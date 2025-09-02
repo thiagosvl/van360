@@ -14,7 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alunos: {
+        Row: {
+          created_at: string
+          dia_vencimento: number
+          endereco: string
+          id: string
+          nome: string
+          nome_responsavel: string
+          telefone_responsavel: string
+          updated_at: string
+          valor_mensalidade: number
+        }
+        Insert: {
+          created_at?: string
+          dia_vencimento: number
+          endereco: string
+          id?: string
+          nome: string
+          nome_responsavel: string
+          telefone_responsavel: string
+          updated_at?: string
+          valor_mensalidade: number
+        }
+        Update: {
+          created_at?: string
+          dia_vencimento?: number
+          endereco?: string
+          id?: string
+          nome?: string
+          nome_responsavel?: string
+          telefone_responsavel?: string
+          updated_at?: string
+          valor_mensalidade?: number
+        }
+        Relationships: []
+      }
+      cobrancas: {
+        Row: {
+          aluno_id: string
+          ano: number
+          created_at: string
+          data_pagamento: string | null
+          data_vencimento: string
+          enviado_em: string | null
+          id: string
+          mes: number
+          status: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          aluno_id: string
+          ano: number
+          created_at?: string
+          data_pagamento?: string | null
+          data_vencimento: string
+          enviado_em?: string | null
+          id?: string
+          mes: number
+          status?: string
+          updated_at?: string
+          valor: number
+        }
+        Update: {
+          aluno_id?: string
+          ano?: number
+          created_at?: string
+          data_pagamento?: string | null
+          data_vencimento?: string
+          enviado_em?: string | null
+          id?: string
+          mes?: number
+          status?: string
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cobrancas_aluno_id_fkey"
+            columns: ["aluno_id"]
+            isOneToOne: false
+            referencedRelation: "alunos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
