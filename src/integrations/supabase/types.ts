@@ -16,34 +16,55 @@ export type Database = {
     Tables: {
       alunos: {
         Row: {
+          bairro: string | null
+          cep: string | null
+          cidade: string | null
           created_at: string
           dia_vencimento: number
           endereco: string
+          estado: string | null
           id: string
           nome: string
           nome_responsavel: string
+          numero: string | null
+          referencia: string | null
+          rua: string | null
           telefone_responsavel: string
           updated_at: string
           valor_mensalidade: number
         }
         Insert: {
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
           created_at?: string
           dia_vencimento: number
           endereco: string
+          estado?: string | null
           id?: string
           nome: string
           nome_responsavel: string
+          numero?: string | null
+          referencia?: string | null
+          rua?: string | null
           telefone_responsavel: string
           updated_at?: string
           valor_mensalidade: number
         }
         Update: {
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
           created_at?: string
           dia_vencimento?: number
           endereco?: string
+          estado?: string | null
           id?: string
           nome?: string
           nome_responsavel?: string
+          numero?: string | null
+          referencia?: string | null
+          rua?: string | null
           telefone_responsavel?: string
           updated_at?: string
           valor_mensalidade?: number
@@ -61,6 +82,7 @@ export type Database = {
           id: string
           mes: number
           status: string
+          tipo_pagamento: string | null
           updated_at: string
           valor: number
         }
@@ -74,6 +96,7 @@ export type Database = {
           id?: string
           mes: number
           status?: string
+          tipo_pagamento?: string | null
           updated_at?: string
           valor: number
         }
@@ -87,6 +110,7 @@ export type Database = {
           id?: string
           mes?: number
           status?: string
+          tipo_pagamento?: string | null
           updated_at?: string
           valor?: number
         }

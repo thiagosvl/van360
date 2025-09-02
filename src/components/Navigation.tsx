@@ -11,7 +11,7 @@ const Navigation = () => {
 
   const menuItems = [
     { path: "/dashboard", label: "Dashboard", icon: Home },
-    { path: "/alunos", label: "Alunos", icon: Users },
+    { path: "/alunos", label: "Passageiros", icon: Users },
   ];
 
   return (

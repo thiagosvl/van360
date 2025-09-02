@@ -2,10 +2,9 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, DollarSign, Calendar, Plus, Filter } from "lucide-react";
+import { Users, DollarSign, Calendar, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 
 interface Aluno {
@@ -65,15 +64,12 @@ const Dashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const mesAtual = new Date().getMonth() + 1;
-      const anoAtual = new Date().getFullYear();
-
-      // Buscar todas as cobranças do mês atual
-      const { data: cobrancasMesAtual } = await supabase
+      // Buscar todas as cobranças do mês/ano filtrado
+      const { data: cobrancasMes } = await supabase
         .from("cobrancas")
         .select("valor, status")
-        .eq("mes", mesAtual)
-        .eq("ano", anoAtual);
+        .eq("mes", mesFilter)
+        .eq("ano", anoFilter);
 
       // Buscar total previsto (soma de todas as mensalidades dos alunos)
       const { data: alunos } = await supabase
@@ -82,7 +78,7 @@ const Dashboard = () => {
 
       const totalPrevisto = alunos?.reduce((sum, aluno) => sum + Number(aluno.valor_mensalidade), 0) || 0;
       
-      const cobrancas = cobrancasMesAtual || [];
+      const cobrancas = cobrancasMes || [];
       const totalCobrancas = cobrancas.length;
       
       const cobrancasPagas = cobrancas.filter(c => c.status === "em_dia").length;
@@ -101,8 +97,8 @@ const Dashboard = () => {
       const { data: alunosAtrasados } = await supabase
         .from("cobrancas")
         .select("aluno_id")
-        .eq("mes", mesAtual)
-        .eq("ano", anoAtual)
+        .eq("mes", mesFilter)
+        .eq("ano", anoFilter)
         .eq("status", "atrasado");
 
       const alunosComAtraso = new Set(alunosAtrasados?.map(c => c.aluno_id)).size;
@@ -141,6 +137,7 @@ const Dashboard = () => {
         `)
         .eq("mes", mesFilter)
         .eq("ano", anoFilter)
+        .in("status", ["pendente", "atrasado"])
         .order("data_vencimento", { ascending: true });
 
       setCobrancas((data || []) as Cobranca[]);
@@ -197,9 +194,6 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchStats();
-  }, []);
-
-  useEffect(() => {
     fetchCobrancas();
   }, [mesFilter, anoFilter]);
 
@@ -211,8 +205,52 @@ const Dashboard = () => {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">Gerencie suas cobranças e alunos</p>
+          <p className="text-muted-foreground">Gerencie suas cobranças e passageiros</p>
         </div>
+
+        {/* Filtros no topo */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="w-4 h-4" />
+              Filtros
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-2 block">Mês</label>
+                <Select value={mesFilter.toString()} onValueChange={(value) => setMesFilter(Number(value))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o mês" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {meses.map((mes, index) => (
+                      <SelectItem key={index} value={(index + 1).toString()}>
+                        {mes}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-2 block">Ano</label>
+                <Select value={anoFilter.toString()} onValueChange={(value) => setAnoFilter(Number(value))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o ano" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[2023, 2024, 2025, 2026].map((ano) => (
+                      <SelectItem key={ano} value={ano.toString()}>
+                        {ano}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -302,63 +340,19 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Alunos com Atraso */}
+        {/* Passageiros com Atraso */}
         {stats.alunosComAtraso > 0 && (
           <Card className="mb-6 border-red-200 bg-red-50">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-red-600" />
                 <span className="text-lg font-semibold text-red-800">
-                  {stats.alunosComAtraso} aluno{stats.alunosComAtraso > 1 ? 's' : ''} com atraso
+                  {stats.alunosComAtraso} passageiro{stats.alunosComAtraso > 1 ? 's' : ''} com atraso
                 </span>
               </div>
             </CardContent>
           </Card>
         )}
-
-        {/* Filtros */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="w-4 h-4" />
-              Filtros
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <label className="text-sm font-medium mb-2 block">Mês</label>
-                <Select value={mesFilter.toString()} onValueChange={(value) => setMesFilter(Number(value))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o mês" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {meses.map((mes, index) => (
-                      <SelectItem key={index} value={(index + 1).toString()}>
-                        {mes}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1">
-                <label className="text-sm font-medium mb-2 block">Ano</label>
-                <Select value={anoFilter.toString()} onValueChange={(value) => setAnoFilter(Number(value))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o ano" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[2023, 2024, 2025, 2026].map((ano) => (
-                      <SelectItem key={ano} value={ano.toString()}>
-                        {ano}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Lista de Cobranças */}
         <Card>
@@ -368,7 +362,7 @@ const Dashboard = () => {
           <CardContent>
             {cobrancas.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                Nenhuma cobrança encontrada para este período
+                Nenhuma cobrança pendente ou atrasada para este período
               </div>
             ) : (
               <div className="space-y-3">
