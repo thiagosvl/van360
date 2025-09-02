@@ -30,16 +30,28 @@ interface Cobranca {
 }
 
 interface DashboardStats {
-  totalAlunos: number;
-  valorMesAtual: number;
-  valorMesAnterior: number;
+  totalPrevisto: number;
+  totalRecebido: number;
+  totalAReceber: number;
+  totalCobrancas: number;
+  cobrancasPagas: number;
+  cobrancasPendentes: number;
+  cobrancasAtrasadas: number;
+  percentualRecebimento: number;
+  alunosComAtraso: number;
 }
 
 const Dashboard = () => {
   const [stats, setStats] = useState<DashboardStats>({
-    totalAlunos: 0,
-    valorMesAtual: 0,
-    valorMesAnterior: 0,
+    totalPrevisto: 0,
+    totalRecebido: 0,
+    totalAReceber: 0,
+    totalCobrancas: 0,
+    cobrancasPagas: 0,
+    cobrancasPendentes: 0,
+    cobrancasAtrasadas: 0,
+    percentualRecebimento: 0,
+    alunosComAtraso: 0,
   });
   const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
@@ -53,40 +65,58 @@ const Dashboard = () => {
 
   const fetchStats = async () => {
     try {
-      // Total de alunos
-      const { count: totalAlunos } = await supabase
-        .from("alunos")
-        .select("*", { count: "exact", head: true });
-
-      // Valor recebido mês atual
       const mesAtual = new Date().getMonth() + 1;
       const anoAtual = new Date().getFullYear();
-      
+
+      // Buscar todas as cobranças do mês atual
       const { data: cobrancasMesAtual } = await supabase
         .from("cobrancas")
-        .select("valor")
+        .select("valor, status")
+        .eq("mes", mesAtual)
+        .eq("ano", anoAtual);
+
+      // Buscar total previsto (soma de todas as mensalidades dos alunos)
+      const { data: alunos } = await supabase
+        .from("alunos")
+        .select("valor_mensalidade");
+
+      const totalPrevisto = alunos?.reduce((sum, aluno) => sum + Number(aluno.valor_mensalidade), 0) || 0;
+      
+      const cobrancas = cobrancasMesAtual || [];
+      const totalCobrancas = cobrancas.length;
+      
+      const cobrancasPagas = cobrancas.filter(c => c.status === "em_dia").length;
+      const cobrancasPendentes = cobrancas.filter(c => c.status === "pendente").length;
+      const cobrancasAtrasadas = cobrancas.filter(c => c.status === "atrasado").length;
+      
+      const totalRecebido = cobrancas
+        .filter(c => c.status === "em_dia")
+        .reduce((sum, c) => sum + Number(c.valor), 0);
+      
+      const totalAReceber = totalPrevisto - totalRecebido;
+      
+      const percentualRecebimento = totalPrevisto > 0 ? (totalRecebido / totalPrevisto) * 100 : 0;
+      
+      // Buscar alunos únicos com cobranças em atraso
+      const { data: alunosAtrasados } = await supabase
+        .from("cobrancas")
+        .select("aluno_id")
         .eq("mes", mesAtual)
         .eq("ano", anoAtual)
-        .eq("status", "em_dia");
+        .eq("status", "atrasado");
 
-      // Valor recebido mês anterior
-      const mesAnterior = mesAtual === 1 ? 12 : mesAtual - 1;
-      const anoAnterior = mesAtual === 1 ? anoAtual - 1 : anoAtual;
-      
-      const { data: cobrancasMesAnterior } = await supabase
-        .from("cobrancas")
-        .select("valor")
-        .eq("mes", mesAnterior)
-        .eq("ano", anoAnterior)
-        .eq("status", "em_dia");
-
-      const valorMesAtual = cobrancasMesAtual?.reduce((sum, c) => sum + Number(c.valor), 0) || 0;
-      const valorMesAnterior = cobrancasMesAnterior?.reduce((sum, c) => sum + Number(c.valor), 0) || 0;
+      const alunosComAtraso = new Set(alunosAtrasados?.map(c => c.aluno_id)).size;
 
       setStats({
-        totalAlunos: totalAlunos || 0,
-        valorMesAtual,
-        valorMesAnterior,
+        totalPrevisto,
+        totalRecebido,
+        totalAReceber,
+        totalCobrancas,
+        cobrancasPagas,
+        cobrancasPendentes,
+        cobrancasAtrasadas,
+        percentualRecebimento,
+        alunosComAtraso,
       });
     } catch (error) {
       console.error("Erro ao buscar estatísticas:", error);
@@ -127,8 +157,7 @@ const Dashboard = () => {
         .eq("id", cobrancaId);
 
       toast({
-        title: "Cobrança reenviada com sucesso",
-        description: `Cobrança reenviada para o responsável de ${nomeAluno}`,
+        title: "Cobrança reenviada com sucesso para o responsável",
       });
     } catch (error) {
       console.error("Erro ao reenviar cobrança:", error);
@@ -180,55 +209,112 @@ const Dashboard = () => {
       <div className="p-4 space-y-6">
         <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground">Gerencie suas cobranças e alunos</p>
-          </div>
-          <Link to="/alunos">
-            <Button className="w-full sm:w-auto">
-              <Plus className="w-4 h-4 mr-2" />
-              Novo Aluno
-            </Button>
-          </Link>
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground">Gerencie suas cobranças e alunos</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Alunos</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Total Previsto</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalAlunos}</div>
+              <div className="text-2xl font-bold">R$ {stats.totalPrevisto.toFixed(2)}</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Recebido Este Mês</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Total Recebido</CardTitle>
+              <DollarSign className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                R$ {stats.valorMesAtual.toFixed(2)}
+              <div className="text-2xl font-bold text-green-600">
+                R$ {stats.totalRecebido.toFixed(2)}
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Recebido Mês Anterior</CardTitle>
+              <CardTitle className="text-sm font-medium">Total a Receber</CardTitle>
+              <DollarSign className="h-4 w-4 text-orange-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600">
+                R$ {stats.totalAReceber.toFixed(2)}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">% Recebimento</CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                R$ {stats.valorMesAnterior.toFixed(2)}
+                {stats.percentualRecebimento.toFixed(1)}%
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Status Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Cobranças</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalCobrancas}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pagas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{stats.cobrancasPagas}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-600">{stats.cobrancasPendentes}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Em Atraso</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">{stats.cobrancasAtrasadas}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Alunos com Atraso */}
+        {stats.alunosComAtraso > 0 && (
+          <Card className="mb-6 border-red-200 bg-red-50">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-red-600" />
+                <span className="text-lg font-semibold text-red-800">
+                  {stats.alunosComAtraso} aluno{stats.alunosComAtraso > 1 ? 's' : ''} com atraso
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Filtros */}
         <Card className="mb-6">
@@ -311,7 +397,7 @@ const Dashboard = () => {
                         onClick={() => reenviarCobranca(cobranca.id, cobranca.alunos.nome)}
                         className="w-full sm:w-auto"
                       >
-                        Reenviar
+                        Reenviar Cobrança
                       </Button>
                     </div>
                   </div>
