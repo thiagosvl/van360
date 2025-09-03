@@ -12,7 +12,7 @@ const Index = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
               <Bus className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-foreground">VanControl</span>
+              <span className="text-xl font-bold text-foreground">Van ni min</span>
             </div>
             <Link to="/dashboard">
               <Button>Entrar</Button>

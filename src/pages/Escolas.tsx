@@ -239,7 +239,7 @@ export default function Escolas() {
     <div className="min-h-screen bg-background">
       <Navigation />
       <div className="p-4 space-y-6">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-foreground">Escolas</h1>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

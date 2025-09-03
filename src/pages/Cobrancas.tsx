@@ -1,12 +1,18 @@
+import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Filter, Send, DollarSign } from "lucide-react";
+import { DollarSign, Filter, Send } from "lucide-react";
 import { useEffect, useState } from "react";
-import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 
 interface Passageiro {
   id: string;
@@ -57,12 +63,24 @@ const Cobrancas = () => {
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(null);
+  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
+    null
+  );
   const { toast } = useToast();
 
   const meses = [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
   ];
 
   const fetchStats = async () => {
@@ -79,34 +97,41 @@ const Cobrancas = () => {
         .from("passageiros")
         .select("valor_mensalidade");
 
-      const totalPrevisto = passageiros?.reduce((sum, passageiro) => sum + Number(passageiro.valor_mensalidade), 0) || 0;
-      
+      const totalPrevisto =
+        passageiros?.reduce(
+          (sum, passageiro) => sum + Number(passageiro.valor_mensalidade),
+          0
+        ) || 0;
+
       const cobrancas = cobrancasMes || [];
       const totalCobrancas = cobrancas.length;
-      
+
       // Classificar status considerando data de vencimento
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
-      
-      const cobrancasPagas = cobrancas.filter(c => c.status === "pago").length;
-      const cobrancasAtrasadas = cobrancas.filter(c => {
+
+      const cobrancasPagas = cobrancas.filter(
+        (c) => c.status === "pago"
+      ).length;
+      const cobrancasAtrasadas = cobrancas.filter((c) => {
         if (c.status === "pago") return false;
         const vencimento = new Date(c.data_vencimento);
         return vencimento < hoje;
       }).length;
-      const cobrancasAVencer = cobrancas.filter(c => {
+      const cobrancasAVencer = cobrancas.filter((c) => {
         if (c.status === "pago") return false;
         const vencimento = new Date(c.data_vencimento);
         return vencimento >= hoje;
       }).length;
-      
+
       const totalRecebido = cobrancas
-        .filter(c => c.status === "pago")
+        .filter((c) => c.status === "pago")
         .reduce((sum, c) => sum + Number(c.valor), 0);
-      
+
       const totalAReceber = totalPrevisto - totalRecebido;
-      
-      const percentualRecebimento = totalPrevisto > 0 ? (totalRecebido / totalPrevisto) * 100 : 0;
+
+      const percentualRecebimento =
+        totalPrevisto > 0 ? (totalRecebido / totalPrevisto) * 100 : 0;
 
       setStats({
         totalPrevisto,
@@ -128,7 +153,8 @@ const Cobrancas = () => {
     try {
       const { data } = await supabase
         .from("cobrancas")
-        .select(`
+        .select(
+          `
           *,
           passageiros (
             id,
@@ -137,17 +163,18 @@ const Cobrancas = () => {
             valor_mensalidade,
             dia_vencimento
           )
-        `)
+        `
+        )
         .eq("mes", mesFilter)
         .eq("ano", anoFilter)
         .order("data_vencimento", { ascending: true });
 
       const cobrancas = data || [];
-      
+
       // Separar cobranças
-      const abertas = cobrancas.filter(c => c.status !== "pago");
-      const pagas = cobrancas.filter(c => c.status === "pago");
-      
+      const abertas = cobrancas.filter((c) => c.status !== "pago");
+      const pagas = cobrancas.filter((c) => c.status === "pago");
+
       setCobrancasAbertas(abertas as Cobranca[]);
       setCobrancasPagas(pagas as Cobranca[]);
     } catch (error) {
@@ -157,7 +184,10 @@ const Cobrancas = () => {
     }
   };
 
-  const reenviarCobranca = async (cobrancaId: string, nomePassageiro: string) => {
+  const reenviarCobranca = async (
+    cobrancaId: string,
+    nomePassageiro: string
+  ) => {
     try {
       await supabase
         .from("cobrancas")
@@ -178,29 +208,31 @@ const Cobrancas = () => {
   };
 
   const getStatusText = (status: string, dataVencimento: string) => {
-    if (status === 'pago') return 'Pago';
-    
+    if (status === "pago") return "Pago";
+
     const vencimento = new Date(dataVencimento);
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
-    
+
     if (vencimento < hoje) {
       const diffTime = hoje.getTime() - vencimento.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return `Atrasou há ${diffDays} dia${diffDays > 1 ? 's' : ''}`;
+      return `Atrasou há ${diffDays} dia${diffDays > 1 ? "s" : ""}`;
     }
-    
-    return 'A vencer';
+
+    return "A vencer";
   };
 
   const getStatusColor = (status: string, dataVencimento: string) => {
-    if (status === 'pago') return 'bg-green-100 text-green-800';
-    
+    if (status === "pago") return "bg-green-100 text-green-800";
+
     const vencimento = new Date(dataVencimento);
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
-    
-    return vencimento < hoje ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800';
+
+    return vencimento < hoje
+      ? "bg-red-100 text-red-800"
+      : "bg-orange-100 text-orange-800";
   };
 
   const openPaymentDialog = (cobranca: Cobranca) => {
@@ -222,11 +254,15 @@ const Cobrancas = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       <div className="p-4 space-y-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Cobranças</h1>
-            <p className="text-muted-foreground">Gerencie todas as cobranças por período</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+              Cobranças
+            </h1>
+            <p className="text-muted-foreground">
+              Gerencie todas as cobranças por período
+            </p>
           </div>
 
           {/* Filtros */}
@@ -241,7 +277,10 @@ const Cobrancas = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <label className="text-sm font-medium mb-2 block">Mês</label>
-                  <Select value={mesFilter.toString()} onValueChange={(value) => setMesFilter(Number(value))}>
+                  <Select
+                    value={mesFilter.toString()}
+                    onValueChange={(value) => setMesFilter(Number(value))}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o mês" />
                     </SelectTrigger>
@@ -256,7 +295,10 @@ const Cobrancas = () => {
                 </div>
                 <div className="flex-1">
                   <label className="text-sm font-medium mb-2 block">Ano</label>
-                  <Select value={anoFilter.toString()} onValueChange={(value) => setAnoFilter(Number(value))}>
+                  <Select
+                    value={anoFilter.toString()}
+                    onValueChange={(value) => setAnoFilter(Number(value))}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o ano" />
                     </SelectTrigger>
@@ -273,12 +315,14 @@ const Cobrancas = () => {
             </CardContent>
           </Card>
 
-
           {/* Cobranças em Aberto */}
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle className="text-red-600">
-                Cobranças em Aberto - {meses[mesFilter - 1]} {anoFilter}
+              <CardTitle className="text-red-600 flex items-center gap-2">
+                Em Aberto - {meses[mesFilter - 1]} {anoFilter}
+                <span className="bg-red-600 text-white text-sm px-2 py-0.5 rounded-full">
+                  {cobrancasAbertas.length}
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -296,20 +340,68 @@ const Cobrancas = () => {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left p-3 text-sm font-medium">Passageiro</th>
-                        <th className="text-right p-3 text-sm font-medium">Valor</th>
-                        <th className="text-center p-3 text-sm font-medium">Ações</th>
+                        <th className="text-left p-3 text-sm font-medium">
+                          Passageiro
+                        </th>
+                        <th className="text-left p-3 text-sm font-medium">
+                          Responsável
+                        </th>
+                        <th className="text-left p-3 text-sm font-medium">
+                          Vencimento
+                        </th>
+                        <th className="text-left p-3 text-sm font-medium">
+                          Status
+                        </th>
+                        <th className="text-right p-3 text-sm font-medium">
+                          Valor
+                        </th>
+                        <th className="text-center p-3 text-sm font-medium">
+                          Ações
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {cobrancasAbertas.map((cobranca) => (
-                        <tr key={cobranca.id} className="border-b hover:bg-muted/50">
+                        <tr
+                          key={cobranca.id}
+                          className="border-b hover:bg-muted/50"
+                        >
                           <td className="p-3">
-                            <span className="font-medium text-sm">{cobranca.passageiros.nome}</span>
+                            <span className="font-medium text-sm">
+                              {cobranca.passageiros.nome}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className="text-sm text-muted-foreground">
+                              {cobranca.passageiros.nome_responsavel || "-"}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className="text-sm">
+                              {new Date(
+                                cobranca.data_vencimento
+                              ).toLocaleDateString("pt-BR")}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                                cobranca.status,
+                                cobranca.data_vencimento
+                              )}`}
+                            >
+                              {getStatusText(
+                                cobranca.status,
+                                cobranca.data_vencimento
+                              )}
+                            </span>
                           </td>
                           <td className="p-3 text-right">
                             <span className="font-medium text-sm">
-                              {Number(cobranca.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                              {Number(cobranca.valor).toLocaleString("pt-BR", {
+                                style: "currency",
+                                currency: "BRL",
+                              })}
                             </span>
                           </td>
                           <td className="p-3 text-center">
@@ -317,7 +409,12 @@ const Cobrancas = () => {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => reenviarCobranca(cobranca.id, cobranca.passageiros.nome)}
+                                onClick={() =>
+                                  reenviarCobranca(
+                                    cobranca.id,
+                                    cobranca.passageiros.nome
+                                  )
+                                }
                                 className="gap-1"
                               >
                                 <Send className="w-3 h-3" />
@@ -345,8 +442,11 @@ const Cobrancas = () => {
           {/* Cobranças Pagas */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-green-600">
-                Cobranças Pagas - {meses[mesFilter - 1]} {anoFilter}
+              <CardTitle className="text-green-600 flex items-center gap-2">
+                Pagas - {meses[mesFilter - 1]} {anoFilter}
+                <span className="bg-green-600 text-white text-sm px-2 py-0.5 rounded-full">
+                  {cobrancasPagas.length}
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -364,32 +464,59 @@ const Cobrancas = () => {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left p-3 text-sm font-medium">Passageiro</th>
-                        <th className="text-left p-3 text-sm font-medium">Data Pagamento</th>
-                        <th className="text-left p-3 text-sm font-medium">Forma</th>
-                        <th className="text-right p-3 text-sm font-medium">Valor</th>
+                        <th className="text-left p-3 text-sm font-medium">
+                          Passageiro
+                        </th>
+                        <th className="text-left p-3 text-sm font-medium">
+                          Responsável
+                        </th>
+                        <th className="text-left p-3 text-sm font-medium">
+                          Data Pagamento
+                        </th>
+                        <th className="text-left p-3 text-sm font-medium">
+                          Forma
+                        </th>
+                        <th className="text-right p-3 text-sm font-medium">
+                          Valor
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {cobrancasPagas.map((cobranca) => (
-                        <tr key={cobranca.id} className="border-b hover:bg-muted/50">
+                        <tr
+                          key={cobranca.id}
+                          className="border-b hover:bg-muted/50"
+                        >
                           <td className="p-3">
-                            <span className="font-medium text-sm">{cobranca.passageiros.nome}</span>
-                          </td>
-                          <td className="p-3">
-                            <span className="text-sm">
-                              {cobranca.data_pagamento 
-                                ? new Date(cobranca.data_pagamento).toLocaleDateString('pt-BR')
-                                : '-'
-                              }
+                            <span className="font-medium text-sm">
+                              {cobranca.passageiros.nome}
                             </span>
                           </td>
                           <td className="p-3">
-                            <span className="text-sm">{cobranca.tipo_pagamento || '-'}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {cobranca.passageiros.nome_responsavel || "-"}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className="text-sm">
+                              {cobranca.data_pagamento
+                                ? new Date(
+                                    cobranca.data_pagamento
+                                  ).toLocaleDateString("pt-BR")
+                                : "-"}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className="text-sm">
+                              {cobranca.tipo_pagamento || "-"}
+                            </span>
                           </td>
                           <td className="p-3 text-right">
                             <span className="font-medium text-sm">
-                              {Number(cobranca.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                              {Number(cobranca.valor).toLocaleString("pt-BR", {
+                                style: "currency",
+                                currency: "BRL",
+                              })}
                             </span>
                           </td>
                         </tr>

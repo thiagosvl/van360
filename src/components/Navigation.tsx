@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Bus, Home, Menu, Users, School, X, Receipt } from "lucide-react";
+import { Bus, Home, Menu, Receipt, School, Users, X } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -23,7 +23,7 @@ const Navigation = () => {
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center gap-2">
             <Bus className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-foreground">VanControl</span>
+            <span className="text-xl font-bold text-foreground">Van ni min</span>
           </Link>
 
           {/* Desktop Menu */}
@@ -64,7 +64,7 @@ const Navigation = () => {
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm md:hidden z-50">
             <div className="fixed top-0 left-0 w-64 h-full bg-background border-r shadow-lg">
               <div className="flex items-center justify-between p-4 border-b">
-                <span className="text-lg font-semibold text-primary">VanControl</span>
+                <span className="text-lg font-semibold text-primary">Van ni min</span>
                 <Button
                   variant="ghost"
                   size="sm"
