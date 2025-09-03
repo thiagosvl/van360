@@ -725,7 +725,7 @@ export default function Passageiros() {
                                 className="gap-1"
                               >
                                 <Pencil className="w-3 h-3" />
-                                Editar
+                                Editar Cadastro
                               </Button>
                               <Button
                                 size="sm"
@@ -734,7 +734,7 @@ export default function Passageiros() {
                                 className="gap-1"
                               >
                                 <History className="w-3 h-3" />
-                                Histórico
+                                Carteirinha Virtual (Histórico)
                               </Button>
                             </div>
                           </div>

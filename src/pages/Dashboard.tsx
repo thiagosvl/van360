@@ -1,4 +1,7 @@
+import LatePaymentsAlert from "@/components/LatePaymentsAlert";
+import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import Navigation from "@/components/Navigation";
+import PaymentStatsCard from "@/components/PaymentStatsCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -9,11 +12,8 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, DollarSign, Filter } from "lucide-react";
+import { Calendar, CreditCard, DollarSign, Filter } from "lucide-react";
 import { useEffect, useState } from "react";
-import PaymentStatsCard from "@/components/PaymentStatsCard";
-import LatePaymentsAlert from "@/components/LatePaymentsAlert";
-import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 
 interface Passageiro {
   id: string;
@@ -48,6 +48,7 @@ interface PaymentStats {
   pix: { count: number; total: number };
   cartao: { count: number; total: number };
   dinheiro: { count: number; total: number };
+  transferencia: { count: number; total: number };
 }
 
 interface DashboardStats {
@@ -79,6 +80,7 @@ const Dashboard = () => {
     pix: { count: 0, total: 0 },
     cartao: { count: 0, total: 0 },
     dinheiro: { count: 0, total: 0 },
+    transferencia: { count: 0, total: 0 },
   });
 
   const [latePayments, setLatePayments] = useState<Cobranca[]>([]);
@@ -86,7 +88,9 @@ const Dashboard = () => {
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(true);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(null);
+  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
+    null
+  );
 
   const meses = [
     "Janeiro",
@@ -109,7 +113,8 @@ const Dashboard = () => {
       // Buscar todas as cobranças do mês/ano filtrado com passageiros
       const { data: cobrancasMes } = await supabase
         .from("cobrancas")
-        .select(`
+        .select(
+          `
           *,
           passageiros (
             id,
@@ -118,14 +123,13 @@ const Dashboard = () => {
             valor_mensalidade,
             dia_vencimento
           )
-        `)
+        `
+        )
         .eq("mes", mesFilter)
         .eq("ano", anoFilter);
 
-      const totalPrevisto = cobrancasMes?.reduce(
-        (sum, c) => sum + Number(c.valor),
-        0
-      ) || 0;
+      const totalPrevisto =
+        cobrancasMes?.reduce((sum, c) => sum + Number(c.valor), 0) || 0;
 
       const cobrancas = cobrancasMes || [];
       const totalCobrancas = cobrancas.length;
@@ -137,13 +141,13 @@ const Dashboard = () => {
       const cobrancasPagas = cobrancas.filter(
         (c) => c.status === "pago"
       ).length;
-      
+
       const cobrancasAtrasadasList = cobrancas.filter((c) => {
         if (c.status === "pago") return false;
         const vencimento = new Date(c.data_vencimento);
         return vencimento < hoje;
       });
-      
+
       const cobrancasPendentes = cobrancas.filter((c) => {
         if (c.status === "pago") return false;
         const vencimento = new Date(c.data_vencimento);
@@ -170,21 +174,28 @@ const Dashboard = () => {
         pix: { count: 0, total: 0 },
         cartao: { count: 0, total: 0 },
         dinheiro: { count: 0, total: 0 },
+        transferencia: { count: 0, total: 0 },
       };
 
       cobrancasPagasData.forEach((c) => {
         const tipo = c.tipo_pagamento?.toLowerCase() || "";
         const valor = Number(c.valor);
-        
+
         if (tipo === "pix") {
           paymentStatsData.pix.count++;
           paymentStatsData.pix.total += valor;
-        } else if (tipo === "cartao") {
+        } else if (tipo === "cartao-credito" || tipo === "cartao-debito") {
           paymentStatsData.cartao.count++;
           paymentStatsData.cartao.total += valor;
         } else if (tipo === "dinheiro") {
           paymentStatsData.dinheiro.count++;
           paymentStatsData.dinheiro.total += valor;
+        } else if (tipo === "transferencia") {
+          if (!paymentStatsData.transferencia) {
+            paymentStatsData.transferencia = { count: 0, total: 0 };
+          }
+          paymentStatsData.transferencia.count++;
+          paymentStatsData.transferencia.total += valor;
         }
       });
 
@@ -209,7 +220,10 @@ const Dashboard = () => {
     }
   };
 
-  const reenviarCobranca = async (cobrancaId: string, nomePassageiro: string) => {
+  const reenviarCobranca = async (
+    cobrancaId: string,
+    nomePassageiro: string
+  ) => {
     try {
       await supabase
         .from("cobrancas")
@@ -311,9 +325,6 @@ const Dashboard = () => {
             onReenviarCobranca={reenviarCobranca}
             onPayment={openPaymentDialog}
           />
-
-          {/* Card de Pagamentos por Forma */}
-          <PaymentStatsCard stats={paymentStats} loading={loading} />
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -455,6 +466,18 @@ const Dashboard = () => {
             </Card>
           </div>
 
+          {/* Card de Pagamentos por Tipo */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="w-4 h-4" />
+                Pagamentos Recebidos por Tipo
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PaymentStatsCard stats={paymentStats} loading={loading} />
+            </CardContent>
+          </Card>
         </div>
       </div>
 

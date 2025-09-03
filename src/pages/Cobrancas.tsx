@@ -1,6 +1,6 @@
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import Navigation from "@/components/Navigation";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -468,7 +468,7 @@ const Cobrancas = () => {
                                 className="gap-1"
                               >
                                 <Send className="w-3 h-3" />
-                                Reenviar
+                                Reenviar Cobrança
                               </Button>
                               <Button
                                 size="sm"
@@ -476,7 +476,7 @@ const Cobrancas = () => {
                                 className="gap-1"
                               >
                                 <DollarSign className="w-3 h-3" />
-                                Pagar
+                                Registrar Pagamento
                               </Button>
                             </div>
                           </td>

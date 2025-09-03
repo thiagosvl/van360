@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, DollarSign, Send, CheckCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, DollarSign, Send } from "lucide-react";
 import { useState } from "react";
 import ConfirmationDialog from "./ConfirmationDialog";
 
@@ -143,7 +143,7 @@ const LatePaymentsAlert = ({
                     className="gap-1 flex-1 sm:flex-none"
                   >
                     <Send className="w-3 h-3" />
-                    Reenviar
+                    Reenviar Cobrança
                   </Button>
                   <Button
                     size="sm"
@@ -151,7 +151,7 @@ const LatePaymentsAlert = ({
                     className="gap-1 flex-1 sm:flex-none"
                   >
                     <DollarSign className="w-3 h-3" />
-                    Pagar
+                    Registrar Pagamento
                   </Button>
                 </div>
               </div>

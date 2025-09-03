@@ -1,17 +1,23 @@
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
+import { useState } from "react";
 
 interface ManualPaymentDialogProps {
   isOpen: boolean;
@@ -31,10 +37,13 @@ export default function ManualPaymentDialog({
   onPaymentRecorded,
 }: ManualPaymentDialogProps) {
   const [valorPago, setValorPago] = useState(
-    valorOriginal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+    valorOriginal.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    })
   );
   const [dataPagamento, setDataPagamento] = useState(
-    new Date().toISOString().split('T')[0]
+    new Date().toISOString().split("T")[0]
   );
   const [tipoPagamento, setTipoPagamento] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,7 +51,7 @@ export default function ManualPaymentDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!tipoPagamento) {
       toast({
         title: "Erro",
@@ -55,7 +64,7 @@ export default function ManualPaymentDialog({
     setLoading(true);
     try {
       const valorNumerico = moneyToNumber(valorPago);
-      
+
       const { error } = await supabase
         .from("cobrancas")
         .update({
@@ -88,8 +97,13 @@ export default function ManualPaymentDialog({
   };
 
   const handleClose = () => {
-    setValorPago(valorOriginal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
-    setDataPagamento(new Date().toISOString().split('T')[0]);
+    setValorPago(
+      valorOriginal.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      })
+    );
+    setDataPagamento(new Date().toISOString().split("T")[0]);
     setTipoPagamento("");
     onClose();
   };
@@ -100,7 +114,7 @@ export default function ManualPaymentDialog({
         <DialogHeader>
           <DialogTitle>Registrar Pagamento Manual</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label className="text-sm font-medium">Passageiro</Label>
@@ -144,11 +158,13 @@ export default function ManualPaymentDialog({
                 <SelectValue placeholder="Selecione a forma de pagamento" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Dinheiro">Dinheiro</SelectItem>
+                <SelectItem value="dinheiro">Dinheiro</SelectItem>
                 <SelectItem value="PIX">PIX</SelectItem>
-                <SelectItem value="Cartão de Débito">Cartão de Débito</SelectItem>
-                <SelectItem value="Cartão de Crédito">Cartão de Crédito</SelectItem>
-                <SelectItem value="Transferência">Transferência</SelectItem>
+                <SelectItem value="cartao-credito">
+                  Cartão de Crédito
+                </SelectItem>
+                <SelectItem value="cartao-debito">Cartão de Débito</SelectItem>
+                <SelectItem value="transferencia">Transferência</SelectItem>
               </SelectContent>
             </Select>
           </div>

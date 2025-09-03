@@ -1,16 +1,16 @@
-import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { DollarSign, Send } from "lucide-react";
-import ManualPaymentDialog from "./ManualPaymentDialog";
+import { useEffect, useState } from "react";
 import ConfirmationDialog from "./ConfirmationDialog";
+import ManualPaymentDialog from "./ManualPaymentDialog";
 
 interface Cobranca {
   id: string;
@@ -196,7 +196,7 @@ export default function PassageiroHistorico({
                             className="text-xs px-2 py-1 h-auto gap-1"
                           >
                             <Send className="w-3 h-3" />
-                            Reenviar
+                            Reenviar Cobrança
                           </Button>
                           <Button
                             size="sm"
@@ -204,7 +204,7 @@ export default function PassageiroHistorico({
                             className="text-xs px-2 py-1 h-auto gap-1"
                           >
                             <DollarSign className="w-3 h-3" />
-                            Pagar
+                            Registrar Pagamento
                           </Button>
                         </div>
                       )}
