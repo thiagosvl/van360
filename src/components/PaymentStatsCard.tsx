@@ -25,7 +25,7 @@ const PaymentStatsCard = ({ stats, loading }: PaymentStatsCardProps) => {
     },
     {
       key: "cartao",
-      name: "Cartões",
+      name: "Cartões (crédito e débito)",
       icon: CreditCard,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
@@ -51,7 +51,7 @@ const PaymentStatsCard = ({ stats, loading }: PaymentStatsCardProps) => {
 
   return (
     <div className="mb-6 space-y-4">
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
         {allPaymentMethods
           .filter((method) => stats[method.key]?.count > 0)
           .map((method) => {

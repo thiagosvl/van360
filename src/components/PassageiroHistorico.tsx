@@ -139,7 +139,7 @@ export default function PassageiroHistorico({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Histórico de Pagamentos - {passageiroNome}</DialogTitle>
+          <DialogTitle>Carteirinha Digital - {passageiroNome}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">

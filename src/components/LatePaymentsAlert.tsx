@@ -35,13 +35,13 @@ interface LatePaymentsAlertProps {
   onPayment: (cobranca: Cobranca) => void;
 }
 
-const LatePaymentsAlert = ({ 
-  latePayments, 
-  loading, 
+const LatePaymentsAlert = ({
+  latePayments,
+  loading,
   selectedMonth,
   selectedYear,
-  onReenviarCobranca, 
-  onPayment 
+  onReenviarCobranca,
+  onPayment,
 }: LatePaymentsAlertProps) => {
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -64,13 +64,16 @@ const LatePaymentsAlert = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-orange-800">
             <AlertTriangle className="h-5 w-5" />
-            Pagamentos em Atraso
+            Mensalidades em Atraso
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-white rounded border">
+              <div
+                key={i}
+                className="flex items-center justify-between p-3 bg-white rounded border"
+              >
                 <div className="flex-1">
                   <Skeleton className="h-4 w-32 mb-1" />
                   <Skeleton className="h-3 w-24" />
@@ -89,15 +92,26 @@ const LatePaymentsAlert = ({
 
   if (latePayments.length === 0) {
     const monthNames = [
-      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro",
     ];
-    
+
     return (
       <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
         <CheckCircle className="h-5 w-5 text-green-600" />
         <div className="text-sm font-medium text-green-800">
-          Todos os pagamentos de {monthNames[selectedMonth - 1]} {selectedYear} estão em dia!
+          Todas as mensalidades de {monthNames[selectedMonth - 1]} {selectedYear}{" "}
+          estão em dia!
         </div>
       </div>
     );
@@ -109,7 +123,7 @@ const LatePaymentsAlert = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-red-800">
             <AlertTriangle className="h-5 w-5" />
-            Pagamentos em Atraso ({latePayments.length})
+            Mensalidades em Atraso ({latePayments.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -124,7 +138,10 @@ const LatePaymentsAlert = ({
                     {cobranca.passageiros.nome}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Venc: {new Date(cobranca.data_vencimento).toLocaleDateString("pt-BR")}
+                    Venc:{" "}
+                    {new Date(cobranca.data_vencimento).toLocaleDateString(
+                      "pt-BR"
+                    )}
                   </div>
                   <div className="text-sm font-medium text-red-600">
                     {Number(cobranca.valor).toLocaleString("pt-BR", {
@@ -133,14 +150,17 @@ const LatePaymentsAlert = ({
                     })}
                   </div>
                 </div>
-                <div className="flex gap-2 w-full sm:w-auto">
+                <div className="flex flex-col gap-2 sm:flex-row sm:gap-2 sm:w-auto w-full">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() =>
-                      handleReenviarClick(cobranca.id, cobranca.passageiros.nome)
+                      handleReenviarClick(
+                        cobranca.id,
+                        cobranca.passageiros.nome
+                      )
                     }
-                    className="gap-1 flex-1 sm:flex-none"
+                    className="gap-1 w-full sm:w-auto"
                   >
                     <Send className="w-3 h-3" />
                     Reenviar Cobrança
@@ -148,7 +168,7 @@ const LatePaymentsAlert = ({
                   <Button
                     size="sm"
                     onClick={() => onPayment(cobranca)}
-                    className="gap-1 flex-1 sm:flex-none"
+                    className="gap-1 w-full sm:w-auto"
                   >
                     <DollarSign className="w-3 h-3" />
                     Registrar Pagamento
@@ -162,7 +182,7 @@ const LatePaymentsAlert = ({
 
       <ConfirmationDialog
         open={confirmDialog.open}
-        onOpenChange={(open) => 
+        onOpenChange={(open) =>
           setConfirmDialog({ open, cobrancaId: "", nomePassageiro: "" })
         }
         title="Reenviar Cobrança"

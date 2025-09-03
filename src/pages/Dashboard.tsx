@@ -316,7 +316,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Alerta de Pagamentos em Atraso */}
+          {/* Alerta de Mensalidades em Atraso */}
           <LatePaymentsAlert
             latePayments={latePayments}
             loading={loading}
@@ -466,18 +466,20 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          {/* Card de Pagamentos por Tipo */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="w-4 h-4" />
-                Pagamentos Recebidos por Tipo
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PaymentStatsCard stats={paymentStats} loading={loading} />
-            </CardContent>
-          </Card>
+          {/* Card de Mensalidades por Tipo */}
+          {stats.totalRecebido > 0 && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="w-4 h-4" />
+                  Mensalidades Recebidas por Tipo
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PaymentStatsCard stats={paymentStats} loading={loading} />
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
