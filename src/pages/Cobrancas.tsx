@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, DollarSign, Filter, Send } from "lucide-react";
-import Navigation from "@/components/Navigation";
+import { Filter, Send } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface Passageiro {
   id: string;
@@ -284,10 +284,6 @@ const Cobrancas = () => {
                     <thead>
                       <tr className="border-b">
                         <th className="text-left p-3 text-sm font-medium">Passageiro</th>
-                        <th className="text-left p-3 text-sm font-medium">Responsável</th>
-                        <th className="text-left p-3 text-sm font-medium">Vencimento</th>
-                        <th className="text-left p-3 text-sm font-medium">Status</th>
-                        <th className="text-right p-3 text-sm font-medium">Valor</th>
                         <th className="text-center p-3 text-sm font-medium">Ações</th>
                       </tr>
                     </thead>
@@ -296,26 +292,6 @@ const Cobrancas = () => {
                         <tr key={cobranca.id} className="border-b hover:bg-muted/50">
                           <td className="p-3">
                             <span className="font-medium text-sm">{cobranca.passageiros.nome}</span>
-                          </td>
-                          <td className="p-3">
-                            <span className="text-sm text-muted-foreground">
-                              {cobranca.passageiros.nome_responsavel || '-'}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <span className="text-sm">
-                              {new Date(cobranca.data_vencimento).toLocaleDateString('pt-BR')}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(cobranca.status, cobranca.data_vencimento)}`}>
-                              {getStatusText(cobranca.status, cobranca.data_vencimento)}
-                            </span>
-                          </td>
-                          <td className="p-3 text-right">
-                            <span className="font-medium text-sm">
-                              {Number(cobranca.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                            </span>
                           </td>
                           <td className="p-3 text-center">
                             <Button
@@ -360,10 +336,8 @@ const Cobrancas = () => {
                     <thead>
                       <tr className="border-b">
                         <th className="text-left p-3 text-sm font-medium">Passageiro</th>
-                        <th className="text-left p-3 text-sm font-medium">Responsável</th>
                         <th className="text-left p-3 text-sm font-medium">Data Pagamento</th>
                         <th className="text-left p-3 text-sm font-medium">Forma</th>
-                        <th className="text-left p-3 text-sm font-medium">Status</th>
                         <th className="text-right p-3 text-sm font-medium">Valor</th>
                       </tr>
                     </thead>
@@ -372,11 +346,6 @@ const Cobrancas = () => {
                         <tr key={cobranca.id} className="border-b hover:bg-muted/50">
                           <td className="p-3">
                             <span className="font-medium text-sm">{cobranca.passageiros.nome}</span>
-                          </td>
-                          <td className="p-3">
-                            <span className="text-sm text-muted-foreground">
-                              {cobranca.passageiros.nome_responsavel || '-'}
-                            </span>
                           </td>
                           <td className="p-3">
                             <span className="text-sm">
@@ -388,11 +357,6 @@ const Cobrancas = () => {
                           </td>
                           <td className="p-3">
                             <span className="text-sm">{cobranca.tipo_pagamento || '-'}</span>
-                          </td>
-                          <td className="p-3">
-                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              Pago
-                            </span>
                           </td>
                           <td className="p-3 text-right">
                             <span className="font-medium text-sm">
