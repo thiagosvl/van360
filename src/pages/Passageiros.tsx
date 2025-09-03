@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { Plus, Pencil, Send, History, ChevronDown, ChevronRight, Search } from "lucide-react";
+import Navigation from "@/components/Navigation";
+import PassageiroHistorico from "@/components/PassageiroHistorico";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -19,11 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { phoneMask, moneyMask, moneyToNumber, cepMask } from "@/utils/masks";
-import PassageiroHistorico from "@/components/PassageiroHistorico";
-import Navigation from "@/components/Navigation";
+import { cepMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
+import { ChevronDown, ChevronRight, History, Pencil, Plus, Search } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Passageiro {
   id: string;
@@ -192,31 +192,6 @@ export default function Passageiros() {
     } catch (error) {
       console.error("Erro ao buscar cobranças:", error);
     }
-  };
-
-  const getPassageiroStatus = (passageiroId: string) => {
-    const cobranca = cobrancas.find(c => c.passageiro_id === passageiroId);
-    if (!cobranca) return { status: "sem_cobranca", color: "bg-gray-100 text-gray-800", text: "Sem cobrança" };
-    
-    if (cobranca.status === 'pago') {
-      return { status: "pago", color: "bg-green-100 text-green-800", text: "Pago" };
-    }
-    
-    const vencimento = new Date(cobranca.data_vencimento);
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    
-    if (vencimento < hoje) {
-      const diffTime = hoje.getTime() - vencimento.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return { 
-        status: "em_atraso", 
-        color: "bg-red-100 text-red-800", 
-        text: `Atrasou há ${diffDays} dia${diffDays > 1 ? 's' : ''}` 
-      };
-    }
-    
-    return { status: "a_vencer", color: "bg-orange-100 text-orange-800", text: "A vencer" };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -642,7 +617,6 @@ export default function Passageiros() {
                 </Card>
               ) : (
               passageiros.map((passageiro) => {
-                const status = getPassageiroStatus(passageiro.id);
                 const isExpanded = expandedPassageiro === passageiro.id;
 
                 return (
@@ -656,11 +630,6 @@ export default function Passageiros() {
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <div className="flex-1 min-w-0">
                             <h3 className="font-medium truncate">{passageiro.nome}</h3>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${status.color}`}>
-                                {status.text}
-                              </span>
-                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
