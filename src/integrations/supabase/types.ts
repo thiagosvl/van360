@@ -14,6 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
+      cobrancas: {
+        Row: {
+          ano: number
+          created_at: string
+          data_pagamento: string | null
+          data_vencimento: string
+          enviado_em: string | null
+          id: string
+          mes: number
+          passageiro_id: string
+          status: string
+          tipo_pagamento: string | null
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          ano: number
+          created_at?: string
+          data_pagamento?: string | null
+          data_vencimento: string
+          enviado_em?: string | null
+          id?: string
+          mes: number
+          passageiro_id: string
+          status?: string
+          tipo_pagamento?: string | null
+          updated_at?: string
+          valor: number
+        }
+        Update: {
+          ano?: number
+          created_at?: string
+          data_pagamento?: string | null
+          data_vencimento?: string
+          enviado_em?: string | null
+          id?: string
+          mes?: number
+          passageiro_id?: string
+          status?: string
+          tipo_pagamento?: string | null
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cobrancas_passageiro_id_fkey"
+            columns: ["passageiro_id"]
+            isOneToOne: false
+            referencedRelation: "passageiros"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escolas: {
+        Row: {
+          ativo: boolean
+          bairro: string | null
+          cep: string | null
+          cidade: string | null
+          created_at: string
+          estado: string | null
+          id: string
+          nome: string
+          numero: string | null
+          referencia: string | null
+          rua: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
+          created_at?: string
+          estado?: string | null
+          id?: string
+          nome: string
+          numero?: string | null
+          referencia?: string | null
+          rua?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
+          created_at?: string
+          estado?: string | null
+          id?: string
+          nome?: string
+          numero?: string | null
+          referencia?: string | null
+          rua?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       passageiros: {
         Row: {
           bairro: string | null
@@ -22,6 +120,7 @@ export type Database = {
           created_at: string
           dia_vencimento: number
           endereco: string
+          escola_id: string | null
           estado: string | null
           id: string
           nome: string
@@ -40,6 +139,7 @@ export type Database = {
           created_at?: string
           dia_vencimento: number
           endereco: string
+          escola_id?: string | null
           estado?: string | null
           id?: string
           nome: string
@@ -58,6 +158,7 @@ export type Database = {
           created_at?: string
           dia_vencimento?: number
           endereco?: string
+          escola_id?: string | null
           estado?: string | null
           id?: string
           nome?: string
@@ -69,57 +170,12 @@ export type Database = {
           updated_at?: string
           valor_mensalidade?: number
         }
-        Relationships: []
-      }
-      cobrancas: {
-        Row: {
-          passageiro_id: string
-          ano: number
-          created_at: string
-          data_pagamento: string | null
-          data_vencimento: string
-          enviado_em: string | null
-          id: string
-          mes: number
-          status: string
-          tipo_pagamento: string | null
-          updated_at: string
-          valor: number
-        }
-        Insert: {
-          passageiro_id: string
-          ano: number
-          created_at?: string
-          data_pagamento?: string | null
-          data_vencimento: string
-          enviado_em?: string | null
-          id?: string
-          mes: number
-          status?: string
-          tipo_pagamento?: string | null
-          updated_at?: string
-          valor: number
-        }
-        Update: {
-          passageiro_id?: string
-          ano?: number
-          created_at?: string
-          data_pagamento?: string | null
-          data_vencimento?: string
-          enviado_em?: string | null
-          id?: string
-          mes?: number
-          status?: string
-          tipo_pagamento?: string | null
-          updated_at?: string
-          valor?: number
-        }
         Relationships: [
           {
-            foreignKeyName: "cobrancas_passageiro_id_fkey"
-            columns: ["passageiro_id"]
+            foreignKeyName: "passageiros_escola_id_fkey"
+            columns: ["escola_id"]
             isOneToOne: false
-            referencedRelation: "passageiros"
+            referencedRelation: "escolas"
             referencedColumns: ["id"]
           },
         ]

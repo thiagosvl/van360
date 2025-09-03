@@ -67,7 +67,7 @@ const Dashboard = () => {
       // Buscar todas as cobranças do mês/ano filtrado
       const { data: cobrancasMes } = await supabase
         .from("cobrancas")
-        .select("valor, status")
+        .select("valor, status, data_vencimento, passageiro_id")
         .eq("mes", mesFilter)
         .eq("ano", anoFilter);
 
@@ -81,12 +81,24 @@ const Dashboard = () => {
       const cobrancas = cobrancasMes || [];
       const totalCobrancas = cobrancas.length;
       
-      const cobrancasPagas = cobrancas.filter(c => c.status === "em_dia").length;
-      const cobrancasPendentes = cobrancas.filter(c => c.status === "pendente").length;
-      const cobrancasAtrasadas = cobrancas.filter(c => c.status === "atrasado").length;
+      // Classificar status considerando data de vencimento
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      
+      const cobrancasPagas = cobrancas.filter(c => c.status === "pago").length;
+      const cobrancasAtrasadas = cobrancas.filter(c => {
+        if (c.status === "pago") return false;
+        const vencimento = new Date(c.data_vencimento);
+        return vencimento < hoje;
+      }).length;
+      const cobrancasPendentes = cobrancas.filter(c => {
+        if (c.status === "pago") return false;
+        const vencimento = new Date(c.data_vencimento);
+        return vencimento >= hoje;
+      }).length;
       
       const totalRecebido = cobrancas
-        .filter(c => c.status === "em_dia")
+        .filter(c => c.status === "pago")
         .reduce((sum, c) => sum + Number(c.valor), 0);
       
       const totalAReceber = totalPrevisto - totalRecebido;
@@ -94,14 +106,15 @@ const Dashboard = () => {
       const percentualRecebimento = totalPrevisto > 0 ? (totalRecebido / totalPrevisto) * 100 : 0;
       
       // Buscar passageiros únicos com cobranças em atraso
-      const { data: passageirosAtrasados } = await supabase
-        .from("cobrancas")
-        .select("passageiro_id")
-        .eq("mes", mesFilter)
-        .eq("ano", anoFilter)
-        .eq("status", "atrasado");
-
-      const passageirosComAtraso = new Set(passageirosAtrasados?.map(c => c.passageiro_id)).size;
+      const passageirosAtrasados = new Set(
+        cobrancas
+          .filter(c => {
+            if (c.status === "pago") return false;
+            const vencimento = new Date(c.data_vencimento);
+            return vencimento < hoje;
+          })
+          .map(c => c.passageiro_id)
+      );
 
       setStats({
         totalPrevisto,
@@ -112,7 +125,7 @@ const Dashboard = () => {
         cobrancasPendentes,
         cobrancasAtrasadas,
         percentualRecebimento,
-        passageirosComAtraso,
+        passageirosComAtraso: passageirosAtrasados.size,
       });
     } catch (error) {
       console.error("Erro ao buscar estatísticas:", error);
@@ -137,10 +150,19 @@ const Dashboard = () => {
         `)
         .eq("mes", mesFilter)
         .eq("ano", anoFilter)
-        .in("status", ["pendente", "atrasado"])
+        .neq("status", "pago")
         .order("data_vencimento", { ascending: true });
 
-      setCobrancas((data || []) as Cobranca[]);
+      // Filtrar apenas pendentes e atrasadas
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      
+      const filteredCobrancas = (data || []).filter(cobranca => {
+        if (cobranca.status === "pago") return false;
+        return true; // Incluir todas as não pagas
+      });
+
+      setCobrancas(filteredCobrancas as Cobranca[]);
     } catch (error) {
       console.error("Erro ao buscar cobranças:", error);
     }

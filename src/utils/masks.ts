@@ -22,12 +22,19 @@ export const moneyMask = (value: string): string => {
   // Remove tudo que não é dígito
   let numericValue = value.replace(/\D/g, '');
   
-  // Converte para formato de moeda
+  // Garantir pelo menos 2 dígitos para centavos
+  if (numericValue.length === 1) {
+    numericValue = '0' + numericValue;
+  }
+  
+  // Converte para formato de moeda brasileiro
   const numberValue = Number(numericValue) / 100;
   
   return numberValue.toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
 };
 

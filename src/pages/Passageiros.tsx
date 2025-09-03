@@ -1,44 +1,34 @@
-import Navigation from "@/components/Navigation";
+import { useState, useEffect } from "react";
+import { Plus, Pencil, Send, History, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { cepMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Calendar, CheckCircle, CreditCard, DollarSign, Edit, MapPin, Phone, Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-
-const passageiroSchema = z.object({
-  nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  nome_responsavel: z.string().min(2, "Nome do responsável deve ter pelo menos 2 caracteres"),
-  telefone_responsavel: z.string().min(14, "Telefone deve estar no formato (11) 99999-9999"),
-  rua: z.string().min(3, "Rua deve ter pelo menos 3 caracteres"),
-  numero: z.string().min(1, "Número é obrigatório"),
-  bairro: z.string().min(2, "Bairro deve ter pelo menos 2 caracteres"),
-  cidade: z.string().min(2, "Cidade deve ter pelo menos 2 caracteres"),
-  estado: z.string().min(2, "Estado deve ter pelo menos 2 caracteres"),
-  cep: z.string().min(9, "CEP deve estar no formato 99999-999"),
-  referencia: z.string().optional(),
-  valor_mensalidade: z.number().min(0.01, "Valor deve ser maior que zero"),
-  dia_vencimento: z.number().min(1, "Dia deve ser entre 1 e 31").max(31, "Dia deve ser entre 1 e 31"),
-});
-
-type PassageiroFormData = z.infer<typeof passageiroSchema>;
+import { phoneMask, moneyMask, moneyToNumber, cepMask } from "@/utils/masks";
+import PassageiroHistorico from "@/components/PassageiroHistorico";
+import Navigation from "@/components/Navigation";
 
 interface Passageiro {
   id: string;
   nome: string;
-  endereco?: string; // Manter para compatibilidade
-  nome_responsavel: string;
-  telefone_responsavel: string;
+  endereco: string;
   rua?: string;
   numero?: string;
   bairro?: string;
@@ -46,8 +36,19 @@ interface Passageiro {
   estado?: string;
   cep?: string;
   referencia?: string;
+  nome_responsavel: string;
+  telefone_responsavel: string;
   valor_mensalidade: number;
   dia_vencimento: number;
+  escola_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Escola {
+  id: string;
+  nome: string;
+  ativo: boolean;
 }
 
 interface Cobranca {
@@ -62,40 +63,74 @@ interface Cobranca {
   tipo_pagamento?: string;
 }
 
-const Passageiros = () => {
+export default function Passageiros() {
   const [passageiros, setPassageiros] = useState<Passageiro[]>([]);
+  const [escolas, setEscolas] = useState<Escola[]>([]);
   const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(null);
-  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(null);
-  const [paymentType, setPaymentType] = useState<string>("");
+  const [selectedEscola, setSelectedEscola] = useState<string>("todas");
+  const [expandedPassageiro, setExpandedPassageiro] = useState<string | null>(null);
+  const [historicoOpen, setHistoricoOpen] = useState(false);
+  const [selectedPassageiroHistorico, setSelectedPassageiroHistorico] = useState<{ id: string; nome: string } | null>(null);
+  const [formData, setFormData] = useState({
+    nome: "",
+    rua: "",
+    numero: "",
+    bairro: "",
+    cidade: "",
+    estado: "",
+    cep: "",
+    referencia: "",
+    nome_responsavel: "",
+    telefone_responsavel: "",
+    valor_mensalidade: "",
+    dia_vencimento: 10,
+    escola_id: "",
+  });
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<PassageiroFormData>({
-    resolver: zodResolver(passageiroSchema),
-    defaultValues: {
-      nome: "",
-      nome_responsavel: "",
-      telefone_responsavel: "",
-      rua: "",
-      numero: "",
-      bairro: "",
-      cidade: "",
-      estado: "",
-      cep: "",
-      referencia: "",
-      valor_mensalidade: 0,
-      dia_vencimento: 5,
-    },
-  });
+  useEffect(() => {
+    fetchEscolas();
+    fetchPassageiros();
+    fetchCobrancas();
+  }, []);
+
+  useEffect(() => {
+    fetchPassageiros();
+  }, [selectedEscola]);
+
+  const fetchEscolas = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("escolas")
+        .select("id, nome, ativo")
+        .eq("ativo", true)
+        .order("nome");
+
+      if (error) throw error;
+      setEscolas(data || []);
+    } catch (error) {
+      console.error("Erro ao buscar escolas:", error);
+    }
+  };
 
   const fetchPassageiros = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("passageiros")
-        .select("*")
-        .order("nome", { ascending: true });
+        .select(`
+          *,
+          escolas(nome)
+        `)
+        .order("nome");
+
+      if (selectedEscola !== "todas") {
+        query = query.eq("escola_id", selectedEscola);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setPassageiros(data || []);
@@ -103,7 +138,7 @@ const Passageiros = () => {
       console.error("Erro ao buscar passageiros:", error);
       toast({
         title: "Erro",
-        description: "Erro ao carregar lista de passageiros",
+        description: "Erro ao carregar passageiros",
         variant: "destructive",
       });
     }
@@ -111,11 +146,12 @@ const Passageiros = () => {
 
   const fetchCobrancas = async () => {
     try {
+      const currentDate = new Date();
       const { data, error } = await supabase
         .from("cobrancas")
         .select("*")
-        .in("status", ["pendente", "atrasado"])
-        .order("data_vencimento", { ascending: true });
+        .eq("mes", currentDate.getMonth() + 1)
+        .eq("ano", currentDate.getFullYear());
 
       if (error) throw error;
       setCobrancas(data || []);
@@ -124,25 +160,55 @@ const Passageiros = () => {
     }
   };
 
-  const handleSubmit = async (data: PassageiroFormData) => {
+  const getPassageiroStatus = (passageiroId: string) => {
+    const cobranca = cobrancas.find(c => c.passageiro_id === passageiroId);
+    if (!cobranca) return { status: "sem_cobranca", color: "bg-gray-100 text-gray-800" };
+    
+    if (cobranca.status === 'pago') {
+      return { status: "pago", color: "bg-green-100 text-green-800" };
+    }
+    
+    const vencimento = new Date(cobranca.data_vencimento);
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    if (vencimento < hoje) {
+      return { status: "em_atraso", color: "bg-red-100 text-red-800" };
+    }
+    
+    return { status: "pendente", color: "bg-yellow-100 text-yellow-800" };
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "pago": return "Pago";
+      case "em_atraso": return "Em atraso";
+      case "pendente": return "Pendente";
+      case "sem_cobranca": return "Sem cobrança";
+      default: return "Desconhecido";
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
     try {
-      const formattedData = {
-        ...data,
-        valor_mensalidade: typeof data.valor_mensalidade === 'string' 
-          ? moneyToNumber(data.valor_mensalidade) 
-          : data.valor_mensalidade,
-        telefone_responsavel: data.telefone_responsavel.replace(/\D/g, ''),
-        cep: data.cep.replace(/\D/g, ''),
+      const passageiroData = {
+        ...formData,
+        valor_mensalidade: moneyToNumber(formData.valor_mensalidade),
+        endereco: `${formData.rua}, ${formData.numero}`, // Manter compatibilidade
+        escola_id: formData.escola_id || null,
       };
 
       if (editingPassageiro) {
         const { error } = await supabase
           .from("passageiros")
-          .update(formattedData)
+          .update(passageiroData)
           .eq("id", editingPassageiro.id);
 
         if (error) throw error;
-
+        
         toast({
           title: "Sucesso",
           description: "Passageiro atualizado com sucesso",
@@ -150,20 +216,19 @@ const Passageiros = () => {
       } else {
         const { error } = await supabase
           .from("passageiros")
-          .insert([formattedData as any]);
+          .insert([passageiroData]);
 
         if (error) throw error;
-
+        
         toast({
           title: "Sucesso",
           description: "Passageiro cadastrado com sucesso",
         });
       }
 
-      form.reset();
+      await fetchPassageiros();
+      resetForm();
       setIsDialogOpen(false);
-      setEditingPassageiro(null);
-      fetchPassageiros();
     } catch (error) {
       console.error("Erro ao salvar passageiro:", error);
       toast({
@@ -171,110 +236,63 @@ const Passageiros = () => {
         description: "Erro ao salvar passageiro",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleEdit = (passageiro: Passageiro) => {
     setEditingPassageiro(passageiro);
-    form.reset({
+    setFormData({
       nome: passageiro.nome,
-      nome_responsavel: passageiro.nome_responsavel,
-      telefone_responsavel: phoneMask(passageiro.telefone_responsavel),
       rua: passageiro.rua || "",
       numero: passageiro.numero || "",
       bairro: passageiro.bairro || "",
       cidade: passageiro.cidade || "",
       estado: passageiro.estado || "",
-      cep: passageiro.cep ? cepMask(passageiro.cep) : "",
+      cep: passageiro.cep || "",
       referencia: passageiro.referencia || "",
-      valor_mensalidade: passageiro.valor_mensalidade,
+      nome_responsavel: passageiro.nome_responsavel,
+      telefone_responsavel: passageiro.telefone_responsavel,
+      valor_mensalidade: moneyMask((passageiro.valor_mensalidade * 100).toString()),
       dia_vencimento: passageiro.dia_vencimento,
+      escola_id: passageiro.escola_id || "",
     });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (passageiroId: string, nomePassageiro: string) => {
+  const handleReenviarCobranca = async (passageiroId: string) => {
     try {
-      const { count } = await supabase
-        .from("cobrancas")
-        .select("*", { count: "exact", head: true })
-        .eq("passageiro_id", passageiroId);
+      const currentDate = new Date();
+      const mes = currentDate.getMonth() + 1;
+      const ano = currentDate.getFullYear();
+      
+      const passageiro = passageiros.find(p => p.id === passageiroId);
+      if (!passageiro) return;
 
-      if (count && count > 0) {
-        toast({
-          title: "Não é possível excluir",
-          description: "Este passageiro possui cobranças geradas. Não é possível excluir.",
-          variant: "destructive",
-        });
-        return;
-      }
-
+      const dataVencimento = new Date(ano, mes - 1, passageiro.dia_vencimento);
+      
       const { error } = await supabase
-        .from("passageiros")
-        .delete()
-        .eq("id", passageiroId);
+        .from("cobrancas")
+        .upsert({
+          passageiro_id: passageiroId,
+          mes,
+          ano,
+          valor: passageiro.valor_mensalidade,
+          data_vencimento: dataVencimento.toISOString().split('T')[0],
+          status: 'pendente',
+          enviado_em: new Date().toISOString(),
+        }, {
+          onConflict: 'passageiro_id,mes,ano'
+        });
 
       if (error) throw error;
 
+      await fetchCobrancas();
       toast({
         title: "Sucesso",
-        description: `${nomePassageiro} foi excluído com sucesso`,
+        description: "Cobrança reenviada com sucesso para o responsável",
       });
-
-      fetchPassageiros();
-    } catch (error) {
-      console.error("Erro ao excluir passageiro:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao excluir passageiro",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const reenviarCobranca = async (passageiro: Passageiro) => {
-    try {
-      const agora = new Date();
-      const mes = agora.getMonth() + 1;
-      const ano = agora.getFullYear();
-      
-      const dataVencimento = new Date(ano, mes - 1, passageiro.dia_vencimento);
-      
-      // Verificar se já existe cobrança para este mês
-      const { data: existingCobranca } = await supabase
-        .from("cobrancas")
-        .select("*")
-        .eq("passageiro_id", passageiro.id)
-        .eq("mes", mes)
-        .eq("ano", ano)
-        .single();
-
-      if (existingCobranca) {
-        // Atualizar a cobrança existente
-        await supabase
-          .from("cobrancas")
-          .update({ enviado_em: new Date().toISOString() })
-          .eq("id", existingCobranca.id);
-      } else {
-        // Criar nova cobrança
-        await supabase
-          .from("cobrancas")
-          .insert([{
-            passageiro_id: passageiro.id,
-            mes,
-            ano,
-            valor: passageiro.valor_mensalidade,
-            status: "pendente",
-            data_vencimento: dataVencimento.toISOString().split('T')[0],
-            enviado_em: new Date().toISOString(),
-          }]);
-      }
-
-      toast({
-        title: "Cobrança reenviada com sucesso para o responsável",
-      });
-      
-      fetchCobrancas();
     } catch (error) {
       console.error("Erro ao reenviar cobrança:", error);
       toast({
@@ -285,527 +303,413 @@ const Passageiros = () => {
     }
   };
 
-  const handlePayment = async (cobranca: Cobranca) => {
-    setSelectedCobranca(cobranca);
-    setIsPaymentDialogOpen(true);
+  const handleHistorico = (passageiro: Passageiro) => {
+    setSelectedPassageiroHistorico({ id: passageiro.id, nome: passageiro.nome });
+    setHistoricoOpen(true);
   };
 
-  const confirmPayment = async () => {
-    if (!selectedCobranca || !paymentType) return;
-
-    try {
-      const { error } = await supabase
-        .from("cobrancas")
-        .update({
-          status: "em_dia",
-          data_pagamento: new Date().toISOString().split('T')[0],
-          tipo_pagamento: paymentType,
-        })
-        .eq("id", selectedCobranca.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Pagamento registrado",
-        description: `Pagamento via ${paymentType.charAt(0).toUpperCase() + paymentType.slice(1)} confirmado`,
-      });
-
-      setIsPaymentDialogOpen(false);
-      setSelectedCobranca(null);
-      setPaymentType("");
-      fetchCobrancas();
-    } catch (error) {
-      console.error("Erro ao registrar pagamento:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao registrar pagamento",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const closeDialog = () => {
-    setIsDialogOpen(false);
+  const resetForm = () => {
+    setFormData({
+      nome: "",
+      rua: "",
+      numero: "",
+      bairro: "",
+      cidade: "",
+      estado: "",
+      cep: "",
+      referencia: "",
+      nome_responsavel: "",
+      telefone_responsavel: "",
+      valor_mensalidade: "",
+      dia_vencimento: 10,
+      escola_id: "",
+    });
     setEditingPassageiro(null);
-    form.reset();
   };
 
-  const closePaymentDialog = () => {
-    setIsPaymentDialogOpen(false);
-    setSelectedCobranca(null);
-    setPaymentType("");
-  };
-
-  const formatEnderecoCompleto = (passageiro: Passageiro): string => {
-    if (passageiro.rua) {
-      const partes = [
-        passageiro.rua,
-        passageiro.numero,
-        passageiro.bairro,
-        passageiro.cidade,
-        passageiro.estado,
-      ].filter(Boolean);
-      return partes.join(', ');
+  const handleInputChange = (field: string, value: string) => {
+    if (field === "telefone_responsavel") {
+      value = phoneMask(value);
+    } else if (field === "valor_mensalidade") {
+      value = moneyMask(value);
+    } else if (field === "cep") {
+      value = cepMask(value);
     }
-    return passageiro.endereco || '';
+    setFormData({ ...formData, [field]: value });
   };
-
-  useEffect(() => {
-    fetchPassageiros();
-    fetchCobrancas();
-  }, []);
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       <div className="p-4 space-y-6">
-        <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Passageiros</h1>
-            <p className="text-muted-foreground">Gerencie seus passageiros e responsáveis</p>
-          </div>
-          
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto">
-                <Plus className="w-4 h-4 mr-2" />
-                Novo Passageiro
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingPassageiro ? "Editar Passageiro" : "Novo Passageiro"}
-                </DialogTitle>
-              </DialogHeader>
-              
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-                  {/* PASSAGEIRO */}
+        <div className="max-w-4xl mx-auto">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold text-foreground">Passageiros</h1>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={resetForm} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Novo Passageiro
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingPassageiro ? "Editar Passageiro" : "Novo Passageiro"}
+                  </DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">PASSAGEIRO</h3>
-                    
-                    <FormField
-                      control={form.control}
-                      name="nome"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome do Passageiro</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Digite o nome do passageiro" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="nome_responsavel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome do Responsável</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Digite o nome do responsável" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <h3 className="text-lg font-semibold">ESCOLA</h3>
+                    <div>
+                      <Label htmlFor="escola">Escola</Label>
+                      <Select
+                        value={formData.escola_id}
+                        onValueChange={(value) => setFormData({ ...formData, escola_id: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma escola" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {escolas.map((escola) => (
+                            <SelectItem key={escola.id} value={escola.id}>
+                              {escola.nome}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
-                  <Separator />
-
-                  {/* ENDEREÇO DO PASSAGEIRO */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">ENDEREÇO DO PASSAGEIRO</h3>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="rua"
-                        render={({ field }) => (
-                          <FormItem className="sm:col-span-2">
-                            <FormLabel>Rua</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Nome da rua" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="numero"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Número</FormLabel>
-                            <FormControl>
-                              <Input placeholder="123" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                    <h3 className="text-lg font-semibold">PASSAGEIRO</h3>
+                    <div>
+                      <Label htmlFor="nome">Nome do Passageiro *</Label>
+                      <Input
+                        id="nome"
+                        required
+                        value={formData.nome}
+                        onChange={(e) => handleInputChange("nome", e.target.value)}
                       />
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="bairro"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Bairro</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Nome do bairro" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="cidade"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Cidade</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Nome da cidade" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                    <div>
+                      <Label htmlFor="nome_responsavel">Nome do Responsável *</Label>
+                      <Input
+                        id="nome_responsavel"
+                        required
+                        value={formData.nome_responsavel}
+                        onChange={(e) => handleInputChange("nome_responsavel", e.target.value)}
                       />
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="estado"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Estado</FormLabel>
-                            <FormControl>
-                              <Input placeholder="SP" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="cep"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>CEP</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="99999-999" 
-                                {...field}
-                                onChange={(e) => field.onChange(cepMask(e.target.value))}
-                                maxLength={9}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <FormField
-                      control={form.control}
-                      name="referencia"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Referência (opcional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Próximo ao mercado..." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="telefone_responsavel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Telefone do Responsável</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="(11) 99999-9999" 
-                              {...field}
-                              onChange={(e) => field.onChange(phoneMask(e.target.value))}
-                              maxLength={15}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <Separator />
-
-                  {/* MENSALIDADE */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">MENSALIDADE</h3>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="valor_mensalidade"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Valor</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="R$ 0,00"
-                                {...field}
-                                onChange={(e) => {
-                                  const masked = moneyMask(e.target.value);
-                                  field.onChange(moneyToNumber(masked));
-                                }}
-                                value={field.value ? moneyMask(field.value.toString()) : ''}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="dia_vencimento"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Dia do Vencimento</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                min="1" 
-                                max="31" 
-                                placeholder="5"
-                                {...field}
-                                onChange={e => field.onChange(parseInt(e.target.value) || 1)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                    <div>
+                      <Label htmlFor="telefone_responsavel">Telefone do Responsável *</Label>
+                      <Input
+                        id="telefone_responsavel"
+                        required
+                        value={formData.telefone_responsavel}
+                        onChange={(e) => handleInputChange("telefone_responsavel", e.target.value)}
+                        maxLength={15}
                       />
                     </div>
                   </div>
-                  
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">ENDEREÇO DO PASSAGEIRO</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="rua">Rua</Label>
+                        <Input
+                          id="rua"
+                          value={formData.rua}
+                          onChange={(e) => handleInputChange("rua", e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="numero">Número</Label>
+                        <Input
+                          id="numero"
+                          value={formData.numero}
+                          onChange={(e) => handleInputChange("numero", e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="bairro">Bairro</Label>
+                        <Input
+                          id="bairro"
+                          value={formData.bairro}
+                          onChange={(e) => handleInputChange("bairro", e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="cidade">Cidade</Label>
+                        <Input
+                          id="cidade"
+                          value={formData.cidade}
+                          onChange={(e) => handleInputChange("cidade", e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="estado">Estado</Label>
+                        <Input
+                          id="estado"
+                          value={formData.estado}
+                          onChange={(e) => handleInputChange("estado", e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="cep">CEP</Label>
+                        <Input
+                          id="cep"
+                          value={formData.cep}
+                          onChange={(e) => handleInputChange("cep", e.target.value)}
+                          maxLength={9}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="referencia">Referência (opcional)</Label>
+                      <Textarea
+                        id="referencia"
+                        value={formData.referencia}
+                        onChange={(e) => handleInputChange("referencia", e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">MENSALIDADE</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="valor_mensalidade">Valor da Mensalidade *</Label>
+                        <Input
+                          id="valor_mensalidade"
+                          required
+                          value={formData.valor_mensalidade}
+                          onChange={(e) => handleInputChange("valor_mensalidade", e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="dia_vencimento">Dia do Vencimento *</Label>
+                        <select
+                          id="dia_vencimento"
+                          required
+                          value={formData.dia_vencimento}
+                          onChange={(e) => setFormData({ ...formData, dia_vencimento: Number(e.target.value) })}
+                          className="w-full p-2 border border-input bg-background rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
+                            <option key={day} value={day}>
+                              {day}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex gap-2 pt-4">
-                    <Button type="button" variant="outline" onClick={closeDialog} className="flex-1">
-                      Cancelar
+                    <Button type="submit" disabled={loading} className="flex-1">
+                      {loading ? "Salvando..." : editingPassageiro ? "Atualizar" : "Cadastrar"}
                     </Button>
-                    <Button type="submit" className="flex-1">
-                      {editingPassageiro ? "Atualizar" : "Cadastrar"}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsDialogOpen(false)}
+                    >
+                      Cancelar
                     </Button>
                   </div>
                 </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-        </div>
+              </DialogContent>
+            </Dialog>
+          </div>
 
-        {/* Lista de Passageiros */}
-        <div className="grid gap-4 sm:gap-6">
-          {passageiros.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <div className="text-muted-foreground">
-                  Nenhum passageiro cadastrado ainda.
-                  <br />
-                  Clique em "Novo Passageiro" para começar.
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            passageiros.map((passageiro) => (
-              <Card key={passageiro.id}>
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <CardTitle className="text-lg">{passageiro.nome}</CardTitle>
-                    <div className="flex gap-2 w-full sm:w-auto">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => reenviarCobranca(passageiro)}
-                        className="flex-1 sm:flex-none"
-                      >
-                        Reenviar Cobrança
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEdit(passageiro)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDelete(passageiro.id, passageiro.nome)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
-                        <MapPin className="w-4 h-4 text-muted-foreground" />
-                        <span className="break-all">{formatEnderecoCompleto(passageiro)}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Phone className="w-4 h-4 text-muted-foreground" />
-                        <span>{phoneMask(passageiro.telefone_responsavel)}</span>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
-                        <DollarSign className="w-4 h-4 text-muted-foreground" />
-                        <span>R$ {passageiro.valor_mensalidade.toFixed(2)}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Calendar className="w-4 h-4 text-muted-foreground" />
-                        <span>Vence dia {passageiro.dia_vencimento}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-3 pt-3 border-t">
-                    <p className="text-sm text-muted-foreground">
-                      <strong>Responsável:</strong> {passageiro.nome_responsavel}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
-
-        {/* Cobranças Pendentes/Atrasadas */}
-        {cobrancas.length > 0 && (
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5" />
-                Cobranças Pendentes/Atrasadas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {cobrancas.map((cobranca) => {
-                  const passageiro = passageiros.find(p => p.id === cobranca.passageiro_id);
-                  if (!passageiro) return null;
-                  
-                  return (
-                    <div
-                      key={cobranca.id}
-                      className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border rounded-lg gap-3"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium truncate">{passageiro.nome}</h3>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {passageiro.nome_responsavel}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Venc: {new Date(cobranca.data_vencimento).toLocaleDateString()} - 
-                          <span className={`ml-1 px-2 py-1 rounded text-xs font-medium ${
-                            cobranca.status === 'atrasado' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {cobranca.status === 'atrasado' ? 'Atrasado' : 'Pendente'}
-                          </span>
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <span className="font-medium">R$ {Number(cobranca.valor).toFixed(2)}</span>
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => handlePayment(cobranca)}
-                          className="w-full sm:w-auto"
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Marcar como Pago
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-         )}
-        </div>
-      </div>
-
-      {/* Dialog de Pagamento */}
-      <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Registrar Pagamento</DialogTitle>
-          </DialogHeader>
-          
-          {selectedCobranca && (
-            <div className="space-y-4">
-              <div className="p-3 bg-muted rounded-lg">
-                <p className="font-medium">
-                  Valor: R$ {Number(selectedCobranca.valor).toFixed(2)}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Vencimento: {new Date(selectedCobranca.data_vencimento).toLocaleDateString()}
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <Label>Tipo de Pagamento</Label>
-                <Select value={paymentType} onValueChange={setPaymentType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo de pagamento" />
+          {/* Filtro por escola */}
+          <Card className="mb-6">
+            <CardContent className="p-4">
+              <div>
+                <Label htmlFor="escola-filter" className="text-sm font-medium">
+                  Filtrar por Escola
+                </Label>
+                <Select value={selectedEscola} onValueChange={setSelectedEscola}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pix">PIX</SelectItem>
-                    <SelectItem value="cartao">Cartão</SelectItem>
-                    <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                    <SelectItem value="todas">Todas as escolas</SelectItem>
+                    {escolas.map((escola) => (
+                      <SelectItem key={escola.id} value={escola.id}>
+                        {escola.nome}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
+            </CardContent>
+          </Card>
 
-              <div className="flex gap-2 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={closePaymentDialog} 
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  onClick={confirmPayment}
-                  disabled={!paymentType}
-                  className="flex-1"
-                >
-                  Confirmar Pagamento
-                </Button>
-              </div>
+          {/* Lista de passageiros */}
+          <div className="space-y-3">
+            {passageiros.map((passageiro) => {
+              const status = getPassageiroStatus(passageiro.id);
+              const isExpanded = expandedPassageiro === passageiro.id;
+
+              return (
+                <Card key={passageiro.id} className="overflow-hidden">
+                  <CardContent className="p-0">
+                    {/* Linha principal - sempre visível */}
+                    <div
+                      className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => setExpandedPassageiro(isExpanded ? null : passageiro.id)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1">
+                              <h3 className="font-medium text-lg">{passageiro.nome}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {passageiro.nome_responsavel}
+                              </p>
+                            </div>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${status.color}`}>
+                              {getStatusText(status.status)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="ml-3">
+                          {isExpanded ? (
+                            <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                          ) : (
+                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Detalhes expandidos */}
+                    {isExpanded && (
+                      <div className="border-t bg-muted/20 p-4 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <strong>Telefone:</strong> {passageiro.telefone_responsavel}
+                          </div>
+                          <div>
+                            <strong>Mensalidade:</strong> {passageiro.valor_mensalidade.toLocaleString('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL'
+                            })}
+                          </div>
+                          <div>
+                            <strong>Vencimento:</strong> Dia {passageiro.dia_vencimento}
+                          </div>
+                          {passageiro.escola_id && (
+                            <div>
+                              <strong>Escola:</strong> {(passageiro as any).escolas?.nome || 'N/A'}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {(passageiro.rua || passageiro.endereco) && (
+                          <div className="text-sm">
+                            <strong>Endereço:</strong>
+                            <div className="text-muted-foreground">
+                              {passageiro.rua ? (
+                                <>
+                                  {passageiro.rua}
+                                  {passageiro.numero && `, ${passageiro.numero}`}
+                                  {passageiro.bairro && ` - ${passageiro.bairro}`}
+                                  {passageiro.cidade && passageiro.estado && (
+                                    <br />
+                                  )}
+                                  {passageiro.cidade && `${passageiro.cidade}`}
+                                  {passageiro.estado && ` - ${passageiro.estado}`}
+                                  {passageiro.cep && (
+                                    <br />
+                                  )}
+                                  {passageiro.cep && `CEP: ${passageiro.cep}`}
+                                </>
+                              ) : (
+                                passageiro.endereco
+                              )}
+                              {passageiro.referencia && (
+                                <>
+                                  <br />
+                                  <span className="text-xs">Ref: {passageiro.referencia}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex flex-wrap gap-2 pt-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(passageiro);
+                            }}
+                            className="gap-1"
+                          >
+                            <Pencil className="h-3 w-3" />
+                            Editar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleReenviarCobranca(passageiro.id);
+                            }}
+                            className="gap-1"
+                          >
+                            <Send className="h-3 w-3" />
+                            Reenviar Cobrança
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleHistorico(passageiro);
+                            }}
+                            className="gap-1"
+                          >
+                            <History className="h-3 w-3" />
+                            Histórico
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {passageiros.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              {selectedEscola === "todas" 
+                ? "Nenhum passageiro cadastrado" 
+                : "Nenhum passageiro encontrado para esta escola"
+              }
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+
+          {/* Modal de histórico */}
+          {selectedPassageiroHistorico && (
+            <PassageiroHistorico
+              passageiroId={selectedPassageiroHistorico.id}
+              passageiroNome={selectedPassageiroHistorico.nome}
+              isOpen={historicoOpen}
+              onClose={() => {
+                setHistoricoOpen(false);
+                setSelectedPassageiroHistorico(null);
+              }}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
-};
-
-export default Passageiros;
+}
