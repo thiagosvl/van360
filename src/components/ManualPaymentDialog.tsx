@@ -149,7 +149,6 @@ export default function ManualPaymentDialog({
                 <SelectItem value="Cartão de Débito">Cartão de Débito</SelectItem>
                 <SelectItem value="Cartão de Crédito">Cartão de Crédito</SelectItem>
                 <SelectItem value="Transferência">Transferência</SelectItem>
-                <SelectItem value="Outro">Outro</SelectItem>
               </SelectContent>
             </Select>
           </div>
