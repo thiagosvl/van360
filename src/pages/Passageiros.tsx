@@ -29,6 +29,10 @@ import {
   Pencil,
   Plus,
   Search,
+  GraduationCap,
+  User,
+  MapPin,
+  DollarSign,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -323,235 +327,261 @@ export default function Passageiros() {
                   </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">ESCOLA</h3>
-                    <div>
-                      <Label htmlFor="escola">Escola</Label>
-                      <Select
-                        value={formData.escola_id}
-                        onValueChange={(value) =>
-                          setFormData({ ...formData, escola_id: value })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione uma escola" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {escolas.map((escola) => (
-                            <SelectItem key={escola.id} value={escola.id}>
-                              {escola.nome}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">PASSAGEIRO</h3>
-                    <div>
-                      <Label htmlFor="nome">Nome do Passageiro *</Label>
-                      <Input
-                        id="nome"
-                        required
-                        value={formData.nome}
-                        onChange={(e) =>
-                          handleInputChange("nome", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="nome_responsavel">
-                        Nome do Responsável *
-                      </Label>
-                      <Input
-                        id="nome_responsavel"
-                        required
-                        value={formData.nome_responsavel}
-                        onChange={(e) =>
-                          handleInputChange("nome_responsavel", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="telefone_responsavel">
-                        Telefone do Responsável *
-                      </Label>
-                      <Input
-                        id="telefone_responsavel"
-                        required
-                        value={formData.telefone_responsavel}
-                        onChange={(e) =>
-                          handleInputChange(
-                            "telefone_responsavel",
-                            e.target.value
-                          )
-                        }
-                        maxLength={15}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">
-                      ENDEREÇO DO PASSAGEIRO
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="rua">Rua</Label>
-                        <Input
-                          id="rua"
-                          value={formData.rua}
-                          onChange={(e) =>
-                            handleInputChange("rua", e.target.value)
-                          }
-                        />
+                  {/* Escola Section */}
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <GraduationCap className="w-5 h-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Escola</h3>
                       </div>
                       <div>
-                        <Label htmlFor="numero">Número</Label>
-                        <Input
-                          id="numero"
-                          value={formData.numero}
-                          onChange={(e) =>
-                            handleInputChange("numero", e.target.value)
+                        <Label htmlFor="escola">Escola</Label>
+                        <Select
+                          value={formData.escola_id}
+                          onValueChange={(value) =>
+                            setFormData({ ...formData, escola_id: value })
                           }
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="bairro">Bairro</Label>
-                        <Input
-                          id="bairro"
-                          value={formData.bairro}
-                          onChange={(e) =>
-                            handleInputChange("bairro", e.target.value)
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="cidade">Cidade</Label>
-                        <Input
-                          id="cidade"
-                          value={formData.cidade}
-                          onChange={(e) =>
-                            handleInputChange("cidade", e.target.value)
-                          }
-                        />
-                      </div>
-                       <div>
-                         <Label htmlFor="estado">Estado</Label>
-                         <Select
-                           value={formData.estado}
-                           onValueChange={(value) =>
-                             handleInputChange("estado", value)
-                           }
-                         >
-                           <SelectTrigger>
-                             <SelectValue placeholder="Selecione o estado" />
-                           </SelectTrigger>
-                           <SelectContent>
-                             <SelectItem value="AC">Acre</SelectItem>
-                             <SelectItem value="AL">Alagoas</SelectItem>
-                             <SelectItem value="AP">Amapá</SelectItem>
-                             <SelectItem value="AM">Amazonas</SelectItem>
-                             <SelectItem value="BA">Bahia</SelectItem>
-                             <SelectItem value="CE">Ceará</SelectItem>
-                             <SelectItem value="DF">Distrito Federal</SelectItem>
-                             <SelectItem value="ES">Espírito Santo</SelectItem>
-                             <SelectItem value="GO">Goiás</SelectItem>
-                             <SelectItem value="MA">Maranhão</SelectItem>
-                             <SelectItem value="MT">Mato Grosso</SelectItem>
-                             <SelectItem value="MS">Mato Grosso do Sul</SelectItem>
-                             <SelectItem value="MG">Minas Gerais</SelectItem>
-                             <SelectItem value="PA">Pará</SelectItem>
-                             <SelectItem value="PB">Paraíba</SelectItem>
-                             <SelectItem value="PR">Paraná</SelectItem>
-                             <SelectItem value="PE">Pernambuco</SelectItem>
-                             <SelectItem value="PI">Piauí</SelectItem>
-                             <SelectItem value="RJ">Rio de Janeiro</SelectItem>
-                             <SelectItem value="RN">Rio Grande do Norte</SelectItem>
-                             <SelectItem value="RS">Rio Grande do Sul</SelectItem>
-                             <SelectItem value="RO">Rondônia</SelectItem>
-                             <SelectItem value="RR">Roraima</SelectItem>
-                             <SelectItem value="SC">Santa Catarina</SelectItem>
-                             <SelectItem value="SP">São Paulo</SelectItem>
-                             <SelectItem value="SE">Sergipe</SelectItem>
-                             <SelectItem value="TO">Tocantins</SelectItem>
-                           </SelectContent>
-                         </Select>
-                       </div>
-                      <div>
-                        <Label htmlFor="cep">CEP</Label>
-                        <Input
-                          id="cep"
-                          value={formData.cep}
-                          onChange={(e) =>
-                            handleInputChange("cep", e.target.value)
-                          }
-                          maxLength={9}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="referencia">Referência (opcional)</Label>
-                      <Textarea
-                        id="referencia"
-                        value={formData.referencia}
-                        onChange={(e) =>
-                          handleInputChange("referencia", e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">MENSALIDADE</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="valor_mensalidade">
-                          Valor da Mensalidade *
-                        </Label>
-                        <Input
-                          id="valor_mensalidade"
-                          required
-                          value={formData.valor_mensalidade}
-                          onChange={(e) =>
-                            handleInputChange(
-                              "valor_mensalidade",
-                              e.target.value
-                            )
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="dia_vencimento">
-                          Dia do Vencimento *
-                        </Label>
-                        <select
-                          id="dia_vencimento"
-                          required
-                          value={formData.dia_vencimento}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              dia_vencimento: e.target.value,
-                            })
-                          }
-                          className="w-full p-2 border border-input bg-background rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         >
-                          <option value="" disabled>
-                            Selecione o dia
-                          </option>
-                          {Array.from({ length: 28 }, (_, i) => i + 1).map(
-                            (day) => (
-                              <option key={day} value={day}>
-                                Dia {day}
-                              </option>
-                            )
-                          )}
-                        </select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione uma escola" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {escolas.map((escola) => (
+                              <SelectItem key={escola.id} value={escola.id}>
+                                {escola.nome}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Passageiro Section */}
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <User className="w-5 h-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Informações do Passageiro</h3>
+                      </div>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="nome">Nome do Passageiro *</Label>
+                          <Input
+                            id="nome"
+                            required
+                            value={formData.nome}
+                            onChange={(e) =>
+                              handleInputChange("nome", e.target.value)
+                            }
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="nome_responsavel">
+                            Nome do Responsável *
+                          </Label>
+                          <Input
+                            id="nome_responsavel"
+                            required
+                            value={formData.nome_responsavel}
+                            onChange={(e) =>
+                              handleInputChange("nome_responsavel", e.target.value)
+                            }
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="telefone_responsavel">
+                            Telefone do Responsável *
+                          </Label>
+                          <Input
+                            id="telefone_responsavel"
+                            required
+                            value={formData.telefone_responsavel}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "telefone_responsavel",
+                                e.target.value
+                              )
+                            }
+                            maxLength={15}
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Endereço Section */}
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <MapPin className="w-5 h-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Endereço</h3>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="rua">Rua</Label>
+                            <Input
+                              id="rua"
+                              value={formData.rua}
+                              onChange={(e) =>
+                                handleInputChange("rua", e.target.value)
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="numero">Número</Label>
+                            <Input
+                              id="numero"
+                              value={formData.numero}
+                              onChange={(e) =>
+                                handleInputChange("numero", e.target.value)
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="bairro">Bairro</Label>
+                            <Input
+                              id="bairro"
+                              value={formData.bairro}
+                              onChange={(e) =>
+                                handleInputChange("bairro", e.target.value)
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="cidade">Cidade</Label>
+                            <Input
+                              id="cidade"
+                              value={formData.cidade}
+                              onChange={(e) =>
+                                handleInputChange("cidade", e.target.value)
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="estado">Estado</Label>
+                            <Select
+                              value={formData.estado}
+                              onValueChange={(value) =>
+                                handleInputChange("estado", value)
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o estado" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="AC">Acre</SelectItem>
+                                <SelectItem value="AL">Alagoas</SelectItem>
+                                <SelectItem value="AP">Amapá</SelectItem>
+                                <SelectItem value="AM">Amazonas</SelectItem>
+                                <SelectItem value="BA">Bahia</SelectItem>
+                                <SelectItem value="CE">Ceará</SelectItem>
+                                <SelectItem value="DF">Distrito Federal</SelectItem>
+                                <SelectItem value="ES">Espírito Santo</SelectItem>
+                                <SelectItem value="GO">Goiás</SelectItem>
+                                <SelectItem value="MA">Maranhão</SelectItem>
+                                <SelectItem value="MT">Mato Grosso</SelectItem>
+                                <SelectItem value="MS">Mato Grosso do Sul</SelectItem>
+                                <SelectItem value="MG">Minas Gerais</SelectItem>
+                                <SelectItem value="PA">Pará</SelectItem>
+                                <SelectItem value="PB">Paraíba</SelectItem>
+                                <SelectItem value="PR">Paraná</SelectItem>
+                                <SelectItem value="PE">Pernambuco</SelectItem>
+                                <SelectItem value="PI">Piauí</SelectItem>
+                                <SelectItem value="RJ">Rio de Janeiro</SelectItem>
+                                <SelectItem value="RN">Rio Grande do Norte</SelectItem>
+                                <SelectItem value="RS">Rio Grande do Sul</SelectItem>
+                                <SelectItem value="RO">Rondônia</SelectItem>
+                                <SelectItem value="RR">Roraima</SelectItem>
+                                <SelectItem value="SC">Santa Catarina</SelectItem>
+                                <SelectItem value="SP">São Paulo</SelectItem>
+                                <SelectItem value="SE">Sergipe</SelectItem>
+                                <SelectItem value="TO">Tocantins</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label htmlFor="cep">CEP</Label>
+                            <Input
+                              id="cep"
+                              value={formData.cep}
+                              onChange={(e) =>
+                                handleInputChange("cep", e.target.value)
+                              }
+                              maxLength={9}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="referencia">Referência (opcional)</Label>
+                          <Textarea
+                            id="referencia"
+                            value={formData.referencia}
+                            onChange={(e) =>
+                              handleInputChange("referencia", e.target.value)
+                            }
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Mensalidade Section */}
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <DollarSign className="w-5 h-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Mensalidade</h3>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="valor_mensalidade">
+                            Valor da Mensalidade *
+                          </Label>
+                          <Input
+                            id="valor_mensalidade"
+                            required
+                            value={formData.valor_mensalidade}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "valor_mensalidade",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="dia_vencimento">
+                            Dia do Vencimento *
+                          </Label>
+                          <select
+                            id="dia_vencimento"
+                            required
+                            value={formData.dia_vencimento}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                dia_vencimento: e.target.value,
+                              })
+                            }
+                            className="w-full p-2 border border-input bg-background rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                          >
+                            <option value="" disabled>
+                              Selecione o dia
+                            </option>
+                            {Array.from({ length: 28 }, (_, i) => i + 1).map(
+                              (day) => (
+                                <option key={day} value={day}>
+                                  Dia {day}
+                                </option>
+                              )
+                            )}
+                          </select>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
 
                   <div className="flex gap-4 pt-4">
                     <Button
