@@ -177,7 +177,6 @@ const LatePaymentsAlert = ({
                 <div className="flex flex-col gap-2 sm:flex-row sm:gap-2 sm:w-auto w-full">
                   <Button
                     size="sm"
-                    variant="outline"
                     onClick={() =>
                       handleReenviarClick(
                         cobranca.id,
@@ -201,15 +200,16 @@ const LatePaymentsAlert = ({
                     className="gap-1 w-full sm:w-auto"
                   >
                     <CreditCard className="w-3 h-3" />
-                    Carteirinha Virtual
+                    Carteirinha
                   </Button>
                   <Button
                     size="sm"
+                    variant="outline"
                     onClick={() => onPayment(cobranca)}
                     className="gap-1 w-full sm:w-auto"
                   >
                     <DollarSign className="w-3 h-3" />
-                    Pagar
+                    Registrar Pagamento
                   </Button>
                 </div>
               </div>

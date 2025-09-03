@@ -147,7 +147,7 @@ export default function PassageiroHistorico({
             <div className="text-center py-8">Carregando histórico...</div>
           ) : cobrancas.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Nenhuma cobrança encontrada
+              Nenhuma mensalidade encontrada
             </div>
           ) : (
             cobrancas.map((cobranca) => (

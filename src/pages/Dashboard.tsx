@@ -114,7 +114,6 @@ const Dashboard = () => {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      // Buscar todas as cobranças do mês/ano filtrado com passageiros
       const { data: cobrancasMes } = await supabase
         .from("cobrancas")
         .select(
@@ -167,12 +166,10 @@ const Dashboard = () => {
       const percentualRecebimento =
         totalPrevisto > 0 ? (totalRecebido / totalPrevisto) * 100 : 0;
 
-      // Buscar passageiros únicos com cobranças em atraso
       const passageirosAtrasados = new Set(
         cobrancasAtrasadasList.map((c) => c.passageiro_id)
       );
 
-      // Calcular estatísticas por forma de pagamento
       const cobrancasPagasData = cobrancas.filter((c) => c.status === "pago");
       const paymentStatsData: PaymentStats = {
         pix: { count: 0, total: 0 },
@@ -271,7 +268,7 @@ const Dashboard = () => {
               Dashboard
             </h1>
             <p className="text-muted-foreground">
-              Gerencie suas cobranças e passageiros
+              Gerencie suas mensalidades e passageiros
             </p>
           </div>
 
@@ -416,7 +413,7 @@ const Dashboard = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Total Cobranças
+                  Total Mensalidades
                 </CardTitle>
               </CardHeader>
               <CardContent>

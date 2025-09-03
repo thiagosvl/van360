@@ -794,7 +794,7 @@ export default function Passageiros() {
                                 className="gap-1"
                               >
                                 <History className="w-3 h-3" />
-                                Carteirinha Virtual
+                                Carteirinha
                               </Button>
                             </div>
                           </div>

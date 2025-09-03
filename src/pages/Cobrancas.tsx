@@ -93,7 +93,7 @@ const Cobrancas = () => {
       setCobrancasAbertas(abertas as Cobranca[]);
       setCobrancasPagas(pagas as Cobranca[]);
     } catch (error) {
-      console.error("Erro ao buscar cobranças:", error);
+      console.error("Erro ao buscar mensalidades:", error);
     } finally {
       setLoading(false);
     }
@@ -220,10 +220,10 @@ const Cobrancas = () => {
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Cobranças
+              Mensalidades
             </h1>
             <p className="text-muted-foreground">
-              Gerencie todas as cobranças por período
+              Gerencie todas as mensalidades por período
             </p>
           </div>
 
@@ -370,7 +370,6 @@ const Cobrancas = () => {
                             <div className="flex gap-2 justify-center">
                               <Button
                                 size="sm"
-                                variant="outline"
                                 onClick={() =>
                                   handleReenviarClick(
                                     cobranca.id,
@@ -380,10 +379,11 @@ const Cobrancas = () => {
                                 className="gap-1"
                               >
                                 <Send className="w-3 h-3" />
-                                Reenviar Cobrança
+                                Reenviar
                               </Button>
                               <Button
                                 size="sm"
+                                variant="outline"
                                 onClick={() => openPaymentDialog(cobranca)}
                                 className="gap-1"
                               >

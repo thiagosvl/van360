@@ -11,7 +11,7 @@ const Navigation = () => {
 
   const menuItems = [
     { path: "/dashboard", label: "Dashboard", icon: Home },
-    { path: "/cobrancas", label: "Cobranças", icon: Receipt },
+    { path: "/mensalidades", label: "Mensalidades", icon: Receipt },
     { path: "/passageiros", label: "Passageiros", icon: Users },
     { path: "/escolas", label: "Escolas", icon: School },
   ];

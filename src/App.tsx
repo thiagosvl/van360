@@ -3,12 +3,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Cobrancas from "./pages/Cobrancas";
 import Dashboard from "./pages/Dashboard";
+import Escolas from "./pages/Escolas";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Passageiros from "./pages/Passageiros";
-import Escolas from "./pages/Escolas";
-import Cobrancas from "./pages/Cobrancas";
 
 const queryClient = new QueryClient();
 
@@ -21,7 +21,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/cobrancas" element={<Cobrancas />} />
+          <Route path="/mensalidades" element={<Cobrancas />} />
           <Route path="/passageiros" element={<Passageiros />} />
           <Route path="/escolas" element={<Escolas />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
