@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Bus, Home, Menu, Users, School, X } from "lucide-react";
+import { Bus, Home, Menu, Users, School, X, Receipt } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -11,6 +11,7 @@ const Navigation = () => {
 
   const menuItems = [
     { path: "/dashboard", label: "Dashboard", icon: Home },
+    { path: "/cobrancas", label: "Cobranças", icon: Receipt },
     { path: "/passageiros", label: "Passageiros", icon: Users },
     { path: "/escolas", label: "Escolas", icon: School },
   ];

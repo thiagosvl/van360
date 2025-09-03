@@ -66,7 +66,7 @@ export default function PassageiroHistorico({
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     
-    return vencimento < hoje ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800';
+    return vencimento < hoje ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800';
   };
 
   const getStatusText = (status: string, dataVencimento: string) => {
@@ -76,7 +76,13 @@ export default function PassageiroHistorico({
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     
-    return vencimento < hoje ? 'Em atraso' : 'Pendente';
+    if (vencimento < hoje) {
+      const diffTime = hoje.getTime() - vencimento.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return `Atrasou há ${diffDays} dia${diffDays > 1 ? 's' : ''}`;
+    }
+    
+    return 'A vencer';
   };
 
   const getMesNome = (mes: number) => {

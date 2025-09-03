@@ -52,7 +52,7 @@ const Dashboard = () => {
     percentualRecebimento: 0,
     passageirosComAtraso: 0,
   });
-  const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
+  
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
   const { toast } = useToast();
@@ -132,91 +132,11 @@ const Dashboard = () => {
     }
   };
 
-  const fetchCobrancas = async () => {
-    try {
-      const { data } = await supabase
-        .from("cobrancas")
-        .select(`
-          *,
-          passageiros (
-            id,
-            nome,
-            endereco,
-            nome_responsavel,
-            telefone_responsavel,
-            valor_mensalidade,
-            dia_vencimento
-          )
-        `)
-        .eq("mes", mesFilter)
-        .eq("ano", anoFilter)
-        .neq("status", "pago")
-        .order("data_vencimento", { ascending: true });
 
-      // Filtrar apenas pendentes e atrasadas
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
-      
-      const filteredCobrancas = (data || []).filter(cobranca => {
-        if (cobranca.status === "pago") return false;
-        return true; // Incluir todas as não pagas
-      });
 
-      setCobrancas(filteredCobrancas as Cobranca[]);
-    } catch (error) {
-      console.error("Erro ao buscar cobranças:", error);
-    }
-  };
-
-  const reenviarCobranca = async (cobrancaId: string, nomePassageiro: string) => {
-    try {
-      await supabase
-        .from("cobrancas")
-        .update({ enviado_em: new Date().toISOString() })
-        .eq("id", cobrancaId);
-
-      toast({
-        title: "Cobrança reenviada com sucesso para o responsável",
-      });
-    } catch (error) {
-      console.error("Erro ao reenviar cobrança:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao reenviar cobrança",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "em_dia":
-        return "text-green-600 bg-green-50";
-      case "pendente":
-        return "text-yellow-600 bg-yellow-50";
-      case "atrasado":
-        return "text-red-600 bg-red-50";
-      default:
-        return "text-gray-600 bg-gray-50";
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "em_dia":
-        return "Em dia";
-      case "pendente":
-        return "Pendente";
-      case "atrasado":
-        return "Atrasado";
-      default:
-        return status;
-    }
-  };
 
   useEffect(() => {
     fetchStats();
-    fetchCobrancas();
   }, [mesFilter, anoFilter]);
 
   return (
@@ -345,10 +265,10 @@ const Dashboard = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
+              <CardTitle className="text-sm font-medium">A vencer</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{stats.cobrancasPendentes}</div>
+              <div className="text-2xl font-bold text-orange-600">{stats.cobrancasPendentes}</div>
             </CardContent>
           </Card>
 
@@ -376,52 +296,6 @@ const Dashboard = () => {
           </Card>
         )}
 
-        {/* Lista de Cobranças */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Cobranças - {meses[mesFilter - 1]} {anoFilter}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {cobrancas.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                Nenhuma cobrança pendente ou atrasada para este período
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {cobrancas.map((cobranca) => (
-                  <div
-                    key={cobranca.id}
-                    className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border rounded-lg gap-3"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium truncate">{cobranca.passageiros.nome}</h3>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {cobranca.passageiros.nome_responsavel}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Venc: {new Date(cobranca.data_vencimento).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(cobranca.status)}`}>
-                        {getStatusText(cobranca.status)}
-                      </span>
-                      <span className="font-medium">R$ {Number(cobranca.valor).toFixed(2)}</span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => reenviarCobranca(cobranca.id, cobranca.passageiros.nome)}
-                        className="w-full sm:w-auto"
-                      >
-                        Reenviar Cobrança
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
         </div>
       </div>
     </div>

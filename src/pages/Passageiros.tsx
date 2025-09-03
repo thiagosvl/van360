@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Plus, Pencil, Send, History, ChevronDown, ChevronRight } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Plus, Pencil, Send, History, ChevronDown, ChevronRight, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -43,6 +43,7 @@ interface Passageiro {
   escola_id?: string;
   created_at: string;
   updated_at: string;
+  escolas?: { nome: string };
 }
 
 interface Escola {
@@ -70,6 +71,7 @@ export default function Passageiros() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(null);
   const [selectedEscola, setSelectedEscola] = useState<string>("todas");
+  const [searchTerm, setSearchTerm] = useState("");
   const [expandedPassageiro, setExpandedPassageiro] = useState<string | null>(null);
   const [historicoOpen, setHistoricoOpen] = useState(false);
   const [selectedPassageiroHistorico, setSelectedPassageiroHistorico] = useState<{ id: string; nome: string } | null>(null);
@@ -91,6 +93,22 @@ export default function Passageiros() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  // Debounce para busca
+  const debounceSearch = useCallback(
+    (() => {
+      let timeoutId: NodeJS.Timeout;
+      return (searchValue: string) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          if (searchValue.length >= 3 || searchValue.length === 0) {
+            fetchPassageiros();
+          }
+        }, 500);
+      };
+    })(),
+    [selectedEscola]
+  );
+
   useEffect(() => {
     fetchEscolas();
     fetchPassageiros();
@@ -100,6 +118,10 @@ export default function Passageiros() {
   useEffect(() => {
     fetchPassageiros();
   }, [selectedEscola]);
+
+  useEffect(() => {
+    debounceSearch(searchTerm);
+  }, [searchTerm, debounceSearch]);
 
   const fetchEscolas = async () => {
     try {
@@ -128,6 +150,10 @@ export default function Passageiros() {
 
       if (selectedEscola !== "todas") {
         query = query.eq("escola_id", selectedEscola);
+      }
+
+      if (searchTerm.length >= 3) {
+        query = query.ilike("nome", `%${searchTerm}%`);
       }
 
       const { data, error } = await query;
@@ -162,10 +188,10 @@ export default function Passageiros() {
 
   const getPassageiroStatus = (passageiroId: string) => {
     const cobranca = cobrancas.find(c => c.passageiro_id === passageiroId);
-    if (!cobranca) return { status: "sem_cobranca", color: "bg-gray-100 text-gray-800" };
+    if (!cobranca) return { status: "sem_cobranca", color: "bg-gray-100 text-gray-800", text: "Sem cobrança" };
     
     if (cobranca.status === 'pago') {
-      return { status: "pago", color: "bg-green-100 text-green-800" };
+      return { status: "pago", color: "bg-green-100 text-green-800", text: "Pago" };
     }
     
     const vencimento = new Date(cobranca.data_vencimento);
@@ -173,20 +199,16 @@ export default function Passageiros() {
     hoje.setHours(0, 0, 0, 0);
     
     if (vencimento < hoje) {
-      return { status: "em_atraso", color: "bg-red-100 text-red-800" };
+      const diffTime = hoje.getTime() - vencimento.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return { 
+        status: "em_atraso", 
+        color: "bg-red-100 text-red-800", 
+        text: `Atrasou há ${diffDays} dia${diffDays > 1 ? 's' : ''}` 
+      };
     }
     
-    return { status: "pendente", color: "bg-yellow-100 text-yellow-800" };
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "pago": return "Pago";
-      case "em_atraso": return "Em atraso";
-      case "pendente": return "Pendente";
-      case "sem_cobranca": return "Sem cobrança";
-      default: return "Desconhecido";
-    }
+    return { status: "a_vencer", color: "bg-orange-100 text-orange-800", text: "A vencer" };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -210,23 +232,41 @@ export default function Passageiros() {
         if (error) throw error;
         
         toast({
-          title: "Sucesso",
-          description: "Passageiro atualizado com sucesso",
+          title: "Passageiro atualizado com sucesso",
         });
       } else {
-        const { error } = await supabase
+        const { data: newPassageiro, error } = await supabase
           .from("passageiros")
-          .insert([passageiroData]);
+          .insert([passageiroData])
+          .select()
+          .single();
 
         if (error) throw error;
         
+        // Criar cobrança do mês atual automaticamente
+        const currentDate = new Date();
+        const mes = currentDate.getMonth() + 1;
+        const ano = currentDate.getFullYear();
+        const dataVencimento = new Date(ano, mes - 1, formData.dia_vencimento);
+        
+        await supabase
+          .from("cobrancas")
+          .insert({
+            passageiro_id: newPassageiro.id,
+            mes,
+            ano,
+            valor: moneyToNumber(formData.valor_mensalidade),
+            data_vencimento: dataVencimento.toISOString().split('T')[0],
+            status: 'pendente',
+          });
+        
         toast({
-          title: "Sucesso",
-          description: "Passageiro cadastrado com sucesso",
+          title: "Passageiro cadastrado com sucesso",
         });
       }
 
       await fetchPassageiros();
+      await fetchCobrancas();
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
@@ -254,7 +294,7 @@ export default function Passageiros() {
       referencia: passageiro.referencia || "",
       nome_responsavel: passageiro.nome_responsavel,
       telefone_responsavel: passageiro.telefone_responsavel,
-      valor_mensalidade: moneyMask((passageiro.valor_mensalidade * 100).toString()),
+      valor_mensalidade: (passageiro.valor_mensalidade * 100).toString().replace('.', ','),
       dia_vencimento: passageiro.dia_vencimento,
       escola_id: passageiro.escola_id || "",
     });
@@ -290,8 +330,7 @@ export default function Passageiros() {
 
       await fetchCobrancas();
       toast({
-        title: "Sucesso",
-        description: "Cobrança reenviada com sucesso para o responsável",
+        title: "Cobrança reenviada com sucesso para o responsável",
       });
     } catch (error) {
       console.error("Erro ao reenviar cobrança:", error);
@@ -499,7 +538,7 @@ export default function Passageiros() {
                         >
                           {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
                             <option key={day} value={day}>
-                              {day}
+                              Dia {day}
                             </option>
                           ))}
                         </select>
@@ -507,16 +546,17 @@ export default function Passageiros() {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-4">
-                    <Button type="submit" disabled={loading} className="flex-1">
-                      {loading ? "Salvando..." : editingPassageiro ? "Atualizar" : "Cadastrar"}
-                    </Button>
+                  <div className="flex gap-4 pt-4">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setIsDialogOpen(false)}
+                      className="flex-1"
                     >
                       Cancelar
+                    </Button>
+                    <Button type="submit" disabled={loading} className="flex-1">
+                      {loading ? "Salvando..." : editingPassageiro ? "Atualizar" : "Cadastrar"}
                     </Button>
                   </div>
                 </form>
@@ -524,179 +564,174 @@ export default function Passageiros() {
             </Dialog>
           </div>
 
-          {/* Filtro por escola */}
+          {/* Filtros */}
           <Card className="mb-6">
-            <CardContent className="p-4">
-              <div>
-                <Label htmlFor="escola-filter" className="text-sm font-medium">
-                  Filtrar por Escola
-                </Label>
-                <Select value={selectedEscola} onValueChange={setSelectedEscola}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todas">Todas as escolas</SelectItem>
-                    {escolas.map((escola) => (
-                      <SelectItem key={escola.id} value={escola.id}>
-                        {escola.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <CardContent className="pt-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <Label htmlFor="escola-filter" className="text-sm font-medium mb-2 block">
+                    Filtrar por Escola
+                  </Label>
+                  <Select value={selectedEscola} onValueChange={setSelectedEscola}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todas as escolas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todas">Todas as escolas</SelectItem>
+                      {escolas.map((escola) => (
+                        <SelectItem key={escola.id} value={escola.id}>
+                          {escola.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <Label htmlFor="search" className="text-sm font-medium mb-2 block">
+                    Buscar por Nome
+                  </Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input
+                      id="search"
+                      placeholder="Digite 3 caracteres ou mais..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Lista de passageiros */}
+          {/* Lista de Passageiros */}
           <div className="space-y-3">
-            {passageiros.map((passageiro) => {
-              const status = getPassageiroStatus(passageiro.id);
-              const isExpanded = expandedPassageiro === passageiro.id;
+            {passageiros.length === 0 ? (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center py-8 text-muted-foreground">
+                    {searchTerm.length > 0 && searchTerm.length < 3 
+                      ? "Digite pelo menos 3 caracteres para buscar"
+                      : "Nenhum passageiro encontrado"
+                    }
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              passageiros.map((passageiro) => {
+                const status = getPassageiroStatus(passageiro.id);
+                const isExpanded = expandedPassageiro === passageiro.id;
 
-              return (
-                <Card key={passageiro.id} className="overflow-hidden">
-                  <CardContent className="p-0">
-                    {/* Linha principal - sempre visível */}
-                    <div
-                      className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => setExpandedPassageiro(isExpanded ? null : passageiro.id)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3">
-                            <div className="flex-1">
-                              <h3 className="font-medium text-lg">{passageiro.nome}</h3>
-                              <p className="text-sm text-muted-foreground">
-                                {passageiro.nome_responsavel}
+                return (
+                  <Card key={passageiro.id} className="overflow-hidden">
+                    <CardContent className="p-0">
+                      {/* Linha principal - clicável */}
+                      <div
+                        className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => setExpandedPassageiro(isExpanded ? null : passageiro.id)}
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium truncate">{passageiro.nome}</h3>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${status.color}`}>
+                                {status.text}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {isExpanded ? (
+                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Conteúdo expandido */}
+                      {isExpanded && (
+                        <div className="border-t bg-muted/20 p-4 space-y-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">Telefone:</span>
+                              <p className="font-medium">{passageiro.telefone_responsavel}</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Mensalidade:</span>
+                              <p className="font-medium">
+                                {passageiro.valor_mensalidade.toLocaleString('pt-BR', { 
+                                  style: 'currency', 
+                                  currency: 'BRL' 
+                                })}
                               </p>
                             </div>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${status.color}`}>
-                              {getStatusText(status.status)}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="ml-3">
-                          {isExpanded ? (
-                            <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                          ) : (
-                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Detalhes expandidos */}
-                    {isExpanded && (
-                      <div className="border-t bg-muted/20 p-4 space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <strong>Telefone:</strong> {passageiro.telefone_responsavel}
-                          </div>
-                          <div>
-                            <strong>Mensalidade:</strong> {passageiro.valor_mensalidade.toLocaleString('pt-BR', {
-                              style: 'currency',
-                              currency: 'BRL'
-                            })}
-                          </div>
-                          <div>
-                            <strong>Vencimento:</strong> Dia {passageiro.dia_vencimento}
-                          </div>
-                          {passageiro.escola_id && (
                             <div>
-                              <strong>Escola:</strong> {(passageiro as any).escolas?.nome || 'N/A'}
+                              <span className="text-muted-foreground">Vencimento:</span>
+                              <p className="font-medium">Todo dia {passageiro.dia_vencimento}</p>
                             </div>
-                          )}
-                        </div>
-                        
-                        {(passageiro.rua || passageiro.endereco) && (
-                          <div className="text-sm">
-                            <strong>Endereço:</strong>
-                            <div className="text-muted-foreground">
-                              {passageiro.rua ? (
-                                <>
-                                  {passageiro.rua}
-                                  {passageiro.numero && `, ${passageiro.numero}`}
-                                  {passageiro.bairro && ` - ${passageiro.bairro}`}
-                                  {passageiro.cidade && passageiro.estado && (
-                                    <br />
-                                  )}
-                                  {passageiro.cidade && `${passageiro.cidade}`}
-                                  {passageiro.estado && ` - ${passageiro.estado}`}
-                                  {passageiro.cep && (
-                                    <br />
-                                  )}
-                                  {passageiro.cep && `CEP: ${passageiro.cep}`}
-                                </>
-                              ) : (
-                                passageiro.endereco
-                              )}
-                              {passageiro.referencia && (
-                                <>
-                                  <br />
-                                  <span className="text-xs">Ref: {passageiro.referencia}</span>
-                                </>
-                              )}
+                            <div>
+                              <span className="text-muted-foreground">Escola:</span>
+                              <p className="font-medium">{passageiro.escolas?.nome || "Não informada"}</p>
                             </div>
                           </div>
-                        )}
+                          
+                          <div>
+                            <span className="text-muted-foreground text-sm">Endereço:</span>
+                            <p className="text-sm">
+                              {[passageiro.rua, passageiro.numero, passageiro.bairro, passageiro.cidade, passageiro.estado]
+                                .filter(Boolean)
+                                .join(', ')}
+                              {passageiro.cep && ` - CEP: ${passageiro.cep}`}
+                            </p>
+                            {passageiro.referencia && (
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Ref.: {passageiro.referencia}
+                              </p>
+                            )}
+                          </div>
 
-                        <div className="flex flex-wrap gap-2 pt-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(passageiro);
-                            }}
-                            className="gap-1"
-                          >
-                            <Pencil className="h-3 w-3" />
-                            Editar
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleReenviarCobranca(passageiro.id);
-                            }}
-                            className="gap-1"
-                          >
-                            <Send className="h-3 w-3" />
-                            Reenviar Cobrança
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleHistorico(passageiro);
-                            }}
-                            className="gap-1"
-                          >
-                            <History className="h-3 w-3" />
-                            Histórico
-                          </Button>
+                          {/* Botões de ação */}
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEdit(passageiro)}
+                              className="gap-1"
+                            >
+                              <Pencil className="w-3 h-3" />
+                              Editar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleReenviarCobranca(passageiro.id)}
+                              className="gap-1"
+                            >
+                              <Send className="w-3 h-3" />
+                              Reenviar Cobrança
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleHistorico(passageiro)}
+                              className="gap-1"
+                            >
+                              <History className="w-3 h-3" />
+                              Histórico
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
           </div>
 
-          {passageiros.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              {selectedEscola === "todas" 
-                ? "Nenhum passageiro cadastrado" 
-                : "Nenhum passageiro encontrado para esta escola"
-              }
-            </div>
-          )}
-
-          {/* Modal de histórico */}
+          {/* Modal de Histórico */}
           {selectedPassageiroHistorico && (
             <PassageiroHistorico
               passageiroId={selectedPassageiroHistorico.id}
