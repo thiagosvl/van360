@@ -22,7 +22,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cepMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
-import { ChevronDown, ChevronRight, History, Pencil, Plus, Search } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  History,
+  Pencil,
+  Plus,
+  Search,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 interface Passageiro {
@@ -52,29 +59,21 @@ interface Escola {
   ativo: boolean;
 }
 
-interface Cobranca {
-  id: string;
-  passageiro_id: string;
-  mes: number;
-  ano: number;
-  valor: number;
-  status: string;
-  data_vencimento: string;
-  data_pagamento?: string;
-  tipo_pagamento?: string;
-}
-
 export default function Passageiros() {
   const [passageiros, setPassageiros] = useState<Passageiro[]>([]);
   const [escolas, setEscolas] = useState<Escola[]>([]);
-  const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(null);
+  const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(
+    null
+  );
   const [selectedEscola, setSelectedEscola] = useState<string>("todas");
   const [searchTerm, setSearchTerm] = useState("");
-  const [expandedPassageiro, setExpandedPassageiro] = useState<string | null>(null);
+  const [expandedPassageiro, setExpandedPassageiro] = useState<string | null>(
+    null
+  );
   const [historicoOpen, setHistoricoOpen] = useState(false);
-  const [selectedPassageiroHistorico, setSelectedPassageiroHistorico] = useState<{ id: string; nome: string } | null>(null);
+  const [selectedPassageiroHistorico, setSelectedPassageiroHistorico] =
+    useState<{ id: string; nome: string } | null>(null);
   const [formData, setFormData] = useState({
     nome: "",
     rua: "",
@@ -87,7 +86,7 @@ export default function Passageiros() {
     nome_responsavel: "",
     telefone_responsavel: "",
     valor_mensalidade: "",
-      dia_vencimento: "",
+    dia_vencimento: "",
     escola_id: "",
   });
   const [loading, setLoading] = useState(false);
@@ -95,39 +94,31 @@ export default function Passageiros() {
   const { toast } = useToast();
 
   // Debounce para busca
-  const debounceSearch = useCallback(
-    (() => {
-      let timeoutId: NodeJS.Timeout;
-      return (searchValue: string) => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-          if (searchValue.length >= 3 || searchValue.length === 0) {
-            setSearching(true);
-            fetchPassageiros();
-          }
-        }, 500);
-      };
-    })(),
-    [selectedEscola]
-  );
+  const debounceSearch = useCallback(() => {
+    let timeoutId: NodeJS.Timeout;
 
-  useEffect(() => {
-    fetchEscolas();
-    fetchPassageiros();
-    fetchCobrancas();
-  }, []);
-
-  useEffect(() => {
-    fetchPassageiros();
+    return (searchValue: string) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        if (searchValue.length >= 2 || searchValue.length === 0) {
+          setSearching(true);
+          fetchPassageiros(searchValue);
+        }
+      }, 500);
+    };
   }, [selectedEscola]);
 
   useEffect(() => {
-    if (searchTerm.length === 0) {
+    fetchEscolas();
+  }, []);
+
+  useEffect(() => {
+    if (searchTerm.length >= 2) {
+      debounceSearch()(searchTerm);
+    } else if (searchTerm.length === 0) {
       fetchPassageiros();
-    } else {
-      debounceSearch(searchTerm);
     }
-  }, [searchTerm, debounceSearch]);
+  }, [selectedEscola, searchTerm]);
 
   const fetchEscolas = async () => {
     try {
@@ -144,23 +135,20 @@ export default function Passageiros() {
     }
   };
 
-  const fetchPassageiros = async () => {
+  const fetchPassageiros = async (search = "") => {
     setLoading(true);
     try {
       let query = supabase
         .from("passageiros")
-        .select(`
-          *,
-          escolas(nome)
-        `)
+        .select(`*, escolas(nome)`)
         .order("nome");
 
       if (selectedEscola !== "todas") {
         query = query.eq("escola_id", selectedEscola);
       }
 
-      if (searchTerm.length >= 3) {
-        query = query.ilike("nome", `%${searchTerm}%`);
+      if (search.length >= 2) {
+        query = query.ilike("nome", `%${search}%`);
       }
 
       const { data, error } = await query;
@@ -177,22 +165,6 @@ export default function Passageiros() {
     } finally {
       setLoading(false);
       setSearching(false);
-    }
-  };
-
-  const fetchCobrancas = async () => {
-    try {
-      const currentDate = new Date();
-      const { data, error } = await supabase
-        .from("cobrancas")
-        .select("*")
-        .eq("mes", currentDate.getMonth() + 1)
-        .eq("ano", currentDate.getFullYear());
-
-      if (error) throw error;
-      setCobrancas(data || []);
-    } catch (error) {
-      console.error("Erro ao buscar cobranças:", error);
     }
   };
 
@@ -216,7 +188,7 @@ export default function Passageiros() {
           .eq("id", editingPassageiro.id);
 
         if (error) throw error;
-        
+
         toast({
           title: "Passageiro atualizado com sucesso",
         });
@@ -228,31 +200,32 @@ export default function Passageiros() {
           .single();
 
         if (error) throw error;
-        
+
         // Criar cobrança do mês atual automaticamente
         const currentDate = new Date();
         const mes = currentDate.getMonth() + 1;
         const ano = currentDate.getFullYear();
-        const dataVencimento = new Date(ano, mes - 1, Number(formData.dia_vencimento));
-        
-        await supabase
-          .from("cobrancas")
-          .insert({
-            passageiro_id: newPassageiro.id,
-            mes,
-            ano,
-            valor: moneyToNumber(formData.valor_mensalidade),
-            data_vencimento: dataVencimento.toISOString().split('T')[0],
-            status: 'pendente',
-          });
-        
+        const dataVencimento = new Date(
+          ano,
+          mes - 1,
+          Number(formData.dia_vencimento)
+        );
+
+        await supabase.from("cobrancas").insert({
+          passageiro_id: newPassageiro.id,
+          mes,
+          ano,
+          valor: moneyToNumber(formData.valor_mensalidade),
+          data_vencimento: dataVencimento.toISOString().split("T")[0],
+          status: "pendente",
+        });
+
         toast({
           title: "Passageiro cadastrado com sucesso",
         });
       }
 
       await fetchPassageiros();
-      await fetchCobrancas();
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
@@ -280,56 +253,20 @@ export default function Passageiros() {
       referencia: passageiro.referencia || "",
       nome_responsavel: passageiro.nome_responsavel,
       telefone_responsavel: passageiro.telefone_responsavel,
-      valor_mensalidade: (passageiro.valor_mensalidade * 100).toString().replace('.', ','),
+      valor_mensalidade: (passageiro.valor_mensalidade * 100)
+        .toString()
+        .replace(".", ","),
       dia_vencimento: passageiro.dia_vencimento.toString(),
       escola_id: passageiro.escola_id || "",
     });
     setIsDialogOpen(true);
   };
 
-  const handleReenviarCobranca = async (passageiroId: string) => {
-    try {
-      const currentDate = new Date();
-      const mes = currentDate.getMonth() + 1;
-      const ano = currentDate.getFullYear();
-      
-      const passageiro = passageiros.find(p => p.id === passageiroId);
-      if (!passageiro) return;
-
-      const dataVencimento = new Date(ano, mes - 1, Number(passageiro.dia_vencimento));
-      
-      const { error } = await supabase
-        .from("cobrancas")
-        .upsert({
-          passageiro_id: passageiroId,
-          mes,
-          ano,
-          valor: passageiro.valor_mensalidade,
-          data_vencimento: dataVencimento.toISOString().split('T')[0],
-          status: 'pendente',
-          enviado_em: new Date().toISOString(),
-        }, {
-          onConflict: 'passageiro_id,mes,ano'
-        });
-
-      if (error) throw error;
-
-      await fetchCobrancas();
-      toast({
-        title: "Cobrança reenviada com sucesso para o responsável",
-      });
-    } catch (error) {
-      console.error("Erro ao reenviar cobrança:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao reenviar cobrança",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleHistorico = (passageiro: Passageiro) => {
-    setSelectedPassageiroHistorico({ id: passageiro.id, nome: passageiro.nome });
+    setSelectedPassageiroHistorico({
+      id: passageiro.id,
+      nome: passageiro.nome,
+    });
     setHistoricoOpen(true);
   };
 
@@ -380,7 +317,9 @@ export default function Passageiros() {
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
-                    {editingPassageiro ? "Editar Passageiro" : "Novo Passageiro"}
+                    {editingPassageiro
+                      ? "Editar Passageiro"
+                      : "Novo Passageiro"}
                   </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -390,7 +329,9 @@ export default function Passageiros() {
                       <Label htmlFor="escola">Escola</Label>
                       <Select
                         value={formData.escola_id}
-                        onValueChange={(value) => setFormData({ ...formData, escola_id: value })}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, escola_id: value })
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione uma escola" />
@@ -414,39 +355,56 @@ export default function Passageiros() {
                         id="nome"
                         required
                         value={formData.nome}
-                        onChange={(e) => handleInputChange("nome", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("nome", e.target.value)
+                        }
                       />
                     </div>
                     <div>
-                      <Label htmlFor="nome_responsavel">Nome do Responsável *</Label>
+                      <Label htmlFor="nome_responsavel">
+                        Nome do Responsável *
+                      </Label>
                       <Input
                         id="nome_responsavel"
                         required
                         value={formData.nome_responsavel}
-                        onChange={(e) => handleInputChange("nome_responsavel", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("nome_responsavel", e.target.value)
+                        }
                       />
                     </div>
                     <div>
-                      <Label htmlFor="telefone_responsavel">Telefone do Responsável *</Label>
+                      <Label htmlFor="telefone_responsavel">
+                        Telefone do Responsável *
+                      </Label>
                       <Input
                         id="telefone_responsavel"
                         required
                         value={formData.telefone_responsavel}
-                        onChange={(e) => handleInputChange("telefone_responsavel", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "telefone_responsavel",
+                            e.target.value
+                          )
+                        }
                         maxLength={15}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">ENDEREÇO DO PASSAGEIRO</h3>
+                    <h3 className="text-lg font-semibold">
+                      ENDEREÇO DO PASSAGEIRO
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="rua">Rua</Label>
                         <Input
                           id="rua"
                           value={formData.rua}
-                          onChange={(e) => handleInputChange("rua", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("rua", e.target.value)
+                          }
                         />
                       </div>
                       <div>
@@ -454,7 +412,9 @@ export default function Passageiros() {
                         <Input
                           id="numero"
                           value={formData.numero}
-                          onChange={(e) => handleInputChange("numero", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("numero", e.target.value)
+                          }
                         />
                       </div>
                       <div>
@@ -462,7 +422,9 @@ export default function Passageiros() {
                         <Input
                           id="bairro"
                           value={formData.bairro}
-                          onChange={(e) => handleInputChange("bairro", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("bairro", e.target.value)
+                          }
                         />
                       </div>
                       <div>
@@ -470,7 +432,9 @@ export default function Passageiros() {
                         <Input
                           id="cidade"
                           value={formData.cidade}
-                          onChange={(e) => handleInputChange("cidade", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("cidade", e.target.value)
+                          }
                         />
                       </div>
                       <div>
@@ -478,7 +442,9 @@ export default function Passageiros() {
                         <Input
                           id="estado"
                           value={formData.estado}
-                          onChange={(e) => handleInputChange("estado", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("estado", e.target.value)
+                          }
                         />
                       </div>
                       <div>
@@ -486,7 +452,9 @@ export default function Passageiros() {
                         <Input
                           id="cep"
                           value={formData.cep}
-                          onChange={(e) => handleInputChange("cep", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("cep", e.target.value)
+                          }
                           maxLength={9}
                         />
                       </div>
@@ -496,7 +464,9 @@ export default function Passageiros() {
                       <Textarea
                         id="referencia"
                         value={formData.referencia}
-                        onChange={(e) => handleInputChange("referencia", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("referencia", e.target.value)
+                        }
                       />
                     </div>
                   </div>
@@ -505,30 +475,48 @@ export default function Passageiros() {
                     <h3 className="text-lg font-semibold">MENSALIDADE</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="valor_mensalidade">Valor da Mensalidade *</Label>
+                        <Label htmlFor="valor_mensalidade">
+                          Valor da Mensalidade *
+                        </Label>
                         <Input
                           id="valor_mensalidade"
                           required
                           value={formData.valor_mensalidade}
-                          onChange={(e) => handleInputChange("valor_mensalidade", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "valor_mensalidade",
+                              e.target.value
+                            )
+                          }
                         />
                       </div>
                       <div>
-                        <Label htmlFor="dia_vencimento">Dia do Vencimento *</Label>
-                         <select
-                           id="dia_vencimento"
-                           required
-                           value={formData.dia_vencimento}
-                           onChange={(e) => setFormData({ ...formData, dia_vencimento: e.target.value })}
-                           className="w-full p-2 border border-input bg-background rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                         >
-                           <option value="" disabled>Selecione o dia</option>
-                           {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
-                             <option key={day} value={day}>
-                               Dia {day}
-                             </option>
-                           ))}
-                         </select>
+                        <Label htmlFor="dia_vencimento">
+                          Dia do Vencimento *
+                        </Label>
+                        <select
+                          id="dia_vencimento"
+                          required
+                          value={formData.dia_vencimento}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              dia_vencimento: e.target.value,
+                            })
+                          }
+                          className="w-full p-2 border border-input bg-background rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          <option value="" disabled>
+                            Selecione o dia
+                          </option>
+                          {Array.from({ length: 28 }, (_, i) => i + 1).map(
+                            (day) => (
+                              <option key={day} value={day}>
+                                Dia {day}
+                              </option>
+                            )
+                          )}
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -543,7 +531,11 @@ export default function Passageiros() {
                       Cancelar
                     </Button>
                     <Button type="submit" disabled={loading} className="flex-1">
-                      {loading ? "Salvando..." : editingPassageiro ? "Atualizar" : "Cadastrar"}
+                      {loading
+                        ? "Salvando..."
+                        : editingPassageiro
+                        ? "Atualizar"
+                        : "Cadastrar"}
                     </Button>
                   </div>
                 </form>
@@ -556,10 +548,16 @@ export default function Passageiros() {
             <CardContent className="pt-6">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
-                  <Label htmlFor="escola-filter" className="text-sm font-medium mb-2 block">
+                  <Label
+                    htmlFor="escola-filter"
+                    className="text-sm font-medium mb-2 block"
+                  >
                     Filtrar por Escola
                   </Label>
-                  <Select value={selectedEscola} onValueChange={setSelectedEscola}>
+                  <Select
+                    value={selectedEscola}
+                    onValueChange={setSelectedEscola}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Todas as escolas" />
                     </SelectTrigger>
@@ -574,14 +572,17 @@ export default function Passageiros() {
                   </Select>
                 </div>
                 <div className="flex-1">
-                  <Label htmlFor="search" className="text-sm font-medium mb-2 block">
+                  <Label
+                    htmlFor="search"
+                    className="text-sm font-medium mb-2 block"
+                  >
                     Buscar por Nome
                   </Label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
                       id="search"
-                      placeholder="Digite 3 caracteres ou mais..."
+                      placeholder="Digite 2 caracteres ou mais..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
@@ -608,110 +609,140 @@ export default function Passageiros() {
                 <Card>
                   <CardContent className="pt-6">
                     <div className="text-center py-8 text-muted-foreground">
-                      {searchTerm.length > 0 && searchTerm.length < 3 
-                        ? "Digite pelo menos 3 caracteres para buscar"
-                        : searchTerm.length >= 3 
+                      {searchTerm.length > 0 && searchTerm.length < 2
+                        ? "Digite pelo menos 2 caracteres para buscar"
+                        : searchTerm.length >= 2
                         ? "Nenhum passageiro encontrado com este nome"
-                        : "Nenhum passageiro encontrado"
-                      }
+                        : "Nenhum passageiro encontrado"}
                     </div>
                   </CardContent>
                 </Card>
               ) : (
-              passageiros.map((passageiro) => {
-                const isExpanded = expandedPassageiro === passageiro.id;
+                passageiros.map((passageiro) => {
+                  const isExpanded = expandedPassageiro === passageiro.id;
 
-                return (
-                  <Card key={passageiro.id} className="overflow-hidden">
-                    <CardContent className="p-0">
-                      {/* Linha principal - clicável */}
-                      <div
-                        className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                        onClick={() => setExpandedPassageiro(isExpanded ? null : passageiro.id)}
-                      >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-medium truncate">{passageiro.nome}</h3>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {isExpanded ? (
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                          ) : (
-                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Conteúdo expandido */}
-                      {isExpanded && (
-                        <div className="border-t bg-muted/20 p-4 space-y-4">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <span className="text-muted-foreground">Telefone:</span>
-                              <p className="font-medium">{passageiro.telefone_responsavel}</p>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Mensalidade:</span>
-                              <p className="font-medium">
-                                {passageiro.valor_mensalidade.toLocaleString('pt-BR', { 
-                                  style: 'currency', 
-                                  currency: 'BRL' 
-                                })}
-                              </p>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Vencimento:</span>
-                              <p className="font-medium">Todo dia {passageiro.dia_vencimento}</p>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Escola:</span>
-                              <p className="font-medium">{passageiro.escolas?.nome || "Não informada"}</p>
+                  return (
+                    <Card key={passageiro.id} className="overflow-hidden">
+                      <CardContent className="p-0">
+                        {/* Linha principal - clicável */}
+                        <div
+                          className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() =>
+                            setExpandedPassageiro(
+                              isExpanded ? null : passageiro.id
+                            )
+                          }
+                        >
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-medium truncate">
+                                {passageiro.nome}
+                              </h3>
                             </div>
                           </div>
-                          
-                          <div>
-                            <span className="text-muted-foreground text-sm">Endereço:</span>
-                            <p className="text-sm">
-                              {[passageiro.rua, passageiro.numero, passageiro.bairro, passageiro.cidade, passageiro.estado]
-                                .filter(Boolean)
-                                .join(', ')}
-                              {passageiro.cep && ` - CEP: ${passageiro.cep}`}
-                            </p>
-                            {passageiro.referencia && (
-                              <p className="text-sm text-muted-foreground mt-1">
-                                Ref.: {passageiro.referencia}
-                              </p>
+                          <div className="flex items-center gap-2">
+                            {isExpanded ? (
+                              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4 text-muted-foreground" />
                             )}
                           </div>
-
-                           {/* Botões de ação */}
-                          <div className="flex flex-wrap gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEdit(passageiro)}
-                              className="gap-1"
-                            >
-                              <Pencil className="w-3 h-3" />
-                              Editar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleHistorico(passageiro)}
-                              className="gap-1"
-                            >
-                              <History className="w-3 h-3" />
-                              Histórico
-                            </Button>
-                          </div>
                         </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })
+
+                        {/* Conteúdo expandido */}
+                        {isExpanded && (
+                          <div className="border-t bg-muted/20 p-4 space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Telefone:
+                                </span>
+                                <p className="font-medium">
+                                  {passageiro.telefone_responsavel}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Mensalidade:
+                                </span>
+                                <p className="font-medium">
+                                  {passageiro.valor_mensalidade.toLocaleString(
+                                    "pt-BR",
+                                    {
+                                      style: "currency",
+                                      currency: "BRL",
+                                    }
+                                  )}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Vencimento:
+                                </span>
+                                <p className="font-medium">
+                                  Todo dia {passageiro.dia_vencimento}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Escola:
+                                </span>
+                                <p className="font-medium">
+                                  {passageiro.escolas?.nome || "Não informada"}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div>
+                              <span className="text-muted-foreground text-sm">
+                                Endereço:
+                              </span>
+                              <p className="text-sm">
+                                {[
+                                  passageiro.rua,
+                                  passageiro.numero,
+                                  passageiro.bairro,
+                                  passageiro.cidade,
+                                  passageiro.estado,
+                                ]
+                                  .filter(Boolean)
+                                  .join(", ")}
+                                {passageiro.cep && ` - CEP: ${passageiro.cep}`}
+                              </p>
+                              {passageiro.referencia && (
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Ref.: {passageiro.referencia}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Botões de ação */}
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEdit(passageiro)}
+                                className="gap-1"
+                              >
+                                <Pencil className="w-3 h-3" />
+                                Editar
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleHistorico(passageiro)}
+                                className="gap-1"
+                              >
+                                <History className="w-3 h-3" />
+                                Histórico
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })
               )}
             </div>
           )}
