@@ -6,6 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Cobranca {
   id: string;
@@ -33,6 +34,7 @@ export default function PassageiroHistorico({
 }: PassageiroHistoricoProps) {
   const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen && passageiroId) {
@@ -89,6 +91,26 @@ export default function PassageiroHistorico({
     return new Date(2024, mes - 1).toLocaleDateString('pt-BR', { month: 'long' });
   };
 
+  const reenviarCobranca = async (cobrancaId: string) => {
+    try {
+      await supabase
+        .from("cobrancas")
+        .update({ enviado_em: new Date().toISOString() })
+        .eq("id", cobrancaId);
+
+      toast({
+        title: "Cobrança reenviada com sucesso para o responsável",
+      });
+    } catch (error) {
+      console.error("Erro ao reenviar cobrança:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao reenviar cobrança",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -128,18 +150,28 @@ export default function PassageiroHistorico({
                       </p>
                     )}
                   </div>
-                  <div className="text-right">
+                  <div className="text-right space-y-2">
                     <p className="font-semibold">
                       {cobranca.valor.toLocaleString('pt-BR', {
                         style: 'currency',
                         currency: 'BRL'
                       })}
                     </p>
-                    <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                      getStatusColor(cobranca.status, cobranca.data_vencimento)
-                    }`}>
-                      {getStatusText(cobranca.status, cobranca.data_vencimento)}
-                    </span>
+                    <div className="flex flex-col gap-2">
+                      <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                        getStatusColor(cobranca.status, cobranca.data_vencimento)
+                      }`}>
+                        {getStatusText(cobranca.status, cobranca.data_vencimento)}
+                      </span>
+                      {cobranca.status !== 'pago' && (
+                        <button
+                          onClick={() => reenviarCobranca(cobranca.id)}
+                          className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
+                        >
+                          Reenviar
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

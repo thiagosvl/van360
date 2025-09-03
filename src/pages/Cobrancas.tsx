@@ -260,95 +260,6 @@ const Cobrancas = () => {
             </CardContent>
           </Card>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Previsto</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {stats.totalPrevisto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Recebido</CardTitle>
-                <DollarSign className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">
-                  {stats.totalRecebido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total a Receber</CardTitle>
-                <DollarSign className="h-4 w-4 text-orange-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-orange-600">
-                  {stats.totalAReceber.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">% Recebimento</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {stats.percentualRecebimento.toFixed(1)}%
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Status Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Cobranças</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.totalCobrancas}</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Pagas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">{stats.cobrancasPagas}</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">A vencer</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-orange-600">{stats.cobrancasAVencer}</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Em Atraso</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-red-600">{stats.cobrancasAtrasadas}</div>
-              </CardContent>
-            </Card>
-          </div>
 
           {/* Cobranças em Aberto */}
           <Card className="mb-6">
@@ -359,48 +270,68 @@ const Cobrancas = () => {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="text-center py-8">Carregando...</div>
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  Carregando...
+                </div>
               ) : cobrancasAbertas.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   Nenhuma cobrança em aberto neste período
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {cobrancasAbertas.map((cobranca) => (
-                    <div
-                      key={cobranca.id}
-                      className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border rounded-lg gap-3"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium truncate">{cobranca.passageiros.nome}</h3>
-                        {cobranca.passageiros.nome_responsavel && (
-                          <p className="text-sm text-muted-foreground truncate">
-                            Responsável: {cobranca.passageiros.nome_responsavel}
-                          </p>
-                        )}
-                        <p className="text-sm text-muted-foreground">
-                          Vencimento: {new Date(cobranca.data_vencimento).toLocaleDateString('pt-BR')}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(cobranca.status, cobranca.data_vencimento)}`}>
-                          {getStatusText(cobranca.status, cobranca.data_vencimento)}
-                        </span>
-                        <span className="font-medium">
-                          {Number(cobranca.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => reenviarCobranca(cobranca.id, cobranca.passageiros.nome)}
-                          className="w-full sm:w-auto gap-1"
-                        >
-                          <Send className="w-3 h-3" />
-                          Reenviar
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-3 text-sm font-medium">Passageiro</th>
+                        <th className="text-left p-3 text-sm font-medium">Responsável</th>
+                        <th className="text-left p-3 text-sm font-medium">Vencimento</th>
+                        <th className="text-left p-3 text-sm font-medium">Status</th>
+                        <th className="text-right p-3 text-sm font-medium">Valor</th>
+                        <th className="text-center p-3 text-sm font-medium">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cobrancasAbertas.map((cobranca) => (
+                        <tr key={cobranca.id} className="border-b hover:bg-muted/50">
+                          <td className="p-3">
+                            <span className="font-medium text-sm">{cobranca.passageiros.nome}</span>
+                          </td>
+                          <td className="p-3">
+                            <span className="text-sm text-muted-foreground">
+                              {cobranca.passageiros.nome_responsavel || '-'}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className="text-sm">
+                              {new Date(cobranca.data_vencimento).toLocaleDateString('pt-BR')}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(cobranca.status, cobranca.data_vencimento)}`}>
+                              {getStatusText(cobranca.status, cobranca.data_vencimento)}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right">
+                            <span className="font-medium text-sm">
+                              {Number(cobranca.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                            </span>
+                          </td>
+                          <td className="p-3 text-center">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => reenviarCobranca(cobranca.id, cobranca.passageiros.nome)}
+                              className="gap-1"
+                            >
+                              <Send className="w-3 h-3" />
+                              Reenviar
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </CardContent>
@@ -415,44 +346,63 @@ const Cobrancas = () => {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="text-center py-8">Carregando...</div>
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  Carregando...
+                </div>
               ) : cobrancasPagas.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   Nenhuma cobrança paga neste mês ainda
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {cobrancasPagas.map((cobranca) => (
-                    <div
-                      key={cobranca.id}
-                      className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border rounded-lg gap-3"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium truncate">{cobranca.passageiros.nome}</h3>
-                        {cobranca.passageiros.nome_responsavel && (
-                          <p className="text-sm text-muted-foreground truncate">
-                            Responsável: {cobranca.passageiros.nome_responsavel}
-                          </p>
-                        )}
-                        <div className="flex flex-col sm:flex-row sm:gap-4 text-sm text-muted-foreground">
-                          {cobranca.data_pagamento && (
-                            <span>Pago em: {new Date(cobranca.data_pagamento).toLocaleDateString('pt-BR')}</span>
-                          )}
-                          {cobranca.tipo_pagamento && (
-                            <span>via {cobranca.tipo_pagamento}</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Pago
-                        </span>
-                        <span className="font-medium">
-                          {Number(cobranca.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-3 text-sm font-medium">Passageiro</th>
+                        <th className="text-left p-3 text-sm font-medium">Responsável</th>
+                        <th className="text-left p-3 text-sm font-medium">Data Pagamento</th>
+                        <th className="text-left p-3 text-sm font-medium">Forma</th>
+                        <th className="text-left p-3 text-sm font-medium">Status</th>
+                        <th className="text-right p-3 text-sm font-medium">Valor</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cobrancasPagas.map((cobranca) => (
+                        <tr key={cobranca.id} className="border-b hover:bg-muted/50">
+                          <td className="p-3">
+                            <span className="font-medium text-sm">{cobranca.passageiros.nome}</span>
+                          </td>
+                          <td className="p-3">
+                            <span className="text-sm text-muted-foreground">
+                              {cobranca.passageiros.nome_responsavel || '-'}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className="text-sm">
+                              {cobranca.data_pagamento 
+                                ? new Date(cobranca.data_pagamento).toLocaleDateString('pt-BR')
+                                : '-'
+                              }
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className="text-sm">{cobranca.tipo_pagamento || '-'}</span>
+                          </td>
+                          <td className="p-3">
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Pago
+                            </span>
+                          </td>
+                          <td className="p-3 text-right">
+                            <span className="font-medium text-sm">
+                              {Number(cobranca.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </CardContent>

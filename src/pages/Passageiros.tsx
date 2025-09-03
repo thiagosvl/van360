@@ -39,7 +39,7 @@ interface Passageiro {
   nome_responsavel: string;
   telefone_responsavel: string;
   valor_mensalidade: number;
-  dia_vencimento: number;
+  dia_vencimento: number | string;
   escola_id?: string;
   created_at: string;
   updated_at: string;
@@ -87,10 +87,11 @@ export default function Passageiros() {
     nome_responsavel: "",
     telefone_responsavel: "",
     valor_mensalidade: "",
-    dia_vencimento: 10,
+      dia_vencimento: "",
     escola_id: "",
   });
   const [loading, setLoading] = useState(false);
+  const [searching, setSearching] = useState(false);
   const { toast } = useToast();
 
   // Debounce para busca
@@ -99,9 +100,12 @@ export default function Passageiros() {
       let timeoutId: NodeJS.Timeout;
       return (searchValue: string) => {
         clearTimeout(timeoutId);
+        setSearching(true);
         timeoutId = setTimeout(() => {
           if (searchValue.length >= 3 || searchValue.length === 0) {
             fetchPassageiros();
+          } else {
+            setSearching(false);
           }
         }, 500);
       };
@@ -139,6 +143,7 @@ export default function Passageiros() {
   };
 
   const fetchPassageiros = async () => {
+    setLoading(true);
     try {
       let query = supabase
         .from("passageiros")
@@ -167,6 +172,9 @@ export default function Passageiros() {
         description: "Erro ao carregar passageiros",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
+      setSearching(false);
     }
   };
 
@@ -219,6 +227,7 @@ export default function Passageiros() {
       const passageiroData = {
         ...formData,
         valor_mensalidade: moneyToNumber(formData.valor_mensalidade),
+        dia_vencimento: Number(formData.dia_vencimento),
         endereco: `${formData.rua}, ${formData.numero}`, // Manter compatibilidade
         escola_id: formData.escola_id || null,
       };
@@ -247,7 +256,7 @@ export default function Passageiros() {
         const currentDate = new Date();
         const mes = currentDate.getMonth() + 1;
         const ano = currentDate.getFullYear();
-        const dataVencimento = new Date(ano, mes - 1, formData.dia_vencimento);
+        const dataVencimento = new Date(ano, mes - 1, Number(formData.dia_vencimento));
         
         await supabase
           .from("cobrancas")
@@ -295,7 +304,7 @@ export default function Passageiros() {
       nome_responsavel: passageiro.nome_responsavel,
       telefone_responsavel: passageiro.telefone_responsavel,
       valor_mensalidade: (passageiro.valor_mensalidade * 100).toString().replace('.', ','),
-      dia_vencimento: passageiro.dia_vencimento,
+      dia_vencimento: passageiro.dia_vencimento.toString(),
       escola_id: passageiro.escola_id || "",
     });
     setIsDialogOpen(true);
@@ -310,7 +319,7 @@ export default function Passageiros() {
       const passageiro = passageiros.find(p => p.id === passageiroId);
       if (!passageiro) return;
 
-      const dataVencimento = new Date(ano, mes - 1, passageiro.dia_vencimento);
+      const dataVencimento = new Date(ano, mes - 1, Number(passageiro.dia_vencimento));
       
       const { error } = await supabase
         .from("cobrancas")
@@ -360,7 +369,7 @@ export default function Passageiros() {
       nome_responsavel: "",
       telefone_responsavel: "",
       valor_mensalidade: "",
-      dia_vencimento: 10,
+      dia_vencimento: "",
       escola_id: "",
     });
     setEditingPassageiro(null);
@@ -529,19 +538,20 @@ export default function Passageiros() {
                       </div>
                       <div>
                         <Label htmlFor="dia_vencimento">Dia do Vencimento *</Label>
-                        <select
-                          id="dia_vencimento"
-                          required
-                          value={formData.dia_vencimento}
-                          onChange={(e) => setFormData({ ...formData, dia_vencimento: Number(e.target.value) })}
-                          className="w-full p-2 border border-input bg-background rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                        >
-                          {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
-                            <option key={day} value={day}>
-                              Dia {day}
-                            </option>
-                          ))}
-                        </select>
+                         <select
+                           id="dia_vencimento"
+                           required
+                           value={formData.dia_vencimento}
+                           onChange={(e) => setFormData({ ...formData, dia_vencimento: e.target.value })}
+                           className="w-full p-2 border border-input bg-background rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                         >
+                           <option value="" disabled>Selecione o dia</option>
+                           {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
+                             <option key={day} value={day}>
+                               Dia {day}
+                             </option>
+                           ))}
+                         </select>
                       </div>
                     </div>
                   </div>
@@ -606,19 +616,31 @@ export default function Passageiros() {
           </Card>
 
           {/* Lista de Passageiros */}
-          <div className="space-y-3">
-            {passageiros.length === 0 ? (
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center py-8 text-muted-foreground">
-                    {searchTerm.length > 0 && searchTerm.length < 3 
-                      ? "Digite pelo menos 3 caracteres para buscar"
-                      : "Nenhum passageiro encontrado"
-                    }
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
+          {loading || searching ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-8 text-muted-foreground">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  {searching ? "Buscando passageiros..." : "Carregando..."}
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {passageiros.length === 0 ? (
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center py-8 text-muted-foreground">
+                      {searchTerm.length > 0 && searchTerm.length < 3 
+                        ? "Digite pelo menos 3 caracteres para buscar"
+                        : searchTerm.length >= 3 
+                        ? "Nenhum passageiro encontrado com este nome"
+                        : "Nenhum passageiro encontrado"
+                      }
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
               passageiros.map((passageiro) => {
                 const status = getPassageiroStatus(passageiro.id);
                 const isExpanded = expandedPassageiro === passageiro.id;
@@ -692,7 +714,7 @@ export default function Passageiros() {
                             )}
                           </div>
 
-                          {/* Botões de ação */}
+                           {/* Botões de ação */}
                           <div className="flex flex-wrap gap-2">
                             <Button
                               size="sm"
@@ -702,15 +724,6 @@ export default function Passageiros() {
                             >
                               <Pencil className="w-3 h-3" />
                               Editar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleReenviarCobranca(passageiro.id)}
-                              className="gap-1"
-                            >
-                              <Send className="w-3 h-3" />
-                              Reenviar Cobrança
                             </Button>
                             <Button
                               size="sm"
@@ -728,8 +741,9 @@ export default function Passageiros() {
                   </Card>
                 );
               })
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* Modal de Histórico */}
           {selectedPassageiroHistorico && (
