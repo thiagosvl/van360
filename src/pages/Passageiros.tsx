@@ -1,20 +1,20 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Edit, Trash2, Phone, MapPin, DollarSign, Calendar, CreditCard, CheckCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
+import { supabase } from "@/integrations/supabase/client";
+import { cepMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Calendar, CheckCircle, CreditCard, DollarSign, Edit, MapPin, Phone, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
-import Navigation from "@/components/Navigation";
-import { phoneMask, moneyMask, moneyToNumber, cepMask } from "@/utils/masks";
 
 const passageiroSchema = z.object({
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -52,7 +52,7 @@ interface Passageiro {
 
 interface Cobranca {
   id: string;
-  aluno_id: string;
+  passageiro_id: string;
   mes: number;
   ano: number;
   valor: number;
@@ -93,7 +93,7 @@ const Passageiros = () => {
   const fetchPassageiros = async () => {
     try {
       const { data, error } = await supabase
-        .from("alunos")
+        .from("passageiros")
         .select("*")
         .order("nome", { ascending: true });
 
@@ -137,7 +137,7 @@ const Passageiros = () => {
 
       if (editingPassageiro) {
         const { error } = await supabase
-          .from("alunos")
+          .from("passageiros")
           .update(formattedData)
           .eq("id", editingPassageiro.id);
 
@@ -149,7 +149,7 @@ const Passageiros = () => {
         });
       } else {
         const { error } = await supabase
-          .from("alunos")
+          .from("passageiros")
           .insert([formattedData as any]);
 
         if (error) throw error;
@@ -198,7 +198,7 @@ const Passageiros = () => {
       const { count } = await supabase
         .from("cobrancas")
         .select("*", { count: "exact", head: true })
-        .eq("aluno_id", passageiroId);
+        .eq("passageiro_id", passageiroId);
 
       if (count && count > 0) {
         toast({
@@ -210,7 +210,7 @@ const Passageiros = () => {
       }
 
       const { error } = await supabase
-        .from("alunos")
+        .from("passageiros")
         .delete()
         .eq("id", passageiroId);
 
@@ -244,7 +244,7 @@ const Passageiros = () => {
       const { data: existingCobranca } = await supabase
         .from("cobrancas")
         .select("*")
-        .eq("aluno_id", passageiro.id)
+        .eq("passageiro_id", passageiro.id)
         .eq("mes", mes)
         .eq("ano", ano)
         .single();
@@ -260,7 +260,7 @@ const Passageiros = () => {
         await supabase
           .from("cobrancas")
           .insert([{
-            aluno_id: passageiro.id,
+            passageiro_id: passageiro.id,
             mes,
             ano,
             valor: passageiro.valor_mensalidade,
@@ -707,7 +707,7 @@ const Passageiros = () => {
             <CardContent>
               <div className="space-y-3">
                 {cobrancas.map((cobranca) => {
-                  const passageiro = passageiros.find(p => p.id === cobranca.aluno_id);
+                  const passageiro = passageiros.find(p => p.id === cobranca.passageiro_id);
                   if (!passageiro) return null;
                   
                   return (

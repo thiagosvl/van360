@@ -1,5 +1,5 @@
--- Adicionar novos campos de endereço para alunos
-ALTER TABLE public.alunos 
+-- Adicionar novos campos de endereço para passageiros
+ALTER TABLE public.passageiros 
 ADD COLUMN rua TEXT,
 ADD COLUMN numero TEXT,
 ADD COLUMN bairro TEXT,

@@ -14,7 +14,7 @@ export type Database = {
   }
   public: {
     Tables: {
-      alunos: {
+      passageiros: {
         Row: {
           bairro: string | null
           cep: string | null
@@ -73,7 +73,7 @@ export type Database = {
       }
       cobrancas: {
         Row: {
-          aluno_id: string
+          passageiro_id: string
           ano: number
           created_at: string
           data_pagamento: string | null
@@ -87,7 +87,7 @@ export type Database = {
           valor: number
         }
         Insert: {
-          aluno_id: string
+          passageiro_id: string
           ano: number
           created_at?: string
           data_pagamento?: string | null
@@ -101,7 +101,7 @@ export type Database = {
           valor: number
         }
         Update: {
-          aluno_id?: string
+          passageiro_id?: string
           ano?: number
           created_at?: string
           data_pagamento?: string | null
@@ -116,10 +116,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "cobrancas_aluno_id_fkey"
-            columns: ["aluno_id"]
+            foreignKeyName: "cobrancas_passageiro_id_fkey"
+            columns: ["passageiro_id"]
             isOneToOne: false
-            referencedRelation: "alunos"
+            referencedRelation: "passageiros"
             referencedColumns: ["id"]
           },
         ]

@@ -1,7 +1,7 @@
-import { Bus, Home, Users, Menu, X } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Bus, Home, Menu, Users, X } from "lucide-react";
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 const Navigation = () => {
   const location = useLocation();
@@ -11,7 +11,7 @@ const Navigation = () => {
 
   const menuItems = [
     { path: "/dashboard", label: "Dashboard", icon: Home },
-    { path: "/alunos", label: "Passageiros", icon: Users },
+    { path: "/passageiros", label: "Passageiros", icon: Users },
   ];
 
   return (

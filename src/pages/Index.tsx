@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bus, Users, DollarSign, CheckCircle } from "lucide-react";
+import { Bus, CheckCircle, DollarSign, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -29,7 +29,7 @@ const Index = () => {
               Organize suas cobranças com facilidade
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              Sistema feito para motoristas de van escolar gerenciarem alunos e mensalidades de forma simples e intuitiva
+              Sistema feito para motoristas de van escolar gerenciarem passageiros e mensalidades de forma simples e intuitiva
             </p>
             <Link to="/dashboard">
               <Button size="lg" className="text-lg px-8 py-3">
@@ -47,10 +47,10 @@ const Index = () => {
                     <Users className="h-6 w-6 text-primary" />
                   </div>
                   <h3 className="text-lg font-semibold text-foreground">
-                    Gestão de Alunos
+                    Gestão de Passageiros
                   </h3>
                   <p className="text-muted-foreground">
-                    Cadastre e organize todos os seus alunos com informações completas dos responsáveis
+                    Cadastre e organize todos os seus passageiros com informações completas dos responsáveis
                   </p>
                 </CardContent>
               </Card>

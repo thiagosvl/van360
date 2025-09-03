@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, DollarSign, Calendar, Filter } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Calendar, DollarSign, Filter, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 
-interface Aluno {
+interface Passageiro {
   id: string;
   nome: string;
   endereco: string;
@@ -19,13 +19,13 @@ interface Aluno {
 
 interface Cobranca {
   id: string;
-  aluno_id: string;
+  passageiro_id: string;
   mes: number;
   ano: number;
   valor: number;
   status: string;
   data_vencimento: string;
-  alunos: Aluno;
+  passageiros: Passageiro;
 }
 
 interface DashboardStats {
@@ -37,7 +37,7 @@ interface DashboardStats {
   cobrancasPendentes: number;
   cobrancasAtrasadas: number;
   percentualRecebimento: number;
-  alunosComAtraso: number;
+  passageirosComAtraso: number;
 }
 
 const Dashboard = () => {
@@ -50,7 +50,7 @@ const Dashboard = () => {
     cobrancasPendentes: 0,
     cobrancasAtrasadas: 0,
     percentualRecebimento: 0,
-    alunosComAtraso: 0,
+    passageirosComAtraso: 0,
   });
   const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
@@ -71,12 +71,12 @@ const Dashboard = () => {
         .eq("mes", mesFilter)
         .eq("ano", anoFilter);
 
-      // Buscar total previsto (soma de todas as mensalidades dos alunos)
-      const { data: alunos } = await supabase
-        .from("alunos")
+      // Buscar total previsto (soma de todas as mensalidades dos passageiros)
+      const { data: passageiros } = await supabase
+        .from("passageiros")
         .select("valor_mensalidade");
 
-      const totalPrevisto = alunos?.reduce((sum, aluno) => sum + Number(aluno.valor_mensalidade), 0) || 0;
+      const totalPrevisto = passageiros?.reduce((sum, passageiro) => sum + Number(passageiro.valor_mensalidade), 0) || 0;
       
       const cobrancas = cobrancasMes || [];
       const totalCobrancas = cobrancas.length;
@@ -93,15 +93,15 @@ const Dashboard = () => {
       
       const percentualRecebimento = totalPrevisto > 0 ? (totalRecebido / totalPrevisto) * 100 : 0;
       
-      // Buscar alunos únicos com cobranças em atraso
-      const { data: alunosAtrasados } = await supabase
+      // Buscar passageiros únicos com cobranças em atraso
+      const { data: passageirosAtrasados } = await supabase
         .from("cobrancas")
-        .select("aluno_id")
+        .select("passageiro_id")
         .eq("mes", mesFilter)
         .eq("ano", anoFilter)
         .eq("status", "atrasado");
 
-      const alunosComAtraso = new Set(alunosAtrasados?.map(c => c.aluno_id)).size;
+      const passageirosComAtraso = new Set(passageirosAtrasados?.map(c => c.passageiro_id)).size;
 
       setStats({
         totalPrevisto,
@@ -112,7 +112,7 @@ const Dashboard = () => {
         cobrancasPendentes,
         cobrancasAtrasadas,
         percentualRecebimento,
-        alunosComAtraso,
+        passageirosComAtraso,
       });
     } catch (error) {
       console.error("Erro ao buscar estatísticas:", error);
@@ -125,7 +125,7 @@ const Dashboard = () => {
         .from("cobrancas")
         .select(`
           *,
-          alunos (
+          passageiros (
             id,
             nome,
             endereco,
@@ -146,7 +146,7 @@ const Dashboard = () => {
     }
   };
 
-  const reenviarCobranca = async (cobrancaId: string, nomeAluno: string) => {
+  const reenviarCobranca = async (cobrancaId: string, nomePassageiro: string) => {
     try {
       await supabase
         .from("cobrancas")
@@ -341,13 +341,13 @@ const Dashboard = () => {
         </div>
 
         {/* Passageiros com Atraso */}
-        {stats.alunosComAtraso > 0 && (
+        {stats.passageirosComAtraso > 0 && (
           <Card className="mb-6 border-red-200 bg-red-50">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-red-600" />
                 <span className="text-lg font-semibold text-red-800">
-                  {stats.alunosComAtraso} passageiro{stats.alunosComAtraso > 1 ? 's' : ''} com atraso
+                  {stats.passageirosComAtraso} passageiro{stats.passageirosComAtraso > 1 ? 's' : ''} com atraso
                 </span>
               </div>
             </CardContent>
@@ -372,9 +372,9 @@ const Dashboard = () => {
                     className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border rounded-lg gap-3"
                   >
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium truncate">{cobranca.alunos.nome}</h3>
+                      <h3 className="font-medium truncate">{cobranca.passageiros.nome}</h3>
                       <p className="text-sm text-muted-foreground truncate">
-                        {cobranca.alunos.nome_responsavel}
+                        {cobranca.passageiros.nome_responsavel}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         Venc: {new Date(cobranca.data_vencimento).toLocaleDateString()}
@@ -388,7 +388,7 @@ const Dashboard = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => reenviarCobranca(cobranca.id, cobranca.alunos.nome)}
+                        onClick={() => reenviarCobranca(cobranca.id, cobranca.passageiros.nome)}
                         className="w-full sm:w-auto"
                       >
                         Reenviar Cobrança
