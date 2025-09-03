@@ -100,12 +100,10 @@ export default function Passageiros() {
       let timeoutId: NodeJS.Timeout;
       return (searchValue: string) => {
         clearTimeout(timeoutId);
-        setSearching(true);
         timeoutId = setTimeout(() => {
           if (searchValue.length >= 3 || searchValue.length === 0) {
+            setSearching(true);
             fetchPassageiros();
-          } else {
-            setSearching(false);
           }
         }, 500);
       };
@@ -124,7 +122,11 @@ export default function Passageiros() {
   }, [selectedEscola]);
 
   useEffect(() => {
-    debounceSearch(searchTerm);
+    if (searchTerm.length === 0) {
+      fetchPassageiros();
+    } else {
+      debounceSearch(searchTerm);
+    }
   }, [searchTerm, debounceSearch]);
 
   const fetchEscolas = async () => {
