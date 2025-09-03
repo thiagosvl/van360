@@ -1,7 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, CheckCircle, DollarSign, Send, CreditCard } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  CreditCard,
+  DollarSign,
+  Send,
+} from "lucide-react";
 import { useState } from "react";
 import ConfirmationDialog from "./ConfirmationDialog";
 
@@ -122,8 +128,8 @@ const LatePaymentsAlert = ({
       <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
         <CheckCircle className="h-5 w-5 text-green-600" />
         <div className="text-sm font-medium text-green-800">
-          Todas as mensalidades de {monthNames[selectedMonth - 1]} {selectedYear}{" "}
-          estão em dia!
+          Todas as mensalidades de {monthNames[selectedMonth - 1]}{" "}
+          {selectedYear} estão em dia!
         </div>
       </div>
     );
@@ -135,7 +141,10 @@ const LatePaymentsAlert = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-red-800">
             <AlertTriangle className="h-5 w-5" />
-            Mensalidades em Atraso ({latePayments.length})
+            Mensalidades em Atraso
+            <span className="bg-red-600 text-white text-sm px-2 py-0.5 rounded-full">
+              {latePayments.length}
+            </span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -183,7 +192,12 @@ const LatePaymentsAlert = ({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => onViewHistory(cobranca.passageiro_id, cobranca.passageiros.nome)}
+                    onClick={() =>
+                      onViewHistory(
+                        cobranca.passageiro_id,
+                        cobranca.passageiros.nome
+                      )
+                    }
                     className="gap-1 w-full sm:w-auto"
                   >
                     <CreditCard className="w-3 h-3" />

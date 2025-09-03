@@ -25,14 +25,14 @@ import { cepMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
 import {
   ChevronDown,
   ChevronRight,
+  DollarSign,
+  GraduationCap,
   History,
+  MapPin,
   Pencil,
   Plus,
   Search,
-  GraduationCap,
   User,
-  MapPin,
-  DollarSign,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -794,7 +794,7 @@ export default function Passageiros() {
                                 className="gap-1"
                               >
                                 <History className="w-3 h-3" />
-                                Carteirinha Virtual (Histórico)
+                                Carteirinha Virtual
                               </Button>
                             </div>
                           </div>

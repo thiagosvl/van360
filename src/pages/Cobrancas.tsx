@@ -36,28 +36,7 @@ interface Cobranca {
   passageiros: Passageiro;
 }
 
-interface DashboardStats {
-  totalPrevisto: number;
-  totalRecebido: number;
-  totalAReceber: number;
-  totalCobrancas: number;
-  cobrancasPagas: number;
-  cobrancasAVencer: number;
-  cobrancasAtrasadas: number;
-  percentualRecebimento: number;
-}
-
 const Cobrancas = () => {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalPrevisto: 0,
-    totalRecebido: 0,
-    totalAReceber: 0,
-    totalCobrancas: 0,
-    cobrancasPagas: 0,
-    cobrancasAVencer: 0,
-    cobrancasAtrasadas: 0,
-    percentualRecebimento: 0,
-  });
   const [cobrancasAbertas, setCobrancasAbertas] = useState<Cobranca[]>([]);
   const [cobrancasPagas, setCobrancasPagas] = useState<Cobranca[]>([]);
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
@@ -83,71 +62,6 @@ const Cobrancas = () => {
     "Novembro",
     "Dezembro",
   ];
-
-  const fetchStats = async () => {
-    try {
-      // Buscar todas as cobranças do mês/ano filtrado
-      const { data: cobrancasMes } = await supabase
-        .from("cobrancas")
-        .select("valor, status, data_vencimento, passageiro_id")
-        .eq("mes", mesFilter)
-        .eq("ano", anoFilter);
-
-      // Buscar total previsto (soma de todas as mensalidades dos passageiros)
-      const { data: passageiros } = await supabase
-        .from("passageiros")
-        .select("valor_mensalidade");
-
-      const totalPrevisto =
-        passageiros?.reduce(
-          (sum, passageiro) => sum + Number(passageiro.valor_mensalidade),
-          0
-        ) || 0;
-
-      const cobrancas = cobrancasMes || [];
-      const totalCobrancas = cobrancas.length;
-
-      // Classificar status considerando data de vencimento
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
-
-      const cobrancasPagas = cobrancas.filter(
-        (c) => c.status === "pago"
-      ).length;
-      const cobrancasAtrasadas = cobrancas.filter((c) => {
-        if (c.status === "pago") return false;
-        const vencimento = new Date(c.data_vencimento);
-        return vencimento < hoje;
-      }).length;
-      const cobrancasAVencer = cobrancas.filter((c) => {
-        if (c.status === "pago") return false;
-        const vencimento = new Date(c.data_vencimento);
-        return vencimento >= hoje;
-      }).length;
-
-      const totalRecebido = cobrancas
-        .filter((c) => c.status === "pago")
-        .reduce((sum, c) => sum + Number(c.valor), 0);
-
-      const totalAReceber = totalPrevisto - totalRecebido;
-
-      const percentualRecebimento =
-        totalPrevisto > 0 ? (totalRecebido / totalPrevisto) * 100 : 0;
-
-      setStats({
-        totalPrevisto,
-        totalRecebido,
-        totalAReceber,
-        totalCobrancas,
-        cobrancasPagas,
-        cobrancasAVencer,
-        cobrancasAtrasadas,
-        percentualRecebimento,
-      });
-    } catch (error) {
-      console.error("Erro ao buscar estatísticas:", error);
-    }
-  };
 
   const fetchCobrancas = async () => {
     setLoading(true);
@@ -210,9 +124,6 @@ const Cobrancas = () => {
       toast({
         title: "Cobrança reenviada com sucesso para o responsável",
       });
-      
-      fetchStats();
-      fetchCobrancas();
     } catch (error) {
       console.error("Erro ao reenviar cobrança:", error);
       toast({
@@ -221,7 +132,11 @@ const Cobrancas = () => {
         variant: "destructive",
       });
     }
-    setConfirmDialogReenvio({ open: false, cobrancaId: "", nomePassageiro: "" });
+    setConfirmDialogReenvio({
+      open: false,
+      cobrancaId: "",
+      nomePassageiro: "",
+    });
   };
 
   const handleReverterClick = (cobrancaId: string) => {
@@ -232,10 +147,10 @@ const Cobrancas = () => {
     try {
       await supabase
         .from("cobrancas")
-        .update({ 
+        .update({
           data_pagamento: null,
           tipo_pagamento: null,
-          status: "pendente"
+          status: "pendente",
         })
         .eq("id", confirmDialogReverter.cobrancaId);
 
@@ -243,8 +158,7 @@ const Cobrancas = () => {
         title: "Pagamento revertido com sucesso",
         description: "A cobrança voltou para a lista de em aberto",
       });
-      
-      fetchStats();
+
       fetchCobrancas();
     } catch (error) {
       console.error("Erro ao reverter pagamento:", error);
@@ -291,12 +205,10 @@ const Cobrancas = () => {
   };
 
   const handlePaymentRecorded = () => {
-    fetchStats();
     fetchCobrancas();
   };
 
   useEffect(() => {
-    fetchStats();
     fetchCobrancas();
   }, [mesFilter, anoFilter]);
 
@@ -607,7 +519,7 @@ const Cobrancas = () => {
 
       <ConfirmationDialog
         open={confirmDialogReenvio.open}
-        onOpenChange={(open) => 
+        onOpenChange={(open) =>
           setConfirmDialogReenvio({ open, cobrancaId: "", nomePassageiro: "" })
         }
         title="Reenviar Cobrança"
@@ -617,7 +529,7 @@ const Cobrancas = () => {
 
       <ConfirmationDialog
         open={confirmDialogReverter.open}
-        onOpenChange={(open) => 
+        onOpenChange={(open) =>
           setConfirmDialogReverter({ open, cobrancaId: "" })
         }
         title="Reverter Pagamento"
