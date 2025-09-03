@@ -306,6 +306,8 @@ const Dashboard = () => {
           <LatePaymentsAlert
             latePayments={latePayments}
             loading={loading}
+            selectedMonth={mesFilter}
+            selectedYear={anoFilter}
             onReenviarCobranca={reenviarCobranca}
             onPayment={openPaymentDialog}
           />

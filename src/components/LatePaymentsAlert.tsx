@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, DollarSign, Send } from "lucide-react";
+import { AlertTriangle, DollarSign, Send, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import ConfirmationDialog from "./ConfirmationDialog";
 
@@ -29,6 +29,8 @@ interface Cobranca {
 interface LatePaymentsAlertProps {
   latePayments: Cobranca[];
   loading: boolean;
+  selectedMonth: number;
+  selectedYear: number;
   onReenviarCobranca: (cobrancaId: string, nomePassageiro: string) => void;
   onPayment: (cobranca: Cobranca) => void;
 }
@@ -36,6 +38,8 @@ interface LatePaymentsAlertProps {
 const LatePaymentsAlert = ({ 
   latePayments, 
   loading, 
+  selectedMonth,
+  selectedYear,
   onReenviarCobranca, 
   onPayment 
 }: LatePaymentsAlertProps) => {
@@ -84,7 +88,19 @@ const LatePaymentsAlert = ({
   }
 
   if (latePayments.length === 0) {
-    return null;
+    const monthNames = [
+      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    ];
+    
+    return (
+      <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
+        <CheckCircle className="h-5 w-5 text-green-600" />
+        <div className="text-sm font-medium text-green-800">
+          Todos os pagamentos de {monthNames[selectedMonth - 1]} {selectedYear} estão em dia!
+        </div>
+      </div>
+    );
   }
 
   return (
