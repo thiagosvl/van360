@@ -2,6 +2,7 @@ import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, DollarSign, Filter, Users } from "lucide-react";
@@ -55,6 +56,7 @@ const Dashboard = () => {
   
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   const meses = [
@@ -63,6 +65,7 @@ const Dashboard = () => {
   ];
 
   const fetchStats = async () => {
+    setLoading(true);
     try {
       // Buscar todas as cobranças do mês/ano filtrado
       const { data: cobrancasMes } = await supabase
@@ -129,6 +132,8 @@ const Dashboard = () => {
       });
     } catch (error) {
       console.error("Erro ao buscar estatísticas:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -202,7 +207,11 @@ const Dashboard = () => {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">R$ {stats.totalPrevisto.toFixed(2)}</div>
+              {loading ? (
+                <Skeleton className="h-8 w-32" />
+              ) : (
+                <div className="text-2xl font-bold">R$ {stats.totalPrevisto.toFixed(2)}</div>
+              )}
             </CardContent>
           </Card>
 
@@ -212,9 +221,13 @@ const Dashboard = () => {
               <DollarSign className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                R$ {stats.totalRecebido.toFixed(2)}
-              </div>
+              {loading ? (
+                <Skeleton className="h-8 w-32" />
+              ) : (
+                <div className="text-2xl font-bold text-green-600">
+                  R$ {stats.totalRecebido.toFixed(2)}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -224,9 +237,13 @@ const Dashboard = () => {
               <DollarSign className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">
-                R$ {stats.totalAReceber.toFixed(2)}
-              </div>
+              {loading ? (
+                <Skeleton className="h-8 w-32" />
+              ) : (
+                <div className="text-2xl font-bold text-orange-600">
+                  R$ {stats.totalAReceber.toFixed(2)}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -236,9 +253,13 @@ const Dashboard = () => {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.percentualRecebimento.toFixed(1)}%
-              </div>
+              {loading ? (
+                <Skeleton className="h-8 w-20" />
+              ) : (
+                <div className="text-2xl font-bold">
+                  {stats.percentualRecebimento.toFixed(1)}%
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -250,7 +271,11 @@ const Dashboard = () => {
               <CardTitle className="text-sm font-medium">Total Cobranças</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalCobrancas}</div>
+              {loading ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold">{stats.totalCobrancas}</div>
+              )}
             </CardContent>
           </Card>
 
@@ -259,7 +284,11 @@ const Dashboard = () => {
               <CardTitle className="text-sm font-medium">Pagas</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.cobrancasPagas}</div>
+              {loading ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold text-green-600">{stats.cobrancasPagas}</div>
+              )}
             </CardContent>
           </Card>
 
@@ -268,7 +297,11 @@ const Dashboard = () => {
               <CardTitle className="text-sm font-medium">A vencer</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{stats.cobrancasPendentes}</div>
+              {loading ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold text-orange-600">{stats.cobrancasPendentes}</div>
+              )}
             </CardContent>
           </Card>
 
@@ -277,7 +310,11 @@ const Dashboard = () => {
               <CardTitle className="text-sm font-medium">Em Atraso</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.cobrancasAtrasadas}</div>
+              {loading ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold text-red-600">{stats.cobrancasAtrasadas}</div>
+              )}
             </CardContent>
           </Card>
         </div>
