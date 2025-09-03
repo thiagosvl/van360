@@ -5,8 +5,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { DollarSign } from "lucide-react";
+import ManualPaymentDialog from "./ManualPaymentDialog";
 
 interface Cobranca {
   id: string;
@@ -34,6 +37,8 @@ export default function PassageiroHistorico({
 }: PassageiroHistoricoProps) {
   const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
   const [loading, setLoading] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -111,6 +116,15 @@ export default function PassageiroHistorico({
     }
   };
 
+  const openPaymentDialog = (cobranca: Cobranca) => {
+    setSelectedCobranca(cobranca);
+    setPaymentDialogOpen(true);
+  };
+
+  const handlePaymentRecorded = () => {
+    fetchHistorico();
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -164,12 +178,24 @@ export default function PassageiroHistorico({
                         {getStatusText(cobranca.status, cobranca.data_vencimento)}
                       </span>
                       {cobranca.status !== 'pago' && (
-                        <button
-                          onClick={() => reenviarCobranca(cobranca.id)}
-                          className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
-                        >
-                          Reenviar
-                        </button>
+                        <div className="flex flex-col gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => reenviarCobranca(cobranca.id)}
+                            className="text-xs px-2 py-1 h-auto"
+                          >
+                            Reenviar
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => openPaymentDialog(cobranca)}
+                            className="text-xs px-2 py-1 h-auto gap-1"
+                          >
+                            <DollarSign className="w-3 h-3" />
+                            Pagar
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -178,6 +204,17 @@ export default function PassageiroHistorico({
             ))
           )}
         </div>
+
+        {selectedCobranca && (
+          <ManualPaymentDialog
+            isOpen={paymentDialogOpen}
+            onClose={() => setPaymentDialogOpen(false)}
+            cobrancaId={selectedCobranca.id}
+            passageiroNome={passageiroNome}
+            valorOriginal={Number(selectedCobranca.valor)}
+            onPaymentRecorded={handlePaymentRecorded}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

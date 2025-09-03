@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Filter, Send } from "lucide-react";
+import { Filter, Send, DollarSign } from "lucide-react";
 import { useEffect, useState } from "react";
+import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 
 interface Passageiro {
   id: string;
@@ -55,6 +56,8 @@ const Cobrancas = () => {
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(null);
   const { toast } = useToast();
 
   const meses = [
@@ -200,6 +203,16 @@ const Cobrancas = () => {
     return vencimento < hoje ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800';
   };
 
+  const openPaymentDialog = (cobranca: Cobranca) => {
+    setSelectedCobranca(cobranca);
+    setPaymentDialogOpen(true);
+  };
+
+  const handlePaymentRecorded = () => {
+    fetchStats();
+    fetchCobrancas();
+  };
+
   useEffect(() => {
     fetchStats();
     fetchCobrancas();
@@ -284,6 +297,7 @@ const Cobrancas = () => {
                     <thead>
                       <tr className="border-b">
                         <th className="text-left p-3 text-sm font-medium">Passageiro</th>
+                        <th className="text-right p-3 text-sm font-medium">Valor</th>
                         <th className="text-center p-3 text-sm font-medium">Ações</th>
                       </tr>
                     </thead>
@@ -293,16 +307,31 @@ const Cobrancas = () => {
                           <td className="p-3">
                             <span className="font-medium text-sm">{cobranca.passageiros.nome}</span>
                           </td>
+                          <td className="p-3 text-right">
+                            <span className="font-medium text-sm">
+                              {Number(cobranca.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                            </span>
+                          </td>
                           <td className="p-3 text-center">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => reenviarCobranca(cobranca.id, cobranca.passageiros.nome)}
-                              className="gap-1"
-                            >
-                              <Send className="w-3 h-3" />
-                              Reenviar
-                            </Button>
+                            <div className="flex gap-2 justify-center">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => reenviarCobranca(cobranca.id, cobranca.passageiros.nome)}
+                                className="gap-1"
+                              >
+                                <Send className="w-3 h-3" />
+                                Reenviar
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => openPaymentDialog(cobranca)}
+                                className="gap-1"
+                              >
+                                <DollarSign className="w-3 h-3" />
+                                Pagar
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -373,6 +402,17 @@ const Cobrancas = () => {
           </Card>
         </div>
       </div>
+
+      {selectedCobranca && (
+        <ManualPaymentDialog
+          isOpen={paymentDialogOpen}
+          onClose={() => setPaymentDialogOpen(false)}
+          cobrancaId={selectedCobranca.id}
+          passageiroNome={selectedCobranca.passageiros.nome}
+          valorOriginal={Number(selectedCobranca.valor)}
+          onPaymentRecorded={handlePaymentRecorded}
+        />
+      )}
     </div>
   );
 };
