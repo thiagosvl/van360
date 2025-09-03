@@ -8,8 +8,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { DollarSign } from "lucide-react";
+import { DollarSign, Send } from "lucide-react";
 import ManualPaymentDialog from "./ManualPaymentDialog";
+import ConfirmationDialog from "./ConfirmationDialog";
 
 interface Cobranca {
   id: string;
@@ -39,6 +40,10 @@ export default function PassageiroHistorico({
   const [loading, setLoading] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    cobrancaId: string;
+  }>({ open: false, cobrancaId: "" });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -96,12 +101,16 @@ export default function PassageiroHistorico({
     return new Date(2024, mes - 1).toLocaleDateString('pt-BR', { month: 'long' });
   };
 
-  const reenviarCobranca = async (cobrancaId: string) => {
+  const handleReenviarClick = (cobrancaId: string) => {
+    setConfirmDialog({ open: true, cobrancaId });
+  };
+
+  const reenviarCobranca = async () => {
     try {
       await supabase
         .from("cobrancas")
         .update({ enviado_em: new Date().toISOString() })
-        .eq("id", cobrancaId);
+        .eq("id", confirmDialog.cobrancaId);
 
       toast({
         title: "Cobrança reenviada com sucesso para o responsável",
@@ -114,6 +123,7 @@ export default function PassageiroHistorico({
         variant: "destructive",
       });
     }
+    setConfirmDialog({ open: false, cobrancaId: "" });
   };
 
   const openPaymentDialog = (cobranca: Cobranca) => {
@@ -182,9 +192,10 @@ export default function PassageiroHistorico({
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => reenviarCobranca(cobranca.id)}
-                            className="text-xs px-2 py-1 h-auto"
+                            onClick={() => handleReenviarClick(cobranca.id)}
+                            className="text-xs px-2 py-1 h-auto gap-1"
                           >
+                            <Send className="w-3 h-3" />
                             Reenviar
                           </Button>
                           <Button
@@ -215,6 +226,16 @@ export default function PassageiroHistorico({
             onPaymentRecorded={handlePaymentRecorded}
           />
         )}
+
+        <ConfirmationDialog
+          open={confirmDialog.open}
+          onOpenChange={(open) => 
+            setConfirmDialog({ open, cobrancaId: "" })
+          }
+          title="Reenviar Cobrança"
+          description="Deseja reenviar esta cobrança para o responsável?"
+          onConfirm={reenviarCobranca}
+        />
       </DialogContent>
     </Dialog>
   );

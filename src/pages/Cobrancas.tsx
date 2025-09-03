@@ -1,5 +1,6 @@
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import Navigation from "@/components/Navigation";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { DollarSign, Filter, Send } from "lucide-react";
+import { DollarSign, Filter, Send, Undo2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface Passageiro {
@@ -184,19 +185,34 @@ const Cobrancas = () => {
     }
   };
 
-  const reenviarCobranca = async (
-    cobrancaId: string,
-    nomePassageiro: string
-  ) => {
+  const [confirmDialogReenvio, setConfirmDialogReenvio] = useState<{
+    open: boolean;
+    cobrancaId: string;
+    nomePassageiro: string;
+  }>({ open: false, cobrancaId: "", nomePassageiro: "" });
+
+  const [confirmDialogReverter, setConfirmDialogReverter] = useState<{
+    open: boolean;
+    cobrancaId: string;
+  }>({ open: false, cobrancaId: "" });
+
+  const handleReenviarClick = (cobrancaId: string, nomePassageiro: string) => {
+    setConfirmDialogReenvio({ open: true, cobrancaId, nomePassageiro });
+  };
+
+  const reenviarCobranca = async () => {
     try {
       await supabase
         .from("cobrancas")
         .update({ enviado_em: new Date().toISOString() })
-        .eq("id", cobrancaId);
+        .eq("id", confirmDialogReenvio.cobrancaId);
 
       toast({
         title: "Cobrança reenviada com sucesso para o responsável",
       });
+      
+      fetchStats();
+      fetchCobrancas();
     } catch (error) {
       console.error("Erro ao reenviar cobrança:", error);
       toast({
@@ -205,6 +221,40 @@ const Cobrancas = () => {
         variant: "destructive",
       });
     }
+    setConfirmDialogReenvio({ open: false, cobrancaId: "", nomePassageiro: "" });
+  };
+
+  const handleReverterClick = (cobrancaId: string) => {
+    setConfirmDialogReverter({ open: true, cobrancaId });
+  };
+
+  const reverterPagamento = async () => {
+    try {
+      await supabase
+        .from("cobrancas")
+        .update({ 
+          data_pagamento: null,
+          tipo_pagamento: null,
+          status: "pendente"
+        })
+        .eq("id", confirmDialogReverter.cobrancaId);
+
+      toast({
+        title: "Pagamento revertido com sucesso",
+        description: "A cobrança voltou para a lista de em aberto",
+      });
+      
+      fetchStats();
+      fetchCobrancas();
+    } catch (error) {
+      console.error("Erro ao reverter pagamento:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao reverter pagamento",
+        variant: "destructive",
+      });
+    }
+    setConfirmDialogReverter({ open: false, cobrancaId: "" });
   };
 
   const getStatusText = (status: string, dataVencimento: string) => {
@@ -410,7 +460,7 @@ const Cobrancas = () => {
                                 size="sm"
                                 variant="outline"
                                 onClick={() =>
-                                  reenviarCobranca(
+                                  handleReenviarClick(
                                     cobranca.id,
                                     cobranca.passageiros.nome
                                   )
@@ -479,6 +529,9 @@ const Cobrancas = () => {
                         <th className="text-right p-3 text-sm font-medium">
                           Valor
                         </th>
+                        <th className="text-center p-3 text-sm font-medium">
+                          Ações
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -519,6 +572,17 @@ const Cobrancas = () => {
                               })}
                             </span>
                           </td>
+                          <td className="p-3 text-center">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleReverterClick(cobranca.id)}
+                              className="gap-1"
+                            >
+                              <Undo2 className="w-3 h-3" />
+                              Reverter
+                            </Button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -540,6 +604,28 @@ const Cobrancas = () => {
           onPaymentRecorded={handlePaymentRecorded}
         />
       )}
+
+      <ConfirmationDialog
+        open={confirmDialogReenvio.open}
+        onOpenChange={(open) => 
+          setConfirmDialogReenvio({ open, cobrancaId: "", nomePassageiro: "" })
+        }
+        title="Reenviar Cobrança"
+        description="Deseja reenviar esta cobrança para o responsável?"
+        onConfirm={reenviarCobranca}
+      />
+
+      <ConfirmationDialog
+        open={confirmDialogReverter.open}
+        onOpenChange={(open) => 
+          setConfirmDialogReverter({ open, cobrancaId: "" })
+        }
+        title="Reverter Pagamento"
+        description="Deseja realmente reverter o pagamento desta cobrança? Essa ação moverá a cobrança de volta para a lista de em aberto."
+        onConfirm={reverterPagamento}
+        variant="destructive"
+        confirmText="Reverter"
+      />
     </div>
   );
 };

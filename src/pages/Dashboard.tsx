@@ -9,8 +9,11 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, DollarSign, Filter, Users } from "lucide-react";
+import { Calendar, DollarSign, Filter } from "lucide-react";
 import { useEffect, useState } from "react";
+import PaymentStatsCard from "@/components/PaymentStatsCard";
+import LatePaymentsAlert from "@/components/LatePaymentsAlert";
+import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 
 interface Passageiro {
   id: string;
@@ -30,7 +33,21 @@ interface Cobranca {
   valor: number;
   status: string;
   data_vencimento: string;
-  passageiros: Passageiro;
+  data_pagamento?: string;
+  tipo_pagamento?: string;
+  passageiros: {
+    id: string;
+    nome: string;
+    nome_responsavel: string;
+    valor_mensalidade: number;
+    dia_vencimento: number;
+  };
+}
+
+interface PaymentStats {
+  pix: { count: number; total: number };
+  cartao: { count: number; total: number };
+  dinheiro: { count: number; total: number };
 }
 
 interface DashboardStats {
@@ -58,9 +75,18 @@ const Dashboard = () => {
     passageirosComAtraso: 0,
   });
 
+  const [paymentStats, setPaymentStats] = useState<PaymentStats>({
+    pix: { count: 0, total: 0 },
+    cartao: { count: 0, total: 0 },
+    dinheiro: { count: 0, total: 0 },
+  });
+
+  const [latePayments, setLatePayments] = useState<Cobranca[]>([]);
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(true);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(null);
 
   const meses = [
     "Janeiro",
@@ -80,22 +106,26 @@ const Dashboard = () => {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      // Buscar todas as cobranças do mês/ano filtrado
+      // Buscar todas as cobranças do mês/ano filtrado com passageiros
       const { data: cobrancasMes } = await supabase
         .from("cobrancas")
-        .select("valor, status, data_vencimento, passageiro_id")
+        .select(`
+          *,
+          passageiros (
+            id,
+            nome,
+            nome_responsavel,
+            valor_mensalidade,
+            dia_vencimento
+          )
+        `)
         .eq("mes", mesFilter)
         .eq("ano", anoFilter);
 
-      // Buscar total previsto (soma de todas as mensalidades dos passageiros)
-      const { data: passageiros } = await supabase
-        .from("passageiros")
-        .select("valor_mensalidade");
-
-      const totalPrevisto = cobrancasMes.reduce(
+      const totalPrevisto = cobrancasMes?.reduce(
         (sum, c) => sum + Number(c.valor),
         0
-      );
+      ) || 0;
 
       const cobrancas = cobrancasMes || [];
       const totalCobrancas = cobrancas.length;
@@ -107,11 +137,13 @@ const Dashboard = () => {
       const cobrancasPagas = cobrancas.filter(
         (c) => c.status === "pago"
       ).length;
-      const cobrancasAtrasadas = cobrancas.filter((c) => {
+      
+      const cobrancasAtrasadasList = cobrancas.filter((c) => {
         if (c.status === "pago") return false;
         const vencimento = new Date(c.data_vencimento);
         return vencimento < hoje;
-      }).length;
+      });
+      
       const cobrancasPendentes = cobrancas.filter((c) => {
         if (c.status === "pago") return false;
         const vencimento = new Date(c.data_vencimento);
@@ -129,14 +161,32 @@ const Dashboard = () => {
 
       // Buscar passageiros únicos com cobranças em atraso
       const passageirosAtrasados = new Set(
-        cobrancas
-          .filter((c) => {
-            if (c.status === "pago") return false;
-            const vencimento = new Date(c.data_vencimento);
-            return vencimento < hoje;
-          })
-          .map((c) => c.passageiro_id)
+        cobrancasAtrasadasList.map((c) => c.passageiro_id)
       );
+
+      // Calcular estatísticas por forma de pagamento
+      const cobrancasPagasData = cobrancas.filter((c) => c.status === "pago");
+      const paymentStatsData: PaymentStats = {
+        pix: { count: 0, total: 0 },
+        cartao: { count: 0, total: 0 },
+        dinheiro: { count: 0, total: 0 },
+      };
+
+      cobrancasPagasData.forEach((c) => {
+        const tipo = c.tipo_pagamento?.toLowerCase() || "";
+        const valor = Number(c.valor);
+        
+        if (tipo === "pix") {
+          paymentStatsData.pix.count++;
+          paymentStatsData.pix.total += valor;
+        } else if (tipo === "cartao") {
+          paymentStatsData.cartao.count++;
+          paymentStatsData.cartao.total += valor;
+        } else if (tipo === "dinheiro") {
+          paymentStatsData.dinheiro.count++;
+          paymentStatsData.dinheiro.total += valor;
+        }
+      });
 
       setStats({
         totalPrevisto,
@@ -145,15 +195,42 @@ const Dashboard = () => {
         totalCobrancas,
         cobrancasPagas,
         cobrancasPendentes,
-        cobrancasAtrasadas,
+        cobrancasAtrasadas: cobrancasAtrasadasList.length,
         percentualRecebimento,
         passageirosComAtraso: passageirosAtrasados.size,
       });
+
+      setPaymentStats(paymentStatsData);
+      setLatePayments(cobrancasAtrasadasList);
     } catch (error) {
       console.error("Erro ao buscar estatísticas:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const reenviarCobranca = async (cobrancaId: string, nomePassageiro: string) => {
+    try {
+      await supabase
+        .from("cobrancas")
+        .update({ enviado_em: new Date().toISOString() })
+        .eq("id", cobrancaId);
+
+      // Refresh data after sending
+      fetchStats();
+    } catch (error) {
+      console.error("Erro ao reenviar cobrança:", error);
+    }
+  };
+
+  const openPaymentDialog = (cobranca: Cobranca) => {
+    setSelectedCobranca(cobranca);
+    setPaymentDialogOpen(true);
+  };
+
+  const handlePaymentRecorded = () => {
+    fetchStats();
+    setPaymentDialogOpen(false);
   };
 
   useEffect(() => {
@@ -224,6 +301,17 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Alerta de Pagamentos em Atraso */}
+          <LatePaymentsAlert
+            latePayments={latePayments}
+            loading={loading}
+            onReenviarCobranca={reenviarCobranca}
+            onPayment={openPaymentDialog}
+          />
+
+          {/* Card de Pagamentos por Forma */}
+          <PaymentStatsCard stats={paymentStats} loading={loading} />
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -365,22 +453,20 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          {/* Passageiros com Atraso */}
-          {stats.passageirosComAtraso > 0 && (
-            <Card className="mb-6 border-red-200 bg-red-50">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-red-600" />
-                  <span className="text-lg font-semibold text-red-800">
-                    {stats.passageirosComAtraso} passageiro
-                    {stats.passageirosComAtraso > 1 ? "s" : ""} com atraso
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
+
+      {/* Manual Payment Dialog */}
+      {selectedCobranca && (
+        <ManualPaymentDialog
+          isOpen={paymentDialogOpen}
+          onClose={() => setPaymentDialogOpen(false)}
+          cobrancaId={selectedCobranca.id}
+          passageiroNome={selectedCobranca.passageiros.nome}
+          valorOriginal={Number(selectedCobranca.valor)}
+          onPaymentRecorded={handlePaymentRecorded}
+        />
+      )}
     </div>
   );
 };

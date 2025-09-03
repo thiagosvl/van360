@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cepMask } from "@/utils/masks";
@@ -47,6 +48,7 @@ export default function Escolas() {
     referencia: "",
   });
   const [loading, setLoading] = useState(false);
+  const [loadingPage, setLoadingPage] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -54,6 +56,7 @@ export default function Escolas() {
   }, []);
 
   const fetchEscolas = async () => {
+    setLoadingPage(true);
     try {
       const { data, error } = await supabase
         .from("escolas")
@@ -69,6 +72,8 @@ export default function Escolas() {
         description: "Erro ao carregar escolas",
         variant: "destructive",
       });
+    } finally {
+      setLoadingPage(false);
     }
   };
 
@@ -369,87 +374,114 @@ export default function Escolas() {
             </Dialog>
           </div>
 
-          <div className="grid gap-4">
-            {escolas.map((escola) => (
-              <Card
-                key={escola.id}
-                className={escola.ativo ? "" : "opacity-50"}
-              >
-                <CardHeader>
-                  <CardTitle className="flex justify-between items-center">
-                    <span className="text-lg">{escola.nome}</span>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEdit(escola)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={escola.ativo ? "outline" : "default"}
-                        onClick={() => handleToggleAtivo(escola)}
-                      >
-                        {escola.ativo ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                      {!escola.ativo && (
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDelete(escola)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
+          {loadingPage ? (
+            <div className="grid gap-4">
+              {[1, 2, 3].map((i) => (
+                <Card key={i}>
+                  <CardHeader>
+                    <CardTitle className="flex justify-between items-center">
+                      <Skeleton className="h-6 w-48" />
+                      <div className="flex gap-2">
+                        <Skeleton className="h-8 w-8" />
+                        <Skeleton className="h-8 w-8" />
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-4 w-40" />
                     </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-sm text-muted-foreground space-y-1">
-                    {escola.rua && (
-                      <div>
-                        {escola.rua}
-                        {escola.numero && `, ${escola.numero}`}
-                      </div>
-                    )}
-                    {escola.bairro && <div>{escola.bairro}</div>}
-                    {escola.cidade && escola.estado && (
-                      <div>
-                        {escola.cidade} - {escola.estado}
-                      </div>
-                    )}
-                    {escola.cep && <div>CEP: {escola.cep}</div>}
-                    {escola.referencia && (
-                      <div className="mt-2">
-                        <strong>Referência:</strong> {escola.referencia}
-                      </div>
-                    )}
-                    <div className="mt-2">
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          escola.ativo
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {escola.ativo ? "Ativa" : "Inativa"}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {escolas.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhuma escola cadastrada
+                  </CardContent>
+                </Card>
+              ))}
             </div>
+          ) : (
+            <>
+              <div className="grid gap-4">
+                {escolas.map((escola) => (
+                  <Card
+                    key={escola.id}
+                    className={escola.ativo ? "" : "opacity-50"}
+                  >
+                    <CardHeader>
+                      <CardTitle className="flex justify-between items-center">
+                        <span className="text-lg">{escola.nome}</span>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEdit(escola)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={escola.ativo ? "outline" : "default"}
+                            onClick={() => handleToggleAtivo(escola)}
+                          >
+                            {escola.ativo ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Button>
+                          {!escola.ativo && (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDelete(escola)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        {escola.rua && (
+                          <div>
+                            {escola.rua}
+                            {escola.numero && `, ${escola.numero}`}
+                          </div>
+                        )}
+                        {escola.bairro && <div>{escola.bairro}</div>}
+                        {escola.cidade && escola.estado && (
+                          <div>
+                            {escola.cidade} - {escola.estado}
+                          </div>
+                        )}
+                        {escola.cep && <div>CEP: {escola.cep}</div>}
+                        {escola.referencia && (
+                          <div className="mt-2">
+                            <strong>Referência:</strong> {escola.referencia}
+                          </div>
+                        )}
+                        <div className="mt-2">
+                          <span
+                            className={`px-2 py-1 rounded text-xs ${
+                              escola.ativo
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {escola.ativo ? "Ativa" : "Inativa"}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {escolas.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  Nenhuma escola cadastrada
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
