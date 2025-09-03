@@ -33,7 +33,7 @@ interface LatePaymentsAlertProps {
   selectedYear: number;
   onReenviarCobranca: (cobrancaId: string, nomePassageiro: string) => void;
   onPayment: (cobranca: Cobranca) => void;
-  onViewHistory: (passageiroId: string) => void;
+  onViewHistory: (passageiroId: string, passageiroNome: string) => void;
 }
 
 const LatePaymentsAlert = ({
@@ -183,11 +183,11 @@ const LatePaymentsAlert = ({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => onViewHistory(cobranca.passageiro_id)}
+                    onClick={() => onViewHistory(cobranca.passageiro_id, cobranca.passageiros.nome)}
                     className="gap-1 w-full sm:w-auto"
                   >
                     <CreditCard className="w-3 h-3" />
-                    Carteirinha
+                    Carteirinha Virtual
                   </Button>
                   <Button
                     size="sm"

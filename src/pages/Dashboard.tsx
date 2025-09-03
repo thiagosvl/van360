@@ -1,6 +1,7 @@
 import LatePaymentsAlert from "@/components/LatePaymentsAlert";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import Navigation from "@/components/Navigation";
+import PassageiroHistorico from "@/components/PassageiroHistorico";
 import PaymentStatsCard from "@/components/PaymentStatsCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,7 +15,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, CreditCard, DollarSign, Filter } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 interface Passageiro {
   id: string;
@@ -65,7 +65,6 @@ interface DashboardStats {
 }
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     totalPrevisto: 0,
     totalRecebido: 0,
@@ -93,6 +92,9 @@ const Dashboard = () => {
   const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
     null
   );
+  const [historicoOpen, setHistoricoOpen] = useState(false);
+  const [selectedPassageiroHistorico, setSelectedPassageiroHistorico] =
+    useState<{ id: string; nome: string } | null>(null);
 
   const meses = [
     "Janeiro",
@@ -249,8 +251,9 @@ const Dashboard = () => {
     setPaymentDialogOpen(false);
   };
 
-  const handleViewHistory = (passageiroId: string) => {
-    navigate(`/passageiros?historico=${passageiroId}`);
+  const handleViewHistory = (passageiroId: string, passageiroNome: string) => {
+    setSelectedPassageiroHistorico({ id: passageiroId, nome: passageiroNome });
+    setHistoricoOpen(true);
   };
 
   useEffect(() => {
@@ -499,6 +502,16 @@ const Dashboard = () => {
           passageiroNome={selectedCobranca.passageiros.nome}
           valorOriginal={Number(selectedCobranca.valor)}
           onPaymentRecorded={handlePaymentRecorded}
+        />
+      )}
+
+      {/* Histórico do Passageiro Dialog */}
+      {selectedPassageiroHistorico && (
+        <PassageiroHistorico
+          passageiroId={selectedPassageiroHistorico.id}
+          passageiroNome={selectedPassageiroHistorico.nome}
+          isOpen={historicoOpen}
+          onClose={() => setHistoricoOpen(false)}
         />
       )}
     </div>
