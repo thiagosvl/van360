@@ -257,9 +257,7 @@ export default function Passageiros() {
       referencia: passageiro.referencia || "",
       nome_responsavel: passageiro.nome_responsavel,
       telefone_responsavel: phoneMask(passageiro.telefone_responsavel),
-      valor_mensalidade: (passageiro.valor_mensalidade * 100)
-        .toString()
-        .replace(".", ","),
+      valor_mensalidade: moneyMask((passageiro.valor_mensalidade * 100).toString()),
       dia_vencimento: passageiro.dia_vencimento.toString(),
       escola_id: passageiro.escola_id || "",
     });
