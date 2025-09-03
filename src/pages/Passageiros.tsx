@@ -256,7 +256,7 @@ export default function Passageiros() {
       cep: passageiro.cep || "",
       referencia: passageiro.referencia || "",
       nome_responsavel: passageiro.nome_responsavel,
-      telefone_responsavel: passageiro.telefone_responsavel,
+      telefone_responsavel: phoneMask(passageiro.telefone_responsavel),
       valor_mensalidade: (passageiro.valor_mensalidade * 100)
         .toString()
         .replace(".", ","),
