@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, CreditCard, DollarSign, Filter } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Passageiro {
   id: string;
@@ -64,6 +65,7 @@ interface DashboardStats {
 }
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     totalPrevisto: 0,
     totalRecebido: 0,
@@ -247,6 +249,10 @@ const Dashboard = () => {
     setPaymentDialogOpen(false);
   };
 
+  const handleViewHistory = (passageiroId: string) => {
+    navigate(`/passageiros?historico=${passageiroId}`);
+  };
+
   useEffect(() => {
     fetchStats();
   }, [mesFilter, anoFilter]);
@@ -324,6 +330,7 @@ const Dashboard = () => {
             selectedYear={anoFilter}
             onReenviarCobranca={reenviarCobranca}
             onPayment={openPaymentDialog}
+            onViewHistory={handleViewHistory}
           />
 
           {/* Stats Cards */}

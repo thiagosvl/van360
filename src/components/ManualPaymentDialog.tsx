@@ -17,7 +17,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ManualPaymentDialogProps {
   isOpen: boolean;
@@ -36,18 +36,27 @@ export default function ManualPaymentDialog({
   valorOriginal,
   onPaymentRecorded,
 }: ManualPaymentDialogProps) {
-  const [valorPago, setValorPago] = useState(
-    valorOriginal.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    })
-  );
+  const [valorPago, setValorPago] = useState("");
   const [dataPagamento, setDataPagamento] = useState(
     new Date().toISOString().split("T")[0]
   );
   const [tipoPagamento, setTipoPagamento] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  // Reset form values when dialog opens with new data
+  useEffect(() => {
+    if (isOpen) {
+      setValorPago(
+        valorOriginal.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        })
+      );
+      setDataPagamento(new Date().toISOString().split("T")[0]);
+      setTipoPagamento("");
+    }
+  }, [isOpen, valorOriginal]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

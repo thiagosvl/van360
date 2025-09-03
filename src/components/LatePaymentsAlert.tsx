@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, CheckCircle, DollarSign, Send } from "lucide-react";
+import { AlertTriangle, CheckCircle, DollarSign, Send, CreditCard } from "lucide-react";
 import { useState } from "react";
 import ConfirmationDialog from "./ConfirmationDialog";
 
@@ -33,6 +33,7 @@ interface LatePaymentsAlertProps {
   selectedYear: number;
   onReenviarCobranca: (cobrancaId: string, nomePassageiro: string) => void;
   onPayment: (cobranca: Cobranca) => void;
+  onViewHistory: (passageiroId: string) => void;
 }
 
 const LatePaymentsAlert = ({
@@ -42,6 +43,7 @@ const LatePaymentsAlert = ({
   selectedYear,
   onReenviarCobranca,
   onPayment,
+  onViewHistory,
 }: LatePaymentsAlertProps) => {
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -56,6 +58,16 @@ const LatePaymentsAlert = ({
   const handleConfirmReenvio = () => {
     onReenviarCobranca(confirmDialog.cobrancaId, confirmDialog.nomePassageiro);
     setConfirmDialog({ open: false, cobrancaId: "", nomePassageiro: "" });
+  };
+
+  const getStatusText = (dataVencimento: string) => {
+    const vencimento = new Date(dataVencimento);
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const diffTime = hoje.getTime() - vencimento.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return `${diffDays} dia${diffDays > 1 ? "s" : ""}`;
   };
 
   if (loading) {
@@ -141,7 +153,10 @@ const LatePaymentsAlert = ({
                     Venc:{" "}
                     {new Date(cobranca.data_vencimento).toLocaleDateString(
                       "pt-BR"
-                    )}
+                    )}{" "}
+                    <span className="text-red-600 font-medium">
+                      (Atrasou há {getStatusText(cobranca.data_vencimento)})
+                    </span>
                   </div>
                   <div className="text-sm font-medium text-red-600">
                     {Number(cobranca.valor).toLocaleString("pt-BR", {
@@ -163,7 +178,16 @@ const LatePaymentsAlert = ({
                     className="gap-1 w-full sm:w-auto"
                   >
                     <Send className="w-3 h-3" />
-                    Reenviar Cobrança
+                    Reenviar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onViewHistory(cobranca.passageiro_id)}
+                    className="gap-1 w-full sm:w-auto"
+                  >
+                    <CreditCard className="w-3 h-3" />
+                    Carteirinha
                   </Button>
                   <Button
                     size="sm"
@@ -171,7 +195,7 @@ const LatePaymentsAlert = ({
                     className="gap-1 w-full sm:w-auto"
                   >
                     <DollarSign className="w-3 h-3" />
-                    Registrar Pagamento
+                    Pagar
                   </Button>
                 </div>
               </div>
