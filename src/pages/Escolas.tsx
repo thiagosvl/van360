@@ -1,6 +1,6 @@
 import Navigation from "@/components/Navigation";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cepMask } from "@/utils/masks";
@@ -49,6 +57,8 @@ export default function Escolas() {
   });
   const [loading, setLoading] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
+  const [schoolToDelete, setSchoolToDelete] = useState<Escola | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -177,15 +187,20 @@ export default function Escolas() {
     }
   };
 
-  const handleDelete = async (escola: Escola) => {
-    if (!confirm("Deseja excluir permanentemente esta escola?")) return;
+  const handleDeleteClick = (escola: Escola) => {
+    setSchoolToDelete(escola);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!schoolToDelete) return;
 
     try {
       // Verificar se há passageiros vinculados
       const { data: passageiros } = await supabase
         .from("passageiros")
         .select("id")
-        .eq("escola_id", escola.id);
+        .eq("escola_id", schoolToDelete.id);
 
       if (passageiros && passageiros.length > 0) {
         toast({
@@ -194,13 +209,15 @@ export default function Escolas() {
             "Não é possível excluir escola com passageiros vinculados",
           variant: "destructive",
         });
+        setIsDeleteDialogOpen(false);
+        setSchoolToDelete(null);
         return;
       }
 
       const { error } = await supabase
         .from("escolas")
         .delete()
-        .eq("id", escola.id);
+        .eq("id", schoolToDelete.id);
 
       if (error) throw error;
 
@@ -209,6 +226,8 @@ export default function Escolas() {
         title: "Sucesso",
         description: "Escola excluída permanentemente",
       });
+      setIsDeleteDialogOpen(false);
+      setSchoolToDelete(null);
     } catch (error) {
       console.error("Erro ao excluir escola:", error);
       toast({
@@ -216,6 +235,8 @@ export default function Escolas() {
         description: "Erro ao excluir escola",
         variant: "destructive",
       });
+      setIsDeleteDialogOpen(false);
+      setSchoolToDelete(null);
     }
   };
 
@@ -375,91 +396,78 @@ export default function Escolas() {
           </div>
 
           {loadingPage ? (
-            <div className="grid gap-4">
-              {[1, 2, 3].map((i) => (
-                <Card key={i}>
-                  <CardHeader>
-                    <CardTitle className="flex justify-between items-center">
-                      <Skeleton className="h-6 w-48" />
-                      <div className="flex gap-2">
-                        <Skeleton className="h-8 w-8" />
-                        <Skeleton className="h-8 w-8" />
-                      </div>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-4 w-40" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="border rounded-md">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Endereço</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {[1, 2, 3].map((i) => (
+                    <TableRow key={i}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-32" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-48" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-16" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-2 justify-end">
+                          <Skeleton className="h-8 w-8" />
+                          <Skeleton className="h-8 w-8" />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           ) : (
             <>
-              <div className="grid gap-4">
-                {escolas.map((escola) => (
-                  <Card
-                    key={escola.id}
-                    className={escola.ativo ? "" : "opacity-50"}
-                  >
-                    <CardHeader>
-                      <CardTitle className="flex justify-between items-center">
-                        <span className="text-lg">{escola.nome}</span>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEdit(escola)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={escola.ativo ? "outline" : "default"}
-                            onClick={() => handleToggleAtivo(escola)}
-                          >
-                            {escola.ativo ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
+              <div className="border rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Endereço</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {escolas.map((escola) => (
+                      <TableRow
+                        key={escola.id}
+                        className={escola.ativo ? "" : "opacity-50"}
+                      >
+                        <TableCell className="font-medium">
+                          {escola.nome}
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm space-y-1">
+                            {escola.rua && (
+                              <div>
+                                {escola.rua}
+                                {escola.numero && `, ${escola.numero}`}
+                              </div>
                             )}
-                          </Button>
-                          {!escola.ativo && (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDelete(escola)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-sm text-muted-foreground space-y-1">
-                        {escola.rua && (
-                          <div>
-                            {escola.rua}
-                            {escola.numero && `, ${escola.numero}`}
+                            {escola.bairro && <div>{escola.bairro}</div>}
+                            {escola.cidade && escola.estado && (
+                              <div>
+                                {escola.cidade} - {escola.estado}
+                              </div>
+                            )}
+                            {escola.cep && <div>CEP: {escola.cep}</div>}
                           </div>
-                        )}
-                        {escola.bairro && <div>{escola.bairro}</div>}
-                        {escola.cidade && escola.estado && (
-                          <div>
-                            {escola.cidade} - {escola.estado}
-                          </div>
-                        )}
-                        {escola.cep && <div>CEP: {escola.cep}</div>}
-                        {escola.referencia && (
-                          <div className="mt-2">
-                            <strong>Referência:</strong> {escola.referencia}
-                          </div>
-                        )}
-                        <div className="mt-2">
+                        </TableCell>
+                        <TableCell>
                           <span
                             className={`px-2 py-1 rounded text-xs ${
                               escola.ativo
@@ -469,11 +477,42 @@ export default function Escolas() {
                           >
                             {escola.ativo ? "Ativa" : "Inativa"}
                           </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEdit(escola)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant={escola.ativo ? "outline" : "default"}
+                              onClick={() => handleToggleAtivo(escola)}
+                            >
+                              {escola.ativo ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </Button>
+                            {!escola.ativo && (
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteClick(escola)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
 
               {escolas.length === 0 && (
@@ -483,6 +522,17 @@ export default function Escolas() {
               )}
             </>
           )}
+
+          <ConfirmationDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            title="Confirmar exclusão"
+            description="Deseja excluir permanentemente esta escola? Esta ação não pode ser desfeita."
+            onConfirm={handleDelete}
+            confirmText="Excluir"
+            cancelText="Cancelar"
+            variant="destructive"
+          />
         </div>
       </div>
     </div>
