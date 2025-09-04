@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cepMask } from "@/utils/masks";
-import { Eye, EyeOff, Pencil, Plus, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Pencil, Plus, Trash2, Building2, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface Escola {
@@ -278,112 +278,127 @@ export default function Escolas() {
                   </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">DADOS DA ESCOLA</h3>
-                    <div>
-                      <Label htmlFor="nome">Nome da Escola *</Label>
-                      <Input
-                        id="nome"
-                        required
-                        value={formData.nome}
-                        onChange={(e) =>
-                          handleInputChange("nome", e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
+                  {/* Dados da Escola Section */}
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Building2 className="w-5 h-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Dados da Escola</h3>
+                      </div>
+                      <div>
+                        <Label htmlFor="nome">Nome da Escola *</Label>
+                        <Input
+                          id="nome"
+                          required
+                          value={formData.nome}
+                          onChange={(e) =>
+                            handleInputChange("nome", e.target.value)
+                          }
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">ENDEREÇO</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="rua">Rua</Label>
-                        <Input
-                          id="rua"
-                          value={formData.rua}
-                          onChange={(e) =>
-                            handleInputChange("rua", e.target.value)
-                          }
-                        />
+                  {/* Endereço Section */}
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <MapPin className="w-5 h-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Endereço</h3>
                       </div>
-                      <div>
-                        <Label htmlFor="numero">Número</Label>
-                        <Input
-                          id="numero"
-                          value={formData.numero}
-                          onChange={(e) =>
-                            handleInputChange("numero", e.target.value)
-                          }
-                        />
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="rua">Rua</Label>
+                            <Input
+                              id="rua"
+                              value={formData.rua}
+                              onChange={(e) =>
+                                handleInputChange("rua", e.target.value)
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="numero">Número</Label>
+                            <Input
+                              id="numero"
+                              value={formData.numero}
+                              onChange={(e) =>
+                                handleInputChange("numero", e.target.value)
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="bairro">Bairro</Label>
+                            <Input
+                              id="bairro"
+                              value={formData.bairro}
+                              onChange={(e) =>
+                                handleInputChange("bairro", e.target.value)
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="cidade">Cidade</Label>
+                            <Input
+                              id="cidade"
+                              value={formData.cidade}
+                              onChange={(e) =>
+                                handleInputChange("cidade", e.target.value)
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="estado">Estado</Label>
+                            <Input
+                              id="estado"
+                              value={formData.estado}
+                              onChange={(e) =>
+                                handleInputChange("estado", e.target.value)
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="cep">CEP</Label>
+                            <Input
+                              id="cep"
+                              value={formData.cep}
+                              onChange={(e) =>
+                                handleInputChange("cep", e.target.value)
+                              }
+                              maxLength={9}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="referencia">Referência (opcional)</Label>
+                          <Textarea
+                            id="referencia"
+                            value={formData.referencia}
+                            onChange={(e) =>
+                              handleInputChange("referencia", e.target.value)
+                            }
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <Label htmlFor="bairro">Bairro</Label>
-                        <Input
-                          id="bairro"
-                          value={formData.bairro}
-                          onChange={(e) =>
-                            handleInputChange("bairro", e.target.value)
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="cidade">Cidade</Label>
-                        <Input
-                          id="cidade"
-                          value={formData.cidade}
-                          onChange={(e) =>
-                            handleInputChange("cidade", e.target.value)
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="estado">Estado</Label>
-                        <Input
-                          id="estado"
-                          value={formData.estado}
-                          onChange={(e) =>
-                            handleInputChange("estado", e.target.value)
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="cep">CEP</Label>
-                        <Input
-                          id="cep"
-                          value={formData.cep}
-                          onChange={(e) =>
-                            handleInputChange("cep", e.target.value)
-                          }
-                          maxLength={9}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="referencia">Referência (opcional)</Label>
-                      <Textarea
-                        id="referencia"
-                        value={formData.referencia}
-                        onChange={(e) =>
-                          handleInputChange("referencia", e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
 
-                  <div className="flex gap-2 pt-4">
+                  <div className="flex gap-4 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsDialogOpen(false)}
+                      className="flex-1"
+                    >
+                      Cancelar
+                    </Button>
                     <Button type="submit" disabled={loading} className="flex-1">
                       {loading
                         ? "Salvando..."
                         : editingEscola
                         ? "Atualizar"
                         : "Cadastrar"}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsDialogOpen(false)}
-                    >
-                      Cancelar
                     </Button>
                   </div>
                 </form>
