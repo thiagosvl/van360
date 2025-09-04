@@ -1,6 +1,7 @@
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import Navigation from "@/components/Navigation";
+import PassageiroHistorico from "@/components/PassageiroHistorico";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { DollarSign, Filter, Send, Undo2 } from "lucide-react";
+import { CreditCard, DollarSign, Filter, Send, Undo2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface Passageiro {
@@ -46,6 +47,9 @@ const Cobrancas = () => {
   const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
     null
   );
+  const [historicoOpen, setHistoricoOpen] = useState(false);
+  const [selectedPassageiroHistorico, setSelectedPassageiroHistorico] =
+    useState<{ id: string; nome: string } | null>(null);
   const { toast } = useToast();
 
   const meses = [
@@ -206,6 +210,25 @@ const Cobrancas = () => {
 
   const handlePaymentRecorded = () => {
     fetchCobrancas();
+  };
+
+  const handleViewHistory = (passageiroId: string, passageiroNome: string) => {
+    setSelectedPassageiroHistorico({ id: passageiroId, nome: passageiroNome });
+    setHistoricoOpen(true);
+  };
+
+  const formatPaymentType = (tipo: string | undefined) => {
+    if (!tipo) return "-";
+    
+    const typeMap: { [key: string]: string } = {
+      "dinheiro": "Dinheiro",
+      "cartao-credito": "Cartão de Crédito",
+      "cartao-debito": "Cartão de Débito",
+      "transferencia": "Transferência",
+      "PIX": "PIX",
+    };
+    
+    return typeMap[tipo] || tipo;
   };
 
   useEffect(() => {
@@ -370,6 +393,20 @@ const Cobrancas = () => {
                             <div className="flex gap-2 justify-center">
                               <Button
                                 size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  handleViewHistory(
+                                    cobranca.passageiro_id,
+                                    cobranca.passageiros.nome
+                                  )
+                                }
+                                className="gap-1"
+                              >
+                                <CreditCard className="w-3 h-3" />
+                                Carteirinha
+                              </Button>
+                              <Button
+                                size="sm"
                                 onClick={() =>
                                   handleReenviarClick(
                                     cobranca.id,
@@ -436,7 +473,7 @@ const Cobrancas = () => {
                           Data Pagamento
                         </th>
                         <th className="text-left p-3 text-sm font-medium">
-                          Forma
+                          Tipo
                         </th>
                         <th className="text-right p-3 text-sm font-medium">
                           Valor
@@ -473,7 +510,7 @@ const Cobrancas = () => {
                           </td>
                           <td className="p-3">
                             <span className="text-sm">
-                              {cobranca.tipo_pagamento || "-"}
+                              {formatPaymentType(cobranca.tipo_pagamento)}
                             </span>
                           </td>
                           <td className="p-3 text-right">
@@ -538,6 +575,15 @@ const Cobrancas = () => {
         variant="destructive"
         confirmText="Reverter"
       />
+
+      {selectedPassageiroHistorico && (
+        <PassageiroHistorico
+          passageiroId={selectedPassageiroHistorico.id}
+          passageiroNome={selectedPassageiroHistorico.nome}
+          isOpen={historicoOpen}
+          onClose={() => setHistoricoOpen(false)}
+        />
+      )}
     </div>
   );
 };
