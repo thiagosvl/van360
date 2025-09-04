@@ -9,6 +9,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -22,29 +30,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cepMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   DollarSign,
   Filter,
-  GraduationCap,
   History,
   MapPin,
   Pencil,
   Plus,
   Search,
-  User,
+  User
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 
 interface Passageiro {
   id: string;
@@ -74,8 +73,8 @@ interface Escola {
 }
 
 const passageiroSchema = z.object({
-  escola_id: z.string().min(1, "Escola é obrigatória"),
-  nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  escola_id: z.string().min(1, "Campo obrigatório"),
+  nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
   rua: z.string().optional(),
   numero: z.string().optional(),
   bairro: z.string().optional(),
@@ -83,15 +82,16 @@ const passageiroSchema = z.object({
   estado: z.string().optional(),
   cep: z.string().optional(),
   referencia: z.string().optional(),
-  nome_responsavel: z.string().min(2, "Nome do responsável deve ter pelo menos 2 caracteres"),
-  telefone_responsavel: z.string()
-    .min(1, "Telefone é obrigatório")
+  nome_responsavel: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+  telefone_responsavel: z
+    .string()
+    .min(1, "Campo obrigatório")
     .refine((val) => {
-      const cleaned = val.replace(/\D/g, '');
+      const cleaned = val.replace(/\D/g, "");
       return cleaned.length === 11;
-    }, "Telefone deve estar no formato (00) 00000-0000"),
-  valor_mensalidade: z.string().min(1, "Valor da mensalidade é obrigatório"),
-  dia_vencimento: z.string().min(1, "Dia do vencimento é obrigatório"),
+    }, "O formato aceito é (00) 00000-0000"),
+  valor_mensalidade: z.string().min(1, "Campo obrigatório"),
+  dia_vencimento: z.string().min(1, "Campo obrigatório"),
 });
 
 type PassageiroFormData = z.infer<typeof passageiroSchema>;
@@ -359,91 +359,167 @@ export default function Passageiros() {
                   </DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                  <form
+                    onSubmit={form.handleSubmit(handleSubmit)}
+                    className="space-y-6"
+                  >
                     <Card>
                       <CardContent className="p-6">
-                        {/* Escola Section */}
-                        <div className="flex items-center gap-2 mb-4">
-                          <GraduationCap className="w-5 h-5 text-primary" />
-                          <h3 className="text-lg font-semibold">Escola</h3>
-                        </div>
-                        <FormField
-                          control={form.control}
-                          name="escola_id"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Escola *</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Selecione uma escola" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {escolas.map((escola) => (
-                                    <SelectItem key={escola.id} value={escola.id}>
-                                      {escola.nome}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
-
                         {/* Passageiro Section */}
                         <div className="flex items-center gap-2 mb-4">
                           <User className="w-5 h-5 text-primary" />
                           <h3 className="text-lg font-semibold">
-                            Informações do Passageiro
+                            Informações
                           </h3>
                         </div>
                         <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="nome"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Nome do Passageiro *</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="escola_id"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Escola *</FormLabel>
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Selecione uma escola" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {escolas.map((escola) => (
+                                        <SelectItem
+                                          key={escola.id}
+                                          value={escola.id}
+                                        >
+                                          {escola.nome}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="nome_responsavel"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Nome do Responsável *</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="telefone_responsavel"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>
+                                    Telefone do Responsável *
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="(00) 00000-0000"
+                                      maxLength={15}
+                                      onChange={(e) => {
+                                        const maskedValue = phoneMask(
+                                          e.target.value
+                                        );
+                                        field.onChange(maskedValue);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+
+                        <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
+
+                        {/* Mensalidade Section */}
+                        <div className="flex items-center gap-2 mb-4">
+                          <DollarSign className="w-5 h-5 text-primary" />
+                          <h3 className="text-lg font-semibold">Mensalidade</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
-                            name="nome"
+                            name="valor_mensalidade"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Nome do Passageiro *</FormLabel>
+                                <FormLabel>Valor *</FormLabel>
                                 <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="nome_responsavel"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Nome do Responsável *</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="telefone_responsavel"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Telefone do Responsável *</FormLabel>
-                                <FormControl>
-                                  <Input 
+                                  <Input
                                     {...field}
-                                    maxLength={15}
                                     onChange={(e) => {
-                                      const maskedValue = phoneMask(e.target.value);
+                                      const maskedValue = moneyMask(
+                                        e.target.value
+                                      );
                                       field.onChange(maskedValue);
                                     }}
                                   />
                                 </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="dia_vencimento"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Dia do Vencimento *</FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Selecione o dia" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {Array.from(
+                                      { length: 31 },
+                                      (_, i) => i + 1
+                                    ).map((day) => (
+                                      <SelectItem
+                                        key={day}
+                                        value={day.toString()}
+                                      >
+                                        Dia {day}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -517,7 +593,10 @@ export default function Passageiros() {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel>Estado</FormLabel>
-                                  <Select onValueChange={field.onChange} value={field.value}>
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                  >
                                     <FormControl>
                                       <SelectTrigger>
                                         <SelectValue placeholder="Selecione o estado" />
@@ -525,32 +604,70 @@ export default function Passageiros() {
                                     </FormControl>
                                     <SelectContent>
                                       <SelectItem value="AC">Acre</SelectItem>
-                                      <SelectItem value="AL">Alagoas</SelectItem>
+                                      <SelectItem value="AL">
+                                        Alagoas
+                                      </SelectItem>
                                       <SelectItem value="AP">Amapá</SelectItem>
-                                      <SelectItem value="AM">Amazonas</SelectItem>
+                                      <SelectItem value="AM">
+                                        Amazonas
+                                      </SelectItem>
                                       <SelectItem value="BA">Bahia</SelectItem>
                                       <SelectItem value="CE">Ceará</SelectItem>
-                                      <SelectItem value="DF">Distrito Federal</SelectItem>
-                                      <SelectItem value="ES">Espírito Santo</SelectItem>
+                                      <SelectItem value="DF">
+                                        Distrito Federal
+                                      </SelectItem>
+                                      <SelectItem value="ES">
+                                        Espírito Santo
+                                      </SelectItem>
                                       <SelectItem value="GO">Goiás</SelectItem>
-                                      <SelectItem value="MA">Maranhão</SelectItem>
-                                      <SelectItem value="MT">Mato Grosso</SelectItem>
-                                      <SelectItem value="MS">Mato Grosso do Sul</SelectItem>
-                                      <SelectItem value="MG">Minas Gerais</SelectItem>
+                                      <SelectItem value="MA">
+                                        Maranhão
+                                      </SelectItem>
+                                      <SelectItem value="MT">
+                                        Mato Grosso
+                                      </SelectItem>
+                                      <SelectItem value="MS">
+                                        Mato Grosso do Sul
+                                      </SelectItem>
+                                      <SelectItem value="MG">
+                                        Minas Gerais
+                                      </SelectItem>
                                       <SelectItem value="PA">Pará</SelectItem>
-                                      <SelectItem value="PB">Paraíba</SelectItem>
+                                      <SelectItem value="PB">
+                                        Paraíba
+                                      </SelectItem>
                                       <SelectItem value="PR">Paraná</SelectItem>
-                                      <SelectItem value="PE">Pernambuco</SelectItem>
+                                      <SelectItem value="PE">
+                                        Pernambuco
+                                      </SelectItem>
                                       <SelectItem value="PI">Piauí</SelectItem>
-                                      <SelectItem value="RJ">Rio de Janeiro</SelectItem>
-                                      <SelectItem value="RN">Rio Grande do Norte</SelectItem>
-                                      <SelectItem value="RS">Rio Grande do Sul</SelectItem>
-                                      <SelectItem value="RO">Rondônia</SelectItem>
-                                      <SelectItem value="RR">Roraima</SelectItem>
-                                      <SelectItem value="SC">Santa Catarina</SelectItem>
-                                      <SelectItem value="SP">São Paulo</SelectItem>
-                                      <SelectItem value="SE">Sergipe</SelectItem>
-                                      <SelectItem value="TO">Tocantins</SelectItem>
+                                      <SelectItem value="RJ">
+                                        Rio de Janeiro
+                                      </SelectItem>
+                                      <SelectItem value="RN">
+                                        Rio Grande do Norte
+                                      </SelectItem>
+                                      <SelectItem value="RS">
+                                        Rio Grande do Sul
+                                      </SelectItem>
+                                      <SelectItem value="RO">
+                                        Rondônia
+                                      </SelectItem>
+                                      <SelectItem value="RR">
+                                        Roraima
+                                      </SelectItem>
+                                      <SelectItem value="SC">
+                                        Santa Catarina
+                                      </SelectItem>
+                                      <SelectItem value="SP">
+                                        São Paulo
+                                      </SelectItem>
+                                      <SelectItem value="SE">
+                                        Sergipe
+                                      </SelectItem>
+                                      <SelectItem value="TO">
+                                        Tocantins
+                                      </SelectItem>
                                     </SelectContent>
                                   </Select>
                                   <FormMessage />
@@ -564,11 +681,13 @@ export default function Passageiros() {
                                 <FormItem>
                                   <FormLabel>CEP</FormLabel>
                                   <FormControl>
-                                    <Input 
+                                    <Input
                                       {...field}
                                       maxLength={9}
                                       onChange={(e) => {
-                                        const maskedValue = cepMask(e.target.value);
+                                        const maskedValue = cepMask(
+                                          e.target.value
+                                        );
                                         field.onChange(maskedValue);
                                       }}
                                     />
@@ -583,63 +702,10 @@ export default function Passageiros() {
                             name="referencia"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Referência (opcional)</FormLabel>
+                                <FormLabel>Referência</FormLabel>
                                 <FormControl>
                                   <Textarea {...field} />
                                 </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-
-                        <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
-
-                        {/* Mensalidade Section */}
-                        <div className="flex items-center gap-2 mb-4">
-                          <DollarSign className="w-5 h-5 text-primary" />
-                          <h3 className="text-lg font-semibold">Mensalidade</h3>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="valor_mensalidade"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Valor da Mensalidade *</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    {...field}
-                                    onChange={(e) => {
-                                      const maskedValue = moneyMask(e.target.value);
-                                      field.onChange(maskedValue);
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="dia_vencimento"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Dia do Vencimento *</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Selecione o dia" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
-                                      <SelectItem key={day} value={day.toString()}>
-                                        Dia {day}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
                                 <FormMessage />
                               </FormItem>
                             )}
