@@ -178,14 +178,17 @@ const Cobrancas = () => {
   const getStatusText = (status: string, dataVencimento: string) => {
     if (status === "pago") return "Pago";
 
-    const vencimento = new Date(dataVencimento);
+    const vencimento = new Date(dataVencimento + "T00:00:00");
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
+    const diffTime = hoje.getTime() - vencimento.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
     if (vencimento < hoje) {
-      const diffTime = hoje.getTime() - vencimento.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return `Atrasou há ${diffDays} dia${diffDays > 1 ? "s" : ""}`;
+      return `Venceu há ${diffDays} dia${diffDays > 1 ? "s" : ""}`;
+    } else if (diffDays == 0) {
+      return "Vence HOJE";
     }
 
     return "A vencer";
@@ -194,7 +197,7 @@ const Cobrancas = () => {
   const getStatusColor = (status: string, dataVencimento: string) => {
     if (status === "pago") return "bg-green-100 text-green-800";
 
-    const vencimento = new Date(dataVencimento);
+    const vencimento = new Date(dataVencimento + "T00:00:00");
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
@@ -361,7 +364,7 @@ const Cobrancas = () => {
                           <td className="p-3">
                             <span className="text-sm">
                               {new Date(
-                                cobranca.data_vencimento
+                                cobranca.data_vencimento + "T00:00:00"
                               ).toLocaleDateString("pt-BR")}
                             </span>
                           </td>
@@ -503,7 +506,7 @@ const Cobrancas = () => {
                             <span className="text-sm">
                               {cobranca.data_pagamento
                                 ? new Date(
-                                    cobranca.data_pagamento
+                                    cobranca.data_pagamento + "T00:00:00"
                                   ).toLocaleDateString("pt-BR")
                                 : "-"}
                             </span>

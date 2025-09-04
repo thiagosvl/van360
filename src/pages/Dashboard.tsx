@@ -326,6 +326,7 @@ const Dashboard = () => {
           <LatePaymentsAlert
             latePayments={latePayments}
             loading={loading}
+            totalCobrancas={stats.totalCobrancas}
             selectedMonth={mesFilter}
             selectedYear={anoFilter}
             onReenviarCobranca={reenviarCobranca}

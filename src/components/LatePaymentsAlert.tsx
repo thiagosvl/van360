@@ -35,6 +35,7 @@ interface Cobranca {
 interface LatePaymentsAlertProps {
   latePayments: Cobranca[];
   loading: boolean;
+  totalCobrancas: number;
   selectedMonth: number;
   selectedYear: number;
   onReenviarCobranca: (cobrancaId: string, nomePassageiro: string) => void;
@@ -45,6 +46,7 @@ interface LatePaymentsAlertProps {
 const LatePaymentsAlert = ({
   latePayments,
   loading,
+  totalCobrancas,
   selectedMonth,
   selectedYear,
   onReenviarCobranca,
@@ -67,16 +69,30 @@ const LatePaymentsAlert = ({
   };
 
   const getStatusText = (dataVencimento: string) => {
-    const vencimento = new Date(dataVencimento);
+    const vencimento = new Date(dataVencimento + "T00:00:00");
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    const diffTime = hoje.getTime() - vencimento.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return `${diffDays} dia${diffDays > 1 ? "s" : ""}`;
+    if (vencimento < hoje) {
+      const diffTime = hoje.getTime() - vencimento.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return `Venceu há ${diffDays} dia${diffDays > 1 ? "s" : ""}`;
+    }
+
+    return "Vence HOJE";
   };
 
-  if (loading) {
+  const getStatusColor = (dataVencimento: string) => {
+    const vencimento = new Date(dataVencimento + "T00:00:00");
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    return vencimento < hoje
+      ? "bg-red-100 text-red-800"
+      : "bg-orange-100 text-orange-800";
+  };
+
+  if (loading && totalCobrancas > 0) {
     return (
       <Card className="mb-6 border-orange-200 bg-orange-50">
         <CardHeader>
@@ -106,6 +122,10 @@ const LatePaymentsAlert = ({
         </CardContent>
       </Card>
     );
+  }
+
+  if (totalCobrancas === 0) {
+    return null;
   }
 
   if (latePayments.length === 0) {
@@ -160,11 +180,15 @@ const LatePaymentsAlert = ({
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Venc.:{" "}
-                    {new Date(cobranca.data_vencimento).toLocaleDateString(
-                      "pt-BR"
-                    )}{" "}
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                      Atrasou há {getStatusText(cobranca.data_vencimento)}
+                    {new Date(
+                      cobranca.data_vencimento + "T00:00:00"
+                    ).toLocaleDateString("pt-BR")}{" "}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                        cobranca.data_vencimento
+                      )}`}
+                    >
+                      {getStatusText(cobranca.data_vencimento)}
                     </span>
                   </div>
                   <div className="text-sm font-medium text-red-600">

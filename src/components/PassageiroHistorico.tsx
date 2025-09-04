@@ -76,7 +76,7 @@ export default function PassageiroHistorico({
   const getStatusColor = (status: string, dataVencimento: string) => {
     if (status === "pago") return "bg-green-100 text-green-800";
 
-    const vencimento = new Date(dataVencimento);
+    const vencimento = new Date(dataVencimento + "T00:00:00");
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
@@ -88,14 +88,17 @@ export default function PassageiroHistorico({
   const getStatusText = (status: string, dataVencimento: string) => {
     if (status === "pago") return "Pago";
 
-    const vencimento = new Date(dataVencimento);
+    const vencimento = new Date(dataVencimento + "T00:00:00");
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
+    const diffTime = hoje.getTime() - vencimento.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
     if (vencimento < hoje) {
-      const diffTime = hoje.getTime() - vencimento.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return `Atrasou há ${diffDays} dia${diffDays > 1 ? "s" : ""}`;
+      return `Venceu há ${diffDays} dia${diffDays > 1 ? "s" : ""}`;
+    } else if (diffDays == 0) {
+      return "Vence HOJE";
     }
 
     return "A vencer";
