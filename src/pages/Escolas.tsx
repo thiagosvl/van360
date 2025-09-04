@@ -15,7 +15,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cepMask } from "@/utils/masks";
-import { Building2, Eye, EyeOff, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  Building2,
+  Eye,
+  EyeOff,
+  MapPin,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface Escola {
@@ -271,7 +279,10 @@ export default function Escolas() {
                   Nova Escola
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogContent
+                className="max-w-2xl max-h-[90vh] overflow-y-auto"
+                onOpenAutoFocus={(e) => e.preventDefault()}
+              >
                 <DialogHeader>
                   <DialogTitle>
                     {editingEscola ? "Editar Escola" : "Nova Escola"}
@@ -283,7 +294,9 @@ export default function Escolas() {
                     <CardContent className="p-6">
                       <div className="flex items-center gap-2 mb-4">
                         <Building2 className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-semibold">Dados da Escola</h3>
+                        <h3 className="text-lg font-semibold">
+                          Dados da Escola
+                        </h3>
                       </div>
                       <div>
                         <Label htmlFor="nome">Nome da Escola *</Label>
@@ -296,12 +309,10 @@ export default function Escolas() {
                           }
                         />
                       </div>
-                    </CardContent>
-                  </Card>
 
-                  {/* Endereço Section */}
-                  <Card>
-                    <CardContent className="p-6">
+                      <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
+
+                      {/* Endereço Section */}
                       <div className="flex items-center gap-2 mb-4">
                         <MapPin className="w-5 h-5 text-primary" />
                         <h3 className="text-lg font-semibold">Endereço</h3>
@@ -371,7 +382,9 @@ export default function Escolas() {
                           </div>
                         </div>
                         <div>
-                          <Label htmlFor="referencia">Referência (opcional)</Label>
+                          <Label htmlFor="referencia">
+                            Referência (opcional)
+                          </Label>
                           <Textarea
                             id="referencia"
                             value={formData.referencia}
@@ -381,26 +394,31 @@ export default function Escolas() {
                           />
                         </div>
                       </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-4 mt-8 pt-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsDialogOpen(false)}
+                          className="flex-1"
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={loading}
+                          className="flex-1"
+                        >
+                          {loading
+                            ? "Salvando..."
+                            : editingEscola
+                            ? "Atualizar"
+                            : "Cadastrar"}
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
-
-                  <div className="flex gap-4 pt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsDialogOpen(false)}
-                      className="flex-1"
-                    >
-                      Cancelar
-                    </Button>
-                    <Button type="submit" disabled={loading} className="flex-1">
-                      {loading
-                        ? "Salvando..."
-                        : editingEscola
-                        ? "Atualizar"
-                        : "Cadastrar"}
-                    </Button>
-                  </div>
                 </form>
               </DialogContent>
             </Dialog>
@@ -411,7 +429,7 @@ export default function Escolas() {
               <CardTitle className="flex items-center gap-2">
                 Lista de Escolas
                 <span className="bg-foreground text-white text-sm px-2 py-0.5 rounded-full">
-                  {escolas.length} escolas
+                  {escolas.length}
                 </span>
               </CardTitle>
             </CardHeader>

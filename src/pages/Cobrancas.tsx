@@ -303,7 +303,7 @@ const Cobrancas = () => {
               <CardTitle className="text-red-600 flex items-center gap-2">
                 Em Aberto - {meses[mesFilter - 1]} {anoFilter}
                 <span className="bg-red-600 text-white text-sm px-2 py-0.5 rounded-full">
-                  {cobrancasAbertas.length} mensalidades
+                  {cobrancasAbertas.length}
                 </span>
               </CardTitle>
             </CardHeader>
@@ -444,7 +444,7 @@ const Cobrancas = () => {
                   Pagas - {meses[mesFilter - 1]} {anoFilter}
                 </span>
                 <span className="bg-green-600 text-white text-sm px-2 py-0.5 rounded-full">
-                  {cobrancasPagas.length} mensalidades
+                  {cobrancasPagas.length}
                 </span>
               </CardTitle>
             </CardHeader>

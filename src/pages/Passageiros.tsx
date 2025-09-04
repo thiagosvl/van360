@@ -321,7 +321,10 @@ export default function Passageiros() {
                   Novo Passageiro
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogContent
+                className="max-w-2xl max-h-[90vh] overflow-y-auto"
+                onOpenAutoFocus={(e) => e.preventDefault()}
+              >
                 <DialogHeader>
                   <DialogTitle>
                     {editingPassageiro
@@ -330,9 +333,9 @@ export default function Passageiros() {
                   </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Escola Section */}
                   <Card>
                     <CardContent className="p-6">
+                  {/* Escola Section */}
                       <div className="flex items-center gap-2 mb-4">
                         <GraduationCap className="w-5 h-5 text-primary" />
                         <h3 className="text-lg font-semibold">Escola</h3>
@@ -357,12 +360,10 @@ export default function Passageiros() {
                           </SelectContent>
                         </Select>
                       </div>
-                    </CardContent>
-                  </Card>
 
-                  {/* Passageiro Section */}
-                  <Card>
-                    <CardContent className="p-6">
+                      <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
+
+                      {/* Passageiro Section */}
                       <div className="flex items-center gap-2 mb-4">
                         <User className="w-5 h-5 text-primary" />
                         <h3 className="text-lg font-semibold">
@@ -415,12 +416,10 @@ export default function Passageiros() {
                           />
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
 
-                  {/* Endereço Section */}
-                  <Card>
-                    <CardContent className="p-6">
+                      <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
+
+                      {/* Endereço Section */}
                       <div className="flex items-center gap-2 mb-4">
                         <MapPin className="w-5 h-5 text-primary" />
                         <h3 className="text-lg font-semibold">Endereço</h3>
@@ -548,12 +547,10 @@ export default function Passageiros() {
                           />
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
 
-                  {/* Mensalidade Section */}
-                  <Card>
-                    <CardContent className="p-6">
+                      <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
+
+                      {/* Mensalidade Section */}
                       <div className="flex items-center gap-2 mb-4">
                         <DollarSign className="w-5 h-5 text-primary" />
                         <h3 className="text-lg font-semibold">Mensalidade</h3>
@@ -604,26 +601,31 @@ export default function Passageiros() {
                           </select>
                         </div>
                       </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-4 mt-8 pt-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsDialogOpen(false)}
+                          className="flex-1"
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={loading}
+                          className="flex-1"
+                        >
+                          {loading
+                            ? "Salvando..."
+                            : editingPassageiro
+                            ? "Atualizar"
+                            : "Cadastrar"}
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
-
-                  <div className="flex gap-4 pt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsDialogOpen(false)}
-                      className="flex-1"
-                    >
-                      Cancelar
-                    </Button>
-                    <Button type="submit" disabled={loading} className="flex-1">
-                      {loading
-                        ? "Salvando..."
-                        : editingPassageiro
-                        ? "Atualizar"
-                        : "Cadastrar"}
-                    </Button>
-                  </div>
                 </form>
               </DialogContent>
             </Dialog>
@@ -691,7 +693,7 @@ export default function Passageiros() {
               <CardTitle className="flex items-center gap-2">
                 Lista de Passageiros
                 <span className="bg-foreground text-white text-sm px-2 py-0.5 rounded-full">
-                  {passageiros.length} passageiros
+                  {passageiros.length}
                 </span>
               </CardTitle>
             </CardHeader>

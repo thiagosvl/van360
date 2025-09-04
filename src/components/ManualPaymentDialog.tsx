@@ -17,7 +17,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface ManualPaymentDialogProps {
   isOpen: boolean;
@@ -119,7 +119,10 @@ export default function ManualPaymentDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent
+        className="max-w-md"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Registrar Pagamento Manual</DialogTitle>
         </DialogHeader>

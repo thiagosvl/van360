@@ -39,7 +39,9 @@ export default function PassageiroHistorico({
   const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
   const [loading, setLoading] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(null);
+  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
+    null
+  );
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     cobrancaId: string;
@@ -72,33 +74,37 @@ export default function PassageiroHistorico({
   };
 
   const getStatusColor = (status: string, dataVencimento: string) => {
-    if (status === 'pago') return 'bg-green-100 text-green-800';
-    
+    if (status === "pago") return "bg-green-100 text-green-800";
+
     const vencimento = new Date(dataVencimento);
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
-    
-    return vencimento < hoje ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800';
+
+    return vencimento < hoje
+      ? "bg-red-100 text-red-800"
+      : "bg-orange-100 text-orange-800";
   };
 
   const getStatusText = (status: string, dataVencimento: string) => {
-    if (status === 'pago') return 'Pago';
-    
+    if (status === "pago") return "Pago";
+
     const vencimento = new Date(dataVencimento);
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
-    
+
     if (vencimento < hoje) {
       const diffTime = hoje.getTime() - vencimento.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return `Atrasou há ${diffDays} dia${diffDays > 1 ? 's' : ''}`;
+      return `Atrasou há ${diffDays} dia${diffDays > 1 ? "s" : ""}`;
     }
-    
-    return 'A vencer';
+
+    return "A vencer";
   };
 
   const getMesNome = (mes: number) => {
-    return new Date(2024, mes - 1).toLocaleDateString('pt-BR', { month: 'long' });
+    return new Date(2024, mes - 1).toLocaleDateString("pt-BR", {
+      month: "long",
+    });
   };
 
   const handleReenviarClick = (cobrancaId: string) => {
@@ -137,11 +143,14 @@ export default function PassageiroHistorico({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent
+        className="max-w-2xl max-h-[80vh] overflow-y-auto"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Carteirinha Digital - {passageiroNome}</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           {loading ? (
             <div className="text-center py-8">Carregando histórico...</div>
@@ -161,11 +170,17 @@ export default function PassageiroHistorico({
                       {getMesNome(cobranca.mes)} {cobranca.ano}
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      Vencimento: {new Date(cobranca.data_vencimento).toLocaleDateString('pt-BR')}
+                      Vencimento:{" "}
+                      {new Date(cobranca.data_vencimento).toLocaleDateString(
+                        "pt-BR"
+                      )}
                     </p>
                     {cobranca.data_pagamento && (
                       <p className="text-sm text-muted-foreground">
-                        Pago em: {new Date(cobranca.data_pagamento).toLocaleDateString('pt-BR')}
+                        Pago em:{" "}
+                        {new Date(cobranca.data_pagamento).toLocaleDateString(
+                          "pt-BR"
+                        )}
                       </p>
                     )}
                     {cobranca.tipo_pagamento && (
@@ -176,18 +191,24 @@ export default function PassageiroHistorico({
                   </div>
                   <div className="text-right space-y-2">
                     <p className="font-semibold">
-                      {cobranca.valor.toLocaleString('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL'
+                      {cobranca.valor.toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
                       })}
                     </p>
                     <div className="flex flex-col gap-2">
-                      <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                        getStatusColor(cobranca.status, cobranca.data_vencimento)
-                      }`}>
-                        {getStatusText(cobranca.status, cobranca.data_vencimento)}
+                      <span
+                        className={`inline-block px-2 py-1 rounded text-xs font-medium ${getStatusColor(
+                          cobranca.status,
+                          cobranca.data_vencimento
+                        )}`}
+                      >
+                        {getStatusText(
+                          cobranca.status,
+                          cobranca.data_vencimento
+                        )}
                       </span>
-                      {cobranca.status !== 'pago' && (
+                      {cobranca.status !== "pago" && (
                         <div className="flex flex-col gap-1">
                           <Button
                             size="sm"
@@ -229,9 +250,7 @@ export default function PassageiroHistorico({
 
         <ConfirmationDialog
           open={confirmDialog.open}
-          onOpenChange={(open) => 
-            setConfirmDialog({ open, cobrancaId: "" })
-          }
+          onOpenChange={(open) => setConfirmDialog({ open, cobrancaId: "" })}
           title="Reenviar Cobrança"
           description="Deseja reenviar esta cobrança para o responsável?"
           onConfirm={reenviarCobranca}
