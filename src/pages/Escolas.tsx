@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cepMask } from "@/utils/masks";
-import { Eye, EyeOff, Pencil, Plus, Trash2, Building2, MapPin } from "lucide-react";
+import { Building2, Eye, EyeOff, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface Escola {
@@ -509,7 +509,7 @@ export default function Escolas() {
             title="Confirmar exclusão"
             description="Deseja excluir permanentemente esta escola? Esta ação não pode ser desfeita."
             onConfirm={handleDelete}
-            confirmText="Excluir"
+            confirmText="Confirmar"
             cancelText="Cancelar"
             variant="destructive"
           />

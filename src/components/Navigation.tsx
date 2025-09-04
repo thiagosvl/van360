@@ -33,7 +33,7 @@ const Navigation = () => {
               return (
                 <Link key={item.path} to={item.path}>
                   <Button
-                    variant={isActive(item.path) ? "link" : "ghost"}
+                    variant={isActive(item.path) ? "default" : "ghost"}
                     className="flex items-center gap-2"
                   >
                     <Icon className="w-4 h-4" />
