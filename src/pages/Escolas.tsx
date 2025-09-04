@@ -25,6 +25,24 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Escola {
   id: string;
@@ -41,25 +59,42 @@ interface Escola {
   updated_at: string;
 }
 
+const escolaSchema = z.object({
+  nome: z.string().min(1, "Nome da escola é obrigatório"),
+  rua: z.string().optional(),
+  numero: z.string().optional(),
+  bairro: z.string().optional(),
+  cidade: z.string().optional(),
+  estado: z.string().optional(),
+  cep: z.string().optional(),
+  referencia: z.string().optional(),
+});
+
+type EscolaFormData = z.infer<typeof escolaSchema>;
+
 export default function Escolas() {
   const [escolas, setEscolas] = useState<Escola[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEscola, setEditingEscola] = useState<Escola | null>(null);
-  const [formData, setFormData] = useState({
-    nome: "",
-    rua: "",
-    numero: "",
-    bairro: "",
-    cidade: "",
-    estado: "",
-    cep: "",
-    referencia: "",
-  });
   const [loading, setLoading] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
   const [schoolToDelete, setSchoolToDelete] = useState<Escola | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
+
+  const form = useForm<EscolaFormData>({
+    resolver: zodResolver(escolaSchema),
+    defaultValues: {
+      nome: "",
+      rua: "",
+      numero: "",
+      bairro: "",
+      cidade: "",
+      estado: "",
+      cep: "",
+      referencia: "",
+    },
+  });
 
   useEffect(() => {
     fetchEscolas();
@@ -87,15 +122,14 @@ export default function Escolas() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (data: EscolaFormData) => {
     setLoading(true);
 
     try {
       if (editingEscola) {
         const { error } = await supabase
           .from("escolas")
-          .update(formData)
+          .update(data)
           .eq("id", editingEscola.id);
 
         if (error) throw error;
@@ -105,7 +139,7 @@ export default function Escolas() {
           description: "Escola atualizada com sucesso",
         });
       } else {
-        const { error } = await supabase.from("escolas").insert([formData]);
+        const { error } = await supabase.from("escolas").insert([data]);
 
         if (error) throw error;
 
@@ -132,7 +166,7 @@ export default function Escolas() {
 
   const handleEdit = (escola: Escola) => {
     setEditingEscola(escola);
-    setFormData({
+    form.reset({
       nome: escola.nome,
       rua: escola.rua || "",
       numero: escola.numero || "",
@@ -241,7 +275,7 @@ export default function Escolas() {
   };
 
   const resetForm = () => {
-    setFormData({
+    form.reset({
       nome: "",
       rua: "",
       numero: "",
@@ -252,13 +286,6 @@ export default function Escolas() {
       referencia: "",
     });
     setEditingEscola(null);
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    if (field === "cep") {
-      value = cepMask(value);
-    }
-    setFormData({ ...formData, [field]: value });
   };
 
   return (
@@ -288,138 +315,200 @@ export default function Escolas() {
                     {editingEscola ? "Editar Escola" : "Nova Escola"}
                   </DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Dados da Escola Section */}
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Building2 className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-semibold">
-                          Dados da Escola
-                        </h3>
-                      </div>
-                      <div>
-                        <Label htmlFor="nome">Nome da Escola *</Label>
-                        <Input
-                          id="nome"
-                          required
-                          value={formData.nome}
-                          onChange={(e) =>
-                            handleInputChange("nome", e.target.value)
-                          }
-                        />
-                      </div>
-
-                      <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
-
-                      {/* Endereço Section */}
-                      <div className="flex items-center gap-2 mb-4">
-                        <MapPin className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-semibold">Endereço</h3>
-                      </div>
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="rua">Rua</Label>
-                            <Input
-                              id="rua"
-                              value={formData.rua}
-                              onChange={(e) =>
-                                handleInputChange("rua", e.target.value)
-                              }
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="numero">Número</Label>
-                            <Input
-                              id="numero"
-                              value={formData.numero}
-                              onChange={(e) =>
-                                handleInputChange("numero", e.target.value)
-                              }
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="bairro">Bairro</Label>
-                            <Input
-                              id="bairro"
-                              value={formData.bairro}
-                              onChange={(e) =>
-                                handleInputChange("bairro", e.target.value)
-                              }
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="cidade">Cidade</Label>
-                            <Input
-                              id="cidade"
-                              value={formData.cidade}
-                              onChange={(e) =>
-                                handleInputChange("cidade", e.target.value)
-                              }
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="estado">Estado</Label>
-                            <Input
-                              id="estado"
-                              value={formData.estado}
-                              onChange={(e) =>
-                                handleInputChange("estado", e.target.value)
-                              }
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="cep">CEP</Label>
-                            <Input
-                              id="cep"
-                              value={formData.cep}
-                              onChange={(e) =>
-                                handleInputChange("cep", e.target.value)
-                              }
-                              maxLength={9}
-                            />
-                          </div>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                    {/* Dados da Escola Section */}
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Building2 className="w-5 h-5 text-primary" />
+                          <h3 className="text-lg font-semibold">
+                            Dados da Escola
+                          </h3>
                         </div>
-                        <div>
-                          <Label htmlFor="referencia">
-                            Referência (opcional)
-                          </Label>
-                          <Textarea
-                            id="referencia"
-                            value={formData.referencia}
-                            onChange={(e) =>
-                              handleInputChange("referencia", e.target.value)
-                            }
+                        <FormField
+                          control={form.control}
+                          name="nome"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nome da Escola *</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
+
+                        {/* Endereço Section */}
+                        <div className="flex items-center gap-2 mb-4">
+                          <MapPin className="w-5 h-5 text-primary" />
+                          <h3 className="text-lg font-semibold">Endereço</h3>
+                        </div>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="rua"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Rua</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="numero"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Número</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="bairro"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Bairro</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="cidade"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Cidade</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="estado"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Estado</FormLabel>
+                                  <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Selecione o estado" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="AC">Acre</SelectItem>
+                                      <SelectItem value="AL">Alagoas</SelectItem>
+                                      <SelectItem value="AP">Amapá</SelectItem>
+                                      <SelectItem value="AM">Amazonas</SelectItem>
+                                      <SelectItem value="BA">Bahia</SelectItem>
+                                      <SelectItem value="CE">Ceará</SelectItem>
+                                      <SelectItem value="DF">Distrito Federal</SelectItem>
+                                      <SelectItem value="ES">Espírito Santo</SelectItem>
+                                      <SelectItem value="GO">Goiás</SelectItem>
+                                      <SelectItem value="MA">Maranhão</SelectItem>
+                                      <SelectItem value="MT">Mato Grosso</SelectItem>
+                                      <SelectItem value="MS">Mato Grosso do Sul</SelectItem>
+                                      <SelectItem value="MG">Minas Gerais</SelectItem>
+                                      <SelectItem value="PA">Pará</SelectItem>
+                                      <SelectItem value="PB">Paraíba</SelectItem>
+                                      <SelectItem value="PR">Paraná</SelectItem>
+                                      <SelectItem value="PE">Pernambuco</SelectItem>
+                                      <SelectItem value="PI">Piauí</SelectItem>
+                                      <SelectItem value="RJ">Rio de Janeiro</SelectItem>
+                                      <SelectItem value="RN">Rio Grande do Norte</SelectItem>
+                                      <SelectItem value="RS">Rio Grande do Sul</SelectItem>
+                                      <SelectItem value="RO">Rondônia</SelectItem>
+                                      <SelectItem value="RR">Roraima</SelectItem>
+                                      <SelectItem value="SC">Santa Catarina</SelectItem>
+                                      <SelectItem value="SP">São Paulo</SelectItem>
+                                      <SelectItem value="SE">Sergipe</SelectItem>
+                                      <SelectItem value="TO">Tocantins</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="cep"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>CEP</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      {...field} 
+                                      maxLength={9}
+                                      onChange={(e) => {
+                                        const maskedValue = cepMask(e.target.value);
+                                        field.onChange(maskedValue);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <FormField
+                            control={form.control}
+                            name="referencia"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Referência (opcional)</FormLabel>
+                                <FormControl>
+                                  <Textarea {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
                         </div>
-                      </div>
 
-                      {/* Actions */}
-                      <div className="flex gap-4 mt-8 pt-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setIsDialogOpen(false)}
-                          className="flex-1"
-                        >
-                          Cancelar
-                        </Button>
-                        <Button
-                          type="submit"
-                          disabled={loading}
-                          className="flex-1"
-                        >
-                          {loading
-                            ? "Salvando..."
-                            : editingEscola
-                            ? "Atualizar"
-                            : "Cadastrar"}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </form>
+                        {/* Actions */}
+                        <div className="flex gap-4 mt-8 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsDialogOpen(false)}
+                            className="flex-1"
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            type="submit"
+                            disabled={loading}
+                            className="flex-1"
+                          >
+                            {loading
+                              ? "Salvando..."
+                              : editingEscola
+                              ? "Atualizar"
+                              : "Cadastrar"}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </form>
+                </Form>
               </DialogContent>
             </Dialog>
           </div>

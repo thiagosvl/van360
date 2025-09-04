@@ -34,6 +34,17 @@ import {
   User,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 interface Passageiro {
   id: string;
@@ -62,6 +73,29 @@ interface Escola {
   ativo: boolean;
 }
 
+const passageiroSchema = z.object({
+  escola_id: z.string().min(1, "Escola é obrigatória"),
+  nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  rua: z.string().optional(),
+  numero: z.string().optional(),
+  bairro: z.string().optional(),
+  cidade: z.string().optional(),
+  estado: z.string().optional(),
+  cep: z.string().optional(),
+  referencia: z.string().optional(),
+  nome_responsavel: z.string().min(2, "Nome do responsável deve ter pelo menos 2 caracteres"),
+  telefone_responsavel: z.string()
+    .min(1, "Telefone é obrigatório")
+    .refine((val) => {
+      const cleaned = val.replace(/\D/g, '');
+      return cleaned.length === 11;
+    }, "Telefone deve estar no formato (00) 00000-0000"),
+  valor_mensalidade: z.string().min(1, "Valor da mensalidade é obrigatório"),
+  dia_vencimento: z.string().min(1, "Dia do vencimento é obrigatório"),
+});
+
+type PassageiroFormData = z.infer<typeof passageiroSchema>;
+
 export default function Passageiros() {
   const [passageiros, setPassageiros] = useState<Passageiro[]>([]);
   const [escolas, setEscolas] = useState<Escola[]>([]);
@@ -77,24 +111,28 @@ export default function Passageiros() {
   const [historicoOpen, setHistoricoOpen] = useState(false);
   const [selectedPassageiroHistorico, setSelectedPassageiroHistorico] =
     useState<{ id: string; nome: string } | null>(null);
-  const [formData, setFormData] = useState({
-    nome: "",
-    rua: "",
-    numero: "",
-    bairro: "",
-    cidade: "",
-    estado: "",
-    cep: "",
-    referencia: "",
-    nome_responsavel: "",
-    telefone_responsavel: "",
-    valor_mensalidade: "",
-    dia_vencimento: "",
-    escola_id: "",
-  });
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const { toast } = useToast();
+
+  const form = useForm<PassageiroFormData>({
+    resolver: zodResolver(passageiroSchema),
+    defaultValues: {
+      escola_id: "",
+      nome: "",
+      rua: "",
+      numero: "",
+      bairro: "",
+      cidade: "",
+      estado: "",
+      cep: "",
+      referencia: "",
+      nome_responsavel: "",
+      telefone_responsavel: "",
+      valor_mensalidade: "",
+      dia_vencimento: "",
+    },
+  });
 
   // Debounce para busca
   const debounceSearch = useCallback(() => {
@@ -171,17 +209,16 @@ export default function Passageiros() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (data: PassageiroFormData) => {
     setLoading(true);
 
     try {
       const passageiroData = {
-        ...formData,
-        valor_mensalidade: moneyToNumber(formData.valor_mensalidade),
-        dia_vencimento: Number(formData.dia_vencimento),
-        endereco: `${formData.rua}, ${formData.numero}`, // Manter compatibilidade
-        escola_id: formData.escola_id || null,
+        ...data,
+        valor_mensalidade: moneyToNumber(data.valor_mensalidade),
+        dia_vencimento: Number(data.dia_vencimento),
+        endereco: `${data.rua}, ${data.numero}`, // Manter compatibilidade
+        escola_id: data.escola_id || null,
       };
 
       if (editingPassageiro) {
@@ -211,14 +248,14 @@ export default function Passageiros() {
         const dataVencimento = new Date(
           ano,
           mes - 1,
-          Number(formData.dia_vencimento)
+          Number(data.dia_vencimento)
         );
 
         await supabase.from("cobrancas").insert({
           passageiro_id: newPassageiro.id,
           mes,
           ano,
-          valor: moneyToNumber(formData.valor_mensalidade),
+          valor: moneyToNumber(data.valor_mensalidade),
           data_vencimento: dataVencimento.toISOString().split("T")[0],
           status: "pendente",
         });
@@ -245,7 +282,7 @@ export default function Passageiros() {
 
   const handleEdit = (passageiro: Passageiro) => {
     setEditingPassageiro(passageiro);
-    setFormData({
+    form.reset({
       nome: passageiro.nome,
       rua: passageiro.rua || "",
       numero: passageiro.numero || "",
@@ -274,7 +311,8 @@ export default function Passageiros() {
   };
 
   const resetForm = () => {
-    setFormData({
+    form.reset({
+      escola_id: "",
       nome: "",
       rua: "",
       numero: "",
@@ -287,20 +325,8 @@ export default function Passageiros() {
       telefone_responsavel: "",
       valor_mensalidade: "",
       dia_vencimento: "",
-      escola_id: "",
     });
     setEditingPassageiro(null);
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    if (field === "telefone_responsavel") {
-      value = phoneMask(value);
-    } else if (field === "valor_mensalidade") {
-      value = moneyMask(value);
-    } else if (field === "cep") {
-      value = cepMask(value);
-    }
-    setFormData({ ...formData, [field]: value });
   };
 
   return (
@@ -332,301 +358,320 @@ export default function Passageiros() {
                       : "Novo Passageiro"}
                   </DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <Card>
-                    <CardContent className="p-6">
-                  {/* Escola Section */}
-                      <div className="flex items-center gap-2 mb-4">
-                        <GraduationCap className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-semibold">Escola</h3>
-                      </div>
-                      <div>
-                        <Label htmlFor="escola">Escola</Label>
-                        <Select
-                          value={formData.escola_id}
-                          onValueChange={(value) =>
-                            setFormData({ ...formData, escola_id: value })
-                          }
-                        >
-                          <SelectTrigger autoFocus={false}>
-                            <SelectValue placeholder="Selecione uma escola" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {escolas.map((escola) => (
-                              <SelectItem key={escola.id} value={escola.id}>
-                                {escola.nome}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
-
-                      {/* Passageiro Section */}
-                      <div className="flex items-center gap-2 mb-4">
-                        <User className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-semibold">
-                          Informações do Passageiro
-                        </h3>
-                      </div>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="nome">Nome do Passageiro *</Label>
-                          <Input
-                            id="nome"
-                            required
-                            value={formData.nome}
-                            onChange={(e) =>
-                              handleInputChange("nome", e.target.value)
-                            }
-                          />
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                    <Card>
+                      <CardContent className="p-6">
+                        {/* Escola Section */}
+                        <div className="flex items-center gap-2 mb-4">
+                          <GraduationCap className="w-5 h-5 text-primary" />
+                          <h3 className="text-lg font-semibold">Escola</h3>
                         </div>
-                        <div>
-                          <Label htmlFor="nome_responsavel">
-                            Nome do Responsável *
-                          </Label>
-                          <Input
-                            id="nome_responsavel"
-                            required
-                            value={formData.nome_responsavel}
-                            onChange={(e) =>
-                              handleInputChange(
-                                "nome_responsavel",
-                                e.target.value
-                              )
-                            }
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="telefone_responsavel">
-                            Telefone do Responsável *
-                          </Label>
-                          <Input
-                            id="telefone_responsavel"
-                            required
-                            value={formData.telefone_responsavel}
-                            onChange={(e) =>
-                              handleInputChange(
-                                "telefone_responsavel",
-                                e.target.value
-                              )
-                            }
-                            maxLength={15}
-                          />
-                        </div>
-                      </div>
+                        <FormField
+                          control={form.control}
+                          name="escola_id"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Escola *</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecione uma escola" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {escolas.map((escola) => (
+                                    <SelectItem key={escola.id} value={escola.id}>
+                                      {escola.nome}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                      <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
+                        <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
 
-                      {/* Endereço Section */}
-                      <div className="flex items-center gap-2 mb-4">
-                        <MapPin className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-semibold">Endereço</h3>
-                      </div>
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="rua">Rua</Label>
-                            <Input
-                              id="rua"
-                              value={formData.rua}
-                              onChange={(e) =>
-                                handleInputChange("rua", e.target.value)
-                              }
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="numero">Número</Label>
-                            <Input
-                              id="numero"
-                              value={formData.numero}
-                              onChange={(e) =>
-                                handleInputChange("numero", e.target.value)
-                              }
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="bairro">Bairro</Label>
-                            <Input
-                              id="bairro"
-                              value={formData.bairro}
-                              onChange={(e) =>
-                                handleInputChange("bairro", e.target.value)
-                              }
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="cidade">Cidade</Label>
-                            <Input
-                              id="cidade"
-                              value={formData.cidade}
-                              onChange={(e) =>
-                                handleInputChange("cidade", e.target.value)
-                              }
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="estado">Estado</Label>
-                            <Select
-                              value={formData.estado}
-                              onValueChange={(value) =>
-                                handleInputChange("estado", value)
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione o estado" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="AC">Acre</SelectItem>
-                                <SelectItem value="AL">Alagoas</SelectItem>
-                                <SelectItem value="AP">Amapá</SelectItem>
-                                <SelectItem value="AM">Amazonas</SelectItem>
-                                <SelectItem value="BA">Bahia</SelectItem>
-                                <SelectItem value="CE">Ceará</SelectItem>
-                                <SelectItem value="DF">
-                                  Distrito Federal
-                                </SelectItem>
-                                <SelectItem value="ES">
-                                  Espírito Santo
-                                </SelectItem>
-                                <SelectItem value="GO">Goiás</SelectItem>
-                                <SelectItem value="MA">Maranhão</SelectItem>
-                                <SelectItem value="MT">Mato Grosso</SelectItem>
-                                <SelectItem value="MS">
-                                  Mato Grosso do Sul
-                                </SelectItem>
-                                <SelectItem value="MG">Minas Gerais</SelectItem>
-                                <SelectItem value="PA">Pará</SelectItem>
-                                <SelectItem value="PB">Paraíba</SelectItem>
-                                <SelectItem value="PR">Paraná</SelectItem>
-                                <SelectItem value="PE">Pernambuco</SelectItem>
-                                <SelectItem value="PI">Piauí</SelectItem>
-                                <SelectItem value="RJ">
-                                  Rio de Janeiro
-                                </SelectItem>
-                                <SelectItem value="RN">
-                                  Rio Grande do Norte
-                                </SelectItem>
-                                <SelectItem value="RS">
-                                  Rio Grande do Sul
-                                </SelectItem>
-                                <SelectItem value="RO">Rondônia</SelectItem>
-                                <SelectItem value="RR">Roraima</SelectItem>
-                                <SelectItem value="SC">
-                                  Santa Catarina
-                                </SelectItem>
-                                <SelectItem value="SP">São Paulo</SelectItem>
-                                <SelectItem value="SE">Sergipe</SelectItem>
-                                <SelectItem value="TO">Tocantins</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <Label htmlFor="cep">CEP</Label>
-                            <Input
-                              id="cep"
-                              value={formData.cep}
-                              onChange={(e) =>
-                                handleInputChange("cep", e.target.value)
-                              }
-                              maxLength={9}
-                            />
-                          </div>
+                        {/* Passageiro Section */}
+                        <div className="flex items-center gap-2 mb-4">
+                          <User className="w-5 h-5 text-primary" />
+                          <h3 className="text-lg font-semibold">
+                            Informações do Passageiro
+                          </h3>
                         </div>
-                        <div>
-                          <Label htmlFor="referencia">
-                            Referência (opcional)
-                          </Label>
-                          <Textarea
-                            id="referencia"
-                            value={formData.referencia}
-                            onChange={(e) =>
-                              handleInputChange("referencia", e.target.value)
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
-
-                      {/* Mensalidade Section */}
-                      <div className="flex items-center gap-2 mb-4">
-                        <DollarSign className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-semibold">Mensalidade</h3>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="valor_mensalidade">
-                            Valor da Mensalidade *
-                          </Label>
-                          <Input
-                            id="valor_mensalidade"
-                            required
-                            value={formData.valor_mensalidade}
-                            onChange={(e) =>
-                              handleInputChange(
-                                "valor_mensalidade",
-                                e.target.value
-                              )
-                            }
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="dia_vencimento">
-                            Dia do Vencimento *
-                          </Label>
-                          <select
-                            id="dia_vencimento"
-                            required
-                            value={formData.dia_vencimento}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                dia_vencimento: e.target.value,
-                              })
-                            }
-                            className="w-full p-2 border border-input bg-background rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                          >
-                            <option value="" disabled>
-                              Selecione o dia
-                            </option>
-                            {Array.from({ length: 28 }, (_, i) => i + 1).map(
-                              (day) => (
-                                <option key={day} value={day}>
-                                  Dia {day}
-                                </option>
-                              )
+                        <div className="space-y-4">
+                          <FormField
+                            control={form.control}
+                            name="nome"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Nome do Passageiro *</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
                             )}
-                          </select>
+                          />
+                          <FormField
+                            control={form.control}
+                            name="nome_responsavel"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Nome do Responsável *</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="telefone_responsavel"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Telefone do Responsável *</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field}
+                                    maxLength={15}
+                                    onChange={(e) => {
+                                      const maskedValue = phoneMask(e.target.value);
+                                      field.onChange(maskedValue);
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </div>
-                      </div>
 
-                      {/* Actions */}
-                      <div className="flex gap-4 mt-8 pt-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setIsDialogOpen(false)}
-                          className="flex-1"
-                        >
-                          Cancelar
-                        </Button>
-                        <Button
-                          type="submit"
-                          disabled={loading}
-                          className="flex-1"
-                        >
-                          {loading
-                            ? "Salvando..."
-                            : editingPassageiro
-                            ? "Atualizar"
-                            : "Cadastrar"}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </form>
+                        <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
+
+                        {/* Endereço Section */}
+                        <div className="flex items-center gap-2 mb-4">
+                          <MapPin className="w-5 h-5 text-primary" />
+                          <h3 className="text-lg font-semibold">Endereço</h3>
+                        </div>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="rua"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Rua</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="numero"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Número</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="bairro"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Bairro</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="cidade"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Cidade</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="estado"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Estado</FormLabel>
+                                  <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Selecione o estado" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="AC">Acre</SelectItem>
+                                      <SelectItem value="AL">Alagoas</SelectItem>
+                                      <SelectItem value="AP">Amapá</SelectItem>
+                                      <SelectItem value="AM">Amazonas</SelectItem>
+                                      <SelectItem value="BA">Bahia</SelectItem>
+                                      <SelectItem value="CE">Ceará</SelectItem>
+                                      <SelectItem value="DF">Distrito Federal</SelectItem>
+                                      <SelectItem value="ES">Espírito Santo</SelectItem>
+                                      <SelectItem value="GO">Goiás</SelectItem>
+                                      <SelectItem value="MA">Maranhão</SelectItem>
+                                      <SelectItem value="MT">Mato Grosso</SelectItem>
+                                      <SelectItem value="MS">Mato Grosso do Sul</SelectItem>
+                                      <SelectItem value="MG">Minas Gerais</SelectItem>
+                                      <SelectItem value="PA">Pará</SelectItem>
+                                      <SelectItem value="PB">Paraíba</SelectItem>
+                                      <SelectItem value="PR">Paraná</SelectItem>
+                                      <SelectItem value="PE">Pernambuco</SelectItem>
+                                      <SelectItem value="PI">Piauí</SelectItem>
+                                      <SelectItem value="RJ">Rio de Janeiro</SelectItem>
+                                      <SelectItem value="RN">Rio Grande do Norte</SelectItem>
+                                      <SelectItem value="RS">Rio Grande do Sul</SelectItem>
+                                      <SelectItem value="RO">Rondônia</SelectItem>
+                                      <SelectItem value="RR">Roraima</SelectItem>
+                                      <SelectItem value="SC">Santa Catarina</SelectItem>
+                                      <SelectItem value="SP">São Paulo</SelectItem>
+                                      <SelectItem value="SE">Sergipe</SelectItem>
+                                      <SelectItem value="TO">Tocantins</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="cep"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>CEP</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      {...field}
+                                      maxLength={9}
+                                      onChange={(e) => {
+                                        const maskedValue = cepMask(e.target.value);
+                                        field.onChange(maskedValue);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <FormField
+                            control={form.control}
+                            name="referencia"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Referência (opcional)</FormLabel>
+                                <FormControl>
+                                  <Textarea {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
+
+                        {/* Mensalidade Section */}
+                        <div className="flex items-center gap-2 mb-4">
+                          <DollarSign className="w-5 h-5 text-primary" />
+                          <h3 className="text-lg font-semibold">Mensalidade</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="valor_mensalidade"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Valor da Mensalidade *</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field}
+                                    onChange={(e) => {
+                                      const maskedValue = moneyMask(e.target.value);
+                                      field.onChange(maskedValue);
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="dia_vencimento"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Dia do Vencimento *</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Selecione o dia" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
+                                      <SelectItem key={day} value={day.toString()}>
+                                        Dia {day}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-4 mt-8 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsDialogOpen(false)}
+                            className="flex-1"
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            type="submit"
+                            disabled={loading}
+                            className="flex-1"
+                          >
+                            {loading
+                              ? "Salvando..."
+                              : editingPassageiro
+                              ? "Atualizar"
+                              : "Cadastrar"}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </form>
+                </Form>
               </DialogContent>
             </Dialog>
           </div>

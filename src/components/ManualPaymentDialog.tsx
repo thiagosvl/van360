@@ -18,6 +18,17 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 interface ManualPaymentDialogProps {
   isOpen: boolean;
@@ -28,6 +39,14 @@ interface ManualPaymentDialogProps {
   onPaymentRecorded: () => void;
 }
 
+const paymentSchema = z.object({
+  valor_pago: z.string().min(1, "Valor pago é obrigatório"),
+  data_pagamento: z.string().min(1, "Data do pagamento é obrigatória"),
+  tipo_pagamento: z.string().min(1, "Forma de pagamento é obrigatória"),
+});
+
+type PaymentFormData = z.infer<typeof paymentSchema>;
+
 export default function ManualPaymentDialog({
   isOpen,
   onClose,
@@ -36,50 +55,43 @@ export default function ManualPaymentDialog({
   valorOriginal,
   onPaymentRecorded,
 }: ManualPaymentDialogProps) {
-  const [valorPago, setValorPago] = useState("");
-  const [dataPagamento, setDataPagamento] = useState(
-    new Date().toISOString().split("T")[0]
-  );
-  const [tipoPagamento, setTipoPagamento] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  const form = useForm<PaymentFormData>({
+    resolver: zodResolver(paymentSchema),
+    defaultValues: {
+      valor_pago: "",
+      data_pagamento: new Date().toISOString().split("T")[0],
+      tipo_pagamento: "",
+    },
+  });
 
   // Reset form values when dialog opens with new data
   useEffect(() => {
     if (isOpen) {
-      setValorPago(
-        valorOriginal.toLocaleString("pt-BR", {
+      form.reset({
+        valor_pago: valorOriginal.toLocaleString("pt-BR", {
           style: "currency",
           currency: "BRL",
-        })
-      );
-      setDataPagamento(new Date().toISOString().split("T")[0]);
-      setTipoPagamento("");
-    }
-  }, [isOpen, valorOriginal]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!tipoPagamento) {
-      toast({
-        title: "Erro",
-        description: "Selecione a forma de pagamento",
-        variant: "destructive",
+        }),
+        data_pagamento: new Date().toISOString().split("T")[0],
+        tipo_pagamento: "",
       });
-      return;
     }
+  }, [isOpen, valorOriginal, form]);
 
+  const handleSubmit = async (data: PaymentFormData) => {
     setLoading(true);
     try {
-      const valorNumerico = moneyToNumber(valorPago);
+      const valorNumerico = moneyToNumber(data.valor_pago);
 
       const { error } = await supabase
         .from("cobrancas")
         .update({
           status: "pago",
-          data_pagamento: dataPagamento,
-          tipo_pagamento: tipoPagamento,
+          data_pagamento: data.data_pagamento,
+          tipo_pagamento: data.tipo_pagamento,
           valor: valorNumerico,
         })
         .eq("id", cobrancaId);
@@ -106,14 +118,14 @@ export default function ManualPaymentDialog({
   };
 
   const handleClose = () => {
-    setValorPago(
-      valorOriginal.toLocaleString("pt-BR", {
+    form.reset({
+      valor_pago: valorOriginal.toLocaleString("pt-BR", {
         style: "currency",
         currency: "BRL",
-      })
-    );
-    setDataPagamento(new Date().toISOString().split("T")[0]);
-    setTipoPagamento("");
+      }),
+      data_pagamento: new Date().toISOString().split("T")[0],
+      tipo_pagamento: "",
+    });
     onClose();
   };
 
@@ -127,70 +139,83 @@ export default function ManualPaymentDialog({
           <DialogTitle>Registrar Pagamento Manual</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label className="text-sm font-medium">Passageiro</Label>
-            <Input value={passageiroNome} disabled className="mt-1" />
-          </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium">Passageiro</Label>
+              <Input value={passageiroNome} disabled className="mt-1" />
+            </div>
 
-          <div>
-            <Label htmlFor="valor" className="text-sm font-medium">
-              Valor Pago
-            </Label>
-            <Input
-              id="valor"
-              value={valorPago}
-              onChange={(e) => setValorPago(moneyMask(e.target.value))}
-              placeholder="R$ 0,00"
-              className="mt-1"
-              required
-              autoFocus={false}
+            <FormField
+              control={form.control}
+              name="valor_pago"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Valor Pago *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field}
+                      placeholder="R$ 0,00"
+                      onChange={(e) => {
+                        const maskedValue = moneyMask(e.target.value);
+                        field.onChange(maskedValue);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div>
-            <Label htmlFor="data" className="text-sm font-medium">
-              Data do Pagamento
-            </Label>
-            <Input
-              id="data"
-              type="date"
-              value={dataPagamento}
-              onChange={(e) => setDataPagamento(e.target.value)}
-              className="mt-1"
-              required
+            <FormField
+              control={form.control}
+              name="data_pagamento"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data do Pagamento *</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div>
-            <Label htmlFor="tipo" className="text-sm font-medium">
-              Forma de Pagamento
-            </Label>
-            <Select value={tipoPagamento} onValueChange={setTipoPagamento}>
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Selecione a forma de pagamento" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="dinheiro">Dinheiro</SelectItem>
-                <SelectItem value="PIX">PIX</SelectItem>
-                <SelectItem value="cartao-credito">
-                  Cartão de Crédito
-                </SelectItem>
-                <SelectItem value="cartao-debito">Cartão de Débito</SelectItem>
-                <SelectItem value="transferencia">Transferência</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            <FormField
+              control={form.control}
+              name="tipo_pagamento"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Forma de Pagamento *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a forma de pagamento" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                      <SelectItem value="PIX">PIX</SelectItem>
+                      <SelectItem value="cartao-credito">Cartão de Crédito</SelectItem>
+                      <SelectItem value="cartao-debito">Cartão de Débito</SelectItem>
+                      <SelectItem value="transferencia">Transferência</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={handleClose}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Registrando..." : "Registrar Pagamento"}
-            </Button>
-          </div>
-        </form>
+            <div className="flex justify-end gap-3 pt-4">
+              <Button type="button" variant="outline" onClick={handleClose}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Registrando..." : "Registrar Pagamento"}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
