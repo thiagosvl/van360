@@ -468,12 +468,14 @@ export default function Escolas() {
                               <Button
                                 size="sm"
                                 variant="outline"
+                                title="Editar"
                                 onClick={() => handleEdit(escola)}
                               >
                                 <Pencil className="h-4 w-4" />
                               </Button>
                               <Button
                                 size="sm"
+                                title={escola.ativo ? "Desativar" : "Reativar"}
                                 variant={escola.ativo ? "outline" : "default"}
                                 onClick={() => handleToggleAtivo(escola)}
                               >
@@ -486,6 +488,7 @@ export default function Escolas() {
                               {!escola.ativo && (
                                 <Button
                                   size="sm"
+                                  title="Remover"
                                   variant="destructive"
                                   onClick={() => handleDeleteClick(escola)}
                                 >
