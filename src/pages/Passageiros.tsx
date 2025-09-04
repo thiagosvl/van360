@@ -334,15 +334,15 @@ export default function Passageiros() {
                       </div>
                       <div>
                         <Label htmlFor="escola">Escola</Label>
-                        <Select
-                          value={formData.escola_id}
-                          onValueChange={(value) =>
-                            setFormData({ ...formData, escola_id: value })
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione uma escola" />
-                          </SelectTrigger>
+                         <Select
+                           value={formData.escola_id}
+                           onValueChange={(value) =>
+                             setFormData({ ...formData, escola_id: value })
+                           }
+                         >
+                           <SelectTrigger autoFocus={false}>
+                             <SelectValue placeholder="Selecione uma escola" />
+                           </SelectTrigger>
                           <SelectContent>
                             {escolas.map((escola) => (
                               <SelectItem key={escola.id} value={escola.id}>
@@ -653,159 +653,84 @@ export default function Passageiros() {
             </CardContent>
           </Card>
 
-          {/* Lista de Passageiros */}
-          {loading || searching ? (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center py-8 text-muted-foreground">
+          {/* Tabela de Passageiros */}
+          <Card>
+            <CardContent>
+              {loading || searching ? (
+                <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
                   {searching ? "Buscando passageiros..." : "Carregando..."}
                 </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-3">
-              {passageiros.length === 0 ? (
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-center py-8 text-muted-foreground">
-                      {searchTerm.length > 0 && searchTerm.length < 2
-                        ? "Digite pelo menos 2 caracteres para buscar"
-                        : searchTerm.length >= 2
-                        ? "Nenhum passageiro encontrado com este nome"
-                        : "Nenhum passageiro encontrado"}
-                    </div>
-                  </CardContent>
-                </Card>
+              ) : passageiros.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  {searchTerm.length > 0 && searchTerm.length < 2
+                    ? "Digite pelo menos 2 caracteres para buscar"
+                    : searchTerm.length >= 2
+                    ? "Nenhum passageiro encontrado com este nome"
+                    : "Nenhum passageiro encontrado"}
+                </div>
               ) : (
-                passageiros.map((passageiro) => {
-                  const isExpanded = expandedPassageiro === passageiro.id;
-
-                  return (
-                    <Card key={passageiro.id} className="overflow-hidden">
-                      <CardContent className="p-0">
-                        {/* Linha principal - clicável */}
-                        <div
-                          className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                          onClick={() =>
-                            setExpandedPassageiro(
-                              isExpanded ? null : passageiro.id
-                            )
-                          }
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-3 text-sm font-medium">
+                          Nome do Passageiro
+                        </th>
+                        <th className="text-left p-3 text-sm font-medium">
+                          Escola
+                        </th>
+                        <th className="text-center p-3 text-sm font-medium">
+                          Ações
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {passageiros.map((passageiro) => (
+                        <tr
+                          key={passageiro.id}
+                          className="border-b hover:bg-muted/50"
                         >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-medium truncate">
-                                {passageiro.nome}
-                              </h3>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {isExpanded ? (
-                              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                            ) : (
-                              <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Conteúdo expandido */}
-                        {isExpanded && (
-                          <div className="border-t bg-muted/20 p-4 space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">
-                                  Telefone:
-                                </span>
-                                <p className="font-medium">
-                                  {passageiro.telefone_responsavel}
-                                </p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">
-                                  Mensalidade:
-                                </span>
-                                <p className="font-medium">
-                                  {passageiro.valor_mensalidade.toLocaleString(
-                                    "pt-BR",
-                                    {
-                                      style: "currency",
-                                      currency: "BRL",
-                                    }
-                                  )}
-                                </p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">
-                                  Vencimento:
-                                </span>
-                                <p className="font-medium">
-                                  Todo dia {passageiro.dia_vencimento}
-                                </p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">
-                                  Escola:
-                                </span>
-                                <p className="font-medium">
-                                  {passageiro.escolas?.nome || "Não informada"}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div>
-                              <span className="text-muted-foreground text-sm">
-                                Endereço:
-                              </span>
-                              <p className="text-sm">
-                                {[
-                                  passageiro.rua,
-                                  passageiro.numero,
-                                  passageiro.bairro,
-                                  passageiro.cidade,
-                                  passageiro.estado,
-                                ]
-                                  .filter(Boolean)
-                                  .join(", ")}
-                                {passageiro.cep && ` - CEP: ${passageiro.cep}`}
-                              </p>
-                              {passageiro.referencia && (
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  Ref.: {passageiro.referencia}
-                                </p>
-                              )}
-                            </div>
-
-                            {/* Botões de ação */}
-                            <div className="flex flex-wrap gap-2">
+                          <td className="p-3">
+                            <span className="font-medium text-sm">
+                              {passageiro.nome}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className="text-sm text-muted-foreground">
+                              {passageiro.escolas?.nome || "Não informada"}
+                            </span>
+                          </td>
+                          <td className="p-3 text-center">
+                            <div className="flex gap-2 justify-center">
                               <Button
                                 size="sm"
                                 variant="outline"
+                                title="Editar"
                                 onClick={() => handleEdit(passageiro)}
                                 className="gap-1"
                               >
                                 <Pencil className="w-3 h-3" />
-                                Editar Cadastro
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
+                                title="Carteirinha"
                                 onClick={() => handleHistorico(passageiro)}
                                 className="gap-1"
                               >
                                 <History className="w-3 h-3" />
-                                Carteirinha
                               </Button>
                             </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                })
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
-            </div>
-          )}
+            </CardContent>
+          </Card>
 
           {/* Modal de Histórico */}
           {selectedPassageiroHistorico && (

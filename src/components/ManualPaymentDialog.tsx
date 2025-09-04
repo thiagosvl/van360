@@ -141,6 +141,7 @@ export default function ManualPaymentDialog({
               placeholder="R$ 0,00"
               className="mt-1"
               required
+              autoFocus={false}
             />
           </div>
 
