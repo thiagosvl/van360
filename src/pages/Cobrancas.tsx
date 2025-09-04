@@ -522,15 +522,31 @@ const Cobrancas = () => {
                             </span>
                           </td>
                           <td className="p-3 text-center">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              title="Reverter"
-                              onClick={() => handleReverterClick(cobranca.id)}
-                              className="gap-1"
-                            >
-                              <Undo2 className="w-3 h-3" />
-                            </Button>
+                            <div className="flex gap-2 justify-center">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                title="Carteirinha"
+                                onClick={() =>
+                                  handleViewHistory(
+                                    cobranca.passageiro_id,
+                                    cobranca.passageiros.nome
+                                  )
+                                }
+                                className="gap-1"
+                              >
+                                <CreditCard className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                title="Reverter"
+                                onClick={() => handleReverterClick(cobranca.id)}
+                                className="gap-1"
+                              >
+                                <Undo2 className="w-3 h-3" />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
