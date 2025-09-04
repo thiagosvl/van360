@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cepMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
@@ -92,6 +93,7 @@ const passageiroSchema = z.object({
     }, "O formato aceito é (00) 00000-0000"),
   valor_mensalidade: z.string().min(1, "Campo obrigatório"),
   dia_vencimento: z.string().min(1, "Campo obrigatório"),
+  emitir_cobranca_mes_atual: z.boolean().optional(),
 });
 
 type PassageiroFormData = z.infer<typeof passageiroSchema>;
@@ -131,6 +133,7 @@ export default function Passageiros() {
       telefone_responsavel: "",
       valor_mensalidade: "",
       dia_vencimento: "",
+      emitir_cobranca_mes_atual: false,
     },
   });
 
@@ -241,24 +244,26 @@ export default function Passageiros() {
 
         if (error) throw error;
 
-        // Criar cobrança do mês atual automaticamente
-        const currentDate = new Date();
-        const mes = currentDate.getMonth() + 1;
-        const ano = currentDate.getFullYear();
-        const dataVencimento = new Date(
-          ano,
-          mes - 1,
-          Number(data.dia_vencimento)
-        );
+        // Criar cobrança do mês atual apenas se checkbox estiver marcado
+        if (data.emitir_cobranca_mes_atual) {
+          const currentDate = new Date();
+          const mes = currentDate.getMonth() + 1;
+          const ano = currentDate.getFullYear();
+          const dataVencimento = new Date(
+            ano,
+            mes - 1,
+            Number(data.dia_vencimento)
+          );
 
-        await supabase.from("cobrancas").insert({
-          passageiro_id: newPassageiro.id,
-          mes,
-          ano,
-          valor: moneyToNumber(data.valor_mensalidade),
-          data_vencimento: dataVencimento.toISOString().split("T")[0],
-          status: "pendente",
-        });
+          await supabase.from("cobrancas").insert({
+            passageiro_id: newPassageiro.id,
+            mes,
+            ano,
+            valor: moneyToNumber(data.valor_mensalidade),
+            data_vencimento: dataVencimento.toISOString().split("T")[0],
+            status: "pendente",
+          });
+        }
 
         toast({
           title: "Passageiro cadastrado com sucesso",
@@ -325,6 +330,7 @@ export default function Passageiros() {
       telefone_responsavel: "",
       valor_mensalidade: "",
       dia_vencimento: "",
+      emitir_cobranca_mes_atual: false,
     });
     setEditingPassageiro(null);
   };
@@ -523,10 +529,35 @@ export default function Passageiros() {
                                 <FormMessage />
                               </FormItem>
                             )}
-                          />
-                        </div>
+                           />
+                         </div>
 
-                        <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
+                         {/* Checkbox para emitir cobrança apenas no cadastro */}
+                         {!editingPassageiro && (
+                           <div className="mt-4">
+                             <FormField
+                               control={form.control}
+                               name="emitir_cobranca_mes_atual"
+                               render={({ field }) => (
+                                 <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                   <FormControl>
+                                     <Checkbox
+                                       checked={field.value}
+                                       onCheckedChange={field.onChange}
+                                     />
+                                   </FormControl>
+                                   <div className="space-y-1 leading-none">
+                                     <FormLabel>
+                                       Emitir cobrança para o mês atual
+                                     </FormLabel>
+                                   </div>
+                                 </FormItem>
+                               )}
+                             />
+                           </div>
+                         )}
+
+                         <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
 
                         {/* Endereço Section */}
                         <div className="flex items-center gap-2 mb-4">

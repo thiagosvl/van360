@@ -5,9 +5,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { DollarSign, Send } from "lucide-react";
+import { DollarSign, Send, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import ConfirmationDialog from "./ConfirmationDialog";
 import ManualPaymentDialog from "./ManualPaymentDialog";
@@ -21,6 +22,7 @@ interface Cobranca {
   data_vencimento: string;
   data_pagamento?: string;
   tipo_pagamento?: string;
+  pagamento_manual?: boolean;
 }
 
 interface PassageiroHistoricoProps {
@@ -45,7 +47,8 @@ export default function PassageiroHistorico({
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     cobrancaId: string;
-  }>({ open: false, cobrancaId: "" });
+    action: 'reenviar' | 'reverter';
+  }>({ open: false, cobrancaId: "", action: 'reenviar' });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -111,28 +114,49 @@ export default function PassageiroHistorico({
   };
 
   const handleReenviarClick = (cobrancaId: string) => {
-    setConfirmDialog({ open: true, cobrancaId });
+    setConfirmDialog({ open: true, cobrancaId, action: 'reenviar' });
   };
 
-  const reenviarCobranca = async () => {
-    try {
-      await supabase
-        .from("cobrancas")
-        .update({ enviado_em: new Date().toISOString() })
-        .eq("id", confirmDialog.cobrancaId);
+  const handleReverterClick = (cobrancaId: string) => {
+    setConfirmDialog({ open: true, cobrancaId, action: 'reverter' });
+  };
 
-      toast({
-        title: "Cobrança reenviada com sucesso para o responsável",
-      });
+  const handleConfirmAction = async () => {
+    try {
+      if (confirmDialog.action === 'reenviar') {
+        await supabase
+          .from("cobrancas")
+          .update({ enviado_em: new Date().toISOString() })
+          .eq("id", confirmDialog.cobrancaId);
+
+        toast({
+          title: "Cobrança reenviada com sucesso para o responsável",
+        });
+      } else if (confirmDialog.action === 'reverter') {
+        await supabase
+          .from("cobrancas")
+          .update({ 
+            status: "pendente",
+            data_pagamento: null,
+            tipo_pagamento: null,
+            pagamento_manual: false
+          })
+          .eq("id", confirmDialog.cobrancaId);
+
+        toast({
+          title: "Pagamento revertido com sucesso",
+        });
+        fetchHistorico();
+      }
     } catch (error) {
-      console.error("Erro ao reenviar cobrança:", error);
+      console.error("Erro ao executar ação:", error);
       toast({
         title: "Erro",
-        description: "Erro ao reenviar cobrança",
+        description: "Erro ao executar ação",
         variant: "destructive",
       });
     }
-    setConfirmDialog({ open: false, cobrancaId: "" });
+    setConfirmDialog({ open: false, cobrancaId: "", action: 'reenviar' });
   };
 
   const openPaymentDialog = (cobranca: Cobranca) => {
@@ -147,98 +171,122 @@ export default function PassageiroHistorico({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-2xl max-h-[80vh] overflow-y-auto"
+        className="max-w-4xl max-h-[80vh] overflow-y-auto"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
           <DialogTitle>Carteirinha Digital - {passageiroNome}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {loading ? (
-            <div className="text-center py-8">Carregando histórico...</div>
-          ) : cobrancas.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhuma mensalidade encontrada
-            </div>
-          ) : (
-            cobrancas.map((cobranca) => (
-              <div
-                key={cobranca.id}
-                className="p-4 border rounded-lg space-y-2"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-medium">
-                      {getMesNome(cobranca.mes)} {cobranca.ano}
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
-                      Vencimento:{" "}
-                      {new Date(cobranca.data_vencimento).toLocaleDateString(
-                        "pt-BR"
-                      )}
-                    </p>
-                    {cobranca.data_pagamento && (
-                      <p className="text-sm text-muted-foreground">
-                        Pago em:{" "}
-                        {new Date(cobranca.data_pagamento).toLocaleDateString(
-                          "pt-BR"
-                        )}
-                      </p>
-                    )}
-                    {cobranca.tipo_pagamento && (
-                      <p className="text-sm text-muted-foreground">
-                        Forma: {cobranca.tipo_pagamento}
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-right space-y-2">
-                    <p className="font-semibold">
-                      {cobranca.valor.toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      })}
-                    </p>
-                    <div className="flex flex-col gap-2">
-                      <span
-                        className={`inline-block px-2 py-1 rounded text-xs font-medium ${getStatusColor(
-                          cobranca.status,
-                          cobranca.data_vencimento
-                        )}`}
-                      >
-                        {getStatusText(
-                          cobranca.status,
-                          cobranca.data_vencimento
-                        )}
-                      </span>
-                      {cobranca.status !== "pago" && (
-                        <div className="flex flex-col gap-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleReenviarClick(cobranca.id)}
-                            className="text-xs px-2 py-1 h-auto gap-1"
-                          >
-                            <Send className="w-3 h-3" />
-                            Reenviar Cobrança
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => openPaymentDialog(cobranca)}
-                            className="text-xs px-2 py-1 h-auto gap-1"
-                          >
-                            <DollarSign className="w-3 h-3" />
-                            Registrar Pagamento
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Histórico de Cobranças</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-center py-8">Carregando histórico...</div>
+            ) : cobrancas.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Nenhuma mensalidade encontrada
               </div>
-            ))
-          )}
-        </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-3 text-sm font-medium">Mês/Ano</th>
+                      <th className="text-left p-3 text-sm font-medium">Valor</th>
+                      <th className="text-left p-3 text-sm font-medium">Status</th>
+                      <th className="text-left p-3 text-sm font-medium">Vencimento</th>
+                      <th className="text-center p-3 text-sm font-medium">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cobrancas.map((cobranca) => (
+                      <tr key={cobranca.id} className="border-b hover:bg-muted/50">
+                        <td className="p-3">
+                          <span className="font-medium text-sm">
+                            {getMesNome(cobranca.mes)} {cobranca.ano}
+                          </span>
+                          {cobranca.data_pagamento && (
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Pago em: {new Date(cobranca.data_pagamento).toLocaleDateString("pt-BR")}
+                            </div>
+                          )}
+                          {cobranca.tipo_pagamento && (
+                            <div className="text-xs text-muted-foreground">
+                              Forma: {cobranca.tipo_pagamento}
+                            </div>
+                          )}
+                        </td>
+                        <td className="p-3">
+                          <span className="font-semibold">
+                            {cobranca.valor.toLocaleString("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            })}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span
+                            className={`inline-block px-2 py-1 rounded text-xs font-medium ${getStatusColor(
+                              cobranca.status,
+                              cobranca.data_vencimento
+                            )}`}
+                          >
+                            {getStatusText(cobranca.status, cobranca.data_vencimento)}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span className="text-sm">
+                            {new Date(cobranca.data_vencimento).toLocaleDateString("pt-BR")}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex gap-1 justify-center">
+                            {cobranca.status !== "pago" ? (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleReenviarClick(cobranca.id)}
+                                  className="h-8 w-8 p-0"
+                                  title="Reenviar Cobrança"
+                                >
+                                  <Send className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={() => openPaymentDialog(cobranca)}
+                                  className="h-8 w-8 p-0"
+                                  title="Registrar Pagamento"
+                                >
+                                  <DollarSign className="w-3 h-3" />
+                                </Button>
+                              </>
+                            ) : (
+                              cobranca.pagamento_manual && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleReverterClick(cobranca.id)}
+                                  className="h-8 w-8 p-0"
+                                  title="Reverter Pagamento"
+                                >
+                                  <RotateCcw className="w-3 h-3" />
+                                </Button>
+                              )
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {selectedCobranca && (
           <ManualPaymentDialog
@@ -253,10 +301,14 @@ export default function PassageiroHistorico({
 
         <ConfirmationDialog
           open={confirmDialog.open}
-          onOpenChange={(open) => setConfirmDialog({ open, cobrancaId: "" })}
-          title="Reenviar Cobrança"
-          description="Deseja reenviar esta cobrança para o responsável?"
-          onConfirm={reenviarCobranca}
+          onOpenChange={(open) => setConfirmDialog({ open, cobrancaId: "", action: 'reenviar' })}
+          title={confirmDialog.action === 'reenviar' ? "Reenviar Cobrança" : "Reverter Pagamento"}
+          description={
+            confirmDialog.action === 'reenviar' 
+              ? "Deseja reenviar esta cobrança para o responsável?"
+              : "Deseja reverter este pagamento? A cobrança voltará ao status pendente."
+          }
+          onConfirm={handleConfirmAction}
         />
       </DialogContent>
     </Dialog>

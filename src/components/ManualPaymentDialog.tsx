@@ -94,6 +94,7 @@ export default function ManualPaymentDialog({
           data_pagamento: data.data_pagamento,
           tipo_pagamento: data.tipo_pagamento,
           valor: valorNumerico,
+          pagamento_manual: true,
         })
         .eq("id", cobrancaId);
 

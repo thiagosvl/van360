@@ -23,6 +23,7 @@ export type Database = {
           enviado_em: string | null
           id: string
           mes: number
+          pagamento_manual: boolean
           passageiro_id: string
           status: string
           tipo_pagamento: string | null
@@ -37,6 +38,7 @@ export type Database = {
           enviado_em?: string | null
           id?: string
           mes: number
+          pagamento_manual?: boolean
           passageiro_id: string
           status?: string
           tipo_pagamento?: string | null
@@ -51,6 +53,7 @@ export type Database = {
           enviado_em?: string | null
           id?: string
           mes?: number
+          pagamento_manual?: boolean
           passageiro_id?: string
           status?: string
           tipo_pagamento?: string | null
