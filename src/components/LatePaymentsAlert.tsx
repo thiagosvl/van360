@@ -79,7 +79,7 @@ const LatePaymentsAlert = ({
       return `Venceu há ${diffDays} dia${diffDays > 1 ? "s" : ""}`;
     }
 
-    return "Vence HOJE";
+    return "Vence hoje";
   };
 
   const getStatusColor = (dataVencimento: string) => {

@@ -188,7 +188,7 @@ const Cobrancas = () => {
     if (vencimento < hoje) {
       return `Venceu há ${diffDays} dia${diffDays > 1 ? "s" : ""}`;
     } else if (diffDays == 0) {
-      return "Vence HOJE";
+      return "Vence hoje";
     }
 
     return "A vencer";
