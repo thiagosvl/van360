@@ -476,7 +476,7 @@ export default function Escolas() {
                               <Button
                                 size="sm"
                                 title={escola.ativo ? "Desativar" : "Reativar"}
-                                variant={escola.ativo ? "outline" : "default"}
+                                variant={escola.ativo ? "outline" : "outline"}
                                 onClick={() => handleToggleAtivo(escola)}
                               >
                                 {escola.ativo ? (
@@ -489,7 +489,7 @@ export default function Escolas() {
                                 <Button
                                   size="sm"
                                   title="Remover"
-                                  variant="destructive"
+                                  variant="outline"
                                   onClick={() => handleDeleteClick(escola)}
                                 >
                                   <Trash2 className="h-4 w-4" />
