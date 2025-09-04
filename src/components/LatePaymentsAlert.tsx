@@ -40,7 +40,7 @@ interface LatePaymentsAlertProps {
   selectedYear: number;
   onReenviarCobranca: (cobrancaId: string, nomePassageiro: string) => void;
   onPayment: (cobranca: Cobranca) => void;
-  onViewHistory: (passageiroId: string, passageiroNome: string) => void;
+  onViewHistory: (passageiroId: string, passageiroNome: string, valorMensalidade: number) => void;
 }
 
 const LatePaymentsAlert = ({
@@ -220,7 +220,8 @@ const LatePaymentsAlert = ({
                     onClick={() =>
                       onViewHistory(
                         cobranca.passageiro_id,
-                        cobranca.passageiros.nome
+                        cobranca.passageiros.nome,
+                        cobranca.passageiros.valor_mensalidade
                       )
                     }
                     className="gap-1 w-full sm:w-auto"

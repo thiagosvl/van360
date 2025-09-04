@@ -112,7 +112,7 @@ export default function Passageiros() {
   );
   const [historicoOpen, setHistoricoOpen] = useState(false);
   const [selectedPassageiroHistorico, setSelectedPassageiroHistorico] =
-    useState<{ id: string; nome: string } | null>(null);
+    useState<{ id: string; nome: string; valorMensalidade: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const { toast } = useToast();
@@ -311,6 +311,7 @@ export default function Passageiros() {
     setSelectedPassageiroHistorico({
       id: passageiro.id,
       nome: passageiro.nome,
+      valorMensalidade: passageiro.valor_mensalidade,
     });
     setHistoricoOpen(true);
   };
@@ -921,6 +922,7 @@ export default function Passageiros() {
             <PassageiroHistorico
               passageiroId={selectedPassageiroHistorico.id}
               passageiroNome={selectedPassageiroHistorico.nome}
+              valorMensalidade={selectedPassageiroHistorico.valorMensalidade}
               isOpen={historicoOpen}
               onClose={() => {
                 setHistoricoOpen(false);

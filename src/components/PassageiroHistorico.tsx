@@ -8,10 +8,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { DollarSign, Send, RotateCcw } from "lucide-react";
+import { DollarSign, Send, RotateCcw, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import ConfirmationDialog from "./ConfirmationDialog";
 import ManualPaymentDialog from "./ManualPaymentDialog";
+import CobrancaRetroativaDialog from "./CobrancaRetroativaDialog";
 
 interface Cobranca {
   id: string;
@@ -28,6 +29,7 @@ interface Cobranca {
 interface PassageiroHistoricoProps {
   passageiroId: string;
   passageiroNome: string;
+  valorMensalidade: number;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -35,6 +37,7 @@ interface PassageiroHistoricoProps {
 export default function PassageiroHistorico({
   passageiroId,
   passageiroNome,
+  valorMensalidade,
   isOpen,
   onClose,
 }: PassageiroHistoricoProps) {
@@ -49,6 +52,7 @@ export default function PassageiroHistorico({
     cobrancaId: string;
     action: 'reenviar' | 'reverter';
   }>({ open: false, cobrancaId: "", action: 'reenviar' });
+  const [retroativaDialogOpen, setRetroativaDialogOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -175,7 +179,18 @@ export default function PassageiroHistorico({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>Carteirinha Digital - {passageiroNome}</DialogTitle>
+          <DialogTitle className="flex items-center justify-between">
+            <span>Carteirinha Digital - {passageiroNome}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setRetroativaDialogOpen(true)}
+              className="ml-4"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Registrar cobrança retroativa
+            </Button>
+          </DialogTitle>
         </DialogHeader>
 
         <Card>
@@ -298,6 +313,15 @@ export default function PassageiroHistorico({
             onPaymentRecorded={handlePaymentRecorded}
           />
         )}
+
+        <CobrancaRetroativaDialog
+          isOpen={retroativaDialogOpen}
+          onClose={() => setRetroativaDialogOpen(false)}
+          passageiroId={passageiroId}
+          passageiroNome={passageiroNome}
+          valorMensalidade={valorMensalidade}
+          onCobrancaAdded={fetchHistorico}
+        />
 
         <ConfirmationDialog
           open={confirmDialog.open}
