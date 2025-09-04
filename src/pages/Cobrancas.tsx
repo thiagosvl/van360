@@ -245,9 +245,6 @@ const Cobrancas = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
               Mensalidades
             </h1>
-            <p className="text-muted-foreground">
-              Gerencie todas as mensalidades por período
-            </p>
           </div>
 
           {/* Filtros */}
@@ -408,6 +405,7 @@ const Cobrancas = () => {
                               <Button
                                 size="sm"
                                 title="Reenviar"
+                                variant="outline"
                                 onClick={() =>
                                   handleReenviarClick(
                                     cobranca.id,

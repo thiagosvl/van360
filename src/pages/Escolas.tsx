@@ -1,6 +1,7 @@
-import Navigation from "@/components/Navigation";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -11,15 +12,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cepMask } from "@/utils/masks";
@@ -267,7 +259,11 @@ export default function Escolas() {
       <div className="p-4 space-y-6">
         <div className="max-w-5xl mx-auto">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-foreground">Escolas</h1>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+                Escolas
+              </h1>
+            </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={resetForm} className="gap-2">
@@ -395,133 +391,102 @@ export default function Escolas() {
             </Dialog>
           </div>
 
-          {loadingPage ? (
-            <div className="border rounded-md">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Endereço</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {[1, 2, 3].map((i) => (
-                    <TableRow key={i}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-32" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-48" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-16" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
-                          <Skeleton className="h-8 w-8" />
-                          <Skeleton className="h-8 w-8" />
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <>
-              <div className="border rounded-md">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Endereço</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {escolas.map((escola) => (
-                      <TableRow
-                        key={escola.id}
-                        className={escola.ativo ? "" : "opacity-50"}
-                      >
-                        <TableCell className="font-medium">
-                          {escola.nome}
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm space-y-1">
-                            {escola.rua && (
-                              <div>
-                                {escola.rua}
-                                {escola.numero && `, ${escola.numero}`}
-                              </div>
-                            )}
-                            {escola.bairro && <div>{escola.bairro}</div>}
-                            {escola.cidade && escola.estado && (
-                              <div>
-                                {escola.cidade} - {escola.estado}
-                              </div>
-                            )}
-                            {escola.cep && <div>CEP: {escola.cep}</div>}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span
-                            className={`px-2 py-1 rounded text-xs ${
-                              escola.ativo
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {escola.ativo ? "Ativa" : "Inativa"}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex gap-2 justify-end">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEdit(escola)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant={escola.ativo ? "outline" : "default"}
-                              onClick={() => handleToggleAtivo(escola)}
-                            >
-                              {escola.ativo ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </Button>
-                            {!escola.ativo && (
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeleteClick(escola)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {escolas.length === 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Lista de Escolas
+                <span className="bg-foreground text-white text-sm px-2 py-0.5 rounded-full">
+                  {escolas.length} escolas
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingPage ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  Carregando...
+                </div>
+              ) : escolas.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   Nenhuma escola cadastrada
                 </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-3 text-sm font-medium">
+                          Nome
+                        </th>
+                        <th className="text-left p-3 text-sm font-medium">
+                          Status
+                        </th>
+                        <th className="text-center p-3 text-sm font-medium">
+                          Ações
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {escolas.map((escola) => (
+                        <tr
+                          key={escola.id}
+                          className="border-b hover:bg-muted/50"
+                        >
+                          <td className="p-3">
+                            <span className="font-medium text-sm">
+                              {escola.nome}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span
+                              className={`px-2 py-1 rounded text-xs ${
+                                escola.ativo
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {escola.ativo ? "Ativa" : "Inativa"}
+                            </span>
+                          </td>
+                          <td className="p-3 text-center">
+                            <div className="flex gap-2 justify-center">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEdit(escola)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={escola.ativo ? "outline" : "default"}
+                                onClick={() => handleToggleAtivo(escola)}
+                              >
+                                {escola.ativo ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </Button>
+                              {!escola.ativo && (
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDeleteClick(escola)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
-            </>
-          )}
+            </CardContent>
+          </Card>
 
           <ConfirmationDialog
             open={isDeleteDialogOpen}

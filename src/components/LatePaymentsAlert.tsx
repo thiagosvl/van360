@@ -159,7 +159,7 @@ const LatePaymentsAlert = ({
                     {cobranca.passageiros.nome}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Venc:{" "}
+                    Venc.:{" "}
                     {new Date(cobranca.data_vencimento).toLocaleDateString(
                       "pt-BR"
                     )}{" "}
@@ -178,6 +178,7 @@ const LatePaymentsAlert = ({
                   <Button
                     size="sm"
                     title="Reenviar"
+                    variant="outline"
                     onClick={() =>
                       handleReenviarClick(
                         cobranca.id,

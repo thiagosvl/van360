@@ -1,7 +1,7 @@
 import Navigation from "@/components/Navigation";
 import PassageiroHistorico from "@/components/PassageiroHistorico";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -23,9 +23,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cepMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
 import {
-  ChevronDown,
-  ChevronRight,
   DollarSign,
+  Filter,
   GraduationCap,
   History,
   MapPin,
@@ -257,7 +256,9 @@ export default function Passageiros() {
       referencia: passageiro.referencia || "",
       nome_responsavel: passageiro.nome_responsavel,
       telefone_responsavel: phoneMask(passageiro.telefone_responsavel),
-      valor_mensalidade: moneyMask((passageiro.valor_mensalidade * 100).toString()),
+      valor_mensalidade: moneyMask(
+        (passageiro.valor_mensalidade * 100).toString()
+      ),
       dia_vencimento: passageiro.dia_vencimento.toString(),
       escola_id: passageiro.escola_id || "",
     });
@@ -308,7 +309,11 @@ export default function Passageiros() {
       <div className="p-4 space-y-6">
         <div className="max-w-5xl mx-auto">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-foreground">Passageiros</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+              Passageiros
+            </h1>
+
+            {/* Modal Passageiro */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={resetForm} className="gap-2">
@@ -334,15 +339,15 @@ export default function Passageiros() {
                       </div>
                       <div>
                         <Label htmlFor="escola">Escola</Label>
-                         <Select
-                           value={formData.escola_id}
-                           onValueChange={(value) =>
-                             setFormData({ ...formData, escola_id: value })
-                           }
-                         >
-                           <SelectTrigger autoFocus={false}>
-                             <SelectValue placeholder="Selecione uma escola" />
-                           </SelectTrigger>
+                        <Select
+                          value={formData.escola_id}
+                          onValueChange={(value) =>
+                            setFormData({ ...formData, escola_id: value })
+                          }
+                        >
+                          <SelectTrigger autoFocus={false}>
+                            <SelectValue placeholder="Selecione uma escola" />
+                          </SelectTrigger>
                           <SelectContent>
                             {escolas.map((escola) => (
                               <SelectItem key={escola.id} value={escola.id}>
@@ -360,7 +365,9 @@ export default function Passageiros() {
                     <CardContent className="p-6">
                       <div className="flex items-center gap-2 mb-4">
                         <User className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-semibold">Informações do Passageiro</h3>
+                        <h3 className="text-lg font-semibold">
+                          Informações do Passageiro
+                        </h3>
                       </div>
                       <div className="space-y-4">
                         <div>
@@ -383,7 +390,10 @@ export default function Passageiros() {
                             required
                             value={formData.nome_responsavel}
                             onChange={(e) =>
-                              handleInputChange("nome_responsavel", e.target.value)
+                              handleInputChange(
+                                "nome_responsavel",
+                                e.target.value
+                              )
                             }
                           />
                         </div>
@@ -475,24 +485,38 @@ export default function Passageiros() {
                                 <SelectItem value="AM">Amazonas</SelectItem>
                                 <SelectItem value="BA">Bahia</SelectItem>
                                 <SelectItem value="CE">Ceará</SelectItem>
-                                <SelectItem value="DF">Distrito Federal</SelectItem>
-                                <SelectItem value="ES">Espírito Santo</SelectItem>
+                                <SelectItem value="DF">
+                                  Distrito Federal
+                                </SelectItem>
+                                <SelectItem value="ES">
+                                  Espírito Santo
+                                </SelectItem>
                                 <SelectItem value="GO">Goiás</SelectItem>
                                 <SelectItem value="MA">Maranhão</SelectItem>
                                 <SelectItem value="MT">Mato Grosso</SelectItem>
-                                <SelectItem value="MS">Mato Grosso do Sul</SelectItem>
+                                <SelectItem value="MS">
+                                  Mato Grosso do Sul
+                                </SelectItem>
                                 <SelectItem value="MG">Minas Gerais</SelectItem>
                                 <SelectItem value="PA">Pará</SelectItem>
                                 <SelectItem value="PB">Paraíba</SelectItem>
                                 <SelectItem value="PR">Paraná</SelectItem>
                                 <SelectItem value="PE">Pernambuco</SelectItem>
                                 <SelectItem value="PI">Piauí</SelectItem>
-                                <SelectItem value="RJ">Rio de Janeiro</SelectItem>
-                                <SelectItem value="RN">Rio Grande do Norte</SelectItem>
-                                <SelectItem value="RS">Rio Grande do Sul</SelectItem>
+                                <SelectItem value="RJ">
+                                  Rio de Janeiro
+                                </SelectItem>
+                                <SelectItem value="RN">
+                                  Rio Grande do Norte
+                                </SelectItem>
+                                <SelectItem value="RS">
+                                  Rio Grande do Sul
+                                </SelectItem>
                                 <SelectItem value="RO">Rondônia</SelectItem>
                                 <SelectItem value="RR">Roraima</SelectItem>
-                                <SelectItem value="SC">Santa Catarina</SelectItem>
+                                <SelectItem value="SC">
+                                  Santa Catarina
+                                </SelectItem>
                                 <SelectItem value="SP">São Paulo</SelectItem>
                                 <SelectItem value="SE">Sergipe</SelectItem>
                                 <SelectItem value="TO">Tocantins</SelectItem>
@@ -512,7 +536,9 @@ export default function Passageiros() {
                           </div>
                         </div>
                         <div>
-                          <Label htmlFor="referencia">Referência (opcional)</Label>
+                          <Label htmlFor="referencia">
+                            Referência (opcional)
+                          </Label>
                           <Textarea
                             id="referencia"
                             value={formData.referencia}
@@ -605,14 +631,20 @@ export default function Passageiros() {
 
           {/* Filtros */}
           <Card className="mb-6">
-            <CardContent className="pt-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                Filtros
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <Label
                     htmlFor="escola-filter"
                     className="text-sm font-medium mb-2 block"
                   >
-                    Filtrar por Escola
+                    Escola
                   </Label>
                   <Select
                     value={selectedEscola}
@@ -636,7 +668,7 @@ export default function Passageiros() {
                     htmlFor="search"
                     className="text-sm font-medium mb-2 block"
                   >
-                    Buscar por Nome
+                    Nome
                   </Label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -655,6 +687,14 @@ export default function Passageiros() {
 
           {/* Tabela de Passageiros */}
           <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Lista de Passageiros
+                <span className="bg-foreground text-white text-sm px-2 py-0.5 rounded-full">
+                  {passageiros.length} passageiros
+                </span>
+              </CardTitle>
+            </CardHeader>
             <CardContent>
               {loading || searching ? (
                 <div className="text-center py-8">
@@ -675,7 +715,7 @@ export default function Passageiros() {
                     <thead>
                       <tr className="border-b">
                         <th className="text-left p-3 text-sm font-medium">
-                          Nome do Passageiro
+                          Nome
                         </th>
                         <th className="text-left p-3 text-sm font-medium">
                           Escola
