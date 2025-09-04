@@ -337,7 +337,7 @@ const Cobrancas = () => {
                         <th className="text-left p-3 text-sm font-medium">
                           Status
                         </th>
-                        <th className="text-right p-3 text-sm font-medium">
+                        <th className="text-left p-3 text-sm font-medium">
                           Valor
                         </th>
                         <th className="text-center p-3 text-sm font-medium">
@@ -381,7 +381,7 @@ const Cobrancas = () => {
                               )}
                             </span>
                           </td>
-                          <td className="p-3 text-right">
+                          <td className="p-3">
                             <span className="font-medium text-sm">
                               {Number(cobranca.valor).toLocaleString("pt-BR", {
                                 style: "currency",
@@ -478,7 +478,7 @@ const Cobrancas = () => {
                         <th className="text-left p-3 text-sm font-medium">
                           Tipo
                         </th>
-                        <th className="text-right p-3 text-sm font-medium">
+                        <th className="text-left p-3 text-sm font-medium">
                           Valor
                         </th>
                         <th className="text-center p-3 text-sm font-medium">
@@ -516,7 +516,7 @@ const Cobrancas = () => {
                               {formatPaymentType(cobranca.tipo_pagamento)}
                             </span>
                           </td>
-                          <td className="p-3 text-right">
+                          <td className="p-3">
                             <span className="font-medium text-sm">
                               {Number(cobranca.valor).toLocaleString("pt-BR", {
                                 style: "currency",
