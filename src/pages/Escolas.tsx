@@ -59,7 +59,7 @@ interface Escola {
 }
 
 const escolaSchema = z.object({
-  nome: z.string().min(1, "Nome da escola é obrigatório"),
+  nome: z.string().min(1, "Campo obrigatório"),
   rua: z.string().optional(),
   numero: z.string().optional(),
   bairro: z.string().optional(),
