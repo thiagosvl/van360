@@ -219,15 +219,15 @@ const Cobrancas = () => {
 
   const formatPaymentType = (tipo: string | undefined) => {
     if (!tipo) return "-";
-    
+
     const typeMap: { [key: string]: string } = {
-      "dinheiro": "Dinheiro",
+      dinheiro: "Dinheiro",
       "cartao-credito": "Cartão de Crédito",
       "cartao-debito": "Cartão de Débito",
-      "transferencia": "Transferência",
-      "PIX": "PIX",
+      transferencia: "Transferência",
+      PIX: "PIX",
     };
-    
+
     return typeMap[tipo] || tipo;
   };
 
@@ -306,7 +306,7 @@ const Cobrancas = () => {
               <CardTitle className="text-red-600 flex items-center gap-2">
                 Em Aberto - {meses[mesFilter - 1]} {anoFilter}
                 <span className="bg-red-600 text-white text-sm px-2 py-0.5 rounded-full">
-                  {cobrancasAbertas.length}
+                  {cobrancasAbertas.length} mensalidades
                 </span>
               </CardTitle>
             </CardHeader>
@@ -394,6 +394,7 @@ const Cobrancas = () => {
                               <Button
                                 size="sm"
                                 variant="outline"
+                                title="Carteirinha"
                                 onClick={() =>
                                   handleViewHistory(
                                     cobranca.passageiro_id,
@@ -403,10 +404,10 @@ const Cobrancas = () => {
                                 className="gap-1"
                               >
                                 <CreditCard className="w-3 h-3" />
-                                Carteirinha
                               </Button>
                               <Button
                                 size="sm"
+                                title="Reenviar"
                                 onClick={() =>
                                   handleReenviarClick(
                                     cobranca.id,
@@ -416,16 +417,15 @@ const Cobrancas = () => {
                                 className="gap-1"
                               >
                                 <Send className="w-3 h-3" />
-                                Reenviar
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
+                                title="Registrar Pagamento"
                                 onClick={() => openPaymentDialog(cobranca)}
                                 className="gap-1"
                               >
                                 <DollarSign className="w-3 h-3" />
-                                Registrar Pagamento
                               </Button>
                             </div>
                           </td>
@@ -442,9 +442,11 @@ const Cobrancas = () => {
           <Card>
             <CardHeader>
               <CardTitle className="text-green-600 flex items-center gap-2">
-                Pagas - {meses[mesFilter - 1]} {anoFilter}
+                <span>
+                  Pagas - {meses[mesFilter - 1]} {anoFilter}
+                </span>
                 <span className="bg-green-600 text-white text-sm px-2 py-0.5 rounded-full">
-                  {cobrancasPagas.length}
+                  {cobrancasPagas.length} mensalidades
                 </span>
               </CardTitle>
             </CardHeader>
@@ -525,11 +527,11 @@ const Cobrancas = () => {
                             <Button
                               size="sm"
                               variant="outline"
+                              title="Reverter"
                               onClick={() => handleReverterClick(cobranca.id)}
                               className="gap-1"
                             >
                               <Undo2 className="w-3 h-3" />
-                              Reverter
                             </Button>
                           </td>
                         </tr>

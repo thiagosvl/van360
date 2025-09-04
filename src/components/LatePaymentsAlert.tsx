@@ -163,8 +163,8 @@ const LatePaymentsAlert = ({
                     {new Date(cobranca.data_vencimento).toLocaleDateString(
                       "pt-BR"
                     )}{" "}
-                    <span className="text-red-600 font-medium">
-                      (Atrasou há {getStatusText(cobranca.data_vencimento)})
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      Atrasou há {getStatusText(cobranca.data_vencimento)}
                     </span>
                   </div>
                   <div className="text-sm font-medium text-red-600">
@@ -177,6 +177,7 @@ const LatePaymentsAlert = ({
                 <div className="flex flex-col gap-2 sm:flex-row sm:gap-2 sm:w-auto w-full">
                   <Button
                     size="sm"
+                    title="Reenviar"
                     onClick={() =>
                       handleReenviarClick(
                         cobranca.id,
@@ -186,11 +187,11 @@ const LatePaymentsAlert = ({
                     className="gap-1 w-full sm:w-auto"
                   >
                     <Send className="w-3 h-3" />
-                    Reenviar
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
+                    title="Carteirinha"
                     onClick={() =>
                       onViewHistory(
                         cobranca.passageiro_id,
@@ -200,16 +201,15 @@ const LatePaymentsAlert = ({
                     className="gap-1 w-full sm:w-auto"
                   >
                     <CreditCard className="w-3 h-3" />
-                    Carteirinha
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
+                    title="Registrar Pagamento"
                     onClick={() => onPayment(cobranca)}
                     className="gap-1 w-full sm:w-auto"
                   >
                     <DollarSign className="w-3 h-3" />
-                    Registrar Pagamento
                   </Button>
                 </div>
               </div>
