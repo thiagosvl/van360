@@ -1,14 +1,14 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { DollarSign, Plus, RotateCcw, Send, ArrowLeft } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import CobrancaRetroativaDialog from "@/components/CobrancaRetroativaDialog";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import Navigation from "@/components/Navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft, DollarSign, Plus, RotateCcw, Send } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface Cobranca {
   id: string;
@@ -240,7 +240,7 @@ export default function PassageiroCarteirinha() {
                 onClick={() => setRetroativaDialogOpen(true)}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Registrar cobrança retroativa
+                Registrar Cobrança Retroativa
               </Button>
             </div>
           </CardHeader>

@@ -1,6 +1,7 @@
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -26,15 +27,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cepMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  CreditCard,
   DollarSign,
   Filter,
-  History,
   MapPin,
   Pencil,
   Plus,
@@ -368,9 +368,7 @@ export default function Passageiros() {
                         {/* Passageiro Section */}
                         <div className="flex items-center gap-2 mb-4">
                           <User className="w-5 h-5 text-primary" />
-                          <h3 className="text-lg font-semibold">
-                            Informações
-                          </h3>
+                          <h3 className="text-lg font-semibold">Informações</h3>
                         </div>
                         <div className="space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -523,35 +521,35 @@ export default function Passageiros() {
                                 <FormMessage />
                               </FormItem>
                             )}
-                           />
-                         </div>
+                          />
+                        </div>
 
-                         {/* Checkbox para emitir cobrança apenas no cadastro */}
-                         {!editingPassageiro && (
-                           <div className="mt-4">
-                             <FormField
-                               control={form.control}
-                               name="emitir_cobranca_mes_atual"
-                               render={({ field }) => (
-                                 <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                   <FormControl>
-                                     <Checkbox
-                                       checked={field.value}
-                                       onCheckedChange={field.onChange}
-                                     />
-                                   </FormControl>
-                                   <div className="space-y-1 leading-none">
-                                     <FormLabel>
-                                       Emitir cobrança para o mês atual
-                                     </FormLabel>
-                                   </div>
-                                 </FormItem>
-                               )}
-                             />
-                           </div>
-                         )}
+                        {/* Checkbox para emitir cobrança apenas no cadastro */}
+                        {!editingPassageiro && (
+                          <div className="mt-4">
+                            <FormField
+                              control={form.control}
+                              name="emitir_cobranca_mes_atual"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>
+                                      Emitir cobrança para o mês atual
+                                    </FormLabel>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        )}
 
-                         <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
+                        <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
 
                         {/* Endereço Section */}
                         <div className="flex items-center gap-2 mb-4">
@@ -897,7 +895,7 @@ export default function Passageiros() {
                                 onClick={() => handleHistorico(passageiro)}
                                 className="gap-1"
                               >
-                                <History className="w-3 h-3" />
+                                <CreditCard className="w-3 h-3" />
                               </Button>
                             </div>
                           </td>
@@ -909,7 +907,6 @@ export default function Passageiros() {
               )}
             </CardContent>
           </Card>
-
         </div>
       </div>
     </div>
