@@ -214,12 +214,13 @@ export default function Passageiros() {
     setLoading(true);
 
     try {
+      const { emitir_cobranca_mes_atual, ...pureData } = data;
       const passageiroData = {
-        ...data,
-        valor_mensalidade: moneyToNumber(data.valor_mensalidade),
-        dia_vencimento: Number(data.dia_vencimento),
-        endereco: `${data.rua}, ${data.numero}`, // Manter compatibilidade
-        escola_id: data.escola_id || null,
+        ...pureData,
+        valor_mensalidade: moneyToNumber(pureData.valor_mensalidade),
+        dia_vencimento: Number(pureData.dia_vencimento),
+        endereco: `${pureData.rua}, ${pureData.numero}`, // Manter compatibilidade
+        escola_id: pureData.escola_id || null,
       };
 
       if (editingPassageiro) {
@@ -243,21 +244,21 @@ export default function Passageiros() {
         if (error) throw error;
 
         // Criar cobrança do mês atual apenas se checkbox estiver marcado
-        if (data.emitir_cobranca_mes_atual) {
+        if (emitir_cobranca_mes_atual) {
           const currentDate = new Date();
           const mes = currentDate.getMonth() + 1;
           const ano = currentDate.getFullYear();
           const dataVencimento = new Date(
             ano,
             mes - 1,
-            Number(data.dia_vencimento)
+            Number(pureData.dia_vencimento)
           );
 
           await supabase.from("cobrancas").insert({
             passageiro_id: newPassageiro.id,
             mes,
             ano,
-            valor: moneyToNumber(data.valor_mensalidade),
+            valor: moneyToNumber(pureData.valor_mensalidade),
             data_vencimento: dataVencimento.toISOString().split("T")[0],
             status: "pendente",
           });
