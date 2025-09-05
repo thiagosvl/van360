@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -17,28 +18,27 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 
 const cobrancaRetroativaSchema = z.object({
   mes: z.string().min(1, "Campo obrigatório"),
@@ -84,10 +84,10 @@ const meses = [
 ];
 
 const tiposPagamento = [
-  { value: "pix", label: "PIX" },
+  { value: "PIX", label: "PIX" },
   { value: "dinheiro", label: "Dinheiro" },
-  { value: "cartao_debito", label: "Cartão de Débito" },
-  { value: "cartao_credito", label: "Cartão de Crédito" },
+  { value: "cartao-debito", label: "Cartão de Débito" },
+  { value: "cartao-credito", label: "Cartão de Crédito" },
   { value: "transferencia", label: "Transferência" },
 ];
 
@@ -305,7 +305,7 @@ export default function CobrancaRetroativaDialog({
                       name="data_pagamento"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel>Data de pagamento</FormLabel>
+                          <FormLabel>Data de pagamento *</FormLabel>
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
@@ -346,7 +346,7 @@ export default function CobrancaRetroativaDialog({
                       name="tipo_pagamento"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Forma de pagamento</FormLabel>
+                          <FormLabel>Forma de pagamento *</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
