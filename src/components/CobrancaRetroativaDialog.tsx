@@ -48,13 +48,21 @@ const cobrancaRetroativaSchema = z.object({
   data_pagamento: z.date().optional(),
   tipo_pagamento: z.string().optional(),
 }).refine((data) => {
-  if (data.foi_pago) {
-    return data.data_pagamento && data.tipo_pagamento;
+  if (data.foi_pago && !data.data_pagamento) {
+    return false;
   }
   return true;
 }, {
-  message: "Data de pagamento e forma de pagamento são obrigatórios quando 'Foi pago?' está marcado",
+  message: "Data de pagamento é obrigatória quando 'Foi pago?' está marcado",
   path: ["data_pagamento"],
+}).refine((data) => {
+  if (data.foi_pago && !data.tipo_pagamento) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Forma de pagamento é obrigatória quando 'Foi pago?' está marcado",
+  path: ["tipo_pagamento"],
 });
 
 type CobrancaRetroativaFormData = z.infer<typeof cobrancaRetroativaSchema>;
@@ -65,6 +73,7 @@ interface CobrancaRetroativaDialogProps {
   passageiroId: string;
   passageiroNome: string;
   valorMensalidade: number;
+  diaVencimento: number;
   onCobrancaAdded: () => void;
 }
 
@@ -97,6 +106,7 @@ export default function CobrancaRetroativaDialog({
   passageiroId,
   passageiroNome,
   valorMensalidade,
+  diaVencimento,
   onCobrancaAdded,
 }: CobrancaRetroativaDialogProps) {
   const [loading, setLoading] = useState(false);
@@ -147,8 +157,8 @@ export default function CobrancaRetroativaDialog({
         return;
       }
 
-      // Calcular data de vencimento (dia 10 do mês)
-      const dataVencimento = new Date(parseInt(data.ano), parseInt(data.mes) - 1, 10);
+      // Calcular data de vencimento usando o dia de vencimento do passageiro
+      const dataVencimento = new Date(parseInt(data.ano), parseInt(data.mes) - 1, diaVencimento);
 
       const cobrancaData = {
         passageiro_id: passageiroId,
@@ -329,7 +339,14 @@ export default function CobrancaRetroativaDialog({
                               <Calendar
                                 mode="single"
                                 selected={field.value}
-                                onSelect={field.onChange}
+                                onSelect={(date) => {
+                                  field.onChange(date);
+                                  // Fechar o popover após selecionar a data
+                                  const popoverTrigger = document.querySelector('[data-state="open"]');
+                                  if (popoverTrigger) {
+                                    (popoverTrigger as HTMLElement).click();
+                                  }
+                                }}
                                 disabled={(date) => date > new Date()}
                                 initialFocus
                                 className={cn("p-3 pointer-events-auto")}

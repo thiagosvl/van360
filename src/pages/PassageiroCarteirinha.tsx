@@ -26,6 +26,7 @@ interface Passageiro {
   id: string;
   nome: string;
   valor_mensalidade: number;
+  dia_vencimento: number;
 }
 
 export default function PassageiroCarteirinha() {
@@ -57,7 +58,7 @@ export default function PassageiroCarteirinha() {
     try {
       const { data, error } = await supabase
         .from("passageiros")
-        .select("id, nome, valor_mensalidade")
+        .select("id, nome, valor_mensalidade, dia_vencimento")
         .eq("id", passageiro_id)
         .single();
 
@@ -396,6 +397,7 @@ export default function PassageiroCarteirinha() {
           passageiroId={passageiro.id}
           passageiroNome={passageiro.nome}
           valorMensalidade={passageiro.valor_mensalidade}
+          diaVencimento={passageiro.dia_vencimento}
           onCobrancaAdded={fetchHistorico}
         />
 
