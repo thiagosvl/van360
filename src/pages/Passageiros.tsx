@@ -2,6 +2,9 @@ import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Trash2 } from "lucide-react";
+
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {
   Dialog,
   DialogContent,
@@ -34,12 +37,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CreditCard,
   DollarSign,
-  Filter,
   MapPin,
   Pencil,
   Plus,
   Search,
-  User
+  User,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -65,6 +67,7 @@ interface Passageiro {
   created_at: string;
   updated_at: string;
   escolas?: { nome: string };
+  ativo: boolean;
 }
 
 interface Escola {
@@ -94,6 +97,7 @@ const passageiroSchema = z.object({
   valor_mensalidade: z.string().min(1, "Campo obrigatório"),
   dia_vencimento: z.string().min(1, "Campo obrigatório"),
   emitir_cobranca_mes_atual: z.boolean().optional(),
+  ativo: z.boolean().optional(),
 });
 
 type PassageiroFormData = z.infer<typeof passageiroSchema>;
@@ -115,6 +119,14 @@ export default function Passageiros() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    passageiroId: string;
+  }>({
+    open: false,
+    passageiroId: "",
+  });
+
   const form = useForm<PassageiroFormData>({
     resolver: zodResolver(passageiroSchema),
     defaultValues: {
@@ -132,6 +144,7 @@ export default function Passageiros() {
       valor_mensalidade: "",
       dia_vencimento: "",
       emitir_cobranca_mes_atual: false,
+      ativo: true,
     },
   });
 
@@ -161,6 +174,56 @@ export default function Passageiros() {
       fetchPassageiros();
     }
   }, [selectedEscola, searchTerm]);
+
+  const handleDeleteClick = (id: string) => {
+    setDeleteDialog({ open: true, passageiroId: id });
+  };
+
+  const handleDelete = async () => {
+    try {
+      const { data: cobrancas, error: checkError } = await supabase
+        .from("cobrancas")
+        .select("id")
+        .eq("passageiro_id", deleteDialog.passageiroId);
+
+      if (checkError) throw checkError;
+
+      if (cobrancas && cobrancas.length > 0) {
+        toast({
+          title: "Não é possível remover",
+          description:
+            "Este passageiro possui histórico de mensalidades. Exclua as cobranças antes de remover o passageiro.",
+          variant: "destructive",
+        });
+        setDeleteDialog({ open: false, passageiroId: "" });
+        return;
+      }
+
+      // Se não houver cobranças, excluir normalmente
+      const { error } = await supabase
+        .from("passageiros")
+        .delete()
+        .eq("id", deleteDialog.passageiroId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Passageiro removido com sucesso.",
+      });
+
+      fetchPassageiros();
+    } catch (error) {
+      console.error("Erro ao excluir passageiro:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao remover passageiro.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteDialog({ open: false, passageiroId: "" });
+    }
+  };
 
   const fetchEscolas = async () => {
     try {
@@ -201,7 +264,7 @@ export default function Passageiros() {
       console.error("Erro ao buscar passageiros:", error);
       toast({
         title: "Erro",
-        description: "Erro ao carregar passageiros",
+        description: "Erro ao carregar passageiros.",
         variant: "destructive",
       });
     } finally {
@@ -219,8 +282,8 @@ export default function Passageiros() {
         ...pureData,
         valor_mensalidade: moneyToNumber(pureData.valor_mensalidade),
         dia_vencimento: Number(pureData.dia_vencimento),
-        endereco: `${pureData.rua}, ${pureData.numero}`, // Manter compatibilidade
         escola_id: pureData.escola_id || null,
+        ativo: pureData.ativo ?? true,
       };
 
       if (editingPassageiro) {
@@ -276,7 +339,7 @@ export default function Passageiros() {
       console.error("Erro ao salvar passageiro:", error);
       toast({
         title: "Erro",
-        description: "Erro ao salvar passageiro",
+        description: "Erro ao salvar passageiro.",
         variant: "destructive",
       });
     } finally {
@@ -302,6 +365,7 @@ export default function Passageiros() {
       ),
       dia_vencimento: passageiro.dia_vencimento.toString(),
       escola_id: passageiro.escola_id || "",
+      ativo: passageiro.ativo,
     });
     setIsDialogOpen(true);
   };
@@ -459,6 +523,28 @@ export default function Passageiros() {
                               )}
                             />
                           </div>
+
+                          {editingPassageiro && (
+                            <div className="mt-2">
+                              <FormField
+                                control={form.control}
+                                name="ativo"
+                                render={({ field }) => (
+                                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                      />
+                                    </FormControl>
+                                    <div className="space-y-1 leading-none">
+                                      <FormLabel>Ativo</FormLabel>
+                                    </div>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          )}
                         </div>
 
                         <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
@@ -564,7 +650,7 @@ export default function Passageiros() {
                               name="rua"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Rua</FormLabel>
+                                  <FormLabel>Logradouro</FormLabel>
                                   <FormControl>
                                     <Input {...field} />
                                   </FormControl>
@@ -766,12 +852,14 @@ export default function Passageiros() {
             </Dialog>
           </div>
 
-          {/* Filtros */}
-          <Card className="mb-6">
+          {/* Tabela de Passageiros */}
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Filter className="w-4 h-4" />
-                Filtros
+                Lista de Passageiros
+                <span className="bg-foreground text-white text-sm px-2 py-0.5 rounded-full">
+                  {passageiros.length}
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -819,97 +907,108 @@ export default function Passageiros() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Tabela de Passageiros */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Lista de Passageiros
-                <span className="bg-foreground text-white text-sm px-2 py-0.5 rounded-full">
-                  {passageiros.length}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading || searching ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                  {searching ? "Buscando passageiros..." : "Carregando..."}
-                </div>
-              ) : passageiros.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  {searchTerm.length > 0 && searchTerm.length < 2
-                    ? "Digite pelo menos 2 caracteres para buscar"
-                    : searchTerm.length >= 2
-                    ? "Nenhum passageiro encontrado com este nome"
-                    : "Nenhum passageiro encontrado"}
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left p-3 text-sm font-medium">
-                          Nome
-                        </th>
-                        <th className="text-left p-3 text-sm font-medium">
-                          Escola
-                        </th>
-                        <th className="text-center p-3 text-sm font-medium">
-                          Ações
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {passageiros.map((passageiro) => (
-                        <tr
-                          key={passageiro.id}
-                          className="border-b hover:bg-muted/50"
-                        >
-                          <td className="p-3">
-                            <span className="font-medium text-sm">
-                              {passageiro.nome}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <span className="text-sm text-muted-foreground">
-                              {passageiro.escolas?.nome || "Não informada"}
-                            </span>
-                          </td>
-                          <td className="p-3 text-center">
-                            <div className="flex gap-2 justify-center">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                title="Editar"
-                                onClick={() => handleEdit(passageiro)}
-                                className="gap-1"
-                              >
-                                <Pencil className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                title="Carteirinha"
-                                onClick={() => handleHistorico(passageiro)}
-                                className="gap-1"
-                              >
-                                <CreditCard className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </td>
+              <div className="mt-8">
+                {loading || searching ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    {searching ? "Buscando passageiros..." : "Carregando..."}
+                  </div>
+                ) : passageiros.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    {searchTerm.length > 0 && searchTerm.length < 2
+                      ? "Digite pelo menos 2 caracteres para buscar"
+                      : searchTerm.length >= 2
+                      ? "Nenhum passageiro encontrado com este nome"
+                      : "Nenhum passageiro encontrado"}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-3 text-sm font-medium">
+                            Nome
+                          </th>
+                          <th className="text-left p-3 text-sm font-medium">
+                            Escola
+                          </th>
+                          <th className="text-center p-3 text-sm font-medium">
+                            Ações
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      </thead>
+                      <tbody>
+                        {passageiros.map((passageiro) => (
+                          <tr
+                            key={passageiro.id}
+                            className="border-b hover:bg-muted/50"
+                          >
+                            <td className="p-3">
+                              <span className="font-medium text-sm">
+                                {passageiro.nome}
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              <span className="text-sm text-muted-foreground">
+                                {passageiro.escolas?.nome || "Não informada"}
+                              </span>
+                            </td>
+                            <td className="p-3 text-center">
+                              <div className="flex gap-2 justify-center">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  title="Editar"
+                                  onClick={() => handleEdit(passageiro)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Pencil className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  title="Carteirinha"
+                                  onClick={() => handleHistorico(passageiro)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <CreditCard className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  title="Remover"
+                                  onClick={() =>
+                                    handleDeleteClick(passageiro.id)
+                                  }
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      <ConfirmationDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog({ open, passageiroId: "" })}
+        title="Remover Passageiro"
+        description="Deseja remover permanentemente este passageiro? Esta ação não pode ser desfeita."
+        onConfirm={handleDelete}
+        confirmText="Remover"
+        cancelText="Cancelar"
+        variant="destructive"
+      />
     </div>
   );
 }

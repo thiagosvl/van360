@@ -40,7 +40,11 @@ interface LatePaymentsAlertProps {
   selectedYear: number;
   onReenviarCobranca: (cobrancaId: string, nomePassageiro: string) => void;
   onPayment: (cobranca: Cobranca) => void;
-  onViewHistory: (passageiroId: string, passageiroNome: string, valorMensalidade: number) => void;
+  onViewHistory: (
+    passageiroId: string,
+    passageiroNome: string,
+    valorMensalidade: number
+  ) => void;
 }
 
 const LatePaymentsAlert = ({
@@ -198,7 +202,7 @@ const LatePaymentsAlert = ({
                     })}
                   </div>
                 </div>
-                <div className="flex flex-col gap-2 sm:flex-row sm:gap-2 sm:w-auto w-full">
+                <div className="flex gap-2 justify-center">
                   <Button
                     size="sm"
                     title="Reenviar"
@@ -209,7 +213,7 @@ const LatePaymentsAlert = ({
                         cobranca.passageiros.nome
                       )
                     }
-                    className="gap-1 w-full sm:w-auto"
+                    className="h-8 w-8 p-0"
                   >
                     <Send className="w-3 h-3" />
                   </Button>
@@ -224,7 +228,7 @@ const LatePaymentsAlert = ({
                         cobranca.passageiros.valor_mensalidade
                       )
                     }
-                    className="gap-1 w-full sm:w-auto"
+                    className="h-8 w-8 p-0"
                   >
                     <CreditCard className="w-3 h-3" />
                   </Button>
@@ -233,7 +237,7 @@ const LatePaymentsAlert = ({
                     variant="outline"
                     title="Registrar Pagamento"
                     onClick={() => onPayment(cobranca)}
-                    className="gap-1 w-full sm:w-auto"
+                    className="h-8 w-8 p-0"
                   >
                     <DollarSign className="w-3 h-3" />
                   </Button>

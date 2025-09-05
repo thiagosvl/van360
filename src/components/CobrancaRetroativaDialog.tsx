@@ -40,30 +40,39 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const cobrancaRetroativaSchema = z.object({
-  mes: z.string().min(1, "Campo obrigatório"),
-  ano: z.string().min(1, "Campo obrigatório"),
-  valor: z.string().min(1, "Campo obrigatório"),
-  foi_pago: z.boolean().default(false),
-  data_pagamento: z.date().optional(),
-  tipo_pagamento: z.string().optional(),
-}).refine((data) => {
-  if (data.foi_pago && !data.data_pagamento) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Data de pagamento é obrigatória quando 'Foi pago?' está marcado",
-  path: ["data_pagamento"],
-}).refine((data) => {
-  if (data.foi_pago && !data.tipo_pagamento) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Forma de pagamento é obrigatória quando 'Foi pago?' está marcado",
-  path: ["tipo_pagamento"],
-});
+const cobrancaRetroativaSchema = z
+  .object({
+    mes: z.string().min(1, "Campo obrigatório"),
+    ano: z.string().min(1, "Campo obrigatório"),
+    valor: z.string().min(1, "Campo obrigatório"),
+    foi_pago: z.boolean().default(false),
+    data_pagamento: z.date().optional(),
+    tipo_pagamento: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.foi_pago && !data.data_pagamento) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Campo obrigatório",
+      path: ["data_pagamento"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.foi_pago && !data.tipo_pagamento) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Campo obrigatório",
+      path: ["tipo_pagamento"],
+    }
+  );
 
 type CobrancaRetroativaFormData = z.infer<typeof cobrancaRetroativaSchema>;
 
@@ -111,11 +120,15 @@ export default function CobrancaRetroativaDialog({
 }: CobrancaRetroativaDialogProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  
+  const [openCalendar, setOpenCalendar] = useState(false);
+
   const currentYear = new Date().getFullYear();
   const anos = [
     { value: currentYear.toString(), label: currentYear.toString() },
-    { value: (currentYear - 1).toString(), label: (currentYear - 1).toString() },
+    {
+      value: (currentYear - 1).toString(),
+      label: (currentYear - 1).toString(),
+    },
   ];
 
   const form = useForm<CobrancaRetroativaFormData>({
@@ -158,18 +171,23 @@ export default function CobrancaRetroativaDialog({
       }
 
       // Calcular data de vencimento usando o dia de vencimento do passageiro
-      const dataVencimento = new Date(parseInt(data.ano), parseInt(data.mes) - 1, diaVencimento);
+      const dataVencimento = new Date(
+        parseInt(data.ano),
+        parseInt(data.mes) - 1,
+        diaVencimento
+      );
 
       const cobrancaData = {
         passageiro_id: passageiroId,
         mes: parseInt(data.mes),
         ano: parseInt(data.ano),
         valor: moneyToNumber(data.valor),
-        data_vencimento: dataVencimento.toISOString().split('T')[0],
+        data_vencimento: dataVencimento.toISOString().split("T")[0],
         status: data.foi_pago ? "pago" : "pendente",
-        data_pagamento: data.foi_pago && data.data_pagamento 
-          ? data.data_pagamento.toISOString().split('T')[0] 
-          : null,
+        data_pagamento:
+          data.foi_pago && data.data_pagamento
+            ? data.data_pagamento.toISOString().split("T")[0]
+            : null,
         tipo_pagamento: data.foi_pago ? data.tipo_pagamento : null,
         pagamento_manual: data.foi_pago,
       };
@@ -212,11 +230,16 @@ export default function CobrancaRetroativaDialog({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Passageiro: {passageiroNome}</CardTitle>
+            <CardTitle className="text-base">
+              Passageiro: {passageiroNome}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(handleSubmit)}
+                className="space-y-4"
+              >
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -224,7 +247,10 @@ export default function CobrancaRetroativaDialog({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Mês</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione o mês" />
@@ -249,7 +275,10 @@ export default function CobrancaRetroativaDialog({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Ano</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione o ano" />
@@ -316,14 +345,20 @@ export default function CobrancaRetroativaDialog({
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormLabel>Data de pagamento *</FormLabel>
-                          <Popover>
+                          <Popover
+                            open={openCalendar}
+                            onOpenChange={setOpenCalendar}
+                          >
                             <PopoverTrigger asChild>
                               <FormControl>
                                 <Button
                                   variant="outline"
+                                  onClick={() => setOpenCalendar(true)}
                                   className={cn(
                                     "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
+                                    !field.value && "text-muted-foreground",
+                                    form.formState.errors.data_pagamento &&
+                                      "border-red-500 ring-red-500"
                                   )}
                                 >
                                   {field.value ? (
@@ -335,17 +370,16 @@ export default function CobrancaRetroativaDialog({
                                 </Button>
                               </FormControl>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
                               <Calendar
                                 mode="single"
                                 selected={field.value}
                                 onSelect={(date) => {
                                   field.onChange(date);
-                                  // Fechar o popover após selecionar a data
-                                  const popoverTrigger = document.querySelector('[data-state="open"]');
-                                  if (popoverTrigger) {
-                                    (popoverTrigger as HTMLElement).click();
-                                  }
+                                  setOpenCalendar(false); // fecha corretamente
                                 }}
                                 disabled={(date) => date > new Date()}
                                 initialFocus
@@ -353,6 +387,7 @@ export default function CobrancaRetroativaDialog({
                               />
                             </PopoverContent>
                           </Popover>
+
                           <FormMessage />
                         </FormItem>
                       )}
@@ -364,7 +399,10 @@ export default function CobrancaRetroativaDialog({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Forma de pagamento *</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecione a forma" />

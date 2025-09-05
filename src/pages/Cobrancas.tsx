@@ -130,7 +130,7 @@ const Cobrancas = () => {
       console.error("Erro ao reenviar cobrança:", error);
       toast({
         title: "Erro",
-        description: "Erro ao reenviar cobrança",
+        description: "Erro ao reenviar cobrança.",
         variant: "destructive",
       });
     }
@@ -158,7 +158,7 @@ const Cobrancas = () => {
 
       toast({
         title: "Pagamento revertido com sucesso",
-        description: "A cobrança voltou para a lista de em aberto",
+        description: "A cobrança voltou para a lista de em aberto.",
       });
 
       fetchCobrancas();
@@ -166,7 +166,7 @@ const Cobrancas = () => {
       console.error("Erro ao reverter pagamento:", error);
       toast({
         title: "Erro",
-        description: "Erro ao reverter pagamento",
+        description: "Erro ao reverter pagamento.",
         variant: "destructive",
       });
     }
@@ -395,7 +395,7 @@ const Cobrancas = () => {
                                 onClick={() =>
                                   handleViewHistory(cobranca.passageiro_id)
                                 }
-                                className="gap-1"
+                                className="h-8 w-8 p-0"
                               >
                                 <CreditCard className="w-3 h-3" />
                               </Button>
@@ -409,7 +409,7 @@ const Cobrancas = () => {
                                     cobranca.passageiros.nome
                                   )
                                 }
-                                className="gap-1"
+                                className="h-8 w-8 p-0"
                               >
                                 <Send className="w-3 h-3" />
                               </Button>
@@ -418,7 +418,7 @@ const Cobrancas = () => {
                                 variant="outline"
                                 title="Registrar Pagamento"
                                 onClick={() => openPaymentDialog(cobranca)}
-                                className="gap-1"
+                                className="h-8 w-8 p-0"
                               >
                                 <DollarSign className="w-3 h-3" />
                               </Button>
@@ -527,7 +527,7 @@ const Cobrancas = () => {
                                 onClick={() =>
                                   handleViewHistory(cobranca.passageiro_id)
                                 }
-                                className="gap-1"
+                                className="h-8 w-8 p-0"
                               >
                                 <CreditCard className="w-3 h-3" />
                               </Button>
@@ -536,7 +536,7 @@ const Cobrancas = () => {
                                 variant="outline"
                                 title="Reverter"
                                 onClick={() => handleReverterClick(cobranca.id)}
-                                className="gap-1"
+                                className="h-8 w-8 p-0"
                               >
                                 <Undo2 className="w-3 h-3" />
                               </Button>
@@ -585,7 +585,6 @@ const Cobrancas = () => {
         variant="destructive"
         confirmText="Reverter"
       />
-
     </div>
   );
 };

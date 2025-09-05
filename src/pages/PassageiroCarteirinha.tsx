@@ -6,7 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, DollarSign, Plus, RotateCcw, Send } from "lucide-react";
+import {
+  ArrowLeft,
+  DollarSign,
+  Plus,
+  RotateCcw,
+  Send,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -36,7 +43,9 @@ export default function PassageiroCarteirinha() {
   const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
   const [loading, setLoading] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(null);
+  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
+    null
+  );
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     cobrancaId: string;
@@ -52,9 +61,48 @@ export default function PassageiroCarteirinha() {
     }
   }, [passageiro_id]);
 
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    cobrancaId: string;
+  }>({
+    open: false,
+    cobrancaId: "",
+  });
+
+  const handleDeleteClick = (id: string) => {
+    setDeleteDialog({ open: true, cobrancaId: id });
+  };
+
+  const handleDelete = async () => {
+    try {
+      const { error } = await supabase
+        .from("cobrancas")
+        .delete()
+        .eq("id", deleteDialog.cobrancaId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Cobrança removida com sucesso.",
+      });
+
+      fetchHistorico();
+    } catch (error) {
+      console.error("Erro ao excluir cobrança:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao remover cobrança.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteDialog({ open: false, cobrancaId: "" });
+    }
+  };
+
   const fetchPassageiro = async () => {
     if (!passageiro_id) return;
-    
+
     try {
       const { data, error } = await supabase
         .from("passageiros")
@@ -68,7 +116,7 @@ export default function PassageiroCarteirinha() {
       console.error("Erro ao buscar passageiro:", error);
       toast({
         title: "Erro",
-        description: "Passageiro não encontrado",
+        description: "Passageiro não encontrado.",
         variant: "destructive",
       });
       navigate("/passageiros");
@@ -77,7 +125,7 @@ export default function PassageiroCarteirinha() {
 
   const fetchHistorico = async () => {
     if (!passageiro_id) return;
-    
+
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -187,7 +235,7 @@ export default function PassageiroCarteirinha() {
       console.error("Erro ao executar ação:", error);
       toast({
         title: "Erro",
-        description: "Erro ao executar ação",
+        description: "Erro ao executar ação.",
         variant: "destructive",
       });
     }
@@ -228,18 +276,15 @@ export default function PassageiroCarteirinha() {
             Voltar
           </Button>
           <h1 className="text-2xl font-bold">
-            {passageiro.nome} - Carteirinha Digital
+            {passageiro.nome} - Carteirinha
           </h1>
         </div>
 
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Histórico de Cobranças</CardTitle>
-              <Button
-                size="sm"
-                onClick={() => setRetroativaDialogOpen(true)}
-              >
+              <CardTitle>Mensalidades</CardTitle>
+              <Button size="sm" onClick={() => setRetroativaDialogOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Registrar Cobrança Retroativa
               </Button>
@@ -353,6 +398,16 @@ export default function PassageiroCarteirinha() {
                                 >
                                   <DollarSign className="w-3 h-3" />
                                 </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDeleteClick(cobranca.id)}
+                                  className="h-8 w-8 p-0"
+                                  title="Remover Cobrança"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
                               </>
                             ) : (
                               cobranca.pagamento_manual && (
@@ -417,6 +472,17 @@ export default function PassageiroCarteirinha() {
               : "Deseja reverter este pagamento? A cobrança voltará ao status pendente."
           }
           onConfirm={handleConfirmAction}
+        />
+
+        <ConfirmationDialog
+          open={deleteDialog.open}
+          onOpenChange={(open) => setDeleteDialog({ open, cobrancaId: "" })}
+          title="Remover cobrança"
+          description="Deseja remover permanentemente esta cobrança? Esta ação não pode ser desfeita."
+          onConfirm={handleDelete}
+          confirmText="Remover"
+          cancelText="Cancelar"
+          variant="destructive"
         />
       </div>
     </div>

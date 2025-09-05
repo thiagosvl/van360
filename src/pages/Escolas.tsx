@@ -2,6 +2,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -30,15 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cepMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Building2,
-  Eye,
-  EyeOff,
-  MapPin,
-  Pencil,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { Building2, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -58,6 +51,28 @@ interface Escola {
   updated_at: string;
 }
 
+interface Passageiro {
+  id: string;
+  nome: string;
+  endereco: string;
+  rua?: string;
+  numero?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
+  cep?: string;
+  referencia?: string;
+  nome_responsavel: string;
+  telefone_responsavel: string;
+  valor_mensalidade: number;
+  dia_vencimento: number | string;
+  escola_id?: string;
+  created_at: string;
+  updated_at: string;
+  escolas?: { nome: string };
+  ativo: boolean;
+}
+
 const escolaSchema = z.object({
   nome: z.string().min(1, "Campo obrigatório"),
   rua: z.string().optional(),
@@ -67,6 +82,7 @@ const escolaSchema = z.object({
   estado: z.string().optional(),
   cep: z.string().optional(),
   referencia: z.string().optional(),
+  ativo: z.boolean().optional(),
 });
 
 type EscolaFormData = z.infer<typeof escolaSchema>;
@@ -92,6 +108,7 @@ export default function Escolas() {
       estado: "",
       cep: "",
       referencia: "",
+      ativo: true,
     },
   });
 
@@ -102,20 +119,17 @@ export default function Escolas() {
   const fetchEscolas = async () => {
     setLoadingPage(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("escolas")
-        .select("*")
+        .select("id, nome, ativo")
         .order("nome");
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setEscolas(data || []);
     } catch (error) {
       console.error("Erro ao buscar escolas:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao carregar escolas",
-        variant: "destructive",
-      });
     } finally {
       setLoadingPage(false);
     }
@@ -126,25 +140,48 @@ export default function Escolas() {
 
     try {
       if (editingEscola) {
+        if (editingEscola.ativo && data.ativo === false) {
+          const { data: passageirosAtivos, error: checkError } = await supabase
+            .from("passageiros")
+            .select("id")
+            .eq("escola_id", editingEscola.id)
+            .eq("ativo", true);
+
+          if (checkError) throw checkError;
+
+          if (passageirosAtivos && passageirosAtivos.length > 0) {
+            toast({
+              title: "Não é possível desativar",
+              description:
+                'Existem passageiros ativos vinculados a esta escola. Mantenha a opção "Ativa" marcada.',
+              variant: "destructive",
+            });
+            setLoading(false);
+            return;
+          }
+        }
+
         const { error } = await supabase
           .from("escolas")
-          .update(data)
+          .update({ ...data, ativo: data.ativo ?? true })
           .eq("id", editingEscola.id);
 
         if (error) throw error;
 
         toast({
           title: "Sucesso",
-          description: "Escola atualizada com sucesso",
+          description: "Escola atualizada com sucesso.",
         });
       } else {
-        const { error } = await supabase.from("escolas").insert([data]);
+        const { error } = await supabase
+          .from("escolas")
+          .insert([{ ...data, ativo: true }]);
 
         if (error) throw error;
 
         toast({
           title: "Sucesso",
-          description: "Escola cadastrada com sucesso",
+          description: "Escola cadastrada com sucesso.",
         });
       }
 
@@ -155,7 +192,7 @@ export default function Escolas() {
       console.error("Erro ao salvar escola:", error);
       toast({
         title: "Erro",
-        description: "Erro ao salvar escola",
+        description: "Erro ao salvar escola.",
         variant: "destructive",
       });
     } finally {
@@ -174,50 +211,9 @@ export default function Escolas() {
       estado: escola.estado || "",
       cep: escola.cep || "",
       referencia: escola.referencia || "",
+      ativo: escola.ativo,
     });
     setIsDialogOpen(true);
-  };
-
-  const handleToggleAtivo = async (escola: Escola) => {
-    try {
-      if (escola.ativo) {
-        // Verificar se há passageiros vinculados
-        const { data: passageiros } = await supabase
-          .from("passageiros")
-          .select("id")
-          .eq("escola_id", escola.id);
-
-        if (passageiros && passageiros.length > 0) {
-          toast({
-            title: "Aviso",
-            description:
-              "Não é possível desativar escola com passageiros vinculados",
-            variant: "destructive",
-          });
-          return;
-        }
-      }
-
-      const { error } = await supabase
-        .from("escolas")
-        .update({ ativo: !escola.ativo })
-        .eq("id", escola.id);
-
-      if (error) throw error;
-
-      await fetchEscolas();
-      toast({
-        title: "Sucesso",
-        description: escola.ativo ? "Escola desativada" : "Escola ativada",
-      });
-    } catch (error) {
-      console.error("Erro ao alterar status:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao alterar status da escola",
-        variant: "destructive",
-      });
-    }
   };
 
   const handleDeleteClick = (escola: Escola) => {
@@ -239,7 +235,7 @@ export default function Escolas() {
         toast({
           title: "Erro",
           description:
-            "Não é possível excluir escola com passageiros vinculados",
+            "Não é possível excluir escola com passageiros vinculados.",
           variant: "destructive",
         });
         setIsDeleteDialogOpen(false);
@@ -257,7 +253,7 @@ export default function Escolas() {
       await fetchEscolas();
       toast({
         title: "Sucesso",
-        description: "Escola excluída permanentemente",
+        description: "Escola excluída permanentemente.",
       });
       setIsDeleteDialogOpen(false);
       setSchoolToDelete(null);
@@ -265,7 +261,7 @@ export default function Escolas() {
       console.error("Erro ao excluir escola:", error);
       toast({
         title: "Erro",
-        description: "Erro ao excluir escola",
+        description: "Erro ao excluir escola.",
         variant: "destructive",
       });
       setIsDeleteDialogOpen(false);
@@ -315,7 +311,10 @@ export default function Escolas() {
                   </DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                  <form
+                    onSubmit={form.handleSubmit(handleSubmit)}
+                    className="space-y-6"
+                  >
                     {/* Dados da Escola Section */}
                     <Card>
                       <CardContent className="p-6">
@@ -338,6 +337,28 @@ export default function Escolas() {
                             </FormItem>
                           )}
                         />
+
+                        {editingEscola && (
+                          <div className="mt-4">
+                            <FormField
+                              control={form.control}
+                              name="ativo"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>Ativa</FormLabel>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        )}
 
                         <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
 
@@ -406,7 +427,10 @@ export default function Escolas() {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel>Estado</FormLabel>
-                                  <Select onValueChange={field.onChange} value={field.value}>
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                  >
                                     <FormControl>
                                       <SelectTrigger>
                                         <SelectValue placeholder="Selecione o estado" />
@@ -414,32 +438,70 @@ export default function Escolas() {
                                     </FormControl>
                                     <SelectContent>
                                       <SelectItem value="AC">Acre</SelectItem>
-                                      <SelectItem value="AL">Alagoas</SelectItem>
+                                      <SelectItem value="AL">
+                                        Alagoas
+                                      </SelectItem>
                                       <SelectItem value="AP">Amapá</SelectItem>
-                                      <SelectItem value="AM">Amazonas</SelectItem>
+                                      <SelectItem value="AM">
+                                        Amazonas
+                                      </SelectItem>
                                       <SelectItem value="BA">Bahia</SelectItem>
                                       <SelectItem value="CE">Ceará</SelectItem>
-                                      <SelectItem value="DF">Distrito Federal</SelectItem>
-                                      <SelectItem value="ES">Espírito Santo</SelectItem>
+                                      <SelectItem value="DF">
+                                        Distrito Federal
+                                      </SelectItem>
+                                      <SelectItem value="ES">
+                                        Espírito Santo
+                                      </SelectItem>
                                       <SelectItem value="GO">Goiás</SelectItem>
-                                      <SelectItem value="MA">Maranhão</SelectItem>
-                                      <SelectItem value="MT">Mato Grosso</SelectItem>
-                                      <SelectItem value="MS">Mato Grosso do Sul</SelectItem>
-                                      <SelectItem value="MG">Minas Gerais</SelectItem>
+                                      <SelectItem value="MA">
+                                        Maranhão
+                                      </SelectItem>
+                                      <SelectItem value="MT">
+                                        Mato Grosso
+                                      </SelectItem>
+                                      <SelectItem value="MS">
+                                        Mato Grosso do Sul
+                                      </SelectItem>
+                                      <SelectItem value="MG">
+                                        Minas Gerais
+                                      </SelectItem>
                                       <SelectItem value="PA">Pará</SelectItem>
-                                      <SelectItem value="PB">Paraíba</SelectItem>
+                                      <SelectItem value="PB">
+                                        Paraíba
+                                      </SelectItem>
                                       <SelectItem value="PR">Paraná</SelectItem>
-                                      <SelectItem value="PE">Pernambuco</SelectItem>
+                                      <SelectItem value="PE">
+                                        Pernambuco
+                                      </SelectItem>
                                       <SelectItem value="PI">Piauí</SelectItem>
-                                      <SelectItem value="RJ">Rio de Janeiro</SelectItem>
-                                      <SelectItem value="RN">Rio Grande do Norte</SelectItem>
-                                      <SelectItem value="RS">Rio Grande do Sul</SelectItem>
-                                      <SelectItem value="RO">Rondônia</SelectItem>
-                                      <SelectItem value="RR">Roraima</SelectItem>
-                                      <SelectItem value="SC">Santa Catarina</SelectItem>
-                                      <SelectItem value="SP">São Paulo</SelectItem>
-                                      <SelectItem value="SE">Sergipe</SelectItem>
-                                      <SelectItem value="TO">Tocantins</SelectItem>
+                                      <SelectItem value="RJ">
+                                        Rio de Janeiro
+                                      </SelectItem>
+                                      <SelectItem value="RN">
+                                        Rio Grande do Norte
+                                      </SelectItem>
+                                      <SelectItem value="RS">
+                                        Rio Grande do Sul
+                                      </SelectItem>
+                                      <SelectItem value="RO">
+                                        Rondônia
+                                      </SelectItem>
+                                      <SelectItem value="RR">
+                                        Roraima
+                                      </SelectItem>
+                                      <SelectItem value="SC">
+                                        Santa Catarina
+                                      </SelectItem>
+                                      <SelectItem value="SP">
+                                        São Paulo
+                                      </SelectItem>
+                                      <SelectItem value="SE">
+                                        Sergipe
+                                      </SelectItem>
+                                      <SelectItem value="TO">
+                                        Tocantins
+                                      </SelectItem>
                                     </SelectContent>
                                   </Select>
                                   <FormMessage />
@@ -453,11 +515,13 @@ export default function Escolas() {
                                 <FormItem>
                                   <FormLabel>CEP</FormLabel>
                                   <FormControl>
-                                    <Input 
-                                      {...field} 
+                                    <Input
+                                      {...field}
                                       maxLength={9}
                                       onChange={(e) => {
-                                        const maskedValue = cepMask(e.target.value);
+                                        const maskedValue = cepMask(
+                                          e.target.value
+                                        );
                                         field.onChange(maskedValue);
                                       }}
                                     />
@@ -575,21 +639,10 @@ export default function Escolas() {
                                 size="sm"
                                 variant="outline"
                                 title="Editar"
+                                className="h-8 w-8 p-0"
                                 onClick={() => handleEdit(escola)}
                               >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                title={escola.ativo ? "Desativar" : "Reativar"}
-                                variant={escola.ativo ? "outline" : "outline"}
-                                onClick={() => handleToggleAtivo(escola)}
-                              >
-                                {escola.ativo ? (
-                                  <EyeOff className="h-4 w-4" />
-                                ) : (
-                                  <Eye className="h-4 w-4" />
-                                )}
+                                <Pencil className="h-3 w-3" />
                               </Button>
                               {!escola.ativo && (
                                 <Button
@@ -597,8 +650,9 @@ export default function Escolas() {
                                   title="Remover"
                                   variant="outline"
                                   onClick={() => handleDeleteClick(escola)}
+                                  className="h-8 w-8 p-0"
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Trash2 className="h-3 w-3" />
                                 </Button>
                               )}
                             </div>
