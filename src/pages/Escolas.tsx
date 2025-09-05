@@ -151,7 +151,7 @@ export default function Escolas() {
 
           if (passageirosAtivos && passageirosAtivos.length > 0) {
             toast({
-              title: "Não é possível desativar",
+              title: "Não é possível desativar.",
               description:
                 'Existem passageiros ativos vinculados a esta escola. Mantenha a opção "Ativa" marcada.',
               variant: "destructive",
@@ -225,7 +225,6 @@ export default function Escolas() {
     if (!schoolToDelete) return;
 
     try {
-      // Verificar se há passageiros vinculados
       const { data: passageiros } = await supabase
         .from("passageiros")
         .select("id")

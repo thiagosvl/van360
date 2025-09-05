@@ -148,7 +148,6 @@ export default function CobrancaRetroativaDialog({
   const handleSubmit = async (data: CobrancaRetroativaFormData) => {
     setLoading(true);
     try {
-      // Verificar se já existe cobrança para o mesmo mês/ano
       const { data: existingCobranca, error: checkError } = await supabase
         .from("cobrancas")
         .select("id")
@@ -170,7 +169,6 @@ export default function CobrancaRetroativaDialog({
         return;
       }
 
-      // Calcular data de vencimento usando o dia de vencimento do passageiro
       const dataVencimento = new Date(
         parseInt(data.ano),
         parseInt(data.mes) - 1,
@@ -379,7 +377,7 @@ export default function CobrancaRetroativaDialog({
                                 selected={field.value}
                                 onSelect={(date) => {
                                   field.onChange(date);
-                                  setOpenCalendar(false); // fecha corretamente
+                                  setOpenCalendar(false);
                                 }}
                                 disabled={(date) => date > new Date()}
                                 initialFocus

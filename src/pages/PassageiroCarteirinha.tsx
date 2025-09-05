@@ -213,7 +213,7 @@ export default function PassageiroCarteirinha() {
           .eq("id", confirmDialog.cobrancaId);
 
         toast({
-          title: "Cobrança reenviada com sucesso para o responsável",
+          title: "Cobrança reenviada com sucesso para o responsável.",
         });
       } else if (confirmDialog.action === "reverter") {
         await supabase
@@ -227,7 +227,7 @@ export default function PassageiroCarteirinha() {
           .eq("id", confirmDialog.cobrancaId);
 
         toast({
-          title: "Pagamento revertido com sucesso",
+          title: "Pagamento revertido com sucesso.",
         });
         fetchHistorico();
       }
@@ -370,7 +370,7 @@ export default function PassageiroCarteirinha() {
                         <td className="p-3">
                           <span className="text-sm">
                             {new Date(
-                              cobranca.data_vencimento
+                              cobranca.data_vencimento + "T00:00:00"
                             ).toLocaleDateString("pt-BR")}
                           </span>
                         </td>

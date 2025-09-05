@@ -68,7 +68,6 @@ export default function ManualPaymentDialog({
     },
   });
 
-  // Reset form values when dialog opens with new data
   useEffect(() => {
     if (isOpen) {
       form.reset({
@@ -101,7 +100,7 @@ export default function ManualPaymentDialog({
       if (error) throw error;
 
       toast({
-        title: "Pagamento registrado com sucesso",
+        title: "Pagamento registrado com sucesso.",
         description: `Pagamento de ${passageiroNome} foi registrado.`,
       });
 

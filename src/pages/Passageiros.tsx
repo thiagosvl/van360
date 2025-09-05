@@ -148,7 +148,6 @@ export default function Passageiros() {
     },
   });
 
-  // Debounce para busca
   const debounceSearch = useCallback(() => {
     let timeoutId: NodeJS.Timeout;
 
@@ -190,7 +189,7 @@ export default function Passageiros() {
 
       if (cobrancas && cobrancas.length > 0) {
         toast({
-          title: "Não é possível remover",
+          title: "Não é possível remover.",
           description:
             "Este passageiro possui histórico de mensalidades. Exclua as cobranças antes de remover o passageiro.",
           variant: "destructive",
@@ -199,7 +198,6 @@ export default function Passageiros() {
         return;
       }
 
-      // Se não houver cobranças, excluir normalmente
       const { error } = await supabase
         .from("passageiros")
         .delete()
@@ -294,41 +292,41 @@ export default function Passageiros() {
 
         if (error) throw error;
 
-        toast({
-          title: "Passageiro atualizado com sucesso",
-        });
-      } else {
-        const { data: newPassageiro, error } = await supabase
-          .from("passageiros")
-          .insert([passageiroData])
-          .select()
-          .single();
+        try {
+          const { data: ultimaCobranca, error: cobrancaError } = await supabase
+            .from("cobrancas")
+            .select("id, status, mes, ano")
+            .eq("passageiro_id", editingPassageiro.id)
+            .neq("status", "pago")
+            .order("ano", { ascending: false })
+            .order("mes", { ascending: false })
+            .limit(1)
+            .single();
 
-        if (error) throw error;
+          if (cobrancaError) {
+            if (cobrancaError.code !== "PGRST116") {
+              console.error("Erro ao buscar última cobrança:", cobrancaError);
+            }
+          }
 
-        // Criar cobrança do mês atual apenas se checkbox estiver marcado
-        if (emitir_cobranca_mes_atual) {
-          const currentDate = new Date();
-          const mes = currentDate.getMonth() + 1;
-          const ano = currentDate.getFullYear();
-          const dataVencimento = new Date(
-            ano,
-            mes - 1,
-            Number(pureData.dia_vencimento)
-          );
+          if (ultimaCobranca) {
+            const novaData = new Date(
+              ultimaCobranca.ano,
+              ultimaCobranca.mes - 1,
+              passageiroData.dia_vencimento
+            );
 
-          await supabase.from("cobrancas").insert({
-            passageiro_id: newPassageiro.id,
-            mes,
-            ano,
-            valor: moneyToNumber(pureData.valor_mensalidade),
-            data_vencimento: dataVencimento.toISOString().split("T")[0],
-            status: "pendente",
-          });
+            await supabase
+              .from("cobrancas")
+              .update({ data_vencimento: novaData.toISOString().split("T")[0] })
+              .eq("id", ultimaCobranca.id);
+          }
+        } catch (err) {
+          console.error("Erro ao atualizar vencimento da cobrança:", err);
         }
 
         toast({
-          title: "Passageiro cadastrado com sucesso",
+          title: "Passageiro atualizado com sucesso.",
         });
       }
 

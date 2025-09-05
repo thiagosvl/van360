@@ -88,7 +88,6 @@ const Cobrancas = () => {
 
       const cobrancas = data || [];
 
-      // Separar cobranças
       const abertas = cobrancas.filter((c) => c.status !== "pago");
       const pagas = cobrancas.filter((c) => c.status === "pago");
 
@@ -157,7 +156,7 @@ const Cobrancas = () => {
         .eq("id", confirmDialogReverter.cobrancaId);
 
       toast({
-        title: "Pagamento revertido com sucesso",
+        title: "Pagamento revertido com sucesso.",
         description: "A cobrança voltou para a lista de em aberto.",
       });
 

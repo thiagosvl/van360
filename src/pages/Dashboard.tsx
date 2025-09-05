@@ -136,7 +136,6 @@ const Dashboard = () => {
       const cobrancas = cobrancasMes || [];
       const totalCobrancas = cobrancas.length;
 
-      // Classificar status considerando data de vencimento
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
 
@@ -230,7 +229,6 @@ const Dashboard = () => {
         .update({ enviado_em: new Date().toISOString() })
         .eq("id", cobrancaId);
 
-      // Refresh data after sending
       fetchStats();
     } catch (error) {
       console.error("Erro ao reenviar cobrança:", error);
