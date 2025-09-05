@@ -10,9 +10,9 @@ import {
   ArrowLeft,
   DollarSign,
   Plus,
-  RotateCcw,
   Send,
   Trash2,
+  Undo2
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -416,7 +416,7 @@ export default function PassageiroCarteirinha() {
                                   className="h-8 w-8 p-0"
                                   title="Reverter Pagamento"
                                 >
-                                  <RotateCcw className="w-3 h-3" />
+                                  <Undo2 className="w-3 h-3" />
                                 </Button>
                               )
                             )}

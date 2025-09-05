@@ -476,7 +476,7 @@ const Dashboard = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="w-4 h-4" />
-                  Mensalidades Recebidas por Tipo
+                  Soma de Valores Recebidos por Forma de Pagamento
                 </CardTitle>
               </CardHeader>
               <CardContent>

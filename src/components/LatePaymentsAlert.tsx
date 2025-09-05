@@ -152,8 +152,7 @@ const LatePaymentsAlert = ({
       <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
         <CheckCircle className="h-5 w-5 text-green-600" />
         <div className="text-sm font-medium text-green-800">
-          Todas as mensalidades de {monthNames[selectedMonth - 1]}{" "}
-          {selectedYear} estão em dia!
+          Todas as mensalidades de {monthNames[selectedMonth - 1]}{" "} estão em dia!
         </div>
       </div>
     );

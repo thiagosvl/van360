@@ -467,7 +467,7 @@ const Cobrancas = () => {
                           Data Pagamento
                         </th>
                         <th className="text-left p-3 text-sm font-medium">
-                          Tipo
+                          Forma
                         </th>
                         <th className="text-left p-3 text-sm font-medium">
                           Valor
@@ -531,7 +531,7 @@ const Cobrancas = () => {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                title="Reverter"
+                                title="Reverter Pagamento"
                                 onClick={() => handleReverterClick(cobranca.id)}
                                 className="h-8 w-8 p-0"
                               >
@@ -580,7 +580,7 @@ const Cobrancas = () => {
         description="Deseja realmente reverter o pagamento desta cobrança? Essa ação moverá a cobrança de volta para a lista de em aberto."
         onConfirm={reverterPagamento}
         variant="destructive"
-        confirmText="Reverter"
+        confirmText="Reverter Pagamento"
       />
     </div>
   );
