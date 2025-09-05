@@ -1,18 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { DollarSign, Plus, RotateCcw, Send } from "lucide-react";
+import { DollarSign, Plus, RotateCcw, Send, ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
-import CobrancaRetroativaDialog from "./CobrancaRetroativaDialog";
-import ConfirmationDialog from "./ConfirmationDialog";
-import ManualPaymentDialog from "./ManualPaymentDialog";
+import { useNavigate, useParams } from "react-router-dom";
+import CobrancaRetroativaDialog from "@/components/CobrancaRetroativaDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import ManualPaymentDialog from "@/components/ManualPaymentDialog";
+import Navigation from "@/components/Navigation";
 
 interface Cobranca {
   id: string;
@@ -26,27 +22,20 @@ interface Cobranca {
   pagamento_manual?: boolean;
 }
 
-interface PassageiroHistoricoProps {
-  passageiroId: string;
-  passageiroNome: string;
-  valorMensalidade: number;
-  isOpen: boolean;
-  onClose: () => void;
+interface Passageiro {
+  id: string;
+  nome: string;
+  valor_mensalidade: number;
 }
 
-export default function PassageiroHistorico({
-  passageiroId,
-  passageiroNome,
-  valorMensalidade,
-  isOpen,
-  onClose,
-}: PassageiroHistoricoProps) {
+export default function PassageiroCarteirinha() {
+  const { passageiro_id } = useParams<{ passageiro_id: string }>();
+  const navigate = useNavigate();
+  const [passageiro, setPassageiro] = useState<Passageiro | null>(null);
   const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
   const [loading, setLoading] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
-    null
-  );
+  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     cobrancaId: string;
@@ -56,18 +45,44 @@ export default function PassageiroHistorico({
   const { toast } = useToast();
 
   useEffect(() => {
-    if (isOpen && passageiroId) {
+    if (passageiro_id) {
+      fetchPassageiro();
       fetchHistorico();
     }
-  }, [isOpen, passageiroId]);
+  }, [passageiro_id]);
+
+  const fetchPassageiro = async () => {
+    if (!passageiro_id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("passageiros")
+        .select("id, nome, valor_mensalidade")
+        .eq("id", passageiro_id)
+        .single();
+
+      if (error) throw error;
+      setPassageiro(data);
+    } catch (error) {
+      console.error("Erro ao buscar passageiro:", error);
+      toast({
+        title: "Erro",
+        description: "Passageiro não encontrado",
+        variant: "destructive",
+      });
+      navigate("/passageiros");
+    }
+  };
 
   const fetchHistorico = async () => {
+    if (!passageiro_id) return;
+    
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from("cobrancas")
         .select("*")
-        .eq("passageiro_id", passageiroId)
+        .eq("passageiro_id", passageiro_id)
         .order("ano", { ascending: false })
         .order("mes", { ascending: false });
 
@@ -187,29 +202,47 @@ export default function PassageiroHistorico({
     fetchHistorico();
   };
 
+  if (!passageiro) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="container mx-auto px-6 py-8">
+          <div className="text-center">Carregando...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent
-        className="max-w-4xl max-h-[80vh] overflow-y-auto"
-        onOpenAutoFocus={(e) => e.preventDefault()}
-      >
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>Carteirinha Digital - {passageiroNome}</span>
-            <Button
-              size="sm"
-              onClick={() => setRetroativaDialogOpen(true)}
-              className="ml-4 mt-4"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Registrar cobrança retroativa
-            </Button>
-          </DialogTitle>
-        </DialogHeader>
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/passageiros")}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Voltar
+          </Button>
+          <h1 className="text-2xl font-bold">
+            {passageiro.nome} - Carteirinha Digital
+          </h1>
+        </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Histórico de Cobranças</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Histórico de Cobranças</CardTitle>
+              <Button
+                size="sm"
+                onClick={() => setRetroativaDialogOpen(true)}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Registrar cobrança retroativa
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -351,7 +384,7 @@ export default function PassageiroHistorico({
             isOpen={paymentDialogOpen}
             onClose={() => setPaymentDialogOpen(false)}
             cobrancaId={selectedCobranca.id}
-            passageiroNome={passageiroNome}
+            passageiroNome={passageiro.nome}
             valorOriginal={Number(selectedCobranca.valor)}
             onPaymentRecorded={handlePaymentRecorded}
           />
@@ -360,9 +393,9 @@ export default function PassageiroHistorico({
         <CobrancaRetroativaDialog
           isOpen={retroativaDialogOpen}
           onClose={() => setRetroativaDialogOpen(false)}
-          passageiroId={passageiroId}
-          passageiroNome={passageiroNome}
-          valorMensalidade={valorMensalidade}
+          passageiroId={passageiro.id}
+          passageiroNome={passageiro.nome}
+          valorMensalidade={passageiro.valor_mensalidade}
           onCobrancaAdded={fetchHistorico}
         />
 
@@ -383,7 +416,7 @@ export default function PassageiroHistorico({
           }
           onConfirm={handleConfirmAction}
         />
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

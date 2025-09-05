@@ -1,7 +1,6 @@
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import Navigation from "@/components/Navigation";
-import PassageiroHistorico from "@/components/PassageiroHistorico";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -15,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { CreditCard, DollarSign, Filter, Send, Undo2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Passageiro {
   id: string;
@@ -47,9 +47,7 @@ const Cobrancas = () => {
   const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
     null
   );
-  const [historicoOpen, setHistoricoOpen] = useState(false);
-  const [selectedPassageiroHistorico, setSelectedPassageiroHistorico] =
-    useState<{ id: string; nome: string; valorMensalidade: number } | null>(null);
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   const meses = [
@@ -215,9 +213,8 @@ const Cobrancas = () => {
     fetchCobrancas();
   };
 
-  const handleViewHistory = (passageiroId: string, passageiroNome: string, valorMensalidade: number) => {
-    setSelectedPassageiroHistorico({ id: passageiroId, nome: passageiroNome, valorMensalidade });
-    setHistoricoOpen(true);
+  const handleViewHistory = (passageiroId: string) => {
+    navigate(`/passageiros/${passageiroId}`);
   };
 
   const formatPaymentType = (tipo: string | undefined) => {
@@ -396,11 +393,7 @@ const Cobrancas = () => {
                                 variant="outline"
                                 title="Carteirinha"
                                 onClick={() =>
-                                  handleViewHistory(
-                                    cobranca.passageiro_id,
-                                    cobranca.passageiros.nome,
-                                    cobranca.passageiros.valor_mensalidade
-                                  )
+                                  handleViewHistory(cobranca.passageiro_id)
                                 }
                                 className="gap-1"
                               >
@@ -532,11 +525,7 @@ const Cobrancas = () => {
                                 variant="outline"
                                 title="Carteirinha"
                                 onClick={() =>
-                                  handleViewHistory(
-                                    cobranca.passageiro_id,
-                                    cobranca.passageiros.nome,
-                                    cobranca.passageiros.valor_mensalidade
-                                  )
+                                  handleViewHistory(cobranca.passageiro_id)
                                 }
                                 className="gap-1"
                               >
@@ -597,15 +586,6 @@ const Cobrancas = () => {
         confirmText="Reverter"
       />
 
-      {selectedPassageiroHistorico && (
-        <PassageiroHistorico
-          passageiroId={selectedPassageiroHistorico.id}
-          passageiroNome={selectedPassageiroHistorico.nome}
-          valorMensalidade={selectedPassageiroHistorico.valorMensalidade}
-          isOpen={historicoOpen}
-          onClose={() => setHistoricoOpen(false)}
-        />
-      )}
     </div>
   );
 };

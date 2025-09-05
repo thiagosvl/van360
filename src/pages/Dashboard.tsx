@@ -1,7 +1,6 @@
 import LatePaymentsAlert from "@/components/LatePaymentsAlert";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import Navigation from "@/components/Navigation";
-import PassageiroHistorico from "@/components/PassageiroHistorico";
 import PaymentStatsCard from "@/components/PaymentStatsCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -15,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, CreditCard, DollarSign, Filter } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Passageiro {
   id: string;
@@ -92,9 +92,8 @@ const Dashboard = () => {
   const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
     null
   );
-  const [historicoOpen, setHistoricoOpen] = useState(false);
-  const [selectedPassageiroHistorico, setSelectedPassageiroHistorico] =
-    useState<{ id: string; nome: string; valorMensalidade: number } | null>(null);
+
+  const navigate = useNavigate();
 
   const meses = [
     "Janeiro",
@@ -248,9 +247,8 @@ const Dashboard = () => {
     setPaymentDialogOpen(false);
   };
 
-  const handleViewHistory = (passageiroId: string, passageiroNome: string, valorMensalidade: number) => {
-    setSelectedPassageiroHistorico({ id: passageiroId, nome: passageiroNome, valorMensalidade });
-    setHistoricoOpen(true);
+  const handleViewHistory = (passageiroId: string) => {
+    navigate(`/passageiros/${passageiroId}`);
   };
 
   useEffect(() => {
@@ -503,16 +501,6 @@ const Dashboard = () => {
         />
       )}
 
-      {/* Histórico do Passageiro Dialog */}
-      {selectedPassageiroHistorico && (
-        <PassageiroHistorico
-          passageiroId={selectedPassageiroHistorico.id}
-          passageiroNome={selectedPassageiroHistorico.nome}
-          valorMensalidade={selectedPassageiroHistorico.valorMensalidade}
-          isOpen={historicoOpen}
-          onClose={() => setHistoricoOpen(false)}
-        />
-      )}
     </div>
   );
 };

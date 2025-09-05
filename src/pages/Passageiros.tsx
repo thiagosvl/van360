@@ -1,5 +1,4 @@
 import Navigation from "@/components/Navigation";
-import PassageiroHistorico from "@/components/PassageiroHistorico";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -44,6 +43,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 interface Passageiro {
@@ -110,11 +110,9 @@ export default function Passageiros() {
   const [expandedPassageiro, setExpandedPassageiro] = useState<string | null>(
     null
   );
-  const [historicoOpen, setHistoricoOpen] = useState(false);
-  const [selectedPassageiroHistorico, setSelectedPassageiroHistorico] =
-    useState<{ id: string; nome: string; valorMensalidade: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   const form = useForm<PassageiroFormData>({
@@ -308,12 +306,7 @@ export default function Passageiros() {
   };
 
   const handleHistorico = (passageiro: Passageiro) => {
-    setSelectedPassageiroHistorico({
-      id: passageiro.id,
-      nome: passageiro.nome,
-      valorMensalidade: passageiro.valor_mensalidade,
-    });
-    setHistoricoOpen(true);
+    navigate(`/passageiros/${passageiro.id}`);
   };
 
   const resetForm = () => {
@@ -917,19 +910,6 @@ export default function Passageiros() {
             </CardContent>
           </Card>
 
-          {/* Modal de Histórico */}
-          {selectedPassageiroHistorico && (
-            <PassageiroHistorico
-              passageiroId={selectedPassageiroHistorico.id}
-              passageiroNome={selectedPassageiroHistorico.nome}
-              valorMensalidade={selectedPassageiroHistorico.valorMensalidade}
-              isOpen={historicoOpen}
-              onClose={() => {
-                setHistoricoOpen(false);
-                setSelectedPassageiroHistorico(null);
-              }}
-            />
-          )}
         </div>
       </div>
     </div>
