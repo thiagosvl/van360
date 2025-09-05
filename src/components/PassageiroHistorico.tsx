@@ -1,18 +1,18 @@
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { DollarSign, Send, RotateCcw, Plus } from "lucide-react";
+import { DollarSign, Plus, RotateCcw, Send } from "lucide-react";
 import { useEffect, useState } from "react";
+import CobrancaRetroativaDialog from "./CobrancaRetroativaDialog";
 import ConfirmationDialog from "./ConfirmationDialog";
 import ManualPaymentDialog from "./ManualPaymentDialog";
-import CobrancaRetroativaDialog from "./CobrancaRetroativaDialog";
 
 interface Cobranca {
   id: string;
@@ -50,8 +50,8 @@ export default function PassageiroHistorico({
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     cobrancaId: string;
-    action: 'reenviar' | 'reverter';
-  }>({ open: false, cobrancaId: "", action: 'reenviar' });
+    action: "reenviar" | "reverter";
+  }>({ open: false, cobrancaId: "", action: "reenviar" });
   const [retroativaDialogOpen, setRetroativaDialogOpen] = useState(false);
   const { toast } = useToast();
 
@@ -112,22 +112,37 @@ export default function PassageiroHistorico({
   };
 
   const getMesNome = (mes: number) => {
-    return new Date(2024, mes - 1).toLocaleDateString("pt-BR", {
+    const nomeMes = new Date(2024, mes - 1).toLocaleDateString("pt-BR", {
       month: "long",
     });
+    return nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
   };
 
   const handleReenviarClick = (cobrancaId: string) => {
-    setConfirmDialog({ open: true, cobrancaId, action: 'reenviar' });
+    setConfirmDialog({ open: true, cobrancaId, action: "reenviar" });
   };
 
   const handleReverterClick = (cobrancaId: string) => {
-    setConfirmDialog({ open: true, cobrancaId, action: 'reverter' });
+    setConfirmDialog({ open: true, cobrancaId, action: "reverter" });
+  };
+
+  const formatPaymentType = (tipo: string | undefined) => {
+    if (!tipo) return "-";
+
+    const typeMap: { [key: string]: string } = {
+      dinheiro: "Dinheiro",
+      "cartao-credito": "Cartão de Crédito",
+      "cartao-debito": "Cartão de Débito",
+      transferencia: "Transferência",
+      PIX: "PIX",
+    };
+
+    return typeMap[tipo] || tipo;
   };
 
   const handleConfirmAction = async () => {
     try {
-      if (confirmDialog.action === 'reenviar') {
+      if (confirmDialog.action === "reenviar") {
         await supabase
           .from("cobrancas")
           .update({ enviado_em: new Date().toISOString() })
@@ -136,14 +151,14 @@ export default function PassageiroHistorico({
         toast({
           title: "Cobrança reenviada com sucesso para o responsável",
         });
-      } else if (confirmDialog.action === 'reverter') {
+      } else if (confirmDialog.action === "reverter") {
         await supabase
           .from("cobrancas")
-          .update({ 
+          .update({
             status: "pendente",
             data_pagamento: null,
             tipo_pagamento: null,
-            pagamento_manual: false
+            pagamento_manual: false,
           })
           .eq("id", confirmDialog.cobrancaId);
 
@@ -160,7 +175,7 @@ export default function PassageiroHistorico({
         variant: "destructive",
       });
     }
-    setConfirmDialog({ open: false, cobrancaId: "", action: 'reenviar' });
+    setConfirmDialog({ open: false, cobrancaId: "", action: "reenviar" });
   };
 
   const openPaymentDialog = (cobranca: Cobranca) => {
@@ -182,10 +197,9 @@ export default function PassageiroHistorico({
           <DialogTitle className="flex items-center justify-between">
             <span>Carteirinha Digital - {passageiroNome}</span>
             <Button
-              variant="outline"
               size="sm"
               onClick={() => setRetroativaDialogOpen(true)}
-              className="ml-4"
+              className="ml-4 mt-4"
             >
               <Plus className="w-4 h-4 mr-2" />
               Registrar cobrança retroativa
@@ -209,28 +223,47 @@ export default function PassageiroHistorico({
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left p-3 text-sm font-medium">Mês/Ano</th>
-                      <th className="text-left p-3 text-sm font-medium">Valor</th>
-                      <th className="text-left p-3 text-sm font-medium">Status</th>
-                      <th className="text-left p-3 text-sm font-medium">Vencimento</th>
-                      <th className="text-center p-3 text-sm font-medium">Ações</th>
+                      <th className="text-left p-3 text-sm font-medium">
+                        Mês/Ano
+                      </th>
+                      <th className="text-left p-3 text-sm font-medium">
+                        Valor
+                      </th>
+                      <th className="text-left p-3 text-sm font-medium">
+                        Status
+                      </th>
+                      <th className="text-left p-3 text-sm font-medium">
+                        Vencimento
+                      </th>
+                      <th className="text-center p-3 text-sm font-medium">
+                        Ações
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {cobrancas.map((cobranca) => (
-                      <tr key={cobranca.id} className="border-b hover:bg-muted/50">
+                      <tr
+                        key={cobranca.id}
+                        className="border-b hover:bg-muted/50"
+                      >
                         <td className="p-3">
                           <span className="font-medium text-sm">
-                            {getMesNome(cobranca.mes)} {cobranca.ano}
+                            {getMesNome(cobranca.mes)}/{cobranca.ano}
                           </span>
                           {cobranca.data_pagamento && (
                             <div className="text-xs text-muted-foreground mt-1">
-                              Pago em: {new Date(cobranca.data_pagamento).toLocaleDateString("pt-BR")}
+                              Pago em{" "}
+                              {new Date(
+                                cobranca.data_pagamento
+                              ).toLocaleDateString("pt-BR", {
+                                day: "2-digit",
+                                month: "2-digit",
+                              })}
                             </div>
                           )}
                           {cobranca.tipo_pagamento && (
                             <div className="text-xs text-muted-foreground">
-                              Forma: {cobranca.tipo_pagamento}
+                              {formatPaymentType(cobranca.tipo_pagamento)}
                             </div>
                           )}
                         </td>
@@ -249,12 +282,17 @@ export default function PassageiroHistorico({
                               cobranca.data_vencimento
                             )}`}
                           >
-                            {getStatusText(cobranca.status, cobranca.data_vencimento)}
+                            {getStatusText(
+                              cobranca.status,
+                              cobranca.data_vencimento
+                            )}
                           </span>
                         </td>
                         <td className="p-3">
                           <span className="text-sm">
-                            {new Date(cobranca.data_vencimento).toLocaleDateString("pt-BR")}
+                            {new Date(
+                              cobranca.data_vencimento
+                            ).toLocaleDateString("pt-BR")}
                           </span>
                         </td>
                         <td className="p-3">
@@ -264,7 +302,9 @@ export default function PassageiroHistorico({
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleReenviarClick(cobranca.id)}
+                                  onClick={() =>
+                                    handleReenviarClick(cobranca.id)
+                                  }
                                   className="h-8 w-8 p-0"
                                   title="Reenviar Cobrança"
                                 >
@@ -272,6 +312,7 @@ export default function PassageiroHistorico({
                                 </Button>
                                 <Button
                                   size="sm"
+                                  variant="outline"
                                   onClick={() => openPaymentDialog(cobranca)}
                                   className="h-8 w-8 p-0"
                                   title="Registrar Pagamento"
@@ -284,7 +325,9 @@ export default function PassageiroHistorico({
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleReverterClick(cobranca.id)}
+                                  onClick={() =>
+                                    handleReverterClick(cobranca.id)
+                                  }
                                   className="h-8 w-8 p-0"
                                   title="Reverter Pagamento"
                                 >
@@ -325,10 +368,16 @@ export default function PassageiroHistorico({
 
         <ConfirmationDialog
           open={confirmDialog.open}
-          onOpenChange={(open) => setConfirmDialog({ open, cobrancaId: "", action: 'reenviar' })}
-          title={confirmDialog.action === 'reenviar' ? "Reenviar Cobrança" : "Reverter Pagamento"}
+          onOpenChange={(open) =>
+            setConfirmDialog({ open, cobrancaId: "", action: "reenviar" })
+          }
+          title={
+            confirmDialog.action === "reenviar"
+              ? "Reenviar Cobrança"
+              : "Reverter Pagamento"
+          }
           description={
-            confirmDialog.action === 'reenviar' 
+            confirmDialog.action === "reenviar"
               ? "Deseja reenviar esta cobrança para o responsável?"
               : "Deseja reverter este pagamento? A cobrança voltará ao status pendente."
           }
