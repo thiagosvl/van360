@@ -169,8 +169,7 @@ export default function Escolas() {
         if (error) throw error;
 
         toast({
-          title: "Sucesso",
-          description: "Escola atualizada com sucesso.",
+          title: "Escola atualizada com sucesso.",
         });
       } else {
         const { error } = await supabase
@@ -180,8 +179,7 @@ export default function Escolas() {
         if (error) throw error;
 
         toast({
-          title: "Sucesso",
-          description: "Escola cadastrada com sucesso.",
+          title: "Escola cadastrada com sucesso.",
         });
       }
 
@@ -191,8 +189,7 @@ export default function Escolas() {
     } catch (error) {
       console.error("Erro ao salvar escola:", error);
       toast({
-        title: "Erro",
-        description: "Erro ao salvar escola.",
+        title: "Erro ao salvar escola.",
         variant: "destructive",
       });
     } finally {
@@ -232,9 +229,7 @@ export default function Escolas() {
 
       if (passageiros && passageiros.length > 0) {
         toast({
-          title: "Erro",
-          description:
-            "Não é possível excluir escola com passageiros vinculados.",
+          title: "Não é possível excluir escola com passageiros vinculados.",
           variant: "destructive",
         });
         setIsDeleteDialogOpen(false);
@@ -251,16 +246,14 @@ export default function Escolas() {
 
       await fetchEscolas();
       toast({
-        title: "Sucesso",
-        description: "Escola excluída permanentemente.",
+        title: "Escola excluída permanentemente.",
       });
       setIsDeleteDialogOpen(false);
       setSchoolToDelete(null);
     } catch (error) {
       console.error("Erro ao excluir escola:", error);
       toast({
-        title: "Erro",
-        description: "Erro ao excluir escola.",
+        title: "Erro ao excluir escola.",
         variant: "destructive",
       });
       setIsDeleteDialogOpen(false);

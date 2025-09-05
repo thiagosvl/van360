@@ -100,8 +100,7 @@ export default function ManualPaymentDialog({
       if (error) throw error;
 
       toast({
-        title: "Pagamento registrado com sucesso.",
-        description: `Pagamento de ${passageiroNome} foi registrado.`,
+        title: `Pagamento de ${passageiroNome} registrado com sucesso.`,
       });
 
       onPaymentRecorded();
@@ -109,8 +108,7 @@ export default function ManualPaymentDialog({
     } catch (error) {
       console.error("Erro ao registrar pagamento:", error);
       toast({
-        title: "Erro",
-        description: "Erro ao registrar pagamento.",
+        title: "Erro ao registrar pagamento.",
         variant: "destructive",
       });
     } finally {

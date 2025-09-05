@@ -105,6 +105,7 @@ type PassageiroFormData = z.infer<typeof passageiroSchema>;
 export default function Passageiros() {
   const [passageiros, setPassageiros] = useState<Passageiro[]>([]);
   const [escolas, setEscolas] = useState<Escola[]>([]);
+  const [escolasModal, setEscolasModal] = useState<Escola[]>([]); // modal
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(
     null
@@ -206,16 +207,14 @@ export default function Passageiros() {
       if (error) throw error;
 
       toast({
-        title: "Sucesso",
-        description: "Passageiro removido com sucesso.",
+        title: "Passageiro removido com sucesso.",
       });
 
       fetchPassageiros();
     } catch (error) {
       console.error("Erro ao excluir passageiro:", error);
       toast({
-        title: "Erro",
-        description: "Erro ao remover passageiro.",
+        title: "Erro ao remover passageiro.",
         variant: "destructive",
       });
     } finally {
@@ -235,6 +234,31 @@ export default function Passageiros() {
       setEscolas(data || []);
     } catch (error) {
       console.error("Erro ao buscar escolas:", error);
+    }
+  };
+
+  const fetchEscolasModal = async (escolaId?: string) => {
+    try {
+      let query = supabase
+        .from("escolas")
+        .select("id, nome, ativo")
+        .eq("ativo", true)
+        .order("nome");
+
+      if (escolaId) {
+        query = supabase
+          .from("escolas")
+          .select("id, nome, ativo")
+          .or(`ativo.eq.true,id.eq.${escolaId}`)
+          .order("nome");
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setEscolasModal(data || []);
+    } catch (error) {
+      console.error("Erro ao buscar escolas (modal):", error);
     }
   };
 
@@ -261,8 +285,7 @@ export default function Passageiros() {
     } catch (error) {
       console.error("Erro ao buscar passageiros:", error);
       toast({
-        title: "Erro",
-        description: "Erro ao carregar passageiros.",
+        title: "Erro ao carregar passageiros.",
         variant: "destructive",
       });
     } finally {
@@ -336,8 +359,7 @@ export default function Passageiros() {
     } catch (error) {
       console.error("Erro ao salvar passageiro:", error);
       toast({
-        title: "Erro",
-        description: "Erro ao salvar passageiro.",
+        title: "Erro ao salvar passageiro.",
         variant: "destructive",
       });
     } finally {
@@ -345,8 +367,9 @@ export default function Passageiros() {
     }
   };
 
-  const handleEdit = (passageiro: Passageiro) => {
+  const handleEdit = async (passageiro: Passageiro) => {
     setEditingPassageiro(passageiro);
+    await fetchEscolasModal(passageiro.escola_id || undefined);
     form.reset({
       nome: passageiro.nome,
       rua: passageiro.rua || "",
@@ -405,7 +428,13 @@ export default function Passageiros() {
             {/* Modal Passageiro */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button onClick={resetForm} className="gap-2">
+                <Button
+                  onClick={() => {
+                    resetForm();
+                    fetchEscolasModal();
+                  }}
+                  className="gap-2"
+                >
                   <Plus className="h-4 w-4" />
                   Novo Passageiro
                 </Button>
@@ -465,7 +494,7 @@ export default function Passageiros() {
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                      {escolas.map((escola) => (
+                                      {escolasModal.map((escola) => (
                                         <SelectItem
                                           key={escola.id}
                                           value={escola.id}
@@ -929,6 +958,9 @@ export default function Passageiros() {
                             Nome
                           </th>
                           <th className="text-left p-3 text-sm font-medium">
+                            Status
+                          </th>
+                          <th className="text-left p-3 text-sm font-medium">
                             Escola
                           </th>
                           <th className="text-center p-3 text-sm font-medium">
@@ -945,6 +977,11 @@ export default function Passageiros() {
                             <td className="p-3">
                               <span className="font-medium text-sm">
                                 {passageiro.nome}
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              <span className="text-sm text-muted-foreground">
+                                {passageiro.ativo ? "Ativo" : "Inativo"}
                               </span>
                             </td>
                             <td className="p-3">

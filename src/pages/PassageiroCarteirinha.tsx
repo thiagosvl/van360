@@ -83,16 +83,14 @@ export default function PassageiroCarteirinha() {
       if (error) throw error;
 
       toast({
-        title: "Sucesso",
-        description: "Cobrança removida com sucesso.",
+        title: "Cobrança removida com sucesso.",
       });
 
       fetchHistorico();
     } catch (error) {
       console.error("Erro ao excluir cobrança:", error);
       toast({
-        title: "Erro",
-        description: "Erro ao remover cobrança.",
+        title: "Erro ao remover cobrança.",
         variant: "destructive",
       });
     } finally {
@@ -115,8 +113,7 @@ export default function PassageiroCarteirinha() {
     } catch (error) {
       console.error("Erro ao buscar passageiro:", error);
       toast({
-        title: "Erro",
-        description: "Passageiro não encontrado.",
+        title: "Passageiro não encontrado.",
         variant: "destructive",
       });
       navigate("/passageiros");
@@ -232,10 +229,9 @@ export default function PassageiroCarteirinha() {
         fetchHistorico();
       }
     } catch (error) {
-      console.error("Erro ao executar ação:", error);
+      console.error("Erro ao reverter pagamento:", error);
       toast({
-        title: "Erro",
-        description: "Erro ao executar ação.",
+        title: "Erro ao reverter pagamento.",
         variant: "destructive",
       });
     }
@@ -333,7 +329,7 @@ export default function PassageiroCarteirinha() {
                             <div className="text-xs text-muted-foreground mt-1">
                               Pago em{" "}
                               {new Date(
-                                cobranca.data_pagamento
+                                cobranca.data_pagamento + "T00:00:00"
                               ).toLocaleDateString("pt-BR", {
                                 day: "2-digit",
                                 month: "2-digit",

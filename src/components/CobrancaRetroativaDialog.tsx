@@ -162,8 +162,7 @@ export default function CobrancaRetroativaDialog({
 
       if (existingCobranca) {
         toast({
-          title: "Erro",
-          description: "Já existe uma cobrança registrada para esse mês.",
+          title: "Já existe uma cobrança registrada para esse mês.",
           variant: "destructive",
         });
         return;
@@ -195,8 +194,7 @@ export default function CobrancaRetroativaDialog({
       if (error) throw error;
 
       toast({
-        title: "Sucesso",
-        description: "Cobrança retroativa registrada com sucesso.",
+        title: "Cobrança retroativa registrada com sucesso.",
       });
 
       onCobrancaAdded();
@@ -205,8 +203,7 @@ export default function CobrancaRetroativaDialog({
     } catch (error) {
       console.error("Erro ao registrar cobrança retroativa:", error);
       toast({
-        title: "Erro",
-        description: "Erro ao registrar cobrança retroativa.",
+        title: "Erro ao registrar cobrança retroativa.",
         variant: "destructive",
       });
     } finally {

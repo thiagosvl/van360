@@ -128,8 +128,7 @@ const Cobrancas = () => {
     } catch (error) {
       console.error("Erro ao reenviar cobrança:", error);
       toast({
-        title: "Erro",
-        description: "Erro ao reenviar cobrança.",
+        title: "Erro ao reenviar cobrança.",
         variant: "destructive",
       });
     }
@@ -164,8 +163,7 @@ const Cobrancas = () => {
     } catch (error) {
       console.error("Erro ao reverter pagamento:", error);
       toast({
-        title: "Erro",
-        description: "Erro ao reverter pagamento.",
+        title: "Erro ao reverter pagamento.",
         variant: "destructive",
       });
     }
