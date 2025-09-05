@@ -8,11 +8,13 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft,
+  Bell,
+  BellOff,
   DollarSign,
   Plus,
   Send,
   Trash2,
-  Undo2
+  Undo2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -27,6 +29,7 @@ interface Cobranca {
   data_pagamento?: string;
   tipo_pagamento?: string;
   pagamento_manual?: boolean;
+  desativar_lembretes?: boolean;
 }
 
 interface Passageiro {
@@ -71,6 +74,34 @@ export default function PassageiroCarteirinha() {
 
   const handleDeleteClick = (id: string) => {
     setDeleteDialog({ open: true, cobrancaId: id });
+  };
+
+  const handleToggleLembretes = async (cobranca: Cobranca) => {
+    try {
+      const novoStatus = !cobranca.desativar_lembretes;
+
+      const { error } = await supabase
+        .from("cobrancas")
+        .update({ desativar_lembretes: novoStatus })
+        .eq("id", cobranca.id);
+
+      if (error) throw error;
+
+      toast({
+        title: `Lembretes ${
+          novoStatus ? "desativados" : "ativados"
+        } com sucesso.`,
+      });
+
+      fetchHistorico();
+    } catch (err) {
+      console.error("Erro ao alternar lembretes:", err);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o status dos lembretes.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDelete = async () => {
@@ -325,22 +356,6 @@ export default function PassageiroCarteirinha() {
                           <span className="font-medium text-sm">
                             {getMesNome(cobranca.mes)}/{cobranca.ano}
                           </span>
-                          {cobranca.data_pagamento && (
-                            <div className="text-xs text-muted-foreground mt-1">
-                              Pago em{" "}
-                              {new Date(
-                                cobranca.data_pagamento + "T00:00:00"
-                              ).toLocaleDateString("pt-BR", {
-                                day: "2-digit",
-                                month: "2-digit",
-                              })}
-                            </div>
-                          )}
-                          {cobranca.tipo_pagamento && (
-                            <div className="text-xs text-muted-foreground">
-                              {formatPaymentType(cobranca.tipo_pagamento)}
-                            </div>
-                          )}
                         </td>
                         <td className="p-3">
                           <span className="font-semibold">
@@ -362,6 +377,24 @@ export default function PassageiroCarteirinha() {
                               cobranca.data_vencimento
                             )}
                           </span>
+                          {cobranca.tipo_pagamento &&
+                            cobranca.data_pagamento && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {formatPaymentType(cobranca.tipo_pagamento)} em{" "}
+                                {new Date(
+                                  cobranca.data_pagamento + "T00:00:00"
+                                ).toLocaleDateString("pt-BR", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                })}
+                              </div>
+                            )}
+                          {cobranca.desativar_lembretes &&
+                            cobranca.status !== "pago" && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                Lembretes suspensos
+                              </div>
+                            )}
                         </td>
                         <td className="p-3">
                           <span className="text-sm">
@@ -419,6 +452,25 @@ export default function PassageiroCarteirinha() {
                                   <Undo2 className="w-3 h-3" />
                                 </Button>
                               )
+                            )}
+                            {cobranca.status !== "pago" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleToggleLembretes(cobranca)}
+                                className="h-8 w-8 p-0"
+                                title={
+                                  cobranca.desativar_lembretes
+                                    ? "Ativar lembretes automáticos"
+                                    : "Desativar lembretes automáticos"
+                                }
+                              >
+                                {cobranca.desativar_lembretes ? (
+                                  <BellOff className="w-3 h-3" />
+                                ) : (
+                                  <Bell className="w-3 h-3" />
+                                )}
+                              </Button>
                             )}
                           </div>
                         </td>

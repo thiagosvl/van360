@@ -12,7 +12,15 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { CreditCard, DollarSign, Filter, Send, Undo2 } from "lucide-react";
+import {
+  Bell,
+  BellOff,
+  CreditCard,
+  DollarSign,
+  Filter,
+  Send,
+  Undo2,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -35,6 +43,7 @@ interface Cobranca {
   data_pagamento?: string;
   tipo_pagamento?: string;
   passageiros: Passageiro;
+  desativar_lembretes?: boolean;
 }
 
 const Cobrancas = () => {
@@ -113,6 +122,34 @@ const Cobrancas = () => {
 
   const handleReenviarClick = (cobrancaId: string, nomePassageiro: string) => {
     setConfirmDialogReenvio({ open: true, cobrancaId, nomePassageiro });
+  };
+
+  const handleToggleLembretes = async (cobranca: Cobranca) => {
+    try {
+      const novoStatus = !cobranca.desativar_lembretes;
+
+      const { error } = await supabase
+        .from("cobrancas")
+        .update({ desativar_lembretes: novoStatus })
+        .eq("id", cobranca.id);
+
+      if (error) throw error;
+
+      toast({
+        title: `Lembretes ${
+          novoStatus ? "desativados" : "ativados"
+        } com sucesso.`,
+      });
+
+      fetchCobrancas();
+    } catch (err) {
+      console.error("Erro ao alternar lembretes:", err);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o status dos lembretes.",
+        variant: "destructive",
+      });
+    }
   };
 
   const reenviarCobranca = async () => {
@@ -374,6 +411,12 @@ const Cobrancas = () => {
                                 cobranca.data_vencimento
                               )}
                             </span>
+                            {cobranca.desativar_lembretes &&
+                              cobranca.status !== "pago" && (
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  Lembretes suspensos
+                                </div>
+                              )}
                           </td>
                           <td className="p-3">
                             <span className="font-medium text-sm">
@@ -419,6 +462,27 @@ const Cobrancas = () => {
                               >
                                 <DollarSign className="w-3 h-3" />
                               </Button>
+                              {cobranca.status !== "pago" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    handleToggleLembretes(cobranca)
+                                  }
+                                  className="h-8 w-8 p-0"
+                                  title={
+                                    cobranca.desativar_lembretes
+                                      ? "Ativar lembretes automáticos"
+                                      : "Desativar lembretes automáticos"
+                                  }
+                                >
+                                  {cobranca.desativar_lembretes ? (
+                                    <BellOff className="w-3 h-3" />
+                                  ) : (
+                                    <Bell className="w-3 h-3" />
+                                  )}
+                                </Button>
+                              )}
                             </div>
                           </td>
                         </tr>

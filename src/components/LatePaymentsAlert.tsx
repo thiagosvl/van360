@@ -1,8 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   AlertTriangle,
+  Bell,
+  BellOff,
   CheckCircle,
   CreditCard,
   DollarSign,
@@ -30,6 +34,7 @@ interface Cobranca {
   data_pagamento?: string;
   tipo_pagamento?: string;
   passageiros: Passageiro;
+  desativar_lembretes?: boolean;
 }
 
 interface LatePaymentsAlertProps {
@@ -37,7 +42,6 @@ interface LatePaymentsAlertProps {
   loading: boolean;
   totalCobrancas: number;
   selectedMonth: number;
-  selectedYear: number;
   onReenviarCobranca: (cobrancaId: string, nomePassageiro: string) => void;
   onPayment: (cobranca: Cobranca) => void;
   onViewHistory: (
@@ -52,7 +56,6 @@ const LatePaymentsAlert = ({
   loading,
   totalCobrancas,
   selectedMonth,
-  selectedYear,
   onReenviarCobranca,
   onPayment,
   onViewHistory,
@@ -63,6 +66,8 @@ const LatePaymentsAlert = ({
     nomePassageiro: string;
   }>({ open: false, cobrancaId: "", nomePassageiro: "" });
 
+  const { toast } = useToast();
+
   const handleReenviarClick = (cobrancaId: string, nomePassageiro: string) => {
     setConfirmDialog({ open: true, cobrancaId, nomePassageiro });
   };
@@ -70,6 +75,34 @@ const LatePaymentsAlert = ({
   const handleConfirmReenvio = () => {
     onReenviarCobranca(confirmDialog.cobrancaId, confirmDialog.nomePassageiro);
     setConfirmDialog({ open: false, cobrancaId: "", nomePassageiro: "" });
+  };
+
+  const handleToggleLembretes = async (cobranca: Cobranca) => {
+    try {
+      const novoStatus = !cobranca.desativar_lembretes;
+
+      const { error } = await supabase
+        .from("cobrancas")
+        .update({ desativar_lembretes: novoStatus })
+        .eq("id", cobranca.id);
+
+      if (error) throw error;
+
+      toast({
+        title: `Lembretes ${
+          novoStatus ? "desativados" : "ativados"
+        } com sucesso.`,
+      });
+
+      // fetchCobrancas();
+    } catch (err) {
+      console.error("Erro ao alternar lembretes:", err);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o status dos lembretes.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getStatusText = (dataVencimento: string) => {
@@ -152,7 +185,7 @@ const LatePaymentsAlert = ({
       <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
         <CheckCircle className="h-5 w-5 text-green-600" />
         <div className="text-sm font-medium text-green-800">
-          Todas as mensalidades de {monthNames[selectedMonth - 1]}{" "} estão em dia!
+          Todas as mensalidades de {monthNames[selectedMonth - 1]} estão em dia!
         </div>
       </div>
     );
@@ -240,6 +273,25 @@ const LatePaymentsAlert = ({
                   >
                     <DollarSign className="w-3 h-3" />
                   </Button>
+                  {cobranca.status !== "pago" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleToggleLembretes(cobranca)}
+                      className="h-8 w-8 p-0"
+                      title={
+                        cobranca.desativar_lembretes
+                          ? "Ativar lembretes automáticos"
+                          : "Desativar lembretes automáticos"
+                      }
+                    >
+                      {cobranca.desativar_lembretes ? (
+                        <BellOff className="w-3 h-3" />
+                      ) : (
+                        <Bell className="w-3 h-3" />
+                      )}
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}

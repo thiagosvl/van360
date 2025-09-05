@@ -324,7 +324,6 @@ const Dashboard = () => {
             loading={loading}
             totalCobrancas={stats.totalCobrancas}
             selectedMonth={mesFilter}
-            selectedYear={anoFilter}
             onReenviarCobranca={reenviarCobranca}
             onPayment={openPaymentDialog}
             onViewHistory={handleViewHistory}
