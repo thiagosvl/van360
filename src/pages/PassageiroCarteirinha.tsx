@@ -119,7 +119,7 @@ export default function PassageiroCarteirinha() {
     try {
       const { data, error } = await supabase
         .from("passageiros")
-        .select("id, nome, valor_mensalidade, dia_vencimento")
+        .select("*")
         .eq("id", passageiro_id)
         .single();
 
@@ -476,6 +476,7 @@ export default function PassageiroCarteirinha() {
           onClose={() => setRetroativaDialogOpen(false)}
           passageiroId={passageiro.id}
           passageiroNome={passageiro.nome}
+          passageiroResponsavelNome={passageiro.nome_responsavel}
           valorMensalidade={passageiro.valor_mensalidade}
           diaVencimento={passageiro.dia_vencimento}
           onCobrancaAdded={fetchHistorico}

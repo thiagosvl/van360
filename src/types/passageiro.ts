@@ -11,6 +11,7 @@ export interface Passageiro {
   referencia?: string;
   nome_responsavel: string;
   telefone_responsavel: string;
+  cpf_responsavel: string;
   valor_mensalidade: number;
   dia_vencimento: number;
   escola_id?: string;

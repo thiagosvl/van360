@@ -81,6 +81,7 @@ interface CobrancaRetroativaDialogProps {
   onClose: () => void;
   passageiroId: string;
   passageiroNome: string;
+  passageiroResponsavelNome: string;
   valorMensalidade: number;
   diaVencimento: number;
   onCobrancaAdded: () => void;
@@ -114,6 +115,7 @@ export default function CobrancaRetroativaDialog({
   onClose,
   passageiroId,
   passageiroNome,
+  passageiroResponsavelNome,
   valorMensalidade,
   diaVencimento,
   onCobrancaAdded,
@@ -226,7 +228,7 @@ export default function CobrancaRetroativaDialog({
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              Passageiro: {passageiroNome}
+              {passageiroNome} (Responsável {passageiroResponsavelNome})
             </CardTitle>
           </CardHeader>
           <CardContent>

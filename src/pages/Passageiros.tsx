@@ -32,6 +32,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { cepMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
@@ -61,6 +62,7 @@ const passageiroSchema = z.object({
   cep: z.string().optional(),
   referencia: z.string().optional(),
   nome_responsavel: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+  cpf_responsavel: z.string().min(1, "Campo obrigatório"),
   telefone_responsavel: z
     .string()
     .min(1, "Campo obrigatório")
@@ -73,6 +75,9 @@ const passageiroSchema = z.object({
   emitir_cobranca_mes_atual: z.boolean().optional(),
   ativo: z.boolean().optional(),
 });
+
+type PassageiroUpdate = Database["public"]["Tables"]["passageiros"]["Update"];
+type PassageiroInsert = Database["public"]["Tables"]["passageiros"]["Insert"];
 
 type PassageiroFormData = z.infer<typeof passageiroSchema>;
 
@@ -113,6 +118,7 @@ export default function Passageiros() {
       referencia: "",
       nome_responsavel: "",
       telefone_responsavel: "",
+      cpf_responsavel: "",
       valor_mensalidade: "",
       dia_vencimento: "",
       emitir_cobranca_mes_atual: false,
@@ -197,7 +203,7 @@ export default function Passageiros() {
     try {
       const { data, error } = await supabase
         .from("escolas")
-        .select("id, nome, ativo")
+        .select("*")
         .eq("ativo", true)
         .order("nome");
 
@@ -212,14 +218,14 @@ export default function Passageiros() {
     try {
       let query = supabase
         .from("escolas")
-        .select("id, nome, ativo")
+        .select("*")
         .eq("ativo", true)
         .order("nome");
 
       if (escolaId) {
         query = supabase
           .from("escolas")
-          .select("id, nome, ativo")
+          .select("*")
           .or(`ativo.eq.true,id.eq.${escolaId}`)
           .order("nome");
       }
@@ -265,6 +271,26 @@ export default function Passageiros() {
     }
   };
 
+  const handleCadastrarRapido = async () => {
+    const hoje = new Date();
+
+    const fakeData = {
+      nome: "Passag. Teste " + Math.floor(Math.random() * 1000),
+      nome_responsavel: "Resp. Teste",
+      telefone_responsavel: "11951186951",
+      cpf_responsavel: "39542391838",
+      valor_mensalidade: (
+        Math.floor(Math.random() * (200 - 100 + 1)) + 100
+      ).toString(),
+      dia_vencimento: hoje.getDate().toString(),
+      escola_id: escolas[0]?.id || "",
+      ativo: true,
+      emitir_cobranca_mes_atual: true,
+    };
+
+    await handleSubmit(fakeData as any);`z`
+  };
+
   const handleSubmit = async (data: PassageiroFormData) => {
     setLoading(true);
 
@@ -281,7 +307,7 @@ export default function Passageiros() {
       if (editingPassageiro) {
         const { error } = await supabase
           .from("passageiros")
-          .update(passageiroData)
+          .update(passageiroData as PassageiroUpdate)
           .eq("id", editingPassageiro.id);
 
         if (error) throw error;
@@ -289,7 +315,7 @@ export default function Passageiros() {
         try {
           const { data: ultimaCobranca, error: cobrancaError } = await supabase
             .from("cobrancas")
-            .select("id, status, mes, ano")
+            .select("*")
             .eq("passageiro_id", editingPassageiro.id)
             .neq("status", "pago")
             .order("ano", { ascending: false })
@@ -329,7 +355,7 @@ export default function Passageiros() {
       } else {
         const { data: newPassageiro, error } = await supabase
           .from("passageiros")
-          .insert([passageiroData])
+          .insert([passageiroData as PassageiroInsert])
           .select()
           .single();
 
@@ -391,6 +417,7 @@ export default function Passageiros() {
       referencia: passageiro.referencia || "",
       nome_responsavel: passageiro.nome_responsavel,
       telefone_responsavel: phoneMask(passageiro.telefone_responsavel),
+      cpf_responsavel: passageiro.cpf_responsavel,
       valor_mensalidade: moneyMask(
         (passageiro.valor_mensalidade * 100).toString()
       ),
@@ -418,6 +445,7 @@ export default function Passageiros() {
       referencia: "",
       nome_responsavel: "",
       telefone_responsavel: "",
+      cpf_responsavel: "",
       valor_mensalidade: "",
       dia_vencimento: "",
       emitir_cobranca_mes_atual: false,
@@ -434,7 +462,14 @@ export default function Passageiros() {
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
               Passageiros
             </h1>
-
+            <Button
+              onClick={handleCadastrarRapido}
+              variant="destructive"
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Cadastrar Rápido
+            </Button>
             {/* Modal Passageiro */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
@@ -560,6 +595,20 @@ export default function Passageiros() {
                               )}
                             />
                           </div>
+
+                          <FormField
+                            control={form.control}
+                            name="cpf_responsavel"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>CPF do Responsável *</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
                           {editingPassageiro && (
                             <div className="mt-2">
