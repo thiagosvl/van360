@@ -4,8 +4,8 @@ export const formatDate = (date: string | Date) => {
 };
 
 export const formatDateToBR = (date: string | Date): string => {
-    const d = new Date(date);
-    return d.toLocaleDateString("pt-BR", {
+    const newDate = new Date(date + "T00:00:00");
+    return newDate.toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",

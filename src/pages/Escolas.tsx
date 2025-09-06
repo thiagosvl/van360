@@ -327,7 +327,7 @@ export default function Escolas() {
                               name="rua"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Rua</FormLabel>
+                                  <FormLabel>Logradouro</FormLabel>
                                   <FormControl>
                                     <Input {...field} />
                                   </FormControl>
