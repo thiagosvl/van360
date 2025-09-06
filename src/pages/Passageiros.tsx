@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { asaasService } from "@/integrations/asaasService";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { Escola } from "@/types/escola";
@@ -288,7 +289,7 @@ export default function Passageiros() {
       emitir_cobranca_mes_atual: true,
     };
 
-    await handleSubmit(fakeData as any);`z`
+    await handleSubmit(fakeData as any);
   };
 
   const handleSubmit = async (data: PassageiroFormData) => {
@@ -358,6 +359,12 @@ export default function Passageiros() {
           .insert([passageiroData as PassageiroInsert])
           .select()
           .single();
+
+        await asaasService.createCustomer({
+          name: passageiroData.nome,
+          cpfCnpj: passageiroData.cpf_responsavel,
+          mobilePhone: passageiroData.telefone_responsavel,
+        });
 
         if (error) throw error;
 
