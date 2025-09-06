@@ -310,18 +310,13 @@ export default function Passageiros() {
               passageiroData.dia_vencimento
             );
 
-            const updateData: any = {
-              data_vencimento: novaData.toISOString().split("T")[0],
-              valor: passageiroData.valor_mensalidade,
-            };
-
-            if (!passageiroData.ativo) {
-              updateData.desativar_lembretes = true;
-            }
-
             await supabase
               .from("cobrancas")
-              .update(updateData)
+              .update({
+                data_vencimento: novaData.toISOString().split("T")[0],
+                valor: passageiroData.valor_mensalidade,
+                desativar_lembretes: !passageiroData.ativo,
+              })
               .eq("id", ultimaCobranca.id);
           }
         } catch (err) {
