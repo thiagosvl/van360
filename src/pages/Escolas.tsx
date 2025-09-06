@@ -29,49 +29,13 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Escola } from "@/types/escola";
 import { cepMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
-interface Escola {
-  id: string;
-  nome: string;
-  rua?: string;
-  numero?: string;
-  bairro?: string;
-  cidade?: string;
-  estado?: string;
-  cep?: string;
-  referencia?: string;
-  ativo: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Passageiro {
-  id: string;
-  nome: string;
-  endereco: string;
-  rua?: string;
-  numero?: string;
-  bairro?: string;
-  cidade?: string;
-  estado?: string;
-  cep?: string;
-  referencia?: string;
-  nome_responsavel: string;
-  telefone_responsavel: string;
-  valor_mensalidade: number;
-  dia_vencimento: number | string;
-  escola_id?: string;
-  created_at: string;
-  updated_at: string;
-  escolas?: { nome: string };
-  ativo: boolean;
-}
 
 const escolaSchema = z.object({
   nome: z.string().min(1, "Campo obrigatório"),
@@ -119,10 +83,7 @@ export default function Escolas() {
   const fetchEscolas = async () => {
     setLoadingPage(true);
     try {
-      let query = supabase
-        .from("escolas")
-        .select("id, nome, ativo")
-        .order("nome");
+      let query = supabase.from("escolas").select("*").order("nome");
 
       const { data, error } = await query;
 
@@ -636,17 +597,16 @@ export default function Escolas() {
                               >
                                 <Pencil className="h-3 w-3" />
                               </Button>
-                              {!escola.ativo && (
-                                <Button
-                                  size="sm"
-                                  title="Remover"
-                                  variant="outline"
-                                  onClick={() => handleDeleteClick(escola)}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              )}
+                              <Button
+                                size="sm"
+                                title="Remover"
+                                variant="outline"
+                                disabled={escola.ativo}
+                                onClick={() => handleDeleteClick(escola)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
                             </div>
                           </td>
                         </tr>

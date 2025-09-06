@@ -19,25 +19,9 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-interface Cobranca {
-  id: string;
-  mes: number;
-  ano: number;
-  valor: number;
-  status: string;
-  data_vencimento: string;
-  data_pagamento?: string;
-  tipo_pagamento?: string;
-  pagamento_manual?: boolean;
-  desativar_lembretes?: boolean;
-}
-
-interface Passageiro {
-  id: string;
-  nome: string;
-  valor_mensalidade: number;
-  dia_vencimento: number;
-}
+import { Cobranca } from "@/types/cobranca";
+import { Passageiro } from "@/types/passageiro";
+import { formatDate, formatDateToBR } from "@/utils/formatters";
 
 export default function PassageiroCarteirinha() {
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
@@ -175,7 +159,7 @@ export default function PassageiroCarteirinha() {
   const getStatusColor = (status: string, dataVencimento: string) => {
     if (status === "pago") return "bg-green-100 text-green-800";
 
-    const vencimento = new Date(dataVencimento + "T00:00:00");
+    const vencimento = formatDate(dataVencimento);
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
@@ -187,7 +171,7 @@ export default function PassageiroCarteirinha() {
   const getStatusText = (status: string, dataVencimento: string) => {
     if (status === "pago") return "Pago";
 
-    const vencimento = new Date(dataVencimento + "T00:00:00");
+    const vencimento = formatDate(dataVencimento);
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
@@ -381,12 +365,7 @@ export default function PassageiroCarteirinha() {
                             cobranca.data_pagamento && (
                               <div className="text-xs text-muted-foreground mt-1">
                                 {formatPaymentType(cobranca.tipo_pagamento)} em{" "}
-                                {new Date(
-                                  cobranca.data_pagamento + "T00:00:00"
-                                ).toLocaleDateString("pt-BR", {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                })}
+                                {formatDateToBR(cobranca.data_pagamento)}
                               </div>
                             )}
                           {cobranca.desativar_lembretes &&
@@ -398,9 +377,7 @@ export default function PassageiroCarteirinha() {
                         </td>
                         <td className="p-3">
                           <span className="text-sm">
-                            {new Date(
-                              cobranca.data_vencimento + "T00:00:00"
-                            ).toLocaleDateString("pt-BR")}
+                            {formatDateToBR(cobranca.data_vencimento)}
                           </span>
                         </td>
                         <td className="p-3">

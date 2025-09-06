@@ -16,41 +16,8 @@ import { Calendar, CreditCard, DollarSign, Filter } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-interface Passageiro {
-  id: string;
-  nome: string;
-  endereco: string;
-  nome_responsavel: string;
-  telefone_responsavel: string;
-  valor_mensalidade: number;
-  dia_vencimento: number;
-}
-
-interface Cobranca {
-  id: string;
-  passageiro_id: string;
-  mes: number;
-  ano: number;
-  valor: number;
-  status: string;
-  data_vencimento: string;
-  data_pagamento?: string;
-  tipo_pagamento?: string;
-  passageiros: {
-    id: string;
-    nome: string;
-    nome_responsavel: string;
-    valor_mensalidade: number;
-    dia_vencimento: number;
-  };
-}
-
-interface PaymentStats {
-  pix: { count: number; total: number };
-  cartao: { count: number; total: number };
-  dinheiro: { count: number; total: number };
-  transferencia: { count: number; total: number };
-}
+import { Cobranca } from "@/types/cobranca";
+import { PaymentStats } from "@/types/paymentStats";
 
 interface DashboardStats {
   totalPrevisto: number;
@@ -261,11 +228,8 @@ const Dashboard = () => {
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Dashboard
+              Tela Inicial
             </h1>
-            <p className="text-muted-foreground">
-              Gerencie suas mensalidades e passageiros
-            </p>
           </div>
 
           {/* Filtros no topo */}
@@ -327,6 +291,7 @@ const Dashboard = () => {
             onReenviarCobranca={reenviarCobranca}
             onPayment={openPaymentDialog}
             onViewHistory={handleViewHistory}
+            onRefresh={fetchStats}
           />
 
           {/* Stats Cards */}
@@ -343,7 +308,10 @@ const Dashboard = () => {
                   <Skeleton className="h-8 w-32" />
                 ) : (
                   <div className="text-2xl font-bold">
-                    R$ {stats.totalPrevisto.toFixed(2)}
+                    {Number(stats.totalPrevisto).toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -361,7 +329,10 @@ const Dashboard = () => {
                   <Skeleton className="h-8 w-32" />
                 ) : (
                   <div className="text-2xl font-bold text-green-600">
-                    R$ {stats.totalRecebido.toFixed(2)}
+                    {Number(stats.totalRecebido).toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -379,7 +350,10 @@ const Dashboard = () => {
                   <Skeleton className="h-8 w-32" />
                 ) : (
                   <div className="text-2xl font-bold text-orange-600">
-                    R$ {stats.totalAReceber.toFixed(2)}
+                    {Number(stats.totalAReceber).toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -497,7 +471,6 @@ const Dashboard = () => {
           onPaymentRecorded={handlePaymentRecorded}
         />
       )}
-
     </div>
   );
 };

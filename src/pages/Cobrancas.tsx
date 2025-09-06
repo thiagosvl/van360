@@ -24,27 +24,8 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-interface Passageiro {
-  id: string;
-  nome: string;
-  nome_responsavel: string;
-  valor_mensalidade: number;
-  dia_vencimento: number;
-}
-
-interface Cobranca {
-  id: string;
-  passageiro_id: string;
-  mes: number;
-  ano: number;
-  valor: number;
-  status: string;
-  data_vencimento: string;
-  data_pagamento?: string;
-  tipo_pagamento?: string;
-  passageiros: Passageiro;
-  desativar_lembretes?: boolean;
-}
+import { Cobranca } from "@/types/cobranca";
+import { formatDate, formatDateToBR } from "@/utils/formatters";
 
 const Cobrancas = () => {
   const [cobrancasAbertas, setCobrancasAbertas] = useState<Cobranca[]>([]);
@@ -210,7 +191,7 @@ const Cobrancas = () => {
   const getStatusText = (status: string, dataVencimento: string) => {
     if (status === "pago") return "Pago";
 
-    const vencimento = new Date(dataVencimento + "T00:00:00");
+    const vencimento = formatDate(dataVencimento);
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
@@ -229,7 +210,7 @@ const Cobrancas = () => {
   const getStatusColor = (status: string, dataVencimento: string) => {
     if (status === "pago") return "bg-green-100 text-green-800";
 
-    const vencimento = new Date(dataVencimento + "T00:00:00");
+    const vencimento = formatDate(dataVencimento);
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
@@ -394,9 +375,7 @@ const Cobrancas = () => {
                           </td>
                           <td className="p-3">
                             <span className="text-sm">
-                              {new Date(
-                                cobranca.data_vencimento + "T00:00:00"
-                              ).toLocaleDateString("pt-BR")}
+                              {formatDateToBR(cobranca.data_vencimento)}
                             </span>
                           </td>
                           <td className="p-3">
@@ -560,9 +539,7 @@ const Cobrancas = () => {
                           <td className="p-3">
                             <span className="text-sm">
                               {cobranca.data_pagamento
-                                ? new Date(
-                                    cobranca.data_pagamento + "T00:00:00"
-                                  ).toLocaleDateString("pt-BR")
+                                ? formatDateToBR(cobranca.data_pagamento)
                                 : "-"}
                             </span>
                           </td>

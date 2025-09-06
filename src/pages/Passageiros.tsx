@@ -32,6 +32,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Escola } from "@/types/escola";
+import { Passageiro } from "@/types/passageiro";
 import { cepMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -47,34 +49,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-
-interface Passageiro {
-  id: string;
-  nome: string;
-  endereco: string;
-  rua?: string;
-  numero?: string;
-  bairro?: string;
-  cidade?: string;
-  estado?: string;
-  cep?: string;
-  referencia?: string;
-  nome_responsavel: string;
-  telefone_responsavel: string;
-  valor_mensalidade: number;
-  dia_vencimento: number | string;
-  escola_id?: string;
-  created_at: string;
-  updated_at: string;
-  escolas?: { nome: string };
-  ativo: boolean;
-}
-
-interface Escola {
-  id: string;
-  nome: string;
-  ativo: boolean;
-}
 
 const passageiroSchema = z.object({
   escola_id: z.string().min(1, "Campo obrigatório"),
@@ -112,9 +86,6 @@ export default function Passageiros() {
   );
   const [selectedEscola, setSelectedEscola] = useState<string>("todas");
   const [searchTerm, setSearchTerm] = useState("");
-  const [expandedPassageiro, setExpandedPassageiro] = useState<string | null>(
-    null
-  );
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const navigate = useNavigate();
@@ -350,6 +321,41 @@ export default function Passageiros() {
 
         toast({
           title: "Passageiro atualizado com sucesso.",
+        });
+      } else {
+        const { data: newPassageiro, error } = await supabase
+          .from("passageiros")
+          .insert([passageiroData])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        if (emitir_cobranca_mes_atual) {
+          const currentDate = new Date();
+          const mes = currentDate.getMonth() + 1;
+          const ano = currentDate.getFullYear();
+
+          const dataVencimento = new Date(
+            ano,
+            mes - 1,
+            Number(pureData.dia_vencimento)
+          );
+
+          await supabase.from("cobrancas").insert([
+            {
+              passageiro_id: newPassageiro.id,
+              mes,
+              ano,
+              valor: moneyToNumber(pureData.valor_mensalidade),
+              data_vencimento: dataVencimento.toISOString().split("T")[0],
+              status: "pendente",
+            },
+          ]);
+        }
+
+        toast({
+          title: "Passageiro cadastrado com sucesso.",
         });
       }
 

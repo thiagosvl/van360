@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Cobranca } from "@/types/cobranca";
+import { formatDate, formatDateToBR } from "@/utils/formatters";
 import {
   AlertTriangle,
   Bell,
@@ -14,28 +16,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import ConfirmationDialog from "./ConfirmationDialog";
-
-interface Passageiro {
-  id: string;
-  nome: string;
-  nome_responsavel: string;
-  valor_mensalidade: number;
-  dia_vencimento: number;
-}
-
-interface Cobranca {
-  id: string;
-  passageiro_id: string;
-  mes: number;
-  ano: number;
-  valor: number;
-  status: string;
-  data_vencimento: string;
-  data_pagamento?: string;
-  tipo_pagamento?: string;
-  passageiros: Passageiro;
-  desativar_lembretes?: boolean;
-}
 
 interface LatePaymentsAlertProps {
   latePayments: Cobranca[];
@@ -49,6 +29,7 @@ interface LatePaymentsAlertProps {
     passageiroNome: string,
     valorMensalidade: number
   ) => void;
+  onRefresh: () => void;
 }
 
 const LatePaymentsAlert = ({
@@ -59,6 +40,7 @@ const LatePaymentsAlert = ({
   onReenviarCobranca,
   onPayment,
   onViewHistory,
+  onRefresh,
 }: LatePaymentsAlertProps) => {
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -94,7 +76,7 @@ const LatePaymentsAlert = ({
         } com sucesso.`,
       });
 
-      // fetchCobrancas();
+      onRefresh();
     } catch (err) {
       console.error("Erro ao alternar lembretes:", err);
       toast({
@@ -106,7 +88,7 @@ const LatePaymentsAlert = ({
   };
 
   const getStatusText = (dataVencimento: string) => {
-    const vencimento = new Date(dataVencimento + "T00:00:00");
+    const vencimento = formatDate(dataVencimento);
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
@@ -120,7 +102,7 @@ const LatePaymentsAlert = ({
   };
 
   const getStatusColor = (dataVencimento: string) => {
-    const vencimento = new Date(dataVencimento + "T00:00:00");
+    const vencimento = formatDate(dataVencimento);
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
@@ -215,10 +197,7 @@ const LatePaymentsAlert = ({
                     {cobranca.passageiros.nome}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Venc.:{" "}
-                    {new Date(
-                      cobranca.data_vencimento + "T00:00:00"
-                    ).toLocaleDateString("pt-BR")}{" "}
+                    Venc.: {formatDateToBR(cobranca.data_vencimento)}{" "}
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
                         cobranca.data_vencimento
@@ -226,6 +205,12 @@ const LatePaymentsAlert = ({
                     >
                       {getStatusText(cobranca.data_vencimento)}
                     </span>
+                    {cobranca.desativar_lembretes &&
+                      cobranca.status !== "pago" && (
+                        <span className="text-xs text-muted-foreground mt-1">
+                          Lembretes suspensos
+                        </span>
+                      )}
                   </div>
                   <div className="text-sm font-medium text-red-600">
                     {Number(cobranca.valor).toLocaleString("pt-BR", {
