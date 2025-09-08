@@ -1,20 +1,57 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 export default function AdminDashboard() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-card text-card-foreground rounded-lg border p-6">
-          <h2 className="text-lg font-semibold mb-2">Total de Motoristas</h2>
-          <p className="text-muted-foreground">Em breve...</p>
-        </div>
-        <div className="bg-card text-card-foreground rounded-lg border p-6">
-          <h2 className="text-lg font-semibold mb-2">Cobranças Pendentes</h2>
-          <p className="text-muted-foreground">Em breve...</p>
-        </div>
-        <div className="bg-card text-card-foreground rounded-lg border p-6">
-          <h2 className="text-lg font-semibold mb-2">Receita Mensal</h2>
-          <p className="text-muted-foreground">Em breve...</p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Painel Administrativo</h1>
+        <p className="text-muted-foreground">
+          Bem-vindo ao painel de administração do sistema de transporte.
+        </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total de Motoristas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">
+              Motoristas cadastrados
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total de Passageiros
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">
+              Passageiros cadastrados
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Cobrancas Ativas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">
+              Mensalidades pendentes
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
