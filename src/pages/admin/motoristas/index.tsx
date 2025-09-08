@@ -34,8 +34,10 @@ export default function MotoristasAdmin() {
 
   const loadMotoristas = async () => {
     try {
-      const { data, error } = await supabase
-        .rpc('get_motoristas_list');
+      const { data, error } = await (supabase as any)
+        .from("motoristas")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setMotoristas(data || []);
@@ -71,8 +73,9 @@ export default function MotoristasAdmin() {
 
   const handleCreateMotorista = async (data: any) => {
     try {
-      const { error } = await supabase
-        .rpc('create_motorista', { motorista_data: data });
+      const { error } = await (supabase as any)
+        .from("motoristas")
+        .insert([data]);
 
       if (error) throw error;
 
@@ -97,11 +100,10 @@ export default function MotoristasAdmin() {
     if (!editingMotorista) return;
 
     try {
-      const { error } = await supabase
-        .rpc('update_motorista', { 
-          motorista_id: editingMotorista.id,
-          motorista_data: data 
-        });
+      const { error } = await (supabase as any)
+        .from("motoristas")
+        .update(data)
+        .eq("id", editingMotorista.id);
 
       if (error) throw error;
 
