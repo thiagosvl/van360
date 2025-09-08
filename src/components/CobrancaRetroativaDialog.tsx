@@ -191,7 +191,7 @@ export default function CobrancaRetroativaDialog({
         pagamento_manual: data.foi_pago,
       };
 
-      const { error } = await (supabase as any).from("cobrancas").insert([cobrancaData]);
+      const { error } = await supabase.from("cobrancas").insert([cobrancaData]);
 
       if (error) throw error;
 

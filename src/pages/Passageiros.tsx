@@ -1,8 +1,8 @@
+import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2 } from "lucide-react";
-import { useSessionContext } from "@/hooks/useSessionContext";
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {
@@ -84,7 +84,6 @@ type PassageiroInsert = Database["public"]["Tables"]["passageiros"]["Insert"];
 type PassageiroFormData = z.infer<typeof passageiroSchema>;
 
 export default function Passageiros() {
-  const { motoristaId } = useSessionContext();
   const [passageiros, setPassageiros] = useState<Passageiro[]>([]);
   const [escolas, setEscolas] = useState<Escola[]>([]);
   const [escolasModal, setEscolasModal] = useState<Escola[]>([]); // modal
@@ -148,13 +147,12 @@ export default function Passageiros() {
   }, []);
 
   useEffect(() => {
-    if (!motoristaId) return;
     if (searchTerm.length >= 2) {
       debounceSearch()(searchTerm);
     } else if (searchTerm.length === 0) {
       fetchPassageiros();
     }
-  }, [selectedEscola, searchTerm, motoristaId]);
+  }, [selectedEscola, searchTerm]);
 
   const handleDeleteClick = (id: string) => {
     setDeleteDialog({ open: true, passageiroId: id });
@@ -244,14 +242,11 @@ export default function Passageiros() {
   };
 
   const fetchPassageiros = async (search = "") => {
-    if (!motoristaId) return;
-    
     setLoading(true);
     try {
       let query = supabase
         .from("passageiros")
         .select(`*, escolas(nome)`)
-        .eq("motorista_id", motoristaId)
         .order("nome");
 
       if (selectedEscola !== "todas") {
@@ -411,7 +406,7 @@ export default function Passageiros() {
               Number(pureData.dia_vencimento)
             );
 
-            await (supabase as any).from("cobrancas").insert([
+            await supabase.from("cobrancas").insert([
               {
                 passageiro_id: newPassageiro.id,
                 mes,
@@ -501,38 +496,45 @@ export default function Passageiros() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-            Passageiros
-          </h1>
-
-          <div className="flex gap-2">
-            {process.env.NODE_ENV === "development" && (
-              <Button
-                onClick={handleCadastrarRapido}
-                variant="outline"
-                size="sm"
-                className="gap-2"
-              >
-                🚀 Rápido
-              </Button>
-            )}
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <div className="p-4 space-y-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+              Passageiros
+            </h1>
+            <Button
+              onClick={handleCadastrarRapido}
+              variant="destructive"
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Cadastrar Rápido
+            </Button>
+            {/* Modal Passageiro */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button onClick={resetForm} className="gap-2">
+                <Button
+                  onClick={() => {
+                    resetForm();
+                    fetchEscolasModal();
+                  }}
+                  className="gap-2"
+                >
                   <Plus className="h-4 w-4" />
                   Novo Passageiro
                 </Button>
               </DialogTrigger>
               <DialogContent
-                className="max-w-4xl max-h-[90vh] overflow-y-auto"
+                className="max-w-2xl max-h-[90vh] overflow-y-auto"
                 onOpenAutoFocus={(e) => e.preventDefault()}
               >
                 <DialogHeader>
                   <DialogTitle>
-                    {editingPassageiro ? "Editar Passageiro" : "Novo Passageiro"}
+                    {editingPassageiro
+                      ? "Editar Passageiro"
+                      : "Novo Passageiro"}
                   </DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
@@ -540,22 +542,108 @@ export default function Passageiros() {
                     onSubmit={form.handleSubmit(handleSubmit)}
                     className="space-y-6"
                   >
-                    {/* Dados do Passageiro Section */}
                     <Card>
                       <CardContent className="p-6">
+                        {/* Passageiro Section */}
                         <div className="flex items-center gap-2 mb-4">
                           <User className="w-5 h-5 text-primary" />
-                          <h3 className="text-lg font-semibold">
-                            Dados do Passageiro
-                          </h3>
+                          <h3 className="text-lg font-semibold">Informações</h3>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="nome"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Nome do Passageiro *</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="escola_id"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Escola *</FormLabel>
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Selecione uma escola" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {escolasModal.map((escola) => (
+                                        <SelectItem
+                                          key={escola.id}
+                                          value={escola.id}
+                                        >
+                                          {escola.nome}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="nome_responsavel"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Nome do Responsável *</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="telefone_responsavel"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>
+                                    Telefone do Responsável *
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="(00) 00000-0000"
+                                      maxLength={15}
+                                      onChange={(e) => {
+                                        const maskedValue = phoneMask(
+                                          e.target.value
+                                        );
+                                        field.onChange(maskedValue);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
                           <FormField
                             control={form.control}
-                            name="nome"
+                            name="cpf_responsavel"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Nome do Passageiro *</FormLabel>
+                                <FormLabel>CPF do Responsável *</FormLabel>
                                 <FormControl>
                                   <Input {...field} />
                                 </FormControl>
@@ -563,49 +651,52 @@ export default function Passageiros() {
                               </FormItem>
                             )}
                           />
-                          <FormField
-                            control={form.control}
-                            name="escola_id"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Escola *</FormLabel>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Selecione a escola" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {(isDialogOpen ? escolasModal : escolas).map(
-                                      (escola) => (
-                                        <SelectItem key={escola.id} value={escola.id}>
-                                          {escola.nome}
-                                          {!escola.ativo && " (Inativa)"}
-                                        </SelectItem>
-                                      )
-                                    )}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
 
+                          {editingPassageiro && (
+                            <div className="mt-2">
+                              <FormField
+                                control={form.control}
+                                name="ativo"
+                                render={({ field }) => (
+                                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                      />
+                                    </FormControl>
+                                    <div className="space-y-1 leading-none">
+                                      <FormLabel>Ativo</FormLabel>
+                                    </div>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
+
+                        {/* Mensalidade Section */}
+                        <div className="flex items-center gap-2 mb-4">
+                          <DollarSign className="w-5 h-5 text-primary" />
+                          <h3 className="text-lg font-semibold">Mensalidade</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
                             name="valor_mensalidade"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Valor da Mensalidade *</FormLabel>
+                                <FormLabel>Valor *</FormLabel>
                                 <FormControl>
                                   <Input
                                     {...field}
-                                    placeholder="R$ 0,00"
                                     onChange={(e) => {
-                                      field.onChange(moneyMask(e.target.value));
+                                      const maskedValue = moneyMask(
+                                        e.target.value
+                                      );
+                                      field.onChange(maskedValue);
                                     }}
                                   />
                                 </FormControl>
@@ -613,30 +704,33 @@ export default function Passageiros() {
                               </FormItem>
                             )}
                           />
-
                           <FormField
                             control={form.control}
                             name="dia_vencimento"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Dia de Vencimento *</FormLabel>
+                                <FormLabel>Dia do Vencimento *</FormLabel>
                                 <Select
                                   onValueChange={field.onChange}
                                   value={field.value}
                                 >
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Dia do vencimento" />
+                                      <SelectValue placeholder="Selecione o dia" />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {Array.from({ length: 28 }, (_, i) => i + 1).map(
-                                      (dia) => (
-                                        <SelectItem key={dia} value={dia.toString()}>
-                                          {dia}
-                                        </SelectItem>
-                                      )
-                                    )}
+                                    {Array.from(
+                                      { length: 31 },
+                                      (_, i) => i + 1
+                                    ).map((day) => (
+                                      <SelectItem
+                                        key={day}
+                                        value={day.toString()}
+                                      >
+                                        Dia {day}
+                                      </SelectItem>
+                                    ))}
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -645,28 +739,7 @@ export default function Passageiros() {
                           />
                         </div>
 
-                        {editingPassageiro && (
-                          <div className="mt-4">
-                            <FormField
-                              control={form.control}
-                              name="ativo"
-                              render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value}
-                                      onCheckedChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                  <div className="space-y-1 leading-none">
-                                    <FormLabel>Ativo</FormLabel>
-                                  </div>
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        )}
-
+                        {/* Checkbox para emitir cobrança apenas no cadastro */}
                         {!editingPassageiro && (
                           <div className="mt-4">
                             <FormField
@@ -768,16 +841,71 @@ export default function Passageiros() {
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                      <SelectItem value="SP">São Paulo</SelectItem>
-                                      <SelectItem value="RJ">Rio de Janeiro</SelectItem>
-                                      <SelectItem value="MG">Minas Gerais</SelectItem>
-                                      <SelectItem value="RS">Rio Grande do Sul</SelectItem>
-                                      <SelectItem value="PR">Paraná</SelectItem>
-                                      <SelectItem value="SC">Santa Catarina</SelectItem>
+                                      <SelectItem value="AC">Acre</SelectItem>
+                                      <SelectItem value="AL">
+                                        Alagoas
+                                      </SelectItem>
+                                      <SelectItem value="AP">Amapá</SelectItem>
+                                      <SelectItem value="AM">
+                                        Amazonas
+                                      </SelectItem>
                                       <SelectItem value="BA">Bahia</SelectItem>
-                                      <SelectItem value="GO">Goiás</SelectItem>
-                                      <SelectItem value="PE">Pernambuco</SelectItem>
                                       <SelectItem value="CE">Ceará</SelectItem>
+                                      <SelectItem value="DF">
+                                        Distrito Federal
+                                      </SelectItem>
+                                      <SelectItem value="ES">
+                                        Espírito Santo
+                                      </SelectItem>
+                                      <SelectItem value="GO">Goiás</SelectItem>
+                                      <SelectItem value="MA">
+                                        Maranhão
+                                      </SelectItem>
+                                      <SelectItem value="MT">
+                                        Mato Grosso
+                                      </SelectItem>
+                                      <SelectItem value="MS">
+                                        Mato Grosso do Sul
+                                      </SelectItem>
+                                      <SelectItem value="MG">
+                                        Minas Gerais
+                                      </SelectItem>
+                                      <SelectItem value="PA">Pará</SelectItem>
+                                      <SelectItem value="PB">
+                                        Paraíba
+                                      </SelectItem>
+                                      <SelectItem value="PR">Paraná</SelectItem>
+                                      <SelectItem value="PE">
+                                        Pernambuco
+                                      </SelectItem>
+                                      <SelectItem value="PI">Piauí</SelectItem>
+                                      <SelectItem value="RJ">
+                                        Rio de Janeiro
+                                      </SelectItem>
+                                      <SelectItem value="RN">
+                                        Rio Grande do Norte
+                                      </SelectItem>
+                                      <SelectItem value="RS">
+                                        Rio Grande do Sul
+                                      </SelectItem>
+                                      <SelectItem value="RO">
+                                        Rondônia
+                                      </SelectItem>
+                                      <SelectItem value="RR">
+                                        Roraima
+                                      </SelectItem>
+                                      <SelectItem value="SC">
+                                        Santa Catarina
+                                      </SelectItem>
+                                      <SelectItem value="SP">
+                                        São Paulo
+                                      </SelectItem>
+                                      <SelectItem value="SE">
+                                        Sergipe
+                                      </SelectItem>
+                                      <SelectItem value="TO">
+                                        Tocantins
+                                      </SelectItem>
                                     </SelectContent>
                                   </Select>
                                   <FormMessage />
@@ -793,9 +921,13 @@ export default function Passageiros() {
                                   <FormControl>
                                     <Input
                                       {...field}
-                                      onChange={(e) =>
-                                        field.onChange(cepMask(e.target.value))
-                                      }
+                                      maxLength={9}
+                                      onChange={(e) => {
+                                        const maskedValue = cepMask(
+                                          e.target.value
+                                        );
+                                        field.onChange(maskedValue);
+                                      }}
                                     />
                                   </FormControl>
                                   <FormMessage />
@@ -810,7 +942,7 @@ export default function Passageiros() {
                               <FormItem>
                                 <FormLabel>Referência</FormLabel>
                                 <FormControl>
-                                  <Textarea {...field} rows={2} />
+                                  <Textarea {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -818,260 +950,201 @@ export default function Passageiros() {
                           />
                         </div>
 
-                        <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
-
-                        {/* Responsável Section */}
-                        <div className="flex items-center gap-2 mb-4">
-                          <DollarSign className="w-5 h-5 text-primary" />
-                          <h3 className="text-lg font-semibold">
-                            Dados do Responsável Financeiro
-                          </h3>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="nome_responsavel"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Nome do Responsável *</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="telefone_responsavel"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Telefone do Responsável *</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) =>
-                                      field.onChange(phoneMask(e.target.value))
-                                    }
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="cpf_responsavel"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>CPF do Responsável *</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => {
-                                      const value = e.target.value.replace(/\D/g, "");
-                                      if (value.length <= 11) {
-                                        field.onChange(value);
-                                      }
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                        {/* Actions */}
+                        <div className="flex gap-4 mt-8 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsDialogOpen(false)}
+                            className="flex-1"
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            type="submit"
+                            disabled={loading}
+                            className="flex-1"
+                          >
+                            {loading
+                              ? "Salvando..."
+                              : editingPassageiro
+                              ? "Atualizar"
+                              : "Cadastrar"}
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
-
-                    <div className="flex justify-end gap-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setIsDialogOpen(false)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button type="submit" disabled={loading}>
-                        {loading ? "Salvando..." : "Salvar"}
-                      </Button>
-                    </div>
                   </form>
                 </Form>
               </DialogContent>
             </Dialog>
           </div>
-        </div>
 
-        {/* Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <div className="flex-1">
-            <Label htmlFor="search" className="text-sm font-medium mb-2 block">
-              Buscar
-            </Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                id="search"
-                type="text"
-                placeholder="Buscar por nome (mín. 2 caracteres)"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-          <div className="flex-1">
-            <Label htmlFor="escola-filter" className="text-sm font-medium mb-2 block">
-              Filtrar por Escola
-            </Label>
-            <Select value={selectedEscola} onValueChange={setSelectedEscola}>
-              <SelectTrigger>
-                <SelectValue placeholder="Todas as escolas" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todas">Todas as escolas</SelectItem>
-                {escolas.map((escola) => (
-                  <SelectItem key={escola.id} value={escola.id}>
-                    {escola.nome}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+          {/* Tabela de Passageiros */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Lista de Passageiros
+                <span className="bg-foreground text-white text-sm px-2 py-0.5 rounded-full">
+                  {passageiros.length}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <Label
+                    htmlFor="escola-filter"
+                    className="text-sm font-medium mb-2 block"
+                  >
+                    Escola
+                  </Label>
+                  <Select
+                    value={selectedEscola}
+                    onValueChange={setSelectedEscola}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todas as escolas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todas">Todas as escolas</SelectItem>
+                      {escolas.map((escola) => (
+                        <SelectItem key={escola.id} value={escola.id}>
+                          {escola.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <Label
+                    htmlFor="search"
+                    className="text-sm font-medium mb-2 block"
+                  >
+                    Nome
+                  </Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input
+                      id="search"
+                      placeholder="Digite 2 caracteres ou mais..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+              </div>
 
-        {/* Passageiros List */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Lista de Passageiros
-              <span className="bg-foreground text-white text-sm px-2 py-0.5 rounded-full">
-                {passageiros.length}
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading || searching ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                Carregando...
-              </div>
-            ) : passageiros.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                {searchTerm || selectedEscola !== "todas"
-                  ? "Nenhum passageiro encontrado para os filtros aplicados"
-                  : "Nenhum passageiro cadastrado"}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-3 text-sm font-medium">Nome</th>
-                      <th className="text-left p-3 text-sm font-medium">Escola</th>
-                      <th className="text-left p-3 text-sm font-medium">Responsável</th>
-                      <th className="text-left p-3 text-sm font-medium">Telefone</th>
-                      <th className="text-left p-3 text-sm font-medium">Valor</th>
-                      <th className="text-left p-3 text-sm font-medium">Vencimento</th>
-                      <th className="text-left p-3 text-sm font-medium">Status</th>
-                      <th className="text-center p-3 text-sm font-medium">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {passageiros.map((passageiro) => (
-                      <tr key={passageiro.id} className="border-b hover:bg-muted/50">
-                        <td className="p-3">
-                          <span className="font-medium text-sm">{passageiro.nome}</span>
-                        </td>
-                        <td className="p-3">
-                          <span className="text-sm text-muted-foreground">
-                            {passageiro.escolas?.nome || "Não definida"}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          <span className="text-sm">{passageiro.nome_responsavel}</span>
-                        </td>
-                        <td className="p-3">
-                          <span className="text-sm">
-                            {phoneMask(passageiro.telefone_responsavel)}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          <span className="font-medium text-sm">
-                            {passageiro.valor_mensalidade.toLocaleString("pt-BR", {
-                              style: "currency",
-                              currency: "BRL",
-                            })}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          <span className="text-sm">Dia {passageiro.dia_vencimento}</span>
-                        </td>
-                        <td className="p-3">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              passageiro.ativo
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
+              <div className="mt-8">
+                {loading || searching ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    {searching ? "Buscando passageiros..." : "Carregando..."}
+                  </div>
+                ) : passageiros.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    {searchTerm.length > 0 && searchTerm.length < 2
+                      ? "Digite pelo menos 2 caracteres para buscar"
+                      : searchTerm.length >= 2
+                      ? "Nenhum passageiro encontrado com este nome"
+                      : "Nenhum passageiro encontrado"}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-3 text-sm font-medium">
+                            Nome
+                          </th>
+                          <th className="text-left p-3 text-sm font-medium">
+                            Status
+                          </th>
+                          <th className="text-left p-3 text-sm font-medium">
+                            Escola
+                          </th>
+                          <th className="text-center p-3 text-sm font-medium">
+                            Ações
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {passageiros.map((passageiro) => (
+                          <tr
+                            key={passageiro.id}
+                            className="border-b hover:bg-muted/50"
                           >
-                            {passageiro.ativo ? "Ativo" : "Inativo"}
-                          </span>
-                        </td>
-                        <td className="p-3 text-center">
-                          <div className="flex gap-2 justify-center">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              title="Carteirinha"
-                              onClick={() => handleHistorico(passageiro)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <CreditCard className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              title="Editar"
-                              onClick={() => handleEdit(passageiro)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Pencil className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              title="Excluir"
-                              onClick={() => handleDeleteClick(passageiro.id)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                            <td className="p-3">
+                              <span className="font-medium text-sm">
+                                {passageiro.nome}
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              <span className="text-sm text-muted-foreground">
+                                {passageiro.ativo ? "Ativo" : "Inativo"}
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              <span className="text-sm text-muted-foreground">
+                                {passageiro.escolas?.nome || "Não informada"}
+                              </span>
+                            </td>
+                            <td className="p-3 text-center">
+                              <div className="flex gap-2 justify-center">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  title="Editar"
+                                  onClick={() => handleEdit(passageiro)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Pencil className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  title="Carteirinha"
+                                  onClick={() => handleHistorico(passageiro)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <CreditCard className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  title="Remover"
+                                  onClick={() =>
+                                    handleDeleteClick(passageiro.id)
+                                  }
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <ConfirmationDialog
-          open={deleteDialog.open}
-          onOpenChange={(open) =>
-            setDeleteDialog({ open, passageiroId: "" })
-          }
-          title="Remover Passageiro"
-          description="Deseja remover permanentemente este passageiro? Esta ação não pode ser desfeita."
-          onConfirm={handleDelete}
-          confirmText="Remover"
-          cancelText="Cancelar"
-          variant="destructive"
-        />
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
+      <ConfirmationDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog({ open, passageiroId: "" })}
+        title="Remover Passageiro"
+        description="Deseja remover permanentemente este passageiro? Esta ação não pode ser desfeita."
+        onConfirm={handleDelete}
+        confirmText="Remover"
+        cancelText="Cancelar"
+        variant="destructive"
+      />
     </div>
   );
 }

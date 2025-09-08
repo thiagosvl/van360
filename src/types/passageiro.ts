@@ -1,7 +1,7 @@
 export interface Passageiro {
   id: string;
   nome: string;
-  endereco?: string; // Made optional for backward compatibility
+  endereco: string;
   rua?: string;
   numero?: string;
   bairro?: string;
@@ -15,8 +15,6 @@ export interface Passageiro {
   valor_mensalidade: number;
   dia_vencimento: number;
   escola_id?: string;
-  motorista_id?: string;
-  asaas_customer_id?: string;
   created_at: string;
   updated_at: string;
   escolas?: { nome: string };

@@ -1,5 +1,6 @@
 import LatePaymentsAlert from "@/components/LatePaymentsAlert";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
+import Navigation from "@/components/Navigation";
 import PaymentStatsCard from "@/components/PaymentStatsCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,7 +12,6 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { useSessionContext } from "@/hooks/useSessionContext";
 import { Calendar, CreditCard, DollarSign, Filter } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -32,7 +32,6 @@ interface DashboardStats {
 }
 
 const Dashboard = () => {
-  const { motoristaId } = useSessionContext();
   const [stats, setStats] = useState<DashboardStats>({
     totalPrevisto: 0,
     totalRecebido: 0,
@@ -79,8 +78,6 @@ const Dashboard = () => {
   ];
 
   const fetchStats = async () => {
-    if (!motoristaId) return;
-    
     setLoading(true);
     try {
       const { data: cobrancasMes } = await supabase
@@ -88,19 +85,17 @@ const Dashboard = () => {
         .select(
           `
           *,
-          passageiros!inner (
+          passageiros (
             id,
             nome,
             nome_responsavel,
             valor_mensalidade,
-            dia_vencimento,
-            motorista_id
+            dia_vencimento
           )
         `
         )
         .eq("mes", mesFilter)
-        .eq("ano", anoFilter)
-        .eq("passageiros.motorista_id", motoristaId);
+        .eq("ano", anoFilter);
 
       const totalPrevisto =
         cobrancasMes?.reduce((sum, c) => sum + Number(c.valor), 0) || 0;
@@ -222,20 +217,20 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    if (motoristaId) {
-      fetchStats();
-    }
-  }, [mesFilter, anoFilter, motoristaId]);
+    fetchStats();
+  }, [mesFilter, anoFilter]);
 
   return (
-    <div className="space-y-6">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-            Tela Inicial
-          </h1>
-        </div>
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <div className="p-4 space-y-6">
+        <div className="max-w-5xl mx-auto">
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+              Tela Inicial
+            </h1>
+          </div>
 
           {/* Filtros no topo */}
           <Card className="mb-6">
@@ -462,6 +457,7 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           )}
+        </div>
       </div>
 
       {/* Manual Payment Dialog */}

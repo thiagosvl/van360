@@ -34,11 +34,8 @@ export default function MotoristasAdmin() {
 
   const loadMotoristas = async () => {
     try {
-      // Use service role for admin operations to bypass RLS
       const { data, error } = await supabase
-        .from("motoristas")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .rpc('get_motoristas_list');
 
       if (error) throw error;
       setMotoristas(data || []);
@@ -75,8 +72,7 @@ export default function MotoristasAdmin() {
   const handleCreateMotorista = async (data: any) => {
     try {
       const { error } = await supabase
-        .from("motoristas")
-        .insert([data]);
+        .rpc('create_motorista', { motorista_data: data });
 
       if (error) throw error;
 
@@ -102,9 +98,10 @@ export default function MotoristasAdmin() {
 
     try {
       const { error } = await supabase
-        .from("motoristas")
-        .update(data)
-        .eq("id", editingMotorista.id);
+        .rpc('update_motorista', { 
+          motorista_id: editingMotorista.id,
+          motorista_data: data 
+        });
 
       if (error) throw error;
 
