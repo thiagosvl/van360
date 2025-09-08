@@ -86,6 +86,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
       if (motoristaData && !motoristaError) {
         setMotorista(motoristaData);
+        setAdmin(null); // Clear admin if motorista found
         setLoading(false);
         return;
       }
@@ -99,9 +100,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
       if (adminData && !adminError) {
         setAdmin(adminData);
+        setMotorista(null); // Clear motorista if admin found
+      } else {
+        // User exists but is neither motorista nor admin
+        setMotorista(null);
+        setAdmin(null);
       }
     } catch (error) {
       console.error("Error checking user profile:", error);
+      setMotorista(null);
+      setAdmin(null);
     } finally {
       setLoading(false);
     }

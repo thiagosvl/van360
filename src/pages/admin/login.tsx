@@ -18,6 +18,7 @@ export default function AdminLogin() {
   const { user, admin, loading: sessionLoading } = useSessionContext();
 
   useEffect(() => {
+    // Only redirect admins who are already logged in
     if (!sessionLoading && user && admin) {
       navigate("/admin", { replace: true });
     }

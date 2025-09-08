@@ -19,14 +19,11 @@ export default function Login() {
   const { user, motorista, admin, loading: sessionLoading } = useSessionContext();
 
   useEffect(() => {
-    if (!sessionLoading && user) {
-      if (admin) {
-        navigate("/admin", { replace: true });
-      } else if (motorista) {
-        navigate("/", { replace: true });
-      }
+    // Only redirect motoristas who are already logged in
+    if (!sessionLoading && user && motorista) {
+      navigate("/", { replace: true });
     }
-  }, [sessionLoading, user, motorista, admin, navigate]);
+  }, [sessionLoading, user, motorista, navigate]);
 
   const { errors, validate, validateAll } = useFormValidation({
     cpfCnpj: { required: true },
