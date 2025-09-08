@@ -36,4 +36,21 @@ export const asaasService = {
 
         return res.json();
     },
+
+    async deleteCustomer(customerId: string) {
+        const res = await fetch(`/asaas/customers/${customerId}`, {
+            method: "DELETE",
+            headers: {
+                accept: "application/json",
+                access_token: ASAAS_TOKEN!,
+            },
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.errors?.[0]?.description || "Erro ao excluir cliente no Asaas");
+        }
+
+        return res.json();
+    }
 };

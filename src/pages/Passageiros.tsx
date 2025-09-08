@@ -75,6 +75,7 @@ const passageiroSchema = z.object({
   dia_vencimento: z.string().min(1, "Campo obrigatório"),
   emitir_cobranca_mes_atual: z.boolean().optional(),
   ativo: z.boolean().optional(),
+  asaas_id: z.string().optional(),
 });
 
 type PassageiroUpdate = Database["public"]["Tables"]["passageiros"]["Update"];
@@ -354,46 +355,80 @@ export default function Passageiros() {
           title: "Passageiro atualizado com sucesso.",
         });
       } else {
-        const { data: newPassageiro, error } = await supabase
-          .from("passageiros")
-          .insert([passageiroData as PassageiroInsert])
-          .select()
-          .single();
-
-        await asaasService.createCustomer({
-          name: passageiroData.nome,
-          cpfCnpj: passageiroData.cpf_responsavel,
-          mobilePhone: passageiroData.telefone_responsavel,
-        });
-
-        if (error) throw error;
-
-        if (emitir_cobranca_mes_atual) {
-          const currentDate = new Date();
-          const mes = currentDate.getMonth() + 1;
-          const ano = currentDate.getFullYear();
-
-          const dataVencimento = new Date(
-            ano,
-            mes - 1,
-            Number(pureData.dia_vencimento)
-          );
-
-          await supabase.from("cobrancas").insert([
-            {
-              passageiro_id: newPassageiro.id,
-              mes,
-              ano,
-              valor: moneyToNumber(pureData.valor_mensalidade),
-              data_vencimento: dataVencimento.toISOString().split("T")[0],
-              status: "pendente",
-            },
-          ]);
+        let asaasCustomer;
+        try {
+          asaasCustomer = await asaasService.createCustomer({
+            name: passageiroData.nome,
+            cpfCnpj: passageiroData.cpf_responsavel,
+            mobilePhone: passageiroData.telefone_responsavel,
+          });
+        } catch (asaasErr) {
+          console.error("Erro ao criar cliente no Asaas:", asaasErr);
+          toast({
+            title: "Erro ao salvar passageiro.",
+            description: "Não foi possível registrar no sistema de cobranças.",
+            variant: "destructive",
+          });
+          return;
         }
 
-        toast({
-          title: "Passageiro cadastrado com sucesso.",
-        });
+        passageiroData.asaas_id = asaasCustomer.id;
+
+        try {
+          const { data: newPassageiro, error } = await supabase
+            .from("passageiros")
+            .insert([passageiroData as PassageiroInsert])
+            .select()
+            .single();
+
+          if (error) {
+            try {
+              await asaasService.deleteCustomer(asaasCustomer.id);
+              console.warn(
+                "Cliente no Asaas removido devido a erro no Supabase"
+              );
+            } catch (rollbackErr) {
+              console.error(
+                "Erro ao remover cliente do Asaas após falha no Supabase:",
+                rollbackErr
+              );
+            }
+            throw error;
+          }
+
+          if (emitir_cobranca_mes_atual) {
+            const currentDate = new Date();
+            const mes = currentDate.getMonth() + 1;
+            const ano = currentDate.getFullYear();
+            const dataVencimento = new Date(
+              ano,
+              mes - 1,
+              Number(pureData.dia_vencimento)
+            );
+
+            await supabase.from("cobrancas").insert([
+              {
+                passageiro_id: newPassageiro.id,
+                mes,
+                ano,
+                valor: moneyToNumber(pureData.valor_mensalidade),
+                data_vencimento: dataVencimento.toISOString().split("T")[0],
+                status: "pendente",
+              },
+            ]);
+          }
+
+          toast({
+            title: "Passageiro cadastrado com sucesso.",
+          });
+        } catch (supabaseErr) {
+          console.error("Erro ao salvar passageiro no Supabase:", supabaseErr);
+          toast({
+            title: "Erro ao salvar passageiro.",
+            description: "Não foi possível salvar os dados no sistema.",
+            variant: "destructive",
+          });
+        }
       }
 
       await fetchPassageiros();

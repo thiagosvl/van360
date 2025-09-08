@@ -138,7 +138,8 @@ export type Database = {
           telefone_responsavel: string
           cpf_responsavel: string
           updated_at: string
-          valor_mensalidade: number
+          valor_mensalidade: number,
+          asaas_id: string
         }
         Insert: {
           ativo?: boolean
@@ -160,6 +161,7 @@ export type Database = {
           cpf_responsavel: string
           updated_at?: string
           valor_mensalidade: number
+          asaas_id: string
         }
         Update: {
           ativo?: boolean
@@ -181,6 +183,7 @@ export type Database = {
           cpf_responsavel: string
           updated_at?: string
           valor_mensalidade?: number
+          asaas_id?: string
         }
         Relationships: [
           {
