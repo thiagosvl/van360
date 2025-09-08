@@ -1,6 +1,5 @@
 import LatePaymentsAlert from "@/components/LatePaymentsAlert";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
-import Navigation from "@/components/Navigation";
 import PaymentStatsCard from "@/components/PaymentStatsCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -229,16 +228,14 @@ const Dashboard = () => {
   }, [mesFilter, anoFilter, motoristaId]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="p-4 space-y-6">
-        <div className="max-w-5xl mx-auto">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Tela Inicial
-            </h1>
-          </div>
+    <div className="space-y-6">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+            Tela Inicial
+          </h1>
+        </div>
 
           {/* Filtros no topo */}
           <Card className="mb-6">
@@ -465,7 +462,6 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           )}
-        </div>
       </div>
 
       {/* Manual Payment Dialog */}

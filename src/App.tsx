@@ -6,6 +6,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { SessionProvider } from "@/hooks/useSessionContext";
 import { withMotoristaGuard } from "@/components/guards/withMotoristaGuard";
 import { withAdminGuard } from "@/components/guards/withAdminGuard";
+import { MotoristaLayout } from "@/pages/motorista/Layout";
 import Cobrancas from "./pages/Cobrancas";
 import Dashboard from "./pages/Dashboard";
 import Escolas from "./pages/Escolas";
@@ -23,11 +24,7 @@ import MotoristasAdmin from "./pages/admin/motoristas/index";
 const queryClient = new QueryClient();
 
 // Protected components
-const ProtectedDashboard = withMotoristaGuard(Dashboard);
-const ProtectedCobrancas = withMotoristaGuard(Cobrancas);
-const ProtectedPassageiros = withMotoristaGuard(Passageiros);
-const ProtectedPassageiroCarteirinha = withMotoristaGuard(PassageiroCarteirinha);
-const ProtectedEscolas = withMotoristaGuard(Escolas);
+const ProtectedMotoristaLayout = withMotoristaGuard(MotoristaLayout);
 const ProtectedAdminLayout = withAdminGuard(AdminLayout);
 
 const App = () => (
@@ -43,14 +40,16 @@ const App = () => (
             <Route path="/admin/login" element={<AdminLogin />} />
             
             {/* Public Landing Page */}
-            <Route path="/" element={<Index />} />
+            <Route index element={<Index />} />
             
-            {/* Motorista Protected Routes */}
-            <Route path="/dashboard" element={<ProtectedDashboard />} />
-            <Route path="/mensalidades" element={<ProtectedCobrancas />} />
-            <Route path="/passageiros" element={<ProtectedPassageiros />} />
-            <Route path="/passageiros/:passageiro_id" element={<ProtectedPassageiroCarteirinha />} />
-            <Route path="/escolas" element={<ProtectedEscolas />} />
+            {/* Motorista Protected Routes with Layout */}
+            <Route path="/" element={<ProtectedMotoristaLayout />}>
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="mensalidades" element={<Cobrancas />} />
+              <Route path="passageiros" element={<Passageiros />} />
+              <Route path="passageiros/:passageiro_id" element={<PassageiroCarteirinha />} />
+              <Route path="escolas" element={<Escolas />} />
+            </Route>
             
             {/* Admin Protected Routes */}
             <Route path="/admin" element={<ProtectedAdminLayout />}>

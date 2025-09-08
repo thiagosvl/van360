@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSessionContext } from "@/hooks/useSessionContext";
-import { supabase } from "@/integrations/supabase/client";
 
 export function withAdminGuard<P extends object>(Component: React.ComponentType<P>) {
   return function ProtectedComponent(props: P) {
@@ -9,25 +8,21 @@ export function withAdminGuard<P extends object>(Component: React.ComponentType<
     const navigate = useNavigate();
 
     useEffect(() => {
-      if (!loading && user) {
-        ensureAdminProfile().then(() => {
-          // Check after ensuring profile
-          const checkAdmin = async () => {
-            const { data: adminData } = await supabase.from("admins")
-              .select("*")
-              .eq("auth_uid", user.id)
-              .maybeSingle();
-            
-            if (!adminData) {
-              navigate("/admin/login");
-            }
-          };
-          checkAdmin();
-        });
-      } else if (!loading && !user) {
+      if (loading) return;
+      
+      if (!user) {
         navigate("/admin/login");
+        return;
       }
-    }, [user, loading, ensureAdminProfile, navigate]);
+      
+      if (user && !admin) {
+        ensureAdminProfile().then((adminProfile) => {
+          if (!adminProfile) {
+            navigate("/admin/login");
+          }
+        });
+      }
+    }, [user, loading, admin, navigate]);
 
     if (loading) {
       return (

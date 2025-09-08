@@ -1,6 +1,5 @@
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
-import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -55,7 +54,40 @@ const Cobrancas = () => {
     "Dezembro",
   ];
 
+import { useSessionContext } from "@/hooks/useSessionContext";
+
+const Cobrancas = () => {
+  const { motoristaId } = useSessionContext();
+  const [cobrancasAbertas, setCobrancasAbertas] = useState<Cobranca[]>([]);
+  const [cobrancasPagas, setCobrancasPagas] = useState<Cobranca[]>([]);
+  const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
+  const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
+  const [loading, setLoading] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
+    null
+  );
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const meses = [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ];
+
   const fetchCobrancas = async () => {
+    if (!motoristaId) return;
+    
     setLoading(true);
     try {
       const { data } = await supabase
@@ -63,17 +95,19 @@ const Cobrancas = () => {
         .select(
           `
           *,
-          passageiros (
+          passageiros!inner (
             id,
             nome,
             nome_responsavel,
             valor_mensalidade,
-            dia_vencimento
+            dia_vencimento,
+            motorista_id
           )
         `
         )
         .eq("mes", mesFilter)
         .eq("ano", anoFilter)
+        .eq("passageiros.motorista_id", motoristaId)
         .order("data_vencimento", { ascending: true });
 
       const cobrancas = data || [];
@@ -247,20 +281,20 @@ const Cobrancas = () => {
   };
 
   useEffect(() => {
-    fetchCobrancas();
-  }, [mesFilter, anoFilter]);
+    if (motoristaId) {
+      fetchCobrancas();
+    }
+  }, [mesFilter, anoFilter, motoristaId]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="p-4 space-y-6">
-        <div className="max-w-5xl mx-auto">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Mensalidades
-            </h1>
-          </div>
+    <div className="space-y-6">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+            Mensalidades
+          </h1>
+        </div>
 
           {/* Filtros */}
           <Card className="mb-6">
@@ -589,7 +623,6 @@ const Cobrancas = () => {
             </CardContent>
           </Card>
         </div>
-      </div>
 
       {selectedCobranca && (
         <ManualPaymentDialog

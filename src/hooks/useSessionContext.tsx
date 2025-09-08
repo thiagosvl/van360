@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useRef, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Motorista } from "@/types/motorista";
@@ -127,7 +127,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const ensureMotoristaProfile = async () => {
+  const ensureMotoristaProfile = useCallback(async () => {
     if (!user || motorista || fetchInFlight.current) return;
     
     fetchInFlight.current = true;
@@ -147,9 +147,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     } finally {
       fetchInFlight.current = false;
     }
-  };
+  }, [user, motorista]);
 
-  const ensureAdminProfile = async () => {
+  const ensureAdminProfile = useCallback(async () => {
     if (!user || admin || fetchInFlight.current) return;
     
     fetchInFlight.current = true;
@@ -169,7 +169,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     } finally {
       fetchInFlight.current = false;
     }
-  };
+  }, [user, admin]);
 
   const value = {
     user,

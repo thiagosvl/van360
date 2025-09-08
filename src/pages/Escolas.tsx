@@ -1,5 +1,4 @@
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -237,11 +236,9 @@ export default function Escolas() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="p-4 space-y-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
                 Escolas
@@ -628,7 +625,6 @@ export default function Escolas() {
             cancelText="Cancelar"
             variant="destructive"
           />
-        </div>
       </div>
     </div>
   );
