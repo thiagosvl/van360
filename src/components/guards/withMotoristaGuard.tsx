@@ -1,21 +1,33 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSessionContext } from "@/hooks/useSessionContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export function withMotoristaGuard<P extends object>(Component: React.ComponentType<P>) {
   return function ProtectedComponent(props: P) {
-    const { user, loading, motorista } = useSessionContext();
+    const { user, loading, motorista, ensureMotoristaProfile } = useSessionContext();
     const navigate = useNavigate();
 
     useEffect(() => {
-      if (!loading) {
-        if (!user) {
-          navigate("/login");
-        } else if (!motorista) {
-          navigate("/login");
-        }
+      if (!loading && user) {
+        ensureMotoristaProfile().then(() => {
+          // Check after ensuring profile
+          const checkMotorista = async () => {
+            const { data: motoristaData } = await supabase.from("motoristas")
+              .select("*")
+              .eq("auth_uid", user.id)
+              .maybeSingle();
+            
+            if (!motoristaData) {
+              navigate("/login");
+            }
+          };
+          checkMotorista();
+        });
+      } else if (!loading && !user) {
+        navigate("/login");
       }
-    }, [user, loading, motorista, navigate]);
+    }, [user, loading, ensureMotoristaProfile, navigate]);
 
     if (loading) {
       return (
@@ -25,7 +37,7 @@ export function withMotoristaGuard<P extends object>(Component: React.ComponentT
       );
     }
 
-    if (!user || !motorista) {
+    if (!user) {
       return null;
     }
 

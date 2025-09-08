@@ -12,6 +12,8 @@ interface SessionContextType {
   isAdmin: boolean;
   motorista: Motorista | null;
   admin: Admin | null;
+  ensureMotoristaProfile: () => Promise<void>;
+  ensureAdminProfile: () => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextType>({
@@ -22,6 +24,8 @@ const SessionContext = createContext<SessionContextType>({
   isAdmin: false,
   motorista: null,
   admin: null,
+  ensureMotoristaProfile: async () => {},
+  ensureAdminProfile: async () => {},
 });
 
 export function SessionProvider({ children }: { children: ReactNode }) {
@@ -36,27 +40,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const lastAccessTokenFetched = useRef<string | null>(null);
   const fetchInFlight = useRef<boolean>(false);
 
+  // Don't automatically load profiles - only do it on demand
   const maybeLoadProfile = (session: Session | null) => {
     if (!session?.user) {
       setLoading(false);
       return;
     }
-
-    const userId = session.user.id;
-    const accessToken = session.access_token;
     
-    // Prevent duplicate requests
-    if (fetchInFlight.current || 
-        (lastUserIdFetched.current === userId && lastAccessTokenFetched.current === accessToken)) {
-      return;
-    }
-
-    setLoading(true);
-    lastUserIdFetched.current = userId;
-    lastAccessTokenFetched.current = accessToken;
-    fetchInFlight.current = true;
-    
-    checkUserProfile(userId);
+    // Just set loading to false, don't fetch profiles automatically
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -135,6 +127,50 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const ensureMotoristaProfile = async () => {
+    if (!user || motorista || fetchInFlight.current) return;
+    
+    fetchInFlight.current = true;
+    try {
+      const { data: motoristaData } = await supabase
+        .from("motoristas")
+        .select("*")
+        .eq("auth_uid", user.id)
+        .maybeSingle();
+
+      if (motoristaData) {
+        setMotorista(motoristaData);
+        setAdmin(null);
+      }
+    } catch (error) {
+      console.error("Error fetching motorista profile:", error);
+    } finally {
+      fetchInFlight.current = false;
+    }
+  };
+
+  const ensureAdminProfile = async () => {
+    if (!user || admin || fetchInFlight.current) return;
+    
+    fetchInFlight.current = true;
+    try {
+      const { data: adminData } = await supabase
+        .from("admins")
+        .select("*")
+        .eq("auth_uid", user.id)
+        .maybeSingle();
+
+      if (adminData) {
+        setAdmin(adminData);
+        setMotorista(null);
+      }
+    } catch (error) {
+      console.error("Error fetching admin profile:", error);
+    } finally {
+      fetchInFlight.current = false;
+    }
+  };
+
   const value = {
     user,
     session,
@@ -143,6 +179,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     isAdmin: !!admin,
     motorista,
     admin,
+    ensureMotoristaProfile,
+    ensureAdminProfile,
   };
 
   return (
