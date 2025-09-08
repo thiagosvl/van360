@@ -406,7 +406,7 @@ export default function Passageiros() {
               Number(pureData.dia_vencimento)
             );
 
-            await supabase.from("cobrancas").insert([
+            await (supabase as any).from("cobrancas").insert([
               {
                 passageiro_id: newPassageiro.id,
                 mes,
