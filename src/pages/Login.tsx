@@ -4,9 +4,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { supabase } from '@/integrations/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 import { cpfCnpjMask } from '@/utils/masks';
 import { useToast } from '@/hooks/use-toast';
+
+const supabaseUrl = "https://jztyffakurtekwxurclw.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHlmZmFrdXJ0ZWt3eHVyY2x3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4NDkwNDMsImV4cCI6MjA3MjQyNTA0M30.n7PD7-FMXJ7ZmBUzpwu5rqHU4ak6g_pKm85pRWr551E";
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -42,20 +47,28 @@ export default function Login() {
         return;
       }
 
-      // Find user by CPF/CNPJ in usuarios table using RPC to avoid type issues
-      const { data: usuarioData, error: usuarioError } = await supabase.rpc('get_user_by_cpf', {
-        cpf_cnpj: cpfCnpjDigits
+      // Find user by CPF/CNPJ in usuarios table using fetch directly
+      const response = await fetch(`${supabaseUrl}/rest/v1/usuarios?cpfcnpj=eq.${cpfCnpjDigits}&select=email,role`, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json'
+        }
       });
 
-      if (usuarioError || !usuarioData) {
+      const usuarios = await response.json();
+
+      if (!usuarios || usuarios.length === 0) {
         setError('Usuário não encontrado');
         setLoading(false);
         return;
       }
 
+      const usuario = usuarios[0];
+
       // Sign in with email and password
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: usuarioData.email,
+        email: usuario.email,
         password: formData.senha,
       });
 

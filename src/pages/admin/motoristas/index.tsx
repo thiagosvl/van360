@@ -1,51 +1,36 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { MotorisstaForm } from "@/components/admin/MotorisstaForm";
-import { supabase } from "@/integrations/supabase/client";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Motorista } from "@/types/motorista";
-import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { MotorisstaForm } from "@/components/admin/MotorisstaForm";
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { formatDateToBR } from '@/utils/formatters';
 
 export default function MotoristasAdmin() {
   const [motoristas, setMotoristas] = useState<Motorista[]>([]);
-  const [filteredMotoristas, setFilteredMotoristas] = useState<Motorista[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("todos");
+  const [selectedMotorista, setSelectedMotorista] = useState<Motorista | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [editingMotorista, setEditingMotorista] = useState<Motorista | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadMotoristas();
-  }, []);
-
-  useEffect(() => {
-    filterMotoristas();
-  }, [motoristas, searchTerm, statusFilter]);
-
-  const loadMotoristas = async () => {
+  const fetchMotoristas = async () => {
     try {
-      const { data, error } = await (supabase as any)
-        .from("motoristas")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from('motoristas')
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setMotoristas(data || []);
-    } catch (error) {
-      console.error("Erro ao carregar motoristas:", error);
+    } catch (error: any) {
       toast({
         title: "Erro",
-        description: "Não foi possível carregar a lista de motoristas.",
+        description: "Erro ao carregar motoristas: " + error.message,
         variant: "destructive",
       });
     } finally {
@@ -53,200 +38,200 @@ export default function MotoristasAdmin() {
     }
   };
 
-  const filterMotoristas = () => {
-    let filtered = motoristas.filter((motorista) =>
-      motorista.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      motorista.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      motorista.cpfCnpj.includes(searchTerm)
-    );
-
-    // Por enquanto, todos os motoristas são considerados "ativos"
-    if (statusFilter === "ativo") {
-      filtered = filtered.filter(() => true);
-    } else if (statusFilter === "bloqueado") {
-      filtered = filtered.filter(() => false);
-    }
-
-    setFilteredMotoristas(filtered);
-    setCurrentPage(1);
-  };
+  useEffect(() => {
+    fetchMotoristas();
+  }, []);
 
   const handleCreateMotorista = async (data: any) => {
     try {
-      const { error } = await (supabase as any)
-        .from("motoristas")
-        .insert([data]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Sucesso",
-        description: "Motorista criado com sucesso!",
-      });
-
+      await fetchMotoristas(); // Refresh list
       setShowForm(false);
-      loadMotoristas();
+      setSelectedMotorista(null);
     } catch (error) {
-      console.error("Erro ao criar motorista:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível criar o motorista.",
-        variant: "destructive",
-      });
+      console.error("Error creating motorista:", error);
     }
   };
 
   const handleUpdateMotorista = async (data: any) => {
-    if (!editingMotorista) return;
-
     try {
-      const { error } = await (supabase as any)
-        .from("motoristas")
+      if (!selectedMotorista) return;
+
+      const { error } = await supabase
+        .from('motoristas')
         .update(data)
-        .eq("id", editingMotorista.id);
+        .eq('id', selectedMotorista.id);
 
       if (error) throw error;
+
+      // Also update email in usuarios table
+      if (data.email) {
+        await supabase
+          .from('usuarios')
+          .update({ email: data.email })
+          .eq('motorista_id', selectedMotorista.id);
+      }
 
       toast({
         title: "Sucesso",
         description: "Motorista atualizado com sucesso!",
       });
 
-      setEditingMotorista(null);
+      await fetchMotoristas();
       setShowForm(false);
-      loadMotoristas();
-    } catch (error) {
-      console.error("Erro ao atualizar motorista:", error);
+      setSelectedMotorista(null);
+    } catch (error: any) {
       toast({
         title: "Erro",
-        description: "Não foi possível atualizar o motorista.",
+        description: "Erro ao atualizar motorista: " + error.message,
         variant: "destructive",
       });
     }
   };
 
   const handleEdit = (motorista: Motorista) => {
-    setEditingMotorista(motorista);
+    setSelectedMotorista(motorista);
     setShowForm(true);
   };
 
-  const handleCloseForm = () => {
-    setShowForm(false);
-    setEditingMotorista(null);
+  const handleDelete = async (motorista: Motorista) => {
+    if (!confirm(`Tem certeza que deseja excluir o motorista ${motorista.nome}?`)) {
+      return;
+    }
+
+    try {
+      // Delete from usuarios first (if exists)
+      await supabase
+        .from('usuarios')
+        .delete()
+        .eq('motorista_id', motorista.id);
+
+      // Delete from motoristas
+      const { error } = await supabase
+        .from('motoristas')
+        .delete()
+        .eq('id', motorista.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Motorista excluído com sucesso!",
+      });
+
+      await fetchMotoristas();
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir motorista: " + error.message,
+        variant: "destructive",
+      });
+    }
   };
 
-  // Paginação
-  const totalPages = Math.ceil(filteredMotoristas.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentMotoristas = filteredMotoristas.slice(startIndex, endIndex);
+  const filteredMotoristas = motoristas.filter(motorista =>
+    motorista.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    motorista.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    motorista.cpfCnpj.includes(searchTerm)
+  );
 
   if (loading) {
-    return <div>Carregando...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Clientes</h1>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Novo cliente
-        </Button>
-      </div>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Gestão de Motoristas</CardTitle>
+              <CardDescription>
+                Gerencie os motoristas e seus acessos ao sistema
+              </CardDescription>
+            </div>
+            <Button onClick={() => setShowForm(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Novo Motorista
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <Input
+              placeholder="Buscar por nome, email ou CPF/CNPJ..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-sm"
+            />
 
-      {/* Filtros */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Buscar por nome, email ou CPF/CNPJ..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos</SelectItem>
-            <SelectItem value="ativo">Ativo</SelectItem>
-            <SelectItem value="bloqueado">Bloqueado</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>CPF/CNPJ</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Telefone</TableHead>
+                    <TableHead>Criado em</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredMotoristas.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                        Nenhum motorista encontrado
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredMotoristas.map((motorista) => (
+                      <TableRow key={motorista.id}>
+                        <TableCell className="font-medium">{motorista.nome}</TableCell>
+                        <TableCell>{motorista.cpfCnpj}</TableCell>
+                        <TableCell>{motorista.email}</TableCell>
+                        <TableCell>{motorista.telefone}</TableCell>
+                        <TableCell>{formatDateToBR(motorista.created_at)}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(motorista)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(motorista)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Tabela */}
-      <div className="border rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>CPF/CNPJ</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Telefone</TableHead>
-              <TableHead>Criado em</TableHead>
-              <TableHead className="w-24">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {currentMotoristas.map((motorista) => (
-              <TableRow key={motorista.id}>
-                <TableCell className="font-medium">{motorista.nome}</TableCell>
-                <TableCell>{motorista.cpfCnpj}</TableCell>
-                <TableCell>{motorista.email}</TableCell>
-                <TableCell>{motorista.telefone}</TableCell>
-                <TableCell>
-                  {format(new Date(motorista.created_at), "dd/MM/yyyy", { locale: ptBR })}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEdit(motorista)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Paginação */}
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            Anterior
-          </Button>
-          <span className="flex items-center px-3 text-sm">
-            Página {currentPage} de {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          >
-            Próxima
-          </Button>
-        </div>
-      )}
-
-      {/* Modal do formulário */}
       {showForm && (
         <MotorisstaForm
-          motorista={editingMotorista}
-          onSubmit={editingMotorista ? handleUpdateMotorista : handleCreateMotorista}
-          onClose={handleCloseForm}
+          motorista={selectedMotorista}
+          onSubmit={selectedMotorista ? handleUpdateMotorista : handleCreateMotorista}
+          onClose={() => {
+            setShowForm(false);
+            setSelectedMotorista(null);
+          }}
         />
       )}
     </div>

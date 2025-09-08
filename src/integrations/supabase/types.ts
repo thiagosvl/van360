@@ -341,7 +341,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_by_cpf: {
+        Args: { cpf_cnpj: string }
+        Returns: {
+          email: string
+          role: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
