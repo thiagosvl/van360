@@ -71,26 +71,26 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const checkUserProfile = async (userId: string) => {
     try {
       // Check if user is a motorista
-      const { data: motoristaData } = await supabase
+      const { data: motoristaData, error: motoristaError } = await supabase
         .from("motoristas")
         .select("*")
         .eq("auth_uid", userId)
-        .single();
+        .maybeSingle();
 
-      if (motoristaData) {
+      if (motoristaData && !motoristaError) {
         setMotorista(motoristaData);
         setLoading(false);
         return;
       }
 
       // Check if user is an admin
-      const { data: adminData } = await supabase
+      const { data: adminData, error: adminError } = await supabase
         .from("admins")
         .select("*")
         .eq("auth_uid", userId)
-        .single();
+        .maybeSingle();
 
-      if (adminData) {
+      if (adminData && !adminError) {
         setAdmin(adminData);
       }
     } catch (error) {
