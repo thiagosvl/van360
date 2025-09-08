@@ -624,40 +624,40 @@ const Cobrancas = () => {
           </Card>
         </div>
 
-      {selectedCobranca && (
-        <ManualPaymentDialog
-          isOpen={paymentDialogOpen}
-          onClose={() => setPaymentDialogOpen(false)}
-          cobrancaId={selectedCobranca.id}
-          passageiroNome={selectedCobranca.passageiros.nome}
-          valorOriginal={Number(selectedCobranca.valor)}
-          onPaymentRecorded={handlePaymentRecorded}
+        {selectedCobranca && (
+          <ManualPaymentDialog
+            isOpen={paymentDialogOpen}
+            onClose={() => setPaymentDialogOpen(false)}
+            cobrancaId={selectedCobranca.id}
+            passageiroNome={selectedCobranca.passageiros.nome}
+            valorOriginal={Number(selectedCobranca.valor)}
+            onPaymentRecorded={handlePaymentRecorded}
+          />
+        )}
+
+        <ConfirmationDialog
+          open={confirmDialogReenvio.open}
+          onOpenChange={(open) =>
+            setConfirmDialogReenvio({ open, cobrancaId: "", nomePassageiro: "" })
+          }
+          title="Reenviar Cobrança"
+          description="Deseja reenviar esta cobrança para o responsável?"
+          onConfirm={reenviarCobranca}
         />
-      )}
 
-      <ConfirmationDialog
-        open={confirmDialogReenvio.open}
-        onOpenChange={(open) =>
-          setConfirmDialogReenvio({ open, cobrancaId: "", nomePassageiro: "" })
-        }
-        title="Reenviar Cobrança"
-        description="Deseja reenviar esta cobrança para o responsável?"
-        onConfirm={reenviarCobranca}
-      />
-
-      <ConfirmationDialog
-        open={confirmDialogReverter.open}
-        onOpenChange={(open) =>
-          setConfirmDialogReverter({ open, cobrancaId: "" })
-        }
-        title="Reverter Pagamento"
-        description="Deseja realmente reverter o pagamento desta cobrança? Essa ação moverá a cobrança de volta para a lista de em aberto."
-        onConfirm={reverterPagamento}
-        variant="destructive"
-        confirmText="Reverter Pagamento"
-      />
-    </div>
-  );
+        <ConfirmationDialog
+          open={confirmDialogReverter.open}
+          onOpenChange={(open) =>
+            setConfirmDialogReverter({ open, cobrancaId: "" })
+          }
+          title="Reverter Pagamento"
+          description="Deseja realmente reverter o pagamento desta cobrança? Essa ação moverá a cobrança de volta para a lista de em aberto."
+          onConfirm={reverterPagamento}
+          variant="destructive"
+          confirmText="Reverter Pagamento"
+        />
+      </div>
+    );
 };
 
 export default Cobrancas;
