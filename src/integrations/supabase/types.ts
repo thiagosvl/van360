@@ -298,6 +298,44 @@ export type Database = {
           },
         ]
       }
+      usuarios: {
+        Row: {
+          auth_uid: string | null
+          cpfcnpj: string
+          created_at: string | null
+          email: string
+          id: string
+          motorista_id: string | null
+          role: string
+        }
+        Insert: {
+          auth_uid?: string | null
+          cpfcnpj: string
+          created_at?: string | null
+          email: string
+          id?: string
+          motorista_id?: string | null
+          role: string
+        }
+        Update: {
+          auth_uid?: string | null
+          cpfcnpj?: string
+          created_at?: string | null
+          email?: string
+          id?: string
+          motorista_id?: string | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usuarios_motorista_id_fkey"
+            columns: ["motorista_id"]
+            isOneToOne: false
+            referencedRelation: "motoristas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
