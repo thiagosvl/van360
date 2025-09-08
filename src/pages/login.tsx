@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { cpfCnpjMask } from "@/utils/masks";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { useSessionContext } from "@/hooks/useSessionContext";
+import { supabase } from "@/integrations/supabase/client";
+import { cpfCnpjMask } from "@/utils/masks";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [cpfCnpj, setCpfCnpj] = useState("");
@@ -67,7 +67,7 @@ export default function Login() {
       if (authError) {
         toast({
           title: "Erro",
-          description: "Email ou senha incorretos",
+          description: "CPF/CNPJ ou senha incorretos",
           variant: "destructive",
         });
         return;
@@ -118,7 +118,7 @@ export default function Login() {
         description: "Login realizado com sucesso!",
       });
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
       toast({
