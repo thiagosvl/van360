@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2 } from "lucide-react";
+import { useSessionContext } from "@/hooks/useSessionContext";
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {
@@ -84,6 +85,7 @@ type PassageiroInsert = Database["public"]["Tables"]["passageiros"]["Insert"];
 type PassageiroFormData = z.infer<typeof passageiroSchema>;
 
 export default function Passageiros() {
+  const { motoristaId } = useSessionContext();
   const [passageiros, setPassageiros] = useState<Passageiro[]>([]);
   const [escolas, setEscolas] = useState<Escola[]>([]);
   const [escolasModal, setEscolasModal] = useState<Escola[]>([]); // modal
@@ -147,12 +149,13 @@ export default function Passageiros() {
   }, []);
 
   useEffect(() => {
+    if (!motoristaId) return;
     if (searchTerm.length >= 2) {
       debounceSearch()(searchTerm);
     } else if (searchTerm.length === 0) {
       fetchPassageiros();
     }
-  }, [selectedEscola, searchTerm]);
+  }, [selectedEscola, searchTerm, motoristaId]);
 
   const handleDeleteClick = (id: string) => {
     setDeleteDialog({ open: true, passageiroId: id });
@@ -242,11 +245,14 @@ export default function Passageiros() {
   };
 
   const fetchPassageiros = async (search = "") => {
+    if (!motoristaId) return;
+    
     setLoading(true);
     try {
       let query = supabase
         .from("passageiros")
         .select(`*, escolas(nome)`)
+        .eq("motorista_id", motoristaId)
         .order("nome");
 
       if (selectedEscola !== "todas") {

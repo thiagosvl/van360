@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import { useSessionContext } from "@/hooks/useSessionContext";
 import { Calendar, CreditCard, DollarSign, Filter } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -32,6 +33,7 @@ interface DashboardStats {
 }
 
 const Dashboard = () => {
+  const { motoristaId } = useSessionContext();
   const [stats, setStats] = useState<DashboardStats>({
     totalPrevisto: 0,
     totalRecebido: 0,
@@ -78,6 +80,8 @@ const Dashboard = () => {
   ];
 
   const fetchStats = async () => {
+    if (!motoristaId) return;
+    
     setLoading(true);
     try {
       const { data: cobrancasMes } = await supabase
@@ -85,17 +89,19 @@ const Dashboard = () => {
         .select(
           `
           *,
-          passageiros (
+          passageiros!inner (
             id,
             nome,
             nome_responsavel,
             valor_mensalidade,
-            dia_vencimento
+            dia_vencimento,
+            motorista_id
           )
         `
         )
         .eq("mes", mesFilter)
-        .eq("ano", anoFilter);
+        .eq("ano", anoFilter)
+        .eq("passageiros.motorista_id", motoristaId);
 
       const totalPrevisto =
         cobrancasMes?.reduce((sum, c) => sum + Number(c.valor), 0) || 0;
@@ -217,8 +223,10 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchStats();
-  }, [mesFilter, anoFilter]);
+    if (motoristaId) {
+      fetchStats();
+    }
+  }, [mesFilter, anoFilter, motoristaId]);
 
   return (
     <div className="min-h-screen bg-background">

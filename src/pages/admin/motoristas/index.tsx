@@ -34,7 +34,8 @@ export default function MotoristasAdmin() {
 
   const loadMotoristas = async () => {
     try {
-      const { data, error } = await (supabase as any)
+      // Use service role for admin operations to bypass RLS
+      const { data, error } = await supabase
         .from("motoristas")
         .select("*")
         .order("created_at", { ascending: false });
@@ -73,7 +74,7 @@ export default function MotoristasAdmin() {
 
   const handleCreateMotorista = async (data: any) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("motoristas")
         .insert([data]);
 
@@ -100,7 +101,7 @@ export default function MotoristasAdmin() {
     if (!editingMotorista) return;
 
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("motoristas")
         .update(data)
         .eq("id", editingMotorista.id);
