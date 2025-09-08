@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cpfCnpjMask } from "@/utils/masks";
 import { useFormValidation } from "@/hooks/useFormValidation";
+import { useSessionContext } from "@/hooks/useSessionContext";
 
 export default function Login() {
   const [cpfCnpj, setCpfCnpj] = useState("");
@@ -15,6 +16,17 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, motorista, admin, loading: sessionLoading } = useSessionContext();
+
+  useEffect(() => {
+    if (!sessionLoading && user) {
+      if (admin) {
+        navigate("/admin", { replace: true });
+      } else if (motorista) {
+        navigate("/", { replace: true });
+      }
+    }
+  }, [sessionLoading, user, motorista, admin, navigate]);
 
   const { errors, validate, validateAll } = useFormValidation({
     cpfCnpj: { required: true },
@@ -36,7 +48,7 @@ export default function Login() {
         .from("motoristas")
         .select("email")
         .eq("cpfCnpj", cpfCnpj.replace(/\D/g, ""))
-        .single();
+        .maybeSingle();
 
       if (motoristaError || !motoristaData) {
         toast({
@@ -67,7 +79,7 @@ export default function Login() {
         .from("motoristas")
         .select("*")
         .eq("auth_uid", data.user.id)
-        .single();
+        .maybeSingle();
 
       if (authError || !authMotorista) {
         await supabase.auth.signOut();

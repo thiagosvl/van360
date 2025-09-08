@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useFormValidation } from "@/hooks/useFormValidation";
+import { useSessionContext } from "@/hooks/useSessionContext";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -14,6 +15,13 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, admin, loading: sessionLoading } = useSessionContext();
+
+  useEffect(() => {
+    if (!sessionLoading && user && admin) {
+      navigate("/admin", { replace: true });
+    }
+  }, [sessionLoading, user, admin, navigate]);
 
   const { errors, validate, validateAll } = useFormValidation({
     email: { required: true, email: true },

@@ -37,19 +37,25 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Clear previous state
-        setMotorista(null);
-        setAdmin(null);
-        
-        if (session?.user) {
-          // Defer profile fetching to avoid callback deadlock
-          setTimeout(() => {
-            checkUserProfile(session.user.id);
-          }, 0);
-        } else {
+
+        // Handle auth events explicitly to avoid unnecessary refetches
+        if (event === "SIGNED_OUT") {
+          setMotorista(null);
+          setAdmin(null);
           setLoading(false);
+          return;
         }
+
+        if (event === "SIGNED_IN" || event === "USER_UPDATED") {
+          if (session?.user) {
+            // Defer profile fetching to avoid callback deadlock
+            setLoading(true);
+            setTimeout(() => {
+              checkUserProfile(session.user.id);
+            }, 0);
+          }
+        }
+        // Ignore TOKEN_REFRESHED to prevent redundant profile queries
       }
     );
 
@@ -57,8 +63,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
+        setLoading(true);
         checkUserProfile(session.user.id);
       } else {
         setLoading(false);
