@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admins: {
+        Row: {
+          auth_uid: string
+          created_at: string | null
+          email: string
+          id: string
+          nome: string
+          updated_at: string | null
+        }
+        Insert: {
+          auth_uid: string
+          created_at?: string | null
+          email: string
+          id?: string
+          nome: string
+          updated_at?: string | null
+        }
+        Update: {
+          auth_uid?: string
+          created_at?: string | null
+          email?: string
+          id?: string
+          nome?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       assinaturas_motoristas: {
         Row: {
           asaas_subscription_id: string
