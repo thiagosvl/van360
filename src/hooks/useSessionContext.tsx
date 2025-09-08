@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Motorista } from "@/types/motorista";
@@ -30,6 +30,34 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [motorista, setMotorista] = useState<Motorista | null>(null);
   const [admin, setAdmin] = useState<Admin | null>(null);
+  
+  // Refs to prevent duplicate requests
+  const lastUserIdFetched = useRef<string | null>(null);
+  const lastAccessTokenFetched = useRef<string | null>(null);
+  const fetchInFlight = useRef<boolean>(false);
+
+  const maybeLoadProfile = (session: Session | null) => {
+    if (!session?.user) {
+      setLoading(false);
+      return;
+    }
+
+    const userId = session.user.id;
+    const accessToken = session.access_token;
+    
+    // Prevent duplicate requests
+    if (fetchInFlight.current || 
+        (lastUserIdFetched.current === userId && lastAccessTokenFetched.current === accessToken)) {
+      return;
+    }
+
+    setLoading(true);
+    lastUserIdFetched.current = userId;
+    lastAccessTokenFetched.current = accessToken;
+    fetchInFlight.current = true;
+    
+    checkUserProfile(userId);
+  };
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -43,17 +71,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           setMotorista(null);
           setAdmin(null);
           setLoading(false);
+          lastUserIdFetched.current = null;
+          lastAccessTokenFetched.current = null;
+          fetchInFlight.current = false;
           return;
         }
 
         if (event === "SIGNED_IN" || event === "USER_UPDATED") {
-          if (session?.user) {
-            // Defer profile fetching to avoid callback deadlock
-            setLoading(true);
-            setTimeout(() => {
-              checkUserProfile(session.user.id);
-            }, 0);
-          }
+          maybeLoadProfile(session);
         }
         // Ignore TOKEN_REFRESHED to prevent redundant profile queries
       }
@@ -63,13 +88,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-
-      if (session?.user) {
-        setLoading(true);
-        checkUserProfile(session.user.id);
-      } else {
-        setLoading(false);
-      }
+      maybeLoadProfile(session);
     });
 
     return () => subscription.unsubscribe();
@@ -112,6 +131,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setAdmin(null);
     } finally {
       setLoading(false);
+      fetchInFlight.current = false;
     }
   };
 

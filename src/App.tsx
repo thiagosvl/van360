@@ -23,7 +23,6 @@ import MotoristasAdmin from "./pages/admin/motoristas/index";
 const queryClient = new QueryClient();
 
 // Protected components
-const ProtectedIndex = withMotoristaGuard(Index);
 const ProtectedDashboard = withMotoristaGuard(Dashboard);
 const ProtectedCobrancas = withMotoristaGuard(Cobrancas);
 const ProtectedPassageiros = withMotoristaGuard(Passageiros);
@@ -43,8 +42,10 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             
+            {/* Public Landing Page */}
+            <Route path="/" element={<Index />} />
+            
             {/* Motorista Protected Routes */}
-            <Route path="/" element={<ProtectedIndex />} />
             <Route path="/dashboard" element={<ProtectedDashboard />} />
             <Route path="/mensalidades" element={<ProtectedCobrancas />} />
             <Route path="/passageiros" element={<ProtectedPassageiros />} />

@@ -40,49 +40,74 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // First, find the motorista by CPF/CNPJ to get their email
+      const cpfCnpjSemMascara = cpfCnpj.replace(/\D/g, "");
+      
+      // Find the motorista by CPF/CNPJ to get their email
       const { data: motoristaData, error: motoristaError } = await supabase
         .from("motoristas")
-        .select("email")
-        .eq("cpfCnpj", cpfCnpj.replace(/\D/g, ""))
+        .select("email, auth_uid")
+        .eq("cpfCnpj", cpfCnpjSemMascara)
         .maybeSingle();
 
       if (motoristaError || !motoristaData) {
         toast({
           title: "Erro",
-          description: "CPF/CNPJ não encontrado",
+          description: "Motorista não encontrado com este CPF/CNPJ",
           variant: "destructive",
         });
         return;
       }
 
-      // Try to sign in with email and password
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Sign in with email and password
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: motoristaData.email,
         password,
       });
 
-      if (error) {
+      if (authError) {
         toast({
           title: "Erro",
-          description: "Credenciais inválidas",
+          description: "Email ou senha incorretos",
           variant: "destructive",
         });
         return;
       }
 
-      // Check if the authenticated user is indeed a motorista
-      const { data: authMotorista, error: authError } = await supabase
-        .from("motoristas")
-        .select("*")
-        .eq("auth_uid", data.user.id)
-        .maybeSingle();
-
-      if (authError || !authMotorista) {
+      // Verify if the authenticated user matches the motorista record
+      if (motoristaData.auth_uid && motoristaData.auth_uid !== authData.user.id) {
         await supabase.auth.signOut();
         toast({
           title: "Erro",
-          description: "Conta de motorista não encontrada",
+          description: "Este usuário não está associado ao motorista encontrado",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // If auth_uid is null, update it
+      if (!motoristaData.auth_uid) {
+        const { error: updateError } = await supabase
+          .from("motoristas")
+          .update({ auth_uid: authData.user.id })
+          .eq("cpfCnpj", cpfCnpjSemMascara);
+
+        if (updateError) {
+          console.error("Error updating motorista auth_uid:", updateError);
+        }
+      }
+
+      // Final verification - check if user has motorista record
+      const { data: verifyMotorista, error: verifyError } = await supabase
+        .from("motoristas")
+        .select("*")
+        .eq("auth_uid", authData.user.id)
+        .maybeSingle();
+
+      if (verifyError || !verifyMotorista) {
+        await supabase.auth.signOut();
+        toast({
+          title: "Erro",
+          description: "Usuário não autorizado como motorista",
           variant: "destructive",
         });
         return;
