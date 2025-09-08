@@ -61,3 +61,18 @@ export const cepMask = (value: string): string => {
   // Aplica a máscara 99999-999
   return numericValue.replace(/(\d{5})(\d{1,3})/, '$1-$2');
 };
+
+// Função para máscara de CPF/CNPJ
+export const cpfCnpjMask = (value: string): string => {
+  if (!value) return value;
+  
+  // Remove tudo que não é dígito
+  const numericValue = value.replace(/\D/g, '');
+  
+  // Aplica máscara de CPF (11 dígitos) ou CNPJ (14 dígitos)
+  if (numericValue.length <= 11) {
+    return numericValue.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  } else {
+    return numericValue.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+  }
+};

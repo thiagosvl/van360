@@ -10,6 +10,10 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Passageiros from "./pages/Passageiros";
 import PassageiroCarteirinha from "./pages/PassageiroCarteirinha";
+import AdminLayout from "./pages/admin/Layout";
+import AdminDashboard from "./pages/admin/index";
+import AdminSettings from "./pages/admin/settings";
+import MotoristasAdmin from "./pages/admin/motoristas/index";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +30,14 @@ const App = () => (
           <Route path="/passageiros" element={<Passageiros />} />
           <Route path="/passageiros/:passageiro_id" element={<PassageiroCarteirinha />} />
           <Route path="/escolas" element={<Escolas />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="motoristas" element={<MotoristasAdmin />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Route>
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -142,7 +142,13 @@ export default function PassageiroCarteirinha() {
     try {
       const { data, error } = await supabase
         .from("cobrancas")
-        .select("*")
+        .select(`
+          *,
+          passageiros:passageiro_id (
+            nome,
+            nome_responsavel
+          )
+        `)
         .eq("passageiro_id", passageiro_id)
         .order("ano", { ascending: false })
         .order("mes", { ascending: false });
