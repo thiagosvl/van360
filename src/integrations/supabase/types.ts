@@ -63,7 +63,6 @@ export type Database = {
           data_pagamento: string | null
           data_vencimento: string
           desativar_lembretes: boolean
-          enviado_em: string | null
           id: string
           mes: number
           usuario_id: string
@@ -81,7 +80,6 @@ export type Database = {
           data_pagamento?: string | null
           data_vencimento: string
           desativar_lembretes?: boolean
-          enviado_em?: string | null
           id?: string
           mes: number
           usuario_id: string
@@ -99,7 +97,6 @@ export type Database = {
           data_pagamento?: string | null
           data_vencimento?: string
           desativar_lembretes?: boolean
-          enviado_em?: string | null
           id?: string
           mes?: number
           usuario_id?: string

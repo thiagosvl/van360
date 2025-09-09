@@ -134,6 +134,26 @@ export function UsuarioForm({ usuario, onSubmit, onClose }: UsuarioFormProps) {
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email *</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="email"
+                          disabled={!!usuario}
+                          placeholder="email@exemplo.com"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="telefone"
@@ -153,24 +173,7 @@ export function UsuarioForm({ usuario, onSubmit, onClose }: UsuarioFormProps) {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email *</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="email"
-                          disabled={!!usuario}
-                          placeholder="email@exemplo.com"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
                 <FormField
                   control={form.control}
                   name="role"

@@ -1,9 +1,9 @@
 import {
-    CreditCard,
-    GraduationCap,
-    LayoutDashboard,
-    Settings,
-    Users,
+  CreditCard,
+  GraduationCap,
+  LayoutDashboard,
+  Settings,
+  Users,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -14,9 +14,9 @@ const adminItems = [
 ];
 
 const motoristaItems = [
-  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { title: "Passageiros", href: "/passageiros", icon: Users },
+  { title: "Início", href: "/dashboard", icon: LayoutDashboard },
   { title: "Mensalidades", href: "/mensalidades", icon: CreditCard },
+  { title: "Passageiros", href: "/passageiros", icon: Users },
   { title: "Escolas", href: "/escolas", icon: GraduationCap },
 ];
 

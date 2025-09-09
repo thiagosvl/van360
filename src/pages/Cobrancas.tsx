@@ -73,6 +73,7 @@ const Cobrancas = () => {
         )
         .eq("mes", mesFilter)
         .eq("ano", anoFilter)
+        .eq("usuario_id", localStorage.getItem("app_user_id"))
         .order("data_vencimento", { ascending: true });
 
       const cobrancas = data || [];
@@ -134,11 +135,6 @@ const Cobrancas = () => {
 
   const reenviarCobranca = async () => {
     try {
-      await supabase
-        .from("cobrancas")
-        .update({ enviado_em: new Date().toISOString() })
-        .eq("id", confirmDialogReenvio.cobrancaId);
-
       toast({
         title: "Cobrança reenviada com sucesso para o responsável",
       });

@@ -82,7 +82,11 @@ export default function Escolas() {
   const fetchEscolas = async () => {
     setLoadingPage(true);
     try {
-      let query = supabase.from("escolas").select("*").order("nome");
+      let query = supabase
+        .from("escolas")
+        .select("*")
+        .eq("usuario_id", localStorage.getItem("app_user_id"))
+        .order("nome");
 
       const { data, error } = await query;
 
@@ -99,26 +103,13 @@ export default function Escolas() {
     setLoading(true);
 
     try {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-      if (sessionError || !session) {
-        toast({
-          title: "Erro de autenticação.",
-          description: "Não foi possível obter os dados do usuário logado.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-
       if (editingEscola) {
         if (editingEscola.ativo && data.ativo === false) {
           const { data: passageirosAtivos, error: checkError } = await supabase
             .from("passageiros")
             .select("id")
             .eq("escola_id", editingEscola.id)
+            .eq("usuario_id", localStorage.getItem("app_user_id"))
             .eq("ativo", true);
 
           if (checkError) throw checkError;
@@ -146,22 +137,6 @@ export default function Escolas() {
           title: "Escola atualizada com sucesso.",
         });
       } else {
-        const authUid = session.user.id;
-
-        const { data: usuario, error: usuarioError } = await supabase
-          .from("usuarios")
-          .select("id")
-          .eq("auth_uid", authUid)
-          .single();
-
-        if (usuarioError || !usuario) {
-          toast({
-            title: "Usuário não encontrado no sistema",
-            variant: "destructive",
-          });
-          return;
-        }
-
         const { error } = await supabase.from("escolas").insert([
           {
             nome: data.nome,
@@ -173,7 +148,7 @@ export default function Escolas() {
             cep: data.cep || null,
             referencia: data.referencia || null,
             ativo: true,
-            usuario_id: usuario.id,
+            usuario_id: localStorage.getItem("app_user_id"),
           },
         ]);
 

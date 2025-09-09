@@ -207,6 +207,7 @@ export default function Passageiros() {
         .from("escolas")
         .select("*")
         .eq("ativo", true)
+        .eq("usuario_id", localStorage.getItem("app_user_id"))
         .order("nome");
 
       if (error) throw error;
@@ -222,6 +223,7 @@ export default function Passageiros() {
         .from("escolas")
         .select("*")
         .eq("ativo", true)
+        .eq("usuario_id", localStorage.getItem("app_user_id"))
         .order("nome");
 
       if (escolaId) {
@@ -247,6 +249,7 @@ export default function Passageiros() {
       let query = supabase
         .from("passageiros")
         .select(`*, escolas(nome)`)
+        .eq("usuario_id", localStorage.getItem("app_user_id"))
         .order("nome");
 
       if (selectedEscola !== "todas") {
@@ -304,6 +307,7 @@ export default function Passageiros() {
         dia_vencimento: Number(pureData.dia_vencimento),
         escola_id: pureData.escola_id || null,
         ativo: pureData.ativo ?? true,
+        usuario_id: localStorage.getItem("app_user_id"),
       };
 
       if (editingPassageiro) {
@@ -374,44 +378,6 @@ export default function Passageiros() {
 
         passageiroData.asaas_customer_id = asaasCustomer.id;
 
-        // Recupera sessão
-        const {
-          data: { session },
-          error: sessionError,
-        } = await supabase.auth.getSession();
-
-        if (sessionError || !session) {
-          toast({
-            title: "Erro de autenticação",
-            description: "Não foi possível obter o usuário logado",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
-
-        // Pega o auth.users.id
-        const authUid = session.user.id;
-
-        // Busca o usuario correspondente
-        const { data: usuario, error: usuarioError } = await supabase
-          .from("usuarios")
-          .select("id")
-          .eq("auth_uid", authUid)
-          .single();
-
-        if (usuarioError || !usuario) {
-          toast({
-            title: "Erro",
-            description: "Usuário não encontrado na tabela usuarios",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
-
-        passageiroData.usuario_id = usuario.id;
-
         try {
           const { data: newPassageiro, error } = await supabase
             .from("passageiros")
@@ -452,7 +418,7 @@ export default function Passageiros() {
                 valor: moneyToNumber(pureData.valor_mensalidade),
                 data_vencimento: dataVencimento.toISOString().split("T")[0],
                 status: "pendente",
-                usuario_id: usuario.id,
+                usuario_id: localStorage.getItem("app_user_id"),
               },
             ]);
           }

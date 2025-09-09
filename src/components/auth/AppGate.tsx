@@ -23,12 +23,15 @@ export const AppGate = ({ children }: AppGateProps) => {
         try {
           const { data } = await supabase
             .from("usuarios")
-            .select("role")
+            .select("id, role")
             .eq("email", user.email as string)
             .single();
           if (active && data?.role) {
             setRoleDb(data.role);
             localStorage.setItem("app_role", data.role);
+          }
+          if (data.id) {
+            localStorage.setItem("app_user_id", data.id);
           }
         } finally {
           if (active) setRoleLoading(false);

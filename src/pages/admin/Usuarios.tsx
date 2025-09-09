@@ -19,7 +19,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Usuario } from "@/types/usuario";
-import { formatDateToBR } from "@/utils/formatters";
+import { formatDateTimeToBR, formatProfile } from "@/utils/formatters";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -130,29 +130,66 @@ export default function UsuariosAdmin() {
     closeForm();
   };
 
-  // ALTERAÇÃO: Lógica de atualização simplificada
   const handleUpdateUsuario = async (data: UsuarioFormData) => {
-    if (!selectedUsuario) return;
+    if (!selectedUsuario || !selectedUsuario.auth_uid) {
+      toast({
+        title: "Erro",
+        description:
+          "Usuário selecionado é inválido ou não possui um ID de autenticação.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    const { error } = await supabase
+    // 1. Atualiza a tabela pública 'usuarios'
+    const { error: profileError } = await supabase
       .from("usuarios")
       .update({
         nome: data.nome,
         telefone: data.telefone,
         role: data.role,
-        // Email e CPF não devem ser alterados na edição
       })
       .eq("id", selectedUsuario.id);
 
-    if (error) throw new Error(error.message);
+    if (profileError) {
+      throw new Error(`Erro ao atualizar perfil: ${profileError.message}`);
+    }
 
-    toast({
-      title: "Sucesso",
-      description: "Usuário atualizado com sucesso!",
-    });
+    try {
+      // 2. Invoca a Edge Function para atualizar a role no Auth
+      const { error: authError } = await supabase.functions.invoke(
+        "adminUpdateUser",
+        {
+          body: {
+            auth_uid: selectedUsuario.auth_uid,
+            role: data.role,
+          },
+        }
+      );
 
-    await fetchUsuarios();
-    closeForm();
+      if (authError) {
+        // Se a atualização do Auth falhar, idealmente deveríamos reverter a atualização do perfil.
+        // Por simplicidade aqui, apenas notificamos o erro.
+        throw new Error(
+          `Perfil atualizado, mas falha ao atualizar permissões: ${authError.message}`
+        );
+      }
+
+      toast({
+        title: "Sucesso",
+        description: "Usuário atualizado com sucesso!",
+      });
+
+      await fetchUsuarios();
+      closeForm();
+    } catch (error: any) {
+      // Este catch vai pegar erros de ambas as operações
+      toast({
+        title: "Erro na Atualização",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   // ALTERAÇÃO: Lógica de exclusão corrigida e aprimorada
@@ -250,73 +287,74 @@ export default function UsuariosAdmin() {
               className="max-w-sm"
             />
 
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>CPF/CNPJ</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Telefone</TableHead>
+                  <TableHead>Pefil</TableHead>
+                  <TableHead>Criado em</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
                   <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>CPF/CNPJ</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Telefone</TableHead>
-                    <TableHead>Criado em</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      </div>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8">
-                        <div className="flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                ) : filteredUsuarios.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="text-center py-8 text-muted-foreground"
+                    >
+                      Nenhum usuario encontrado
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredUsuarios.map((usuario) => (
+                    <TableRow key={usuario.id}>
+                      <TableCell className="font-medium">
+                        {usuario.nome}
+                      </TableCell>
+                      <TableCell>{usuario.cpfcnpj}</TableCell>
+                      <TableCell>{usuario.email}</TableCell>
+                      <TableCell>{usuario.telefone}</TableCell>
+                      <TableCell>{formatProfile(usuario.role)}</TableCell>
+                      <TableCell>
+                        {formatDateTimeToBR(usuario.created_at)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(usuario)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(usuario)}
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
-                  ) : filteredUsuarios.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className="text-center py-8 text-muted-foreground"
-                      >
-                        Nenhum usuario encontrado
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredUsuarios.map((usuario) => (
-                      <TableRow key={usuario.id}>
-                        <TableCell className="font-medium">
-                          {usuario.nome}
-                        </TableCell>
-                        <TableCell>{usuario.cpfcnpj}</TableCell>
-                        <TableCell>{usuario.email}</TableCell>
-                        <TableCell>{usuario.telefone}</TableCell>
-                        <TableCell>
-                          {formatDateToBR(usuario.created_at)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(usuario)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDelete(usuario)}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>

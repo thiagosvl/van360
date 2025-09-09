@@ -26,7 +26,7 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
   const title = role === "admin" ? "Van Admin" : "Van Motorista";
 
   return (
-    <header className="flex h-16 items-center justify-between px-6">
+    <header className="flex h-16 items-center justify-between px-6 bg-white">
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
           <span className="text-primary-foreground font-bold text-sm">

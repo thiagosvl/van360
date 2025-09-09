@@ -141,14 +141,17 @@ export default function PassageiroCarteirinha() {
     try {
       const { data, error } = await supabase
         .from("cobrancas")
-        .select(`
+        .select(
+          `
           *,
           passageiros:passageiro_id (
             nome,
             nome_responsavel
           )
-        `)
+        `
+        )
         .eq("passageiro_id", passageiro_id)
+        .eq("usuario_id", localStorage.getItem("app_user_id"))
         .order("ano", { ascending: false })
         .order("mes", { ascending: false });
 
@@ -224,13 +227,8 @@ export default function PassageiroCarteirinha() {
   const handleConfirmAction = async () => {
     try {
       if (confirmDialog.action === "reenviar") {
-        await supabase
-          .from("cobrancas")
-          .update({ enviado_em: new Date().toISOString() })
-          .eq("id", confirmDialog.cobrancaId);
-
         toast({
-          title: "Cobrança reenviada com sucesso para o responsável.",
+          title: "Cobrança reenviada com sucesso para o responsável",
         });
       } else if (confirmDialog.action === "reverter") {
         await supabase

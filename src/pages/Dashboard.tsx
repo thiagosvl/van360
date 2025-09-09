@@ -15,6 +15,7 @@ import { Calendar, CreditCard, DollarSign, Filter } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { toast } from "@/hooks/use-toast";
 import { Cobranca } from "@/types/cobranca";
 import { PaymentStats } from "@/types/paymentStats";
 
@@ -94,6 +95,7 @@ const Dashboard = () => {
         `
         )
         .eq("mes", mesFilter)
+        .eq("usuario_id", localStorage.getItem("app_user_id"))
         .eq("ano", anoFilter);
 
       const totalPrevisto =
@@ -189,16 +191,9 @@ const Dashboard = () => {
     cobrancaId: string,
     nomePassageiro: string
   ) => {
-    try {
-      await supabase
-        .from("cobrancas")
-        .update({ enviado_em: new Date().toISOString() })
-        .eq("id", cobrancaId);
-
-      fetchStats();
-    } catch (error) {
-      console.error("Erro ao reenviar cobrança:", error);
-    }
+    toast({
+      title: "Cobrança reenviada com sucesso para o responsável",
+    });
   };
 
   const openPaymentDialog = (cobranca: Cobranca) => {
@@ -222,239 +217,237 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       <div className="w-full">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Tela Inicial
-            </h1>
-          </div>
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+            Tela Inicial
+          </h1>
+        </div>
 
-          {/* Filtros no topo */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="w-4 h-4" />
-                Filtros
+        {/* Filtros no topo */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="w-4 h-4" />
+              Filtros
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-2 block">Mês</label>
+                <Select
+                  value={mesFilter.toString()}
+                  onValueChange={(value) => setMesFilter(Number(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o mês" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {meses.map((mes, index) => (
+                      <SelectItem key={index} value={(index + 1).toString()}>
+                        {mes}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-2 block">Ano</label>
+                <Select
+                  value={anoFilter.toString()}
+                  onValueChange={(value) => setAnoFilter(Number(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o ano" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[2023, 2024, 2025, 2026].map((ano) => (
+                      <SelectItem key={ano} value={ano.toString()}>
+                        {ano}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Alerta de Mensalidades em Atraso */}
+        <LatePaymentsAlert
+          latePayments={latePayments}
+          loading={loading}
+          totalCobrancas={stats.totalCobrancas}
+          selectedMonth={mesFilter}
+          onReenviarCobranca={reenviarCobranca}
+          onPayment={openPaymentDialog}
+          onViewHistory={handleViewHistory}
+          onRefresh={fetchStats}
+        />
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Previsto
               </CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <label className="text-sm font-medium mb-2 block">Mês</label>
-                  <Select
-                    value={mesFilter.toString()}
-                    onValueChange={(value) => setMesFilter(Number(value))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o mês" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {meses.map((mes, index) => (
-                        <SelectItem key={index} value={(index + 1).toString()}>
-                          {mes}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              {loading ? (
+                <Skeleton className="h-8 w-32" />
+              ) : (
+                <div className="text-2xl font-bold">
+                  {Number(stats.totalPrevisto).toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  })}
                 </div>
-                <div className="flex-1">
-                  <label className="text-sm font-medium mb-2 block">Ano</label>
-                  <Select
-                    value={anoFilter.toString()}
-                    onValueChange={(value) => setAnoFilter(Number(value))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o ano" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[2023, 2024, 2025, 2026].map((ano) => (
-                        <SelectItem key={ano} value={ano.toString()}>
-                          {ano}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Alerta de Mensalidades em Atraso */}
-          <LatePaymentsAlert
-            latePayments={latePayments}
-            loading={loading}
-            totalCobrancas={stats.totalCobrancas}
-            selectedMonth={mesFilter}
-            onReenviarCobranca={reenviarCobranca}
-            onPayment={openPaymentDialog}
-            onViewHistory={handleViewHistory}
-            onRefresh={fetchStats}
-          />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Recebido
+              </CardTitle>
+              <DollarSign className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <Skeleton className="h-8 w-32" />
+              ) : (
+                <div className="text-2xl font-bold text-green-600">
+                  {Number(stats.totalRecebido).toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Previsto
-                </CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <Skeleton className="h-8 w-32" />
-                ) : (
-                  <div className="text-2xl font-bold">
-                    {Number(stats.totalPrevisto).toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total a Receber
+              </CardTitle>
+              <DollarSign className="h-4 w-4 text-orange-600" />
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <Skeleton className="h-8 w-32" />
+              ) : (
+                <div className="text-2xl font-bold text-orange-600">
+                  {Number(stats.totalAReceber).toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Recebido
-                </CardTitle>
-                <DollarSign className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <Skeleton className="h-8 w-32" />
-                ) : (
-                  <div className="text-2xl font-bold text-green-600">
-                    {Number(stats.totalRecebido).toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                % Recebimento
+              </CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <Skeleton className="h-8 w-20" />
+              ) : (
+                <div className="text-2xl font-bold">
+                  {stats.percentualRecebimento.toFixed(1)}%
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total a Receber
-                </CardTitle>
-                <DollarSign className="h-4 w-4 text-orange-600" />
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <Skeleton className="h-8 w-32" />
-                ) : (
-                  <div className="text-2xl font-bold text-orange-600">
-                    {Number(stats.totalAReceber).toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+        {/* Status Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Mensalidades
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold">{stats.totalCobrancas}</div>
+              )}
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  % Recebimento
-                </CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <Skeleton className="h-8 w-20" />
-                ) : (
-                  <div className="text-2xl font-bold">
-                    {stats.percentualRecebimento.toFixed(1)}%
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pagas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold text-green-600">
+                  {stats.cobrancasPagas}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-          {/* Status Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Mensalidades
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <Skeleton className="h-8 w-16" />
-                ) : (
-                  <div className="text-2xl font-bold">
-                    {stats.totalCobrancas}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">A vencer</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold text-orange-600">
+                  {stats.cobrancasPendentes}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Pagas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <Skeleton className="h-8 w-16" />
-                ) : (
-                  <div className="text-2xl font-bold text-green-600">
-                    {stats.cobrancasPagas}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Em Atraso</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold text-red-600">
+                  {stats.cobrancasAtrasadas}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">A vencer</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <Skeleton className="h-8 w-16" />
-                ) : (
-                  <div className="text-2xl font-bold text-orange-600">
-                    {stats.cobrancasPendentes}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Em Atraso</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <Skeleton className="h-8 w-16" />
-                ) : (
-                  <div className="text-2xl font-bold text-red-600">
-                    {stats.cobrancasAtrasadas}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Card de Mensalidades por Tipo */}
-          {stats.totalRecebido > 0 && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4" />
-                  Soma de Valores Recebidos por Forma de Pagamento
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PaymentStatsCard stats={paymentStats} loading={loading} />
-              </CardContent>
-        </Card>
-      )}
-    </div>
+        {/* Card de Mensalidades por Tipo */}
+        {stats.totalRecebido > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="w-4 h-4" />
+                Soma de Valores Recebidos por Forma de Pagamento
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PaymentStatsCard stats={paymentStats} loading={loading} />
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* Manual Payment Dialog */}
       {selectedCobranca && (
