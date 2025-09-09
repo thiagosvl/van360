@@ -6,6 +6,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from '@/hooks/useAuth';
 import { AppGate } from '@/components/auth/AppGate';
 import AppLayout from '@/layouts/AppLayout';
+import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Cobrancas from "./pages/Cobrancas";
@@ -25,11 +26,13 @@ const App = () => (
       <Sonner position="top-right" />
       <AuthProvider>
         <BrowserRouter>
-          <AppGate>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              
-              <Route path="/" element={<AppLayout />}>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            
+            {/* Protected routes */}
+            <Route element={<AppGate><AppLayout /></AppGate>}>
                 {/* Admin Routes */}
                 <Route path="admin" element={<AdminDashboard />} />
                 <Route path="admin/motoristas" element={<MotoristasAdmin />} />
@@ -44,7 +47,6 @@ const App = () => (
               
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </AppGate>
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>

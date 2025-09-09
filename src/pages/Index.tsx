@@ -14,7 +14,7 @@ const Index = () => {
               <Bus className="h-8 w-8 text-primary" />
               <span className="text-xl font-bold text-foreground">Van ni min</span>
             </div>
-            <Link to="/dashboard">
+            <Link to="/login">
               <Button>Entrar</Button>
             </Link>
           </div>
@@ -31,7 +31,7 @@ const Index = () => {
             <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
               Sistema feito para motoristas de van escolar gerenciarem passageiros e mensalidades de forma simples e intuitiva
             </p>
-            <Link to="/dashboard">
+            <Link to="/login">
               <Button size="lg" className="text-lg px-8 py-3">
                 Começar Agora
               </Button>
@@ -94,7 +94,7 @@ const Index = () => {
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
                 Não perca mais tempo com planilhas complicadas. Nosso sistema foi pensado especialmente para motoristas de van escolar.
               </p>
-              <Link to="/dashboard">
+              <Link to="/login">
                 <Button size="lg" className="text-lg px-8 py-3">
                   Começar Gratuitamente
                 </Button>

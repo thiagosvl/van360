@@ -1,51 +1,52 @@
-import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { createClient } from '@supabase/supabase-js';
 import { cpfCnpjMask } from '@/utils/masks';
 import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
 
 const supabaseUrl = "https://jztyffakurtekwxurclw.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dHlmZmFrdXJ0ZWt3eHVyY2x3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4NDkwNDMsImV4cCI6MjA3MjQyNTA0M30.n7PD7-FMXJ7ZmBUzpwu5rqHU4ak6g_pKm85pRWr551E";
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+const loginSchema = z.object({
+  cpfCnpj: z.string()
+    .min(1, 'CPF/CNPJ é obrigatório')
+    .refine((value) => {
+      const digits = value.replace(/\D/g, '');
+      return digits.length === 11 || digits.length === 14;
+    }, 'CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos'),
+  senha: z.string()
+    .min(1, 'Senha é obrigatória')
+    .min(6, 'Senha deve ter no mínimo 6 caracteres'),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
 export default function Login() {
-  const [formData, setFormData] = useState({
-    cpfCnpj: '',
-    senha: '',
-  });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const { toast } = useToast();
 
-  const handleInputChange = (field: string, value: string) => {
-    if (field === 'cpfCnpj') {
-      setFormData(prev => ({ ...prev, [field]: cpfCnpjMask(value) }));
-    } else {
-      setFormData(prev => ({ ...prev, [field]: value }));
-    }
-    // Clear error when user starts typing
-    if (error) setError('');
-  };
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      cpfCnpj: '',
+      senha: '',
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
-    setError('');
 
     try {
       // Clean CPF/CNPJ to digits only
-      const cpfCnpjDigits = formData.cpfCnpj.replace(/\D/g, '');
-      
-      if (!cpfCnpjDigits || !formData.senha) {
-        setError('CPF/CNPJ e senha são obrigatórios');
-        setLoading(false);
-        return;
-      }
+      const cpfCnpjDigits = data.cpfCnpj.replace(/\D/g, '');
 
       // Find user by CPF/CNPJ in usuarios table using fetch directly
       const response = await fetch(`${supabaseUrl}/rest/v1/usuarios?cpfcnpj=eq.${cpfCnpjDigits}&select=email,role`, {
@@ -59,7 +60,10 @@ export default function Login() {
       const usuarios = await response.json();
 
       if (!usuarios || usuarios.length === 0) {
-        setError('Usuário não encontrado');
+        form.setError('cpfCnpj', {
+          type: 'manual',
+          message: 'Usuário não encontrado'
+        });
         setLoading(false);
         return;
       }
@@ -69,14 +73,20 @@ export default function Login() {
       // Sign in with email and password
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: usuario.email,
-        password: formData.senha,
+        password: data.senha,
       });
 
       if (signInError) {
         if (signInError.message.includes('Invalid login credentials')) {
-          setError('Senha incorreta');
+          form.setError('senha', {
+            type: 'manual',
+            message: 'Senha incorreta'
+          });
         } else {
-          setError('Erro inesperado: ' + signInError.message);
+          form.setError('root', {
+            type: 'manual',
+            message: 'Erro inesperado: ' + signInError.message
+          });
         }
         setLoading(false);
         return;
@@ -90,7 +100,10 @@ export default function Login() {
 
     } catch (error) {
       console.error('Login error:', error);
-      setError('Erro inesperado');
+      form.setError('root', {
+        type: 'manual',
+        message: 'Erro inesperado'
+      });
       setLoading(false);
     }
   };
@@ -105,45 +118,62 @@ export default function Login() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="cpfCnpj">CPF/CNPJ</Label>
-              <Input
-                id="cpfCnpj"
-                type="text"
-                value={formData.cpfCnpj}
-                onChange={(e) => handleInputChange('cpfCnpj', e.target.value)}
-                placeholder="000.000.000-00"
-                required
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="cpfCnpj"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CPF/CNPJ</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="000.000.000-00"
+                        {...field}
+                        onChange={(e) => {
+                          const masked = cpfCnpjMask(e.target.value);
+                          field.onChange(masked);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="senha">Senha</Label>
-              <Input
-                id="senha"
-                type="password"
-                value={formData.senha}
-                onChange={(e) => handleInputChange('senha', e.target.value)}
-                placeholder="Digite sua senha"
-                required
+              <FormField
+                control={form.control}
+                name="senha"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Senha</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Digite sua senha"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={loading}
-            >
-              {loading ? 'Entrando...' : 'Entrar'}
-            </Button>
-          </form>
+              {form.formState.errors.root && (
+                <div className="text-sm text-destructive">
+                  {form.formState.errors.root.message}
+                </div>
+              )}
+
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={loading}
+              >
+                {loading ? 'Entrando...' : 'Entrar'}
+              </Button>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>
