@@ -1,4 +1,3 @@
-import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -496,14 +495,13 @@ export default function Passageiros() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="p-4 space-y-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Passageiros
-            </h1>
+    <div className="space-y-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+            Passageiros
+          </h1>
+          <div className="flex gap-2">
             <Button
               onClick={handleCadastrarRapido}
               variant="destructive"
@@ -979,160 +977,160 @@ export default function Passageiros() {
               </DialogContent>
             </Dialog>
           </div>
-
-          {/* Tabela de Passageiros */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Lista de Passageiros
-                <span className="bg-foreground text-white text-sm px-2 py-0.5 rounded-full">
-                  {passageiros.length}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <Label
-                    htmlFor="escola-filter"
-                    className="text-sm font-medium mb-2 block"
-                  >
-                    Escola
-                  </Label>
-                  <Select
-                    value={selectedEscola}
-                    onValueChange={setSelectedEscola}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todas as escolas" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todas">Todas as escolas</SelectItem>
-                      {escolas.map((escola) => (
-                        <SelectItem key={escola.id} value={escola.id}>
-                          {escola.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex-1">
-                  <Label
-                    htmlFor="search"
-                    className="text-sm font-medium mb-2 block"
-                  >
-                    Nome
-                  </Label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input
-                      id="search"
-                      placeholder="Digite 2 caracteres ou mais..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8">
-                {loading || searching ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                    {searching ? "Buscando passageiros..." : "Carregando..."}
-                  </div>
-                ) : passageiros.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    {searchTerm.length > 0 && searchTerm.length < 2
-                      ? "Digite pelo menos 2 caracteres para buscar"
-                      : searchTerm.length >= 2
-                      ? "Nenhum passageiro encontrado com este nome"
-                      : "Nenhum passageiro encontrado"}
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left p-3 text-sm font-medium">
-                            Nome
-                          </th>
-                          <th className="text-left p-3 text-sm font-medium">
-                            Status
-                          </th>
-                          <th className="text-left p-3 text-sm font-medium">
-                            Escola
-                          </th>
-                          <th className="text-center p-3 text-sm font-medium">
-                            Ações
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {passageiros.map((passageiro) => (
-                          <tr
-                            key={passageiro.id}
-                            className="border-b hover:bg-muted/50"
-                          >
-                            <td className="p-3">
-                              <span className="font-medium text-sm">
-                                {passageiro.nome}
-                              </span>
-                            </td>
-                            <td className="p-3">
-                              <span className="text-sm text-muted-foreground">
-                                {passageiro.ativo ? "Ativo" : "Inativo"}
-                              </span>
-                            </td>
-                            <td className="p-3">
-                              <span className="text-sm text-muted-foreground">
-                                {passageiro.escolas?.nome || "Não informada"}
-                              </span>
-                            </td>
-                            <td className="p-3 text-center">
-                              <div className="flex gap-2 justify-center">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  title="Editar"
-                                  onClick={() => handleEdit(passageiro)}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <Pencil className="w-3 h-3" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  title="Carteirinha"
-                                  onClick={() => handleHistorico(passageiro)}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <CreditCard className="w-3 h-3" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  title="Remover"
-                                  onClick={() =>
-                                    handleDeleteClick(passageiro.id)
-                                  }
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
         </div>
+
+        {/* Tabela de Passageiros */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              Lista de Passageiros
+              <span className="bg-foreground text-white text-sm px-2 py-0.5 rounded-full">
+                {passageiros.length}
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <Label
+                  htmlFor="escola-filter"
+                  className="text-sm font-medium mb-2 block"
+                >
+                  Escola
+                </Label>
+                <Select
+                  value={selectedEscola}
+                  onValueChange={setSelectedEscola}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todas as escolas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas as escolas</SelectItem>
+                    {escolas.map((escola) => (
+                      <SelectItem key={escola.id} value={escola.id}>
+                        {escola.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <Label
+                  htmlFor="search"
+                  className="text-sm font-medium mb-2 block"
+                >
+                  Nome
+                </Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    id="search"
+                    placeholder="Digite 2 caracteres ou mais..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8">
+              {loading || searching ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  {searching ? "Buscando passageiros..." : "Carregando..."}
+                </div>
+              ) : passageiros.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  {searchTerm.length > 0 && searchTerm.length < 2
+                    ? "Digite pelo menos 2 caracteres para buscar"
+                    : searchTerm.length >= 2
+                    ? "Nenhum passageiro encontrado com este nome"
+                    : "Nenhum passageiro encontrado"}
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-3 text-sm font-medium">
+                          Nome
+                        </th>
+                        <th className="text-left p-3 text-sm font-medium">
+                          Status
+                        </th>
+                        <th className="text-left p-3 text-sm font-medium">
+                          Escola
+                        </th>
+                        <th className="text-center p-3 text-sm font-medium">
+                          Ações
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {passageiros.map((passageiro) => (
+                        <tr
+                          key={passageiro.id}
+                          className="border-b hover:bg-muted/50"
+                        >
+                          <td className="p-3">
+                            <span className="font-medium text-sm">
+                              {passageiro.nome}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className="text-sm text-muted-foreground">
+                              {passageiro.ativo ? "Ativo" : "Inativo"}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className="text-sm text-muted-foreground">
+                              {passageiro.escolas?.nome || "Não informada"}
+                            </span>
+                          </td>
+                          <td className="p-3 text-center">
+                            <div className="flex gap-2 justify-center">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                title="Editar"
+                                onClick={() => handleEdit(passageiro)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Pencil className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                title="Carteirinha"
+                                onClick={() => handleHistorico(passageiro)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <CreditCard className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                title="Remover"
+                                onClick={() =>
+                                  handleDeleteClick(passageiro.id)
+                                }
+                                className="h-8 w-8 p-0"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <ConfirmationDialog

@@ -7,7 +7,7 @@ import { MotoristaNavbar } from '@/components/motorista/MotoristaNavbar';
 
 export default function AppLayout() {
   const { user } = useAuth();
-  const role = user?.app_metadata?.role;
+  const role = (user?.app_metadata?.role as string | undefined) ?? (localStorage.getItem('app_role') || undefined);
 
   const isAdmin = role === 'admin';
   const isMotorista = role === 'motorista';

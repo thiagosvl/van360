@@ -18,7 +18,7 @@ export const AppGate = ({ children }: AppGateProps) => {
     let active = true;
 
     async function loadRole() {
-      if (user && !user.app_metadata?.role) {
+      if (user && !user.app_metadata?.role && !localStorage.getItem('app_role')) {
         setRoleLoading(true);
         try {
           const { data } = await supabase
@@ -26,12 +26,13 @@ export const AppGate = ({ children }: AppGateProps) => {
             .select('role')
             .eq('email', user.email as string)
             .single();
-          if (active) setRoleDb(data?.role ?? null);
+          if (active && data?.role) {
+            setRoleDb(data.role);
+            localStorage.setItem('app_role', data.role);
+          }
         } finally {
           if (active) setRoleLoading(false);
         }
-      } else {
-        setRoleDb(null);
       }
     }
 
@@ -39,7 +40,7 @@ export const AppGate = ({ children }: AppGateProps) => {
     return () => {
       active = false;
     };
-  }, [user]);
+  }, [user?.email]); // Only depend on email
 
   const role = (user?.app_metadata?.role as string | undefined) ?? roleDb ?? (localStorage.getItem('app_role') || undefined);
 

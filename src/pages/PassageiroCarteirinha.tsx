@@ -1,7 +1,6 @@
 import CobrancaRetroativaDialog from "@/components/CobrancaRetroativaDialog";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
-import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -270,18 +269,14 @@ export default function PassageiroCarteirinha() {
 
   if (!passageiro) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="container mx-auto px-6 py-8">
-          <div className="text-center">Carregando...</div>
-        </div>
+      <div className="space-y-6">
+        <div className="text-center">Carregando...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="space-y-6">
       <div className="container mx-auto px-6 py-8">
         <div className="flex items-center gap-4 mb-6">
           <Button

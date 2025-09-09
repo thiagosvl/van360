@@ -16,6 +16,7 @@ export function MotoristaNavbar() {
 
   const handleSignOut = async () => {
     try {
+      localStorage.removeItem('app_role');
       await supabase.auth.signOut();
       toast({
         title: 'Logout realizado',
