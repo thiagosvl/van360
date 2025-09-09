@@ -1,40 +1,34 @@
-import { Outlet } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { AdminNavbar } from '@/components/admin/AdminNavbar';
-import { MotoristaSidebar } from '@/components/motorista/MotoristaSidebar';
-import { MotoristaNavbar } from '@/components/motorista/MotoristaNavbar';
+import { AppNavbar } from "@/components/AppNavbar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { useAuth } from "@/hooks/useAuth";
+import { Outlet } from "react-router-dom";
 
 export default function AppLayout() {
   const { user } = useAuth();
-  const role = (user?.app_metadata?.role as string | undefined) ?? (localStorage.getItem('app_role') || undefined);
+  const role =
+    (user?.app_metadata?.role as string | undefined) ??
+    (localStorage.getItem("app_role") || undefined);
 
-  const isAdmin = role === 'admin';
-  const isMotorista = role === 'motorista';
+  if (!role) return null;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex h-screen">
-        {/* Sidebar */}
-        <div className="w-64 border-r bg-card">
-          {isAdmin && <AdminSidebar />}
-          {isMotorista && <MotoristaSidebar />}
-        </div>
-
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col">
-          {/* Navbar */}
-          <div className="border-b">
-            {isAdmin && <AdminNavbar />}
-            {isMotorista && <MotoristaNavbar />}
+    <SidebarProvider>
+      <div className="min-h-screen w-full bg-background">
+        <div className="flex h-screen">
+          <div className="w-64 border-r bg-card">
+            <AppSidebar role={role as "admin" | "motorista"} />
           </div>
-
-          {/* Page Content */}
-          <main className="flex-1 overflow-auto p-6">
-            <Outlet />
-          </main>
+          <div className="flex-1 flex flex-col">
+            <div className="border-b">
+              <AppNavbar role={role as "admin" | "motorista"} />
+            </div>
+            <main className="flex-1 overflow-auto p-6">
+              <Outlet />
+            </main>
+          </div>
         </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }

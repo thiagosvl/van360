@@ -16,17 +16,17 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { cpfCnpjMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { useNavigate } from "react-router-dom";
+import { z } from "zod";
 
 
 const loginSchema = z.object({
-  cpfCnpj: z
+  cpfcnpj: z
     .string()
     .min(1, "Campo obrigatório")
     .refine(
@@ -51,7 +51,7 @@ export default function Login() {
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      cpfCnpj: "",
+      cpfcnpj: "",
       senha: "",
     },
   });
@@ -60,15 +60,15 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const cpfCnpjDigits = data.cpfCnpj.replace(/\D/g, "");
+      const cpfcnpjDigits = data.cpfcnpj.replace(/\D/g, "");
       const { data: usuario, error: usuarioError } = await supabase
         .from('usuarios')
         .select('email, role')
-        .eq('cpfcnpj', cpfCnpjDigits)
+        .eq('cpfcnpj', cpfcnpjDigits)
         .single();
 
       if (usuarioError || !usuario) {
-        form.setError("cpfCnpj", {
+        form.setError("cpfcnpj", {
           type: "manual",
           message: "Usuário não encontrado",
         });
@@ -109,7 +109,7 @@ export default function Login() {
         localStorage.setItem('app_role', role);
       }
       if (role === 'admin') {
-        navigate('/admin', { replace: true });
+        navigate('/admin/dashboard', { replace: true });
       } else {
         navigate('/dashboard', { replace: true });
       }
@@ -139,7 +139,7 @@ export default function Login() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="cpfCnpj"
+                name="cpfcnpj"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>CPF/CNPJ *</FormLabel>

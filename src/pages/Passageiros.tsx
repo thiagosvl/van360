@@ -75,6 +75,7 @@ const passageiroSchema = z.object({
   emitir_cobranca_mes_atual: z.boolean().optional(),
   ativo: z.boolean().optional(),
   asaas_customer_id: z.string().optional(),
+  usuario_id: z.string().optional(),
 });
 
 type PassageiroUpdate = Database["public"]["Tables"]["passageiros"]["Update"];
@@ -373,6 +374,44 @@ export default function Passageiros() {
 
         passageiroData.asaas_customer_id = asaasCustomer.id;
 
+        // Recupera sessão
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
+
+        if (sessionError || !session) {
+          toast({
+            title: "Erro de autenticação",
+            description: "Não foi possível obter o usuário logado",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
+        // Pega o auth.users.id
+        const authUid = session.user.id;
+
+        // Busca o usuario correspondente
+        const { data: usuario, error: usuarioError } = await supabase
+          .from("usuarios")
+          .select("id")
+          .eq("auth_uid", authUid)
+          .single();
+
+        if (usuarioError || !usuario) {
+          toast({
+            title: "Erro",
+            description: "Usuário não encontrado na tabela usuarios",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
+        passageiroData.usuario_id = usuario.id;
+
         try {
           const { data: newPassageiro, error } = await supabase
             .from("passageiros")
@@ -413,6 +452,7 @@ export default function Passageiros() {
                 valor: moneyToNumber(pureData.valor_mensalidade),
                 data_vencimento: dataVencimento.toISOString().split("T")[0],
                 status: "pendente",
+                usuario_id: usuario.id,
               },
             ]);
           }
@@ -496,7 +536,7 @@ export default function Passageiros() {
 
   return (
     <div className="space-y-6">
-      <div className="max-w-5xl mx-auto">
+      <div className="w-full">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             Passageiros
@@ -1113,9 +1153,7 @@ export default function Passageiros() {
                                 size="sm"
                                 variant="outline"
                                 title="Remover"
-                                onClick={() =>
-                                  handleDeleteClick(passageiro.id)
-                                }
+                                onClick={() => handleDeleteClick(passageiro.id)}
                                 className="h-8 w-8 p-0"
                               >
                                 <Trash2 className="w-3 h-3" />

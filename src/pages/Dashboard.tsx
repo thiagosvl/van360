@@ -221,7 +221,7 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div className="max-w-5xl mx-auto">
+      <div className="w-full">
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">

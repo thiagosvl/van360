@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
 };
 
 serve(async (req) => {
@@ -13,106 +13,103 @@ serve(async (req) => {
   }
 
   try {
-    // Get service role key for admin operations
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !serviceRoleKey) {
+      throw new Error("Supabase environment variables are not set.");
+    }
+
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
+      auth: { autoRefreshToken: false, persistSession: false }
     });
 
-    const { email, role, motorista_id } = await req.json();
+    const { email, role, usuario_id } = await req.json();
 
-    // Validations
+    // --- Validações ---
     if (!email || !role) {
-      return new Response(
-        JSON.stringify({ error: 'Email e role são obrigatórios' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Email e role são obrigatórios' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
-
     if (!['admin', 'motorista'].includes(role)) {
-      return new Response(
-        JSON.stringify({ error: 'Role deve ser admin ou motorista' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Role deve ser admin ou motorista' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
-    if (role === 'motorista' && !motorista_id) {
-      return new Response(
-        JSON.stringify({ error: 'motorista_id é obrigatório para role motorista' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    // --- Lógica Refatorada ---
 
-    // Check if email already exists in usuarios table
-    const { data: existingUser } = await supabase
-      .from('usuarios')
-      .select('email')
-      .eq('email', email)
-      .single();
-
-    if (existingUser) {
-      return new Response(
-        JSON.stringify({ error: 'Email já existe' }),
-        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Generate random password (8-10 characters)
+    // 1. Gerar senha aleatória
     const generatePassword = () => {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      const length = Math.floor(Math.random() * 3) + 8; // 8-10 chars
+      const length = 10;
       let result = '';
       for (let i = 0; i < length; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
       }
       return result;
     };
-
     const senha = generatePassword();
 
-    // Create user in Supabase Auth
+    // 2. Tentar criar o usuário no Auth PRIMEIRO.
+    // O próprio Supabase vai retornar um erro se o email já existir.
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password: senha,
-      app_metadata: {
-        role,
-        ...(role === 'motorista' && { motorista_id })
-      }
+      email_confirm: true, // Já cria o usuário como verificado
+      app_metadata: { role }
     });
 
     if (authError) {
-      console.error('Error creating auth user:', authError);
-      return new Response(
-        JSON.stringify({ error: 'Erro ao criar usuário: ' + authError.message }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      // O erro pode ser "User already registered", que traduzimos para o frontend.
+      const errorMessage = authError.message.includes("User already registered")
+        ? "Email já existe no sistema de autenticação"
+        : `Erro ao criar usuário: ${authError.message}`;
+
+      return new Response(JSON.stringify({ error: errorMessage }), {
+        // Usamos 409 (Conflict) para "usuário já existe"
+        status: authError.message.includes("User already registered") ? 409 : 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     const auth_uid = authData.user.id;
+    console.log(`Created auth user ${email} with auth_uid ${auth_uid}`);
 
-    console.log(`Created user ${email} with auth_uid ${auth_uid}`);
+    // 3. Se o usuário Auth foi criado, ATUALIZAR a tabela 'usuarios' com o auth_uid.
+    // Esta etapa assume que o registro em 'usuarios' já foi criado pelo frontend
+    // e está aguardando o auth_uid.
+    const { error: updateError } = await supabase
+      .from('usuarios')
+      .update({ auth_uid: auth_uid })
+      .eq('id', usuario_id);
 
-    return new Response(
-      JSON.stringify({ auth_uid, senha }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    if (updateError) {
+      // Se a atualização falhar, devemos deletar o usuário do Auth para não criar inconsistência (rollback)
+      await supabase.auth.admin.deleteUser(auth_uid);
+      console.error('Rollback: Deleted auth user due to profile update failure.', updateError);
+      return new Response(JSON.stringify({ error: 'Não foi possível associar o usuário de autenticação ao perfil.' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 4. Se tudo deu certo, retornar sucesso e a senha gerada
+    return new Response(JSON.stringify({
+      auth_uid,
+      senha
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
 
   } catch (error) {
     console.error('Error in adminCreateUser function:', error);
-    return new Response(
-      JSON.stringify({ error: 'Erro interno do servidor' }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    return new Response(JSON.stringify({ error: 'Erro interno do servidor: ' + error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
 });

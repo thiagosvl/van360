@@ -99,6 +99,20 @@ export default function Escolas() {
     setLoading(true);
 
     try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        toast({
+          title: "Erro de autenticação.",
+          description: "Não foi possível obter os dados do usuário logado.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
       if (editingEscola) {
         if (editingEscola.ativo && data.ativo === false) {
           const { data: passageirosAtivos, error: checkError } = await supabase
@@ -132,6 +146,22 @@ export default function Escolas() {
           title: "Escola atualizada com sucesso.",
         });
       } else {
+        const authUid = session.user.id;
+
+        const { data: usuario, error: usuarioError } = await supabase
+          .from("usuarios")
+          .select("id")
+          .eq("auth_uid", authUid)
+          .single();
+
+        if (usuarioError || !usuario) {
+          toast({
+            title: "Usuário não encontrado no sistema",
+            variant: "destructive",
+          });
+          return;
+        }
+
         const { error } = await supabase.from("escolas").insert([
           {
             nome: data.nome,
@@ -143,6 +173,7 @@ export default function Escolas() {
             cep: data.cep || null,
             referencia: data.referencia || null,
             ativo: true,
+            usuario_id: usuario.id,
           },
         ]);
 
@@ -247,7 +278,7 @@ export default function Escolas() {
 
   return (
     <div className="space-y-6">
-      <div className="max-w-5xl mx-auto">
+      <div className="w-full">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
@@ -462,6 +493,7 @@ export default function Escolas() {
                                 <FormLabel>CEP</FormLabel>
                                 <FormControl>
                                   <Input
+                                    placeholder="00000-000"
                                     {...field}
                                     maxLength={9}
                                     onChange={(e) => {

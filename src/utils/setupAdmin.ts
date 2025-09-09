@@ -7,7 +7,7 @@ export const createAdminAuthUser = async () => {
       body: {
         email: 'thiago-svl@hotmail.com',
         role: 'admin',
-        motorista_id: null
+        usuario_id: null
       }
     });
 
