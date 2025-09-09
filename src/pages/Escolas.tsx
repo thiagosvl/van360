@@ -132,9 +132,8 @@ export default function Escolas() {
           title: "Escola atualizada com sucesso.",
         });
       } else {
-        const { error } = await supabase
-          .from("escolas")
-          .insert([{
+        const { error } = await supabase.from("escolas").insert([
+          {
             nome: data.nome,
             rua: data.rua || null,
             numero: data.numero || null,
@@ -143,8 +142,9 @@ export default function Escolas() {
             estado: data.estado || null,
             cep: data.cep || null,
             referencia: data.referencia || null,
-            ativo: true
-          }]);
+            ativo: true,
+          },
+        ]);
 
         if (error) throw error;
 
@@ -248,394 +248,380 @@ export default function Escolas() {
   return (
     <div className="space-y-6">
       <div className="max-w-5xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-                Escolas
-              </h1>
-            </div>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={resetForm} className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Nova Escola
-                </Button>
-              </DialogTrigger>
-              <DialogContent
-                className="max-w-2xl max-h-[90vh] overflow-y-auto"
-                onOpenAutoFocus={(e) => e.preventDefault()}
-              >
-                <DialogHeader>
-                  <DialogTitle>
-                    {editingEscola ? "Editar Escola" : "Nova Escola"}
-                  </DialogTitle>
-                </DialogHeader>
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(handleSubmit)}
-                    className="space-y-6"
-                  >
-                    {/* Dados da Escola Section */}
-                    <Card>
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-2 mb-4">
-                          <Building2 className="w-5 h-5 text-primary" />
-                          <h3 className="text-lg font-semibold">
-                            Dados da Escola
-                          </h3>
-                        </div>
-                        <FormField
-                          control={form.control}
-                          name="nome"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Nome da Escola *</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        {editingEscola && (
-                          <div className="mt-4">
-                            <FormField
-                              control={form.control}
-                              name="ativo"
-                              render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value}
-                                      onCheckedChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                  <div className="space-y-1 leading-none">
-                                    <FormLabel>Ativa</FormLabel>
-                                  </div>
-                                </FormItem>
-                              )}
-                            />
-                          </div>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+              Escolas
+            </h1>
+          </div>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={resetForm} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Nova Escola
+              </Button>
+            </DialogTrigger>
+            <DialogContent
+              className="max-w-2xl max-h-[90vh] overflow-y-auto"
+              onOpenAutoFocus={(e) => e.preventDefault()}
+            >
+              <DialogHeader>
+                <DialogTitle>
+                  {editingEscola ? "Editar Escola" : "Nova Escola"}
+                </DialogTitle>
+              </DialogHeader>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(handleSubmit)}
+                  className="space-y-6"
+                >
+                  {/* Dados da Escola Section */}
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Building2 className="w-5 h-5 text-primary" />
+                        <h3 className="text-lg font-semibold">
+                          Dados da Escola
+                        </h3>
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name="nome"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome da Escola *</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
+                      />
 
-                        <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
-
-                        {/* Endereço Section */}
-                        <div className="flex items-center gap-2 mb-4">
-                          <MapPin className="w-5 h-5 text-primary" />
-                          <h3 className="text-lg font-semibold">Endereço</h3>
-                        </div>
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="rua"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Logradouro</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="numero"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Número</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="bairro"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Bairro</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="cidade"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Cidade</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="estado"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Estado</FormLabel>
-                                  <Select
-                                    onValueChange={field.onChange}
-                                    value={field.value}
-                                  >
-                                    <FormControl>
-                                      <SelectTrigger>
-                                        <SelectValue placeholder="Selecione o estado" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      <SelectItem value="AC">Acre</SelectItem>
-                                      <SelectItem value="AL">
-                                        Alagoas
-                                      </SelectItem>
-                                      <SelectItem value="AP">Amapá</SelectItem>
-                                      <SelectItem value="AM">
-                                        Amazonas
-                                      </SelectItem>
-                                      <SelectItem value="BA">Bahia</SelectItem>
-                                      <SelectItem value="CE">Ceará</SelectItem>
-                                      <SelectItem value="DF">
-                                        Distrito Federal
-                                      </SelectItem>
-                                      <SelectItem value="ES">
-                                        Espírito Santo
-                                      </SelectItem>
-                                      <SelectItem value="GO">Goiás</SelectItem>
-                                      <SelectItem value="MA">
-                                        Maranhão
-                                      </SelectItem>
-                                      <SelectItem value="MT">
-                                        Mato Grosso
-                                      </SelectItem>
-                                      <SelectItem value="MS">
-                                        Mato Grosso do Sul
-                                      </SelectItem>
-                                      <SelectItem value="MG">
-                                        Minas Gerais
-                                      </SelectItem>
-                                      <SelectItem value="PA">Pará</SelectItem>
-                                      <SelectItem value="PB">
-                                        Paraíba
-                                      </SelectItem>
-                                      <SelectItem value="PR">Paraná</SelectItem>
-                                      <SelectItem value="PE">
-                                        Pernambuco
-                                      </SelectItem>
-                                      <SelectItem value="PI">Piauí</SelectItem>
-                                      <SelectItem value="RJ">
-                                        Rio de Janeiro
-                                      </SelectItem>
-                                      <SelectItem value="RN">
-                                        Rio Grande do Norte
-                                      </SelectItem>
-                                      <SelectItem value="RS">
-                                        Rio Grande do Sul
-                                      </SelectItem>
-                                      <SelectItem value="RO">
-                                        Rondônia
-                                      </SelectItem>
-                                      <SelectItem value="RR">
-                                        Roraima
-                                      </SelectItem>
-                                      <SelectItem value="SC">
-                                        Santa Catarina
-                                      </SelectItem>
-                                      <SelectItem value="SP">
-                                        São Paulo
-                                      </SelectItem>
-                                      <SelectItem value="SE">
-                                        Sergipe
-                                      </SelectItem>
-                                      <SelectItem value="TO">
-                                        Tocantins
-                                      </SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="cep"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>CEP</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      maxLength={9}
-                                      onChange={(e) => {
-                                        const maskedValue = cepMask(
-                                          e.target.value
-                                        );
-                                        field.onChange(maskedValue);
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
+                      {editingEscola && (
+                        <div className="mt-4">
                           <FormField
                             control={form.control}
-                            name="referencia"
+                            name="ativo"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                  <FormLabel>Ativa</FormLabel>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
+
+                      <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
+
+                      {/* Endereço Section */}
+                      <div className="flex items-center gap-2 mb-4">
+                        <MapPin className="w-5 h-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Endereço</h3>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="rua"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Referência</FormLabel>
+                                <FormLabel>Logradouro</FormLabel>
                                 <FormControl>
-                                  <Textarea {...field} />
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="numero"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Número</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="bairro"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Bairro</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="cidade"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Cidade</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="estado"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Estado</FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Selecione o estado" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="AC">Acre</SelectItem>
+                                    <SelectItem value="AL">Alagoas</SelectItem>
+                                    <SelectItem value="AP">Amapá</SelectItem>
+                                    <SelectItem value="AM">Amazonas</SelectItem>
+                                    <SelectItem value="BA">Bahia</SelectItem>
+                                    <SelectItem value="CE">Ceará</SelectItem>
+                                    <SelectItem value="DF">
+                                      Distrito Federal
+                                    </SelectItem>
+                                    <SelectItem value="ES">
+                                      Espírito Santo
+                                    </SelectItem>
+                                    <SelectItem value="GO">Goiás</SelectItem>
+                                    <SelectItem value="MA">Maranhão</SelectItem>
+                                    <SelectItem value="MT">
+                                      Mato Grosso
+                                    </SelectItem>
+                                    <SelectItem value="MS">
+                                      Mato Grosso do Sul
+                                    </SelectItem>
+                                    <SelectItem value="MG">
+                                      Minas Gerais
+                                    </SelectItem>
+                                    <SelectItem value="PA">Pará</SelectItem>
+                                    <SelectItem value="PB">Paraíba</SelectItem>
+                                    <SelectItem value="PR">Paraná</SelectItem>
+                                    <SelectItem value="PE">
+                                      Pernambuco
+                                    </SelectItem>
+                                    <SelectItem value="PI">Piauí</SelectItem>
+                                    <SelectItem value="RJ">
+                                      Rio de Janeiro
+                                    </SelectItem>
+                                    <SelectItem value="RN">
+                                      Rio Grande do Norte
+                                    </SelectItem>
+                                    <SelectItem value="RS">
+                                      Rio Grande do Sul
+                                    </SelectItem>
+                                    <SelectItem value="RO">Rondônia</SelectItem>
+                                    <SelectItem value="RR">Roraima</SelectItem>
+                                    <SelectItem value="SC">
+                                      Santa Catarina
+                                    </SelectItem>
+                                    <SelectItem value="SP">
+                                      São Paulo
+                                    </SelectItem>
+                                    <SelectItem value="SE">Sergipe</SelectItem>
+                                    <SelectItem value="TO">
+                                      Tocantins
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="cep"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>CEP</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    maxLength={9}
+                                    onChange={(e) => {
+                                      const maskedValue = cepMask(
+                                        e.target.value
+                                      );
+                                      field.onChange(maskedValue);
+                                    }}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
                         </div>
+                        <FormField
+                          control={form.control}
+                          name="referencia"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Referência</FormLabel>
+                              <FormControl>
+                                <Textarea {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-                        {/* Actions */}
-                        <div className="flex gap-4 mt-8 pt-4">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setIsDialogOpen(false)}
-                            className="flex-1"
-                          >
-                            Cancelar
-                          </Button>
-                          <Button
-                            type="submit"
-                            disabled={loading}
-                            className="flex-1"
-                          >
-                            {loading
-                              ? "Salvando..."
-                              : editingEscola
-                              ? "Atualizar"
-                              : "Cadastrar"}
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Lista de Escolas
-                <span className="bg-foreground text-white text-sm px-2 py-0.5 rounded-full">
-                  {escolas.length}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loadingPage ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                  Carregando...
-                </div>
-              ) : escolas.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  Nenhuma escola cadastrada
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left p-3 text-sm font-medium">
-                          Nome
-                        </th>
-                        <th className="text-left p-3 text-sm font-medium">
-                          Status
-                        </th>
-                        <th className="text-center p-3 text-sm font-medium">
-                          Ações
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {escolas.map((escola) => (
-                        <tr
-                          key={escola.id}
-                          className="border-b hover:bg-muted/50"
+                      {/* Actions */}
+                      <div className="flex gap-4 mt-8 pt-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsDialogOpen(false)}
+                          className="flex-1"
                         >
-                          <td className="p-3">
-                            <span className="font-medium text-sm">
-                              {escola.nome}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <span
-                              className={`px-2 py-1 rounded text-xs ${
-                                escola.ativo
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              {escola.ativo ? "Ativa" : "Inativa"}
-                            </span>
-                          </td>
-                          <td className="p-3 text-center">
-                            <div className="flex gap-2 justify-center">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                title="Editar"
-                                className="h-8 w-8 p-0"
-                                onClick={() => handleEdit(escola)}
-                              >
-                                <Pencil className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                title="Remover"
-                                variant="outline"
-                                disabled={escola.ativo}
-                                onClick={() => handleDeleteClick(escola)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <ConfirmationDialog
-            open={isDeleteDialogOpen}
-            onOpenChange={setIsDeleteDialogOpen}
-            title="Confirmar exclusão"
-            description="Deseja excluir permanentemente esta escola? Esta ação não pode ser desfeita."
-            onConfirm={handleDelete}
-            confirmText="Confirmar"
-            cancelText="Cancelar"
-            variant="destructive"
-          />
+                          Cancelar
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={loading}
+                          className="flex-1"
+                        >
+                          {loading
+                            ? "Salvando..."
+                            : editingEscola
+                            ? "Atualizar"
+                            : "Cadastrar"}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              Lista de Escolas
+              <span className="bg-foreground text-white text-sm px-2 py-0.5 rounded-full">
+                {escolas.length}
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loadingPage ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                Carregando...
+              </div>
+            ) : escolas.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Nenhuma escola cadastrada
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-3 text-sm font-medium">
+                        Nome
+                      </th>
+                      <th className="text-left p-3 text-sm font-medium">
+                        Status
+                      </th>
+                      <th className="text-center p-3 text-sm font-medium">
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {escolas.map((escola) => (
+                      <tr
+                        key={escola.id}
+                        className="border-b hover:bg-muted/50"
+                      >
+                        <td className="p-3">
+                          <span className="font-medium text-sm">
+                            {escola.nome}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span
+                            className={`px-2 py-1 rounded text-xs ${
+                              escola.ativo
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {escola.ativo ? "Ativa" : "Inativa"}
+                          </span>
+                        </td>
+                        <td className="p-3 text-center">
+                          <div className="flex gap-2 justify-center">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              title="Editar"
+                              className="h-8 w-8 p-0"
+                              onClick={() => handleEdit(escola)}
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              title="Remover"
+                              variant="outline"
+                              disabled={escola.ativo}
+                              onClick={() => handleDeleteClick(escola)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <ConfirmationDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          title="Confirmar exclusão"
+          description="Deseja excluir permanentemente esta escola? Esta ação não pode ser desfeita."
+          onConfirm={handleDelete}
+          confirmText="Confirmar"
+          cancelText="Cancelar"
+          variant="destructive"
+        />
       </div>
     </div>
   );
+}

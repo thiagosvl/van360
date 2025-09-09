@@ -252,340 +252,337 @@ const Cobrancas = () => {
   return (
     <div className="space-y-6">
       <div className="max-w-5xl mx-auto">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Mensalidades
-            </h1>
-          </div>
-
-          {/* Filtros */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="w-4 h-4" />
-                Filtros
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <label className="text-sm font-medium mb-2 block">Mês</label>
-                  <Select
-                    value={mesFilter.toString()}
-                    onValueChange={(value) => setMesFilter(Number(value))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o mês" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {meses.map((mes, index) => (
-                        <SelectItem key={index} value={(index + 1).toString()}>
-                          {mes}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex-1">
-                  <label className="text-sm font-medium mb-2 block">Ano</label>
-                  <Select
-                    value={anoFilter.toString()}
-                    onValueChange={(value) => setAnoFilter(Number(value))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o ano" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[2023, 2024, 2025, 2026].map((ano) => (
-                        <SelectItem key={ano} value={ano.toString()}>
-                          {ano}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Cobranças em Aberto */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-red-600 flex items-center gap-2">
-                Em Aberto - {meses[mesFilter - 1]} {anoFilter}
-                <span className="bg-red-600 text-white text-sm px-2 py-0.5 rounded-full">
-                  {cobrancasAbertas.length}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                  Carregando...
-                </div>
-              ) : cobrancasAbertas.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  Nenhuma cobrança em aberto neste período
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left p-3 text-sm font-medium">
-                          Passageiro
-                        </th>
-                        <th className="text-left p-3 text-sm font-medium">
-                          Responsável
-                        </th>
-                        <th className="text-left p-3 text-sm font-medium">
-                          Vencimento
-                        </th>
-                        <th className="text-left p-3 text-sm font-medium">
-                          Status
-                        </th>
-                        <th className="text-left p-3 text-sm font-medium">
-                          Valor
-                        </th>
-                        <th className="text-center p-3 text-sm font-medium">
-                          Ações
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {cobrancasAbertas.map((cobranca) => (
-                        <tr
-                          key={cobranca.id}
-                          className="border-b hover:bg-muted/50"
-                        >
-                          <td className="p-3">
-                            <span className="font-medium text-sm">
-                              {cobranca.passageiros.nome}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <span className="text-sm text-muted-foreground">
-                              {cobranca.passageiros.nome_responsavel || "-"}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <span className="text-sm">
-                              {formatDateToBR(cobranca.data_vencimento)}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                                cobranca.status,
-                                cobranca.data_vencimento
-                              )}`}
-                            >
-                              {getStatusText(
-                                cobranca.status,
-                                cobranca.data_vencimento
-                              )}
-                            </span>
-                            {cobranca.desativar_lembretes &&
-                              cobranca.status !== "pago" && (
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  Lembretes suspensos
-                                </div>
-                              )}
-                          </td>
-                          <td className="p-3">
-                            <span className="font-medium text-sm">
-                              {Number(cobranca.valor).toLocaleString("pt-BR", {
-                                style: "currency",
-                                currency: "BRL",
-                              })}
-                            </span>
-                          </td>
-                          <td className="p-3 text-center">
-                            <div className="flex gap-2 justify-center">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                title="Carteirinha"
-                                onClick={() =>
-                                  handleViewHistory(cobranca.passageiro_id)
-                                }
-                                className="h-8 w-8 p-0"
-                              >
-                                <CreditCard className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                title="Reenviar"
-                                variant="outline"
-                                onClick={() =>
-                                  handleReenviarClick(
-                                    cobranca.id,
-                                    cobranca.passageiros.nome
-                                  )
-                                }
-                                className="h-8 w-8 p-0"
-                              >
-                                <Send className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                title="Registrar Pagamento"
-                                onClick={() => openPaymentDialog(cobranca)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <DollarSign className="w-3 h-3" />
-                              </Button>
-                              {cobranca.status !== "pago" && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() =>
-                                    handleToggleLembretes(cobranca)
-                                  }
-                                  className="h-8 w-8 p-0"
-                                  title={
-                                    cobranca.desativar_lembretes
-                                      ? "Ativar lembretes automáticos"
-                                      : "Desativar lembretes automáticos"
-                                  }
-                                >
-                                  {cobranca.desativar_lembretes ? (
-                                    <BellOff className="w-3 h-3" />
-                                  ) : (
-                                    <Bell className="w-3 h-3" />
-                                  )}
-                                </Button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Cobranças Pagas */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-green-600 flex items-center gap-2">
-                <span>
-                  Pagas - {meses[mesFilter - 1]} {anoFilter}
-                </span>
-                <span className="bg-green-600 text-white text-sm px-2 py-0.5 rounded-full">
-                  {cobrancasPagas.length}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                  Carregando...
-                </div>
-              ) : cobrancasPagas.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  Nenhuma cobrança paga neste mês ainda
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left p-3 text-sm font-medium">
-                          Passageiro
-                        </th>
-                        <th className="text-left p-3 text-sm font-medium">
-                          Responsável
-                        </th>
-                        <th className="text-left p-3 text-sm font-medium">
-                          Data Pagamento
-                        </th>
-                        <th className="text-left p-3 text-sm font-medium">
-                          Forma
-                        </th>
-                        <th className="text-left p-3 text-sm font-medium">
-                          Valor
-                        </th>
-                        <th className="text-center p-3 text-sm font-medium">
-                          Ações
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {cobrancasPagas.map((cobranca) => (
-                        <tr
-                          key={cobranca.id}
-                          className="border-b hover:bg-muted/50"
-                        >
-                          <td className="p-3">
-                            <span className="font-medium text-sm">
-                              {cobranca.passageiros.nome}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <span className="text-sm text-muted-foreground">
-                              {cobranca.passageiros.nome_responsavel || "-"}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <span className="text-sm">
-                              {cobranca.data_pagamento
-                                ? formatDateToBR(cobranca.data_pagamento)
-                                : "-"}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <span className="text-sm">
-                              {formatPaymentType(cobranca.tipo_pagamento)}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <span className="font-medium text-sm">
-                              {Number(cobranca.valor).toLocaleString("pt-BR", {
-                                style: "currency",
-                                currency: "BRL",
-                              })}
-                            </span>
-                          </td>
-                          <td className="p-3 text-center">
-                            <div className="flex gap-2 justify-center">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                title="Carteirinha"
-                                onClick={() =>
-                                  handleViewHistory(cobranca.passageiro_id)
-                                }
-                                className="h-8 w-8 p-0"
-                              >
-                                <CreditCard className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                title="Reverter Pagamento"
-                                onClick={() => handleReverterClick(cobranca.id)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Undo2 className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+            Mensalidades
+          </h1>
         </div>
+
+        {/* Filtros */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="w-4 h-4" />
+              Filtros
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-2 block">Mês</label>
+                <Select
+                  value={mesFilter.toString()}
+                  onValueChange={(value) => setMesFilter(Number(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o mês" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {meses.map((mes, index) => (
+                      <SelectItem key={index} value={(index + 1).toString()}>
+                        {mes}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-2 block">Ano</label>
+                <Select
+                  value={anoFilter.toString()}
+                  onValueChange={(value) => setAnoFilter(Number(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o ano" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[2023, 2024, 2025, 2026].map((ano) => (
+                      <SelectItem key={ano} value={ano.toString()}>
+                        {ano}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Cobranças em Aberto */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-red-600 flex items-center gap-2">
+              Em Aberto - {meses[mesFilter - 1]} {anoFilter}
+              <span className="bg-red-600 text-white text-sm px-2 py-0.5 rounded-full">
+                {cobrancasAbertas.length}
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                Carregando...
+              </div>
+            ) : cobrancasAbertas.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Nenhuma cobrança em aberto neste período
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-3 text-sm font-medium">
+                        Passageiro
+                      </th>
+                      <th className="text-left p-3 text-sm font-medium">
+                        Responsável
+                      </th>
+                      <th className="text-left p-3 text-sm font-medium">
+                        Vencimento
+                      </th>
+                      <th className="text-left p-3 text-sm font-medium">
+                        Status
+                      </th>
+                      <th className="text-left p-3 text-sm font-medium">
+                        Valor
+                      </th>
+                      <th className="text-center p-3 text-sm font-medium">
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cobrancasAbertas.map((cobranca) => (
+                      <tr
+                        key={cobranca.id}
+                        className="border-b hover:bg-muted/50"
+                      >
+                        <td className="p-3">
+                          <span className="font-medium text-sm">
+                            {cobranca.passageiros.nome}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span className="text-sm text-muted-foreground">
+                            {cobranca.passageiros.nome_responsavel || "-"}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span className="text-sm">
+                            {formatDateToBR(cobranca.data_vencimento)}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              cobranca.status,
+                              cobranca.data_vencimento
+                            )}`}
+                          >
+                            {getStatusText(
+                              cobranca.status,
+                              cobranca.data_vencimento
+                            )}
+                          </span>
+                          {cobranca.desativar_lembretes &&
+                            cobranca.status !== "pago" && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                Lembretes suspensos
+                              </div>
+                            )}
+                        </td>
+                        <td className="p-3">
+                          <span className="font-medium text-sm">
+                            {Number(cobranca.valor).toLocaleString("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            })}
+                          </span>
+                        </td>
+                        <td className="p-3 text-center">
+                          <div className="flex gap-2 justify-center">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              title="Carteirinha"
+                              onClick={() =>
+                                handleViewHistory(cobranca.passageiro_id)
+                              }
+                              className="h-8 w-8 p-0"
+                            >
+                              <CreditCard className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              title="Reenviar"
+                              variant="outline"
+                              onClick={() =>
+                                handleReenviarClick(
+                                  cobranca.id,
+                                  cobranca.passageiros.nome
+                                )
+                              }
+                              className="h-8 w-8 p-0"
+                            >
+                              <Send className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              title="Registrar Pagamento"
+                              onClick={() => openPaymentDialog(cobranca)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <DollarSign className="w-3 h-3" />
+                            </Button>
+                            {cobranca.status !== "pago" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleToggleLembretes(cobranca)}
+                                className="h-8 w-8 p-0"
+                                title={
+                                  cobranca.desativar_lembretes
+                                    ? "Ativar lembretes automáticos"
+                                    : "Desativar lembretes automáticos"
+                                }
+                              >
+                                {cobranca.desativar_lembretes ? (
+                                  <BellOff className="w-3 h-3" />
+                                ) : (
+                                  <Bell className="w-3 h-3" />
+                                )}
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Cobranças Pagas */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-green-600 flex items-center gap-2">
+              <span>
+                Pagas - {meses[mesFilter - 1]} {anoFilter}
+              </span>
+              <span className="bg-green-600 text-white text-sm px-2 py-0.5 rounded-full">
+                {cobrancasPagas.length}
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                Carregando...
+              </div>
+            ) : cobrancasPagas.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Nenhuma cobrança paga neste mês ainda
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-3 text-sm font-medium">
+                        Passageiro
+                      </th>
+                      <th className="text-left p-3 text-sm font-medium">
+                        Responsável
+                      </th>
+                      <th className="text-left p-3 text-sm font-medium">
+                        Data Pagamento
+                      </th>
+                      <th className="text-left p-3 text-sm font-medium">
+                        Forma
+                      </th>
+                      <th className="text-left p-3 text-sm font-medium">
+                        Valor
+                      </th>
+                      <th className="text-center p-3 text-sm font-medium">
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cobrancasPagas.map((cobranca) => (
+                      <tr
+                        key={cobranca.id}
+                        className="border-b hover:bg-muted/50"
+                      >
+                        <td className="p-3">
+                          <span className="font-medium text-sm">
+                            {cobranca.passageiros.nome}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span className="text-sm text-muted-foreground">
+                            {cobranca.passageiros.nome_responsavel || "-"}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span className="text-sm">
+                            {cobranca.data_pagamento
+                              ? formatDateToBR(cobranca.data_pagamento)
+                              : "-"}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span className="text-sm">
+                            {formatPaymentType(cobranca.tipo_pagamento)}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span className="font-medium text-sm">
+                            {Number(cobranca.valor).toLocaleString("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            })}
+                          </span>
+                        </td>
+                        <td className="p-3 text-center">
+                          <div className="flex gap-2 justify-center">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              title="Carteirinha"
+                              onClick={() =>
+                                handleViewHistory(cobranca.passageiro_id)
+                              }
+                              className="h-8 w-8 p-0"
+                            >
+                              <CreditCard className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              title="Reverter Pagamento"
+                              onClick={() => handleReverterClick(cobranca.id)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Undo2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {selectedCobranca && (
