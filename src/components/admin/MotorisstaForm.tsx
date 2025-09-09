@@ -1,20 +1,20 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Motorista, CreateMotoristaData, UpdateMotoristaData } from "@/types/motorista";
-import { cpfCnpjMask, phoneMask } from "@/utils/masks";
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { CreateMotoristaData, Motorista, UpdateMotoristaData } from "@/types/motorista";
+import { cpfCnpjMask, phoneMask } from "@/utils/masks";
+import { useEffect, useState } from "react";
 
-interface MotorisstaFormProps {
+interface MotoristaFormProps {
   motorista: Motorista | null;
   onSubmit: (data: CreateMotoristaData | UpdateMotoristaData) => void;
   onClose: () => void;
 }
 
-export function MotorisstaForm({ motorista, onSubmit, onClose }: MotorisstaFormProps) {
+export function MotoristaForm({ motorista, onSubmit, onClose }: MotoristaFormProps) {
   const [formData, setFormData] = useState({
     nome: "",
     cpfCnpj: "",

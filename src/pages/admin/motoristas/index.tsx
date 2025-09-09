@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
+import { MotoristaForm } from "@/components/admin/MotoristaForm";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Pencil, Trash2 } from "lucide-react";
-import { Motorista } from "@/types/motorista";
-import { MotorisstaForm } from "@/components/admin/MotorisstaForm";
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Motorista } from "@/types/motorista";
 import { formatDateToBR } from '@/utils/formatters';
+import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function MotoristasAdmin() {
   const [motoristas, setMotoristas] = useState<Motorista[]>([]);
@@ -225,7 +225,7 @@ export default function MotoristasAdmin() {
       </Card>
 
       {showForm && (
-        <MotorisstaForm
+        <MotoristaForm
           motorista={selectedMotorista}
           onSubmit={selectedMotorista ? handleUpdateMotorista : handleCreateMotorista}
           onClose={() => {

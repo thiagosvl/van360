@@ -74,7 +74,7 @@ const passageiroSchema = z.object({
   dia_vencimento: z.string().min(1, "Campo obrigatório"),
   emitir_cobranca_mes_atual: z.boolean().optional(),
   ativo: z.boolean().optional(),
-  asaas_id: z.string().optional(),
+  asaas_customer_id: z.string().optional(),
 });
 
 type PassageiroUpdate = Database["public"]["Tables"]["passageiros"]["Update"];
@@ -371,7 +371,7 @@ export default function Passageiros() {
           return;
         }
 
-        passageiroData.asaas_id = asaasCustomer.id;
+        passageiroData.asaas_customer_id = asaasCustomer.id;
 
         try {
           const { data: newPassageiro, error } = await supabase
