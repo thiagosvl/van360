@@ -34,7 +34,15 @@ export function MotoristaNavbar() {
   return (
     <header className="flex h-16 items-center justify-between px-6">
       <div className="flex items-center space-x-4">
-        <h1 className="text-xl font-semibold">Painel do Motorista</h1>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-sm">VM</span>
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold">Van Admin</h1>
+            <p className="text-xs text-muted-foreground">Sistema de Transporte</p>
+          </div>
+        </div>
       </div>
 
       <div className="flex items-center space-x-4">
