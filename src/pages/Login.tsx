@@ -23,8 +23,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const supabaseUrl = "https://jztyffakurtekwxurclw.supabase.co";
-const supabaseKey = "SEU_KEY_AQUI";
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL!;
+const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY!;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -38,10 +38,10 @@ const loginSchema = z.object({
         return digits.length === 11 || digits.length === 14;
       },
       {
-        message: "CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos",
+        message: "CPF 11 dígitos ou CNPJ 14 dígitos",
       }
     ),
-  senha: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
+  senha: z.string().min(6, "Mínimo de 6 caracteres"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
