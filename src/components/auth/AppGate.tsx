@@ -1,4 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
 interface AppGateProps {
@@ -9,7 +11,39 @@ export const AppGate = ({ children }: AppGateProps) => {
   const { user, session, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) {
+  const [roleDb, setRoleDb] = useState<string | null>(null);
+  const [roleLoading, setRoleLoading] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadRole() {
+      if (user && !user.app_metadata?.role) {
+        setRoleLoading(true);
+        try {
+          const { data } = await supabase
+            .from('usuarios')
+            .select('role')
+            .eq('email', user.email as string)
+            .single();
+          if (active) setRoleDb(data?.role ?? null);
+        } finally {
+          if (active) setRoleLoading(false);
+        }
+      } else {
+        setRoleDb(null);
+      }
+    }
+
+    loadRole();
+    return () => {
+      active = false;
+    };
+  }, [user]);
+
+  const role = (user?.app_metadata?.role as string | undefined) ?? roleDb ?? (localStorage.getItem('app_role') || undefined);
+
+  if (loading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -25,14 +59,15 @@ export const AppGate = ({ children }: AppGateProps) => {
     return <>{children}</>;
   }
 
-  // Get user role from app_metadata
-  const role = user.app_metadata?.role;
 
   // If user is authenticated but on login page, redirect to appropriate dashboard
   if (location.pathname === '/login') {
     if (role === 'admin') {
       return <Navigate to="/admin" replace />;
     } else if (role === 'motorista') {
+      return <Navigate to="/dashboard" replace />;
+    } else if (!roleLoading) {
+      // Fallback: authenticated without a known role
       return <Navigate to="/dashboard" replace />;
     }
   }

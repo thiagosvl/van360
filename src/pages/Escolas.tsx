@@ -135,7 +135,17 @@ export default function Escolas() {
       } else {
         const { error } = await supabase
           .from("escolas")
-          .insert([{ ...data, ativo: true }]);
+          .insert([{
+            nome: data.nome,
+            rua: data.rua || null,
+            numero: data.numero || null,
+            bairro: data.bairro || null,
+            cidade: data.cidade || null,
+            estado: data.estado || null,
+            cep: data.cep || null,
+            referencia: data.referencia || null,
+            ativo: true
+          }]);
 
         if (error) throw error;
 

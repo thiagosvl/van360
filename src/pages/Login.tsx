@@ -18,15 +18,12 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { cpfCnpjMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useNavigate } from "react-router-dom";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL!;
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 const loginSchema = z.object({
   cpfCnpj: z
@@ -49,6 +46,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function Login() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -63,20 +61,13 @@ export default function Login() {
 
     try {
       const cpfCnpjDigits = data.cpfCnpj.replace(/\D/g, "");
-      const response = await fetch(
-        `${supabaseUrl}/rest/v1/usuarios?cpfcnpj=eq.${cpfCnpjDigits}&select=email,role`,
-        {
-          headers: {
-            apikey: supabaseKey,
-            Authorization: `Bearer ${supabaseKey}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const { data: usuario, error: usuarioError } = await supabase
+        .from('usuarios')
+        .select('email, role')
+        .eq('cpfcnpj', cpfCnpjDigits)
+        .single();
 
-      const usuarios = await response.json();
-
-      if (!usuarios || usuarios.length === 0) {
+      if (usuarioError || !usuario) {
         form.setError("cpfCnpj", {
           type: "manual",
           message: "Usuário não encontrado",
@@ -85,10 +76,10 @@ export default function Login() {
         return;
       }
 
-      const usuario = usuarios[0];
+      const usuarioData = usuario;
 
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: usuario.email,
+        email: usuarioData.email,
         password: data.senha,
       });
 
@@ -112,6 +103,16 @@ export default function Login() {
         title: "Login realizado com sucesso",
         description: "Bem-vindo!",
       });
+
+      const role = (usuarioData.role as string | undefined) || undefined;
+      if (role) {
+        localStorage.setItem('app_role', role);
+      }
+      if (role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     } catch (error) {
       console.error("Login error:", error);
       form.setError("root", {
