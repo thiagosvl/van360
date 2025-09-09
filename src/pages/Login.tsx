@@ -34,7 +34,7 @@ export default function Login() {
   const { toast } = useToast();
 
   const form = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(loginSchema, { mode: 'sync' }),
     defaultValues: {
       cpfCnpj: '',
       senha: '',
@@ -129,6 +129,7 @@ export default function Login() {
                     <FormControl>
                       <Input
                         placeholder="000.000.000-00"
+                        autoComplete="username"
                         {...field}
                         onChange={(e) => {
                           const masked = cpfCnpjMask(e.target.value);
@@ -151,6 +152,7 @@ export default function Login() {
                       <Input
                         type="password"
                         placeholder="Digite sua senha"
+                        autoComplete="current-password"
                         {...field}
                       />
                     </FormControl>
