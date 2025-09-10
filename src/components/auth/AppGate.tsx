@@ -23,7 +23,7 @@ export const AppGate = ({ children }: AppGateProps) => {
         try {
           const { data } = await supabase
             .from("usuarios")
-            .select("id, role")
+            .select("id, role, asaas_subaccount_api_key")
             .eq("email", user.email as string)
             .single();
           if (active && data?.role) {
@@ -32,6 +32,12 @@ export const AppGate = ({ children }: AppGateProps) => {
           }
           if (data.id) {
             localStorage.setItem("app_user_id", data.id);
+          }
+          if (data?.asaas_subaccount_api_key) {
+            localStorage.setItem(
+              "asaas_api_key",
+              data.asaas_subaccount_api_key
+            );
           }
         } finally {
           if (active) setRoleLoading(false);
@@ -97,6 +103,7 @@ export const AppGate = ({ children }: AppGateProps) => {
       "/passageiros",
       "/mensalidades",
       "/escolas",
+      "/configuracoes",
     ];
     const isAllowedRoute = allowedRoutes.some(
       (route) =>

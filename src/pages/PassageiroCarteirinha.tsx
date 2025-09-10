@@ -18,9 +18,16 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { asaasService } from "@/integrations/asaasService";
 import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
-import { formatDate, formatDateToBR } from "@/utils/formatters";
+import {
+  formatCobrancaOrigem,
+  formatDate,
+  formatDateToBR,
+} from "@/utils/formatters";
+
+const apiKey = localStorage.getItem("asaas_api_key");
 
 export default function PassageiroCarteirinha() {
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
@@ -49,14 +56,14 @@ export default function PassageiroCarteirinha() {
 
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
-    cobrancaId: string;
+    cobranca: Cobranca;
   }>({
     open: false,
-    cobrancaId: "",
+    cobranca: null,
   });
 
-  const handleDeleteClick = (id: string) => {
-    setDeleteDialog({ open: true, cobrancaId: id });
+  const handleDeleteClick = (cobranca: Cobranca) => {
+    setDeleteDialog({ open: true, cobranca });
   };
 
   const handleToggleLembretes = async (cobranca: Cobranca) => {
@@ -89,10 +96,20 @@ export default function PassageiroCarteirinha() {
 
   const handleDelete = async () => {
     try {
+      if (
+        deleteDialog.cobranca.origem === "automatica" &&
+        deleteDialog.cobranca.asaas_payment_id
+      ) {
+        await asaasService.deletePayment(
+          deleteDialog.cobranca.asaas_payment_id,
+          null
+        );
+      }
+
       const { error } = await supabase
         .from("cobrancas")
         .delete()
-        .eq("id", deleteDialog.cobrancaId);
+        .eq("id", deleteDialog.cobranca.id);
 
       if (error) throw error;
 
@@ -108,7 +125,7 @@ export default function PassageiroCarteirinha() {
         variant: "destructive",
       });
     } finally {
-      setDeleteDialog({ open: false, cobrancaId: "" });
+      setDeleteDialog({ open: false, cobranca: null });
     }
   };
 
@@ -275,8 +292,8 @@ export default function PassageiroCarteirinha() {
 
   return (
     <div className="space-y-6">
-      <div className="container mx-auto px-6 py-8">
-        <div className="flex items-center gap-4 mb-6">
+      <div className="w-full">
+        <div className="flex items-center mb-6">
           <Button
             variant="outline"
             size="sm"
@@ -285,7 +302,7 @@ export default function PassageiroCarteirinha() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
           </Button>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-2xl ml-3 sm:text-3xl font-bold text-foreground">
             {passageiro.nome} - Carteirinha
           </h1>
         </div>
@@ -323,6 +340,9 @@ export default function PassageiroCarteirinha() {
                       </th>
                       <th className="text-left p-3 text-sm font-medium">
                         Vencimento
+                      </th>
+                      <th className="text-left p-3 text-sm font-medium">
+                        Origem
                       </th>
                       <th className="text-center p-3 text-sm font-medium">
                         Ações
@@ -380,12 +400,18 @@ export default function PassageiroCarteirinha() {
                           </span>
                         </td>
                         <td className="p-3">
+                          <span className="text-sm">
+                            {formatCobrancaOrigem(cobranca.origem)}
+                          </span>
+                        </td>
+                        <td className="p-3">
                           <div className="flex gap-1 justify-center">
                             {cobranca.status !== "pago" ? (
                               <>
                                 <Button
                                   size="sm"
                                   variant="outline"
+                                  disabled={cobranca.origem === "manual"}
                                   onClick={() =>
                                     handleReenviarClick(cobranca.id)
                                   }
@@ -407,7 +433,28 @@ export default function PassageiroCarteirinha() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleDeleteClick(cobranca.id)}
+                                  disabled={cobranca.origem === "manual"}
+                                  onClick={() =>
+                                    handleToggleLembretes(cobranca)
+                                  }
+                                  className="h-8 w-8 p-0"
+                                  title={
+                                    cobranca.desativar_lembretes
+                                      ? "Ativar lembretes automáticos"
+                                      : "Desativar lembretes automáticos"
+                                  }
+                                >
+                                  {cobranca.desativar_lembretes ? (
+                                    <BellOff className="w-3 h-3" />
+                                  ) : (
+                                    <Bell className="w-3 h-3" />
+                                  )}
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDeleteClick(cobranca)}
                                   className="h-8 w-8 p-0"
                                   title="Remover Cobrança"
                                 >
@@ -428,25 +475,6 @@ export default function PassageiroCarteirinha() {
                                   <Undo2 className="w-3 h-3" />
                                 </Button>
                               )
-                            )}
-                            {cobranca.status !== "pago" && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleToggleLembretes(cobranca)}
-                                className="h-8 w-8 p-0"
-                                title={
-                                  cobranca.desativar_lembretes
-                                    ? "Ativar lembretes automáticos"
-                                    : "Desativar lembretes automáticos"
-                                }
-                              >
-                                {cobranca.desativar_lembretes ? (
-                                  <BellOff className="w-3 h-3" />
-                                ) : (
-                                  <Bell className="w-3 h-3" />
-                                )}
-                              </Button>
                             )}
                           </div>
                         </td>
@@ -501,7 +529,7 @@ export default function PassageiroCarteirinha() {
 
         <ConfirmationDialog
           open={deleteDialog.open}
-          onOpenChange={(open) => setDeleteDialog({ open, cobrancaId: "" })}
+          onOpenChange={(open) => setDeleteDialog({ open, cobranca: null })}
           title="Remover cobrança"
           description="Deseja remover permanentemente esta cobrança? Esta ação não pode ser desfeita."
           onConfirm={handleDelete}

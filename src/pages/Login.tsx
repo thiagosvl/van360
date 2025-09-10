@@ -24,7 +24,6 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
-
 const loginSchema = z.object({
   cpfcnpj: z
     .string()
@@ -62,9 +61,9 @@ export default function Login() {
     try {
       const cpfcnpjDigits = data.cpfcnpj.replace(/\D/g, "");
       const { data: usuario, error: usuarioError } = await supabase
-        .from('usuarios')
-        .select('email, role')
-        .eq('cpfcnpj', cpfcnpjDigits)
+        .from("usuarios")
+        .select("email, role")
+        .eq("cpfcnpj", cpfcnpjDigits)
         .single();
 
       if (usuarioError || !usuario) {
@@ -78,6 +77,7 @@ export default function Login() {
 
       const usuarioData = usuario;
 
+      localStorage.removeItem("asaas_api_key");
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: usuarioData.email,
         password: data.senha,
@@ -106,12 +106,12 @@ export default function Login() {
 
       const role = (usuarioData.role as string | undefined) || undefined;
       if (role) {
-        localStorage.setItem('app_role', role);
+        localStorage.setItem("app_role", role);
       }
-      if (role === 'admin') {
-        navigate('/admin/dashboard', { replace: true });
+      if (role === "admin") {
+        navigate("/admin/dashboard", { replace: true });
       } else {
-        navigate('/dashboard', { replace: true });
+        navigate("/dashboard", { replace: true });
       }
     } catch (error) {
       console.error("Login error:", error);

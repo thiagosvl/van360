@@ -3,7 +3,6 @@ import { componentTagger } from "lovable-tagger";
 import path from "path";
 import { defineConfig } from "vite";
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
@@ -13,6 +12,11 @@ export default defineConfig(({ mode }) => ({
         target: "https://api-sandbox.asaas.com/v3",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/asaas/, ""),
+        configure: (proxy) => {
+          proxy.on("proxyReq", (proxyReq, req) => {
+            console.log("➡ Proxy request para:", proxyReq.getHeader("host") + proxyReq.path);
+          });
+        },
       },
     }
   },

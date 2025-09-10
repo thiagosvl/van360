@@ -18,6 +18,7 @@ const motoristaItems = [
   { title: "Mensalidades", href: "/mensalidades", icon: CreditCard },
   { title: "Passageiros", href: "/passageiros", icon: Users },
   { title: "Escolas", href: "/escolas", icon: GraduationCap },
+  { title: "Configurações", href: "/configuracoes", icon: Settings },
 ];
 
 export function AppSidebar({ role }: { role: "admin" | "motorista" }) {

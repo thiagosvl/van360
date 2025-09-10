@@ -190,6 +190,7 @@ export default function CobrancaRetroativaDialog({
         tipo_pagamento: data.foi_pago ? data.tipo_pagamento : null,
         pagamento_manual: data.foi_pago,
         usuario_id: localStorage.getItem("app_user_id"),
+        origem: "manual"
       };
 
       const { error } = await (supabase as any)

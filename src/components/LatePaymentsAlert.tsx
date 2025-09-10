@@ -222,20 +222,6 @@ const LatePaymentsAlert = ({
                 <div className="flex gap-2 justify-center">
                   <Button
                     size="sm"
-                    title="Reenviar"
-                    variant="outline"
-                    onClick={() =>
-                      handleReenviarClick(
-                        cobranca.id,
-                        cobranca.passageiros.nome
-                      )
-                    }
-                    className="h-8 w-8 p-0"
-                  >
-                    <Send className="w-3 h-3" />
-                  </Button>
-                  <Button
-                    size="sm"
                     variant="outline"
                     title="Carteirinha"
                     onClick={() =>
@@ -251,6 +237,21 @@ const LatePaymentsAlert = ({
                   </Button>
                   <Button
                     size="sm"
+                    title="Reenviar"
+                    disabled={cobranca.origem === "manual"}
+                    variant="outline"
+                    onClick={() =>
+                      handleReenviarClick(
+                        cobranca.id,
+                        cobranca.passageiros.nome
+                      )
+                    }
+                    className="h-8 w-8 p-0"
+                  >
+                    <Send className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    size="sm"
                     variant="outline"
                     title="Registrar Pagamento"
                     onClick={() => onPayment(cobranca)}
@@ -262,6 +263,7 @@ const LatePaymentsAlert = ({
                     <Button
                       size="sm"
                       variant="outline"
+                      disabled={cobranca.origem === "manual"}
                       onClick={() => handleToggleLembretes(cobranca)}
                       className="h-8 w-8 p-0"
                       title={

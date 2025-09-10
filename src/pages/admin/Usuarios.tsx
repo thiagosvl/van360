@@ -17,14 +17,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { asaasService } from "@/integrations/asaasService";
 import { supabase } from "@/integrations/supabase/client";
 import { Usuario } from "@/types/usuario";
-import { formatDateTimeToBR, formatProfile } from "@/utils/formatters";
+import { formatDateTimeToBR } from "@/utils/formatters";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function UsuariosAdmin() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [senhaTemporaria, setSenhaTemporaria] = useState("");
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null);
@@ -38,6 +40,7 @@ export default function UsuariosAdmin() {
       const { data, error } = await supabase
         .from("usuarios")
         .select("*")
+        .eq("role", "motorista")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -64,6 +67,9 @@ export default function UsuariosAdmin() {
 
   const handleCreateUsuario = async (data: UsuarioFormData) => {
     const cpfcnpjDigits = data.cpfcnpj.replace(/\D/g, "");
+    let createdUsuario: any = null;
+    let createdSubAccount: any = null;
+    let createdAuthUid: string | null = null;
 
     // 1. Verificar se usuário já existe
     const { data: existingUsers, error: existingError } = await supabase
@@ -84,7 +90,7 @@ export default function UsuariosAdmin() {
       }
     }
 
-    // 2. Inserir na tabela 'usuarios' (sem o auth_uid ainda)
+    // 2. Inserir na tabela 'usuarios'
     const { data: usuarioData, error: usuarioError } = await supabase
       .from("usuarios")
       .insert({
@@ -98,9 +104,10 @@ export default function UsuariosAdmin() {
       .single();
 
     if (usuarioError) throw new Error(usuarioError.message);
+    createdUsuario = usuarioData;
 
     try {
-      // 3. Criar usuário no Auth via Edge Function
+      // 3. Criar usuário no Auth via Edge Function (sempre)
       const { data: authData, error: authError } =
         await supabase.functions.invoke("adminCreateUser", {
           body: {
@@ -112,22 +119,82 @@ export default function UsuariosAdmin() {
 
       if (authError) throw new Error(authError.message);
 
-      // 4. Atualizar a tabela 'usuarios' com o auth_uid
+      createdAuthUid = authData.auth_uid;
+      setSenhaTemporaria(authData.senha);
+
+      // Atualizar auth_uid na tabela
       await supabase
         .from("usuarios")
-        .update({ auth_uid: authData.auth_uid })
+        .update({ auth_uid: createdAuthUid })
         .eq("id", usuarioData.id);
 
-      toast({ title: "Sucesso", description: "Usuário criado com sucesso!" });
-      // TODO: Implementar um modal para exibir a senha `authData.senha` se desejar
-    } catch (error) {
-      // Rollback: se a criação no Auth falhar, deleta o usuário da tabela pública
-      await supabase.from("usuarios").delete().eq("id", usuarioData.id);
-      throw error; // Re-lança o erro para ser pego pelo formulário
-    }
+      // 4. Se motorista → criar subconta e cliente no Asaas
+      if (data.role === "motorista") {
+        const subAccount = await asaasService.createSubAccount({
+          name: data.nome,
+          email: data.email,
+          cpfCnpj: cpfcnpjDigits,
+          companyType: "INDIVIDUAL",
+          phone: data.telefone,
+          mobilePhone: data.telefone,
+          birthDate: "1994-05-16",
+          address: "Av. Rolf Wiest",
+          addressNumber: "277",
+          complement: "Sala 502",
+          province: "Bom Retiro",
+          postalCode: "89223005",
+          incomeValue: 1000,
+        });
 
-    await fetchUsuarios();
-    closeForm();
+        createdSubAccount = subAccount;
+
+        await supabase
+          .from("usuarios")
+          .update({
+            asaas_subaccount_id: subAccount.id,
+            asaas_subaccount_api_key: subAccount.apiKey,
+          })
+          .eq("id", usuarioData.id);
+
+        const customer = await asaasService.createCustomer({
+          name: data.nome,
+          email: data.email,
+          cpfCnpj: cpfcnpjDigits,
+          mobilePhone: data.telefone,
+        });
+
+        await supabase
+          .from("usuarios")
+          .update({ asaas_root_customer_id: customer.id })
+          .eq("id", usuarioData.id);
+      }
+
+      toast({ title: "Sucesso", description: "Usuário criado com sucesso!" });
+      await fetchUsuarios();
+      closeForm();
+    } catch (error) {
+      // rollback
+      if (createdUsuario) {
+        await supabase.from("usuarios").delete().eq("id", createdUsuario.id);
+      }
+      if (createdAuthUid) {
+        try {
+          await supabase.functions.invoke("adminDeleteUser", {
+            body: { auth_uid: createdAuthUid },
+          });
+        } catch (err) {
+          console.warn("Erro ao deletar usuário do Auth no rollback:", err);
+        }
+      }
+      throw error;
+      // if (createdSubAccount) {
+      //   try {
+      //     await asaasService.deleteSubAccount(createdSubAccount.id);
+      //   } catch (err) {
+      //     console.warn("Erro ao deletar subconta no rollback:", err);
+      //   }
+      // }
+    }
   };
 
   const handleUpdateUsuario = async (data: UsuarioFormData) => {
@@ -258,13 +325,15 @@ export default function UsuariosAdmin() {
 
   return (
     <div className="space-y-6">
+      <h1>Senha: {senhaTemporaria}</h1>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Gestão de Usuários</CardTitle>
+              <CardTitle>Gestão de Motoristas</CardTitle>
               <CardDescription>
                 Gerencie os usuarios e seus acessos ao sistema
+                <br />
               </CardDescription>
             </div>
             <Button
@@ -294,7 +363,6 @@ export default function UsuariosAdmin() {
                   <TableHead>CPF/CNPJ</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Telefone</TableHead>
-                  <TableHead>Pefil</TableHead>
                   <TableHead>Criado em</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -326,7 +394,6 @@ export default function UsuariosAdmin() {
                       <TableCell>{usuario.cpfcnpj}</TableCell>
                       <TableCell>{usuario.email}</TableCell>
                       <TableCell>{usuario.telefone}</TableCell>
-                      <TableCell>{formatProfile(usuario.role)}</TableCell>
                       <TableCell>
                         {formatDateTimeToBR(usuario.created_at)}
                       </TableCell>

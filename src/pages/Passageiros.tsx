@@ -51,6 +51,8 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
+const apiKey = localStorage.getItem("asaas_api_key");
+
 const passageiroSchema = z.object({
   escola_id: z.string().min(1, "Campo obrigatório"),
   nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
@@ -86,7 +88,7 @@ type PassageiroFormData = z.infer<typeof passageiroSchema>;
 export default function Passageiros() {
   const [passageiros, setPassageiros] = useState<Passageiro[]>([]);
   const [escolas, setEscolas] = useState<Escola[]>([]);
-  const [escolasModal, setEscolasModal] = useState<Escola[]>([]); // modal
+  const [escolasModal, setEscolasModal] = useState<Escola[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(
     null
@@ -176,6 +178,18 @@ export default function Passageiros() {
         });
         setDeleteDialog({ open: false, passageiroId: "" });
         return;
+      }
+
+      const { data: passageiro, error: passageiroError } = await supabase
+        .from("passageiros")
+        .select("asaas_customer_id")
+        .eq("id", deleteDialog.passageiroId)
+        .single();
+
+      if (passageiroError) throw passageiroError;
+
+      if (passageiro?.asaas_customer_id) {
+        await asaasService.deleteCustomer(passageiro.asaas_customer_id, null);
       }
 
       const { error } = await supabase
@@ -361,11 +375,14 @@ export default function Passageiros() {
       } else {
         let asaasCustomer;
         try {
-          asaasCustomer = await asaasService.createCustomer({
-            name: passageiroData.nome,
-            cpfCnpj: passageiroData.cpf_responsavel,
-            mobilePhone: passageiroData.telefone_responsavel,
-          });
+          asaasCustomer = await asaasService.createCustomer(
+            {
+              name: passageiroData.nome,
+              cpfCnpj: passageiroData.cpf_responsavel,
+              mobilePhone: passageiroData.telefone_responsavel,
+            },
+            null
+          );
         } catch (asaasErr) {
           console.error("Erro ao criar cliente no Asaas:", asaasErr);
           toast({
@@ -387,7 +404,7 @@ export default function Passageiros() {
 
           if (error) {
             try {
-              await asaasService.deleteCustomer(asaasCustomer.id);
+              await asaasService.deleteCustomer(asaasCustomer.id, null);
               console.warn(
                 "Cliente no Asaas removido devido a erro no Supabase"
               );
@@ -410,6 +427,18 @@ export default function Passageiros() {
               Number(pureData.dia_vencimento)
             );
 
+            const payment = await asaasService.createPayment(
+              {
+                customer: newPassageiro.asaas_customer_id,
+                billingType: "UNDEFINED",
+                value: moneyToNumber(pureData.valor_mensalidade),
+                dueDate: dataVencimento.toISOString().split("T")[0],
+                description: `Mensalidade ${mes}/${ano}`,
+                externalReference: newPassageiro.id,
+              },
+              null
+            );
+
             await (supabase as any).from("cobrancas").insert([
               {
                 passageiro_id: newPassageiro.id,
@@ -419,6 +448,10 @@ export default function Passageiros() {
                 data_vencimento: dataVencimento.toISOString().split("T")[0],
                 status: "pendente",
                 usuario_id: localStorage.getItem("app_user_id"),
+                origem: "automatica",
+                asaas_payment_id: payment.id,
+                asaas_invoice_url: payment.invoiceUrl,
+                asaas_bankslip_url: payment.bankSlipUrl,
               },
             ]);
           }

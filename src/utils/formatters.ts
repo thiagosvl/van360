@@ -19,6 +19,13 @@ export const formatProfile = (profile: string): string => {
   return "Motorista";
 };
 
+export const formatCobrancaOrigem = (origem: string): string => {
+  if (origem === "automatica") {
+    return "Automática";
+  }
+  return "Manual";
+};
+
 // --- NOVA FUNÇÃO ADICIONADA ---
 /**
  * Formata uma data (string ISO ou objeto Date) para o padrão brasileiro.

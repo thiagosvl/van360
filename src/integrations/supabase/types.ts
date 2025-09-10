@@ -72,6 +72,9 @@ export type Database = {
           tipo_pagamento: string | null
           updated_at: string
           valor: number
+          origem: string
+          asaas_invoice_url: string
+          asaas_bankslip_url: string
         }
         Insert: {
           ano: number
@@ -89,6 +92,9 @@ export type Database = {
           tipo_pagamento?: string | null
           updated_at?: string
           valor: number
+          origem: string
+          asaas_invoice_url?: string
+          asaas_bankslip_url?: string
         }
         Update: {
           ano?: number
@@ -106,6 +112,9 @@ export type Database = {
           tipo_pagamento?: string | null
           updated_at?: string
           valor?: number
+          origem?: string
+          asaas_invoice_url?: string
+          asaas_bankslip_url?: string
         }
         Relationships: [
           {
@@ -168,6 +177,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      configuracoes_motoristas: {
+        Row: {
+          id: string
+          usuario_id: string
+          horario_envio: string | null
+          mensagem_lembrete_antecipada: string | null
+          mensagem_lembrete_dia: string | null
+          mensagem_lembrete_atraso: string | null
+          dias_antes_vencimento: number | null
+          dias_apos_vencimento: number | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          usuario_id: string
+          horario_envio?: string | null
+          mensagem_lembrete_antecipada?: string | null
+          mensagem_lembrete_dia?: string | null
+          mensagem_lembrete_atraso?: string | null
+          dias_antes_vencimento?: number | null
+          dias_apos_vencimento?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          usuario_id?: string
+          horario_envio?: string | null
+          mensagem_lembrete_antecipada?: string | null
+          mensagem_lembrete_dia?: string | null
+          mensagem_lembrete_atraso?: string | null
+          dias_antes_vencimento?: number | null
+          dias_apos_vencimento?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "configuracoes_motoristas_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: true
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       passageiros: {
         Row: {

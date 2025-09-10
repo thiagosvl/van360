@@ -10,6 +10,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import AdminSettings from "./pages/admin/Settings";
 import UsuariosAdmin from "./pages/admin/Usuarios";
 import Cobrancas from "./pages/Cobrancas";
+import Configuracoes from "./pages/Configuracoes";
 import Dashboard from "./pages/Dashboard";
 import Escolas from "./pages/Escolas";
 import Index from "./pages/Index";
@@ -65,6 +66,7 @@ const App = () => (
               />
               <Route path="mensalidades" element={<Cobrancas />} />
               <Route path="escolas" element={<Escolas />} />
+              <Route path="configuracoes" element={<Configuracoes />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

@@ -414,6 +414,7 @@ const Cobrancas = () => {
                             <Button
                               size="sm"
                               title="Reenviar"
+                              disabled={cobranca.origem === "manual"}
                               variant="outline"
                               onClick={() =>
                                 handleReenviarClick(
@@ -437,6 +438,7 @@ const Cobrancas = () => {
                             {cobranca.status !== "pago" && (
                               <Button
                                 size="sm"
+                                disabled={cobranca.origem === "manual"}
                                 variant="outline"
                                 onClick={() => handleToggleLembretes(cobranca)}
                                 className="h-8 w-8 p-0"
