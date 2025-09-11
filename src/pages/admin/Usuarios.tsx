@@ -65,6 +65,7 @@ export default function UsuariosAdmin() {
     setSelectedUsuario(null);
   };
 
+
   const handleCreateUsuario = async (data: UsuarioFormData) => {
     const cpfcnpjDigits = data.cpfcnpj.replace(/\D/g, "");
     let createdUsuario: any = null;
@@ -156,11 +157,15 @@ export default function UsuariosAdmin() {
           })
           .eq("id", usuarioData.id);
 
+        // Criar webhook na subconta Asaas (após salvar subaccount_api_key)
+        await asaasService.createWebhook(subAccount.apiKey);
+
         const customer = await asaasService.createCustomer({
           name: data.nome,
           email: data.email,
           cpfCnpj: cpfcnpjDigits,
           mobilePhone: data.telefone,
+          notificationDisabled: true,
         });
 
         await supabase

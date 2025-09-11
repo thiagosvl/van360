@@ -64,6 +64,10 @@ const passageiroSchema = z.object({
   cep: z.string().optional(),
   referencia: z.string().optional(),
   nome_responsavel: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+  email_responsavel: z
+    .string()
+    .min(1, "Campo obrigatório")
+    .email("E-mail inválido"),
   cpf_responsavel: z.string().min(1, "Campo obrigatório"),
   telefone_responsavel: z
     .string()
@@ -121,6 +125,7 @@ export default function Passageiros() {
       cep: "",
       referencia: "",
       nome_responsavel: "",
+      email_responsavel: "",
       telefone_responsavel: "",
       cpf_responsavel: "",
       valor_mensalidade: "",
@@ -296,6 +301,7 @@ export default function Passageiros() {
     const fakeData = {
       nome: "Passag. Teste " + Math.floor(Math.random() * 1000),
       nome_responsavel: "Resp. Teste",
+      email_responsavel: "abiliodasvendas@gmail.com",
       telefone_responsavel: "11951186951",
       cpf_responsavel: "39542391838",
       valor_mensalidade: (
@@ -380,6 +386,7 @@ export default function Passageiros() {
               name: passageiroData.nome,
               cpfCnpj: passageiroData.cpf_responsavel,
               mobilePhone: passageiroData.telefone_responsavel,
+              notificationDisabled: true,
             },
             apiKey
           );
@@ -560,7 +567,7 @@ export default function Passageiros() {
                   className="gap-2"
                 >
                   <Plus className="h-4 w-4" />
-                  Novo Passageiro
+                  Novo Cadastro
                 </Button>
               </DialogTrigger>
               <DialogContent
@@ -584,7 +591,7 @@ export default function Passageiros() {
                         {/* Passageiro Section */}
                         <div className="flex items-center gap-2 mb-4">
                           <User className="w-5 h-5 text-primary" />
-                          <h3 className="text-lg font-semibold">Informações</h3>
+                          <h3 className="text-lg font-semibold">Passageiro</h3>
                         </div>
                         <div className="space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -634,61 +641,6 @@ export default function Passageiros() {
                             />
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="nome_responsavel"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Nome do Responsável *</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="telefone_responsavel"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>
-                                    Telefone do Responsável *
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      placeholder="(00) 00000-0000"
-                                      maxLength={15}
-                                      onChange={(e) => {
-                                        const maskedValue = phoneMask(
-                                          e.target.value
-                                        );
-                                        field.onChange(maskedValue);
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-
-                          <FormField
-                            control={form.control}
-                            name="cpf_responsavel"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>CPF do Responsável *</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
                           {editingPassageiro && (
                             <div className="mt-2">
                               <FormField
@@ -710,6 +662,87 @@ export default function Passageiros() {
                               />
                             </div>
                           )}
+                        </div>
+
+                        <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />
+
+                        {/* Responsável Section */}
+                        <div className="flex items-center gap-2 mb-4">
+                          <User className="w-5 h-5 text-primary" />
+                          <h3 className="text-lg font-semibold">Responsável</h3>
+                        </div>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="nome_responsavel"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Nome *</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="email_responsavel"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>E-mail *</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      type="email"
+                                      placeholder="exemplo@email.com"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="telefone_responsavel"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>
+                                    Telefone *
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="(00) 00000-0000"
+                                      maxLength={15}
+                                      onChange={(e) => {
+                                        const maskedValue = phoneMask(
+                                          e.target.value
+                                        );
+                                        field.onChange(maskedValue);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="cpf_responsavel"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>CPF *</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
                         </div>
 
                         <hr className="mt-8 mb-6 h-0.5 border-t-0 bg-neutral-100 dark:bg-white/10" />

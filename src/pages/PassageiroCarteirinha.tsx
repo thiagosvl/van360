@@ -231,11 +231,11 @@ export default function PassageiroCarteirinha() {
     if (!tipo) return "-";
 
     const typeMap: { [key: string]: string } = {
-      dinheiro: "Dinheiro",
+      "dinheiro": "Dinheiro",
       "cartao-credito": "Cartão de Crédito",
       "cartao-debito": "Cartão de Débito",
-      transferencia: "Transferência",
-      PIX: "PIX",
+      "transferencia": "Transferência",
+      "PIX": "PIX",
     };
 
     return typeMap[tipo] || tipo;
@@ -342,6 +342,9 @@ export default function PassageiroCarteirinha() {
                         Vencimento
                       </th>
                       <th className="text-left p-3 text-sm font-medium">
+                        Pagamento
+                      </th>
+                      <th className="text-left p-3 text-sm font-medium">
                         Origem
                       </th>
                       <th className="text-center p-3 text-sm font-medium">
@@ -383,8 +386,7 @@ export default function PassageiroCarteirinha() {
                           {cobranca.tipo_pagamento &&
                             cobranca.data_pagamento && (
                               <div className="text-xs text-muted-foreground mt-1">
-                                {formatPaymentType(cobranca.tipo_pagamento)} em{" "}
-                                {formatDateToBR(cobranca.data_pagamento)}
+                                {formatPaymentType(cobranca.tipo_pagamento)}
                               </div>
                             )}
                           {cobranca.desativar_lembretes &&
@@ -397,6 +399,13 @@ export default function PassageiroCarteirinha() {
                         <td className="p-3">
                           <span className="text-sm">
                             {formatDateToBR(cobranca.data_vencimento)}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span className="text-sm">
+                            {cobranca.data_pagamento
+                              ? formatDateToBR(cobranca.data_pagamento)
+                              : ""}
                           </span>
                         </td>
                         <td className="p-3">

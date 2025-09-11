@@ -234,8 +234,8 @@ const Cobrancas = () => {
       dinheiro: "Dinheiro",
       "cartao-credito": "Cartão de Crédito",
       "cartao-debito": "Cartão de Débito",
-      transferencia: "Transferência",
-      PIX: "PIX",
+      "transferencia": "Transferência",
+      "PIX": "PIX",
     };
 
     return typeMap[tipo] || tipo;

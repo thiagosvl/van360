@@ -9,6 +9,7 @@ export interface Passageiro {
   cep?: string;
   referencia?: string;
   nome_responsavel: string;
+  email_responsavel: string;
   telefone_responsavel: string;
   cpf_responsavel: string;
   valor_mensalidade: number;

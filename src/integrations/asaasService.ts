@@ -7,6 +7,7 @@ export const asaasService = {
         cpfCnpj: string;
         email?: string;
         mobilePhone?: string;
+        notificationDisabled?: boolean;
     }, apiKey?: string) {
         const res = await fetch('/asaas/customers', {
             method: "POST",
@@ -111,6 +112,38 @@ export const asaasService = {
 
         return res.json();
     },
+
+    async createWebhook(subAccountApiKey: string): Promise<any> {
+        try {
+            const response = await fetch("https://www.asaas.com/api/v3/webhooks", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "access_token": subAccountApiKey,
+                },
+                body: JSON.stringify({
+                    name: "Webhook Mensalidade Passageiro Recebida",
+                    url: "https://jztyffakurtekwxurclw.supabase.co/functions/v1/pagamentoMensalidadePassageiro",
+                    email: null,
+                    enabled: true,
+                    interrupted: false,
+                    apiVersion: 3,
+                    sendType: "SEQUENTIALLY",
+                    events: ["PAYMENT_RECEIVED"],
+                    authToken: import.meta.env.VITE_ASAAS_WEBHOOK_TOKEN,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erro ao criar webhook: ${response.statusText}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Erro ao criar webhook:", error);
+            throw error;
+        }
+    }
 
     // async deleteSubAccount(id: string) {
     //     const response = await fetch(`/asaas/customers/accounts/${id}`, {
