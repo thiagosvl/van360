@@ -189,7 +189,7 @@ export default function Passageiros() {
       if (passageiroError) throw passageiroError;
 
       if (passageiro?.asaas_customer_id) {
-        await asaasService.deleteCustomer(passageiro.asaas_customer_id, null);
+        await asaasService.deleteCustomer(passageiro.asaas_customer_id, apiKey);
       }
 
       const { error } = await supabase
@@ -381,7 +381,7 @@ export default function Passageiros() {
               cpfCnpj: passageiroData.cpf_responsavel,
               mobilePhone: passageiroData.telefone_responsavel,
             },
-            null
+            apiKey
           );
         } catch (asaasErr) {
           console.error("Erro ao criar cliente no Asaas:", asaasErr);
@@ -404,7 +404,7 @@ export default function Passageiros() {
 
           if (error) {
             try {
-              await asaasService.deleteCustomer(asaasCustomer.id, null);
+              await asaasService.deleteCustomer(asaasCustomer.id, apiKey);
               console.warn(
                 "Cliente no Asaas removido devido a erro no Supabase"
               );
@@ -436,7 +436,7 @@ export default function Passageiros() {
                 description: `Mensalidade ${mes}/${ano}`,
                 externalReference: newPassageiro.id,
               },
-              null
+              apiKey
             );
 
             await (supabase as any).from("cobrancas").insert([

@@ -102,7 +102,7 @@ export default function PassageiroCarteirinha() {
       ) {
         await asaasService.deletePayment(
           deleteDialog.cobranca.asaas_payment_id,
-          null
+          apiKey
         );
       }
 
