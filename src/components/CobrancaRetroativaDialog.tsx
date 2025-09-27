@@ -108,6 +108,7 @@ const tiposPagamento = [
   { value: "cartao-debito", label: "Cartão de Débito" },
   { value: "cartao-credito", label: "Cartão de Crédito" },
   { value: "transferencia", label: "Transferência" },
+  { value: "boleto", label: "Boleto" },
 ];
 
 export default function CobrancaRetroativaDialog({
@@ -164,7 +165,7 @@ export default function CobrancaRetroativaDialog({
 
       if (existingCobranca) {
         toast({
-          title: "Já existe uma cobrança registrada para esse mês.",
+          title: "Já existe uma mensalidade registrada para esse mês.",
           variant: "destructive",
         });
         return;
@@ -200,16 +201,16 @@ export default function CobrancaRetroativaDialog({
       if (error) throw error;
 
       toast({
-        title: "Cobrança retroativa registrada com sucesso.",
+        title: "Mensalidade retroativa registrada com sucesso.",
       });
 
       onCobrancaAdded();
       onClose();
       form.reset();
     } catch (error) {
-      console.error("Erro ao registrar cobrança retroativa:", error);
+      console.error("Erro ao registrar mensalidade retroativa:", error);
       toast({
-        title: "Erro ao registrar cobrança retroativa.",
+        title: "Erro ao registrar mensalidade retroativa.",
         variant: "destructive",
       });
     } finally {
@@ -226,7 +227,7 @@ export default function CobrancaRetroativaDialog({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Registrar Cobrança Retroativa</DialogTitle>
+          <DialogTitle>Registrar Mensalidade Retroativa</DialogTitle>
         </DialogHeader>
 
         <Card>

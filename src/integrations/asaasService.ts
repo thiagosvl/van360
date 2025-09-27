@@ -40,7 +40,7 @@ export const asaasService = {
         if (!res.ok) {
             const err = await res.json();
             throw new Error(
-                err.errors?.[0]?.description || "Erro ao remover cobrança no Asaas"
+                err.errors?.[0]?.description || "Erro ao excluir mensalidade no Asaas"
             );
         }
 
@@ -106,7 +106,7 @@ export const asaasService = {
         if (!res.ok) {
             const err = await res.json();
             throw new Error(
-                err.errors?.[0]?.description || "Erro ao criar cobrança no Asaas"
+                err.errors?.[0]?.description || "Erro ao criar mensalidade no Asaas"
             );
         }
 
@@ -115,7 +115,7 @@ export const asaasService = {
 
     async createWebhook(subAccountApiKey: string): Promise<any> {
         try {
-            const response = await fetch("https://www.asaas.com/api/v3/webhooks", {
+            const response = await fetch("/asaas/customers/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -143,7 +143,82 @@ export const asaasService = {
             console.error("Erro ao criar webhook:", error);
             throw error;
         }
-    }
+    },
+
+    async updatePayment(paymentId: string, body: any, apiKey: string) {
+        try {
+            const response = await fetch(`/asaas/payments/${paymentId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    access_token: apiKey,
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Erro ao atualizar mensalidade: ${JSON.stringify(errorData)}`);
+            }
+
+            return await response.json();
+        } catch (err) {
+            console.error("Erro no updatePayment:", err);
+            throw err;
+        }
+    },
+
+    async confirmPaymentInCash(paymentId: string, paymentDate: string, value: number, apiKey: string) {
+        try {
+            const payload = {
+                paymentDate,
+                value,
+                notifyCustomer: false,
+            };
+
+            const response = await fetch(`/asaas/payments/${paymentId}/receiveInCash`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    access_token: apiKey,
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Erro ao confirmar pagamento manual: ${JSON.stringify(errorData)}`);
+            }
+
+            return await response.json();
+        } catch (err) {
+            console.error("Erro em confirmPaymentInCash:", err);
+            throw err;
+        }
+    },
+
+    async undoPaymentInCash(paymentId: string, apiKey: string) {
+        try {
+            const response = await fetch(`/asaas/payments/${paymentId}/undoReceivedInCash`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    access_token: apiKey,
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Erro ao desfazer pagamento manual: ${JSON.stringify(errorData)}`);
+            }
+
+            return await response.json();
+        } catch (err) {
+            console.error("Erro em undoPaymentInCash:", err);
+            throw err;
+        }
+    },
+
 
     // async deleteSubAccount(id: string) {
     //     const response = await fetch(`/asaas/customers/accounts/${id}`, {

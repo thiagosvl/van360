@@ -3,6 +3,12 @@ import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -11,20 +17,20 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Bell,
-  BellOff,
-  CreditCard,
-  DollarSign,
-  Filter,
-  Send,
-  Undo2,
-} from "lucide-react";
+import { Filter, MoreVertical } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { asaasService } from "@/integrations/asaasService";
 import { Cobranca } from "@/types/cobranca";
-import { formatDate, formatDateToBR } from "@/utils/formatters";
+import {
+  formatDateToBR,
+  formatPaymentType,
+  getStatusColor,
+  getStatusText,
+} from "@/utils/formatters";
+
+const apiKey = localStorage.getItem("asaas_api_key");
 
 const Cobrancas = () => {
   const [cobrancasAbertas, setCobrancasAbertas] = useState<Cobranca[]>([]);
@@ -96,7 +102,7 @@ const Cobrancas = () => {
     nomePassageiro: string;
   }>({ open: false, cobrancaId: "", nomePassageiro: "" });
 
-  const [confirmDialogReverter, setConfirmDialogReverter] = useState<{
+  const [confirmDialogDesfazer, setConfirmDialogDesfazer] = useState<{
     open: boolean;
     cobrancaId: string;
   }>({ open: false, cobrancaId: "" });
@@ -136,12 +142,12 @@ const Cobrancas = () => {
   const reenviarCobranca = async () => {
     try {
       toast({
-        title: "Cobrança reenviada com sucesso para o responsável",
+        title: "Mensalidade reenviada com sucesso para o responsável",
       });
     } catch (error) {
-      console.error("Erro ao reenviar cobrança:", error);
+      console.error("Erro ao reenviar mensalidade:", error);
       toast({
-        title: "Erro ao reenviar cobrança.",
+        title: "Erro ao reenviar mensalidade.",
         variant: "destructive",
       });
     }
@@ -152,66 +158,79 @@ const Cobrancas = () => {
     });
   };
 
-  const handleReverterClick = (cobrancaId: string) => {
-    setConfirmDialogReverter({ open: true, cobrancaId });
+  const handleDesfazerClick = (cobrancaId: string) => {
+    setConfirmDialogDesfazer({ open: true, cobrancaId });
   };
 
-  const reverterPagamento = async () => {
+  const desfazerPagamento = async () => {
     try {
-      await supabase
+      const { data: cobranca, error: fetchError } = await supabase
+        .from("cobrancas")
+        .select(
+          "id, origem, pagamento_manual, asaas_payment_id, status, data_pagamento, tipo_pagamento"
+        )
+        .eq("id", confirmDialogDesfazer.cobrancaId)
+        .single();
+
+      if (fetchError || !cobranca) {
+        throw new Error(
+          "Não foi possível localizar a mensalidade para desfazer"
+        );
+      }
+
+      // Atualiza no Supabase (reversão local)
+      const { error: updateError } = await supabase
         .from("cobrancas")
         .update({
+          status: "pendente",
           data_pagamento: null,
           tipo_pagamento: null,
-          status: "pendente",
+          pagamento_manual: false,
         })
-        .eq("id", confirmDialogReverter.cobrancaId);
+        .eq("id", confirmDialogDesfazer.cobrancaId);
+
+      if (updateError) throw updateError;
+
+      // Se for automática, também precisa desfazer no Asaas
+      if (cobranca.origem === "automatica") {
+        try {
+          await asaasService.undoPaymentInCash(
+            cobranca.asaas_payment_id,
+            apiKey
+          );
+        } catch (asaasErr) {
+          console.error("Erro ao desfazer no Asaas:", asaasErr);
+
+          // Rollback no Supabase (volta para pago)
+          await supabase
+            .from("cobrancas")
+            .update({
+              status: "pago",
+              data_pagamento: cobranca.data_pagamento,
+              tipo_pagamento: cobranca.tipo_pagamento,
+              pagamento_manual: cobranca.pagamento_manual,
+            })
+            .eq("id", cobranca.id);
+
+          throw new Error("Erro ao desfazer pagamento no Asaas");
+        }
+      }
 
       toast({
-        title: "Pagamento revertido com sucesso.",
-        description: "A cobrança voltou para a lista de em aberto.",
+        title: "Pagamento desfeito com sucesso.",
+        description: "A mensalidade voltou para a lista de em aberto.",
       });
 
       fetchCobrancas();
     } catch (error) {
-      console.error("Erro ao reverter pagamento:", error);
+      console.error("Erro ao desfazer pagamento:", error);
       toast({
-        title: "Erro ao reverter pagamento.",
+        title: "Erro ao desfazer pagamento.",
         variant: "destructive",
       });
     }
-    setConfirmDialogReverter({ open: false, cobrancaId: "" });
-  };
 
-  const getStatusText = (status: string, dataVencimento: string) => {
-    if (status === "pago") return "Pago";
-
-    const vencimento = formatDate(dataVencimento);
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-
-    const diffTime = hoje.getTime() - vencimento.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (vencimento < hoje) {
-      return `Venceu há ${diffDays} dia${diffDays > 1 ? "s" : ""}`;
-    } else if (diffDays == 0) {
-      return "Vence hoje";
-    }
-
-    return "A vencer";
-  };
-
-  const getStatusColor = (status: string, dataVencimento: string) => {
-    if (status === "pago") return "bg-green-100 text-green-800";
-
-    const vencimento = formatDate(dataVencimento);
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-
-    return vencimento < hoje
-      ? "bg-red-100 text-red-800"
-      : "bg-orange-100 text-orange-800";
+    setConfirmDialogDesfazer({ open: false, cobrancaId: "" });
   };
 
   const openPaymentDialog = (cobranca: Cobranca) => {
@@ -225,20 +244,6 @@ const Cobrancas = () => {
 
   const handleViewHistory = (passageiroId: string) => {
     navigate(`/passageiros/${passageiroId}`);
-  };
-
-  const formatPaymentType = (tipo: string | undefined) => {
-    if (!tipo) return "-";
-
-    const typeMap: { [key: string]: string } = {
-      dinheiro: "Dinheiro",
-      "cartao-credito": "Cartão de Crédito",
-      "cartao-debito": "Cartão de Débito",
-      "transferencia": "Transferência",
-      "PIX": "PIX",
-    };
-
-    return typeMap[tipo] || tipo;
   };
 
   useEffect(() => {
@@ -305,7 +310,7 @@ const Cobrancas = () => {
           </CardContent>
         </Card>
 
-        {/* Cobranças em Aberto */}
+        {/* Mensalidades em Aberto */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-red-600 flex items-center gap-2">
@@ -323,7 +328,7 @@ const Cobrancas = () => {
               </div>
             ) : cobrancasAbertas.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                Nenhuma cobrança em aberto neste período
+                Nenhuma mensalidade em aberto neste período
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -334,16 +339,13 @@ const Cobrancas = () => {
                         Passageiro
                       </th>
                       <th className="text-left p-3 text-sm font-medium">
-                        Responsável
+                        Valor
                       </th>
                       <th className="text-left p-3 text-sm font-medium">
                         Vencimento
                       </th>
                       <th className="text-left p-3 text-sm font-medium">
                         Status
-                      </th>
-                      <th className="text-left p-3 text-sm font-medium">
-                        Valor
                       </th>
                       <th className="text-center p-3 text-sm font-medium">
                         Ações
@@ -360,10 +362,17 @@ const Cobrancas = () => {
                           <span className="font-medium text-sm">
                             {cobranca.passageiros.nome}
                           </span>
+                          <br />
+                          <span className="text-xs text-muted-foreground">
+                            {cobranca.passageiros.nome_responsavel || "-"}
+                          </span>
                         </td>
                         <td className="p-3">
-                          <span className="text-sm text-muted-foreground">
-                            {cobranca.passageiros.nome_responsavel || "-"}
+                          <span className="text-sm">
+                            {Number(cobranca.valor).toLocaleString("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            })}
                           </span>
                         </td>
                         <td className="p-3">
@@ -390,72 +399,63 @@ const Cobrancas = () => {
                               </div>
                             )}
                         </td>
-                        <td className="p-3">
-                          <span className="font-medium text-sm">
-                            {Number(cobranca.valor).toLocaleString("pt-BR", {
-                              style: "currency",
-                              currency: "BRL",
-                            })}
-                          </span>
-                        </td>
                         <td className="p-3 text-center">
-                          <div className="flex gap-2 justify-center">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              title="Carteirinha"
-                              onClick={() =>
-                                handleViewHistory(cobranca.passageiro_id)
-                              }
-                              className="h-8 w-8 p-0"
-                            >
-                              <CreditCard className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              title="Reenviar"
-                              disabled={cobranca.origem === "manual"}
-                              variant="outline"
-                              onClick={() =>
-                                handleReenviarClick(
-                                  cobranca.id,
-                                  cobranca.passageiros.nome
-                                )
-                              }
-                              className="h-8 w-8 p-0"
-                            >
-                              <Send className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              title="Registrar Pagamento"
-                              onClick={() => openPaymentDialog(cobranca)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <DollarSign className="w-3 h-3" />
-                            </Button>
-                            {cobranca.status !== "pago" && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
                               <Button
+                                variant="secondary"
                                 size="sm"
-                                disabled={cobranca.origem === "manual"}
-                                variant="outline"
-                                onClick={() => handleToggleLembretes(cobranca)}
-                                className="h-8 w-8 p-0"
-                                title={
-                                  cobranca.desativar_lembretes
-                                    ? "Ativar lembretes automáticos"
-                                    : "Desativar lembretes automáticos"
+                                className="h-8"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  navigate(
+                                    `/passageiros/${cobranca.passageiros.id}/mensalidade/${cobranca.id}`
+                                  )
                                 }
                               >
-                                {cobranca.desativar_lembretes ? (
-                                  <BellOff className="w-3 h-3" />
-                                ) : (
-                                  <Bell className="w-3 h-3" />
-                                )}
-                              </Button>
-                            )}
-                          </div>
+                                Mensalidade
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleViewHistory(cobranca.passageiro_id)
+                                }
+                              >
+                                Carteirinha Digital
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => openPaymentDialog(cobranca)}
+                              >
+                                Registrar Pagamento
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={cobranca.origem === "manual"}
+                                onClick={() =>
+                                  handleReenviarClick(
+                                    cobranca.id,
+                                    cobranca.passageiros.nome
+                                  )
+                                }
+                              >
+                                Reenviar Notificação
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={
+                                  cobranca.status === "pago" ||
+                                  cobranca.origem === "manual"
+                                }
+                                onClick={() => handleToggleLembretes(cobranca)}
+                              >
+                                {cobranca.desativar_lembretes
+                                  ? "Ativar Lembretes"
+                                  : "Desativar Lembretes"}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </td>
                       </tr>
                     ))}
@@ -466,7 +466,7 @@ const Cobrancas = () => {
           </CardContent>
         </Card>
 
-        {/* Cobranças Pagas */}
+        {/* Mensalidades Pagas */}
         <Card>
           <CardHeader>
             <CardTitle className="text-green-600 flex items-center gap-2">
@@ -486,7 +486,7 @@ const Cobrancas = () => {
               </div>
             ) : cobrancasPagas.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                Nenhuma cobrança paga neste mês ainda
+                Nenhuma mensalidade paga neste mês ainda
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -497,16 +497,13 @@ const Cobrancas = () => {
                         Passageiro
                       </th>
                       <th className="text-left p-3 text-sm font-medium">
-                        Responsável
-                      </th>
-                      <th className="text-left p-3 text-sm font-medium">
-                        Data Pagamento
-                      </th>
-                      <th className="text-left p-3 text-sm font-medium">
-                        Forma
+                        Pagou em
                       </th>
                       <th className="text-left p-3 text-sm font-medium">
                         Valor
+                      </th>
+                      <th className="text-left p-3 text-sm font-medium">
+                        Forma de Pagamento
                       </th>
                       <th className="text-center p-3 text-sm font-medium">
                         Ações
@@ -523,9 +520,8 @@ const Cobrancas = () => {
                           <span className="font-medium text-sm">
                             {cobranca.passageiros.nome}
                           </span>
-                        </td>
-                        <td className="p-3">
-                          <span className="text-sm text-muted-foreground">
+                          <br />
+                          <span className="text-xs text-muted-foreground">
                             {cobranca.passageiros.nome_responsavel || "-"}
                           </span>
                         </td>
@@ -538,40 +534,61 @@ const Cobrancas = () => {
                         </td>
                         <td className="p-3">
                           <span className="text-sm">
-                            {formatPaymentType(cobranca.tipo_pagamento)}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          <span className="font-medium text-sm">
                             {Number(cobranca.valor).toLocaleString("pt-BR", {
                               style: "currency",
                               currency: "BRL",
                             })}
                           </span>
                         </td>
+                        <td className="p-3">
+                          <span className="text-sm">
+                            {formatPaymentType(cobranca.tipo_pagamento)}
+                          </span>
+                          {cobranca.pagamento_manual && (
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Registrado Manualmente
+                            </div>
+                          )}
+                        </td>
                         <td className="p-3 text-center">
-                          <div className="flex gap-2 justify-center">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              title="Carteirinha"
-                              onClick={() =>
-                                handleViewHistory(cobranca.passageiro_id)
-                              }
-                              className="h-8 w-8 p-0"
-                            >
-                              <CreditCard className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              title="Reverter Pagamento"
-                              onClick={() => handleReverterClick(cobranca.id)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Undo2 className="w-3 h-3" />
-                            </Button>
-                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                className="h-8"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  navigate(
+                                    `/passageiros/${cobranca.passageiros.id}/mensalidade/${cobranca.id}`
+                                  )
+                                }
+                              >
+                                Mensalidade
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleViewHistory(cobranca.passageiro_id)
+                                }
+                              >
+                                Carteirinha Digital
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={
+                                  cobranca.status !== "pago" ||
+                                  !cobranca.pagamento_manual
+                                }
+                                onClick={() => handleDesfazerClick(cobranca.id)}
+                              >
+                                Desfazer Pagamento
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </td>
                       </tr>
                     ))}
@@ -599,21 +616,21 @@ const Cobrancas = () => {
         onOpenChange={(open) =>
           setConfirmDialogReenvio({ open, cobrancaId: "", nomePassageiro: "" })
         }
-        title="Reenviar Cobrança"
-        description="Deseja reenviar esta cobrança para o responsável?"
+        title="Reenviar Notificação"
+        description="Deseja reenviar esta notificação para o responsável?"
         onConfirm={reenviarCobranca}
       />
 
       <ConfirmationDialog
-        open={confirmDialogReverter.open}
+        open={confirmDialogDesfazer.open}
         onOpenChange={(open) =>
-          setConfirmDialogReverter({ open, cobrancaId: "" })
+          setConfirmDialogDesfazer({ open, cobrancaId: "" })
         }
-        title="Reverter Pagamento"
-        description="Deseja realmente reverter o pagamento desta cobrança? Essa ação moverá a cobrança de volta para a lista de em aberto."
-        onConfirm={reverterPagamento}
+        title="Desfazer Pagamento"
+        description="Deseja realmente desfazer o pagamento desta mensalidade? Essa ação moverá a mensalidade de volta para a lista de em aberto."
+        onConfirm={desfazerPagamento}
         variant="destructive"
-        confirmText="Reverter Pagamento"
+        confirmText="Desfazer Pagamento"
       />
     </div>
   );

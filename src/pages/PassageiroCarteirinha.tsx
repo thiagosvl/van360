@@ -3,18 +3,15 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  ArrowLeft,
-  Bell,
-  BellOff,
-  DollarSign,
-  Plus,
-  Send,
-  Trash2,
-  Undo2,
-} from "lucide-react";
+import { MoreVertical, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -22,9 +19,9 @@ import { asaasService } from "@/integrations/asaasService";
 import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
 import {
-  formatCobrancaOrigem,
-  formatDate,
   formatDateToBR,
+  getStatusColor,
+  getStatusText,
 } from "@/utils/formatters";
 
 const apiKey = localStorage.getItem("asaas_api_key");
@@ -42,7 +39,7 @@ export default function PassageiroCarteirinha() {
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     cobrancaId: string;
-    action: "reenviar" | "reverter";
+    action: "reenviar" | "desfazer";
   }>({ open: false, cobrancaId: "", action: "reenviar" });
   const [retroativaDialogOpen, setRetroativaDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -114,14 +111,14 @@ export default function PassageiroCarteirinha() {
       if (error) throw error;
 
       toast({
-        title: "Cobrança removida com sucesso.",
+        title: "Mensalidade excluida com sucesso.",
       });
 
       fetchHistorico();
     } catch (error) {
-      console.error("Erro ao excluir cobrança:", error);
+      console.error("Erro ao excluir mensalidade:", error);
       toast({
-        title: "Erro ao remover cobrança.",
+        title: "Erro ao excluir mensalidade.",
         variant: "destructive",
       });
     } finally {
@@ -181,37 +178,6 @@ export default function PassageiroCarteirinha() {
     }
   };
 
-  const getStatusColor = (status: string, dataVencimento: string) => {
-    if (status === "pago") return "bg-green-100 text-green-800";
-
-    const vencimento = formatDate(dataVencimento);
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-
-    return vencimento < hoje
-      ? "bg-red-100 text-red-800"
-      : "bg-orange-100 text-orange-800";
-  };
-
-  const getStatusText = (status: string, dataVencimento: string) => {
-    if (status === "pago") return "Pago";
-
-    const vencimento = formatDate(dataVencimento);
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-
-    const diffTime = hoje.getTime() - vencimento.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (vencimento < hoje) {
-      return `Venceu há ${diffDays} dia${diffDays > 1 ? "s" : ""}`;
-    } else if (diffDays == 0) {
-      return "Vence hoje";
-    }
-
-    return "A vencer";
-  };
-
   const getMesNome = (mes: number) => {
     const nomeMes = new Date(2024, mes - 1).toLocaleDateString("pt-BR", {
       month: "long",
@@ -223,32 +189,33 @@ export default function PassageiroCarteirinha() {
     setConfirmDialog({ open: true, cobrancaId, action: "reenviar" });
   };
 
-  const handleReverterClick = (cobrancaId: string) => {
-    setConfirmDialog({ open: true, cobrancaId, action: "reverter" });
-  };
-
-  const formatPaymentType = (tipo: string | undefined) => {
-    if (!tipo) return "-";
-
-    const typeMap: { [key: string]: string } = {
-      "dinheiro": "Dinheiro",
-      "cartao-credito": "Cartão de Crédito",
-      "cartao-debito": "Cartão de Débito",
-      "transferencia": "Transferência",
-      "PIX": "PIX",
-    };
-
-    return typeMap[tipo] || tipo;
+  const handleDesfazerClick = (cobrancaId: string) => {
+    setConfirmDialog({ open: true, cobrancaId, action: "desfazer" });
   };
 
   const handleConfirmAction = async () => {
     try {
       if (confirmDialog.action === "reenviar") {
         toast({
-          title: "Cobrança reenviada com sucesso para o responsável",
+          title: "Notificação reenviada com sucesso para o responsável",
         });
-      } else if (confirmDialog.action === "reverter") {
-        await supabase
+      } else if (confirmDialog.action === "desfazer") {
+        const { data: cobranca, error: fetchError } = await supabase
+          .from("cobrancas")
+          .select(
+            "id, origem, pagamento_manual, asaas_payment_id, status, data_pagamento, tipo_pagamento"
+          )
+          .eq("id", confirmDialog.cobrancaId)
+          .single();
+
+        if (fetchError || !cobranca) {
+          throw new Error(
+            "Não foi possível localizar a mensalidade para desfazer"
+          );
+        }
+
+        // Atualiza no Supabase (reversão local)
+        const { error: updateError } = await supabase
           .from("cobrancas")
           .update({
             status: "pendente",
@@ -258,15 +225,42 @@ export default function PassageiroCarteirinha() {
           })
           .eq("id", confirmDialog.cobrancaId);
 
+        if (updateError) throw updateError;
+
+        // Se for automática, também precisa desfazer no Asaas
+        if (cobranca.origem === "automatica") {
+          try {
+            await asaasService.undoPaymentInCash(
+              cobranca.asaas_payment_id,
+              apiKey
+            );
+          } catch (asaasErr) {
+            console.error("Erro ao desfazer no Asaas:", asaasErr);
+
+            // Rollback no Supabase (volta para pago)
+            await supabase
+              .from("cobrancas")
+              .update({
+                status: "pago",
+                data_pagamento: cobranca.data_pagamento,
+                tipo_pagamento: cobranca.tipo_pagamento,
+                pagamento_manual: cobranca.pagamento_manual,
+              })
+              .eq("id", cobranca.id);
+
+            throw new Error("Erro ao desfazer pagamento no Asaas");
+          }
+        }
+
         toast({
           title: "Pagamento revertido com sucesso.",
         });
         fetchHistorico();
       }
     } catch (error) {
-      console.error("Erro ao reverter pagamento:", error);
+      console.error("Erro ao desfazer pagamento:", error);
       toast({
-        title: "Erro ao reverter pagamento.",
+        title: "Erro ao desfazer pagamento.",
         variant: "destructive",
       });
     }
@@ -294,14 +288,6 @@ export default function PassageiroCarteirinha() {
     <div className="space-y-6">
       <div className="w-full">
         <div className="flex items-center mb-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate("/passageiros")}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
-          </Button>
           <h1 className="text-2xl ml-3 sm:text-3xl font-bold text-foreground">
             {passageiro.nome} - Carteirinha
           </h1>
@@ -313,7 +299,7 @@ export default function PassageiroCarteirinha() {
               <CardTitle>Mensalidades</CardTitle>
               <Button size="sm" onClick={() => setRetroativaDialogOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
-                Registrar Cobrança Retroativa
+                Registrar Mensalidade Retroativa
               </Button>
             </div>
           </CardHeader>
@@ -333,19 +319,16 @@ export default function PassageiroCarteirinha() {
                         Mês/Ano
                       </th>
                       <th className="text-left p-3 text-sm font-medium">
-                        Valor
+                        Status
                       </th>
                       <th className="text-left p-3 text-sm font-medium">
-                        Status
+                        Valor
                       </th>
                       <th className="text-left p-3 text-sm font-medium">
                         Vencimento
                       </th>
                       <th className="text-left p-3 text-sm font-medium">
-                        Pagamento
-                      </th>
-                      <th className="text-left p-3 text-sm font-medium">
-                        Origem
+                        Pagou em
                       </th>
                       <th className="text-center p-3 text-sm font-medium">
                         Ações
@@ -364,14 +347,6 @@ export default function PassageiroCarteirinha() {
                           </span>
                         </td>
                         <td className="p-3">
-                          <span className="font-semibold">
-                            {cobranca.valor.toLocaleString("pt-BR", {
-                              style: "currency",
-                              currency: "BRL",
-                            })}
-                          </span>
-                        </td>
-                        <td className="p-3">
                           <span
                             className={`inline-block px-2 py-1 rounded text-xs font-medium ${getStatusColor(
                               cobranca.status,
@@ -383,18 +358,20 @@ export default function PassageiroCarteirinha() {
                               cobranca.data_vencimento
                             )}
                           </span>
-                          {cobranca.tipo_pagamento &&
-                            cobranca.data_pagamento && (
-                              <div className="text-xs text-muted-foreground mt-1">
-                                {formatPaymentType(cobranca.tipo_pagamento)}
-                              </div>
-                            )}
                           {cobranca.desativar_lembretes &&
                             cobranca.status !== "pago" && (
                               <div className="text-xs text-muted-foreground mt-1">
                                 Lembretes suspensos
                               </div>
                             )}
+                        </td>
+                        <td className="p-3">
+                          <span className="font-semibold">
+                            {cobranca.valor.toLocaleString("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            })}
+                          </span>
                         </td>
                         <td className="p-3">
                           <span className="text-sm">
@@ -409,83 +386,73 @@ export default function PassageiroCarteirinha() {
                           </span>
                         </td>
                         <td className="p-3">
-                          <span className="text-sm">
-                            {formatCobrancaOrigem(cobranca.origem)}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          <div className="flex gap-1 justify-center">
-                            {cobranca.status !== "pago" ? (
-                              <>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  disabled={cobranca.origem === "manual"}
-                                  onClick={() =>
-                                    handleReenviarClick(cobranca.id)
-                                  }
-                                  className="h-8 w-8 p-0"
-                                  title="Reenviar Cobrança"
-                                >
-                                  <Send className="w-3 h-3" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => openPaymentDialog(cobranca)}
-                                  className="h-8 w-8 p-0"
-                                  title="Registrar Pagamento"
-                                >
-                                  <DollarSign className="w-3 h-3" />
-                                </Button>
-
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  disabled={cobranca.origem === "manual"}
-                                  onClick={() =>
-                                    handleToggleLembretes(cobranca)
-                                  }
-                                  className="h-8 w-8 p-0"
-                                  title={
-                                    cobranca.desativar_lembretes
-                                      ? "Ativar lembretes automáticos"
-                                      : "Desativar lembretes automáticos"
-                                  }
-                                >
-                                  {cobranca.desativar_lembretes ? (
-                                    <BellOff className="w-3 h-3" />
-                                  ) : (
-                                    <Bell className="w-3 h-3" />
-                                  )}
-                                </Button>
-
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleDeleteClick(cobranca)}
-                                  className="h-8 w-8 p-0"
-                                  title="Remover Cobrança"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              </>
-                            ) : (
-                              cobranca.pagamento_manual && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() =>
-                                    handleReverterClick(cobranca.id)
-                                  }
-                                  className="h-8 w-8 p-0"
-                                  title="Reverter Pagamento"
-                                >
-                                  <Undo2 className="w-3 h-3" />
-                                </Button>
-                              )
-                            )}
-                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                className="h-8"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  navigate(
+                                    `/passageiros/${passageiro.id}/mensalidade/${cobranca.id}`
+                                  )
+                                }
+                              >
+                                Mensalidade
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={cobranca.status === "pago"}
+                                onClick={() => openPaymentDialog(cobranca)}
+                              >
+                                Registrar Pagamento
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={
+                                  cobranca.status !== "pago" ||
+                                  !cobranca.pagamento_manual
+                                }
+                                onClick={() => handleDesfazerClick(cobranca.id)}
+                              >
+                                Desfazer Pagamento
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={
+                                  cobranca.status === "pago" ||
+                                  cobranca.origem === "manual"
+                                }
+                                onClick={() => handleReenviarClick(cobranca.id)}
+                              >
+                                Reenviar Notificação
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={
+                                  cobranca.status === "pago" ||
+                                  cobranca.origem === "manual"
+                                }
+                                onClick={() => handleToggleLembretes(cobranca)}
+                              >
+                                {cobranca.desativar_lembretes
+                                  ? "Ativar Lembretes"
+                                  : "Desativar Lembretes"}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                disabled={
+                                  cobranca.status === "pago" ||
+                                  cobranca.origem === "automatica"
+                                }
+                                onClick={() => handleDeleteClick(cobranca)}
+                              >
+                                Excluir Mensalidade
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </td>
                       </tr>
                     ))}
@@ -525,13 +492,13 @@ export default function PassageiroCarteirinha() {
           }
           title={
             confirmDialog.action === "reenviar"
-              ? "Reenviar Cobrança"
-              : "Reverter Pagamento"
+              ? "Reenviar Notificação"
+              : "Desfazer Pagamento"
           }
           description={
             confirmDialog.action === "reenviar"
-              ? "Deseja reenviar esta cobrança para o responsável?"
-              : "Deseja reverter este pagamento? A cobrança voltará ao status pendente."
+              ? "Deseja reenviar esta notificação para o responsável?"
+              : "Deseja desfazer este pagamento? A mensalidade voltará ao status pendente."
           }
           onConfirm={handleConfirmAction}
         />
@@ -539,10 +506,10 @@ export default function PassageiroCarteirinha() {
         <ConfirmationDialog
           open={deleteDialog.open}
           onOpenChange={(open) => setDeleteDialog({ open, cobranca: null })}
-          title="Remover cobrança"
-          description="Deseja remover permanentemente esta cobrança? Esta ação não pode ser desfeita."
+          title="Excluir"
+          description="Deseja excluir permanentemente essa mensalidade? Esta ação não pode ser desfeita."
           onConfirm={handleDelete}
-          confirmText="Remover"
+          confirmText="Excluir"
           cancelText="Cancelar"
           variant="destructive"
         />

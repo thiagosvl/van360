@@ -67,7 +67,7 @@ serve(async (req) => {
         .eq("asaas_payment_id", payment.id);
 
       if (updateError) {
-        console.error("Erro ao atualizar cobrança:", updateError);
+        console.error("Erro ao atualizar mensalidade:", updateError);
         return new Response("DB update error", { status: 500 });
       }
     }

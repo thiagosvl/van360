@@ -599,7 +599,7 @@ export default function Escolas() {
                             </Button>
                             <Button
                               size="sm"
-                              title="Remover"
+                              title="Excluir"
                               variant="outline"
                               disabled={escola.ativo}
                               onClick={() => handleDeleteClick(escola)}

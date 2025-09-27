@@ -1,6 +1,5 @@
 import { AppNavbar } from "@/components/AppNavbar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { Outlet } from "react-router-dom";
 
@@ -13,22 +12,26 @@ export default function AppLayout() {
   if (!role) return null;
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen w-full bg-background">
-        <div className="flex h-screen">
-          <div className="w-64 border-r bg-card">
+    <div className="min-h-screen w-full bg-background">
+      <div className="flex h-screen">
+        {/* Sidebar só em desktop */}
+        <aside className="hidden md:flex md:w-64 md:flex-col md:border-r bg-white">
+          <div className="p-6 border-b">
+            <h2 className="text-lg font-semibold">Sistema Transporte</h2>
+          </div>
+          <div className="flex-1 overflow-y-auto px-3 py-4">
             <AppSidebar role={role as "admin" | "motorista"} />
           </div>
-          <div className="flex-1 flex flex-col">
-            <div className="border-b">
-              <AppNavbar role={role as "admin" | "motorista"} />
-            </div>
-            <main className="flex-1 overflow-auto p-6">
-              <Outlet />
-            </main>
-          </div>
+        </aside>
+
+        {/* Conteúdo principal */}
+        <div className="flex-1 flex flex-col">
+          <AppNavbar role={role as "admin" | "motorista"} />
+          <main className="flex-1 overflow-auto p-4 sm:p-6">
+            <Outlet />
+          </main>
         </div>
       </div>
-    </SidebarProvider>
+    </div>
   );
 }

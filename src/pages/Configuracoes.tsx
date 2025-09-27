@@ -200,7 +200,7 @@ export default function Configuracoes() {
 
             <div className="space-y-2">
               <Label htmlFor="mensagem_lembrete_atraso">
-                Mensagem Cobrança Atrasada
+                Mensagem Mensalidade Atrasada
               </Label>
               <Textarea
                 id="mensagem_lembrete_atraso"

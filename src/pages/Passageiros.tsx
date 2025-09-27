@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { isValidCPF } from "@/utils/validators";
 import { Trash2 } from "lucide-react";
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -35,7 +36,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
-import { cepMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
+import {
+  cepMask,
+  cpfMask,
+  moneyMask,
+  moneyToNumber,
+  phoneMask,
+} from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CreditCard,
@@ -68,7 +75,10 @@ const passageiroSchema = z.object({
     .string()
     .min(1, "Campo obrigatório")
     .email("E-mail inválido"),
-  cpf_responsavel: z.string().min(1, "Campo obrigatório"),
+  cpf_responsavel: z
+    .string()
+    .min(1, "Campo obrigatório")
+    .refine((val) => isValidCPF(val), "CPF inválido"),
   telefone_responsavel: z
     .string()
     .min(1, "Campo obrigatório")
@@ -98,6 +108,7 @@ export default function Passageiros() {
     null
   );
   const [selectedEscola, setSelectedEscola] = useState<string>("todas");
+  const [selectedStatus, setSelectedStatus] = useState<string>("todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -135,6 +146,9 @@ export default function Passageiros() {
     },
   });
 
+  const diaInformado = form.watch("dia_vencimento");
+  const emitirCobranca = form.watch("emitir_cobranca_mes_atual");
+
   const debounceSearch = useCallback(() => {
     let timeoutId: NodeJS.Timeout;
 
@@ -159,7 +173,7 @@ export default function Passageiros() {
     } else if (searchTerm.length === 0) {
       fetchPassageiros();
     }
-  }, [selectedEscola, searchTerm]);
+  }, [selectedEscola, selectedStatus, searchTerm]);
 
   const handleDeleteClick = (id: string) => {
     setDeleteDialog({ open: true, passageiroId: id });
@@ -176,9 +190,9 @@ export default function Passageiros() {
 
       if (cobrancas && cobrancas.length > 0) {
         toast({
-          title: "Não é possível remover.",
+          title: "Não foi possível excluir.",
           description:
-            "Este passageiro possui histórico de mensalidades. Exclua as cobranças antes de remover o passageiro.",
+            "Este passageiro possui mensalidades em seu histórico. Exclua as mensalidades antes de excluir o passageiro.",
           variant: "destructive",
         });
         setDeleteDialog({ open: false, passageiroId: "" });
@@ -205,14 +219,14 @@ export default function Passageiros() {
       if (error) throw error;
 
       toast({
-        title: "Passageiro removido com sucesso.",
+        title: "Passageiro excluido com sucesso.",
       });
 
       fetchPassageiros();
     } catch (error) {
       console.error("Erro ao excluir passageiro:", error);
       toast({
-        title: "Erro ao remover passageiro.",
+        title: "Erro ao excluir passageiro.",
         variant: "destructive",
       });
     } finally {
@@ -269,6 +283,7 @@ export default function Passageiros() {
         .from("passageiros")
         .select(`*, escolas(nome)`)
         .eq("usuario_id", localStorage.getItem("app_user_id"))
+
         .order("nome");
 
       if (selectedEscola !== "todas") {
@@ -277,6 +292,10 @@ export default function Passageiros() {
 
       if (search.length >= 2) {
         query = query.ilike("nome", `%${search}%`);
+      }
+
+      if (selectedStatus !== "todos") {
+        query = query.eq("ativo", selectedStatus === "ativo");
       }
 
       const { data, error } = await query;
@@ -330,15 +349,28 @@ export default function Passageiros() {
         usuario_id: localStorage.getItem("app_user_id"),
       };
 
+      // ----- EDITAR PASSAGEIRO -----
       if (editingPassageiro) {
-        const { error } = await supabase
-          .from("passageiros")
-          .update(passageiroData as PassageiroUpdate)
-          .eq("id", editingPassageiro.id);
+        let rollbackNeeded = false;
 
-        if (error) throw error;
+        // Busca snapshot ANTES do update
+        const { data: oldPassageiro, error: fetchError } = await supabase
+          .from("passageiros")
+          .select("*")
+          .eq("id", editingPassageiro.id)
+          .single();
+
+        if (fetchError) throw fetchError;
+        const snapshotPassageiro = { ...oldPassageiro };
 
         try {
+          const { error: updateError } = await supabase
+            .from("passageiros")
+            .update(passageiroData as PassageiroUpdate)
+            .eq("id", editingPassageiro.id);
+
+          if (updateError) throw updateError;
+
           const { data: ultimaCobranca, error: cobrancaError } = await supabase
             .from("cobrancas")
             .select("*")
@@ -349,38 +381,102 @@ export default function Passageiros() {
             .limit(1)
             .single();
 
-          if (cobrancaError) {
-            if (cobrancaError.code !== "PGRST116") {
-              console.error("Erro ao buscar última cobrança:", cobrancaError);
+          if (!cobrancaError && ultimaCobranca) {
+            const valorMudou =
+              passageiroData.valor_mensalidade !== ultimaCobranca.valor;
+
+            const vencimentoMudou =
+              passageiroData.dia_vencimento !==
+              editingPassageiro.dia_vencimento;
+
+            if (valorMudou || vencimentoMudou) {
+              const hoje = new Date();
+              hoje.setHours(0, 0, 0, 0);
+
+              const novaDataVencimento = new Date(
+                ultimaCobranca.ano,
+                ultimaCobranca.mes - 1,
+                passageiroData.dia_vencimento
+              );
+              novaDataVencimento.setHours(0, 0, 0, 0);
+
+              const podeAtualizarCobranca =
+                valorMudou || (vencimentoMudou && novaDataVencimento >= hoje);
+
+              if (podeAtualizarCobranca) {
+                const updatePayload = {
+                  value: passageiroData.valor_mensalidade,
+                  dueDate: novaDataVencimento.toISOString().split("T")[0],
+                  billingType: "UNDEFINED",
+                };
+
+                rollbackNeeded = true; // <-- adiciona aqui
+
+                // Atualiza no Asaas se necessário
+                await asaasService.updatePayment(
+                  ultimaCobranca.asaas_payment_id,
+                  updatePayload,
+                  apiKey
+                );
+
+                // Atualiza também no Supabase
+                const { error: updateCobrancaError } = await supabase
+                  .from("cobrancas")
+                  .update({
+                    data_vencimento: vencimentoMudou
+                      ? novaDataVencimento.toISOString().split("T")[0]
+                      : ultimaCobranca.data_vencimento,
+                    valor: valorMudou
+                      ? passageiroData.valor_mensalidade
+                      : ultimaCobranca.valor,
+                    desativar_lembretes: !passageiroData.ativo,
+                  })
+                  .eq("id", ultimaCobranca.id);
+
+                if (updateCobrancaError) {
+                  rollbackNeeded = true;
+                  throw updateCobrancaError;
+                }
+              }
             }
           }
 
-          if (ultimaCobranca) {
-            const novaData = new Date(
-              ultimaCobranca.ano,
-              ultimaCobranca.mes - 1,
-              passageiroData.dia_vencimento
-            );
-
-            await supabase
-              .from("cobrancas")
-              .update({
-                data_vencimento: novaData.toISOString().split("T")[0],
-                valor: passageiroData.valor_mensalidade,
-                desativar_lembretes: !passageiroData.ativo,
-              })
-              .eq("id", ultimaCobranca.id);
-          }
+          toast({ title: "Passageiro atualizado com sucesso." });
         } catch (err) {
-          console.error("Erro ao atualizar vencimento da cobrança:", err);
-        }
+          console.error("Erro ao editar passageiro:", err);
 
-        toast({
-          title: "Passageiro atualizado com sucesso.",
-        });
-      } else {
-        let asaasCustomer;
+          if (rollbackNeeded) {
+            try {
+              // Reverte atualização usando os dados originais
+              const { error: rollbackError } = await supabase
+                .from("passageiros")
+                .update(snapshotPassageiro)
+                .eq("id", editingPassageiro.id);
+
+              if (rollbackError) throw rollbackError;
+
+              console.log("Rollback da edição realizado com sucesso.");
+            } catch (rollbackErr) {
+              console.error("Erro no rollback da edição:", rollbackErr);
+            }
+          }
+
+          toast({
+            title: "Erro ao atualizar passageiro.",
+            description: "As alterações foram desfeitas.",
+            variant: "destructive",
+          });
+        }
+      }
+
+      // ----- NOVO PASSAGEIRO -----
+      else {
+        let asaasCustomer: any = null;
+        let newPassageiro: any = null;
+        let payment: any = null;
+
         try {
+          // 1. Cria cliente no Asaas
           asaasCustomer = await asaasService.createCustomer(
             {
               name: passageiroData.nome,
@@ -390,51 +486,30 @@ export default function Passageiros() {
             },
             apiKey
           );
-        } catch (asaasErr) {
-          console.error("Erro ao criar cliente no Asaas:", asaasErr);
-          toast({
-            title: "Erro ao salvar passageiro.",
-            description: "Não foi possível registrar no sistema de cobranças.",
-            variant: "destructive",
-          });
-          return;
-        }
 
-        passageiroData.asaas_customer_id = asaasCustomer.id;
+          passageiroData.asaas_customer_id = asaasCustomer.id;
 
-        try {
-          const { data: newPassageiro, error } = await supabase
-            .from("passageiros")
-            .insert([passageiroData as PassageiroInsert])
-            .select()
-            .single();
+          const { data: insertedPassageiro, error: insertPassageiroError } =
+            await supabase
+              .from("passageiros")
+              .insert([passageiroData as PassageiroInsert])
+              .select()
+              .single();
 
-          if (error) {
-            try {
-              await asaasService.deleteCustomer(asaasCustomer.id, apiKey);
-              console.warn(
-                "Cliente no Asaas removido devido a erro no Supabase"
-              );
-            } catch (rollbackErr) {
-              console.error(
-                "Erro ao remover cliente do Asaas após falha no Supabase:",
-                rollbackErr
-              );
-            }
-            throw error;
-          }
+          if (insertPassageiroError) throw insertPassageiroError;
+          newPassageiro = insertedPassageiro;
 
           if (emitir_cobranca_mes_atual) {
             const currentDate = new Date();
             const mes = currentDate.getMonth() + 1;
             const ano = currentDate.getFullYear();
-            const dataVencimento = new Date(
-              ano,
-              mes - 1,
-              Number(pureData.dia_vencimento)
-            );
+            const diaInformado = Number(pureData.dia_vencimento);
+            const hoje = currentDate.getDate();
+            const vencimentoAjustado =
+              diaInformado < hoje ? hoje : diaInformado;
+            const dataVencimento = new Date(ano, mes - 1, vencimentoAjustado);
 
-            const payment = await asaasService.createPayment(
+            payment = await asaasService.createPayment(
               {
                 customer: newPassageiro.asaas_customer_id,
                 billingType: "UNDEFINED",
@@ -446,31 +521,49 @@ export default function Passageiros() {
               apiKey
             );
 
-            await (supabase as any).from("cobrancas").insert([
-              {
-                passageiro_id: newPassageiro.id,
-                mes,
-                ano,
-                valor: moneyToNumber(pureData.valor_mensalidade),
-                data_vencimento: dataVencimento.toISOString().split("T")[0],
-                status: "pendente",
-                usuario_id: localStorage.getItem("app_user_id"),
-                origem: "automatica",
-                asaas_payment_id: payment.id,
-                asaas_invoice_url: payment.invoiceUrl,
-                asaas_bankslip_url: payment.bankSlipUrl,
-              },
-            ]);
+            const { error: cobrancaError } = await supabase
+              .from("cobrancas")
+              .insert([
+                {
+                  passageiro_id: newPassageiro.id,
+                  mes,
+                  ano,
+                  valor: moneyToNumber(pureData.valor_mensalidade),
+                  data_vencimento: dataVencimento.toISOString().split("T")[0],
+                  status: "pendente",
+                  usuario_id: localStorage.getItem("app_user_id"),
+                  origem: "automatica",
+                  asaas_payment_id: payment.id,
+                  asaas_invoice_url: payment.invoiceUrl,
+                  asaas_bankslip_url: payment.bankSlipUrl,
+                },
+              ]);
+
+            if (cobrancaError) throw cobrancaError;
+          }
+
+          toast({ title: "Passageiro cadastrado com sucesso." });
+        } catch (err) {
+          console.error("Erro ao cadastrar passageiro:", err);
+
+          // Rollback em cascata
+          try {
+            if (payment?.id)
+              await asaasService.deletePayment(payment.id, apiKey);
+            if (newPassageiro?.id)
+              await supabase
+                .from("passageiros")
+                .delete()
+                .eq("id", newPassageiro.id);
+            if (asaasCustomer?.id)
+              await asaasService.deleteCustomer(asaasCustomer.id, apiKey);
+          } catch (rollbackErr) {
+            console.error("Erro durante rollback:", rollbackErr);
           }
 
           toast({
-            title: "Passageiro cadastrado com sucesso.",
-          });
-        } catch (supabaseErr) {
-          console.error("Erro ao salvar passageiro no Supabase:", supabaseErr);
-          toast({
             title: "Erro ao salvar passageiro.",
-            description: "Não foi possível salvar os dados no sistema.",
+            description: "Todas as alterações foram desfeitas.",
             variant: "destructive",
           });
         }
@@ -480,7 +573,7 @@ export default function Passageiros() {
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      console.error("Erro ao salvar passageiro:", error);
+      console.error("Erro geral:", error);
       toast({
         title: "Erro ao salvar passageiro.",
         variant: "destructive",
@@ -504,6 +597,7 @@ export default function Passageiros() {
       referencia: passageiro.referencia || "",
       nome_responsavel: passageiro.nome_responsavel,
       telefone_responsavel: phoneMask(passageiro.telefone_responsavel),
+      email_responsavel: passageiro.email_responsavel,
       cpf_responsavel: passageiro.cpf_responsavel,
       valor_mensalidade: moneyMask(
         (passageiro.valor_mensalidade * 100).toString()
@@ -531,6 +625,7 @@ export default function Passageiros() {
       cep: "",
       referencia: "",
       nome_responsavel: "",
+      email_responsavel: "",
       telefone_responsavel: "",
       cpf_responsavel: "",
       valor_mensalidade: "",
@@ -708,9 +803,7 @@ export default function Passageiros() {
                               name="telefone_responsavel"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>
-                                    Telefone *
-                                  </FormLabel>
+                                  <FormLabel>Telefone *</FormLabel>
                                   <FormControl>
                                     <Input
                                       {...field}
@@ -736,7 +829,12 @@ export default function Passageiros() {
                                 <FormItem>
                                   <FormLabel>CPF *</FormLabel>
                                   <FormControl>
-                                    <Input {...field} />
+                                    <Input
+                                      {...field}
+                                      onChange={(e) =>
+                                        field.onChange(cpfMask(e.target.value))
+                                      }
+                                    />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -752,64 +850,68 @@ export default function Passageiros() {
                           <DollarSign className="w-5 h-5 text-primary" />
                           <h3 className="text-lg font-semibold">Mensalidade</h3>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="valor_mensalidade"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Valor *</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    onChange={(e) => {
-                                      const maskedValue = moneyMask(
-                                        e.target.value
-                                      );
-                                      field.onChange(maskedValue);
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="dia_vencimento"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Dia do Vencimento *</FormLabel>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                >
+
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="valor_mensalidade"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Valor *</FormLabel>
                                   <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Selecione o dia" />
-                                    </SelectTrigger>
+                                    <Input
+                                      {...field}
+                                      onChange={(e) => {
+                                        const maskedValue = moneyMask(
+                                          e.target.value
+                                        );
+                                        field.onChange(maskedValue);
+                                      }}
+                                    />
                                   </FormControl>
-                                  <SelectContent>
-                                    {Array.from(
-                                      { length: 31 },
-                                      (_, i) => i + 1
-                                    ).map((day) => (
-                                      <SelectItem
-                                        key={day}
-                                        value={day.toString()}
-                                      >
-                                        Dia {day}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="dia_vencimento"
+                              render={({ field }) => {
+                                return (
+                                  <FormItem>
+                                    <FormLabel>Dia do Vencimento *</FormLabel>
+                                    <Select
+                                      onValueChange={field.onChange}
+                                      value={field.value}
+                                    >
+                                      <FormControl>
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Selecione o dia" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {Array.from(
+                                          { length: 31 },
+                                          (_, i) => i + 1
+                                        ).map((day) => (
+                                          <SelectItem
+                                            key={day}
+                                            value={day.toString()}
+                                          >
+                                            Dia {day}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                  </FormItem>
+                                );
+                              }}
+                            />
+                          </div>
                         </div>
 
-                        {/* Checkbox para emitir cobrança apenas no cadastro */}
                         {!editingPassageiro && (
                           <div className="mt-4">
                             <FormField
@@ -825,12 +927,39 @@ export default function Passageiros() {
                                   </FormControl>
                                   <div className="space-y-1 leading-none">
                                     <FormLabel>
-                                      Emitir cobrança para o mês atual
+                                      Emitir mensalidade para o mês atual
                                     </FormLabel>
                                   </div>
                                 </FormItem>
                               )}
                             />
+
+                            {(() => {
+                              const diaInformado =
+                                Number(form.getValues("dia_vencimento")) ||
+                                null;
+
+                              if (
+                                !editingPassageiro &&
+                                emitirCobranca &&
+                                diaInformado &&
+                                Number(diaInformado) < new Date().getDate()
+                              ) {
+                                return (
+                                  <div className="mt-4">
+                                    <p className="text-sm text-yellow-600">
+                                      ⚠️ O dia escolhido já passou neste mês.
+                                      <br />
+                                      👉 A mensalidade deste mês <b>vence hoje</b>.
+                                      <br />
+                                      📅 A partir do próximo mês, o vencimento{" "}
+                                      <b>será sempre no dia {diaInformado}</b>.
+                                    </p>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })()}
                           </div>
                         )}
 
@@ -1065,6 +1194,45 @@ export default function Passageiros() {
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <Label
+                  htmlFor="search"
+                  className="text-sm font-medium mb-2 block"
+                >
+                  Nome
+                </Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    id="search"
+                    placeholder="Digite 2 caracteres ou mais..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <div className="flex-1">
+                <Label
+                  htmlFor="status-filter"
+                  className="text-sm font-medium mb-2 block"
+                >
+                  Status
+                </Label>
+                <Select
+                  value={selectedStatus}
+                  onValueChange={setSelectedStatus}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos os status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="ativo">Ativo</SelectItem>
+                    <SelectItem value="inativo">Inativo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <Label
                   htmlFor="escola-filter"
                   className="text-sm font-medium mb-2 block"
                 >
@@ -1086,24 +1254,6 @@ export default function Passageiros() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="flex-1">
-                <Label
-                  htmlFor="search"
-                  className="text-sm font-medium mb-2 block"
-                >
-                  Nome
-                </Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                  <Input
-                    id="search"
-                    placeholder="Digite 2 caracteres ou mais..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
               </div>
             </div>
 
@@ -1166,15 +1316,6 @@ export default function Passageiros() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                title="Editar"
-                                onClick={() => handleEdit(passageiro)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Pencil className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
                                 title="Carteirinha"
                                 onClick={() => handleHistorico(passageiro)}
                                 className="h-8 w-8 p-0"
@@ -1184,7 +1325,16 @@ export default function Passageiros() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                title="Remover"
+                                title="Editar"
+                                onClick={() => handleEdit(passageiro)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Pencil className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                title="Excluir"
                                 onClick={() => handleDeleteClick(passageiro.id)}
                                 className="h-8 w-8 p-0"
                               >
@@ -1206,10 +1356,10 @@ export default function Passageiros() {
       <ConfirmationDialog
         open={deleteDialog.open}
         onOpenChange={(open) => setDeleteDialog({ open, passageiroId: "" })}
-        title="Remover Passageiro"
-        description="Deseja remover permanentemente este passageiro? Esta ação não pode ser desfeita."
+        title="Excluir Passageiro"
+        description="Deseja excluir permanentemente este passageiro? Esta ação não pode ser desfeita."
         onConfirm={handleDelete}
-        confirmText="Remover"
+        confirmText="Excluir"
         cancelText="Cancelar"
         variant="destructive"
       />

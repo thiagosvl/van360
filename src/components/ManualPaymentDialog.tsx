@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { asaasService } from "@/integrations/asaasService";
 import { supabase } from "@/integrations/supabase/client";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,6 +48,8 @@ const paymentSchema = z.object({
 });
 
 type PaymentFormData = z.infer<typeof paymentSchema>;
+
+const apiKey = localStorage.getItem("asaas_api_key");
 
 export default function ManualPaymentDialog({
   isOpen,
@@ -75,7 +78,7 @@ export default function ManualPaymentDialog({
           style: "currency",
           currency: "BRL",
         }),
-        data_pagamento: new Date().toISOString().split("T")[0],
+        data_pagamento: "",
         tipo_pagamento: "",
       });
     }
@@ -86,23 +89,72 @@ export default function ManualPaymentDialog({
     try {
       const valorNumerico = moneyToNumber(data.valor_pago);
 
-      const { error } = await supabase
+      const { data: cobranca, error: fetchError } = await supabase
         .from("cobrancas")
-        .update({
-          status: "pago",
-          data_pagamento: data.data_pagamento,
-          tipo_pagamento: data.tipo_pagamento,
-          valor: valorNumerico,
-          pagamento_manual: true,
-        })
-        .eq("id", cobrancaId);
+        .select("id, origem, asaas_payment_id, data_vencimento")
+        .eq("id", cobrancaId)
+        .single();
 
-      if (error) throw error;
+      if (fetchError || !cobranca) {
+        throw new Error("Não foi possível localizar a mensalidade.");
+      }
+
+      if (cobranca.origem === "automatica" && cobranca.asaas_payment_id) {
+        const hoje = new Date(new Date().setHours(0, 0, 0, 0));
+        const dataSelecionada = new Date(data.data_pagamento);
+        const vencimento = new Date(cobranca.data_vencimento);
+
+        const dataParaAsaas =
+          dataSelecionada < vencimento ? hoje : dataSelecionada;
+
+        await asaasService.confirmPaymentInCash(
+          cobranca.asaas_payment_id,
+          dataParaAsaas.toISOString().split("T")[0],
+          valorNumerico,
+          apiKey
+        );
+
+        try {
+          // 2. Atualiza Supabase
+          const { error } = await supabase
+            .from("cobrancas")
+            .update({
+              status: "pago",
+              data_pagamento: data.data_pagamento,
+              tipo_pagamento: data.tipo_pagamento,
+              valor: valorNumerico,
+              pagamento_manual: true,
+            })
+            .eq("id", cobrancaId);
+
+          if (error) throw error;
+        } catch (supabaseErr) {
+          await asaasService.undoPaymentInCash(
+            cobranca.asaas_payment_id,
+            apiKey
+          );
+          throw supabaseErr;
+        }
+      }
+
+      if (cobranca.origem === "manual") {
+        const { error } = await supabase
+          .from("cobrancas")
+          .update({
+            status: "pago",
+            data_pagamento: data.data_pagamento,
+            tipo_pagamento: data.tipo_pagamento,
+            valor: valorNumerico,
+            pagamento_manual: true,
+          })
+          .eq("id", cobrancaId);
+
+        if (error) throw error;
+      }
 
       toast({
         title: `Pagamento de ${passageiroNome} registrado com sucesso.`,
       });
-
       onPaymentRecorded();
       onClose();
     } catch (error) {
@@ -174,15 +226,21 @@ export default function ManualPaymentDialog({
                 <FormField
                   control={form.control}
                   name="data_pagamento"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Data do Pagamento *</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const hoje = new Date();
+                    hoje.setHours(0, 0, 0, 0);
+                    const hojeStr = hoje.toISOString().split("T")[0];
+
+                    return (
+                      <FormItem>
+                        <FormLabel>Data do Pagamento *</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} max={hojeStr} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <FormField
@@ -212,6 +270,7 @@ export default function ManualPaymentDialog({
                           <SelectItem value="transferencia">
                             Transferência
                           </SelectItem>
+                          <SelectItem value="boleto">Boleto</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

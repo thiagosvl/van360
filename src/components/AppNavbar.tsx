@@ -1,3 +1,4 @@
+import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -5,10 +6,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut, User } from "lucide-react";
+import { LogOut, Menu, User } from "lucide-react";
 
 export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
   const { user } = useAuth();
@@ -26,15 +34,36 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
   const title = role === "admin" ? "Van Admin" : "Van Motorista";
 
   return (
-    <header className="flex h-16 items-center justify-between px-6 bg-white">
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-          <span className="text-primary-foreground font-bold text-sm">
-            {role === "admin" ? "VA" : "VM"}
-          </span>
+    <header className="flex h-16 items-center justify-between px-4 sm:px-6 bg-white border-b shadow-sm">
+      <div className="flex items-center gap-3">
+        {/* Botão hambúrguer no mobile */}
+        <div className="md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+
+            <SheetContent side="left" className="w-72 sm:w-80 p-0">
+              <SheetHeader className="flex flex-col items-center justify-center py-4 border-b">
+                <SheetTitle className="text-lg font-semibold">
+                  Sistema Transporte
+                </SheetTitle>
+              </SheetHeader>
+
+              <div className="p-4">
+                {/* Apenas renderiza o AppSidebar. O fechamento ocorre lá. */}
+                <AppSidebar role={role} />
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
+
         <div>
-          <h1 className="text-lg font-semibold">{title}</h1>
+          <h1 className="text-base sm:text-lg font-semibold leading-tight">
+            {title}
+          </h1>
           <p className="text-xs text-muted-foreground">Sistema de Transporte</p>
         </div>
       </div>
@@ -43,7 +72,7 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="flex items-center space-x-2">
             <User className="h-4 w-4" />
-            <span>{user?.email}</span>
+            <span className="hidden sm:inline">{user?.email}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

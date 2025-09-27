@@ -25,29 +25,23 @@ export function AppSidebar({ role }: { role: "admin" | "motorista" }) {
   const menuItems = role === "admin" ? adminItems : motoristaItems;
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="p-6">
-        <h2 className="text-lg font-semibold">Sistema Transporte</h2>
-      </div>
-
-      <nav className="flex-1 space-y-1 px-4">
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.href}
-            to={item.href}
-            className={({ isActive }) =>
-              `flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`
-            }
-          >
-            <item.icon className="mr-3 h-4 w-4" />
-            {item.title}
-          </NavLink>
-        ))}
-      </nav>
-    </div>
+    <nav className="flex flex-col gap-2">
+      {menuItems.map((item) => (
+        <NavLink
+          key={item.href}
+          to={item.href}
+          className={({ isActive }) =>
+            `flex items-center rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 ${
+              isActive
+                ? "bg-primary/10 text-primary border-l-4 border-primary"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`
+          }
+        >
+          <item.icon className="mr-3 h-5 w-5" />
+          <span>{item.title}</span>
+        </NavLink>
+      ))}
+    </nav>
   );
 }

@@ -62,17 +62,32 @@ export const cepMask = (value: string): string => {
   return numericValue.replace(/(\d{5})(\d{1,3})/, '$1-$2');
 };
 
-// Função para máscara de CPF/CNPJ
+// Máscara apenas para CPF → 000.000.000-00
+export const cpfMask = (value: string): string => {
+  if (!value) return value;
+  const numericValue = value.replace(/\D/g, "").slice(0, 11);
+
+  return numericValue
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+};
+
+// Máscara apenas para CNPJ → 00.000.000/0000-00
+export const cnpjMask = (value: string): string => {
+  if (!value) return value;
+  const numericValue = value.replace(/\D/g, "").slice(0, 14);
+
+  return numericValue
+    .replace(/^(\d{2})(\d)/, "$1.$2")
+    .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1/$2")
+    .replace(/(\d{4})(\d)/, "$1-$2");
+};
+
+// Decide se aplica máscara de CPF ou CNPJ com base no tamanho
 export const cpfCnpjMask = (value: string): string => {
   if (!value) return value;
-  
-  // Remove tudo que não é dígito
-  const numericValue = value.replace(/\D/g, '');
-  
-  // Aplica máscara de CPF (11 dígitos) ou CNPJ (14 dígitos)
-  if (numericValue.length <= 11) {
-    return numericValue.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-  } else {
-    return numericValue.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-  }
+  const numericValue = value.replace(/\D/g, "");
+  return numericValue.length <= 11 ? cpfMask(value) : cnpjMask(value);
 };

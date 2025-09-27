@@ -21,19 +21,11 @@ export const formatProfile = (profile: string): string => {
 
 export const formatCobrancaOrigem = (origem: string): string => {
   if (origem === "automatica") {
-    return "Automática";
+    return "Sistema";
   }
   return "Manual";
 };
 
-// --- NOVA FUNÇÃO ADICIONADA ---
-/**
- * Formata uma data (string ISO ou objeto Date) para o padrão brasileiro.
- * @param date A data a ser formatada.
- * @param options Opções de formatação.
- * @param options.includeTime Se verdadeiro, inclui a hora e os minutos (hh:mm). O padrão é falso.
- * @returns A data formatada como string.
- */
 export const formatDateTimeToBR = (
   date: string | Date,
   options: { includeTime?: boolean } = {}
@@ -65,4 +57,57 @@ export const formatDateTimeToBR = (
     console.error("Error formatting date:", error);
     return "Invalid Date";
   }
+};
+
+export const formatStatus = (origem: string): string => {
+  if (origem === "pago") {
+    return "Pago";
+  }
+  return "Pendente";
+};
+
+export const getStatusText = (status: string, dataVencimento: string) => {
+  if (status === "pago") return "Pago";
+
+  const vencimento = formatDate(dataVencimento);
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  const diffTime = hoje.getTime() - vencimento.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (vencimento < hoje) {
+    return `Venceu há ${diffDays} dia${diffDays > 1 ? "s" : ""}`;
+  } else if (diffDays == 0) {
+    return "Vence hoje";
+  }
+
+  return "A vencer";
+};
+
+export const getStatusColor = (status: string, dataVencimento: string) => {
+  if (status === "pago") return "bg-green-100 text-green-800";
+
+  const vencimento = formatDate(dataVencimento);
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  return vencimento < hoje
+    ? "bg-red-100 text-red-800"
+    : "bg-orange-100 text-orange-800";
+};
+
+export const formatPaymentType = (tipo: string | undefined) => {
+  if (!tipo) return "";
+
+  const typeMap: { [key: string]: string } = {
+    dinheiro: "Dinheiro",
+    "cartao-credito": "Cartão de Crédito",
+    "cartao-debito": "Cartão de Débito",
+    transferencia: "Transferência",
+    PIX: "PIX",
+    boleto: "Boleto",
+  };
+
+  return typeMap[tipo] || tipo;
 };

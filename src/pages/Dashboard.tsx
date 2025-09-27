@@ -49,6 +49,7 @@ const Dashboard = () => {
     cartao: { count: 0, total: 0 },
     dinheiro: { count: 0, total: 0 },
     transferencia: { count: 0, total: 0 },
+    boleto: { count: 0, total: 0 },
   });
 
   const [latePayments, setLatePayments] = useState<Cobranca[]>([]);
@@ -142,6 +143,7 @@ const Dashboard = () => {
         cartao: { count: 0, total: 0 },
         dinheiro: { count: 0, total: 0 },
         transferencia: { count: 0, total: 0 },
+        boleto: { count: 0, total: 0 },
       };
 
       cobrancasPagasData.forEach((c) => {
@@ -157,6 +159,9 @@ const Dashboard = () => {
         } else if (tipo === "dinheiro") {
           paymentStatsData.dinheiro.count++;
           paymentStatsData.dinheiro.total += valor;
+        } else if (tipo === "boleto") {
+          paymentStatsData.boleto.count++;
+          paymentStatsData.boleto.total += valor;
         } else if (tipo === "transferencia") {
           if (!paymentStatsData.transferencia) {
             paymentStatsData.transferencia = { count: 0, total: 0 };
@@ -192,7 +197,7 @@ const Dashboard = () => {
     nomePassageiro: string
   ) => {
     toast({
-      title: "Cobrança reenviada com sucesso para o responsável",
+      title: "Mensalidade reenviada com sucesso para o responsável",
     });
   };
 
@@ -439,7 +444,7 @@ const Dashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="w-4 h-4" />
-                Soma de Valores Recebidos por Forma de Pagamento
+                Total Recebido por Forma de Pgto
               </CardTitle>
             </CardHeader>
             <CardContent>

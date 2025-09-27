@@ -17,6 +17,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PassageiroCarteirinha from "./pages/PassageiroCarteirinha";
+import PassageiroCobranca from "./pages/PassageiroCobranca";
 import Passageiros from "./pages/Passageiros";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,10 @@ const App = () => (
               <Route
                 path="passageiros/:passageiro_id"
                 element={<PassageiroCarteirinha />}
+              />
+              <Route
+                path="passageiros/:passageiro_id/mensalidade/:cobranca_id"
+                element={<PassageiroCobranca />}
               />
               <Route path="mensalidades" element={<Cobrancas />} />
               <Route path="escolas" element={<Escolas />} />

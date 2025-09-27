@@ -1,7 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { PaymentStats } from "@/types/paymentStats";
-import { Banknote, CreditCard, Smartphone } from "lucide-react";
-
+import { Banknote, CreditCard, FileText, Smartphone } from "lucide-react";
 
 interface PaymentStatsCardProps {
   stats: PaymentStats;
@@ -41,6 +40,14 @@ const PaymentStatsCard = ({ stats, loading }: PaymentStatsCardProps) => {
       color: "text-yellow-600",
       bgColor: "bg-yellow-50",
       borderColor: "border-yellow-200",
+    },
+    {
+      key: "boleto",
+      name: "Boleto",
+      icon: FileText,
+      color: "text-gray-700",
+      bgColor: "bg-gray-100",
+      borderColor: "border-gray-300",
     },
   ];
 
