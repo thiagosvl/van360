@@ -14,7 +14,7 @@ import {
   formatDateToBR,
   formatPaymentType,
   getStatusColor,
-  getStatusText
+  getStatusText,
 } from "@/utils/formatters";
 import { MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -100,9 +100,9 @@ export default function PassageiroCobranca() {
               disabled={
                 cobranca.status === "pago" || cobranca.origem === "manual"
               }
-              onClick={() => toast({ title: "Reenviar mensalidade" })}
+              onClick={() => toast({ title: "Enviar notificação" })}
             >
-              Reenviar Notificação
+              Enviar Notificação
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={

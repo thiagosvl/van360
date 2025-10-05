@@ -39,8 +39,8 @@ export default function PassageiroCarteirinha() {
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     cobrancaId: string;
-    action: "reenviar" | "desfazer";
-  }>({ open: false, cobrancaId: "", action: "reenviar" });
+    action: "enviar" | "desfazer";
+  }>({ open: false, cobrancaId: "", action: "enviar" });
   const [retroativaDialogOpen, setRetroativaDialogOpen] = useState(false);
   const { toast } = useToast();
 
@@ -185,8 +185,8 @@ export default function PassageiroCarteirinha() {
     return nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
   };
 
-  const handleReenviarClick = (cobrancaId: string) => {
-    setConfirmDialog({ open: true, cobrancaId, action: "reenviar" });
+  const handleEnviarNotificacaoClick = (cobrancaId: string) => {
+    setConfirmDialog({ open: true, cobrancaId, action: "enviar" });
   };
 
   const handleDesfazerClick = (cobrancaId: string) => {
@@ -195,9 +195,9 @@ export default function PassageiroCarteirinha() {
 
   const handleConfirmAction = async () => {
     try {
-      if (confirmDialog.action === "reenviar") {
+      if (confirmDialog.action === "enviar") {
         toast({
-          title: "Notificação reenviada com sucesso para o responsável",
+          title: "Notificação enviada com sucesso para o responsável",
         });
       } else if (confirmDialog.action === "desfazer") {
         const { data: cobranca, error: fetchError } = await supabase
@@ -264,7 +264,7 @@ export default function PassageiroCarteirinha() {
         variant: "destructive",
       });
     }
-    setConfirmDialog({ open: false, cobrancaId: "", action: "reenviar" });
+    setConfirmDialog({ open: false, cobrancaId: "", action: "enviar" });
   };
 
   const openPaymentDialog = (cobranca: Cobranca) => {
@@ -426,9 +426,9 @@ export default function PassageiroCarteirinha() {
                                   cobranca.status === "pago" ||
                                   cobranca.origem === "manual"
                                 }
-                                onClick={() => handleReenviarClick(cobranca.id)}
+                                onClick={() => handleEnviarNotificacaoClick(cobranca.id)}
                               >
-                                Reenviar Notificação
+                                Enviar Notificação
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 disabled={
@@ -488,16 +488,16 @@ export default function PassageiroCarteirinha() {
         <ConfirmationDialog
           open={confirmDialog.open}
           onOpenChange={(open) =>
-            setConfirmDialog({ open, cobrancaId: "", action: "reenviar" })
+            setConfirmDialog({ open, cobrancaId: "", action: "enviar" })
           }
           title={
-            confirmDialog.action === "reenviar"
-              ? "Reenviar Notificação"
+            confirmDialog.action === "enviar"
+              ? "Enviar Notificação"
               : "Desfazer Pagamento"
           }
           description={
-            confirmDialog.action === "reenviar"
-              ? "Deseja reenviar esta notificação para o responsável?"
+            confirmDialog.action === "enviar"
+              ? "Deseja enviar esta notificação para o responsável?"
               : "Deseja desfazer este pagamento? A mensalidade voltará ao status pendente."
           }
           onConfirm={handleConfirmAction}

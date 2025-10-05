@@ -219,6 +219,37 @@ export const asaasService = {
         }
     },
 
+    async obterPixAsaas(paymentId: string, apiKey: string): Promise<{
+        payload: string;
+        encodedImage?: string;
+        expirationDate?: string;
+        description?: string;
+    } | null> {
+        try {
+            const res = await fetch(`/asaas/payments/${paymentId}/pixQrCode`, {
+                method: "GET",
+                headers: {
+                    accept: "application/json",
+                    access_token: apiKey,
+                },
+            });
+            if (!res.ok) {
+                console.error("Asaas pixQrCode HTTP", res.status, await res.text());
+                return null;
+            }
+            const data = await res.json();
+            if (!data?.payload) return null;
+            return {
+                payload: data.payload,
+                encodedImage: data.encodedImage,
+                expirationDate: data.expirationDate,
+                description: data.description,
+            };
+        } catch (e) {
+            console.error("Asaas pixQrCode erro", e);
+            return null;
+        }
+    },
 
     // async deleteSubAccount(id: string) {
     //     const response = await fetch(`/asaas/customers/accounts/${id}`, {

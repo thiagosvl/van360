@@ -1,22 +1,125 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 import { ConfiguracoesMotorista } from "@/types/configuracoesMotorista";
-import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Clock, Eye, Loader2, Mail } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
+// Subcomponente para o editor de mensagens, agora com o botão de pré-visualização
+const MessageEditor = ({
+  id,
+  label,
+  value,
+  onChange,
+  variables,
+  error,
+  onPreview,
+}: {
+  id: keyof ConfiguracoesMotorista;
+  label: string;
+  value: string;
+  onChange: (field: keyof ConfiguracoesMotorista, value: string) => void;
+  variables: string[];
+  error?: string;
+  onPreview: () => void;
+}) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isFocused, setIsFocused] = useState(false);
+
+  const handleVariableClick = (variable: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const charBefore = text.substring(start - 1, start);
+    const prefix =
+      start > 0 && charBefore !== " " && charBefore !== "\n" ? " " : "";
+    const newText =
+      text.substring(0, start) + prefix + variable + "" + text.substring(end);
+    onChange(id, newText);
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPosition = start + prefix.length + variable.length + 1;
+      textarea.selectionStart = textarea.selectionEnd = newCursorPosition;
+    }, 0);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between items-center">
+        <Label htmlFor={id} className="font-semibold">
+          {label}
+        </Label>
+        <Button variant="ghost" size="sm" onClick={onPreview} className="text-xs h-8">
+          <Eye className="w-4 h-4 mr-2" />
+          Pré-visualizar
+        </Button>
+      </div>
+      <div className="flex flex-wrap gap-1">
+        {variables.map((variable) => (
+          <Badge
+            key={variable}
+            variant={isFocused ? "default" : "secondary"}
+            className="cursor-pointer hover:opacity-80"
+            onClick={() => handleVariableClick(variable)}
+          >
+            {variable}
+          </Badge>
+        ))}
+      </div>
+      <Textarea
+        id={id}
+        ref={textareaRef}
+        value={value}
+        onChange={(e) => onChange(id, e.target.value)}
+        rows={5}
+        className={cn(error && "border-red-500 focus-visible:ring-red-500")}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+      />
+      <div className="flex justify-between items-center">
+        {error ? (
+          <p className="text-sm text-red-500">{error}</p>
+        ) : (
+          <div />
+        )}
+        <p className="text-xs text-muted-foreground">{value.length} / 300 caracteres</p>
+      </div>
+    </div>
+  );
+};
+
+type FormErrors = Partial<Record<keyof ConfiguracoesMotorista, string>>;
 
 export default function Configuracoes() {
-  const [configuracoes, setConfiguracoes] =
-    useState<ConfiguracoesMotorista | null>(null);
+  const [configuracoes, setConfiguracoes] = useState<ConfiguracoesMotorista | null>(null);
   const [loadingPage, setLoadingPage] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [previewData, setPreviewData] = useState({ isOpen: false, title: "", content: "" });
   const { toast } = useToast();
-
   const userId = localStorage.getItem("app_user_id");
+
+  const commonVariables = ["{{nome_responsavel}}", "{{nome_passageiro}}", "{{valor}}", "{{vencimento}}"];
 
   useEffect(() => {
     fetchConfiguracoes();
@@ -25,19 +128,10 @@ export default function Configuracoes() {
   const fetchConfiguracoes = async () => {
     setLoadingPage(true);
     try {
-      const { data, error } = await supabase
-        .from("configuracoes_motoristas")
-        .select("*")
-        .eq("usuario_id", userId)
-        .single();
-
+      const { data, error } = await supabase.from("configuracoes_motoristas").select("*").eq("usuario_id", userId).single();
       if (error && error.code !== "PGRST116") throw error;
       if (!data) {
-        const { data: created, error: insertError } = await supabase
-          .from("configuracoes_motoristas")
-          .insert([{ usuario_id: userId }])
-          .select()
-          .single();
+        const { data: created, error: insertError } = await supabase.from("configuracoes_motoristas").insert([{ usuario_id: userId }]).select().single();
         if (insertError) throw insertError;
         setConfiguracoes(created);
       } else {
@@ -45,6 +139,7 @@ export default function Configuracoes() {
       }
     } catch (error) {
       console.error("Erro ao buscar/criar configurações:", error);
+      toast({ title: "Erro ao carregar", description: "Não foi possível carregar as configurações.", variant: "destructive" });
     } finally {
       setLoadingPage(false);
     }
@@ -52,176 +147,157 @@ export default function Configuracoes() {
 
   const handleChange = (field: keyof ConfiguracoesMotorista, value: any) => {
     if (!configuracoes) return;
-    setConfiguracoes({ ...configuracoes, [field]: value });
+    let processedValue = value;
+    if (field === "dias_antes_vencimento" || field === "dias_apos_vencimento") {
+      let numValue = Number(value);
+      if (numValue > 7) numValue = 7;
+      if (numValue < 0) numValue = 0;
+      processedValue = numValue;
+    }
+    setConfiguracoes({ ...configuracoes, [field]: processedValue });
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const validateForm = (): boolean => {
+    if (!configuracoes) return false;
+    const newErrors: FormErrors = {};
+    if (!configuracoes.horario_envio) { newErrors.horario_envio = "O horário é obrigatório."; }
+    if ((configuracoes.dias_antes_vencimento ?? 0) <= 0) { newErrors.dias_antes_vencimento = "O valor deve ser no mínimo 1."; }
+    if ((configuracoes.dias_apos_vencimento ?? 0) <= 0) { newErrors.dias_apos_vencimento = "O valor deve ser no mínimo 1."; }
+    if (!configuracoes.mensagem_lembrete_antecipada?.trim()) { newErrors.mensagem_lembrete_antecipada = "A mensagem é obrigatória."; }
+    if (!configuracoes.mensagem_lembrete_dia?.trim()) { newErrors.mensagem_lembrete_dia = "A mensagem é obrigatória."; }
+    if (!configuracoes.mensagem_lembrete_atraso?.trim()) { newErrors.mensagem_lembrete_atraso = "A mensagem é obrigatória."; }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = async () => {
-    if (!configuracoes) return;
+    if (!validateForm() || !configuracoes) {
+      toast({ title: "Campos inválidos", description: "Por favor, corrija os campos destacados antes de salvar.", variant: "destructive" });
+      return;
+    }
     setSaving(true);
+    setErrors({});
     try {
-      const { error } = await supabase
-        .from("configuracoes_motoristas")
-        .update({
-          horario_envio: configuracoes.horario_envio,
-          mensagem_lembrete_antecipada:
-            configuracoes.mensagem_lembrete_antecipada,
-          mensagem_lembrete_dia: configuracoes.mensagem_lembrete_dia,
-          mensagem_lembrete_atraso: configuracoes.mensagem_lembrete_atraso,
-          dias_antes_vencimento: configuracoes.dias_antes_vencimento,
-          dias_apos_vencimento: configuracoes.dias_apos_vencimento,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", configuracoes.id);
-
-      if (error) {
-        console.error("Erro ao salvar configurações:", error);
-        toast({
-          title: "Erro ao salvar",
-          description:
-            "Não foi possível salvar as configurações. Tente novamente.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      toast({
-        title: "Configurações salvas",
-        description: "As configurações foram atualizadas com sucesso.",
-      });
+      const { error } = await supabase.from("configuracoes_motoristas").update({ ...configuracoes, updated_at: new Date().toISOString() }).eq("id", configuracoes.id);
+      if (error) throw error;
+      toast({ title: "Configurações salvas", description: "Suas preferências foram atualizadas com sucesso." });
     } catch (error) {
-      console.error("Erro inesperado:", error);
-      toast({
-        title: "Erro inesperado",
-        description: "Ocorreu um problema ao salvar as configurações.",
-        variant: "destructive",
-      });
+      console.error("Erro ao salvar configurações:", error);
+      toast({ title: "Erro ao salvar", description: "Não foi possível salvar as configurações. Tente novamente.", variant: "destructive" });
     } finally {
       setSaving(false);
     }
   };
 
+  const handlePreview = (title: string, messageText: string) => {
+    const exampleData = {
+      "{{nome_responsavel}}": "Ana Souza",
+      "{{nome_passageiro}}": "Júnior",
+      "{{valor}}": (250).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+      "{{vencimento}}": new Date(new Date().setDate(new Date().getDate() + 5)).toLocaleDateString('pt-BR'),
+    };
+    let processedText = messageText;
+    for (const [variable, exampleValue] of Object.entries(exampleData)) {
+      processedText = processedText.replaceAll(variable, exampleValue);
+    }
+    setPreviewData({ isOpen: true, title: `Pré-visualização: ${title}`, content: processedText });
+  };
+
   if (loadingPage) {
-    return (
-      <div className="flex justify-center items-center h-40">
-        <Loader2 className="w-6 h-6 animate-spin" />
-      </div>
-    );
+    return <div className="flex justify-center items-center h-40"><Loader2 className="w-6 h-6 animate-spin" /></div>;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="w-full">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-            Configurações
-          </h1>
+    <>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Configurações</h1>
+          <Button onClick={handleSave} disabled={saving}>
+            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Salvar Alterações
+          </Button>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Configurações do Motorista</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="horario_envio">
-                Horário de envio dos lembretes
-              </Label>
-              <Input
-                id="horario_envio"
-                type="time"
-                value={configuracoes?.horario_envio || ""}
-                onChange={(e) => handleChange("horario_envio", e.target.value)}
-              />
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Clock className="w-5 h-5" />Agendamento de Lembretes</CardTitle>
+              <CardDescription>Defina quando e com que frequência os lembretes automáticos serão enviados.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="horario_envio">Horário de envio dos lembretes</Label>
+                <Input id="horario_envio" type="time" value={configuracoes?.horario_envio || ""} onChange={(e) => handleChange("horario_envio", e.target.value)} className={cn(errors.horario_envio && "border-red-500 focus-visible:ring-red-500")} />
+                {errors.horario_envio && <p className="text-sm text-red-500">{errors.horario_envio}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dias_antes_vencimento">Lembrete antecipado (dias antes)</Label>
+                <Input id="dias_antes_vencimento" type="number" min="1" max="7" value={configuracoes?.dias_antes_vencimento ?? 1} onChange={(e) => handleChange("dias_antes_vencimento", e.target.value)} className={cn(errors.dias_antes_vencimento && "border-red-500 focus-visible:ring-red-500")} />
+                {errors.dias_antes_vencimento ? <p className="text-sm text-red-500">{errors.dias_antes_vencimento}</p> : <p className="text-xs text-muted-foreground">Mínimo de 1 e máximo de 7 dias.</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dias_apos_vencimento">Lembrete de atraso (dias após)</Label>
+                <Input id="dias_apos_vencimento" type="number" min="1" max="7" value={configuracoes?.dias_apos_vencimento ?? 1} onChange={(e) => handleChange("dias_apos_vencimento", e.target.value)} className={cn(errors.dias_apos_vencimento && "border-red-500 focus-visible:ring-red-500")} />
+                {errors.dias_apos_vencimento ? <p className="text-sm text-red-500">{errors.dias_apos_vencimento}</p> : <p className="text-xs text-muted-foreground">Mínimo de 1 e máximo de 7 dias.</p>}
+              </div>
+            </CardContent>
+          </Card>
 
-            <div className="space-y-2">
-              <Label htmlFor="dias_antes_vencimento">
-                Dias antes do vencimento
-              </Label>
-              <Input
-                id="dias_antes_vencimento"
-                type="number"
-                min="0"
-                value={configuracoes?.dias_antes_vencimento ?? 0}
-                onChange={(e) =>
-                  handleChange("dias_antes_vencimento", Number(e.target.value))
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="dias_apos_vencimento">
-                Dias após o vencimento
-              </Label>
-              <Input
-                id="dias_apos_vencimento"
-                type="number"
-                min="0"
-                value={configuracoes?.dias_apos_vencimento ?? 0}
-                onChange={(e) =>
-                  handleChange("dias_apos_vencimento", Number(e.target.value))
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="mensagem_lembrete_antecipada">
-                Mensagem Lembrete Antecipada
-              </Label>
-              <Textarea
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Mail className="w-5 h-5" />Modelos de Mensagem</CardTitle>
+              <CardDescription>Personalize o texto que será enviado aos seus clientes em cada etapa da cobrança.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <MessageEditor
                 id="mensagem_lembrete_antecipada"
+                label="Mensagem Lembrete Antecipada"
                 value={configuracoes?.mensagem_lembrete_antecipada || ""}
-                onChange={(e) =>
-                  handleChange("mensagem_lembrete_antecipada", e.target.value)
-                }
+                onChange={handleChange}
+                variables={commonVariables}
+                error={errors.mensagem_lembrete_antecipada}
+                onPreview={() => handlePreview("Lembrete Antecipado", configuracoes?.mensagem_lembrete_antecipada || "")}
               />
-              <p className="text-xs text-muted-foreground">
-                Use variáveis como {"{{nome_responsavel}}"},{" "}
-                {"{{nome_passageiro}}"}, {"{{valor}}"}, {"{{vencimento}}"}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="mensagem_lembrete_dia">
-                Mensagem Dia de Vencimento
-              </Label>
-              <Textarea
+              <MessageEditor
                 id="mensagem_lembrete_dia"
+                label="Mensagem Dia de Vencimento"
                 value={configuracoes?.mensagem_lembrete_dia || ""}
-                onChange={(e) =>
-                  handleChange("mensagem_lembrete_dia", e.target.value)
-                }
+                onChange={handleChange}
+                variables={commonVariables}
+                error={errors.mensagem_lembrete_dia}
+                onPreview={() => handlePreview("Dia de Vencimento", configuracoes?.mensagem_lembrete_dia || "")}
               />
-              <p className="text-xs text-muted-foreground">
-                Use variáveis como {"{{nome_responsavel}}"},{" "}
-                {"{{nome_passageiro}}"}, {"{{valor}}"}, {"{{vencimento}}"}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="mensagem_lembrete_atraso">
-                Mensagem Mensalidade Atrasada
-              </Label>
-              <Textarea
+              <MessageEditor
                 id="mensagem_lembrete_atraso"
+                label="Mensagem Mensalidade Atrasada"
                 value={configuracoes?.mensagem_lembrete_atraso || ""}
-                onChange={(e) =>
-                  handleChange("mensagem_lembrete_atraso", e.target.value)
-                }
+                onChange={handleChange}
+                variables={commonVariables}
+                error={errors.mensagem_lembrete_atraso}
+                onPreview={() => handlePreview("Mensalidade Atrasada", configuracoes?.mensagem_lembrete_atraso || "")}
               />
-              <p className="text-xs text-muted-foreground">
-                Use variáveis como {"{{nome_responsavel}}"},{" "}
-                {"{{nome_passageiro}}"}, {"{{valor}}"}, {"{{vencimento}}"}
-              </p>
-            </div>
-
-            <Button onClick={handleSave} disabled={saving}>
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Salvar
-            </Button>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+
+      <Dialog open={previewData.isOpen} onOpenChange={(isOpen) => setPreviewData({ ...previewData, isOpen })}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{previewData.title}</DialogTitle>
+          </DialogHeader>
+          <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap rounded-md border bg-muted p-4 text-sm">
+            <p>{previewData.content}</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 import LatePaymentsAlert from "@/components/LatePaymentsAlert";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
-import PaymentStatsCard from "@/components/PaymentStatsCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -10,14 +10,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { supabase } from "@/integrations/supabase/client";
-import { Calendar, CreditCard, DollarSign, Filter } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
 import { toast } from "@/hooks/use-toast";
+import { asaasService } from "@/integrations/asaasService";
+import { supabase } from "@/integrations/supabase/client";
 import { Cobranca } from "@/types/cobranca";
 import { PaymentStats } from "@/types/paymentStats";
+import {
+  Banknote,
+  CalendarDays,
+  CirclePercent,
+  ClipboardList,
+  CreditCard,
+  Filter,
+  Hourglass,
+  Landmark,
+  PieChart,
+  Smartphone,
+  Ticket,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface DashboardStats {
   totalPrevisto: number;
@@ -28,8 +40,104 @@ interface DashboardStats {
   cobrancasPendentes: number;
   cobrancasAtrasadas: number;
   percentualRecebimento: number;
-  passageirosComAtraso: number;
 }
+
+const apiKey = localStorage.getItem("asaas_api_key");
+
+const PaymentStatsDisplay = ({
+  stats,
+  totalRecebido,
+  loading,
+}: {
+  stats: PaymentStats;
+  totalRecebido: number;
+  loading: boolean;
+}) => {
+  const paymentMethods = [
+    { key: "pix", label: "PIX", icon: Smartphone, color: "bg-sky-500" },
+    {
+      key: "cartao",
+      label: "Cartões",
+      icon: CreditCard,
+      color: "bg-purple-500",
+    },
+    { key: "boleto", label: "Boleto", icon: Ticket, color: "bg-gray-500" },
+    {
+      key: "dinheiro",
+      label: "Dinheiro",
+      icon: Banknote,
+      color: "bg-green-500",
+    },
+    {
+      key: "transferencia",
+      label: "Transferência",
+      icon: Landmark,
+      color: "bg-blue-500",
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-16 w-full" />
+        ))}
+      </div>
+    );
+  }
+
+  const activeMethods = paymentMethods.filter(
+    (method) => stats[method.key as keyof PaymentStats]?.total > 0
+  );
+
+  if (activeMethods.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Nenhum pagamento registrado neste período.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {activeMethods.map((methodInfo) => {
+        const methodData = stats[methodInfo.key as keyof PaymentStats];
+        if (!methodData) return null;
+
+        const percentage =
+          totalRecebido > 0 ? (methodData.total / totalRecebido) * 100 : 0;
+
+        return (
+          <div key={methodInfo.key}>
+            <div className="flex justify-between items-center mb-2">
+              <div className="flex items-center gap-3">
+                <methodInfo.icon className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <div className="font-semibold">{methodInfo.label}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {methodData.count}{" "}
+                    {methodData.count === 1 ? "pagamento" : "pagamentos"}
+                  </div>
+                </div>
+              </div>
+              <div className="font-bold text-lg">
+                {methodData.total.toLocaleString("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                })}
+              </div>
+            </div>
+            <Progress
+              value={percentage}
+              className="h-2"
+              indicatorClassName={methodInfo.color}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 const Dashboard = () => {
   const [stats, setStats] = useState<DashboardStats>({
@@ -41,7 +149,6 @@ const Dashboard = () => {
     cobrancasPendentes: 0,
     cobrancasAtrasadas: 0,
     percentualRecebimento: 0,
-    passageirosComAtraso: 0,
   });
 
   const [paymentStats, setPaymentStats] = useState<PaymentStats>({
@@ -84,60 +191,35 @@ const Dashboard = () => {
       const { data: cobrancasMes } = await supabase
         .from("cobrancas")
         .select(
-          `
-          *,
-          passageiros (
-            id,
-            nome,
-            nome_responsavel,
-            valor_mensalidade,
-            dia_vencimento
-          )
-        `
+          `*, passageiros (id, nome, nome_responsavel, valor_mensalidade, dia_vencimento)`
         )
         .eq("mes", mesFilter)
         .eq("usuario_id", localStorage.getItem("app_user_id"))
         .eq("ano", anoFilter);
-
       const totalPrevisto =
         cobrancasMes?.reduce((sum, c) => sum + Number(c.valor), 0) || 0;
-
       const cobrancas = cobrancasMes || [];
       const totalCobrancas = cobrancas.length;
-
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
-
-      const cobrancasPagas = cobrancas.filter(
-        (c) => c.status === "pago"
-      ).length;
-
+      const cobrancasPagasList = cobrancas.filter((c) => c.status === "pago");
       const cobrancasAtrasadasList = cobrancas.filter((c) => {
         if (c.status === "pago") return false;
         const vencimento = new Date(c.data_vencimento);
         return vencimento < hoje;
       });
-
       const cobrancasPendentes = cobrancas.filter((c) => {
         if (c.status === "pago") return false;
         const vencimento = new Date(c.data_vencimento);
         return vencimento >= hoje;
       }).length;
-
-      const totalRecebido = cobrancas
-        .filter((c) => c.status === "pago")
-        .reduce((sum, c) => sum + Number(c.valor), 0);
-
+      const totalRecebido = cobrancasPagasList.reduce(
+        (sum, c) => sum + Number(c.valor),
+        0
+      );
       const totalAReceber = totalPrevisto - totalRecebido;
-
       const percentualRecebimento =
         totalPrevisto > 0 ? (totalRecebido / totalPrevisto) * 100 : 0;
-
-      const passageirosAtrasados = new Set(
-        cobrancasAtrasadasList.map((c) => c.passageiro_id)
-      );
-
-      const cobrancasPagasData = cobrancas.filter((c) => c.status === "pago");
       const paymentStatsData: PaymentStats = {
         pix: { count: 0, total: 0 },
         cartao: { count: 0, total: 0 },
@@ -145,11 +227,9 @@ const Dashboard = () => {
         transferencia: { count: 0, total: 0 },
         boleto: { count: 0, total: 0 },
       };
-
-      cobrancasPagasData.forEach((c) => {
+      cobrancasPagasList.forEach((c) => {
         const tipo = c.tipo_pagamento?.toLowerCase() || "";
         const valor = Number(c.valor);
-
         if (tipo === "pix") {
           paymentStatsData.pix.count++;
           paymentStatsData.pix.total += valor;
@@ -163,26 +243,20 @@ const Dashboard = () => {
           paymentStatsData.boleto.count++;
           paymentStatsData.boleto.total += valor;
         } else if (tipo === "transferencia") {
-          if (!paymentStatsData.transferencia) {
-            paymentStatsData.transferencia = { count: 0, total: 0 };
-          }
           paymentStatsData.transferencia.count++;
           paymentStatsData.transferencia.total += valor;
         }
       });
-
       setStats({
         totalPrevisto,
         totalRecebido,
         totalAReceber,
         totalCobrancas,
-        cobrancasPagas,
+        cobrancasPagas: cobrancasPagasList.length,
         cobrancasPendentes,
         cobrancasAtrasadas: cobrancasAtrasadasList.length,
         percentualRecebimento,
-        passageirosComAtraso: passageirosAtrasados.size,
       });
-
       setPaymentStats(paymentStatsData);
       setLatePayments(cobrancasAtrasadasList);
     } catch (error) {
@@ -192,25 +266,81 @@ const Dashboard = () => {
     }
   };
 
-  const reenviarCobranca = async (
+  const enviarNotificacaoCobranca = async (
     cobrancaId: string,
     nomePassageiro: string
   ) => {
-    toast({
-      title: "Mensalidade reenviada com sucesso para o responsável",
-    });
+    try {
+      const { data: cobranca, error: fetchError } = await supabase
+        .from("cobrancas")
+        .select(
+          `
+        id,
+        valor,
+        asaas_payment_id,
+        passageiro:passageiros (
+          id,
+          nome,
+          nome_responsavel,
+          telefone_responsavel
+        )
+      `
+        )
+        .eq("id", cobrancaId)
+        .single();
+
+      if (fetchError || !cobranca) {
+        throw new Error("Não foi possível localizar a mensalidade.");
+      }
+
+      const to = cobranca.passageiro?.telefone_responsavel;
+      if (!to) {
+        throw new Error("Telefone do responsável não encontrado.");
+      }
+
+      const pix = await asaasService.obterPixAsaas(
+        cobranca.asaas_payment_id,
+        apiKey
+      );
+
+      const response = await fetch(
+        "https://jztyffakurtekwxurclw.supabase.co/functions/v1/enviarNotificacaoManual",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            to,
+            pix: pix || undefined,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Erro na Edge Function: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error("Falha no fluxo do n8n");
+      }
+
+      toast({ title: "Notificação enviada com sucesso para o responsável" });
+    } catch (err) {
+      console.error("Erro ao enviar notificação:", err);
+      toast({ title: "Erro ao enviar notificação", variant: "destructive" });
+    }
   };
 
   const openPaymentDialog = (cobranca: Cobranca) => {
     setSelectedCobranca(cobranca);
     setPaymentDialogOpen(true);
   };
-
   const handlePaymentRecorded = () => {
     fetchStats();
     setPaymentDialogOpen(false);
   };
-
   const handleViewHistory = (passageiroId: string) => {
     navigate(`/passageiros/${passageiroId}`);
   };
@@ -222,14 +352,13 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       <div className="w-full">
-        {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             Tela Inicial
           </h1>
         </div>
 
-        {/* Filtros no topo */}
+        {/* AJUSTE 1: Filtros com layout otimizado e labels claras */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -238,74 +367,72 @@ const Dashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <label className="text-sm font-medium mb-2 block">Mês</label>
-                <Select
-                  value={mesFilter.toString()}
-                  onValueChange={(value) => setMesFilter(Number(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o mês" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {meses.map((mes, index) => (
-                      <SelectItem key={index} value={(index + 1).toString()}>
-                        {mes}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1">
-                <label className="text-sm font-medium mb-2 block">Ano</label>
-                <Select
-                  value={anoFilter.toString()}
-                  onValueChange={(value) => setAnoFilter(Number(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o ano" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[2023, 2024, 2025, 2026].map((ano) => (
-                      <SelectItem key={ano} value={ano.toString()}>
-                        {ano}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+              <label htmlFor="mes-select" className="text-sm font-medium">
+                Mês
+              </label>
+              <label htmlFor="ano-select" className="text-sm font-medium">
+                Ano
+              </label>
+              <Select
+                value={mesFilter.toString()}
+                onValueChange={(value) => setMesFilter(Number(value))}
+              >
+                <SelectTrigger id="mes-select">
+                  <SelectValue placeholder="Selecione o mês" />
+                </SelectTrigger>
+                <SelectContent>
+                  {meses.map((mes, index) => (
+                    <SelectItem key={index} value={(index + 1).toString()}>
+                      {mes}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={anoFilter.toString()}
+                onValueChange={(value) => setAnoFilter(Number(value))}
+              >
+                <SelectTrigger id="ano-select">
+                  <SelectValue placeholder="Selecione o ano" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[2023, 2024, 2025, 2026].map((ano) => (
+                    <SelectItem key={ano} value={ano.toString()}>
+                      {ano}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
 
-        {/* Alerta de Mensalidades em Atraso */}
         <LatePaymentsAlert
           latePayments={latePayments}
           loading={loading}
           totalCobrancas={stats.totalCobrancas}
           selectedMonth={mesFilter}
-          onReenviarCobranca={reenviarCobranca}
+          onEnviarNotificacaoCobranca={enviarNotificacaoCobranca}
           onPayment={openPaymentDialog}
           onViewHistory={handleViewHistory}
           onRefresh={fetchStats}
         />
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Total Previsto
               </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <ClipboardList className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               {loading ? (
                 <Skeleton className="h-8 w-32" />
               ) : (
-                <div className="text-2xl font-bold">
-                  {Number(stats.totalPrevisto).toLocaleString("pt-BR", {
+                <div className="text-xl sm:text-2xl font-bold">
+                  {stats.totalPrevisto.toLocaleString("pt-BR", {
                     style: "currency",
                     currency: "BRL",
                   })}
@@ -313,20 +440,19 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Total Recebido
               </CardTitle>
-              <DollarSign className="h-4 w-4 text-green-600" />
+              <Landmark className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
               {loading ? (
                 <Skeleton className="h-8 w-32" />
               ) : (
-                <div className="text-2xl font-bold text-green-600">
-                  {Number(stats.totalRecebido).toLocaleString("pt-BR", {
+                <div className="text-xl sm:text-2xl font-bold text-green-600">
+                  {stats.totalRecebido.toLocaleString("pt-BR", {
                     style: "currency",
                     currency: "BRL",
                   })}
@@ -334,20 +460,19 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Total a Receber
               </CardTitle>
-              <DollarSign className="h-4 w-4 text-orange-600" />
+              <Hourglass className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
               {loading ? (
                 <Skeleton className="h-8 w-32" />
               ) : (
-                <div className="text-2xl font-bold text-orange-600">
-                  {Number(stats.totalAReceber).toLocaleString("pt-BR", {
+                <div className="text-xl sm:text-2xl font-bold text-orange-600">
+                  {stats.totalAReceber.toLocaleString("pt-BR", {
                     style: "currency",
                     currency: "BRL",
                   })}
@@ -355,19 +480,18 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 % Recebimento
               </CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <CirclePercent className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               {loading ? (
                 <Skeleton className="h-8 w-20" />
               ) : (
-                <div className="text-2xl font-bold">
+                <div className="text-xl sm:text-2xl font-bold">
                   {stats.percentualRecebimento.toFixed(1)}%
                 </div>
               )}
@@ -375,86 +499,88 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Status Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Mensalidades
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                <div className="text-2xl font-bold">{stats.totalCobrancas}</div>
-              )}
-            </CardContent>
-          </Card>
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CalendarDays className="w-5 h-5" />
+              Situação do Mês
+            </CardTitle>
+          </CardHeader>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pagas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                <div className="text-2xl font-bold text-green-600">
-                  {stats.cobrancasPagas}
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="text-sm font-medium text-muted-foreground mb-1">
+                  Mensalidades
                 </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">A vencer</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                <div className="text-2xl font-bold text-orange-600">
-                  {stats.cobrancasPendentes}
+                {loading ? (
+                  <Skeleton className="h-7 w-12" />
+                ) : (
+                  <div className="text-2xl font-bold">
+                    {stats.totalCobrancas}
+                  </div>
+                )}
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="text-sm font-medium text-muted-foreground mb-1">
+                  Pagas
                 </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Em Atraso</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                <div className="text-2xl font-bold text-red-600">
-                  {stats.cobrancasAtrasadas}
+                {loading ? (
+                  <Skeleton className="h-7 w-12" />
+                ) : (
+                  <div className="text-2xl font-bold text-green-600">
+                    {stats.cobrancasPagas}
+                  </div>
+                )}
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="text-sm font-medium text-muted-foreground mb-1">
+                  A vencer
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                {loading ? (
+                  <Skeleton className="h-7 w-12" />
+                ) : (
+                  <div className="text-2xl font-bold text-orange-600">
+                    {stats.cobrancasPendentes}
+                  </div>
+                )}
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="text-sm font-medium text-muted-foreground mb-1">
+                  Em Atraso
+                </div>
+                {loading ? (
+                  <Skeleton className="h-7 w-12" />
+                ) : (
+                  <div className="text-2xl font-bold text-red-600">
+                    {stats.cobrancasAtrasadas}
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Card de Mensalidades por Tipo */}
+        {/* AJUSTE 3: Ícone do título corrigido para PieChart */}
         {stats.totalRecebido > 0 && (
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CreditCard className="w-4 h-4" />
-                Total Recebido por Forma de Pgto
+                <PieChart className="w-5 h-5" />
+                Origem dos Recebimentos
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <PaymentStatsCard stats={paymentStats} loading={loading} />
+              <PaymentStatsDisplay
+                stats={paymentStats}
+                totalRecebido={stats.totalRecebido}
+                loading={loading}
+              />
             </CardContent>
           </Card>
         )}
       </div>
 
-      {/* Manual Payment Dialog */}
       {selectedCobranca && (
         <ManualPaymentDialog
           isOpen={paymentDialogOpen}
