@@ -18,10 +18,10 @@ import { PaymentStats } from "@/types/paymentStats";
 import {
   Banknote,
   CalendarDays,
+  CheckCircle,
   CirclePercent,
   ClipboardList,
   CreditCard,
-  Filter,
   Hourglass,
   Landmark,
   PieChart,
@@ -93,7 +93,7 @@ const PaymentStatsDisplay = ({
   if (activeMethods.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        Nenhum pagamento registrado neste período.
+        Nenhuma mensalidade recebida neste período.
       </p>
     );
   }
@@ -360,13 +360,7 @@ const Dashboard = () => {
 
         {/* AJUSTE 1: Filtros com layout otimizado e labels claras */}
         <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="w-4 h-4" />
-              Filtros
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="mt-4">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
               <label htmlFor="mes-select" className="text-sm font-medium">
                 Mês
@@ -408,16 +402,32 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <LatePaymentsAlert
-          latePayments={latePayments}
-          loading={loading}
-          totalCobrancas={stats.totalCobrancas}
-          selectedMonth={mesFilter}
-          onEnviarNotificacaoCobranca={enviarNotificacaoCobranca}
-          onPayment={openPaymentDialog}
-          onViewHistory={handleViewHistory}
-          onRefresh={fetchStats}
-        />
+        {loading ? (
+          <Card className="mb-6">
+            <CardHeader>
+              <Skeleton className="h-6 w-48" />
+            </CardHeader>
+            <CardContent className="">
+              <Skeleton className="h-10 w-full" />
+            </CardContent>
+          </Card>
+        ) : latePayments.length > 0 ? (
+          <LatePaymentsAlert latePayments={latePayments} />
+        ) : stats.totalCobrancas > 0 ? (
+          <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <div className="text-sm font-medium text-green-800">
+              Tudo em dia! Não há mensalidades pendentes em{" "}
+              {meses[mesFilter - 1]}. 🎉
+            </div>
+          </div>
+        ) : (
+          <div className="mb-6 flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <div className="text-sm font-medium text-gray-500">
+              Nenhuma mensalidade registrada para {meses[mesFilter - 1]}.
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <Card>
@@ -562,23 +572,21 @@ const Dashboard = () => {
         </Card>
 
         {/* AJUSTE 3: Ícone do título corrigido para PieChart */}
-        {stats.totalRecebido > 0 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <PieChart className="w-5 h-5" />
-                Origem dos Recebimentos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PaymentStatsDisplay
-                stats={paymentStats}
-                totalRecebido={stats.totalRecebido}
-                loading={loading}
-              />
-            </CardContent>
-          </Card>
-        )}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PieChart className="w-5 h-5" />
+              Origem dos Recebimentos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PaymentStatsDisplay
+              stats={paymentStats}
+              totalRecebido={stats.totalRecebido}
+              loading={loading}
+            />
+          </CardContent>
+        </Card>
       </div>
 
       {selectedCobranca && (

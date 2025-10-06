@@ -1,12 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { toast } from "@/components/ui/use-toast";
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
   formatCobrancaOrigem,
@@ -16,8 +17,26 @@ import {
   getStatusColor,
   getStatusText,
 } from "@/utils/formatters";
-import { MessageCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  ArrowRight,
+  BadgeCheck,
+  Bell,
+  BellOff,
+  Calendar,
+  Contact,
+  CreditCard,
+  Download,
+  ExternalLink,
+  FileText,
+  IdCard,
+  MessageCircle,
+  School,
+  Send,
+  Trash2,
+  User,
+  XCircle,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 interface CobrancaDetalhe {
@@ -41,6 +60,40 @@ interface CobrancaDetalhe {
   escola_nome: string;
 }
 
+const InfoItem = ({
+  icon: Icon,
+  label,
+  children,
+  className,
+}: {
+  icon: React.ElementType;
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <div className={className}>
+    <div className="text-sm text-muted-foreground flex items-center gap-1.5">
+      <Icon className="w-4 h-4" />
+      <span>{label}</span>
+    </div>
+    <div className="font-semibold text-foreground mt-1">{children || "-"}</div>
+  </div>
+);
+
+const CobrancaDetalheSkeleton = () => (
+  <div className="space-y-6">
+    <div className="flex items-center justify-between mb-6">
+      <Skeleton className="h-9 w-64" />
+      <Skeleton className="h-10 w-24" />
+    </div>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <Skeleton className="lg:col-span-3 h-32 w-full" />
+      <Skeleton className="lg:col-span-2 h-64 w-full" />
+      <Skeleton className="lg:col-span-1 h-64 w-full" />
+    </div>
+  </div>
+);
+
 export default function PassageiroCobranca() {
   const navigate = useNavigate();
   const params = useParams();
@@ -48,209 +101,268 @@ export default function PassageiroCobranca() {
     passageiro_id: string;
     cobranca_id: string;
   };
-
+  const [loading, setLoading] = useState(true);
   const [cobranca, setCobranca] = useState<CobrancaDetalhe | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data, error } = await supabase
-        .from("vw_cobrancas_detalhes")
-        .select("*")
-        .eq("cobranca_id", cobranca_id)
-        .single();
-
-      if (error || !data) {
-        navigate("/dashboard");
-        return;
+      setLoading(true); // Garante que o loading seja exibido em re-fetches
+      try {
+        const { data, error } = await supabase
+          .from("vw_cobrancas_detalhes")
+          .select("*")
+          .eq("cobranca_id", cobranca_id)
+          .single();
+        if (error || !data) {
+          toast({
+            title: "Erro",
+            description: "Mensalidade não encontrada.",
+            variant: "destructive",
+          });
+          navigate("/dashboard");
+          return;
+        }
+        setCobranca(data as CobrancaDetalhe);
+      } catch (error) {
+        console.error("Erro ao buscar detalhes da cobrança:", error);
+      } finally {
+        setLoading(false);
       }
-      setCobranca(data as CobrancaDetalhe);
     };
     fetchData();
-  }, [cobranca_id, navigate]);
+  }, [cobranca_id, navigate, toast]);
 
-  if (!cobranca) return <div>Carregando...</div>;
+  if (loading) return <CobrancaDetalheSkeleton />;
+
+  if (!cobranca) return null;
+
+  const handleAction = (title: string) => {
+    toast({ title });
+  };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-          Mensalidade
+          Detalhes da Mensalidade
         </h1>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="default">Ações</Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem
-              disabled={cobranca.status === "pago"}
-              onClick={() => toast({ title: "Registrar pagamento" })}
-            >
-              Registrar Pagamento
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              disabled={
-                cobranca.status !== "pago" || !cobranca.pagamento_manual
-              }
-              onClick={() => toast({ title: "Desfazer pagamento" })}
-            >
-              Desfazer Pagamento
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              disabled={
-                cobranca.status === "pago" || cobranca.origem === "manual"
-              }
-              onClick={() => toast({ title: "Enviar notificação" })}
-            >
-              Enviar Notificação
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              disabled={
-                cobranca.status === "pago" || cobranca.origem === "manual"
-              }
-              onClick={() => toast({ title: "Toggle Lembretes" })}
-            >
-              {cobranca.desativar_lembretes
-                ? "Ativar Lembretes"
-                : "Desativar Lembretes"}
-            </DropdownMenuItem>
-            <DropdownMenuItem
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Card Principal de Status */}
+        <Card className="lg:col-span-3 order-1">
+          <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <div className="text-sm text-muted-foreground">
+                Valor da Mensalidade
+              </div>
+              <div className="text-4xl font-bold tracking-tight">
+                {cobranca.valor.toLocaleString("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                })}
+              </div>
+              <div className="text-muted-foreground mt-1">
+                Vencimento em: {formatDateToBR(cobranca.data_vencimento)}
+              </div>
+              {cobranca.status !== "pago" && (
+                <span
+                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                    cobranca.status,
+                    cobranca.data_vencimento
+                  )}`}
+                >
+                  {getStatusText(cobranca.status, cobranca.data_vencimento)}
+                </span>
+              )}
+            </div>
+            <div className="flex-shrink-0 w-full sm:w-auto">
+              {cobranca.status === "pendente" ? (
+                <Button
+                  size="lg"
+                  className="w-full"
+                  onClick={() => handleAction("Registrar Pagamento")}
+                >
+                  <BadgeCheck className="w-5 h-5 mr-2" /> Registrar Pagamento
+                </Button>
+              ) : cobranca.pagamento_manual ? (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleAction("Desfazer Pagamento")}
+                >
+                  <XCircle className="w-5 h-5 mr-2" /> Desfazer Pagamento
+                </Button>
+              ) : (
+                <div
+                  className={`flex items-center justify-center px-4 py-2 rounded-md text-base font-medium ${getStatusColor(
+                    cobranca.status,
+                    cobranca.data_vencimento
+                  )}`}
+                >
+                  {getStatusText(cobranca.status, cobranca.data_vencimento)}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Detalhes do Pagamento */}
+        <Card className="lg:col-span-2 order-3 lg:order-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Detalhes da Transação
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 border rounded-lg bg-muted/50">
+              <InfoItem icon={CreditCard} label="Forma de Pagamento">
+                {formatPaymentType(cobranca.tipo_pagamento)}
+              </InfoItem>
+              <InfoItem icon={Calendar} label="Data do Pagamento">
+                {cobranca.data_pagamento
+                  ? formatDateTimeToBR(cobranca.data_pagamento, {
+                      includeTime: true,
+                    })
+                  : "-"}
+              </InfoItem>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+              <InfoItem icon={Bell} label="Notificações no WhatsApp">
+                {cobranca.desativar_lembretes ? "Desativadas" : "Ativadas"}
+              </InfoItem>
+              <InfoItem icon={ArrowRight} label="Origem">
+                {formatCobrancaOrigem(cobranca.origem)}
+              </InfoItem>
+              <InfoItem icon={BadgeCheck} label="Pgto. Manual">
+                {cobranca.pagamento_manual ? "Sim" : "Não"}
+              </InfoItem>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t">
+              <Button
+                asChild
+                disabled={!cobranca.asaas_invoice_url}
+                variant="secondary"
+                className="flex-1"
+              >
+                <a
+                  href={cobranca.asaas_invoice_url || "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" /> Ver Página de
+                  Pagamento
+                </a>
+              </Button>
+              <Button
+                asChild
+                disabled={!cobranca.asaas_bankslip_url}
+                variant="outline"
+                className="flex-1"
+              >
+                <a
+                  href={cobranca.asaas_bankslip_url || "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Download className="w-4 h-4 mr-2" /> Baixar Boleto
+                </a>
+              </Button>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
               disabled={
                 cobranca.status === "pago" || cobranca.origem === "automatica"
               }
-              className="text-red-600"
-              onClick={() => toast({ title: "Excluir mensalidade" })}
+              onClick={() => handleAction("Excluir Mensalidade")}
             >
-              Excluir Mensalidade
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <Trash2 className="w-3 h-3 mr-2" /> Excluir Mensalidade Manual
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Passageiro e Responsável */}
+        <Card className="lg:col-span-1 order-2 lg:order-3">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Contact className="w-5 h-5" />
+              Contato e Informações
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <InfoItem icon={User} label="Passageiro">
+              {cobranca.passageiro_nome}
+            </InfoItem>
+            <InfoItem icon={Contact} label="Responsável">
+              {cobranca.nome_responsavel}
+            </InfoItem>
+            <InfoItem icon={School} label="Escola">
+              {cobranca.escola_nome}
+            </InfoItem>
+
+            <div className="space-y-2 pt-6 border-t">
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={() =>
+                  navigate(`/passageiros/${cobranca.passageiro_id}`)
+                }
+              >
+                <IdCard className="h-4 w-4 mr-2" /> Ver Carteirinha Digital
+              </Button>
+              <Button
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                disabled={!cobranca.telefone_responsavel}
+                onClick={() =>
+                  window.open(
+                    `https://wa.me/${cobranca.telefone_responsavel?.replace(
+                      /\D/g,
+                      ""
+                    )}`,
+                    "_blank"
+                  )
+                }
+              >
+                <MessageCircle className="h-4 w-4 mr-2" /> Enviar WhatsApp
+              </Button>
+              <Button
+                className="w-full"
+                variant="outline"
+                disabled={
+                  cobranca.status === "pago" || cobranca.origem === "manual"
+                }
+                onClick={() => handleAction("Enviar Notificação")}
+              >
+                <Send className="h-4 w-4 mr-2" /> Enviar Notificação
+              </Button>
+              <Button
+                className="w-full"
+                variant="outline"
+                disabled={
+                  cobranca.status === "pago" || cobranca.origem === "manual"
+                }
+                onClick={() => handleAction("Toggle Lembretes")}
+              >
+                {cobranca.desativar_lembretes ? (
+                  <Bell className="h-4 w-4 mr-2" />
+                ) : (
+                  <BellOff className="h-4 w-4 mr-2" />
+                )}
+                {cobranca.desativar_lembretes
+                  ? "Ativar Lembretes"
+                  : "Desativar Lembretes"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-
-      {/* Status e Valor */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Status da Mensalidade</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold">
-              {cobranca.valor.toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })}
-            </span>
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                cobranca.status,
-                cobranca.data_vencimento
-              )}`}
-            >
-              {getStatusText(cobranca.status, cobranca.data_vencimento)}
-            </span>
-          </div>
-          <p>
-            <strong>Vencimento:</strong>{" "}
-            {formatDateToBR(cobranca.data_vencimento)}
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Detalhes do Pagamento */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Detalhes do Pagamento</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <p>
-            <strong>Origem:</strong> {formatCobrancaOrigem(cobranca.origem)}
-          </p>
-          <p>
-            <strong>Lembretes Automáticos:</strong>{" "}
-            {cobranca.desativar_lembretes ? "Ativo" : "Inativo"}
-          </p>
-          <p>
-            <strong>Pagamento Manual:</strong>{" "}
-            {cobranca.pagamento_manual ? "Sim" : "Não"}
-          </p>
-          <p>
-            <strong>Forma de Pagamento:</strong>{" "}
-            {formatPaymentType(cobranca.tipo_pagamento)}
-          </p>
-          <p>
-            <strong>Data do Pagamento:</strong>{" "}
-            {cobranca.data_pagamento
-              ? formatDateTimeToBR(cobranca.data_pagamento, {
-                  includeTime: true,
-                })
-              : "-"}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-2 mt-2">
-            <Button
-              asChild
-              disabled={!cobranca.asaas_invoice_url}
-              variant="secondary"
-            >
-              <a
-                href={cobranca.asaas_invoice_url || "#"}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Abrir Cobrança
-              </a>
-            </Button>
-            <Button
-              asChild
-              disabled={!cobranca.asaas_bankslip_url}
-              variant="secondary"
-            >
-              <a
-                href={cobranca.asaas_bankslip_url || "#"}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Baixar Boleto
-              </a>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Passageiro e Responsável */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Passageiro e Responsável</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <p>
-            <strong>Passageiro:</strong> {cobranca.passageiro_nome}
-          </p>
-          <p>
-            <strong>Escola:</strong> {cobranca.escola_nome}
-          </p>
-          <p>
-            <strong>Responsável:</strong> {cobranca.nome_responsavel}
-          </p>
-          <p>
-            <strong>Telefone:</strong> {cobranca.telefone_responsavel || "-"}
-          </p>
-          <Button
-            className="mt-2 bg-green-600 hover:bg-green-700 text-white"
-            disabled={!cobranca.telefone_responsavel}
-            onClick={() =>
-              window.open(
-                `https://wa.me/${cobranca.telefone_responsavel?.replace(
-                  /\D/g,
-                  ""
-                )}`,
-                "_blank"
-              )
-            }
-          >
-            <MessageCircle className="h-4 w-4 mr-2" /> Enviar WhatsApp
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   );
 }

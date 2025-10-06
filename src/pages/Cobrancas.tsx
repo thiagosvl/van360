@@ -2,7 +2,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,9 +33,9 @@ import {
   Archive,
   BellOff,
   CheckCircle2,
-  Filter,
   MoreVertical,
   Search,
+  Send
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -135,16 +135,16 @@ const Cobrancas = () => {
         .eq("id", cobranca.id);
       if (error) throw error;
       toast({
-        title: `Lembretes ${
-          novoStatus ? "desativados" : "ativados"
+        title: `Notificações ${
+          novoStatus ? "desativadas" : "ativadas"
         } com sucesso.`,
       });
       fetchCobrancas();
     } catch (err) {
-      console.error("Erro ao alternar lembretes:", err);
+      console.error("Erro ao realizar alterações:", err);
       toast({
         title: "Erro",
-        description: "Não foi possível atualizar o status dos lembretes.",
+        description: "Não foi possível realizar as alterações.",
         variant: "destructive",
       });
     }
@@ -265,13 +265,7 @@ const Cobrancas = () => {
           </h1>
         </div>
         <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="w-4 h-4" />
-              Filtros
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="mt-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Mês</label>
@@ -433,11 +427,27 @@ const Cobrancas = () => {
                                   cobranca.status !== "pago" && (
                                     <div className="text-xs text-yellow-800 mt-2 flex items-center gap-1">
                                       <BellOff className="w-3 h-3" />
-                                      Lembretes suspensos
+                                      Notificações suspensas
                                     </div>
                                   )}
                               </td>
                               <td className="p-3 text-center align-top">
+                                <Button
+      variant="ghost"
+      size="sm"
+      className="h-8 w-8 p-0"
+      disabled={cobranca.origem === "manual"}
+      onClick={(e) => {
+        e.stopPropagation();
+        setConfirmDialogEnvioNotificacao({
+          open: true,
+          cobrancaId: cobranca.id,
+          nomePassageiro: cobranca.passageiros.nome,
+        });
+      }}
+    >
+      <Send className="h-4 w-4" />
+    </Button>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button
@@ -456,7 +466,7 @@ const Cobrancas = () => {
                                         navigateToDetails(cobranca);
                                       }}
                                     >
-                                      Mensalidade
+                                      Ver Mensalidade
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                       onClick={(e) => {
@@ -466,7 +476,7 @@ const Cobrancas = () => {
                                         );
                                       }}
                                     >
-                                      Carteirinha Digital
+                                      Ver Carteirinha Digital
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                       onClick={(e) => {
@@ -501,8 +511,8 @@ const Cobrancas = () => {
                                       }}
                                     >
                                       {cobranca.desativar_lembretes
-                                        ? "Ativar Lembretes"
-                                        : "Desativar Lembretes"}
+                                        ? "Ativar Notificações"
+                                        : "Desativar Notificações"}
                                     </DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
@@ -547,7 +557,7 @@ const Cobrancas = () => {
                                     navigateToDetails(cobranca);
                                   }}
                                 >
-                                  Mensalidade
+                                  Ver Mensalidade
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={(e) => {
@@ -557,7 +567,7 @@ const Cobrancas = () => {
                                     );
                                   }}
                                 >
-                                  Carteirinha Digital
+                                  Ver Carteirinha Digital
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={(e) => {
@@ -591,8 +601,8 @@ const Cobrancas = () => {
                                   }}
                                 >
                                   {cobranca.desativar_lembretes
-                                    ? "Ativar Lembretes"
-                                    : "Desativar Lembretes"}
+                                    ? "Ativar Notificações"
+                                    : "Desativar Notificações"}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -625,7 +635,7 @@ const Cobrancas = () => {
                             cobranca.status !== "pago" && (
                               <div className="mt-2 flex items-center gap-2 text-xs p-2 rounded-md bg-yellow-50 text-yellow-800 border border-yellow-200">
                                 <BellOff className="h-4 w-4 shrink-0" />
-                                <span>Lembretes automáticos suspensos</span>
+                                <span>Notificações suspensas</span>
                               </div>
                             )}
                         </div>
@@ -748,7 +758,7 @@ const Cobrancas = () => {
                                         navigateToDetails(cobranca);
                                       }}
                                     >
-                                      Mensalidade
+                                      Ver Mensalidade
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                       onClick={(e) => {
@@ -758,7 +768,7 @@ const Cobrancas = () => {
                                         );
                                       }}
                                     >
-                                      Carteirinha Digital
+                                      Ver Carteirinha Digital
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                       disabled={
@@ -818,7 +828,7 @@ const Cobrancas = () => {
                                     navigateToDetails(cobranca);
                                   }}
                                 >
-                                  Mensalidade
+                                  Ver Mensalidade
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={(e) => {
@@ -828,7 +838,7 @@ const Cobrancas = () => {
                                     );
                                   }}
                                 >
-                                  Carteirinha Digital
+                                  Ver Carteirinha Digital
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   disabled={

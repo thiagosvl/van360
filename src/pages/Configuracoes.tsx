@@ -258,12 +258,12 @@ export default function Configuracoes() {
             <CardContent className="space-y-6">
               <MessageEditor
                 id="mensagem_lembrete_antecipada"
-                label="Mensagem Lembrete Antecipada"
+                label="Mensagem Notificação Antecipada"
                 value={configuracoes?.mensagem_lembrete_antecipada || ""}
                 onChange={handleChange}
                 variables={commonVariables}
                 error={errors.mensagem_lembrete_antecipada}
-                onPreview={() => handlePreview("Lembrete Antecipado", configuracoes?.mensagem_lembrete_antecipada || "")}
+                onPreview={() => handlePreview("Notificação Antecipada", configuracoes?.mensagem_lembrete_antecipada || "")}
               />
               <MessageEditor
                 id="mensagem_lembrete_dia"
