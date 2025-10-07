@@ -42,7 +42,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
-import { formatDateToBR } from "@/utils/formatters";
+import { formatDateToBR, meses } from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -97,20 +97,6 @@ const COLORS = [
   "#8884d8",
   "#82ca9d",
   "#ffc658",
-];
-const meses = [
-  "Janeiro",
-  "Fevereiro",
-  "Março",
-  "Abril",
-  "Maio",
-  "Junho",
-  "Julho",
-  "Agosto",
-  "Setembro",
-  "Outubro",
-  "Novembro",
-  "Dezembro",
 ];
 
 const renderCustomizedLabel = ({

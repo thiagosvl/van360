@@ -167,7 +167,7 @@ export default function UsuariosAdmin() {
           .eq("id", usuarioData.id);
       }
 
-      toast({ title: "Sucesso", description: "Usuário criado com sucesso!" });
+      toast({  title: "Usuário criado com sucesso!" });
       await fetchUsuarios();
       closeForm();
     } catch (error) {
@@ -236,8 +236,7 @@ export default function UsuariosAdmin() {
       }
 
       toast({
-        title: "Sucesso",
-        description: "Usuário atualizado com sucesso!",
+        title: "Usuário atualizado com sucesso!",
       });
 
       await fetchUsuarios();
@@ -277,8 +276,7 @@ export default function UsuariosAdmin() {
       if (error) throw error;
 
       toast({
-        title: "Sucesso",
-        description: "Usuário excluído com sucesso!",
+        title: "Usuário excluído com sucesso!",
       });
 
       await fetchUsuarios();

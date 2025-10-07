@@ -96,6 +96,9 @@ export default function Escolas() {
   const [loadingPage, setLoadingPage] = useState(true);
   const [schoolToDelete, setSchoolToDelete] = useState<Escola | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [openAccordionItems, setOpenAccordionItems] = useState([
+    "dados-escola",
+  ]);
   const { toast } = useToast();
 
   const form = useForm<EscolaFormData>({
@@ -132,6 +135,15 @@ export default function Escolas() {
     } finally {
       setLoadingPage(false);
     }
+  };
+
+  const onFormError = (errors: any) => {
+    toast({
+      title: "Campos inválidos",
+      description: "Por favor, corrija os erros no formulário.",
+      variant: "destructive",
+    });
+    setOpenAccordionItems(["dados-escola", "endereco"]);
   };
 
   const handleSubmit = async (data: EscolaFormData) => {
@@ -284,22 +296,23 @@ export default function Escolas() {
               </DialogHeader>
               <Form {...form}>
                 <form
-                  onSubmit={form.handleSubmit(handleSubmit)}
+                  onSubmit={form.handleSubmit(handleSubmit, onFormError)}
                   className="space-y-6 pt-4"
                 >
                   <Accordion
                     type="multiple"
-                    defaultValue={["dados-escola", "endereco"]}
+                    value={openAccordionItems}
+                    onValueChange={setOpenAccordionItems}
                     className="w-full"
                   >
-                    <AccordionItem value="dados-escola">
+                    <AccordionItem value="dados-escola" className="mt-4">
                       <AccordionTrigger>
                         <div className="flex items-center gap-2 text-lg font-semibold">
                           <Building2 className="w-5 h-5 text-primary" />
                           Dados da Escola
                         </div>
                       </AccordionTrigger>
-                      <AccordionContent className="p-4 pt-6 space-y-4">
+                      <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
                         <FormField
                           control={form.control}
                           name="nome"
@@ -336,14 +349,14 @@ export default function Escolas() {
                         )}
                       </AccordionContent>
                     </AccordionItem>
-                    <AccordionItem value="endereco">
+                    <AccordionItem value="endereco" className="mt-4">
                       <AccordionTrigger>
                         <div className="flex items-center gap-2 text-lg font-semibold">
                           <MapPin className="w-5 h-5 text-primary" />
                           Endereço
                         </div>
                       </AccordionTrigger>
-                      <AccordionContent className="p-4 pt-6 space-y-4">
+                      <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                           <FormField
                             control={form.control}

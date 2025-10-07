@@ -20,8 +20,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { asaasService } from "@/integrations/asaasService";
 import { supabase } from "@/integrations/supabase/client";
+import { cobrancaService } from "@/services/passageiroService";
 import { Cobranca } from "@/types/cobranca";
 import {
   disableDesfazerPagamento,
@@ -33,6 +33,7 @@ import {
   formatPaymentType,
   getStatusColor,
   getStatusText,
+  meses,
 } from "@/utils/formatters";
 import {
   Archive,
@@ -82,25 +83,10 @@ const Cobrancas = () => {
 
   const navigate = useNavigate();
   const { toast } = useToast();
-  const apiKey = localStorage.getItem("asaas_api_key");
   const currentYear = new Date().getFullYear();
   const anos = Array.from({ length: 5 }, (_, i) =>
     (currentYear - i).toString()
   );
-  const meses = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
 
   const fetchCobrancas = async () => {
     setLoading(true);
@@ -120,8 +106,7 @@ const Cobrancas = () => {
     } catch (error) {
       console.error("Erro ao buscar mensalidades:", error);
       toast({
-        title: "Erro ao buscar dados",
-        description: "Não foi possível carregar as mensalidades.",
+        title: "Não foi possível carregar as mensalidades.",
         variant: "destructive",
       });
     } finally {
@@ -146,8 +131,7 @@ const Cobrancas = () => {
     } catch (err) {
       console.error("Erro ao realizar alterações:", err);
       toast({
-        title: "Erro",
-        description: "Não foi possível realizar as alterações.",
+        title: "Não foi possível realizar as alterações.",
         variant: "destructive",
       });
     }
@@ -169,55 +153,23 @@ const Cobrancas = () => {
 
   const desfazerPagamento = async () => {
     try {
-      const { data: cobranca, error: fetchError } = await supabase
-        .from("cobrancas")
-        .select("*")
-        .eq("id", confirmDialogDesfazer.cobrancaId)
-        .single();
-      if (fetchError || !cobranca)
-        throw new Error(
-          "Não foi possível localizar a mensalidade para desfazer"
-        );
-      const { error: updateError } = await supabase
-        .from("cobrancas")
-        .update({
-          status: "pendente",
-          data_pagamento: null,
-          tipo_pagamento: null,
-          pagamento_manual: false,
-        })
-        .eq("id", confirmDialogDesfazer.cobrancaId);
-      if (updateError) throw updateError;
-      if (cobranca.origem === "automatica" && apiKey) {
-        try {
-          await asaasService.undoPaymentInCash(
-            cobranca.asaas_payment_id,
-            apiKey
-          );
-        } catch (asaasErr) {
-          console.error("Erro ao desfazer no Asaas:", asaasErr);
-          await supabase
-            .from("cobrancas")
-            .update({
-              status: "pago",
-              data_pagamento: cobranca.data_pagamento,
-              tipo_pagamento: cobranca.tipo_pagamento,
-              pagamento_manual: cobranca.pagamento_manual,
-            })
-            .eq("id", cobranca.id);
-          throw new Error("Erro ao desfazer pagamento no Asaas");
-        }
-      }
+      await cobrancaService.desfazerPagamento(confirmDialogDesfazer.cobrancaId);
+
       toast({
         title: "Pagamento desfeito com sucesso.",
         description: "A mensalidade voltou para a lista de em aberto.",
       });
       fetchCobrancas();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao desfazer pagamento:", error);
-      toast({ title: "Erro ao desfazer pagamento.", variant: "destructive" });
+      toast({
+        title: "Erro ao desfazer pagamento.",
+        description: error.message || "Não foi possível concluir a operação.",
+        variant: "destructive",
+      });
+    } finally {
+      setConfirmDialogDesfazer({ open: false, cobrancaId: "" });
     }
-    setConfirmDialogDesfazer({ open: false, cobrancaId: "" });
   };
 
   const openPaymentDialog = (cobranca: Cobranca) => {
@@ -478,7 +430,7 @@ const Cobrancas = () => {
                                         );
                                       }}
                                     >
-                                      Ver Carteirinha Digital
+                                      Ver Carteirinha
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                       disabled={disableRegistrarPagamento(
@@ -573,7 +525,7 @@ const Cobrancas = () => {
                                     );
                                   }}
                                 >
-                                  Ver Carteirinha Digital
+                                  Ver Carteirinha
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   disabled={disableRegistrarPagamento(cobranca)}
@@ -740,7 +692,7 @@ const Cobrancas = () => {
                                 </div>
                                 {cobranca.pagamento_manual && (
                                   <div className="text-xs text-muted-foreground mt-1">
-                                    Registrado Manualmente
+                                    Registrado manualmente
                                   </div>
                                 )}
                               </td>
@@ -773,7 +725,7 @@ const Cobrancas = () => {
                                         );
                                       }}
                                     >
-                                      Ver Carteirinha Digital
+                                      Ver Carteirinha
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                       disabled={disableDesfazerPagamento(
@@ -842,7 +794,7 @@ const Cobrancas = () => {
                                     );
                                   }}
                                 >
-                                  Ver Carteirinha Digital
+                                  Ver Carteirinha
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   disabled={disableDesfazerPagamento(cobranca)}
@@ -886,7 +838,7 @@ const Cobrancas = () => {
                           </div>
                           {cobranca.pagamento_manual && (
                             <div className="text-xs text-muted-foreground mt-2 pt-2 border-t">
-                              Registrado Manualmente
+                              Registrado manualmente
                             </div>
                           )}
                         </div>

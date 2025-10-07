@@ -1,3 +1,18 @@
+export const meses = [
+  "Janeiro",
+  "Fevereiro",
+  "Março",
+  "Abril",
+  "Maio",
+  "Junho",
+  "Julho",
+  "Agosto",
+  "Setembro",
+  "Outubro",
+  "Novembro",
+  "Dezembro",
+];
+
 export const formatDate = (date: string | Date) => {
   const d = new Date(date + "T00:00:00");
   return d;
@@ -110,3 +125,8 @@ export const formatPaymentType = (tipo: string | undefined) => {
 
   return typeMap[tipo] || tipo;
 };
+
+export const currentMonthInText = () => {
+  const date = new Date();
+  return meses[date.getMonth()];
+}

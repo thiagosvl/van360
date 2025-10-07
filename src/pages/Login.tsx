@@ -101,7 +101,6 @@ export default function Login() {
 
       toast({
         title: "Login realizado com sucesso",
-        description: "Bem-vindo!",
       });
 
       const role = (usuarioData.role as string | undefined) || undefined;

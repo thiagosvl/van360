@@ -10,6 +10,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { cobrancaService } from "@/services/passageiroService";
 import {
   disableEnviarNotificacao,
   disableExcluirMensalidade,
@@ -38,6 +39,7 @@ import {
   FileText,
   History as HistoryIcon,
   IdCard,
+  Loader2,
   MessageCircle,
   School,
   Send,
@@ -157,6 +159,7 @@ export default function PassageiroCobranca() {
     cobranca_id: string;
   };
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [cobranca, setCobranca] = useState<CobrancaDetalhe | null>(null);
   const [showFullHistory, setShowFullHistory] = useState(false);
@@ -210,8 +213,7 @@ export default function PassageiroCobranca() {
         .single();
       if (error || !data) {
         toast({
-          title: "Erro",
-          description: "Mensalidade não encontrada.",
+          title: "Mensalidade não encontrada.",
           variant: "destructive",
         });
         navigate("/dashboard");
@@ -222,6 +224,27 @@ export default function PassageiroCobranca() {
       console.error("Erro ao buscar detalhes da cobrança:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const desfazerPagamento = async () => {
+    setSaving(true);
+    try {
+      await cobrancaService.desfazerPagamento(cobranca_id);
+
+      toast({
+        title: "Pagamento desfeito com sucesso.",
+      });
+      fetchData();
+    } catch (error: any) {
+      console.error("Erro ao desfazer pagamento:", error);
+      toast({
+        title: "Erro ao desfazer pagamento.",
+        description: error.message || "Não foi possível concluir a operação.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -289,9 +312,11 @@ export default function PassageiroCobranca() {
                   size="lg"
                   variant="outline"
                   className="w-full"
-                  onClick={() => handleAction("Desfazer Pagamento")}
+                  onClick={() => desfazerPagamento()}
                 >
-                  <XCircle className="w-5 h-5 mr-2" /> Desfazer Pagamento
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {!saving && <XCircle className="w-5 h-5 mr-2" />} Desfazer
+                  Pagamento
                 </Button>
               ) : (
                 <div
@@ -448,7 +473,7 @@ export default function PassageiroCobranca() {
                   navigate(`/passageiros/${cobranca.passageiro_id}`)
                 }
               >
-                <IdCard className="h-4 w-4 mr-2" /> Ver Carteirinha Digital
+                <IdCard className="h-4 w-4 mr-2" /> Ver Carteirinha
               </Button>
               <Button
                 className="w-full bg-green-600 hover:bg-green-700 text-white"

@@ -68,7 +68,12 @@ const MessageEditor = ({
         <Label htmlFor={id} className="font-semibold">
           {label}
         </Label>
-        <Button variant="ghost" size="sm" onClick={onPreview} className="text-xs h-8">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onPreview}
+          className="text-xs h-8"
+        >
           <Eye className="w-4 h-4 mr-2" />
           Pré-visualizar
         </Button>
@@ -96,12 +101,10 @@ const MessageEditor = ({
         onBlur={() => setIsFocused(false)}
       />
       <div className="flex justify-between items-center">
-        {error ? (
-          <p className="text-sm text-red-500">{error}</p>
-        ) : (
-          <div />
-        )}
-        <p className="text-xs text-muted-foreground">{value.length} / 300 caracteres</p>
+        {error ? <p className="text-sm text-red-500">{error}</p> : <div />}
+        <p className="text-xs text-muted-foreground">
+          {value.length} / 300 caracteres
+        </p>
       </div>
     </div>
   );
@@ -110,15 +113,25 @@ const MessageEditor = ({
 type FormErrors = Partial<Record<keyof ConfiguracoesMotorista, string>>;
 
 export default function Configuracoes() {
-  const [configuracoes, setConfiguracoes] = useState<ConfiguracoesMotorista | null>(null);
+  const [configuracoes, setConfiguracoes] =
+    useState<ConfiguracoesMotorista | null>(null);
   const [loadingPage, setLoadingPage] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [previewData, setPreviewData] = useState({ isOpen: false, title: "", content: "" });
+  const [previewData, setPreviewData] = useState({
+    isOpen: false,
+    title: "",
+    content: "",
+  });
   const { toast } = useToast();
   const userId = localStorage.getItem("app_user_id");
 
-  const commonVariables = ["{{nome_responsavel}}", "{{nome_passageiro}}", "{{valor}}", "{{vencimento}}"];
+  const commonVariables = [
+    "{{nome_responsavel}}",
+    "{{nome_passageiro}}",
+    "{{valor}}",
+    "{{vencimento}}",
+  ];
 
   useEffect(() => {
     fetchConfiguracoes();
@@ -127,10 +140,18 @@ export default function Configuracoes() {
   const fetchConfiguracoes = async () => {
     setLoadingPage(true);
     try {
-      const { data, error } = await supabase.from("configuracoes_motoristas").select("*").eq("usuario_id", userId).single();
+      const { data, error } = await supabase
+        .from("configuracoes_motoristas")
+        .select("*")
+        .eq("usuario_id", userId)
+        .single();
       if (error && error.code !== "PGRST116") throw error;
       if (!data) {
-        const { data: created, error: insertError } = await supabase.from("configuracoes_motoristas").insert([{ usuario_id: userId }]).select().single();
+        const { data: created, error: insertError } = await supabase
+          .from("configuracoes_motoristas")
+          .insert([{ usuario_id: userId }])
+          .select()
+          .single();
         if (insertError) throw insertError;
         setConfiguracoes(created);
       } else {
@@ -138,7 +159,10 @@ export default function Configuracoes() {
       }
     } catch (error) {
       console.error("Erro ao buscar/criar configurações:", error);
-      toast({ title: "Erro ao carregar", description: "Não foi possível carregar as configurações.", variant: "destructive" });
+      toast({
+        title: "Não foi possível carregar as configurações.",
+        variant: "destructive",
+      });
     } finally {
       setLoadingPage(false);
     }
@@ -155,7 +179,7 @@ export default function Configuracoes() {
     }
     setConfiguracoes({ ...configuracoes, [field]: processedValue });
     if (errors[field]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[field];
         return newErrors;
@@ -166,30 +190,56 @@ export default function Configuracoes() {
   const validateForm = (): boolean => {
     if (!configuracoes) return false;
     const newErrors: FormErrors = {};
-    if (!configuracoes.horario_envio) { newErrors.horario_envio = "O horário é obrigatório."; }
-    if ((configuracoes.dias_antes_vencimento ?? 0) <= 0) { newErrors.dias_antes_vencimento = "O valor deve ser no mínimo 1."; }
-    if ((configuracoes.dias_apos_vencimento ?? 0) <= 0) { newErrors.dias_apos_vencimento = "O valor deve ser no mínimo 1."; }
-    if (!configuracoes.mensagem_lembrete_antecipada?.trim()) { newErrors.mensagem_lembrete_antecipada = "A mensagem é obrigatória."; }
-    if (!configuracoes.mensagem_lembrete_dia?.trim()) { newErrors.mensagem_lembrete_dia = "A mensagem é obrigatória."; }
-    if (!configuracoes.mensagem_lembrete_atraso?.trim()) { newErrors.mensagem_lembrete_atraso = "A mensagem é obrigatória."; }
+    if (!configuracoes.horario_envio) {
+      newErrors.horario_envio = "O horário é obrigatório.";
+    }
+    if ((configuracoes.dias_antes_vencimento ?? 0) <= 0) {
+      newErrors.dias_antes_vencimento = "O valor deve ser no mínimo 1.";
+    }
+    if ((configuracoes.dias_apos_vencimento ?? 0) <= 0) {
+      newErrors.dias_apos_vencimento = "O valor deve ser no mínimo 1.";
+    }
+    if (!configuracoes.mensagem_lembrete_antecipada?.trim()) {
+      newErrors.mensagem_lembrete_antecipada = "A mensagem é obrigatória.";
+    }
+    if (!configuracoes.mensagem_lembrete_dia?.trim()) {
+      newErrors.mensagem_lembrete_dia = "A mensagem é obrigatória.";
+    }
+    if (!configuracoes.mensagem_lembrete_atraso?.trim()) {
+      newErrors.mensagem_lembrete_atraso = "A mensagem é obrigatória.";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = async () => {
     if (!validateForm() || !configuracoes) {
-      toast({ title: "Campos inválidos", description: "Por favor, corrija os campos destacados antes de salvar.", variant: "destructive" });
+      toast({
+        title: "Campos inválidos",
+        description: "Por favor, corrija os campos destacados antes de salvar.",
+        variant: "destructive",
+      });
       return;
     }
     setSaving(true);
     setErrors({});
     try {
-      const { error } = await supabase.from("configuracoes_motoristas").update({ ...configuracoes, updated_at: new Date().toISOString() }).eq("id", configuracoes.id);
+      const { error } = await supabase
+        .from("configuracoes_motoristas")
+        .update({ ...configuracoes, updated_at: new Date().toISOString() })
+        .eq("id", configuracoes.id);
       if (error) throw error;
-      toast({ title: "Configurações salvas", description: "Suas preferências foram atualizadas com sucesso." });
+      toast({
+        title: "Suas preferências foram atualizadas com sucesso.",
+      });
     } catch (error) {
       console.error("Erro ao salvar configurações:", error);
-      toast({ title: "Erro ao salvar", description: "Não foi possível salvar as configurações. Tente novamente.", variant: "destructive" });
+      toast({
+        title: "Erro ao salvar",
+        description:
+          "Não foi possível salvar as configurações. Tente novamente.",
+        variant: "destructive",
+      });
     } finally {
       setSaving(false);
     }
@@ -199,25 +249,40 @@ export default function Configuracoes() {
     const exampleData = {
       "{{nome_responsavel}}": "Ana Souza",
       "{{nome_passageiro}}": "Júnior",
-      "{{valor}}": (250).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
-      "{{vencimento}}": new Date(new Date().setDate(new Date().getDate() + 5)).toLocaleDateString('pt-BR'),
+      "{{valor}}": (250).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }),
+      "{{vencimento}}": new Date(
+        new Date().setDate(new Date().getDate() + 5)
+      ).toLocaleDateString("pt-BR"),
     };
     let processedText = messageText;
     for (const [variable, exampleValue] of Object.entries(exampleData)) {
       processedText = processedText.replaceAll(variable, exampleValue);
     }
-    setPreviewData({ isOpen: true, title: `Pré-visualização: ${title}`, content: processedText });
+    setPreviewData({
+      isOpen: true,
+      title: `Pré-visualização: ${title}`,
+      content: processedText,
+    });
   };
 
   if (loadingPage) {
-    return <div className="flex justify-center items-center h-40"><Loader2 className="w-6 h-6 animate-spin" /></div>;
+    return (
+      <div className="flex justify-center items-center h-40">
+        <Loader2 className="w-6 h-6 animate-spin" />
+      </div>
+    );
   }
 
   return (
     <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Configurações</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+            Configurações
+          </h1>
           <Button onClick={handleSave} disabled={saving}>
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Salvar Alterações
@@ -227,32 +292,105 @@ export default function Configuracoes() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Clock className="w-5 h-5" />Agendamento de Lembretes</CardTitle>
-              <CardDescription>Defina quando e com que frequência os lembretes automáticos serão enviados.</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                Agendamento de Lembretes
+              </CardTitle>
+              <CardDescription>
+                Defina quando e com que frequência os lembretes automáticos
+                serão enviados.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="horario_envio">Horário de envio dos lembretes</Label>
-                <Input id="horario_envio" type="time" value={configuracoes?.horario_envio || ""} onChange={(e) => handleChange("horario_envio", e.target.value)} className={cn(errors.horario_envio && "border-red-500 focus-visible:ring-red-500")} />
-                {errors.horario_envio && <p className="text-sm text-red-500">{errors.horario_envio}</p>}
+                <Label htmlFor="horario_envio">
+                  Horário de envio dos lembretes
+                </Label>
+                <Input
+                  id="horario_envio"
+                  type="time"
+                  value={configuracoes?.horario_envio || ""}
+                  onChange={(e) =>
+                    handleChange("horario_envio", e.target.value)
+                  }
+                  className={cn(
+                    errors.horario_envio &&
+                      "border-red-500 focus-visible:ring-red-500"
+                  )}
+                />
+                {errors.horario_envio && (
+                  <p className="text-sm text-red-500">{errors.horario_envio}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="dias_antes_vencimento">Lembrete antecipado (dias antes)</Label>
-                <Input id="dias_antes_vencimento" type="number" min="1" max="7" value={configuracoes?.dias_antes_vencimento ?? 1} onChange={(e) => handleChange("dias_antes_vencimento", e.target.value)} className={cn(errors.dias_antes_vencimento && "border-red-500 focus-visible:ring-red-500")} />
-                {errors.dias_antes_vencimento ? <p className="text-sm text-red-500">{errors.dias_antes_vencimento}</p> : <p className="text-xs text-muted-foreground">Mínimo de 1 e máximo de 7 dias.</p>}
+                <Label htmlFor="dias_antes_vencimento">
+                  Lembrete antecipado (dias antes)
+                </Label>
+                <Input
+                  id="dias_antes_vencimento"
+                  type="number"
+                  min="1"
+                  max="7"
+                  value={configuracoes?.dias_antes_vencimento ?? 1}
+                  onChange={(e) =>
+                    handleChange("dias_antes_vencimento", e.target.value)
+                  }
+                  className={cn(
+                    errors.dias_antes_vencimento &&
+                      "border-red-500 focus-visible:ring-red-500"
+                  )}
+                />
+                {errors.dias_antes_vencimento ? (
+                  <p className="text-sm text-red-500">
+                    {errors.dias_antes_vencimento}
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Mínimo de 1 e máximo de 7 dias.
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="dias_apos_vencimento">Lembrete de atraso (dias após)</Label>
-                <Input id="dias_apos_vencimento" type="number" min="1" max="7" value={configuracoes?.dias_apos_vencimento ?? 1} onChange={(e) => handleChange("dias_apos_vencimento", e.target.value)} className={cn(errors.dias_apos_vencimento && "border-red-500 focus-visible:ring-red-500")} />
-                {errors.dias_apos_vencimento ? <p className="text-sm text-red-500">{errors.dias_apos_vencimento}</p> : <p className="text-xs text-muted-foreground">Mínimo de 1 e máximo de 7 dias.</p>}
+                <Label htmlFor="dias_apos_vencimento">
+                  Lembrete de atraso (dias após)
+                </Label>
+                <Input
+                  id="dias_apos_vencimento"
+                  type="number"
+                  min="1"
+                  max="7"
+                  value={configuracoes?.dias_apos_vencimento ?? 1}
+                  onChange={(e) =>
+                    handleChange("dias_apos_vencimento", e.target.value)
+                  }
+                  className={cn(
+                    errors.dias_apos_vencimento &&
+                      "border-red-500 focus-visible:ring-red-500"
+                  )}
+                />
+                {errors.dias_apos_vencimento ? (
+                  <p className="text-sm text-red-500">
+                    {errors.dias_apos_vencimento}
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Mínimo de 1 e máximo de 7 dias.
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Mail className="w-5 h-5" />Modelos de Mensagem</CardTitle>
-              <CardDescription>Personalize o texto que será enviado aos seus clientes em cada etapa da cobrança.</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="w-5 h-5" />
+                Modelos de Mensagem
+              </CardTitle>
+              <CardDescription>
+                Personalize o texto que será enviado aos seus clientes em cada
+                etapa da cobrança.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <MessageEditor
@@ -262,7 +400,12 @@ export default function Configuracoes() {
                 onChange={handleChange}
                 variables={commonVariables}
                 error={errors.mensagem_lembrete_antecipada}
-                onPreview={() => handlePreview("Notificação Antecipada", configuracoes?.mensagem_lembrete_antecipada || "")}
+                onPreview={() =>
+                  handlePreview(
+                    "Notificação Antecipada",
+                    configuracoes?.mensagem_lembrete_antecipada || ""
+                  )
+                }
               />
               <MessageEditor
                 id="mensagem_lembrete_dia"
@@ -271,7 +414,12 @@ export default function Configuracoes() {
                 onChange={handleChange}
                 variables={commonVariables}
                 error={errors.mensagem_lembrete_dia}
-                onPreview={() => handlePreview("Dia de Vencimento", configuracoes?.mensagem_lembrete_dia || "")}
+                onPreview={() =>
+                  handlePreview(
+                    "Dia de Vencimento",
+                    configuracoes?.mensagem_lembrete_dia || ""
+                  )
+                }
               />
               <MessageEditor
                 id="mensagem_lembrete_atraso"
@@ -280,14 +428,22 @@ export default function Configuracoes() {
                 onChange={handleChange}
                 variables={commonVariables}
                 error={errors.mensagem_lembrete_atraso}
-                onPreview={() => handlePreview("Mensalidade Atrasada", configuracoes?.mensagem_lembrete_atraso || "")}
+                onPreview={() =>
+                  handlePreview(
+                    "Mensalidade Atrasada",
+                    configuracoes?.mensagem_lembrete_atraso || ""
+                  )
+                }
               />
             </CardContent>
           </Card>
         </div>
       </div>
 
-      <Dialog open={previewData.isOpen} onOpenChange={(isOpen) => setPreviewData({ ...previewData, isOpen })}>
+      <Dialog
+        open={previewData.isOpen}
+        onOpenChange={(isOpen) => setPreviewData({ ...previewData, isOpen })}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{previewData.title}</DialogTitle>
