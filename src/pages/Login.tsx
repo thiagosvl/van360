@@ -50,8 +50,8 @@ export default function Login() {
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      cpfcnpj: "",
-      senha: "",
+      cpfcnpj: "841.235.570-90",
+      senha: "S5KSZZyNaL",
     },
   });
 
@@ -98,10 +98,6 @@ export default function Login() {
         setLoading(false);
         return;
       }
-
-      toast({
-        title: "Login realizado com sucesso",
-      });
 
       const role = (usuarioData.role as string | undefined) || undefined;
       if (role) {

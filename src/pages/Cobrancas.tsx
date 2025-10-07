@@ -349,7 +349,7 @@ const Cobrancas = () => {
                                   {cobranca.passageiros.nome}
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                  {cobranca.passageiros.nome_responsavel || "-"}
+                                  Responsável: {" "}{cobranca.passageiros.nome_responsavel || "-"}
                                 </div>
                               </td>
                               <td className="p-3 align-top">
@@ -490,7 +490,7 @@ const Cobrancas = () => {
                                 {cobranca.passageiros.nome}
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                Resp:{" "}
+                                Responsável:{" "}
                                 {cobranca.passageiros.nome_responsavel || "-"}
                               </div>
                             </div>
@@ -758,7 +758,7 @@ const Cobrancas = () => {
                                 {cobranca.passageiros.nome}
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                Resp:{" "}
+                                Responsável:{" "}
                                 {cobranca.passageiros.nome_responsavel || "-"}
                               </div>
                             </div>
