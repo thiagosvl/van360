@@ -14,7 +14,6 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen w-full bg-background">
       <div className="flex h-screen">
-        {/* Sidebar só em desktop */}
         <aside className="hidden md:flex md:w-64 md:flex-col md:border-r bg-white">
           <div className="p-6 border-b">
             <h2 className="text-lg font-semibold">Sistema Transporte</h2>
@@ -24,7 +23,6 @@ export default function AppLayout() {
           </div>
         </aside>
 
-        {/* Conteúdo principal */}
         <div className="flex-1 flex flex-col">
           <AppNavbar role={role as "admin" | "motorista"} />
           <main className="flex-1 overflow-auto p-4 sm:p-6">

@@ -23,7 +23,6 @@ import { ConfiguracoesMotorista } from "@/types/configuracoesMotorista";
 import { Clock, Eye, Loader2, Mail } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-// Subcomponente para o editor de mensagens, agora com o botão de pré-visualização
 const MessageEditor = ({
   id,
   label,

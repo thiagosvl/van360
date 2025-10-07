@@ -31,7 +31,6 @@ import {
   SelectValue,
 } from "../ui/select";
 
-// ALTERAÇÃO: Schema do Zod simplificado e mais estrito para o 'role'.
 export const usuarioSchema = z.object({
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   cpfcnpj: z.string().min(11, "CPF/CNPJ é obrigatório"),
@@ -56,8 +55,6 @@ export function UsuarioForm({ usuario, onSubmit, onClose }: UsuarioFormProps) {
 
   const form = useForm<UsuarioFormData>({
     resolver: zodResolver(usuarioSchema),
-    // ALTERAÇÃO: `defaultValues` ajustado para o novo schema.
-    // O valor de 'role' será `undefined` para novos usuários, o que é o correto.
     defaultValues: {
       nome: usuario?.nome || "",
       cpfcnpj: usuario?.cpfcnpj || "",

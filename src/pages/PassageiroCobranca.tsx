@@ -1,3 +1,4 @@
+import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,12 +23,14 @@ import {
   BadgeCheck,
   Bell,
   BellOff,
+  Bot,
   Calendar,
   Contact,
   CreditCard,
   Download,
   ExternalLink,
   FileText,
+  History as HistoryIcon,
   IdCard,
   MessageCircle,
   School,
@@ -94,6 +97,52 @@ const CobrancaDetalheSkeleton = () => (
   </div>
 );
 
+const NotificationTimeline = ({
+  items,
+}: {
+  items: { date: string; event: string; type: string }[];
+}) => {
+  const getIcon = (type: string) => {
+    switch (type) {
+      case "auto":
+        return <Bot className="h-5 w-5 text-muted-foreground" />;
+      case "manual":
+        return <User className="h-5 w-5 text-muted-foreground" />;
+      default:
+        return <Bot className="h-5 w-5 text-muted-foreground" />;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {items.map((item, index) => (
+        <div key={index} className="flex gap-4">
+          <div className="relative flex-shrink-0">
+            <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+              {getIcon(item.type)}
+            </div>
+            {index < items.length - 1 && (
+              <div className="absolute top-11 left-1/2 -translate-x-1/2 w-px h-full bg-border" />
+            )}
+          </div>
+          <div>
+            <p className="font-medium text-sm">{item.event}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {new Date(item.date).toLocaleString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default function PassageiroCobranca() {
   const navigate = useNavigate();
   const params = useParams();
@@ -102,34 +151,75 @@ export default function PassageiroCobranca() {
     cobranca_id: string;
   };
   const [loading, setLoading] = useState(true);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [cobranca, setCobranca] = useState<CobrancaDetalhe | null>(null);
+  const [showFullHistory, setShowFullHistory] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true); // Garante que o loading seja exibido em re-fetches
-      try {
-        const { data, error } = await supabase
-          .from("vw_cobrancas_detalhes")
-          .select("*")
-          .eq("cobranca_id", cobranca_id)
-          .single();
-        if (error || !data) {
-          toast({
-            title: "Erro",
-            description: "Mensalidade não encontrada.",
-            variant: "destructive",
-          });
-          navigate("/dashboard");
-          return;
-        }
-        setCobranca(data as CobrancaDetalhe);
-      } catch (error) {
-        console.error("Erro ao buscar detalhes da cobrança:", error);
-      } finally {
-        setLoading(false);
+  const mockLog = [
+    {
+      date: "2025-10-05T17:49:00",
+      event: "Cobrança reenviada manualmente por você",
+      type: "manual",
+    },
+    {
+      date: "2025-10-02T17:49:00",
+      event: "Cobrança reenviada manualmente por você",
+      type: "manual",
+    },
+    {
+      date: "2025-09-28T09:05:00",
+      event: "3º lembrete de atraso enviado",
+      type: "auto",
+    },
+    {
+      date: "2025-09-27T09:05:00",
+      event: "2º lembrete de atraso enviado",
+      type: "auto",
+    },
+    {
+      date: "2025-09-26T09:00:00",
+      event: "1º lembrete de atraso enviado",
+      type: "auto",
+    },
+    {
+      date: "2025-09-25T09:00:00",
+      event: "Cobrança enviada no vencimento",
+      type: "auto",
+    },
+    {
+      date: "2025-09-22T09:00:00",
+      event: "Aviso de mensalidade já disponível para pagamento",
+      type: "auto",
+    },
+  ];
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("vw_cobrancas_detalhes")
+        .select("*")
+        .eq("cobranca_id", cobranca_id)
+        .single();
+      if (error || !data) {
+        toast({
+          title: "Erro",
+          description: "Mensalidade não encontrada.",
+          variant: "destructive",
+        });
+        navigate("/dashboard");
+        return;
       }
-    };
+      setCobranca(data as CobrancaDetalhe);
+    } catch (error) {
+      console.error("Erro ao buscar detalhes da cobrança:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [cobranca_id, navigate, toast]);
 
@@ -150,7 +240,6 @@ export default function PassageiroCobranca() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Card Principal de Status */}
         <Card className="lg:col-span-3 order-1">
           <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -182,7 +271,10 @@ export default function PassageiroCobranca() {
                 <Button
                   size="lg"
                   className="w-full"
-                  onClick={() => handleAction("Registrar Pagamento")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPaymentDialogOpen(true);
+                  }}
                 >
                   <BadgeCheck className="w-5 h-5 mr-2" /> Registrar Pagamento
                 </Button>
@@ -209,7 +301,6 @@ export default function PassageiroCobranca() {
           </CardContent>
         </Card>
 
-        {/* Detalhes do Pagamento */}
         <Card className="lg:col-span-2 order-3 lg:order-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -231,7 +322,7 @@ export default function PassageiroCobranca() {
               </InfoItem>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-              <InfoItem icon={Bell} label="Notificações no WhatsApp">
+              <InfoItem icon={Bell} label="Notificações">
                 {cobranca.desativar_lembretes ? "Desativadas" : "Ativadas"}
               </InfoItem>
               <InfoItem icon={ArrowRight} label="Origem">
@@ -240,6 +331,32 @@ export default function PassageiroCobranca() {
               <InfoItem icon={BadgeCheck} label="Pgto. Manual">
                 {cobranca.pagamento_manual ? "Sim" : "Não"}
               </InfoItem>
+            </div>
+            <div className="pt-6 border-t">
+              <h4 className="text-sm font-semibold mb-4 flex items-center gap-2 text-muted-foreground">
+                <HistoryIcon className="w-4 h-4" />
+                Histórico de Notificações
+              </h4>
+
+              <NotificationTimeline items={[mockLog[0]]} />
+
+              {showFullHistory && mockLog.length > 1 && (
+                <div className="mt-6">
+                  <NotificationTimeline items={mockLog.slice(1)} />
+                </div>
+              )}
+
+              {mockLog.length > 1 && (
+                <Button
+                  variant="link"
+                  className="p-0 h-auto text-xs mt-4"
+                  onClick={() => setShowFullHistory(!showFullHistory)}
+                >
+                  {showFullHistory
+                    ? "Ocultar histórico"
+                    : `+ Ver mais ${mockLog.length - 1} eventos`}
+                </Button>
+              )}
             </div>
             <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t">
               <Button
@@ -288,7 +405,6 @@ export default function PassageiroCobranca() {
           </CardFooter>
         </Card>
 
-        {/* Passageiro e Responsável */}
         <Card className="lg:col-span-1 order-2 lg:order-3">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -363,6 +479,18 @@ export default function PassageiroCobranca() {
           </CardContent>
         </Card>
       </div>
+
+      <ManualPaymentDialog
+        isOpen={paymentDialogOpen}
+        onClose={() => setPaymentDialogOpen(false)}
+        cobrancaId={cobranca_id}
+        passageiroNome={cobranca.passageiro_nome}
+        valorOriginal={Number(cobranca.valor)}
+        onPaymentRecorded={() => {
+          setPaymentDialogOpen(false);
+          fetchData();
+        }}
+      />
     </div>
   );
 }

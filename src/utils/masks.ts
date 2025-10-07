@@ -1,11 +1,8 @@
-// Função para máscara de telefone celular
 export const phoneMask = (value: string): string => {
   if (!value) return value;
   
-  // Remove tudo que não é dígito
   const numericValue = value.replace(/\D/g, '');
   
-  // Aplica a máscara (11) 99999-9999
   if (numericValue.length <= 11) {
     return numericValue
       .replace(/(\d{2})(\d)/, '($1) $2')
@@ -15,19 +12,15 @@ export const phoneMask = (value: string): string => {
   return value;
 };
 
-// Função para máscara de dinheiro
 export const moneyMask = (value: string): string => {
   if (!value) return '';
   
-  // Remove tudo que não é dígito
   let numericValue = value.replace(/\D/g, '');
   
-  // Garantir pelo menos 2 dígitos para centavos
   if (numericValue.length === 1) {
     numericValue = '0' + numericValue;
   }
   
-  // Converte para formato de moeda brasileiro
   const numberValue = Number(numericValue) / 100;
   
   return numberValue.toLocaleString('pt-BR', {
@@ -38,11 +31,9 @@ export const moneyMask = (value: string): string => {
   });
 };
 
-// Função para converter valor monetário mascarado para number
 export const moneyToNumber = (value: string): number => {
   if (!value) return 0;
   
-  // Remove símbolos de moeda e espaços
   const numericString = value
     .replace(/[R$\s]/g, '')
     .replace(/\./g, '')
@@ -51,18 +42,14 @@ export const moneyToNumber = (value: string): number => {
   return parseFloat(numericString) || 0;
 };
 
-// Função para máscara de CEP
 export const cepMask = (value: string): string => {
   if (!value) return value;
   
-  // Remove tudo que não é dígito
   const numericValue = value.replace(/\D/g, '');
   
-  // Aplica a máscara 99999-999
   return numericValue.replace(/(\d{5})(\d{1,3})/, '$1-$2');
 };
 
-// Máscara apenas para CPF → 000.000.000-00
 export const cpfMask = (value: string): string => {
   if (!value) return value;
   const numericValue = value.replace(/\D/g, "").slice(0, 11);
@@ -73,7 +60,6 @@ export const cpfMask = (value: string): string => {
     .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
 };
 
-// Máscara apenas para CNPJ → 00.000.000/0000-00
 export const cnpjMask = (value: string): string => {
   if (!value) return value;
   const numericValue = value.replace(/\D/g, "").slice(0, 14);
@@ -85,7 +71,6 @@ export const cnpjMask = (value: string): string => {
     .replace(/(\d{4})(\d)/, "$1-$2");
 };
 
-// Decide se aplica máscara de CPF ou CNPJ com base no tamanho
 export const cpfCnpjMask = (value: string): string => {
   if (!value) return value;
   const numericValue = value.replace(/\D/g, "");

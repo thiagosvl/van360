@@ -33,7 +33,6 @@ export const formatDateTimeToBR = (
   try {
     const dateObj = new Date(date);
 
-    // Verifica se a data é válida
     if (isNaN(dateObj.getTime())) {
       return "Invalid Date";
     }

@@ -33,6 +33,7 @@ import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
+  SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -344,7 +345,6 @@ export default function Escolas() {
                       </AccordionTrigger>
                       <AccordionContent className="p-4 pt-6 space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                          {/* Linha 1: CEP (1/4) e Logradouro (3/4) */}
                           <FormField
                             control={form.control}
                             name="cep"
@@ -379,7 +379,6 @@ export default function Escolas() {
                             )}
                           />
 
-                          {/* Linha 2: Número (1/4) e Bairro (3/4) */}
                           <FormField
                             control={form.control}
                             name="numero"
@@ -407,7 +406,6 @@ export default function Escolas() {
                             )}
                           />
 
-                          {/* Linha 3: Cidade (3/4) e Estado (1/4) */}
                           <FormField
                             control={form.control}
                             name="cidade"
@@ -437,7 +435,57 @@ export default function Escolas() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {/* Lista de Estados */}
+                                    <SelectItem value="AC">Acre</SelectItem>
+                                    <SelectItem value="AL">Alagoas</SelectItem>
+                                    <SelectItem value="AP">Amapá</SelectItem>
+                                    <SelectItem value="AM">Amazonas</SelectItem>
+                                    <SelectItem value="BA">Bahia</SelectItem>
+                                    <SelectItem value="CE">Ceará</SelectItem>
+                                    <SelectItem value="DF">
+                                      Distrito Federal
+                                    </SelectItem>
+                                    <SelectItem value="ES">
+                                      Espírito Santo
+                                    </SelectItem>
+                                    <SelectItem value="GO">Goiás</SelectItem>
+                                    <SelectItem value="MA">Maranhão</SelectItem>
+                                    <SelectItem value="MT">
+                                      Mato Grosso
+                                    </SelectItem>
+                                    <SelectItem value="MS">
+                                      Mato Grosso do Sul
+                                    </SelectItem>
+                                    <SelectItem value="MG">
+                                      Minas Gerais
+                                    </SelectItem>
+                                    <SelectItem value="PA">Pará</SelectItem>
+                                    <SelectItem value="PB">Paraíba</SelectItem>
+                                    <SelectItem value="PR">Paraná</SelectItem>
+                                    <SelectItem value="PE">
+                                      Pernambuco
+                                    </SelectItem>
+                                    <SelectItem value="PI">Piauí</SelectItem>
+                                    <SelectItem value="RJ">
+                                      Rio de Janeiro
+                                    </SelectItem>
+                                    <SelectItem value="RN">
+                                      Rio Grande do Norte
+                                    </SelectItem>
+                                    <SelectItem value="RS">
+                                      Rio Grande do Sul
+                                    </SelectItem>
+                                    <SelectItem value="RO">Rondônia</SelectItem>
+                                    <SelectItem value="RR">Roraima</SelectItem>
+                                    <SelectItem value="SC">
+                                      Santa Catarina
+                                    </SelectItem>
+                                    <SelectItem value="SP">
+                                      São Paulo
+                                    </SelectItem>
+                                    <SelectItem value="SE">Sergipe</SelectItem>
+                                    <SelectItem value="TO">
+                                      Tocantins
+                                    </SelectItem>
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -445,7 +493,6 @@ export default function Escolas() {
                             )}
                           />
 
-                          {/* Linha 4: Referência (Largura Total) */}
                           <FormField
                             control={form.control}
                             name="referencia"

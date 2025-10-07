@@ -13,6 +13,7 @@ import Cobrancas from "./pages/Cobrancas";
 import Configuracoes from "./pages/Configuracoes";
 import Dashboard from "./pages/Dashboard";
 import Escolas from "./pages/Escolas";
+import Gastos from "./pages/Gastos";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -30,7 +31,6 @@ const App = () => (
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            {/* Public routes */}
             <Route path="/" element={<Index />} />
             <Route
               path="/login"
@@ -71,6 +71,7 @@ const App = () => (
               />
               <Route path="mensalidades" element={<Cobrancas />} />
               <Route path="escolas" element={<Escolas />} />
+              <Route path="gastos" element={<Gastos />} />
               <Route path="configuracoes" element={<Configuracoes />} />
             </Route>
 

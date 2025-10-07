@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -25,7 +24,6 @@ serve(async (req) => {
 
     const { email, role, usuario_id } = await req.json();
 
-    // --- Validações ---
     if (!email || !role) {
       return new Response(JSON.stringify({ error: 'Email e role são obrigatórios' }), {
         status: 400,
@@ -39,9 +37,6 @@ serve(async (req) => {
       });
     }
 
-    // --- Lógica Refatorada ---
-
-    // 1. Gerar senha aleatória
     const generatePassword = () => {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
       const length = 10;
@@ -53,23 +48,19 @@ serve(async (req) => {
     };
     const senha = generatePassword();
 
-    // 2. Tentar criar o usuário no Auth PRIMEIRO.
-    // O próprio Supabase vai retornar um erro se o email já existir.
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password: senha,
-      email_confirm: true, // Já cria o usuário como verificado
+      email_confirm: true,
       app_metadata: { role }
     });
 
     if (authError) {
-      // O erro pode ser "User already registered", que traduzimos para o frontend.
       const errorMessage = authError.message.includes("User already registered")
         ? "Email já existe no sistema de autenticação"
         : `Erro ao criar usuário: ${authError.message}`;
 
       return new Response(JSON.stringify({ error: errorMessage }), {
-        // Usamos 409 (Conflict) para "usuário já existe"
         status: authError.message.includes("User already registered") ? 409 : 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -78,16 +69,12 @@ serve(async (req) => {
     const auth_uid = authData.user.id;
     console.log(`Created auth user ${email} with auth_uid ${auth_uid}`);
 
-    // 3. Se o usuário Auth foi criado, ATUALIZAR a tabela 'usuarios' com o auth_uid.
-    // Esta etapa assume que o registro em 'usuarios' já foi criado pelo frontend
-    // e está aguardando o auth_uid.
     const { error: updateError } = await supabase
       .from('usuarios')
       .update({ auth_uid: auth_uid })
       .eq('id', usuario_id);
 
     if (updateError) {
-      // Se a atualização falhar, devemos deletar o usuário do Auth para não criar inconsistência (rollback)
       await supabase.auth.admin.deleteUser(auth_uid);
       console.error('Rollback: Deleted auth user due to profile update failure.', updateError);
       return new Response(JSON.stringify({ error: 'Não foi possível associar o usuário de autenticação ao perfil.' }), {
@@ -96,7 +83,6 @@ serve(async (req) => {
       });
     }
 
-    // 4. Se tudo deu certo, retornar sucesso e a senha gerada
     return new Response(JSON.stringify({
       auth_uid,
       senha

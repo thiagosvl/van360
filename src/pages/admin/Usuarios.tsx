@@ -34,7 +34,6 @@ export default function UsuariosAdmin() {
   const { toast } = useToast();
 
   const fetchUsuarios = async () => {
-    // A lógica de fetch permanece a mesma
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -72,7 +71,6 @@ export default function UsuariosAdmin() {
     let createdSubAccount: any = null;
     let createdAuthUid: string | null = null;
 
-    // 1. Verificar se usuário já existe
     const { data: existingUsers, error: existingError } = await supabase
       .from("usuarios")
       .select("cpfcnpj,email")
@@ -91,7 +89,6 @@ export default function UsuariosAdmin() {
       }
     }
 
-    // 2. Inserir na tabela 'usuarios'
     const { data: usuarioData, error: usuarioError } = await supabase
       .from("usuarios")
       .insert({
@@ -108,7 +105,6 @@ export default function UsuariosAdmin() {
     createdUsuario = usuarioData;
 
     try {
-      // 3. Criar usuário no Auth via Edge Function (sempre)
       const { data: authData, error: authError } =
         await supabase.functions.invoke("adminCreateUser", {
           body: {
@@ -123,13 +119,11 @@ export default function UsuariosAdmin() {
       createdAuthUid = authData.auth_uid;
       setSenhaTemporaria(authData.senha);
 
-      // Atualizar auth_uid na tabela
       await supabase
         .from("usuarios")
         .update({ auth_uid: createdAuthUid })
         .eq("id", usuarioData.id);
 
-      // 4. Se motorista → criar subconta e cliente no Asaas
       if (data.role === "motorista") {
         const subAccount = await asaasService.createSubAccount({
           name: data.nome,
@@ -157,7 +151,6 @@ export default function UsuariosAdmin() {
           })
           .eq("id", usuarioData.id);
 
-        // Criar webhook na subconta Asaas (após salvar subaccount_api_key)
         await asaasService.createWebhook(subAccount.apiKey);
 
         const customer = await asaasService.createCustomer({
@@ -178,7 +171,6 @@ export default function UsuariosAdmin() {
       await fetchUsuarios();
       closeForm();
     } catch (error) {
-      // rollback
       if (createdUsuario) {
         await supabase.from("usuarios").delete().eq("id", createdUsuario.id);
       }
@@ -213,7 +205,6 @@ export default function UsuariosAdmin() {
       return;
     }
 
-    // 1. Atualiza a tabela pública 'usuarios'
     const { error: profileError } = await supabase
       .from("usuarios")
       .update({
@@ -228,7 +219,6 @@ export default function UsuariosAdmin() {
     }
 
     try {
-      // 2. Invoca a Edge Function para atualizar a role no Auth
       const { error: authError } = await supabase.functions.invoke(
         "adminUpdateUser",
         {
@@ -240,8 +230,6 @@ export default function UsuariosAdmin() {
       );
 
       if (authError) {
-        // Se a atualização do Auth falhar, idealmente deveríamos reverter a atualização do perfil.
-        // Por simplicidade aqui, apenas notificamos o erro.
         throw new Error(
           `Perfil atualizado, mas falha ao atualizar permissões: ${authError.message}`
         );
@@ -255,7 +243,6 @@ export default function UsuariosAdmin() {
       await fetchUsuarios();
       closeForm();
     } catch (error: any) {
-      // Este catch vai pegar erros de ambas as operações
       toast({
         title: "Erro na Atualização",
         description: error.message,
@@ -264,15 +251,12 @@ export default function UsuariosAdmin() {
     }
   };
 
-  // ALTERAÇÃO: Lógica de exclusão corrigida e aprimorada
   const handleDelete = async (usuario: Usuario) => {
     if (!confirm(`Tem certeza que deseja excluir o usuário ${usuario.nome}?`)) {
       return;
     }
 
     try {
-      // 1. Deletar o usuário do Supabase Auth via Edge Function
-      // É necessário criar uma função 'adminDeleteUser' que receba o auth_uid
       if (usuario.auth_uid) {
         const { error: authError } = await supabase.functions.invoke(
           "adminDeleteUser",
@@ -280,13 +264,11 @@ export default function UsuariosAdmin() {
             body: { auth_uid: usuario.auth_uid },
           }
         );
-        // Não bloqueamos a exclusão se o usuário do auth não for encontrado
         if (authError && !authError.message.includes("User not found")) {
           throw authError;
         }
       }
 
-      // 2. Deletar da tabela 'usuarios'
       const { error } = await supabase
         .from("usuarios")
         .delete()

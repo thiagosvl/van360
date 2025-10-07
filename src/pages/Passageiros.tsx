@@ -314,6 +314,8 @@ export default function Passageiros() {
   };
 
   const handleSubmit = async (data: PassageiroFormData) => {
+    setLoading(true);
+
     try {
       const { emitir_cobranca_mes_atual, ...pureData } = data;
       const passageiroData = {
@@ -324,48 +326,230 @@ export default function Passageiros() {
         ativo: pureData.ativo ?? true,
         usuario_id: localStorage.getItem("app_user_id"),
       };
+
       if (editingPassageiro) {
+        let rollbackNeeded = false;
+
         const { data: oldPassageiro, error: fetchError } = await supabase
           .from("passageiros")
           .select("*")
           .eq("id", editingPassageiro.id)
           .single();
+
         if (fetchError) throw fetchError;
-        const { error: updateError } = await supabase
-          .from("passageiros")
-          .update(passageiroData as PassageiroUpdate)
-          .eq("id", editingPassageiro.id);
-        if (updateError) throw updateError;
-        toast({ title: "Passageiro atualizado com sucesso." });
-      } else {
-        const asaasCustomer = await asaasService.createCustomer(
-          {
-            name: passageiroData.nome,
-            cpfCnpj: passageiroData.cpf_responsavel,
-            mobilePhone: passageiroData.telefone_responsavel,
-            notificationDisabled: true,
-          },
-          apiKey
-        );
-        passageiroData.asaas_customer_id = asaasCustomer.id;
-        const { data: insertedPassageiro, error: insertPassageiroError } =
-          await supabase
+        const snapshotPassageiro = { ...oldPassageiro };
+
+        try {
+          const { error: updateError } = await supabase
             .from("passageiros")
-            .insert([passageiroData as PassageiroInsert])
-            .select()
+            .update(passageiroData as PassageiroUpdate)
+            .eq("id", editingPassageiro.id);
+
+          if (updateError) throw updateError;
+
+          const { data: ultimaCobranca, error: cobrancaError } = await supabase
+            .from("cobrancas")
+            .select("*")
+            .eq("passageiro_id", editingPassageiro.id)
+            .neq("status", "pago")
+            .order("ano", { ascending: false })
+            .order("mes", { ascending: false })
+            .limit(1)
             .single();
-        if (insertPassageiroError) throw insertPassageiroError;
-        if (emitir_cobranca_mes_atual) {
-          // Lógica para criar cobrança no Asaas e Supabase
+
+          if (!cobrancaError && ultimaCobranca) {
+            const valorMudou =
+              passageiroData.valor_mensalidade !== ultimaCobranca.valor;
+
+            const vencimentoMudou =
+              passageiroData.dia_vencimento !==
+              editingPassageiro.dia_vencimento;
+
+            if (valorMudou || vencimentoMudou) {
+              const hoje = new Date();
+              hoje.setHours(0, 0, 0, 0);
+
+              const novaDataVencimento = new Date(
+                ultimaCobranca.ano,
+                ultimaCobranca.mes - 1,
+                passageiroData.dia_vencimento
+              );
+              novaDataVencimento.setHours(0, 0, 0, 0);
+
+              const podeAtualizarCobranca =
+                valorMudou || (vencimentoMudou && novaDataVencimento >= hoje);
+
+              if (podeAtualizarCobranca) {
+                const updatePayload = {
+                  value: passageiroData.valor_mensalidade,
+                  dueDate: novaDataVencimento.toISOString().split("T")[0],
+                  billingType: "UNDEFINED",
+                };
+
+                rollbackNeeded = true;
+
+                await asaasService.updatePayment(
+                  ultimaCobranca.asaas_payment_id,
+                  updatePayload,
+                  apiKey
+                );
+
+                const { error: updateCobrancaError } = await supabase
+                  .from("cobrancas")
+                  .update({
+                    data_vencimento: vencimentoMudou
+                      ? novaDataVencimento.toISOString().split("T")[0]
+                      : ultimaCobranca.data_vencimento,
+                    valor: valorMudou
+                      ? passageiroData.valor_mensalidade
+                      : ultimaCobranca.valor,
+                    desativar_lembretes: !passageiroData.ativo,
+                  })
+                  .eq("id", ultimaCobranca.id);
+
+                if (updateCobrancaError) {
+                  rollbackNeeded = true;
+                  throw updateCobrancaError;
+                }
+              }
+            }
+          }
+
+          toast({ title: "Passageiro atualizado com sucesso." });
+        } catch (err) {
+          console.error("Erro ao editar passageiro:", err);
+
+          if (rollbackNeeded) {
+            try {
+              const { error: rollbackError } = await supabase
+                .from("passageiros")
+                .update(snapshotPassageiro)
+                .eq("id", editingPassageiro.id);
+
+              if (rollbackError) throw rollbackError;
+
+              console.log("Rollback da edição realizado com sucesso.");
+            } catch (rollbackErr) {
+              console.error("Erro no rollback da edição:", rollbackErr);
+            }
+          }
+
+          toast({
+            title: "Erro ao atualizar passageiro.",
+            description: "As alterações foram desfeitas.",
+            variant: "destructive",
+          });
         }
-        toast({ title: "Passageiro cadastrado com sucesso." });
       }
+
+      else {
+        let asaasCustomer: any = null;
+        let newPassageiro: any = null;
+        let payment: any = null;
+
+        try {
+          asaasCustomer = await asaasService.createCustomer(
+            {
+              name: passageiroData.nome,
+              cpfCnpj: passageiroData.cpf_responsavel,
+              mobilePhone: passageiroData.telefone_responsavel,
+              notificationDisabled: true,
+            },
+            apiKey
+          );
+
+          passageiroData.asaas_customer_id = asaasCustomer.id;
+
+          const { data: insertedPassageiro, error: insertPassageiroError } =
+            await supabase
+              .from("passageiros")
+              .insert([passageiroData as PassageiroInsert])
+              .select()
+              .single();
+
+          if (insertPassageiroError) throw insertPassageiroError;
+          newPassageiro = insertedPassageiro;
+
+          if (emitir_cobranca_mes_atual) {
+            const currentDate = new Date();
+            const mes = currentDate.getMonth() + 1;
+            const ano = currentDate.getFullYear();
+            const diaInformado = Number(pureData.dia_vencimento);
+            const hoje = currentDate.getDate();
+            const vencimentoAjustado =
+              diaInformado < hoje ? hoje : diaInformado;
+            const dataVencimento = new Date(ano, mes - 1, vencimentoAjustado);
+
+            payment = await asaasService.createPayment(
+              {
+                customer: newPassageiro.asaas_customer_id,
+                billingType: "UNDEFINED",
+                value: moneyToNumber(pureData.valor_mensalidade),
+                dueDate: dataVencimento.toISOString().split("T")[0],
+                description: `Mensalidade ${mes}/${ano}`,
+                externalReference: newPassageiro.id,
+              },
+              apiKey
+            );
+
+            const { error: cobrancaError } = await supabase
+              .from("cobrancas")
+              .insert([
+                {
+                  passageiro_id: newPassageiro.id,
+                  mes,
+                  ano,
+                  valor: moneyToNumber(pureData.valor_mensalidade),
+                  data_vencimento: dataVencimento.toISOString().split("T")[0],
+                  status: "pendente",
+                  usuario_id: localStorage.getItem("app_user_id"),
+                  origem: "automatica",
+                  asaas_payment_id: payment.id,
+                  asaas_invoice_url: payment.invoiceUrl,
+                  asaas_bankslip_url: payment.bankSlipUrl,
+                },
+              ]);
+
+            if (cobrancaError) throw cobrancaError;
+          }
+
+          toast({ title: "Passageiro cadastrado com sucesso." });
+        } catch (err) {
+          console.error("Erro ao cadastrar passageiro:", err);
+
+          try {
+            if (payment?.id)
+              await asaasService.deletePayment(payment.id, apiKey);
+            if (newPassageiro?.id)
+              await supabase
+                .from("passageiros")
+                .delete()
+                .eq("id", newPassageiro.id);
+            if (asaasCustomer?.id)
+              await asaasService.deleteCustomer(asaasCustomer.id, apiKey);
+          } catch (rollbackErr) {
+            console.error("Erro durante rollback:", rollbackErr);
+          }
+
+          toast({
+            title: "Erro ao salvar passageiro.",
+            description: "Todas as alterações foram desfeitas.",
+            variant: "destructive",
+          });
+        }
+      }
+
       await fetchPassageiros();
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
       console.error("Erro geral:", error);
-      toast({ title: "Erro ao salvar passageiro.", variant: "destructive" });
+      toast({
+        title: "Erro ao salvar passageiro.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -409,7 +593,7 @@ export default function Passageiros() {
       <div className="w-full">
         <Button
           onClick={handleCadastrarRapido}
-          variant="secondary"
+          variant="destructive"
           className="gap-2"
         >
           <Plus className="h-4 w-4" />
@@ -463,7 +647,7 @@ export default function Passageiros() {
                             Passageiro
                           </div>
                         </AccordionTrigger>
-                        <AccordionContent className="p-4 pt-6 space-y-4">
+                        <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField
                               control={form.control}
@@ -539,7 +723,7 @@ export default function Passageiros() {
                             Responsável
                           </div>
                         </AccordionTrigger>
-                        <AccordionContent className="p-4 pt-6 space-y-4">
+                        <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField
                               control={form.control}
@@ -621,7 +805,7 @@ export default function Passageiros() {
                             Mensalidade
                           </div>
                         </AccordionTrigger>
-                        <AccordionContent className="p-4 pt-6 space-y-4">
+                        <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField
                               control={form.control}
@@ -698,6 +882,35 @@ export default function Passageiros() {
                                   </FormItem>
                                 )}
                               />
+
+                              {(() => {
+                                const diaInformado =
+                                  Number(form.getValues("dia_vencimento")) ||
+                                  null;
+
+                                if (
+                                  !editingPassageiro &&
+                                  emitirCobranca &&
+                                  diaInformado &&
+                                  Number(diaInformado) < new Date().getDate()
+                                ) {
+                                  return (
+                                    <div className="mt-4">
+                                      <p className="text-sm text-yellow-600">
+                                        ⚠️ O dia escolhido já passou neste mês.
+                                        <br />
+                                        👉 A mensalidade deste mês{" "}
+                                        <b>vence hoje</b>.
+                                        <br />
+                                        📅 A partir do próximo mês, o vencimento{" "}
+                                        <b>será sempre no dia {diaInformado}</b>
+                                        .
+                                      </p>
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              })()}
                             </div>
                           )}
                         </AccordionContent>
@@ -709,9 +922,8 @@ export default function Passageiros() {
                             Endereço
                           </div>
                         </AccordionTrigger>
-                        <AccordionContent className="p-4 pt-6 space-y-4">
+                        <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            {/* Linha 1: CEP (1/4) e Logradouro (3/4) */}
                             <FormField
                               control={form.control}
                               name="cep"
@@ -748,7 +960,6 @@ export default function Passageiros() {
                               )}
                             />
 
-                            {/* Linha 2: Número (1/4) e Bairro (3/4) */}
                             <FormField
                               control={form.control}
                               name="numero"
@@ -776,7 +987,6 @@ export default function Passageiros() {
                               )}
                             />
 
-                            {/* Linha 3: Cidade (3/4) e Estado (1/4) */}
                             <FormField
                               control={form.control}
                               name="cidade"
@@ -806,7 +1016,71 @@ export default function Passageiros() {
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                      {/* Lista de Estados */}
+                                      <SelectItem value="AC">Acre</SelectItem>
+                                      <SelectItem value="AL">
+                                        Alagoas
+                                      </SelectItem>
+                                      <SelectItem value="AP">Amapá</SelectItem>
+                                      <SelectItem value="AM">
+                                        Amazonas
+                                      </SelectItem>
+                                      <SelectItem value="BA">Bahia</SelectItem>
+                                      <SelectItem value="CE">Ceará</SelectItem>
+                                      <SelectItem value="DF">
+                                        Distrito Federal
+                                      </SelectItem>
+                                      <SelectItem value="ES">
+                                        Espírito Santo
+                                      </SelectItem>
+                                      <SelectItem value="GO">Goiás</SelectItem>
+                                      <SelectItem value="MA">
+                                        Maranhão
+                                      </SelectItem>
+                                      <SelectItem value="MT">
+                                        Mato Grosso
+                                      </SelectItem>
+                                      <SelectItem value="MS">
+                                        Mato Grosso do Sul
+                                      </SelectItem>
+                                      <SelectItem value="MG">
+                                        Minas Gerais
+                                      </SelectItem>
+                                      <SelectItem value="PA">Pará</SelectItem>
+                                      <SelectItem value="PB">
+                                        Paraíba
+                                      </SelectItem>
+                                      <SelectItem value="PR">Paraná</SelectItem>
+                                      <SelectItem value="PE">
+                                        Pernambuco
+                                      </SelectItem>
+                                      <SelectItem value="PI">Piauí</SelectItem>
+                                      <SelectItem value="RJ">
+                                        Rio de Janeiro
+                                      </SelectItem>
+                                      <SelectItem value="RN">
+                                        Rio Grande do Norte
+                                      </SelectItem>
+                                      <SelectItem value="RS">
+                                        Rio Grande do Sul
+                                      </SelectItem>
+                                      <SelectItem value="RO">
+                                        Rondônia
+                                      </SelectItem>
+                                      <SelectItem value="RR">
+                                        Roraima
+                                      </SelectItem>
+                                      <SelectItem value="SC">
+                                        Santa Catarina
+                                      </SelectItem>
+                                      <SelectItem value="SP">
+                                        São Paulo
+                                      </SelectItem>
+                                      <SelectItem value="SE">
+                                        Sergipe
+                                      </SelectItem>
+                                      <SelectItem value="TO">
+                                        Tocantins
+                                      </SelectItem>
                                     </SelectContent>
                                   </Select>
                                   <FormMessage />
@@ -814,7 +1088,6 @@ export default function Passageiros() {
                               )}
                             />
 
-                            {/* Linha 4: Referência (Largura Total) */}
                             <FormField
                               control={form.control}
                               name="referencia"
@@ -875,7 +1148,6 @@ export default function Passageiros() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {/* AJUSTE: Seção de filtros com labels explícitas */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="search">Buscar por Nome</Label>

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { asaasService } from "@/integrations/asaasService";
 import { supabase } from "@/integrations/supabase/client";
 import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
@@ -31,7 +32,6 @@ import {
   School,
   TrendingDown,
   TrendingUp,
-  User,
   UserCircle2
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
@@ -177,18 +177,144 @@ export default function PassageiroCarteirinha() {
     return nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
   };
 
+  const handleDeleteClick = (cobranca: Cobranca) => {
+    setDeleteDialog({ open: true, cobranca });
+  };
+
   const handleToggleLembretes = async (cobranca: Cobranca) => {
-    /* ... Lógica Completa ... */
+    try {
+      const novoStatus = !cobranca.desativar_lembretes;
+
+      const { error } = await supabase
+        .from("cobrancas")
+        .update({ desativar_lembretes: novoStatus })
+        .eq("id", cobranca.id);
+
+      if (error) throw error;
+
+      toast({
+        title: `Lembretes ${
+          novoStatus ? "desativados" : "ativados"
+        } com sucesso.`,
+      });
+
+      fetchHistorico(passageiro_id);
+    } catch (err) {
+      console.error("Erro ao alternar lembretes:", err);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o status dos lembretes.",
+        variant: "destructive",
+      });
+    }
   };
   const handleDelete = async () => {
-    /* ... Lógica Completa ... */
+    try {
+      if (
+        deleteDialog.cobranca.origem === "automatica" &&
+        deleteDialog.cobranca.asaas_payment_id
+      ) {
+        await asaasService.deletePayment(
+          deleteDialog.cobranca.asaas_payment_id,
+          apiKey
+        );
+      }
+
+      const { error } = await supabase
+        .from("cobrancas")
+        .delete()
+        .eq("id", deleteDialog.cobranca.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Mensalidade excluida com sucesso.",
+      });
+
+      fetchHistorico(passageiro_id);
+    } catch (error) {
+      console.error("Erro ao excluir mensalidade:", error);
+      toast({
+        title: "Erro ao excluir mensalidade.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteDialog({ open: false, cobranca: null });
+    }
   };
   const handleEnviarNotificacaoClick = (cobrancaId: string) =>
     setConfirmDialog({ open: true, cobrancaId, action: "enviar" });
   const handleDesfazerClick = (cobrancaId: string) =>
     setConfirmDialog({ open: true, cobrancaId, action: "desfazer" });
   const handleConfirmAction = async () => {
-    /* ... Lógica Completa ... */
+    try {
+      if (confirmDialog.action === "enviar") {
+        toast({
+          title: "Notificação enviada com sucesso para o responsável",
+        });
+      } else if (confirmDialog.action === "desfazer") {
+        const { data: cobranca, error: fetchError } = await supabase
+          .from("cobrancas")
+          .select(
+            "id, origem, pagamento_manual, asaas_payment_id, status, data_pagamento, tipo_pagamento"
+          )
+          .eq("id", confirmDialog.cobrancaId)
+          .single();
+
+        if (fetchError || !cobranca) {
+          throw new Error(
+            "Não foi possível localizar a mensalidade para desfazer"
+          );
+        }
+
+        const { error: updateError } = await supabase
+          .from("cobrancas")
+          .update({
+            status: "pendente",
+            data_pagamento: null,
+            tipo_pagamento: null,
+            pagamento_manual: false,
+          })
+          .eq("id", confirmDialog.cobrancaId);
+
+        if (updateError) throw updateError;
+
+        if (cobranca.origem === "automatica") {
+          try {
+            await asaasService.undoPaymentInCash(
+              cobranca.asaas_payment_id,
+              apiKey
+            );
+          } catch (asaasErr) {
+            console.error("Erro ao desfazer no Asaas:", asaasErr);
+
+            await supabase
+              .from("cobrancas")
+              .update({
+                status: "pago",
+                data_pagamento: cobranca.data_pagamento,
+                tipo_pagamento: cobranca.tipo_pagamento,
+                pagamento_manual: cobranca.pagamento_manual,
+              })
+              .eq("id", cobranca.id);
+
+            throw new Error("Erro ao desfazer pagamento no Asaas");
+          }
+        }
+
+        toast({
+          title: "Pagamento revertido com sucesso.",
+        });
+        fetchHistorico(passageiro_id);
+      }
+    } catch (error) {
+      console.error("Erro ao desfazer pagamento:", error);
+      toast({
+        title: "Erro ao desfazer pagamento.",
+        variant: "destructive",
+      });
+    }
+    setConfirmDialog({ open: false, cobrancaId: "", action: "enviar" });
   };
   const openPaymentDialog = (cobranca: Cobranca) => {
     setSelectedCobranca(cobranca);
@@ -242,9 +368,6 @@ export default function PassageiroCarteirinha() {
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              <InfoItem icon={User} label="Passageiro">
-                {passageiro.nome}
-              </InfoItem>
               <InfoItem icon={School} label="Escola">
                 {passageiro.escolas?.nome || "Não informada"}
               </InfoItem>
@@ -285,13 +408,13 @@ export default function PassageiroCarteirinha() {
                     size="sm"
                     onClick={() => setRetroativaDialogOpen(true)}
                   >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Registrar Retroativa
+                    <Plus className="w-4 h-4 md:mr-2" />
+                    <span className="hidden md:block">Registrar Retroativa</span>
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="hidden md:block -mx-6 -mt-6">
+                <div className="hidden md:block">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b">
@@ -306,9 +429,6 @@ export default function PassageiroCarteirinha() {
                         </th>
                         <th className="p-4 text-left text-xs font-medium text-gray-600">
                           Vencimento
-                        </th>
-                        <th className="p-4 text-left text-xs font-medium text-gray-600">
-                          Pagou em
                         </th>
                         <th className="p-4 text-center text-xs font-medium text-gray-600">
                           Ações
@@ -358,11 +478,6 @@ export default function PassageiroCarteirinha() {
                           <td className="p-4 align-top">
                             {formatDateToBR(cobranca.data_vencimento)}
                           </td>
-                          <td className="p-4 align-top">
-                            {cobranca.data_pagamento
-                              ? formatDateToBR(cobranca.data_pagamento)
-                              : "-"}
-                          </td>
                           <td className="p-4 text-center align-top">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -394,6 +509,40 @@ export default function PassageiroCarteirinha() {
                                   }}
                                 >
                                   Registrar Pagamento
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  disabled={
+                                    cobranca.origem === "manual" ||
+                                    cobranca.status === "pago"
+                                  }
+                                  onClick={(e) => {
+                                    handleEnviarNotificacaoClick(cobranca.id);
+                                  }}
+                                >
+                                  Enviar Notificação
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  disabled={
+                                    cobranca.status === "pago" ||
+                                    cobranca.origem === "manual"
+                                  }
+                                  onClick={() =>
+                                    handleToggleLembretes(cobranca)
+                                  }
+                                >
+                                  {cobranca.desativar_lembretes
+                                    ? "Ativar Lembretes"
+                                    : "Desativar Lembretes"}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="text-red-600"
+                                  disabled={
+                                    cobranca.status === "pago" ||
+                                    cobranca.origem === "automatica"
+                                  }
+                                  onClick={() => handleDeleteClick(cobranca)}
+                                >
+                                  Excluir Mensalidade
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   disabled={

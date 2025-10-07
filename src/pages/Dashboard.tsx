@@ -1,5 +1,4 @@
 import LatePaymentsAlert from "@/components/LatePaymentsAlert";
-import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -10,8 +9,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "@/hooks/use-toast";
-import { asaasService } from "@/integrations/asaasService";
 import { supabase } from "@/integrations/supabase/client";
 import { Cobranca } from "@/types/cobranca";
 import { PaymentStats } from "@/types/paymentStats";
@@ -29,7 +26,6 @@ import {
   Ticket,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 interface DashboardStats {
   totalPrevisto: number;
@@ -159,16 +155,19 @@ const Dashboard = () => {
     boleto: { count: 0, total: 0 },
   });
 
+  const currentYear = new Date().getFullYear();
+  const anos = [
+    { value: currentYear.toString(), label: currentYear.toString() },
+    {
+      value: (currentYear - 1).toString(),
+      label: (currentYear - 1).toString(),
+    },
+  ];
+
   const [latePayments, setLatePayments] = useState<Cobranca[]>([]);
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(true);
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
-    null
-  );
-
-  const navigate = useNavigate();
 
   const meses = [
     "Janeiro",
@@ -266,85 +265,6 @@ const Dashboard = () => {
     }
   };
 
-  const enviarNotificacaoCobranca = async (
-    cobrancaId: string,
-    nomePassageiro: string
-  ) => {
-    try {
-      const { data: cobranca, error: fetchError } = await supabase
-        .from("cobrancas")
-        .select(
-          `
-        id,
-        valor,
-        asaas_payment_id,
-        passageiro:passageiros (
-          id,
-          nome,
-          nome_responsavel,
-          telefone_responsavel
-        )
-      `
-        )
-        .eq("id", cobrancaId)
-        .single();
-
-      if (fetchError || !cobranca) {
-        throw new Error("Não foi possível localizar a mensalidade.");
-      }
-
-      const to = cobranca.passageiro?.telefone_responsavel;
-      if (!to) {
-        throw new Error("Telefone do responsável não encontrado.");
-      }
-
-      const pix = await asaasService.obterPixAsaas(
-        cobranca.asaas_payment_id,
-        apiKey
-      );
-
-      const response = await fetch(
-        "https://jztyffakurtekwxurclw.supabase.co/functions/v1/enviarNotificacaoManual",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            to,
-            pix: pix || undefined,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Erro na Edge Function: ${response.status}`);
-      }
-
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error("Falha no fluxo do n8n");
-      }
-
-      toast({ title: "Notificação enviada com sucesso para o responsável" });
-    } catch (err) {
-      console.error("Erro ao enviar notificação:", err);
-      toast({ title: "Erro ao enviar notificação", variant: "destructive" });
-    }
-  };
-
-  const openPaymentDialog = (cobranca: Cobranca) => {
-    setSelectedCobranca(cobranca);
-    setPaymentDialogOpen(true);
-  };
-  const handlePaymentRecorded = () => {
-    fetchStats();
-    setPaymentDialogOpen(false);
-  };
-  const handleViewHistory = (passageiroId: string) => {
-    navigate(`/passageiros/${passageiroId}`);
-  };
-
   useEffect(() => {
     fetchStats();
   }, [mesFilter, anoFilter]);
@@ -358,7 +278,6 @@ const Dashboard = () => {
           </h1>
         </div>
 
-        {/* AJUSTE 1: Filtros com layout otimizado e labels claras */}
         <Card className="mb-6">
           <CardContent className="mt-4">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
@@ -391,9 +310,9 @@ const Dashboard = () => {
                   <SelectValue placeholder="Selecione o ano" />
                 </SelectTrigger>
                 <SelectContent>
-                  {[2023, 2024, 2025, 2026].map((ano) => (
-                    <SelectItem key={ano} value={ano.toString()}>
-                      {ano}
+                  {anos.map((ano) => (
+                    <SelectItem key={ano.value} value={ano.value}>
+                      {ano.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -571,7 +490,6 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* AJUSTE 3: Ícone do título corrigido para PieChart */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -588,17 +506,6 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
-
-      {selectedCobranca && (
-        <ManualPaymentDialog
-          isOpen={paymentDialogOpen}
-          onClose={() => setPaymentDialogOpen(false)}
-          cobrancaId={selectedCobranca.id}
-          passageiroNome={selectedCobranca.passageiros.nome}
-          valorOriginal={Number(selectedCobranca.valor)}
-          onPaymentRecorded={handlePaymentRecorded}
-        />
-      )}
     </div>
   );
 };

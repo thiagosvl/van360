@@ -364,6 +364,47 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      },
+      gastos: {
+        Row: {
+          id: string
+          auth_uid: string | null
+          usuario_id: string
+          descricao: string
+          valor: number
+          date: string
+          categoria: number
+          notas: string
+        }
+        Insert: {
+          id: string
+          auth_uid: string | null
+          usuario_id: string
+          descricao: string
+          valor: number
+          date: string
+          categoria: number
+          notas: string
+        }
+        Update: {
+          id: string
+          auth_uid: string | null
+          usuario_id: string
+          descricao: string
+          valor: number
+          date: string
+          categoria: number
+          notas: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gastos_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -35,12 +35,11 @@ import {
   CheckCircle2,
   MoreVertical,
   Search,
-  Send
+  Send,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Subcomponente para o esqueleto de carregamento da lista
 const ListSkeleton = () => (
   <div className="space-y-4">
     {[1, 2, 3, 4].map((i) => (
@@ -73,7 +72,6 @@ const Cobrancas = () => {
     cobrancaId: "",
   });
 
-  // AJUSTE: Estados para controlar a busca em cada aba
   const [buscaAbertas, setBuscaAbertas] = useState("");
   const [buscaPagas, setBuscaPagas] = useState("");
 
@@ -230,12 +228,10 @@ const Cobrancas = () => {
 
   useEffect(() => {
     fetchCobrancas();
-    // Reseta a busca ao mudar o filtro de mês/ano
     setBuscaAbertas("");
     setBuscaPagas("");
   }, [mesFilter, anoFilter]);
 
-  // AJUSTE: Lógica de filtro front-end usando useMemo para performance
   const cobrancasAbertasFiltradas = useMemo(() => {
     if (!buscaAbertas) return cobrancasAbertas;
     const searchTerm = buscaAbertas.toLowerCase();
@@ -358,7 +354,8 @@ const Cobrancas = () => {
                   </div>
                 ) : cobrancasAbertasFiltradas.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
-                    Nenhum passageiro ou responsável encontrado com o nome "{buscaAbertas}"
+                    Nenhum passageiro ou responsável encontrado com o nome "
+                    {buscaAbertas}"
                   </div>
                 ) : (
                   <>
@@ -433,21 +430,21 @@ const Cobrancas = () => {
                               </td>
                               <td className="p-3 text-center align-top">
                                 <Button
-      variant="ghost"
-      size="sm"
-      className="h-8 w-8 p-0"
-      disabled={cobranca.origem === "manual"}
-      onClick={(e) => {
-        e.stopPropagation();
-        setConfirmDialogEnvioNotificacao({
-          open: true,
-          cobrancaId: cobranca.id,
-          nomePassageiro: cobranca.passageiros.nome,
-        });
-      }}
-    >
-      <Send className="h-4 w-4" />
-    </Button>
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  disabled={cobranca.origem === "manual"}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setConfirmDialogEnvioNotificacao({
+                                      open: true,
+                                      cobrancaId: cobranca.id,
+                                      nomePassageiro: cobranca.passageiros.nome,
+                                    });
+                                  }}
+                                >
+                                  <Send className="h-4 w-4" />
+                                </Button>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button
@@ -674,7 +671,8 @@ const Cobrancas = () => {
                   </div>
                 ) : cobrancasPagasFiltradas.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
-                    Nenhum passageiro ou responsável encontrado com o nome "{buscaPagas}"
+                    Nenhum passageiro ou responsável encontrado com o nome "
+                    {buscaPagas}"
                   </div>
                 ) : (
                   <>

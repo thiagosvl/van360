@@ -12,14 +12,12 @@ export const AppGate = ({ children }: AppGateProps) => {
   const location = useLocation();
 
   const [roleDb, setRoleDb] = useState<string | null>(null);
-  const [roleLoading, setRoleLoading] = useState(false);
 
   useEffect(() => {
     let active = true;
 
     async function loadRole() {
       if (user) {
-        setRoleLoading(true);
         try {
           const { data } = await supabase
             .from("usuarios")
@@ -40,7 +38,6 @@ export const AppGate = ({ children }: AppGateProps) => {
             );
           }
         } finally {
-          if (active) setRoleLoading(false);
         }
       }
     }
@@ -64,7 +61,6 @@ export const AppGate = ({ children }: AppGateProps) => {
     );
   }
 
-  // Se não logado
   if (!session || !user) {
     if (location.pathname.startsWith("/admin")) {
       return <Navigate to="/login" replace />;
@@ -75,7 +71,6 @@ export const AppGate = ({ children }: AppGateProps) => {
     return <>{children}</>;
   }
 
-  // Se logado e acessou /login -> redireciona de acordo com a role
   if (location.pathname === "/login") {
     if (role === "admin") {
       return <Navigate to="/admin/dashboard" replace />;
@@ -83,11 +78,9 @@ export const AppGate = ({ children }: AppGateProps) => {
     if (role === "motorista") {
       return <Navigate to="/dashboard" replace />;
     }
-    // fallback: se estiver logado mas sem role definida, joga no dashboard padrão
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Se logado como admin
   if (role === "admin") {
     if (location.pathname === "/admin") {
       return <Navigate to="/admin/dashboard" replace />;
@@ -96,7 +89,6 @@ export const AppGate = ({ children }: AppGateProps) => {
       return <Navigate to="/admin/dashboard" replace />;
     }
   }
-  // Se logado como motorista
   else if (role === "motorista") {
     const allowedRoutes = [
       "/dashboard",
@@ -104,6 +96,7 @@ export const AppGate = ({ children }: AppGateProps) => {
       "/mensalidades",
       "/escolas",
       "/configuracoes",
+      "/gastos",
     ];
     const isAllowedRoute = allowedRoutes.some(
       (route) =>
@@ -114,7 +107,6 @@ export const AppGate = ({ children }: AppGateProps) => {
       return <Navigate to="/dashboard" replace />;
     }
   }
-  // Se logado mas sem role válida
   else {
     return <Navigate to="/login" replace />;
   }

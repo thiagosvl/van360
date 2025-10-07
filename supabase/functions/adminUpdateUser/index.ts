@@ -31,7 +31,6 @@ serve(async (req) => {
       });
     }
 
-    // Atualiza os metadados do usuário no sistema de autenticação
     const { data, error } = await supabase.auth.admin.updateUserById(
       auth_uid,
       { app_metadata: { role: role } }

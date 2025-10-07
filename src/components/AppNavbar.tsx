@@ -36,7 +36,6 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
   return (
     <header className="flex h-16 items-center justify-between px-4 sm:px-6 bg-white border-b shadow-sm">
       <div className="flex items-center gap-3">
-        {/* Botão hambúrguer no mobile */}
         <div className="md:hidden">
           <Sheet>
             <SheetTrigger asChild>
@@ -53,7 +52,6 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
               </SheetHeader>
 
               <div className="p-4">
-                {/* Apenas renderiza o AppSidebar. O fechamento ocorre lá. */}
                 <AppSidebar role={role} />
               </div>
             </SheetContent>

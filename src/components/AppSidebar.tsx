@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Settings,
   Users,
+  Wallet,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -18,6 +19,7 @@ const motoristaItems = [
   { title: "Mensalidades", href: "/mensalidades", icon: CreditCard },
   { title: "Passageiros", href: "/passageiros", icon: Users },
   { title: "Escolas", href: "/escolas", icon: GraduationCap },
+  { title: "Gastos", href: "/gastos", icon: Wallet },
   { title: "Configurações", href: "/configuracoes", icon: Settings },
 ];
 

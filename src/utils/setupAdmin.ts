@@ -1,6 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
 
-// Create admin auth user via edge function
 export const createAdminAuthUser = async () => {
   try {
     const { data, error } = await supabase.functions.invoke('adminCreateUser', {
@@ -16,7 +15,6 @@ export const createAdminAuthUser = async () => {
       return null;
     }
 
-    // Update usuarios table with auth_uid
     await supabase
       .from('usuarios')
       .update({ auth_uid: data.auth_uid })
@@ -30,5 +28,4 @@ export const createAdminAuthUser = async () => {
   }
 };
 
-// Call this function to create admin user
 createAdminAuthUser();
