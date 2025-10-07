@@ -1,24 +1,24 @@
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { asaasService } from "@/integrations/asaasService";
@@ -28,11 +28,11 @@ import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { currentMonthInText } from "@/utils/formatters";
 import {
-    cepMask,
-    cpfMask,
-    moneyMask,
-    moneyToNumber,
-    phoneMask,
+  cepMask,
+  cpfMask,
+  moneyMask,
+  moneyToNumber,
+  phoneMask,
 } from "@/utils/masks";
 import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,10 +41,10 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "./ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
@@ -52,7 +52,7 @@ import { Checkbox } from "./ui/checkbox";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 
-const apiKey = localStorage.getItem("asaas_api_key");
+const asaasApiKey = localStorage.getItem("asaas_api_key");
 
 const passageiroSchema = z.object({
   escola_id: z.string().min(1, "Campo obrigatório"),
@@ -302,7 +302,7 @@ export default function PassengerFormDialog({
                 await asaasService.updatePayment(
                   ultimaCobranca.asaas_payment_id,
                   updatePayload,
-                  apiKey
+                  asaasApiKey
                 );
 
                 const { error: updateCobrancaError } = await supabase
@@ -364,7 +364,7 @@ export default function PassengerFormDialog({
               mobilePhone: passageiroData.telefone_responsavel,
               notificationDisabled: true,
             },
-            apiKey
+            asaasApiKey
           );
 
           passageiroData.asaas_customer_id = asaasCustomer.id;
@@ -398,7 +398,7 @@ export default function PassengerFormDialog({
                 description: `Mensalidade ${mes}/${ano}`,
                 externalReference: newPassageiro.id,
               },
-              apiKey
+              asaasApiKey
             );
 
             const { error: cobrancaError } = await supabase
@@ -428,14 +428,14 @@ export default function PassengerFormDialog({
 
           try {
             if (payment?.id)
-              await asaasService.deletePayment(payment.id, apiKey);
+              await asaasService.deletePayment(payment.id, asaasApiKey);
             if (newPassageiro?.id)
               await supabase
                 .from("passageiros")
                 .delete()
                 .eq("id", newPassageiro.id);
             if (asaasCustomer?.id)
-              await asaasService.deleteCustomer(asaasCustomer.id, apiKey);
+              await asaasService.deleteCustomer(asaasCustomer.id, asaasApiKey);
           } catch (rollbackErr) {
             console.error("Erro durante rollback:", rollbackErr);
           }

@@ -39,8 +39,6 @@ interface DashboardStats {
   percentualRecebimento: number;
 }
 
-const apiKey = localStorage.getItem("asaas_api_key");
-
 const PaymentStatsDisplay = ({
   stats,
   totalRecebido,
@@ -90,7 +88,7 @@ const PaymentStatsDisplay = ({
   if (activeMethods.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        Nenhuma mensalidade recebida neste período.
+        Nenhuma mensalidade recebida no mês indicado.
       </p>
     );
   }

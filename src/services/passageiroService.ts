@@ -1,65 +1,50 @@
 import { asaasService } from "@/integrations/asaasService";
 import { supabase } from "@/integrations/supabase/client";
 
+const asaasApiKey = localStorage.getItem("asaas_api_key");
 
-const apiKey = localStorage.getItem("asaas_api_key");
+export const passageiroService = {
+  async getNumeroCobrancas(passageiroId: string): Promise<number> {
+    const { count, error } = await supabase
+      .from("cobrancas")
+      .select("id", { count: "exact", head: true })
+      .eq("passageiro_id", passageiroId);
 
-/**
- * Desfaz um pagamento, revertendo o status no Supabase e, se aplicável, no Asaas.
- * Inclui lógica de rollback para garantir a consistência dos dados.
- *
- * @param cobrancaId O ID da cobrança a ser desfeita.
- * @param apiKey A chave da API do Asaas (pode ser null se não for usada).
- * @throws Lança um erro se qualquer etapa do processo falhar.
- */
-export const cobrancaService = {
-    async desfazerPagamento(cobrancaId: string): Promise<void> {
-        // 1. Busca a cobrança para obter todos os dados necessários.
-        const { data: cobranca, error: fetchError } = await supabase
-            .from("cobrancas")
-            .select("*")
-            .eq("id", cobrancaId)
-            .single();
+    if (error) {
+      console.error("Erro ao contar cobranças:", error);
+      throw new Error("Não foi possível verificar as cobranças do passageiro.");
+    }
 
-        if (fetchError || !cobranca) {
-            throw new Error("Não foi possível localizar a mensalidade para desfazer o pagamento.");
-        }
+    return count || 0;
+  },
 
-        // Guarda um snapshot para o caso de precisarmos de rollback.
-        const originalState = { ...cobranca };
+  async excluirPassageiro(passageiroId: string): Promise<void> {
+    const { data: passageiro, error: passageiroError } = await supabase
+      .from("passageiros")
+      .select("asaas_customer_id")
+      .eq("id", passageiroId)
+      .single();
 
-        // 2. Tenta reverter o status no Supabase primeiro.
-        const { error: updateError } = await supabase
-            .from("cobrancas")
-            .update({
-                status: "pendente",
-                data_pagamento: null,
-                tipo_pagamento: null,
-                pagamento_manual: false,
-            })
-            .eq("id", cobrancaId);
+    if (passageiroError) {
+      throw new Error("Não foi possível localizar o passageiro para exclusão.");
+    }
 
-        if (updateError) {
-            throw new Error("Falha ao atualizar o status da cobrança no banco de dados.");
-        }
+    if (passageiro?.asaas_customer_id && asaasApiKey) {
+      try {
+        await asaasService.deleteCustomer(passageiro.asaas_customer_id, asaasApiKey);
+      } catch (asaasErr) {
+        console.error("Erro ao excluir cliente no Asaas. A operação foi abortada.", asaasErr);
+        throw new Error("Falha ao excluir o cliente no provedor de pagamento.");
+      }
+    }
 
-        if (cobranca.origem === "automatica" && cobranca.asaas_payment_id && apiKey) {
-            try {
-                await asaasService.undoPaymentInCash(cobranca.asaas_payment_id, apiKey);
-            } catch (asaasErr) {
-                console.error("Erro ao desfazer o pagamento no Asaas. Iniciando rollback...", asaasErr);
-                await supabase
-                    .from("cobrancas")
-                    .update({
-                        status: originalState.status,
-                        data_pagamento: originalState.data_pagamento,
-                        tipo_pagamento: originalState.tipo_pagamento,
-                        pagamento_manual: originalState.pagamento_manual,
-                    })
-                    .eq("id", cobrancaId);
+    const { error } = await supabase
+      .from("passageiros")
+      .delete()
+      .eq("id", passageiroId);
 
-                throw new Error("Erro ao comunicar com o provedor de pagamento. A alteração foi desfeita.");
-            }
-        }
-    },
+    if (error) {
+      throw new Error("Falha ao excluir o passageiro do banco de dados.");
+    }
+  },
 };

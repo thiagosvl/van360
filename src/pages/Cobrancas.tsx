@@ -21,7 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { cobrancaService } from "@/services/passageiroService";
+import { cobrancaService } from "@/services/cobrancaService";
 import { Cobranca } from "@/types/cobranca";
 import {
   disableDesfazerPagamento,
@@ -72,7 +72,7 @@ const Cobrancas = () => {
     null
   );
   const [confirmDialogEnvioNotificacao, setConfirmDialogEnvioNotificacao] =
-    useState({ open: false, cobrancaId: "", nomePassageiro: "" });
+    useState({ open: false, cobranca: null });
   const [confirmDialogDesfazer, setConfirmDialogDesfazer] = useState({
     open: false,
     cobrancaId: "",
@@ -116,22 +116,20 @@ const Cobrancas = () => {
 
   const handleToggleLembretes = async (cobranca: Cobranca) => {
     try {
-      const novoStatus = !cobranca.desativar_lembretes;
-      const { error } = await supabase
-        .from("cobrancas")
-        .update({ desativar_lembretes: novoStatus })
-        .eq("id", cobranca.id);
-      if (error) throw error;
+      const novoStatus = await cobrancaService.toggleNotificacoes(cobranca);
+
       toast({
         title: `Notificações ${
           novoStatus ? "desativadas" : "ativadas"
         } com sucesso.`,
       });
+
       fetchCobrancas();
-    } catch (err) {
-      console.error("Erro ao realizar alterações:", err);
+    } catch (error: any) {
+      console.error("Erro ao alterar lembretes:", error);
       toast({
-        title: "Não foi possível realizar as alterações.",
+        title: "Erro ao alterar notificações.",
+        description: error.message || "Não foi possível concluir a operação.",
         variant: "destructive",
       });
     }
@@ -139,6 +137,9 @@ const Cobrancas = () => {
 
   const enviarNotificacaoCobranca = async () => {
     try {
+      await cobrancaService.enviarNotificacao(
+        confirmDialogEnvioNotificacao.cobranca
+      );
       toast({ title: "Notificação enviada com sucesso para o responsável" });
     } catch (error) {
       console.error("Erro ao enviar notificação:", error);
@@ -146,8 +147,7 @@ const Cobrancas = () => {
     }
     setConfirmDialogEnvioNotificacao({
       open: false,
-      cobrancaId: "",
-      nomePassageiro: "",
+      cobranca: null,
     });
   };
 
@@ -395,8 +395,7 @@ const Cobrancas = () => {
                                     e.stopPropagation();
                                     setConfirmDialogEnvioNotificacao({
                                       open: true,
-                                      cobrancaId: cobranca.id,
-                                      nomePassageiro: cobranca.passageiros.nome,
+                                      cobranca,
                                     });
                                   }}
                                 >
@@ -451,9 +450,7 @@ const Cobrancas = () => {
                                         e.stopPropagation();
                                         setConfirmDialogEnvioNotificacao({
                                           open: true,
-                                          cobrancaId: cobranca.id,
-                                          nomePassageiro:
-                                            cobranca.passageiros.nome,
+                                          cobranca,
                                         });
                                       }}
                                     >
@@ -542,8 +539,7 @@ const Cobrancas = () => {
                                     e.stopPropagation();
                                     setConfirmDialogEnvioNotificacao({
                                       open: true,
-                                      cobrancaId: cobranca.id,
-                                      nomePassageiro: cobranca.passageiros.nome,
+                                      cobranca,
                                     });
                                   }}
                                 >
@@ -870,8 +866,7 @@ const Cobrancas = () => {
         onOpenChange={(open) =>
           setConfirmDialogEnvioNotificacao({
             open,
-            cobrancaId: "",
-            nomePassageiro: "",
+            cobranca: null,
           })
         }
         title="Enviar Notificação"

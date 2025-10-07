@@ -8,13 +8,13 @@ export const asaasService = {
         email?: string;
         mobilePhone?: string;
         notificationDisabled?: boolean;
-    }, apiKey?: string) {
+    }, asaasApiKey?: string) {
         const res = await fetch('/asaas/customers', {
             method: "POST",
             headers: {
                 accept: "application/json",
                 "content-type": "application/json",
-                access_token: apiKey ?? ASAAS_TOKEN,
+                access_token: asaasApiKey ?? ASAAS_TOKEN,
             },
             body: JSON.stringify(customer),
         });
@@ -27,13 +27,13 @@ export const asaasService = {
         return res.json();
     },
 
-    async deletePayment(paymentId: string, apiKey: string) {
+    async deletePayment(paymentId: string, asaasApiKey: string) {
         const res = await fetch(`/asaas/payments/${paymentId}`, {
             method: "DELETE",
             headers: {
                 accept: "application/json",
                 "content-type": "application/json",
-                access_token: apiKey ?? ASAAS_TOKEN,
+                access_token: asaasApiKey ?? ASAAS_TOKEN,
             },
         });
 
@@ -47,12 +47,12 @@ export const asaasService = {
         return res.json();
     },
 
-    async deleteCustomer(customerId: string, apiKey: string) {
+    async deleteCustomer(customerId: string, asaasApiKey: string) {
         const res = await fetch(`/asaas/customers/${customerId}`, {
             method: "DELETE",
             headers: {
                 accept: "application/json",
-                access_token: apiKey ?? ASAAS_TOKEN,
+                access_token: asaasApiKey ?? ASAAS_TOKEN,
             },
         },);
 
@@ -91,14 +91,14 @@ export const asaasService = {
             description?: string;
             externalReference?: string;
         },
-        apiKey: string
+        asaasApiKey: string
     ) {
         const res = await fetch(`/asaas/payments`, {
             method: "POST",
             headers: {
                 accept: "application/json",
                 "content-type": "application/json",
-                access_token: apiKey ?? ASAAS_TOKEN,
+                access_token: asaasApiKey ?? ASAAS_TOKEN,
             },
             body: JSON.stringify(payment),
         });
@@ -113,13 +113,13 @@ export const asaasService = {
         return res.json();
     },
 
-    async createWebhook(subAccountApiKey: string): Promise<any> {
+    async createWebhook(subAccountasaasApiKey: string): Promise<any> {
         try {
             const response = await fetch("/asaas/customers/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "access_token": subAccountApiKey,
+                    "access_token": subAccountasaasApiKey,
                 },
                 body: JSON.stringify({
                     name: "Webhook Mensalidade Passageiro Recebida",
@@ -145,13 +145,13 @@ export const asaasService = {
         }
     },
 
-    async updatePayment(paymentId: string, body: any, apiKey: string) {
+    async updatePayment(paymentId: string, body: any, asaasApiKey: string) {
         try {
             const response = await fetch(`/asaas/payments/${paymentId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    access_token: apiKey,
+                    access_token: asaasApiKey,
                 },
                 body: JSON.stringify(body),
             });
@@ -168,7 +168,7 @@ export const asaasService = {
         }
     },
 
-    async confirmPaymentInCash(paymentId: string, paymentDate: string, value: number, apiKey: string) {
+    async confirmPaymentInCash(paymentId: string, paymentDate: string, value: number, asaasApiKey: string) {
         try {
             const payload = {
                 paymentDate,
@@ -180,7 +180,7 @@ export const asaasService = {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    access_token: apiKey,
+                    access_token: asaasApiKey,
                 },
                 body: JSON.stringify(payload),
             });
@@ -197,13 +197,13 @@ export const asaasService = {
         }
     },
 
-    async undoPaymentInCash(paymentId: string, apiKey: string) {
+    async undoPaymentInCash(paymentId: string, asaasApiKey: string) {
         try {
             const response = await fetch(`/asaas/payments/${paymentId}/undoReceivedInCash`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    access_token: apiKey,
+                    access_token: asaasApiKey,
                 },
             });
 
@@ -219,7 +219,7 @@ export const asaasService = {
         }
     },
 
-    async obterPixAsaas(paymentId: string, apiKey: string): Promise<{
+    async obterPixAsaas(paymentId: string, asaasApiKey: string): Promise<{
         payload: string;
         encodedImage?: string;
         expirationDate?: string;
@@ -230,7 +230,7 @@ export const asaasService = {
                 method: "GET",
                 headers: {
                     accept: "application/json",
-                    access_token: apiKey,
+                    access_token: asaasApiKey,
                 },
             });
             if (!res.ok) {

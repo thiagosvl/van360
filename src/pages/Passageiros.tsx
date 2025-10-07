@@ -19,8 +19,8 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { asaasService } from "@/integrations/asaasService";
 import { supabase } from "@/integrations/supabase/client";
+import { passageiroService } from "@/services/passageiroService";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import {
@@ -115,40 +115,30 @@ export default function Passageiros() {
 
   const handleDelete = async () => {
     try {
-      const { data: cobrancas, error: checkError } = await supabase
-        .from("cobrancas")
-        .select("id")
-        .eq("passageiro_id", deleteDialog.passageiroId);
-      if (checkError) throw checkError;
-      if (cobrancas && cobrancas.length > 0) {
+      const numCobrancas = await passageiroService.getNumeroCobrancas(
+        deleteDialog.passageiroId
+      );
+
+      if (numCobrancas > 0) {
         toast({
           title: "Não foi possível excluir.",
-          description:
-            "Este passageiro possui mensalidades em seu histórico. Exclua as mensalidades antes de excluir o passageiro.",
+          description: `Este passageiro possui ${numCobrancas} mensalidade(s) em seu histórico.`,
           variant: "destructive",
         });
-        setDeleteDialog({ open: false, passageiroId: "" });
         return;
       }
-      const { data: passageiro, error: passageiroError } = await supabase
-        .from("passageiros")
-        .select("asaas_customer_id")
-        .eq("id", deleteDialog.passageiroId)
-        .single();
-      if (passageiroError) throw passageiroError;
-      if (passageiro?.asaas_customer_id && apiKey) {
-        await asaasService.deleteCustomer(passageiro.asaas_customer_id, apiKey);
-      }
-      const { error } = await supabase
-        .from("passageiros")
-        .delete()
-        .eq("id", deleteDialog.passageiroId);
-      if (error) throw error;
-      toast({ title: "Passageiro excluido com sucesso." });
+
+      await passageiroService.excluirPassageiro(deleteDialog.passageiroId);
+
+      toast({ title: "Passageiro excluído com sucesso." });
       fetchPassageiros();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao excluir passageiro:", error);
-      toast({ title: "Erro ao excluir passageiro.", variant: "destructive" });
+      toast({
+        title: "Erro ao excluir passageiro.",
+        description: error.message || "Não foi possível concluir a operação.",
+        variant: "destructive",
+      });
     } finally {
       setDeleteDialog({ open: false, passageiroId: "" });
     }
@@ -493,7 +483,7 @@ export default function Passageiros() {
         open={deleteDialog.open}
         onOpenChange={(open) => setDeleteDialog({ open, passageiroId: "" })}
         title="Excluir Passageiro"
-        description="Deseja excluir permanentemente este passageiro? Esta ação não pode ser desfeita."
+        description="Deseja excluir permanentemente este passageiro?"
         onConfirm={handleDelete}
         confirmText="Excluir"
         variant="destructive"

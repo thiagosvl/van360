@@ -718,7 +718,7 @@ export default function Escolas() {
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         title="Confirmar exclusão"
-        description="Deseja excluir permanentemente esta escola? Esta ação não pode ser desfeita."
+        description="Deseja excluir permanentemente esta escola?"
         onConfirm={handleDelete}
         confirmText="Confirmar"
         variant="destructive"

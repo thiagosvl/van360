@@ -18,3 +18,11 @@ export const disableDesfazerPagamento = (cobranca): boolean => {
 export const disableExcluirMensalidade = (cobranca): boolean => {
     return cobranca.status === "pago" || cobranca.origem === "automatica";
 };
+
+export const disableBaixarBoleto = (cobranca): boolean => {
+    return !cobranca.asaas_bankslip_url || cobranca.status === "pago" || cobranca.origem === "manual";
+}
+
+export const disableVerPaginaPagamento = (cobranca): boolean => {
+    return !cobranca.asaas_invoice_url || cobranca.status === "pago" || cobranca.origem === "manual";
+}

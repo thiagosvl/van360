@@ -28,9 +28,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { asaasService } from "@/integrations/asaasService";
-import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { cobrancaService } from "@/services/cobrancaService";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -58,8 +57,6 @@ const paymentSchema = z.object({
 });
 
 type PaymentFormData = z.infer<typeof paymentSchema>;
-
-const apiKey = localStorage.getItem("asaas_api_key");
 
 export default function ManualPaymentDialog({
   isOpen,
@@ -94,55 +91,26 @@ export default function ManualPaymentDialog({
   const handleSubmit = async (data: PaymentFormData) => {
     setLoading(true);
     try {
-      const valorNumerico = moneyToNumber(data.valor_pago);
-      const dataPagamentoFormatada = data.data_pagamento
-        .toISOString()
-        .split("T")[0];
+      const pagamentoData = {
+        valor_pago: moneyToNumber(data.valor_pago),
+        data_pagamento: data.data_pagamento.toISOString().split("T")[0],
+        tipo_pagamento: data.tipo_pagamento,
+      };
 
-      const { data: cobranca, error: fetchError } = await supabase
-        .from("cobrancas")
-        .select("id, origem, asaas_payment_id, data_vencimento")
-        .eq("id", cobrancaId)
-        .single();
-
-      if (fetchError || !cobranca) {
-        throw new Error("Não foi possível localizar a mensalidade.");
-      }
-
-      if (
-        cobranca.origem === "automatica" &&
-        cobranca.asaas_payment_id &&
-        apiKey
-      ) {
-        await asaasService.confirmPaymentInCash(
-          cobranca.asaas_payment_id,
-          dataPagamentoFormatada,
-          valorNumerico,
-          apiKey
-        );
-      }
-
-      const { error } = await supabase
-        .from("cobrancas")
-        .update({
-          status: "pago",
-          data_pagamento: dataPagamentoFormatada,
-          tipo_pagamento: data.tipo_pagamento,
-          valor: valorNumerico,
-          pagamento_manual: true,
-        })
-        .eq("id", cobrancaId);
-
-      if (error) throw error;
+      await cobrancaService.registrarPagamentoManual(cobrancaId, pagamentoData);
 
       toast({
         title: `Pagamento de ${passageiroNome} registrado com sucesso.`,
       });
       onPaymentRecorded();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao registrar pagamento:", error);
-      toast({ title: "Erro ao registrar pagamento.", variant: "destructive" });
+      toast({
+        title: "Erro ao registrar pagamento.",
+        description: error.message || "Não foi possível concluir a operação.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

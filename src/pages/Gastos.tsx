@@ -508,13 +508,19 @@ export default function Gastos() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                               <DropdownMenuItem
-                                onClick={() => openDialog(gasto)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openDialog(gasto);
+                                }}
                               >
                                 <Edit className="w-4 h-4 mr-2" />
                                 Editar
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleDelete(gasto.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(gasto.id);
+                                }}
                                 className="text-red-500"
                               >
                                 <Trash2 className="w-4 h-4 mr-2" />

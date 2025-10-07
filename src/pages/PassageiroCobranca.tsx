@@ -1,4 +1,6 @@
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
+import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,16 +12,19 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { cobrancaService } from "@/services/passageiroService";
+import { cobrancaService } from "@/services/cobrancaService";
+import { CobrancaDetalhe } from "@/types/cobrancaDetalhe";
+import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import {
+  disableBaixarBoleto,
   disableEnviarNotificacao,
   disableExcluirMensalidade,
   disableRegistrarPagamento,
   disableToggleLembretes,
+  disableVerPaginaPagamento,
 } from "@/utils/disableActions";
 import {
   formatCobrancaOrigem,
-  formatDateTimeToBR,
   formatDateToBR,
   formatPaymentType,
   getStatusColor,
@@ -39,7 +44,6 @@ import {
   FileText,
   History as HistoryIcon,
   IdCard,
-  Loader2,
   MessageCircle,
   School,
   Send,
@@ -49,27 +53,6 @@ import {
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
-interface CobrancaDetalhe {
-  cobranca_id: string;
-  valor: number;
-  data_vencimento: string;
-  data_pagamento: string | null;
-  tipo_pagamento: string | null;
-  status: "pago" | "pendente";
-  desativar_lembretes: boolean;
-  passageiro_id: string;
-  passageiro_nome: string;
-  nome_responsavel: string;
-  telefone_responsavel: string;
-  asaas_bankslip_url: string | null;
-  asaas_invoice_url: string | null;
-  cpf_responsavel: string;
-  escola_id: string;
-  origem: string;
-  pagamento_manual: boolean;
-  escola_nome: string;
-}
 
 const InfoItem = ({
   icon: Icon,
@@ -105,11 +88,7 @@ const CobrancaDetalheSkeleton = () => (
   </div>
 );
 
-const NotificationTimeline = ({
-  items,
-}: {
-  items: { date: string; event: string; type: string }[];
-}) => {
+const NotificationTimeline = ({ items }: { items: CobrancaNotificacao[] }) => {
   const getIcon = (type: string) => {
     switch (type) {
       case "auto":
@@ -121,22 +100,46 @@ const NotificationTimeline = ({
     }
   };
 
+  const getEventDescription = (tipoEvento: string): string => {
+    if (tipoEvento === "REENVIO_MANUAL") {
+      return "Cobrança reenviada manualmente por você";
+    }
+
+    const atrasoMatch = tipoEvento.match(/^LEMBRETE_ATRASO_(\d+)$/);
+    if (atrasoMatch) {
+      const numeroLembrete = atrasoMatch[1];
+
+      return `${numeroLembrete}ª lembrete de atraso enviado`;
+    }
+
+    switch (tipoEvento) {
+      case "AVISO_VENCIMENTO":
+        return "Cobrança enviada no vencimento";
+      case "AVISO_ANTECIPADO":
+        return "Aviso de mensalidade já disponível para pagamento";
+      default:
+        return `Ação de Notificação: ${tipoEvento} (Tipo desconhecido)`;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {items.map((item, index) => (
         <div key={index} className="flex gap-4">
           <div className="relative flex-shrink-0">
             <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-              {getIcon(item.type)}
+              {getIcon(item.tipo_origem)}
             </div>
             {index < items.length - 1 && (
               <div className="absolute top-11 left-1/2 -translate-x-1/2 w-px h-full bg-border" />
             )}
           </div>
           <div>
-            <p className="font-medium text-sm">{item.event}</p>
+            <p className="font-medium text-sm">
+              {getEventDescription(item.tipo_evento)}
+            </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {new Date(item.date).toLocaleString("pt-BR", {
+              {new Date(item.data_envio).toLocaleString("pt-BR", {
                 day: "2-digit",
                 month: "2-digit",
                 year: "numeric",
@@ -158,58 +161,75 @@ export default function PassageiroCobranca() {
     passageiro_id: string;
     cobranca_id: string;
   };
+  const [notificacoes, setNotificacoes] = useState<CobrancaNotificacao[]>([]);
+  const [confirmDialogDesfazer, setConfirmDialogDesfazer] = useState({
+    open: false,
+    cobrancaId: "",
+  });
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [cobranca, setCobranca] = useState<CobrancaDetalhe | null>(null);
   const [showFullHistory, setShowFullHistory] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+  });
   const { toast } = useToast();
 
-  let mockLog = [
-    {
-      date: "2025-10-05T17:49:00",
-      event: "Cobrança reenviada manualmente por você",
-      type: "manual",
-    },
-    {
-      date: "2025-10-02T17:49:00",
-      event: "Cobrança reenviada manualmente por você",
-      type: "manual",
-    },
-    {
-      date: "2025-09-28T09:05:00",
-      event: "3º lembrete de atraso enviado",
-      type: "auto",
-    },
-    {
-      date: "2025-09-27T09:05:00",
-      event: "2º lembrete de atraso enviado",
-      type: "auto",
-    },
-    {
-      date: "2025-09-26T09:00:00",
-      event: "1º lembrete de atraso enviado",
-      type: "auto",
-    },
-    {
-      date: "2025-09-25T09:00:00",
-      event: "Cobrança enviada no vencimento",
-      type: "auto",
-    },
-    {
-      date: "2025-09-22T09:00:00",
-      event: "Aviso de mensalidade já disponível para pagamento",
-      type: "auto",
-    },
-  ];
+  const goToExternalURL = (url: string) => {
+    if (!url) return;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
-  const fetchData = async () => {
+  const handleEnviarNotificacao = async () => {
+    try {
+      await cobrancaService.enviarNotificacao(cobranca);
+      toast({ title: "Notificação enviada com sucesso para o responsável" });
+      fetchNotificacoes();
+    } catch (error) {
+      console.error("Erro ao enviar notificação:", error);
+      toast({ title: "Erro ao enviar mensalidade.", variant: "destructive" });
+    }
+  };
+
+  const handleToggleLembretes = async () => {
+    try {
+      const novoStatus = await cobrancaService.toggleNotificacoes(cobranca);
+
+      toast({
+        title: `Notificações ${
+          novoStatus ? "desativadas" : "ativadas"
+        } com sucesso.`,
+      });
+
+      cobranca.desativar_lembretes = !cobranca.desativar_lembretes;
+    } catch (error: any) {
+      console.error("Erro ao alterar lembretes:", error);
+      toast({
+        title: "Erro ao alterar notificações.",
+        description: error.message || "Não foi possível concluir a operação.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchNotificacoes = async () => {
+    cobrancaService
+      .getNotificacoesByCobrancaId(cobranca_id)
+      .then((data) => {
+        setNotificacoes(data);
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar as notifica;'oes:", error);
+      });
+  };
+
+  const fetchCobranca = async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from("vw_cobrancas_detalhes")
         .select("*")
-        .eq("cobranca_id", cobranca_id)
+        .eq("id", cobranca_id)
         .single();
       if (error || !data) {
         toast({
@@ -228,14 +248,13 @@ export default function PassageiroCobranca() {
   };
 
   const desfazerPagamento = async () => {
-    setSaving(true);
     try {
       await cobrancaService.desfazerPagamento(cobranca_id);
 
       toast({
         title: "Pagamento desfeito com sucesso.",
       });
-      fetchData();
+      fetchCobranca();
     } catch (error: any) {
       console.error("Erro ao desfazer pagamento:", error);
       toast({
@@ -244,20 +263,37 @@ export default function PassageiroCobranca() {
         variant: "destructive",
       });
     } finally {
-      setSaving(false);
+      setConfirmDialogDesfazer({ open: false, cobrancaId: "" });
     }
   };
 
   useEffect(() => {
-    fetchData();
+    fetchCobranca();
+    fetchNotificacoes();
   }, [cobranca_id, navigate, toast]);
 
   if (loading) return <CobrancaDetalheSkeleton />;
 
   if (!cobranca) return null;
 
-  const handleAction = (title: string) => {
-    toast({ title });
+  const deleteCobranca = async () => {
+    try {
+      await cobrancaService.excluirCobranca(cobranca);
+
+      toast({
+        title: "Mensalidade excluída com sucesso.",
+      });
+      navigate(`/passageiros/${cobranca.passageiro_id}`);
+    } catch (error: any) {
+      console.error("Erro ao excluir mensalidade:", error);
+      toast({
+        title: "Erro ao excluir mensalidade.",
+        description: error.message || "Não foi possível concluir a operação.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteDialog({ open: false });
+    }
   };
 
   return (
@@ -312,11 +348,14 @@ export default function PassageiroCobranca() {
                   size="lg"
                   variant="outline"
                   className="w-full"
-                  onClick={() => desfazerPagamento()}
+                  onClick={() =>
+                    setConfirmDialogDesfazer({
+                      open: true,
+                      cobrancaId: cobranca_id,
+                    })
+                  }
                 >
-                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {!saving && <XCircle className="w-5 h-5 mr-2" />} Desfazer
-                  Pagamento
+                  <XCircle className="w-5 h-5 mr-2" /> Desfazer Pagamento
                 </Button>
               ) : (
                 <div
@@ -346,14 +385,15 @@ export default function PassageiroCobranca() {
               </InfoItem>
               <InfoItem icon={Calendar} label="Data do Pagamento">
                 {cobranca.data_pagamento
-                  ? formatDateTimeToBR(cobranca.data_pagamento, {
-                      includeTime: true,
-                    })
+                  ? formatDateToBR(cobranca.data_pagamento)
                   : "-"}
               </InfoItem>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-              <InfoItem icon={Bell} label="Notificações Automáticas">
+              <InfoItem
+                icon={cobranca.desativar_lembretes ? BellOff : Bell}
+                label="Notificações Automáticas"
+              >
                 {cobranca.desativar_lembretes ? "Desativadas" : "Ativadas"}
               </InfoItem>
               <InfoItem icon={ArrowRight} label="Origem">
@@ -369,21 +409,17 @@ export default function PassageiroCobranca() {
                 Histórico de Notificações
               </h4>
 
-              {/* AJUSTE APLICADO AQUI */}
-              {mockLog && mockLog.length > 0 ? (
+              {notificacoes && notificacoes.length > 0 ? (
                 <>
-                  {/* Exibe o item mais recente */}
-                  <NotificationTimeline items={[mockLog[0]]} />
+                  <NotificationTimeline items={[notificacoes[0]]} />
 
-                  {/* Lógica para expandir/recolher o restante do histórico */}
-                  {showFullHistory && mockLog.length > 1 && (
+                  {showFullHistory && notificacoes.length > 1 && (
                     <div className="mt-6">
-                      <NotificationTimeline items={mockLog.slice(1)} />
+                      <NotificationTimeline items={notificacoes.slice(1)} />
                     </div>
                   )}
 
-                  {/* Botão que controla a visibilidade */}
-                  {mockLog.length > 1 && (
+                  {notificacoes.length > 1 && (
                     <Button
                       variant="link"
                       className="p-0 h-auto text-xs mt-4"
@@ -391,46 +427,37 @@ export default function PassageiroCobranca() {
                     >
                       {showFullHistory
                         ? "Ocultar histórico"
-                        : `+ Ver mais ${mockLog.length - 1} eventos`}
+                        : `+ Ver mais ${notificacoes.length - 1} evento${
+                            notificacoes.length > 1 ? "s" : ""
+                          }`}
                     </Button>
                   )}
                 </>
               ) : (
-                // Mensagem exibida quando não há notificações
-                <p className="text-sm text-muted-foreground">
-                  Nenhuma notificação ainda foi enviada referente esta cobrança.
-                </p>
+                <Alert className="py-2">
+                  <AlertTitle className="text-sm font-semibold mb-0">
+                    Nenhuma notificação foi enviada.
+                  </AlertTitle>
+                </Alert>
               )}
             </div>
             <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t">
               <Button
-                asChild
-                disabled={!cobranca.asaas_invoice_url}
-                variant="secondary"
-                className="flex-1"
-              >
-                <a
-                  href={cobranca.asaas_invoice_url || "#"}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" /> Ver Página de
-                  Pagamento
-                </a>
-              </Button>
-              <Button
-                asChild
-                disabled={!cobranca.asaas_bankslip_url}
+                disabled={disableVerPaginaPagamento(cobranca)}
                 variant="outline"
                 className="flex-1"
+                onClick={() => goToExternalURL(cobranca.asaas_invoice_url)}
               >
-                <a
-                  href={cobranca.asaas_bankslip_url || "#"}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Download className="w-4 h-4 mr-2" /> Baixar Boleto
-                </a>
+                <ExternalLink className="w-4 h-4 mr-2" /> Ver Página de
+                Pagamento
+              </Button>
+              <Button
+                disabled={disableBaixarBoleto(cobranca)}
+                variant="outline"
+                className="flex-1"
+                onClick={() => goToExternalURL(cobranca.asaas_bankslip_url)}
+              >
+                <Download className="w-4 h-4 mr-2" /> Baixar Boleto
               </Button>
             </div>
           </CardContent>
@@ -440,7 +467,7 @@ export default function PassageiroCobranca() {
               size="sm"
               className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
               disabled={disableExcluirMensalidade(cobranca)}
-              onClick={() => handleAction("Excluir Mensalidade")}
+              onClick={() => setDeleteDialog({ open: true })}
             >
               <Trash2 className="w-3 h-3 mr-2" /> Excluir Mensalidade
             </Button>
@@ -494,7 +521,7 @@ export default function PassageiroCobranca() {
                 className="w-full"
                 variant="outline"
                 disabled={disableEnviarNotificacao(cobranca)}
-                onClick={() => handleAction("Enviar Notificação")}
+                onClick={() => handleEnviarNotificacao()}
               >
                 <Send className="h-4 w-4 mr-2" /> Enviar Notificação
               </Button>
@@ -502,7 +529,7 @@ export default function PassageiroCobranca() {
                 className="w-full"
                 variant="outline"
                 disabled={disableToggleLembretes(cobranca)}
-                onClick={() => handleAction("Toggle Lembretes")}
+                onClick={() => handleToggleLembretes()}
               >
                 {cobranca.desativar_lembretes ? (
                   <Bell className="h-4 w-4 mr-2" />
@@ -526,8 +553,30 @@ export default function PassageiroCobranca() {
         valorOriginal={Number(cobranca.valor)}
         onPaymentRecorded={() => {
           setPaymentDialogOpen(false);
-          fetchData();
+          fetchCobranca();
         }}
+      />
+
+      <ConfirmationDialog
+        open={confirmDialogDesfazer.open}
+        onOpenChange={(open) =>
+          setConfirmDialogDesfazer({ open, cobrancaId: "" })
+        }
+        title="Desfazer Pagamento"
+        description="Deseja realmente desfazer o pagamento desta mensalidade?"
+        onConfirm={desfazerPagamento}
+        variant="destructive"
+        confirmText="Desfazer Pagamento"
+      />
+
+      <ConfirmationDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog({ open })}
+        title="Excluir"
+        description="Deseja excluir permanentemente essa mensalidade?"
+        onConfirm={deleteCobranca}
+        confirmText="Excluir"
+        variant="destructive"
       />
     </div>
   );
