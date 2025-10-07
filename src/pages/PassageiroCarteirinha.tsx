@@ -17,6 +17,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
 import {
+  disableDesfazerPagamento,
+  disableEnviarNotificacao,
+  disableExcluirMensalidade,
+  disableRegistrarPagamento,
+  disableToggleLembretes,
+} from "@/utils/disableActions";
+import {
   formatDateToBR,
   getStatusColor,
   getStatusText,
@@ -32,7 +39,7 @@ import {
   School,
   TrendingDown,
   TrendingUp,
-  UserCircle2
+  UserCircle2,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -409,7 +416,9 @@ export default function PassageiroCarteirinha() {
                     onClick={() => setRetroativaDialogOpen(true)}
                   >
                     <Plus className="w-4 h-4 md:mr-2" />
-                    <span className="hidden md:block">Registrar Retroativa</span>
+                    <span className="hidden md:block">
+                      Registrar Retroativa
+                    </span>
                   </Button>
                 </div>
               </CardHeader>
@@ -502,7 +511,7 @@ export default function PassageiroCarteirinha() {
                                   Ver Mensalidade
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  disabled={cobranca.status === "pago"}
+                                  disabled={disableRegistrarPagamento(cobranca)}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     openPaymentDialog(cobranca);
@@ -511,10 +520,7 @@ export default function PassageiroCarteirinha() {
                                   Registrar Pagamento
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  disabled={
-                                    cobranca.origem === "manual" ||
-                                    cobranca.status === "pago"
-                                  }
+                                  disabled={disableEnviarNotificacao(cobranca)}
                                   onClick={(e) => {
                                     handleEnviarNotificacaoClick(cobranca.id);
                                   }}
@@ -522,10 +528,7 @@ export default function PassageiroCarteirinha() {
                                   Enviar Notificação
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  disabled={
-                                    cobranca.status === "pago" ||
-                                    cobranca.origem === "manual"
-                                  }
+                                  disabled={disableToggleLembretes(cobranca)}
                                   onClick={() =>
                                     handleToggleLembretes(cobranca)
                                   }
@@ -535,26 +538,20 @@ export default function PassageiroCarteirinha() {
                                     : "Desativar Lembretes"}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  className="text-red-600"
-                                  disabled={
-                                    cobranca.status === "pago" ||
-                                    cobranca.origem === "automatica"
-                                  }
-                                  onClick={() => handleDeleteClick(cobranca)}
-                                >
-                                  Excluir Mensalidade
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  disabled={
-                                    cobranca.status !== "pago" ||
-                                    !cobranca.pagamento_manual
-                                  }
+                                  disabled={disableDesfazerPagamento(cobranca)}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleDesfazerClick(cobranca.id);
                                   }}
                                 >
                                   Desfazer Pagamento
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="text-red-600"
+                                  disabled={disableExcluirMensalidade(cobranca)}
+                                  onClick={() => handleDeleteClick(cobranca)}
+                                >
+                                  Excluir Mensalidade
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -602,7 +599,7 @@ export default function PassageiroCarteirinha() {
                               Ver Mensalidade
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              disabled={cobranca.status === "pago"}
+                              disabled={disableRegistrarPagamento(cobranca)}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 openPaymentDialog(cobranca);
@@ -611,10 +608,7 @@ export default function PassageiroCarteirinha() {
                               Registrar Pagamento
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              disabled={
-                                cobranca.status !== "pago" ||
-                                !cobranca.pagamento_manual
-                              }
+                              disabled={disableDesfazerPagamento(cobranca)}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDesfazerClick(cobranca.id);

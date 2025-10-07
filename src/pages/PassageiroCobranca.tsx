@@ -11,6 +11,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  disableEnviarNotificacao,
+  disableExcluirMensalidade,
+  disableRegistrarPagamento,
+  disableToggleLembretes,
+} from "@/utils/disableActions";
+import {
   formatCobrancaOrigem,
   formatDateTimeToBR,
   formatDateToBR,
@@ -156,7 +162,7 @@ export default function PassageiroCobranca() {
   const [showFullHistory, setShowFullHistory] = useState(false);
   const { toast } = useToast();
 
-  const mockLog = [
+  let mockLog = [
     {
       date: "2025-10-05T17:49:00",
       event: "Cobrança reenviada manualmente por você",
@@ -267,7 +273,7 @@ export default function PassageiroCobranca() {
               )}
             </div>
             <div className="flex-shrink-0 w-full sm:w-auto">
-              {cobranca.status === "pendente" ? (
+              {!disableRegistrarPagamento(cobranca) ? (
                 <Button
                   size="lg"
                   className="w-full"
@@ -322,7 +328,7 @@ export default function PassageiroCobranca() {
               </InfoItem>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-              <InfoItem icon={Bell} label="Notificações">
+              <InfoItem icon={Bell} label="Notificações Automáticas">
                 {cobranca.desativar_lembretes ? "Desativadas" : "Ativadas"}
               </InfoItem>
               <InfoItem icon={ArrowRight} label="Origem">
@@ -338,24 +344,37 @@ export default function PassageiroCobranca() {
                 Histórico de Notificações
               </h4>
 
-              <NotificationTimeline items={[mockLog[0]]} />
+              {/* AJUSTE APLICADO AQUI */}
+              {mockLog && mockLog.length > 0 ? (
+                <>
+                  {/* Exibe o item mais recente */}
+                  <NotificationTimeline items={[mockLog[0]]} />
 
-              {showFullHistory && mockLog.length > 1 && (
-                <div className="mt-6">
-                  <NotificationTimeline items={mockLog.slice(1)} />
-                </div>
-              )}
+                  {/* Lógica para expandir/recolher o restante do histórico */}
+                  {showFullHistory && mockLog.length > 1 && (
+                    <div className="mt-6">
+                      <NotificationTimeline items={mockLog.slice(1)} />
+                    </div>
+                  )}
 
-              {mockLog.length > 1 && (
-                <Button
-                  variant="link"
-                  className="p-0 h-auto text-xs mt-4"
-                  onClick={() => setShowFullHistory(!showFullHistory)}
-                >
-                  {showFullHistory
-                    ? "Ocultar histórico"
-                    : `+ Ver mais ${mockLog.length - 1} eventos`}
-                </Button>
+                  {/* Botão que controla a visibilidade */}
+                  {mockLog.length > 1 && (
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto text-xs mt-4"
+                      onClick={() => setShowFullHistory(!showFullHistory)}
+                    >
+                      {showFullHistory
+                        ? "Ocultar histórico"
+                        : `+ Ver mais ${mockLog.length - 1} eventos`}
+                    </Button>
+                  )}
+                </>
+              ) : (
+                // Mensagem exibida quando não há notificações
+                <p className="text-sm text-muted-foreground">
+                  Nenhuma notificação ainda foi enviada referente esta cobrança.
+                </p>
               )}
             </div>
             <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t">
@@ -395,12 +414,10 @@ export default function PassageiroCobranca() {
               variant="ghost"
               size="sm"
               className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
-              disabled={
-                cobranca.status === "pago" || cobranca.origem === "automatica"
-              }
+              disabled={disableExcluirMensalidade(cobranca)}
               onClick={() => handleAction("Excluir Mensalidade")}
             >
-              <Trash2 className="w-3 h-3 mr-2" /> Excluir Mensalidade Manual
+              <Trash2 className="w-3 h-3 mr-2" /> Excluir Mensalidade
             </Button>
           </CardFooter>
         </Card>
@@ -451,9 +468,7 @@ export default function PassageiroCobranca() {
               <Button
                 className="w-full"
                 variant="outline"
-                disabled={
-                  cobranca.status === "pago" || cobranca.origem === "manual"
-                }
+                disabled={disableEnviarNotificacao(cobranca)}
                 onClick={() => handleAction("Enviar Notificação")}
               >
                 <Send className="h-4 w-4 mr-2" /> Enviar Notificação
@@ -461,9 +476,7 @@ export default function PassageiroCobranca() {
               <Button
                 className="w-full"
                 variant="outline"
-                disabled={
-                  cobranca.status === "pago" || cobranca.origem === "manual"
-                }
+                disabled={disableToggleLembretes(cobranca)}
                 onClick={() => handleAction("Toggle Lembretes")}
               >
                 {cobranca.desativar_lembretes ? (
