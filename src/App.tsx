@@ -14,7 +14,6 @@ import Configuracoes from "./pages/Configuracoes";
 import Dashboard from "./pages/Dashboard";
 import Escolas from "./pages/Escolas";
 import Gastos from "./pages/Gastos";
-import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PassageiroCarteirinha from "./pages/PassageiroCarteirinha";
@@ -31,7 +30,11 @@ const App = () => (
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            {/* <Route path="/"  element={<Index />} /> */}
+            <Route
+              path="/"
+              element={<Navigate to="/dashboard" replace />}
+            />
             <Route
               path="/login"
               element={
