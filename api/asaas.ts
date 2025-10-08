@@ -26,6 +26,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Methods", CORS_HEADERS["Access-Control-Allow-Methods"]);
   res.setHeader("Access-Control-Allow-Headers", CORS_HEADERS["Access-Control-Allow-Headers"]);
 
+  const asaasKey = req.headers["x-asaas-key"];
+
+  if (!asaasKey) {
+    return res.status(401).json({ error: "Chave de acesso ASAAS não fornecida." });
+  }
+
   const rawUrl = req.url || "";
   const endpoint = rawUrl.startsWith("/api/asaas")
     ? rawUrl.replace(/^\/api\/asaas/, "")
@@ -58,7 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       method,
       headers: {
         "Content-Type": "application/json",
-        "access_token": process.env.VITE_ASAAS_TOKEN || process.env.ASAAS_API_KEY!,
+        "access_token": asaasKey as string,
       },
       body: bodyToSend,
     });

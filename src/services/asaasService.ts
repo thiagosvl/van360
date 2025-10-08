@@ -2,8 +2,8 @@ const API_BASE_URL =
     import.meta.env.MODE === "development"
         ? "/asaas"
         : "/api/asaas";
-
-const ASAAS_TOKEN = import.meta.env.VITE_ASAAS_TOKEN;
+        
+const ASAAS_GENERAL_TOKEN = import.meta.env.VITE_ASAAS_TOKEN;
 
 export const asaasService = {
     async createCustomer(customer: {
@@ -18,7 +18,7 @@ export const asaasService = {
             headers: {
                 "accept": "application/json",
                 "content-type": "application/json",
-                "access_token": asaasApiKey ?? ASAAS_TOKEN,
+                "x-asaas-key": asaasApiKey, 
             },
             body: JSON.stringify(customer),
         });
@@ -46,7 +46,7 @@ export const asaasService = {
             headers: {
                 accept: "application/json",
                 "content-type": "application/json",
-                access_token: asaasApiKey ?? ASAAS_TOKEN,
+                access_token: asaasApiKey,
             },
         });
 
@@ -65,7 +65,7 @@ export const asaasService = {
             method: "DELETE",
             headers: {
                 accept: "application/json",
-                access_token: asaasApiKey ?? ASAAS_TOKEN,
+                access_token: asaasApiKey,
             },
         },);
 
@@ -82,7 +82,7 @@ export const asaasService = {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                access_token: ASAAS_TOKEN!,
+                access_token: ASAAS_GENERAL_TOKEN!,
             },
             body: JSON.stringify(data),
         });
@@ -111,7 +111,7 @@ export const asaasService = {
             headers: {
                 accept: "application/json",
                 "content-type": "application/json",
-                access_token: asaasApiKey ?? ASAAS_TOKEN,
+                access_token: asaasApiKey,
             },
             body: JSON.stringify(payment),
         });
@@ -268,7 +268,7 @@ export const asaasService = {
     //     const response = await fetch(`${API_BASE_URL}/customers/accounts/${id}`, {
     //         method: "DELETE",
     //         headers: {
-    //             access_token: ASAAS_TOKEN!,
+    //             access_token: ASAAS_GENERAL_TOKEN!,
     //         },
     //     });
 
