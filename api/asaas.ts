@@ -11,12 +11,20 @@ const CORS_HEADERS = {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { method } = req;
 
+  // LOG 1: O que a Vercel Function está recebendo
+  console.log('--- REQUISIÇÃO VERCEL INICIADA ---');
+  console.log('Método recebido:', method);
+  console.log('URL Completa recebida:', req.url);
+  // req.body é o JSON parseado. Usamos JSON.stringify para garantir que tudo seja logado.
+  console.log('Corpo (req.body) recebido:', JSON.stringify(req.body, null, 2));
+  console.log('---------------------------------');
+
   // 1. TRATAMENTO DO MÉTODO OPTIONS (Pré-voo CORS)
   if (method === "OPTIONS") {
     res.writeHead(204, CORS_HEADERS);
     return res.end();
   }
-  
+
   // O restante do código, com a adição dos headers CORS
   res.setHeader("Access-Control-Allow-Origin", CORS_HEADERS["Access-Control-Allow-Origin"]);
   res.setHeader("Access-Control-Allow-Methods", CORS_HEADERS["Access-Control-Allow-Methods"]);
@@ -32,30 +40,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!["GET", "POST", "PUT", "DELETE"].includes(method || "")) {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
-  
-  try {
-    // ... (restante da lógica do seu proxy, que está OK)
-    let rawBody: any = req.body;
-    
-    // ... (restante da lógica de body parsing)
-    
-    // Seu código de parsing de body é complexo. Vamos simplificar se o body já veio pronto.
-    const body = rawBody && typeof rawBody === 'object' ? JSON.stringify(rawBody) : rawBody;
 
+  try {
+
+    // --- ÚNICA ALTERAÇÃO NECESSÁRIA NO CORPO ---
+    // O Vercel já parseou o corpo da requisição para um objeto JS em req.body.
+    // Para enviar via fetch, precisamos serializá-lo de volta para uma string JSON.
+    const bodyToSend = req.body && method !== 'GET'
+      ? JSON.stringify(req.body)
+      : undefined;
+    // -------------------------------------------
+
+    // LOG 2: O que será enviado ao ASAAS
+    console.log('--- ENVIANDO PARA ASAAS ---');
+    console.log('URL de Destino:', fullUrl);
+    console.log('Método de Envio:', method);
+    // Loga o corpo que está sendo enviado (deve ser uma string JSON)
+    console.log('Corpo Enviado (bodyToSend):', bodyToSend);
+    console.log('---------------------------');
 
     const response = await fetch(fullUrl, {
       method,
       headers: {
         "Content-Type": "application/json",
-        "access_token": process.env.ASAAS_API_KEY!,
+        // A chave API_KEY deve vir do ambiente Vercel
+        "access_token": process.env.VITE_ASAAS_TOKEN || process.env.ASAAS_API_KEY!, // Use a chave correta
       },
-      body: method !== "GET" ? body : undefined,
+      body: bodyToSend, // Usa o corpo serializado
     });
+
+    // LOG 3: O que o ASAAS está retornando
+    console.log('--- RESPOSTA DO ASAAS RECEBIDA ---');
+    console.log('Status de Resposta:', response.status);
+    console.log('Status OK:', response.ok);
+    console.log('----------------------------------');
 
     let data = null;
     try {
-      // Tenta ler o JSON, mas se falhar (ex: status 204 No Content), data será null
-      data = await response.json(); 
+      // Tenta ler o JSON; se falhar (ex: 405 ou 204), ignora
+      const text = await response.text();
+      data = text ? JSON.parse(text) : null;
     } catch (e) {
       console.warn("Could not parse JSON response from Asaas:", e);
       data = null;
