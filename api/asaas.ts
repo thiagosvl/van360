@@ -26,6 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Methods", CORS_HEADERS["Access-Control-Allow-Methods"]);
   res.setHeader("Access-Control-Allow-Headers", CORS_HEADERS["Access-Control-Allow-Headers"]);
 
+  console.log('headers que chegaram', req.headers);
   const asaasKey = req.headers["x-asaas-key"];
 
    // LOG de debug para ver o que o Vercel está lendo
