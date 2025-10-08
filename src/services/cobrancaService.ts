@@ -1,5 +1,5 @@
-import { asaasService } from "@/integrations/asaasService";
 import { supabase } from "@/integrations/supabase/client";
+import { asaasService } from "@/services/asaasService";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaDetalhe } from "@/types/cobrancaDetalhe";
 import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";

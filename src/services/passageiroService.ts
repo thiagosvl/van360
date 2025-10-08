@@ -1,5 +1,5 @@
-import { asaasService } from "@/integrations/asaasService";
 import { supabase } from "@/integrations/supabase/client";
+import { asaasService } from "@/services/asaasService";
 import { moneyToNumber } from "@/utils/masks";
 
 const asaasApiKey = localStorage.getItem("asaas_api_key");

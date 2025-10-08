@@ -1,4 +1,8 @@
-const ASAAS_BASE_URL = import.meta.env.VITE_ASAAS_BASE_URL;
+const API_BASE_URL =
+  import.meta.env.MODE === "development"
+    ? "/asaas"
+    : "/api/asaas";
+    
 const ASAAS_TOKEN = import.meta.env.VITE_ASAAS_TOKEN;
 
 export const asaasService = {
@@ -9,7 +13,7 @@ export const asaasService = {
         mobilePhone?: string;
         notificationDisabled?: boolean;
     }, asaasApiKey?: string) {
-        const res = await fetch('/api/asaas/customers', {
+        const res = await fetch(`${API_BASE_URL}/customers`, {
             method: "POST",
             headers: {
                 accept: "application/json",
@@ -28,7 +32,7 @@ export const asaasService = {
     },
 
     async deletePayment(paymentId: string, asaasApiKey: string) {
-        const res = await fetch(`/api/asaas/payments/${paymentId}`, {
+        const res = await fetch(`${API_BASE_URL}/payments/${paymentId}`, {
             method: "DELETE",
             headers: {
                 accept: "application/json",
@@ -48,7 +52,7 @@ export const asaasService = {
     },
 
     async deleteCustomer(customerId: string, asaasApiKey: string) {
-        const res = await fetch(`/api/asaas/customers/${customerId}`, {
+        const res = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
             method: "DELETE",
             headers: {
                 accept: "application/json",
@@ -65,7 +69,7 @@ export const asaasService = {
     },
 
     async createSubAccount(data: any) {
-        const response = await fetch(`/api/asaas/accounts`, {
+        const response = await fetch(`${API_BASE_URL}/accounts`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -93,7 +97,7 @@ export const asaasService = {
         },
         asaasApiKey: string
     ) {
-        const res = await fetch(`/api/asaas/payments`, {
+        const res = await fetch(`${API_BASE_URL}/payments`, {
             method: "POST",
             headers: {
                 accept: "application/json",
@@ -115,7 +119,7 @@ export const asaasService = {
 
     async createWebhook(subAccountasaasApiKey: string): Promise<any> {
         try {
-            const response = await fetch("/api/asaas/customers/", {
+            const response = await fetch("${API_BASE_URL}/customers/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -147,7 +151,7 @@ export const asaasService = {
 
     async updatePayment(paymentId: string, body: any, asaasApiKey: string) {
         try {
-            const response = await fetch(`/api/asaas/payments/${paymentId}`, {
+            const response = await fetch(`${API_BASE_URL}/payments/${paymentId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -176,7 +180,7 @@ export const asaasService = {
                 notifyCustomer: false,
             };
 
-            const response = await fetch(`/api/asaas/payments/${paymentId}/receiveInCash`, {
+            const response = await fetch(`${API_BASE_URL}/payments/${paymentId}/receiveInCash`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -199,7 +203,7 @@ export const asaasService = {
 
     async undoPaymentInCash(paymentId: string, asaasApiKey: string) {
         try {
-            const response = await fetch(`/api/asaas/payments/${paymentId}/undoReceivedInCash`, {
+            const response = await fetch(`${API_BASE_URL}/payments/${paymentId}/undoReceivedInCash`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -226,7 +230,7 @@ export const asaasService = {
         description?: string;
     } | null> {
         try {
-            const res = await fetch(`/api/asaas/payments/${paymentId}/pixQrCode`, {
+            const res = await fetch(`${API_BASE_URL}/payments/${paymentId}/pixQrCode`, {
                 method: "GET",
                 headers: {
                     accept: "application/json",
@@ -252,7 +256,7 @@ export const asaasService = {
     },
 
     // async deleteSubAccount(id: string) {
-    //     const response = await fetch(`/api/asaas/customers/accounts/${id}`, {
+    //     const response = await fetch(`${API_BASE_URL}/customers/accounts/${id}`, {
     //         method: "DELETE",
     //         headers: {
     //             access_token: ASAAS_TOKEN!,
