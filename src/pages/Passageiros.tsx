@@ -29,6 +29,8 @@ import {
   Pencil,
   Plus,
   Search,
+  ToggleLeft,
+  ToggleRight,
   Trash2,
   Users2,
 } from "lucide-react";
@@ -61,7 +63,6 @@ export default function Passageiros() {
   const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(
     null
   );
-  const [isQuickRegister, setIsQuickRegister] = useState(false);
   const [selectedEscola, setSelectedEscola] = useState<string>("todas");
   const [selectedStatus, setSelectedStatus] = useState<string>("todos");
   const [searchTerm, setSearchTerm] = useState("");
@@ -72,6 +73,11 @@ export default function Passageiros() {
     open: boolean;
     passageiroId: string;
   }>({ open: false, passageiroId: "" });
+  const [confirmToggleDialog, setConfirmToggleDialog] = useState({
+    open: false,
+    passageiro: null as Passageiro | null,
+    action: "" as "ativar" | "desativar" | "",
+  });
 
   const fetchPassageiros = useCallback(async () => {
     setLoading(true);
@@ -142,6 +148,35 @@ export default function Passageiros() {
       });
     } finally {
       setDeleteDialog({ open: false, passageiroId: "" });
+    }
+  };
+
+  const handleToggleClick = (passageiro: Passageiro) => {
+    const action = passageiro.ativo ? "desativar" : "ativar";
+    setConfirmToggleDialog({ open: true, passageiro, action });
+  };
+
+  const handleToggleConfirm = async () => {
+    const p = confirmToggleDialog.passageiro;
+    if (!p) return;
+
+    try {
+      await passageiroService.toggleAtivo(p.id, p.ativo);
+
+      toast({
+        title: `Passageiro ${confirmToggleDialog.action} com sucesso.`,
+      });
+
+      fetchPassageiros();
+    } catch (error: any) {
+      console.error("Erro ao alternar status:", error);
+      toast({
+        title: `Erro ao ${confirmToggleDialog.action} o passageiro.`,
+        description: error.message || "Não foi possível concluir a operação.",
+        variant: "destructive",
+      });
+    } finally {
+      setConfirmToggleDialog({ open: false, passageiro: null, action: "" });
     }
   };
 
@@ -275,7 +310,7 @@ export default function Passageiros() {
                   <SelectContent>
                     <SelectItem value="todos">Todos</SelectItem>
                     <SelectItem value="ativo">Ativo</SelectItem>
-                    <SelectItem value="inativo">Inativo</SelectItem>
+                    <SelectItem value="desativado">Desativado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -352,7 +387,7 @@ export default function Passageiros() {
                                     : "bg-red-100 text-red-800"
                                 }`}
                               >
-                                {passageiro.ativo ? "Ativo" : "Inativo"}
+                                {passageiro.ativo ? "Ativo" : "Desativado"}
                               </span>
                             </td>
                             <td className="p-3 align-top">
@@ -392,6 +427,25 @@ export default function Passageiros() {
                                   >
                                     <Pencil className="w-4 h-4 mr-2" />
                                     Editar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleToggleClick(passageiro);
+                                    }}
+                                  >
+                                    {passageiro.ativo ? (
+                                      <>
+                                        <ToggleLeft className="w-4 h-4 mr-2" />
+                                        Desativar
+                                      </>
+                                    ) : (
+                                      <>
+                                        <ToggleRight className="w-4 h-4 mr-2" />
+                                        Reativar
+                                      </>
+                                    )}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     className="cursor-pointer text-red-600"
@@ -461,6 +515,25 @@ export default function Passageiros() {
                                 Editar
                               </DropdownMenuItem>
                               <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleClick(passageiro);
+                                }}
+                              >
+                                {passageiro.ativo ? (
+                                  <>
+                                    <ToggleLeft className="w-4 h-4 mr-2" />
+                                    Desativar
+                                  </>
+                                ) : (
+                                  <>
+                                    <ToggleRight className="w-4 h-4 mr-2" />
+                                    Reativar
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setDeleteDialog({
@@ -484,7 +557,7 @@ export default function Passageiros() {
                                 : "bg-red-100 text-red-800"
                             }`}
                           >
-                            {passageiro.ativo ? "Ativo" : "Inativo"}
+                            {passageiro.ativo ? "Ativo" : "Desativado"}
                           </span>
                         </div>
                       </div>
@@ -505,6 +578,30 @@ export default function Passageiros() {
           onSuccess={fetchPassageiros}
         />
       )}
+
+      <ConfirmationDialog
+        open={confirmToggleDialog.open}
+        onOpenChange={(open) =>
+          setConfirmToggleDialog({ open, passageiro: null, action: "" })
+        }
+        title={
+          confirmToggleDialog.action === "ativar"
+            ? "Reativar Passageiro"
+            : "Desativar Passageiro"
+        }
+        description={`Deseja realmente ${
+          confirmToggleDialog.action
+        } o cadastro de ${
+          confirmToggleDialog.passageiro?.nome || "este passageiro"
+        }? Esta ação pode afetar a geração de cobranças.`}
+        onConfirm={handleToggleConfirm}
+        confirmText={
+          confirmToggleDialog.action === "ativar" ? "Ativar" : "Desativar"
+        }
+        variant={
+          confirmToggleDialog.action === "desativar" ? "destructive" : "default"
+        }
+      />
 
       <ConfirmationDialog
         open={deleteDialog.open}

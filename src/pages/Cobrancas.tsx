@@ -303,7 +303,7 @@ const Cobrancas = () => {
                     <ListSkeleton />
                   </div>
                 ) : cobrancasAbertas.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
+                  <div className="flex flex-col items-center justify-center text-center px-2 py-12 text-muted-foreground">
                     <CheckCircle2 className="w-12 h-12 mb-4 text-gray-300" />
                     <p>
                       Tudo em dia! Não há mensalidades pendentes no mês
@@ -311,9 +311,9 @@ const Cobrancas = () => {
                     </p>
                   </div>
                 ) : cobrancasAbertasFiltradas.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
+                  <div className="text-center px-2 py-12 text-muted-foreground">
                     Nenhum passageiro ou responsável encontrado com o nome "
-                    {buscaAbertas}"
+                    {buscaAbertas}".
                   </div>
                 ) : (
                   <>
@@ -566,8 +566,11 @@ const Cobrancas = () => {
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
-                          <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center justify-between">
                             <div className="text-sm">
+                              <span className="block text-xs text-muted-foreground">
+                                Vencimento:{" "}
+                              </span>
                               <span className="font-semibold">
                                 {formatDateToBR(cobranca.data_vencimento)}
                               </span>
@@ -632,9 +635,9 @@ const Cobrancas = () => {
                     <p>Nenhum pagamento registrado no mês indicado.</p>
                   </div>
                 ) : cobrancasPagasFiltradas.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
+                  <div className="text-center px-2 py-12 text-muted-foreground">
                     Nenhum passageiro ou responsável encontrado com o nome "
-                    {buscaPagas}"
+                    {buscaPagas}".
                   </div>
                 ) : (
                   <>

@@ -164,7 +164,6 @@ export const passageiroService = {
     }
   },
 
-
   // =================================================================
   // NOVO MÉTODO: Atualização Completa (Substitui o bloco 'if' do handleSubmit)
   // =================================================================
@@ -284,5 +283,34 @@ export const passageiroService = {
       // Relança o erro para o componente tratar a mensagem de notificação
       throw new Error(err.message || "Erro desconhecido ao atualizar passageiro.");
     }
-  }
+  },
+
+  async toggleAtivo(passageiroId: string, statusAtual: boolean): Promise<boolean> {
+    const novoStatus = !statusAtual;
+
+    const { error: passageiroUpdateError } = await supabase
+      .from("passageiros")
+      .update({ ativo: novoStatus })
+      .eq("id", passageiroId);
+
+    if (passageiroUpdateError) {
+      throw new Error(`Falha ao ${novoStatus ? "ativar" : "desativar"} o passageiro no banco de dados.`);
+    }
+
+    if (!novoStatus) {
+
+      const { error: updateCobrancasError } = await supabase
+        .from("cobrancas")
+        .update({ desativar_lembretes: true })
+        .eq("passageiro_id", passageiroId)
+        .neq("status", "pago")
+        .eq("origem", "automatica");
+
+      if (updateCobrancasError) {
+        console.error("Falha ao desativar lembretes em massa:", updateCobrancasError);
+      }
+    }
+
+    return novoStatus;
+  },
 };

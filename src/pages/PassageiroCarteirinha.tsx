@@ -109,6 +109,10 @@ export default function PassageiroCarteirinha() {
   const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
     null
   );
+  const [confirmToggleDialog, setConfirmToggleDialog] = useState({
+    open: false,
+    action: "" as "ativar" | "desativar" | "",
+  });
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
     cobrancaId: "",
@@ -220,8 +224,8 @@ export default function PassageiroCarteirinha() {
 
       if (numCobrancas > 0) {
         toast({
-          title: "Negado: Passageiro possui mensalidades.",
-          description: `Mas você ainda pode inativa-lo editando o cadastro.`,
+          title: "NEGADO: Passageiro possui mensalidades.",
+          description: `Mas você ainda pode desativa-lo editando o cadastro.`,
           variant: "destructive",
         });
         return;
@@ -238,6 +242,34 @@ export default function PassageiroCarteirinha() {
         description: error.message || "Não foi possível concluir a operação.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleToggleClick = (statusAtual: boolean) => {
+    const action = statusAtual ? "desativar" : "ativar";
+    setConfirmToggleDialog({ open: true, action });
+  };
+
+  const handleToggleConfirm = async () => {
+    if (!passageiro || !passageiro_id) return;
+
+    try {
+      await passageiroService.toggleAtivo(passageiro_id, passageiro.ativo);
+
+      toast({
+        title: `Passageiro ${confirmToggleDialog.action} com sucesso.`,
+      });
+
+      fetchPassageiro();
+    } catch (error: any) {
+      console.error("Erro ao alternar status:", error);
+      toast({
+        title: `Erro ao ${confirmToggleDialog.action} o passageiro.`,
+        description: error.message || "Não foi possível concluir a operação.",
+        variant: "destructive",
+      });
+    } finally {
+      setConfirmToggleDialog({ open: false, action: "" });
     }
   };
 
@@ -347,7 +379,7 @@ export default function PassageiroCarteirinha() {
               variant={passageiro.ativo ? "default" : "destructive"}
               className="mt-1"
             >
-              {passageiro.ativo ? "Ativo" : "Inativo"}
+              {passageiro.ativo ? "Ativo" : "Desativado"}
             </Badge>
           </div>
         </div>
@@ -378,6 +410,7 @@ export default function PassageiroCarteirinha() {
                 {passageiro.telefone_responsavel}
               </InfoItem>
               <Button
+                variant="outline"
                 className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white"
                 disabled={!passageiro.telefone_responsavel}
                 onClick={() =>
@@ -392,6 +425,23 @@ export default function PassageiroCarteirinha() {
               >
                 <MessageCircle className="h-4 w-4 mr-2" /> Enviar WhatsApp
               </Button>
+              {passageiro.ativo ? (
+                <Button
+                  variant="outline"
+                  className="w-full mt-2 border-red-500 text-red-500 hover:bg-red-50"
+                  onClick={() => handleToggleClick(passageiro.ativo)}
+                >
+                  Desativar Passageiro
+                </Button>
+              ) : (
+                <Button
+                  variant="default"
+                  className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => handleToggleClick(passageiro.ativo)}
+                >
+                  Reativar Cadastro
+                </Button>
+              )}
             </CardContent>
             <CardFooter>
               <Button
@@ -594,9 +644,15 @@ export default function PassageiroCarteirinha() {
                         }
                         className="p-4 active:bg-muted/50"
                       >
-                        <div className="flex justify-between items-start">
-                          <div className="font-semibold text-gray-800">
-                            {getMesNome(cobranca.mes)}/{cobranca.ano}
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="pr-2">
+                            <div className="font-semibold text-gray-800">
+                              {getMesNome(cobranca.mes)}/{cobranca.ano}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              Vencimento:{" "}
+                              {formatDateToBR(cobranca.data_vencimento)}
+                            </div>
                           </div>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -671,12 +727,31 @@ export default function PassageiroCarteirinha() {
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
-                        <div className="text-sm text-muted-foreground mb-2">
-                          Vencimento: {formatDateToBR(cobranca.data_vencimento)}
-                        </div>
-                        <div className="flex justify-between items-center mt-2">
+
+                        <div className="flex items-center justify-between">
+                          {cobranca.data_pagamento ? (
+                            <div className="text-sm">
+                              <span className="block text-xs text-muted-foreground">
+                                Pagou em:{" "}
+                              </span>
+                              <span className="font-semibold">
+                                {formatDateToBR(cobranca.data_pagamento)}
+                              </span>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="text-sm">
+                                <span className="block text-xs text-muted-foreground text-white">
+                                  ?
+                                </span>
+                                <span className="font-semibold text-white">
+                                  ?
+                                </span>
+                              </div>
+                            </>
+                          )}
                           <span
-                            className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${getStatusColor(
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
                               cobranca.status,
                               cobranca.data_vencimento
                             )}`}
@@ -686,12 +761,12 @@ export default function PassageiroCarteirinha() {
                               cobranca.data_vencimento
                             )}
                           </span>
-                          <span className="font-bold text-lg">
-                            {cobranca.valor.toLocaleString("pt-BR", {
-                              style: "currency",
-                              currency: "BRL",
-                            })}
-                          </span>
+                        </div>
+                        <div className="text-right text-muted-foreground text-sm mb-3">
+                          {Number(cobranca.valor).toLocaleString("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                          })}
                         </div>
                         {cobranca.desativar_lembretes &&
                           cobranca.status !== "pago" && (
@@ -725,7 +800,7 @@ export default function PassageiroCarteirinha() {
                     <Alert className="bg-yellow-50 border-yellow-200 text-yellow-900">
                       <AlertTriangle className="h-4 w-4 !text-yellow-900" />
                       <AlertTitle className="font-bold">
-                        Cadastro Inativo
+                        Cadastro Desativado
                       </AlertTitle>
                       <AlertDescription className="text-yellow-800 space-y-3">
                         <p>
@@ -814,6 +889,23 @@ export default function PassageiroCarteirinha() {
         valorMensalidade={passageiro.valor_mensalidade}
         diaVencimento={passageiro.dia_vencimento}
         onCobrancaAdded={() => fetchCobrancas()}
+      />
+      <ConfirmationDialog
+        open={confirmToggleDialog.open}
+        onOpenChange={(open) => setConfirmToggleDialog({ open, action: "" })}
+        title={
+          confirmToggleDialog.action === "ativar"
+            ? "Reativar Passageiro"
+            : "Desativar Passageiro"
+        }
+        description={`Deseja realmente ${confirmToggleDialog.action} o cadastro de ${passageiro.nome}? Esta ação pode afetar a geração de cobranças.`}
+        onConfirm={handleToggleConfirm}
+        confirmText={
+          confirmToggleDialog.action === "ativar" ? "Reativar" : "Desativar"
+        }
+        variant={
+          confirmToggleDialog.action === "desativar" ? "destructive" : "default"
+        }
       />
       <ConfirmationDialog
         open={confirmDialog.open}

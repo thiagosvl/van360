@@ -30,6 +30,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -40,7 +41,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { escolaService } from "@/services/escolaService";
 import { Escola } from "@/types/escola";
 import { cepMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -52,9 +53,13 @@ import {
   Pencil,
   Plus,
   School,
+  Search,
+  ToggleLeft,
+  ToggleRight,
   Trash2,
+  Users2
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -89,7 +94,9 @@ const SchoolListSkeleton = () => (
 );
 
 export default function Escolas() {
-  const [escolas, setEscolas] = useState<Escola[]>([]);
+  const [escolas, setEscolas] = useState<
+    (Escola & { passageiros_ativos_count?: number })[]
+  >([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEscola, setEditingEscola] = useState<Escola | null>(null);
   const [loading, setLoading] = useState(false);
@@ -99,6 +106,8 @@ export default function Escolas() {
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "dados-escola",
   ]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("todos");
   const { toast } = useToast();
 
   const form = useForm<EscolaFormData>({
@@ -116,26 +125,45 @@ export default function Escolas() {
     },
   });
 
+  const fetchEscolas = useCallback(async () => {
+    setLoadingPage(true);
+    try {
+      const data = await escolaService.fetchEscolasComContagemAtivos();
+      setEscolas(data || []);
+    } catch (error) {
+      console.error("Erro ao buscar escolas:", error);
+      toast({ title: "Erro ao carregar escolas.", variant: "destructive" });
+    } finally {
+      setLoadingPage(false);
+    }
+  }, [toast]);
+
   useEffect(() => {
     fetchEscolas();
   }, []);
 
-  const fetchEscolas = async () => {
-    setLoadingPage(true);
-    try {
-      const { data, error } = await supabase
-        .from("escolas")
-        .select("*")
-        .eq("usuario_id", localStorage.getItem("app_user_id"))
-        .order("nome");
-      if (error) throw error;
-      setEscolas(data || []);
-    } catch (error) {
-      console.error("Erro ao buscar escolas:", error);
-    } finally {
-      setLoadingPage(false);
+  const escolasFiltradas = useMemo(() => {
+    let filtered = escolas;
+
+    if (selectedStatus !== "todos") {
+      const status = selectedStatus === "ativa";
+      filtered = filtered.filter((escola) => escola.ativo === status);
     }
-  };
+
+    if (searchTerm) {
+      const lowerCaseSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter((escola) =>
+        escola.nome.toLowerCase().includes(lowerCaseSearch)
+      );
+    }
+
+    return filtered;
+  }, [escolas, selectedStatus, searchTerm]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {}, 500);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
 
   const onFormError = (errors: any) => {
     toast({
@@ -149,56 +177,29 @@ export default function Escolas() {
   const handleSubmit = async (data: EscolaFormData) => {
     setLoading(true);
     try {
-      if (editingEscola) {
-        if (editingEscola.ativo && data.ativo === false) {
-          const { data: passageirosAtivos, error: checkError } = await supabase
-            .from("passageiros")
-            .select("id")
-            .eq("escola_id", editingEscola.id)
-            .eq("usuario_id", localStorage.getItem("app_user_id"))
-            .eq("ativo", true);
-          if (checkError) throw checkError;
-          if (passageirosAtivos && passageirosAtivos.length > 0) {
-            toast({
-              title: "Não é possível desativar.",
-              description:
-                'Existem passageiros ativos vinculados a esta escola. Mantenha a opção "Ativa" marcada.',
-              variant: "destructive",
-            });
-            setLoading(false);
-            return;
-          }
-        }
-        const { error } = await supabase
-          .from("escolas")
-          .update({ ...data, ativo: data.ativo ?? true })
-          .eq("id", editingEscola.id);
-        if (error) throw error;
-        toast({ title: "Escola atualizada com sucesso." });
-      } else {
-        const { error } = await supabase.from("escolas").insert([
-          {
-            nome: data.nome,
-            rua: data.rua || null,
-            numero: data.numero || null,
-            bairro: data.bairro || null,
-            cidade: data.cidade || null,
-            estado: data.estado || null,
-            cep: data.cep || null,
-            referencia: data.referencia || null,
-            ativo: true,
-            usuario_id: localStorage.getItem("app_user_id"),
-          },
-        ]);
-        if (error) throw error;
-        toast({ title: "Escola cadastrada com sucesso." });
-      }
+      await escolaService.saveEscola(data, editingEscola);
+
+      toast({
+        title: `Escola ${
+          editingEscola ? "atualizada" : "cadastrada"
+        } com sucesso.`,
+      });
+
       await fetchEscolas();
       resetForm();
       setIsDialogOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao salvar escola:", error);
-      toast({ title: "Erro ao salvar escola.", variant: "destructive" });
+
+      if (error.message.includes("passageiros ativos")) {
+        toast({
+          title: "Não é possível desativar.",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({ title: "Erro ao salvar escola.", variant: "destructive" });
+      }
     } finally {
       setLoading(false);
     }
@@ -206,6 +207,7 @@ export default function Escolas() {
 
   const handleEdit = (escola: Escola) => {
     setEditingEscola(escola);
+    setOpenAccordionItems(["dados-escola", "endereco"]);
     form.reset({
       nome: escola.nome,
       rua: escola.rua || "",
@@ -228,32 +230,44 @@ export default function Escolas() {
   const handleDelete = async () => {
     if (!schoolToDelete) return;
     try {
-      const { data: passageiros } = await supabase
-        .from("passageiros")
-        .select("id")
-        .eq("escola_id", schoolToDelete.id);
-      if (passageiros && passageiros.length > 0) {
-        toast({
-          title: "Não é possível excluir escola com passageiros vinculados.",
-          variant: "destructive",
-        });
-        setIsDeleteDialogOpen(false);
-        setSchoolToDelete(null);
-        return;
-      }
-      const { error } = await supabase
-        .from("escolas")
-        .delete()
-        .eq("id", schoolToDelete.id);
-      if (error) throw error;
+      await escolaService.deleteEscola(schoolToDelete.id);
+
       await fetchEscolas();
       toast({ title: "Escola excluída permanentemente." });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao excluir escola:", error);
-      toast({ title: "Erro ao excluir escola.", variant: "destructive" });
+
+      if (error.message.includes("passageiros vinculados")) {
+        toast({
+          title: "Erro ao excluir escola.",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({ title: "Erro ao excluir escola.", variant: "destructive" });
+      }
     } finally {
       setIsDeleteDialogOpen(false);
       setSchoolToDelete(null);
+    }
+  };
+
+  const handleToggleAtivo = async (escola: Escola) => {
+    try {
+      const novoStatus = await escolaService.toggleAtivo(escola);
+
+      toast({
+        title: `Escola ${novoStatus ? "ativada" : "desativada"} com sucesso.`,
+      });
+
+      fetchEscolas();
+    } catch (error: any) {
+      console.error("Erro ao alternar status:", error);
+      toast({
+        title: "Erro ao alternar status.",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -297,7 +311,7 @@ export default function Escolas() {
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-                  className="space-y-6 pt-4"
+                  className="space-y-6"
                 >
                   <Accordion
                     type="multiple"
@@ -305,7 +319,7 @@ export default function Escolas() {
                     onValueChange={setOpenAccordionItems}
                     className="w-full"
                   >
-                    <AccordionItem value="dados-escola" className="mt-4">
+                    <AccordionItem value="dados-escola">
                       <AccordionTrigger>
                         <div className="flex items-center gap-2 text-lg font-semibold">
                           <Building2 className="w-5 h-5 text-primary" />
@@ -357,7 +371,7 @@ export default function Escolas() {
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                           <FormField
                             control={form.control}
                             name="cep"
@@ -382,7 +396,7 @@ export default function Escolas() {
                             control={form.control}
                             name="rua"
                             render={({ field }) => (
-                              <FormItem className="md:col-span-3">
+                              <FormItem className="md:col-span-4">
                                 <FormLabel>Logradouro</FormLabel>
                                 <FormControl>
                                   <Input {...field} />
@@ -409,7 +423,7 @@ export default function Escolas() {
                             control={form.control}
                             name="bairro"
                             render={({ field }) => (
-                              <FormItem className="md:col-span-3">
+                              <FormItem className="md:col-span-4">
                                 <FormLabel>Bairro</FormLabel>
                                 <FormControl>
                                   <Input {...field} />
@@ -436,7 +450,7 @@ export default function Escolas() {
                             control={form.control}
                             name="estado"
                             render={({ field }) => (
-                              <FormItem className="md:col-span-1">
+                              <FormItem className="md:col-span-2">
                                 <FormLabel>Estado</FormLabel>
                                 <Select
                                   onValueChange={field.onChange}
@@ -510,7 +524,7 @@ export default function Escolas() {
                             control={form.control}
                             name="referencia"
                             render={({ field }) => (
-                              <FormItem className="col-span-1 md:col-span-4">
+                              <FormItem className="col-span-1 md:col-span-5">
                                 <FormLabel>Referência</FormLabel>
                                 <FormControl>
                                   <Textarea {...field} />
@@ -561,12 +575,48 @@ export default function Escolas() {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <div className="space-y-2">
+                <Label htmlFor="search">Buscar por Nome</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    id="search"
+                    placeholder="Nome da escola..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status-filter">Status</Label>
+                <Select
+                  value={selectedStatus}
+                  onValueChange={setSelectedStatus}
+                >
+                  <SelectTrigger id="status-filter">
+                    <SelectValue placeholder="Todos os status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="ativa">Ativa</SelectItem>
+                    <SelectItem value="desativada">Desativada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             {loadingPage ? (
               <SchoolListSkeleton />
-            ) : escolas.length === 0 ? (
+            ) : escolasFiltradas.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
                 <School className="w-12 h-12 mb-4 text-gray-300" />
-                <p>Nenhuma escola cadastrada.</p>
+                <p>
+                  {searchTerm
+                    ? `Nenhuma escola encontrada para "${searchTerm}"`
+                    : "Nenhuma escola cadastrada."}
+                </p>
               </div>
             ) : (
               <>
@@ -578,6 +628,9 @@ export default function Escolas() {
                           Nome
                         </th>
                         <th className="p-3 text-left text-xs font-medium text-gray-600">
+                          Passageiros Ativos
+                        </th>
+                        <th className="p-3 text-left text-xs font-medium text-gray-600">
                           Status
                         </th>
                         <th className="p-3 text-center text-xs font-medium text-gray-600">
@@ -586,7 +639,7 @@ export default function Escolas() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {escolas.map((escola) => (
+                      {escolasFiltradas.map((escola) => (
                         <tr
                           key={escola.id}
                           onClick={() => handleEdit(escola)}
@@ -598,6 +651,12 @@ export default function Escolas() {
                             </div>
                           </td>
                           <td className="p-3 align-top">
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Users2 className="w-4 h-4" />
+                              {escola.passageiros_ativos_count}
+                            </div>
+                          </td>
+                          <td className="p-3 align-top">
                             <span
                               className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
                                 escola.ativo
@@ -605,7 +664,7 @@ export default function Escolas() {
                                   : "bg-red-100 text-red-800"
                               }`}
                             >
-                              {escola.ativo ? "Ativa" : "Inativa"}
+                              {escola.ativo ? "Ativa" : "Desativada"}
                             </span>
                           </td>
                           <td className="p-3 text-center align-top">
@@ -632,6 +691,25 @@ export default function Escolas() {
                                   Editar
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
+                                  className="cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleAtivo(escola);
+                                  }}
+                                >
+                                  {escola.ativo ? (
+                                    <>
+                                      <ToggleLeft className="w-4 h-4 mr-2" />
+                                      Desativar
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ToggleRight className="w-4 h-4 mr-2" />
+                                      Reativar
+                                    </>
+                                  )}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
                                   disabled={escola.ativo}
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -650,8 +728,9 @@ export default function Escolas() {
                     </tbody>
                   </table>
                 </div>
+
                 <div className="md:hidden divide-y divide-gray-200">
-                  {escolas.map((escola) => (
+                  {escolasFiltradas.map((escola) => (
                     <div
                       key={escola.id}
                       onClick={() => handleEdit(escola)}
@@ -661,7 +740,7 @@ export default function Escolas() {
                         <div className="font-semibold text-gray-800">
                           {escola.nome}
                         </div>
-                        <div className="mt-1">
+                        <div className="mt-1 flex items-center gap-3">
                           <span
                             className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
                               escola.ativo
@@ -669,8 +748,12 @@ export default function Escolas() {
                                 : "bg-red-100 text-red-800"
                             }`}
                           >
-                            {escola.ativo ? "Ativa" : "Inativa"}
+                            {escola.ativo ? "Ativa" : "Desativada"}
                           </span>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Users2 className="w-4 h-4" />
+                            {escola.passageiros_ativos_count} ativos
+                          </div>
                         </div>
                       </div>
                       <DropdownMenu>
@@ -693,6 +776,24 @@ export default function Escolas() {
                           >
                             <Pencil className="w-4 h-4 mr-2" />
                             Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleAtivo(escola);
+                            }}
+                          >
+                            {escola.ativo ? (
+                              <>
+                                <ToggleLeft className="w-4 h-4 mr-2" />
+                                Desativar
+                              </>
+                            ) : (
+                              <>
+                                <ToggleRight className="w-4 h-4 mr-2" />
+                                Reativar
+                              </>
+                            )}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             disabled={escola.ativo}

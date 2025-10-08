@@ -22,17 +22,11 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Database } from "@/integrations/supabase/types";
 import { passageiroService } from "@/services/passageiroService";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { currentMonthInText } from "@/utils/formatters";
-import {
-  cepMask,
-  cpfMask,
-  moneyMask,
-  phoneMask
-} from "@/utils/masks";
+import { cepMask, cpfMask, moneyMask, phoneMask } from "@/utils/masks";
 import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, DollarSign, Loader2, MapPin, User } from "lucide-react";
@@ -84,8 +78,6 @@ const passageiroSchema = z.object({
   asaas_customer_id: z.string().optional(),
   usuario_id: z.string().optional(),
 });
-type PassageiroUpdate = Database["public"]["Tables"]["passageiros"]["Update"];
-type PassageiroInsert = Database["public"]["Tables"]["passageiros"]["Insert"];
 type PassageiroFormData = z.infer<typeof passageiroSchema>;
 
 interface PassengerFormDialogProps {
@@ -198,6 +190,12 @@ export default function PassengerFormDialog({
           escola_id: editingPassageiro.escola_id || "",
           ativo: editingPassageiro.ativo,
         });
+        setOpenAccordionItems([
+          "passageiro",
+          "responsavel",
+          "mensalidade",
+          "endereco",
+        ]);
       } else {
         fetchEscolasModal();
         form.reset({
@@ -562,7 +560,7 @@ export default function PassengerFormDialog({
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <FormField
                       control={form.control}
                       name="cep"
@@ -587,7 +585,7 @@ export default function PassengerFormDialog({
                       control={form.control}
                       name="rua"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-3">
+                        <FormItem className="md:col-span-4">
                           <FormLabel>Logradouro</FormLabel>
                           <FormControl>
                             <Input {...field} />
@@ -614,7 +612,7 @@ export default function PassengerFormDialog({
                       control={form.control}
                       name="bairro"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-3">
+                        <FormItem className="md:col-span-4">
                           <FormLabel>Bairro</FormLabel>
                           <FormControl>
                             <Input {...field} />
@@ -641,7 +639,7 @@ export default function PassengerFormDialog({
                       control={form.control}
                       name="estado"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-1">
+                        <FormItem className="md:col-span-2">
                           <FormLabel>Estado</FormLabel>
                           <Select
                             onValueChange={field.onChange}
@@ -699,7 +697,7 @@ export default function PassengerFormDialog({
                       control={form.control}
                       name="referencia"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-4">
+                        <FormItem className="md:col-span-5">
                           <FormLabel>Referência</FormLabel>
                           <FormControl>
                             <Textarea {...field} />

@@ -165,6 +165,7 @@ const CustomLegend = (props: any) => {
 
 export default function Gastos() {
   const [gastos, setGastos] = useState<Gasto[]>([]);
+  const [openCalendar, setOpenCalendar] = useState(false);
   const [loading, setLoading] = useState(true);
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
@@ -450,7 +451,7 @@ export default function Gastos() {
           ) : gastos.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
               <FileText className="w-12 h-12 mb-4 text-gray-300" />
-              <p>Nenhum gasto registrado neste período.</p>
+              <p>Nenhum gasto registrado no mês indicado.</p>
             </div>
           ) : (
             <>
@@ -459,10 +460,10 @@ export default function Gastos() {
                   <thead>
                     <tr className="border-b">
                       <th className="p-4 text-left text-xs font-medium text-gray-600">
-                        Descrição
+                        Categoria
                       </th>
                       <th className="p-4 text-left text-xs font-medium text-gray-600">
-                        Categoria
+                        Descrição
                       </th>
                       <th className="p-4 text-left text-xs font-medium text-gray-600">
                         Data
@@ -479,12 +480,12 @@ export default function Gastos() {
                     {gastos.map((gasto) => (
                       <tr key={gasto.id} className="hover:bg-muted/50">
                         <td className="p-4 align-top">
+                          <Badge variant="outline">{gasto.categoria}</Badge>
+                        </td>
+                        <td className="p-4 align-top">
                           <div className="font-medium text-sm">
                             {gasto.descricao}
                           </div>
-                        </td>
-                        <td className="p-4 align-top">
-                          <Badge variant="outline">{gasto.categoria}</Badge>
                         </td>
                         <td className="p-4 align-top">
                           {formatDateToBR(gasto.data)}
@@ -537,21 +538,69 @@ export default function Gastos() {
               </div>
               <div className="md:hidden divide-y divide-gray-100 -mx-6">
                 {gastos.map((gasto) => (
-                  <div key={gasto.id} className="p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="font-semibold">{gasto.descricao}</div>
-                      <div className="font-bold text-lg">
-                        {gasto.valor.toLocaleString("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        })}
+                  <div key={gasto.id} className="p-4 active:bg-muted/50">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="pr-2">
+                        <div className="font-semibold text-gray-800">
+                          {gasto.categoria}
+                        </div>
                       </div>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem
+                            className="cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openDialog(gasto);
+                            }}
+                          >
+                            <Edit className="w-4 h-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(gasto.id);
+                            }}
+                            className="text-red-500 cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <Badge variant="outline">{gasto.categoria}</Badge>
-                      <div className="text-muted-foreground">
-                        {formatDateToBR(gasto.data)}
+
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm">
+                        <span className="block text-xs text-muted-foreground">
+                          Cadastrou em:{" "}
+                        </span>
+                        <span className="font-semibold">
+                          {formatDateToBR(gasto.data)}
+                        </span>
                       </div>
+                      <span
+                        className={`px-2 pr-0 py-1 rounded-full text-xs font-medium`}
+                      >
+                        <Badge variant="outline">{gasto.descricao}</Badge>
+                      </span>
+                    </div>
+                    <div className="text-right text-muted-foreground text-sm mb-3">
+                      {Number(gasto.valor).toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      })}
                     </div>
                   </div>
                 ))}
@@ -575,10 +624,34 @@ export default function Gastos() {
             >
               <FormField
                 control={form.control}
+                name="categoria"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Categoria *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma categoria" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categoriasGastos.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="descricao"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
-                    <FormLabel>Descrição</FormLabel>
+                    <FormLabel>Descrição *</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -592,7 +665,7 @@ export default function Gastos() {
                   name="valor"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Valor</FormLabel>
+                      <FormLabel>Valor *</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -610,8 +683,11 @@ export default function Gastos() {
                   name="data"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Data</FormLabel>
-                      <Popover>
+                      <FormLabel>Data *</FormLabel>
+                      <Popover
+                        open={openCalendar}
+                        onOpenChange={setOpenCalendar}
+                      >
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
@@ -635,7 +711,10 @@ export default function Gastos() {
                             mode="single"
                             selected={field.value}
                             onSelect={(date) => {
-                              if (date) field.onChange(date);
+                              if (date) {
+                                field.onChange(date);
+                                setOpenCalendar(false);
+                              }
                             }}
                             initialFocus
                             locale={ptBR}
@@ -649,34 +728,10 @@ export default function Gastos() {
               </div>
               <FormField
                 control={form.control}
-                name="categoria"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel>Categoria</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione uma categoria" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categoriasGastos.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
                 name="notas"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notas (Opcional)</FormLabel>
+                    <FormLabel>Notas</FormLabel>
                     <FormControl>
                       <Textarea {...field} />
                     </FormControl>
