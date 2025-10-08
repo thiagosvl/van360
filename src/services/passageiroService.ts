@@ -3,6 +3,7 @@ import { asaasService } from "@/services/asaasService";
 import { moneyToNumber } from "@/utils/masks";
 
 const asaasApiKey = localStorage.getItem("asaas_api_key");
+console.log(localStorage);
 
 export const passageiroService = {
   async getNumeroCobrancas(passageiroId: string): Promise<number> {
