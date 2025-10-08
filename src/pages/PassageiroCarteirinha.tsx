@@ -18,6 +18,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,6 +51,7 @@ import {
   Contact,
   Hash,
   Info,
+  Mail,
   MessageCircle,
   MoreVertical,
   Pencil,
@@ -56,6 +64,8 @@ import {
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+
+const currentYear = new Date().getFullYear().toString();
 
 const InfoItem = ({
   icon: Icon,
@@ -127,16 +137,45 @@ export default function PassageiroCarteirinha() {
   const [deletePassageiroDialog, setDeletePassageiroDialog] = useState({
     open: false,
   });
+  const [availableYears, setAvailableYears] = useState<string[]>([currentYear]);
+  const [yearFilter, setYearFilter] = useState(currentYear);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchAllData = async () => {
+      setLoading(true);
+      if (passageiro_id) {
+        await fetchAvailableYears();
+
+        const p = await fetchPassageiro();
+        if (p) await fetchCobrancas(yearFilter);
+      }
+      setLoading(false);
+    };
+
+    fetchAllData();
+  }, [passageiro_id]);
+
+  useEffect(() => {
+    if (!loading) {
+      fetchCobrancas(yearFilter);
+    }
+  }, [yearFilter]);
 
   const handleEditClick = () => {
     setIsFormOpen(true);
   };
 
-  const handleSuccess = () => {
+  const handlePassageiroFormSuccess = () => {
     fetchPassageiro();
-    fetchCobrancas();
+    fetchCobrancas(yearFilter);
+    fetchAvailableYears();
     setIsFormOpen(false);
+  };
+
+  const handleCobrancaAdded = () => {
+    fetchCobrancas(yearFilter);
+    fetchAvailableYears();
   };
 
   const fetchPassageiro = async () => {
@@ -158,15 +197,16 @@ export default function PassageiroCarteirinha() {
     }
   };
 
-  const fetchCobrancas = async () => {
+  const fetchCobrancas = async (year: string) => {
     try {
       const { data, error } = await supabase
         .from("cobrancas")
         .select(`*, passageiros:passageiro_id (nome, nome_responsavel)`)
         .eq("passageiro_id", passageiro_id)
         .eq("usuario_id", localStorage.getItem("app_user_id"))
-        .order("ano", { ascending: false })
+        .eq("ano", year)
         .order("mes", { ascending: false });
+
       if (error) throw error;
       setCobrancas(data || []);
     } catch (error) {
@@ -174,37 +214,25 @@ export default function PassageiroCarteirinha() {
     }
   };
 
-  useEffect(() => {
-    const fetchAllData = async () => {
-      setLoading(true);
-      if (passageiro_id) {
-        const p = await fetchPassageiro();
-        if (p) await fetchCobrancas();
-      }
-      setLoading(false);
-    };
-    fetchAllData();
-  }, [passageiro_id]);
+  const fetchAvailableYears = async () => {
+    try {
+      const years = await cobrancaService.fetchAvailableYears(passageiro_id);
+      setAvailableYears(years);
 
-  const yearlySummary = useMemo(() => {
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    return cobrancas.reduce(
-      (acc, c) => {
-        if (c.status === "pago") {
-          acc.pago += Number(c.valor);
-        } else {
-          acc.pendente += Number(c.valor);
-          const vencimento = new Date(c.data_vencimento);
-          if (vencimento < hoje) {
-            acc.emAtraso += 1;
-          }
-        }
-        return acc;
-      },
-      { pago: 0, pendente: 0, emAtraso: 0 }
-    );
-  }, [cobrancas]);
+      let newYearFilter = yearFilter;
+
+      if (!years.includes(yearFilter)) {
+        const fallbackYear = new Date().getFullYear().toString();
+        setYearFilter(fallbackYear);
+        newYearFilter = fallbackYear;
+      }
+
+      return newYearFilter;
+    } catch (error) {
+      console.error("Erro ao buscar anos disponíveis:", error);
+      return yearFilter;
+    }
+  };
 
   const getMesNome = (mes: number) => {
     const nomeMes = new Date(2024, mes - 1).toLocaleDateString("pt-BR", {
@@ -258,7 +286,9 @@ export default function PassageiroCarteirinha() {
       await passageiroService.toggleAtivo(passageiro_id, passageiro.ativo);
 
       toast({
-        title: `Passageiro ${confirmToggleDialog.action} com sucesso.`,
+        title: `Passageiro ${
+          confirmToggleDialog.action == "ativar" ? "ativo" : "desativado"
+        } com sucesso.`,
       });
 
       fetchPassageiro();
@@ -291,7 +321,7 @@ export default function PassageiroCarteirinha() {
         } com sucesso.`,
       });
 
-      fetchCobrancas();
+      fetchCobrancas(yearFilter);
     } catch (err) {
       console.error("Erro ao alternar lembretes:", err);
       toast({
@@ -301,7 +331,7 @@ export default function PassageiroCarteirinha() {
     }
   };
 
-  const deleteCobranca = async () => {
+  const handleDeleteCobranca = async () => {
     if (!deleteCobrancaDialog.cobranca) return;
 
     try {
@@ -310,7 +340,12 @@ export default function PassageiroCarteirinha() {
       toast({
         title: "Mensalidade excluída com sucesso.",
       });
-      fetchCobrancas();
+
+      const newFilterYear = await fetchAvailableYears();
+
+      if (newFilterYear === yearFilter) {
+        await fetchCobrancas(yearFilter);
+      }
     } catch (error: any) {
       console.error("Erro ao excluir mensalidade:", error);
       toast({
@@ -341,7 +376,7 @@ export default function PassageiroCarteirinha() {
         toast({
           title: "Pagamento desfeito com sucesso.",
         });
-        fetchCobrancas();
+        fetchCobrancas(yearFilter);
       }
     } catch (error: any) {
       console.error("Erro ao processar ação:", error);
@@ -360,8 +395,29 @@ export default function PassageiroCarteirinha() {
     setPaymentDialogOpen(true);
   };
   const handlePaymentRecorded = () => {
-    fetchCobrancas();
+    fetchCobrancas(yearFilter);
+    fetchAvailableYears();
   };
+
+  const yearlySummary = useMemo(() => {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    return cobrancas.reduce(
+      (acc, c) => {
+        if (c.status === "pago") {
+          acc.pago += Number(c.valor);
+        } else {
+          acc.pendente += Number(c.valor);
+          const vencimento = new Date(c.data_vencimento);
+          if (vencimento < hoje) {
+            acc.emAtraso += 1;
+          }
+        }
+        return acc;
+      },
+      { pago: 0, pendente: 0, emAtraso: 0 }
+    );
+  }, [cobrancas]);
 
   if (loading || !passageiro) {
     return <CarteirinhaSkeleton />;
@@ -386,92 +442,40 @@ export default function PassageiroCarteirinha() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div className="lg:col-start-1 lg:row-start-1">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <CardTitle className="text-lg">Informações</CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleEditClick}
-                className="h-8 w-8"
-              >
-                <Pencil className="w-4 h-4" />
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <InfoItem icon={School} label="Escola">
-                {passageiro.escolas?.nome || "Não informada"}
-              </InfoItem>
-              <InfoItem icon={Contact} label="Responsável">
-                {passageiro.nome_responsavel}
-              </InfoItem>
-              <InfoItem icon={MessageCircle} label="Telefone">
-                {formatarTelefone(passageiro.telefone_responsavel)}
-              </InfoItem>
-              <Button
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
-                disabled={!passageiro.telefone_responsavel}
-                onClick={() =>
-                  window.open(
-                    `https://wa.me/${passageiro.telefone_responsavel?.replace(
-                      /\D/g,
-                      ""
-                    )}`,
-                    "_blank"
-                  )
-                }
-              >
-                <MessageCircle className="h-4 w-4 mr-2" /> Enviar WhatsApp
-              </Button>
-              {passageiro.ativo ? (
-                <Button
-                  variant="outline"
-                  className="w-full mt-2 border-red-500 text-red-500 hover:bg-red-50"
-                  onClick={() => handleToggleClick(passageiro.ativo)}
-                >
-                  Desativar Passageiro
-                </Button>
-              ) : (
-                <Button
-                  variant="default"
-                  className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => handleToggleClick(passageiro.ativo)}
-                >
-                  Reativar Cadastro
-                </Button>
-              )}
-            </CardContent>
-            <CardFooter>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 justify-start p-2"
-                onClick={() => {
-                  setDeletePassageiroDialog({ open: true });
-                }}
-              >
-                <Trash2 className="w-3 h-3 mr-2" /> Excluir Passageiro
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-
-        <div className="lg:col-start-2 lg:col-span-2 lg:row-start-1 lg:row-span-2">
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:items-start">
+        <div className="order-1 lg:order-2 lg:col-span-2 lg:row-start-1 lg:row-span-2">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Mensalidades</CardTitle>
-                {passageiro.ativo && (
-                  <Button
-                    size="sm"
-                    onClick={() => setRetroativaDialogOpen(true)}
-                  >
-                    <Plus className="w-4 h-4 md:mr-2" />
-                    <span className="hidden md:block">Registrar Mensalidade</span>
-                  </Button>
-                )}
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-muted-foreground hidden sm:block">
+                    Ano:
+                  </label>
+                  <Select value={yearFilter} onValueChange={setYearFilter}>
+                    <SelectTrigger className="w-[100px] text-sm">
+                      <SelectValue placeholder="Ano" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableYears.map((ano) => (
+                        <SelectItem key={ano} value={ano}>
+                          {ano}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {passageiro.ativo && (
+                    <Button
+                      size="sm"
+                      onClick={() => setRetroativaDialogOpen(true)}
+                    >
+                      <Plus className="w-4 h-4 md:mr-2" />
+                      <span className="hidden md:block">
+                        Registrar Mensalidade
+                      </span>
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -826,7 +830,81 @@ export default function PassageiroCarteirinha() {
           </Card>
         </div>
 
-        <div className="lg:col-start-1 lg:row-start-2">
+        <div className="order-2 lg:order-1 lg:col-start-1 lg:row-start-1">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-4">
+              <CardTitle className="text-lg">Informações</CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleEditClick}
+                className="h-8 w-8"
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <InfoItem icon={School} label="Escola">
+                {passageiro.escolas?.nome || "Não informada"}
+              </InfoItem>
+              <InfoItem icon={Contact} label="Responsável">
+                {passageiro.nome_responsavel}
+              </InfoItem>
+              <InfoItem icon={MessageCircle} label="Telefone">
+                {formatarTelefone(passageiro.telefone_responsavel)}
+              </InfoItem>
+              <InfoItem icon={Mail} label="E-mail">
+                {passageiro.email_responsavel || "Não informado"}
+              </InfoItem>
+              <Button
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                disabled={!passageiro.telefone_responsavel}
+                onClick={() =>
+                  window.open(
+                    `https://wa.me/${passageiro.telefone_responsavel?.replace(
+                      /\D/g,
+                      ""
+                    )}`,
+                    "_blank"
+                  )
+                }
+              >
+                <MessageCircle className="h-4 w-4 mr-2" /> Enviar WhatsApp
+              </Button>
+              {passageiro.ativo ? (
+                <Button
+                  variant="outline"
+                  className="w-full mt-2 border-red-500 text-red-500 hover:bg-red-50"
+                  onClick={() => handleToggleClick(passageiro.ativo)}
+                >
+                  Desativar Passageiro
+                </Button>
+              ) : (
+                <Button
+                  variant="default"
+                  className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => handleToggleClick(passageiro.ativo)}
+                >
+                  Reativar Cadastro
+                </Button>
+              )}
+            </CardContent>
+            <CardFooter>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 justify-start p-2"
+                onClick={() => {
+                  setDeletePassageiroDialog({ open: true });
+                }}
+              >
+                <Trash2 className="w-3 h-3 mr-2" /> Excluir Passageiro
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+
+        <div className="order-3 lg:order-3 lg:col-start-1 lg:row-start-2">
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">
@@ -889,7 +967,7 @@ export default function PassageiroCarteirinha() {
         passageiroResponsavelNome={passageiro.nome_responsavel}
         valorMensalidade={passageiro.valor_mensalidade}
         diaVencimento={passageiro.dia_vencimento}
-        onCobrancaAdded={() => fetchCobrancas()}
+        onCobrancaAdded={() => handleCobrancaAdded()}
       />
       <ConfirmationDialog
         open={confirmToggleDialog.open}
@@ -930,7 +1008,7 @@ export default function PassageiroCarteirinha() {
         }
         title="Excluir"
         description="Deseja excluir permanentemente essa mensalidade?"
-        onConfirm={deleteCobranca}
+        onConfirm={handleDeleteCobranca}
         confirmText="Excluir"
         variant="destructive"
       />
@@ -948,7 +1026,7 @@ export default function PassageiroCarteirinha() {
           isOpen={isFormOpen}
           onClose={() => setIsFormOpen(false)}
           editingPassageiro={passageiro}
-          onSuccess={handleSuccess}
+          onSuccess={handlePassageiroFormSuccess}
         />
       )}
     </div>

@@ -189,5 +189,37 @@ export const cobrancaService = {
             }
             throw new Error("Falha ao atualizar a cobrança no banco de dados.");
         }
+    },
+
+    async fetchAvailableYears(passageiroId: string): Promise<string[]> {
+    try {
+        const { data, error } = await supabase
+            .from('cobrancas')
+            .select('ano')
+            .eq('passageiro_id', passageiroId)
+            .order('ano', { ascending: false });
+
+        if (error) throw error;
+        
+        const uniqueYears = Array.from(new Set(data.map(item => item.ano.toString())));
+        
+        const currentYear = new Date().getFullYear().toString();
+        
+        if (!uniqueYears.includes(currentYear)) {
+            uniqueYears.unshift(currentYear);
+        } else {
+            const index = uniqueYears.indexOf(currentYear);
+            if (index !== 0) {
+                uniqueYears.splice(index, 1);
+                uniqueYears.unshift(currentYear);
+            }
+        }
+
+        return uniqueYears;
+
+    } catch (error) {
+        console.error("Erro ao buscar anos disponíveis:", error);
+        return [new Date().getFullYear().toString()];
     }
+}
 };
