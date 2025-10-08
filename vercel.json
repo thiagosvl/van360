@@ -1,5 +1,37 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    // 1. REGRA DE EXCEÇÃO (API): Ignora o fallback e roteia qualquer coisa para /api/asaas
+    {
+      "source": "/api/asaas/(.*)",
+      "destination": "/api/asaas"
+    },
+    // 2. REGRA DE FALLBACK (SPA): Garante que todas as outras rotas voltem para o index.html
+    { 
+      "source": "/(.*)", 
+      "destination": "/" 
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/asaas/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Credentials",
+          "value": "true"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET,DELETE,POST,PUT,OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-Requested-With, Content-Type, Authorization, x-asaas-key"
+        }
+      ]
+    }
   ]
 }

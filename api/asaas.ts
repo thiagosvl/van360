@@ -28,7 +28,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const asaasKey = req.headers["x-asaas-key"];
 
-  if (!asaasKey) {
+   // LOG de debug para ver o que o Vercel está lendo
+  console.log('Chave do Motorista lida na Vercel:', asaasKey);
+
+   if (!asaasKey) {
     return res.status(401).json({ error: "Chave de acesso ASAAS não fornecida." });
   }
 
