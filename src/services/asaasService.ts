@@ -16,15 +16,14 @@ export const asaasService = {
         const res = await fetch(`${API_BASE_URL}/customers`, {
             method: "POST",
             headers: {
-                accept: "application/json",
+                "accept": "application/json",
                 "content-type": "application/json",
-                access_token: asaasApiKey ?? ASAAS_TOKEN,
+                "access_token": asaasApiKey ?? ASAAS_TOKEN,
             },
             body: JSON.stringify(customer),
         });
 
         if (!res.ok) {
-            // Tenta ler o erro como texto primeiro, para não quebrar em JSON vazio
             const errorText = await res.text();
             let errorMessage = `Erro (${res.status}) ao criar cliente no Asaas: ${errorText}`;
 
@@ -32,7 +31,6 @@ export const asaasService = {
                 const err = JSON.parse(errorText);
                 errorMessage = err.errors?.[0]?.description || JSON.stringify(err);
             } catch (e) {
-                // Se falhar, usa a mensagem HTTP original (ex: 405 Method Not Allowed)
                 errorMessage = `Falha de Conexão (${res.status} ${res.statusText || 'Erro Desconhecido'}): ${errorText}`;
             }
 
