@@ -240,7 +240,7 @@ export default function CobrancaRetroativaDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md bg-white">
+      <DialogContent className="max-w-md bg-white max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Registrar Mensalidade</DialogTitle>
         </DialogHeader>
@@ -345,8 +345,8 @@ export default function CobrancaRetroativaDialog({
                 <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-yellow-600" />
                 <p className="font-medium leading-snug">
                   <span className="font-bold">Aviso: Mês Futuro.</span> Esta
-                  mensalidade será gerada automaticamente no início do mês selecionado.
-                  Registre agora apenas se for um adiantamento.
+                  mensalidade será gerada automaticamente no início do mês
+                  selecionado. Registre agora apenas se for um adiantamento.
                 </p>
               </div>
             )}
