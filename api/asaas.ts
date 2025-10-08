@@ -37,6 +37,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     : rawUrl;
   const fullUrl = `https://api-sandbox.asaas.com/v3${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
 
+  // LOG 1: Verifique o endpoint que a Vercel está vendo!
+  console.log('Endpoint Vercel:', endpoint);
+  console.log('URL final para ASAAS:', fullUrl);
+
   if (!["GET", "POST", "PUT", "DELETE"].includes(method || "")) {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
