@@ -1,8 +1,8 @@
 const API_BASE_URL =
-  import.meta.env.MODE === "development"
-    ? "/asaas"
-    : "/api/asaas";
-    
+    import.meta.env.MODE === "development"
+        ? "/asaas"
+        : "/api/asaas";
+
 const ASAAS_TOKEN = import.meta.env.VITE_ASAAS_TOKEN;
 
 export const asaasService = {
@@ -24,8 +24,19 @@ export const asaasService = {
         });
 
         if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.errors?.[0]?.description || "Erro ao criar cliente no Asaas");
+            // Tenta ler o erro como texto primeiro, para não quebrar em JSON vazio
+            const errorText = await res.text();
+            let errorMessage = `Erro (${res.status}) ao criar cliente no Asaas: ${errorText}`;
+
+            try {
+                const err = JSON.parse(errorText);
+                errorMessage = err.errors?.[0]?.description || JSON.stringify(err);
+            } catch (e) {
+                // Se falhar, usa a mensagem HTTP original (ex: 405 Method Not Allowed)
+                errorMessage = `Falha de Conexão (${res.status} ${res.statusText || 'Erro Desconhecido'}): ${errorText}`;
+            }
+
+            throw new Error(errorMessage);
         }
 
         return res.json();
