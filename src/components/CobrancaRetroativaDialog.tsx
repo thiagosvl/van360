@@ -288,7 +288,7 @@ export default function CobrancaRetroativaDialog({
                           <SelectValue placeholder="Selecione..." />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="max-h-60 overflow-y-auto">
                         {meses.map((mes) => (
                           <SelectItem key={mes.value} value={mes.value}>
                             {mes.label}
@@ -326,7 +326,7 @@ export default function CobrancaRetroativaDialog({
                           <SelectValue placeholder="Selecione..." />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="max-h-60 overflow-y-auto">
                         {anos.map((ano) => (
                           <SelectItem key={ano.value} value={ano.value}>
                             {ano.label}
@@ -458,7 +458,7 @@ export default function CobrancaRetroativaDialog({
                             <SelectValue placeholder="Selecione a forma" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="max-h-60 overflow-y-auto">
                           {tiposPagamento.map((tipo) => (
                             <SelectItem key={tipo.value} value={tipo.value}>
                               {tipo.label}
