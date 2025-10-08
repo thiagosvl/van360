@@ -46,7 +46,7 @@ export const asaasService = {
             headers: {
                 accept: "application/json",
                 "content-type": "application/json",
-                access_token: asaasApiKey,
+                "x-asaas-key": asaasApiKey,
             },
         });
 
@@ -65,7 +65,7 @@ export const asaasService = {
             method: "DELETE",
             headers: {
                 accept: "application/json",
-                access_token: asaasApiKey,
+                "x-asaas-key": asaasApiKey,
             },
         },);
 
@@ -82,7 +82,7 @@ export const asaasService = {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                access_token: ASAAS_GENERAL_TOKEN!,
+                "x-asaas-key": ASAAS_GENERAL_TOKEN!,
             },
             body: JSON.stringify(data),
         });
@@ -111,7 +111,7 @@ export const asaasService = {
             headers: {
                 accept: "application/json",
                 "content-type": "application/json",
-                access_token: asaasApiKey,
+                "x-asaas-key": asaasApiKey,
             },
             body: JSON.stringify(payment),
         });
@@ -132,7 +132,7 @@ export const asaasService = {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "access_token": subAccountasaasApiKey,
+                    "x-asaas-key": subAccountasaasApiKey,
                 },
                 body: JSON.stringify({
                     name: "Webhook Mensalidade Passageiro Recebida",
@@ -164,7 +164,7 @@ export const asaasService = {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    access_token: asaasApiKey,
+                    "x-asaas-key": asaasApiKey,
                 },
                 body: JSON.stringify(body),
             });
@@ -193,7 +193,7 @@ export const asaasService = {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    access_token: asaasApiKey,
+                    "x-asaas-key": asaasApiKey,
                 },
                 body: JSON.stringify(payload),
             });
@@ -216,7 +216,7 @@ export const asaasService = {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    access_token: asaasApiKey,
+                    "x-asaas-key": asaasApiKey,
                 },
             });
 
@@ -243,7 +243,7 @@ export const asaasService = {
                 method: "GET",
                 headers: {
                     accept: "application/json",
-                    access_token: asaasApiKey,
+                    "x-asaas-key": asaasApiKey,
                 },
             });
             if (!res.ok) {
@@ -268,7 +268,7 @@ export const asaasService = {
     //     const response = await fetch(`${API_BASE_URL}/customers/accounts/${id}`, {
     //         method: "DELETE",
     //         headers: {
-    //             access_token: ASAAS_GENERAL_TOKEN!,
+    //             "x-asaas-key": ASAAS_GENERAL_TOKEN!,
     //         },
     //     });
 
