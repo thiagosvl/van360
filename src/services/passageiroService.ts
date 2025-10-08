@@ -51,7 +51,7 @@ export const passageiroService = {
 
   async createPassageiroComTransacao(
     data: any // Use o tipo PassageiroFormData ou 'any' temporariamente
-  ): Promise<void> {
+  ): Promise<boolean> {
 
     // As chaves de rollback que precisamos rastrear
     let asaasCustomer: any = null;
@@ -72,6 +72,8 @@ export const passageiroService = {
       telefone_responsavel: pureData.telefone_responsavel.replace(/\D/g, ""),
     };
 
+    console.log('key', asaasApiKey);
+    return;
     try {
       // --- 1. Criar Cliente ASAAS ---
       asaasCustomer = await asaasService.createCustomer(
