@@ -4,10 +4,10 @@ import { Cobranca } from "@/types/cobranca";
 import { CobrancaDetalhe } from "@/types/cobrancaDetalhe";
 import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 
-const asaasApiKey = localStorage.getItem("asaas_api_key");
-
 export const cobrancaService = {
     async desfazerPagamento(cobrancaId: string): Promise<void> {
+        const asaasApiKey = localStorage.getItem("asaas_api_key");
+
         const { data: cobranca, error: fetchError } = await supabase
             .from("cobrancas")
             .select("*")
@@ -55,6 +55,8 @@ export const cobrancaService = {
     },
 
     async excluirCobranca(cobranca: Cobranca | CobrancaDetalhe): Promise<void> {
+        const asaasApiKey = localStorage.getItem("asaas_api_key");
+
         if (cobranca.origem === "automatica" && cobranca.asaas_payment_id && asaasApiKey) {
             try {
                 await asaasService.deletePayment(cobranca.asaas_payment_id, asaasApiKey);
@@ -140,6 +142,8 @@ export const cobrancaService = {
     },
 
     async registrarPagamentoManual(cobrancaId: string, pagamentoData: any): Promise<void> {
+        const asaasApiKey = localStorage.getItem("asaas_api_key");
+        
         const { data: cobranca, error: fetchError } = await supabase
             .from("cobrancas")
             .select("id, origem, asaas_payment_id, data_vencimento")

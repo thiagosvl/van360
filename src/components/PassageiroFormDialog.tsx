@@ -51,8 +51,6 @@ import { Checkbox } from "./ui/checkbox";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 
-const asaasApiKey = localStorage.getItem("asaas_api_key");
-
 const passageiroSchema = z.object({
   escola_id: z.string().min(1, "Campo obrigatório"),
   nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),

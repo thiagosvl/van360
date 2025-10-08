@@ -2,10 +2,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { asaasService } from "@/services/asaasService";
 import { moneyToNumber } from "@/utils/masks";
 
-const asaasApiKey = localStorage.getItem("asaas_api_key");
-console.log(localStorage);
-
 export const passageiroService = {
+
   async getNumeroCobrancas(passageiroId: string): Promise<number> {
     const { count, error } = await supabase
       .from("cobrancas")
@@ -54,6 +52,8 @@ export const passageiroService = {
     data: any // Use o tipo PassageiroFormData ou 'any' temporariamente
   ): Promise<void> {
 
+    const asaasApiKey = localStorage.getItem("asaas_api_key");
+
     // As chaves de rollback que precisamos rastrear
     let asaasCustomer: any = null;
     let newPassageiro: any = null;
@@ -72,9 +72,6 @@ export const passageiroService = {
       cpf_responsavel: pureData.cpf_responsavel.replace(/\D/g, ""),
       telefone_responsavel: pureData.telefone_responsavel.replace(/\D/g, ""),
     };
-
-    
-      console.log('key', asaasApiKey);
 
     try {
       // --- 1. Criar Cliente ASAAS ---
@@ -176,6 +173,8 @@ export const passageiroService = {
     data: any, // Use o tipo PassageiroFormData ou 'any' temporariamente
     editingPassageiro: any // Precisamos do objeto antigo para o rollback
   ): Promise<void> {
+
+    const asaasApiKey = localStorage.getItem("asaas_api_key");
 
     // Adaptação dos dados (retirada do Dialog)
     const { emitir_cobranca_mes_atual, ...pureData } = data;
