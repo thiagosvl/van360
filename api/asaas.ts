@@ -4,14 +4,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { method } = req;
   const endpoint = req.url?.replace("/api/asaas", "") || "";
 
+  // Métodos aceitos
   if (!["GET", "POST", "PUT", "DELETE"].includes(method || "")) {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
 
   try {
-    const body =
-      typeof req.body === "object" ? JSON.stringify(req.body) : req.body || undefined;
+    // Garante que o corpo seja tratado corretamente
+    let rawBody: any = req.body;
 
+    if (!rawBody && req.method !== "GET") {
+      const chunks: Uint8Array[] = [];
+      for await (const chunk of req) {
+        chunks.push(chunk);
+      }
+      rawBody = Buffer.concat(chunks).toString();
+    }
+
+    const body =
+      typeof rawBody === "string" && rawBody.trim().length > 0
+        ? rawBody
+        : JSON.stringify(rawBody || {});
+
+    // Faz a chamada real à API Asaas
     const response = await fetch(`https://api-sandbox.asaas.com/v3${endpoint}`, {
       method,
       headers: {
@@ -28,9 +43,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       data = null;
     }
 
-    res.status(response.status).json(data);
+    return res.status(response.status).json(data);
   } catch (error: any) {
-    res.status(500).json({
+    console.error("Erro ao conectar com a API Asaas:", error);
+    return res.status(500).json({
       error: "Erro ao conectar com a API Asaas",
       details: error.message,
     });
