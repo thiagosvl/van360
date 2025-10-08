@@ -444,7 +444,7 @@ export default function Configuracoes() {
         open={previewData.isOpen}
         onOpenChange={(isOpen) => setPreviewData({ ...previewData, isOpen })}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[95vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{previewData.title}</DialogTitle>
           </DialogHeader>

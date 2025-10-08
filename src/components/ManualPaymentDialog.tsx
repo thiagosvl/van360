@@ -119,7 +119,7 @@ export default function ManualPaymentDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-md bg-white"
+        className="max-w-md max-h-[95vh] overflow-y-auto bg-white"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
@@ -216,7 +216,7 @@ export default function ManualPaymentDialog({
                         <SelectValue placeholder="Selecione a forma de pagamento" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="max-h-60 overflow-y-auto">
                       <SelectItem value="dinheiro">Dinheiro</SelectItem>
                       <SelectItem value="PIX">PIX</SelectItem>
                       <SelectItem value="cartao-credito">

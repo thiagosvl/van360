@@ -274,7 +274,7 @@ export default function PassengerFormDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white"
+        className="max-w-3xl max-h-[95vh] overflow-y-auto bg-white"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
@@ -336,7 +336,7 @@ export default function PassengerFormDialog({
                                 <SelectValue placeholder="Selecione uma escola" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
+                            <SelectContent className="max-h-60 overflow-y-auto">
                               {escolasModal.map((escola) => (
                                 <SelectItem key={escola.id} value={escola.id}>
                                   {escola.nome}
@@ -500,7 +500,7 @@ export default function PassengerFormDialog({
                                 <SelectValue placeholder="Selecione o dia" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
+                            <SelectContent className="max-h-60 overflow-y-auto">
                               {Array.from({ length: 31 }, (_, i) => i + 1).map(
                                 (day) => (
                                   <SelectItem key={day} value={day.toString()}>
@@ -683,7 +683,7 @@ export default function PassengerFormDialog({
                                 <SelectValue placeholder="UF" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
+                            <SelectContent className="max-h-60 overflow-y-auto">
                               <SelectItem value="AC">Acre</SelectItem>
                               <SelectItem value="AL">Alagoas</SelectItem>
                               <SelectItem value="AP">Amapá</SelectItem>

@@ -307,7 +307,7 @@ export default function Passageiros() {
                   <SelectTrigger id="status-filter">
                     <SelectValue placeholder="Todos os status" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-60 overflow-y-auto">
                     <SelectItem value="todos">Todos</SelectItem>
                     <SelectItem value="ativo">Ativo</SelectItem>
                     <SelectItem value="desativado">Desativado</SelectItem>
@@ -323,7 +323,7 @@ export default function Passageiros() {
                   <SelectTrigger id="escola-filter">
                     <SelectValue placeholder="Todas as escolas" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-60 overflow-y-auto">
                     <SelectItem value="todas">Todas as escolas</SelectItem>
                     {escolas.map((escola) => (
                       <SelectItem key={escola.id} value={escola.id}>

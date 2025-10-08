@@ -319,7 +319,7 @@ export default function Escolas() {
                   <SelectTrigger id="status-filter">
                     <SelectValue placeholder="Todos os status" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-60 overflow-y-auto">
                     <SelectItem value="todos">Todos</SelectItem>
                     <SelectItem value="ativa">Ativa</SelectItem>
                     <SelectItem value="desativada">Desativada</SelectItem>

@@ -84,7 +84,7 @@ export function UsuarioForm({ usuario, onSubmit, onClose }: UsuarioFormProps) {
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {usuario ? "Editar Usuário" : "Novo Usuário"}
@@ -185,7 +185,7 @@ export function UsuarioForm({ usuario, onSubmit, onClose }: UsuarioFormProps) {
                           <SelectTrigger>
                             <SelectValue placeholder="Selecione o perfil" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="max-h-60 overflow-y-auto">
                             <SelectItem value="motorista">Motorista</SelectItem>
                             <SelectItem value="admin">Admin</SelectItem>
                           </SelectContent>

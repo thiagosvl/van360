@@ -337,7 +337,7 @@ export default function Gastos() {
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-60 overflow-y-auto">
                   {meses.map((mes, index) => (
                     <SelectItem key={index} value={(index + 1).toString()}>
                       {mes}
@@ -355,7 +355,7 @@ export default function Gastos() {
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-60 overflow-y-auto">
                   {anos.map((ano) => (
                     <SelectItem key={ano.value} value={ano.value}>
                       {ano.label}
@@ -611,7 +611,7 @@ export default function Gastos() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="bg-white">
+        <DialogContent className="max-w-md max-h-[95vh] overflow-y-auto bg-white">
           <DialogHeader>
             <DialogTitle>
               {editingGasto ? "Editar Gasto" : "Adicionar Gasto"}
@@ -634,7 +634,7 @@ export default function Gastos() {
                           <SelectValue placeholder="Selecione uma categoria" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="max-h-60 overflow-y-auto">
                         {categoriasGastos.map((cat) => (
                           <SelectItem key={cat} value={cat}>
                             {cat}

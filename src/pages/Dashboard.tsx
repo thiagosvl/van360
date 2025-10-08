@@ -278,7 +278,7 @@ const Dashboard = () => {
                 <SelectTrigger id="mes-select">
                   <SelectValue placeholder="Selecione o mês" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-60 overflow-y-auto">
                   {meses.map((mes, index) => (
                     <SelectItem key={index} value={(index + 1).toString()}>
                       {mes}
@@ -293,7 +293,7 @@ const Dashboard = () => {
                 <SelectTrigger id="ano-select">
                   <SelectValue placeholder="Selecione o ano" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-60 overflow-y-auto">
                   {anos.map((ano) => (
                     <SelectItem key={ano.value} value={ano.value}>
                       {ano.label}

@@ -193,7 +193,8 @@ export default function CobrancaRetroativaDialog({
       }
       if (existingCobranca) {
         toast({
-          title: "Já existe uma mensalidade cadastrada no mês e ano indicado.",
+          title:
+            "O passageiro já possui uma mensalidade desse mês e ano indicado",
           variant: "destructive",
         });
         return;
@@ -240,7 +241,7 @@ export default function CobrancaRetroativaDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md bg-white max-h-[95vh] overflow-y-auto">
+      <DialogContent className="max-w-md max-h-[95vh] overflow-y-auto bg-white">
         <DialogHeader>
           <DialogTitle>Registrar Mensalidade</DialogTitle>
         </DialogHeader>

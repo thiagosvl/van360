@@ -229,7 +229,7 @@ const Cobrancas = () => {
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o mês" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-60 overflow-y-auto">
                     {meses.map((mes, index) => (
                       <SelectItem key={index} value={(index + 1).toString()}>
                         {mes}
@@ -247,7 +247,7 @@ const Cobrancas = () => {
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o ano" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-60 overflow-y-auto">
                     {anos.map((ano) => (
                       <SelectItem key={ano} value={ano}>
                         {ano}
