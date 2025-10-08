@@ -867,6 +867,7 @@ const Cobrancas = () => {
           onClose={() => setPaymentDialogOpen(false)}
           cobrancaId={selectedCobranca.id}
           passageiroNome={selectedCobranca.passageiros.nome}
+          responsavelNome={selectedCobranca.passageiros.nome_responsavel}
           valorOriginal={Number(selectedCobranca.valor)}
           onPaymentRecorded={() => {
             setPaymentDialogOpen(false);

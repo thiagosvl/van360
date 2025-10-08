@@ -400,7 +400,11 @@ export default function PassageiroCobranca() {
                 {formatCobrancaOrigem(cobranca.origem)}
               </InfoItem>
               <InfoItem icon={BadgeCheck} label="Quem registrou o pagamento?">
-                {cobranca.status === "pago" ? cobranca.pagamento_manual ? "Você" : "Sistema" : "Ainda não foi paga"}
+                {cobranca.status === "pago"
+                  ? cobranca.pagamento_manual
+                    ? "Você"
+                    : "Sistema"
+                  : "Ainda não foi paga"}
               </InfoItem>
             </div>
             <div className="pt-6 border-t">
@@ -550,6 +554,7 @@ export default function PassageiroCobranca() {
         onClose={() => setPaymentDialogOpen(false)}
         cobrancaId={cobranca_id}
         passageiroNome={cobranca.passageiro_nome}
+        responsavelNome={cobranca.nome_responsavel}
         valorOriginal={Number(cobranca.valor)}
         onPaymentRecorded={() => {
           setPaymentDialogOpen(false);

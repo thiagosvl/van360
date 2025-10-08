@@ -34,7 +34,7 @@ import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, Loader2, User } from "lucide-react";
+import { CalendarIcon, Contact, Loader2, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -44,6 +44,7 @@ interface ManualPaymentDialogProps {
   onClose: () => void;
   cobrancaId: string;
   passageiroNome: string;
+  responsavelNome: string;
   valorOriginal: number;
   onPaymentRecorded: () => void;
 }
@@ -63,6 +64,7 @@ export default function ManualPaymentDialog({
   onClose,
   cobrancaId,
   passageiroNome,
+  responsavelNome,
   valorOriginal,
   onPaymentRecorded,
 }: ManualPaymentDialogProps) {
@@ -126,12 +128,17 @@ export default function ManualPaymentDialog({
           <DialogTitle>Registrar Pagamento Manual</DialogTitle>
         </DialogHeader>
 
-        <div className="p-3 bg-muted/50 rounded-lg border">
+        <div className="p-3 bg-muted/50 rounded-lg border space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <User className="w-4 h-4" />
             <span>Passageiro</span>
           </div>
           <p className="font-semibold">{passageiroNome}</p>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Contact className="w-4 h-4" />
+            <span>Responsável</span>
+          </div>
+          <p className="font-semibold">{responsavelNome}</p>
         </div>
 
         <Form {...form}>

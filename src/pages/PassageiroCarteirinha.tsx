@@ -876,6 +876,7 @@ export default function PassageiroCarteirinha() {
           onClose={() => setPaymentDialogOpen(false)}
           cobrancaId={selectedCobranca.id}
           passageiroNome={passageiro.nome}
+          responsavelNome={passageiro.nome_responsavel}
           valorOriginal={Number(selectedCobranca.valor)}
           onPaymentRecorded={handlePaymentRecorded}
         />
