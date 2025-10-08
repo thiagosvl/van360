@@ -231,6 +231,14 @@ export default function Passageiros() {
           </div>
         </div>
 
+        <Button
+          onClick={handleCadastrarRapido}
+          variant="destructive"
+          className="gap-2 text-uppercase text-white"
+        >
+          CADASTRO PREGUIÇOSO
+        </Button>
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -242,13 +250,6 @@ export default function Passageiros() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Button
-                onClick={handleCadastrarRapido}
-                variant="destructive"
-                className="gap-2 text-uppercase text-white"
-              >
-                CADASTRO PREGUIÇOSO
-              </Button>
               <div className="space-y-2">
                 <Label htmlFor="search">Buscar por Nome</Label>
                 <div className="relative">
