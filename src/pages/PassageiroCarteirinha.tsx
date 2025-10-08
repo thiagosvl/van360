@@ -693,6 +693,13 @@ export default function PassageiroCarteirinha() {
                             })}
                           </span>
                         </div>
+                        {cobranca.desativar_lembretes &&
+                          cobranca.status !== "pago" && (
+                            <div className="mt-2 flex items-center gap-2 text-xs p-2 rounded-md bg-yellow-50 text-yellow-800 border border-yellow-200">
+                              <BellOff className="h-4 w-4 shrink-0" />
+                              <span>Notificações automáticas suspensas</span>
+                            </div>
+                          )}
                       </div>
                     ))}
                   </div>

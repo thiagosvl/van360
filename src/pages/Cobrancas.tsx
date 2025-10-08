@@ -289,7 +289,7 @@ const Cobrancas = () => {
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Buscar por nome do passageiro ou responsável..."
+                      placeholder="Buscar por passageiro ou responsável..."
                       className="pl-10"
                       value={buscaAbertas}
                       onChange={(e) => setBuscaAbertas(e.target.value)}
@@ -613,7 +613,7 @@ const Cobrancas = () => {
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Buscar por nome do passageiro ou responsável..."
+                      placeholder="Buscar por passageiro ou responsável..."
                       className="pl-10"
                       value={buscaPagas}
                       onChange={(e) => setBuscaPagas(e.target.value)}
@@ -695,7 +695,7 @@ const Cobrancas = () => {
                                 </div>
                                 {cobranca.pagamento_manual && (
                                   <div className="text-xs text-muted-foreground mt-1">
-                                    Registrado manualmente
+                                    Pagamento registrado manualmente
                                   </div>
                                 )}
                               </td>
@@ -844,7 +844,7 @@ const Cobrancas = () => {
                           </div>
                           {cobranca.pagamento_manual && (
                             <div className="text-xs text-muted-foreground mt-2 pt-2 border-t">
-                              Registrado manualmente
+                              Pagamento registrado manualmente
                             </div>
                           )}
                         </div>
