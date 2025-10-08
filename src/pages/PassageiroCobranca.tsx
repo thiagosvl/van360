@@ -435,7 +435,7 @@ export default function PassageiroCobranca() {
                 </>
               ) : (
                 <Alert className="py-2">
-                  <AlertTitle className="text-sm font-semibold mb-0">
+                  <AlertTitle className="text-xs font-semibold text-muted-foreground mb-0">
                     Nenhuma notificação foi enviada
                   </AlertTitle>
                 </Alert>
@@ -537,8 +537,8 @@ export default function PassageiroCobranca() {
                   <BellOff className="h-4 w-4 mr-2" />
                 )}
                 {cobranca.desativar_lembretes
-                  ? "Ativar Lembretes"
-                  : "Desativar Lembretes"}
+                  ? "Ativar Notificações"
+                  : "Desativar Notificações"}
               </Button>
             </div>
           </CardContent>

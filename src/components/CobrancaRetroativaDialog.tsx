@@ -194,9 +194,9 @@ export default function CobrancaRetroativaDialog({
       onCobrancaAdded();
       handleClose();
     } catch (error) {
-      console.error("Erro ao registrar mensalidade retroativa:", error);
+      console.error("Erro ao registrar mensalidade:", error);
       toast({
-        title: "Erro ao registrar mensalidade retroativa.",
+        title: "Erro ao registrar mensalidade.",
         variant: "destructive",
       });
     }
@@ -211,7 +211,7 @@ export default function CobrancaRetroativaDialog({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md bg-white">
         <DialogHeader>
-          <DialogTitle>Registrar Mensalidade Retroativa</DialogTitle>
+          <DialogTitle>Registrar Mensalidade</DialogTitle>
         </DialogHeader>
         <div className="p-3 bg-muted/50 rounded-lg border space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">

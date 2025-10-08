@@ -307,7 +307,7 @@ export const passageiroService = {
         .eq("origem", "automatica");
 
       if (updateCobrancasError) {
-        console.error("Falha ao desativar lembretes em massa:", updateCobrancasError);
+        console.error("Falha ao desativar notificações em massa:", updateCobrancasError);
       }
     }
 

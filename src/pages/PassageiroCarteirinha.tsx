@@ -33,6 +33,7 @@ import {
   disableToggleLembretes,
 } from "@/utils/disableActions";
 import {
+  formatarTelefone,
   formatDateToBR,
   getStatusColor,
   getStatusText,
@@ -407,11 +408,10 @@ export default function PassageiroCarteirinha() {
                 {passageiro.nome_responsavel}
               </InfoItem>
               <InfoItem icon={MessageCircle} label="Telefone">
-                {passageiro.telefone_responsavel}
+                {formatarTelefone(passageiro.telefone_responsavel)}
               </InfoItem>
               <Button
-                variant="outline"
-                className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white"
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
                 disabled={!passageiro.telefone_responsavel}
                 onClick={() =>
                   window.open(
@@ -469,7 +469,7 @@ export default function PassageiroCarteirinha() {
                     onClick={() => setRetroativaDialogOpen(true)}
                   >
                     <Plus className="w-4 h-4 md:mr-2" />
-                    <span className="hidden md:block">Registrar Cobrança</span>
+                    <span className="hidden md:block">Registrar Mensalidade</span>
                   </Button>
                 )}
               </div>
@@ -598,8 +598,8 @@ export default function PassageiroCarteirinha() {
                                     }}
                                   >
                                     {cobranca.desativar_lembretes
-                                      ? "Ativar Lembretes"
-                                      : "Desativar Lembretes"}
+                                      ? "Ativar Notificações"
+                                      : "Desativar Notificações"}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     className="cursor-pointer"
@@ -702,8 +702,8 @@ export default function PassageiroCarteirinha() {
                                 }}
                               >
                                 {cobranca.desativar_lembretes
-                                  ? "Ativar Lembretes"
-                                  : "Desativar Lembretes"}
+                                  ? "Ativar Notificações"
+                                  : "Desativar Notificações"}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 disabled={disableDesfazerPagamento(cobranca)}
