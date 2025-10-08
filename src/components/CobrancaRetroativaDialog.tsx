@@ -162,7 +162,7 @@ export default function CobrancaRetroativaDialog({
       }
       if (existingCobranca) {
         toast({
-          title: "Já existe uma mensalidade registrada para esse mês.",
+          title: "Já existe uma mensalidade no mês indicado.",
           variant: "destructive",
         });
         return;

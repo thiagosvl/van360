@@ -102,7 +102,7 @@ const NotificationTimeline = ({ items }: { items: CobrancaNotificacao[] }) => {
 
   const getEventDescription = (tipoEvento: string): string => {
     if (tipoEvento === "REENVIO_MANUAL") {
-      return "Cobrança reenviada manualmente por você";
+      return "Cobrança enviada manualmente por você";
     }
 
     const atrasoMatch = tipoEvento.match(/^LEMBRETE_ATRASO_(\d+)$/);
@@ -396,11 +396,11 @@ export default function PassageiroCobranca() {
               >
                 {cobranca.desativar_lembretes ? "Desativadas" : "Ativadas"}
               </InfoItem>
-              <InfoItem icon={ArrowRight} label="Como foi registrada">
+              <InfoItem icon={ArrowRight} label="Quem gerou a mensalidade?">
                 {formatCobrancaOrigem(cobranca.origem)}
               </InfoItem>
-              <InfoItem icon={BadgeCheck} label="Registrou Pgto. Manual?">
-                {cobranca.pagamento_manual ? "Sim" : "Não"}
+              <InfoItem icon={BadgeCheck} label="Quem registrou o pagamento?">
+                {cobranca.status === "pago" ? cobranca.pagamento_manual ? "Você" : "Sistema" : "Ainda não foi paga"}
               </InfoItem>
             </div>
             <div className="pt-6 border-t">

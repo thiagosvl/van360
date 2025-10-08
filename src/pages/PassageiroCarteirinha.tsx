@@ -478,7 +478,7 @@ export default function PassageiroCarteirinha() {
                                 cobranca.status !== "pago" && (
                                   <div className="text-xs text-yellow-800 mt-2 flex items-center gap-1">
                                     <BellOff className="w-3 h-3" />
-                                    Lembretes suspensos
+                                    Notificações automáticas suspensas
                                   </div>
                                 )}
                             </td>
