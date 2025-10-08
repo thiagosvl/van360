@@ -1,34 +1,13 @@
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import EscolaFormDialog from "@/components/EscolaFormDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -39,16 +18,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { escolaService } from "@/services/escolaService";
 import { Escola } from "@/types/escola";
-import { cepMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Building2,
-  Loader2,
-  MapPin,
   MoreVertical,
   Pencil,
   Plus,
@@ -57,7 +31,7 @@ import {
   ToggleLeft,
   ToggleRight,
   Trash2,
-  Users2
+  Users2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -174,6 +148,12 @@ export default function Escolas() {
     setOpenAccordionItems(["dados-escola", "endereco"]);
   };
 
+  const handleSuccess = (escolaCriada: Escola) => {
+    fetchEscolas();
+    setEditingEscola(null);
+    setIsDialogOpen(false);
+  };
+
   const handleSubmit = async (data: EscolaFormData) => {
     setLoading(true);
     try {
@@ -281,8 +261,10 @@ export default function Escolas() {
       estado: "",
       cep: "",
       referencia: "",
+      ativo: true,
     });
     setEditingEscola(null);
+    setOpenAccordionItems(["dados-escola"]);
   };
 
   return (
@@ -292,277 +274,16 @@ export default function Escolas() {
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             Escolas
           </h1>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={resetForm} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Nova Escola
-              </Button>
-            </DialogTrigger>
-            <DialogContent
-              className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white"
-              onOpenAutoFocus={(e) => e.preventDefault()}
-            >
-              <DialogHeader>
-                <DialogTitle>
-                  {editingEscola ? "Editar Escola" : "Nova Escola"}
-                </DialogTitle>
-              </DialogHeader>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-                  className="space-y-6"
-                >
-                  <Accordion
-                    type="multiple"
-                    value={openAccordionItems}
-                    onValueChange={setOpenAccordionItems}
-                    className="w-full"
-                  >
-                    <AccordionItem value="dados-escola">
-                      <AccordionTrigger>
-                        <div className="flex items-center gap-2 text-lg font-semibold">
-                          <Building2 className="w-5 h-5 text-primary" />
-                          Dados da Escola
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                        <FormField
-                          control={form.control}
-                          name="nome"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Nome da Escola *</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        {editingEscola && (
-                          <div className="pt-2">
-                            <FormField
-                              control={form.control}
-                              name="ativo"
-                              render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value}
-                                      onCheckedChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                  <div className="space-y-1 leading-none">
-                                    <FormLabel>Ativa</FormLabel>
-                                  </div>
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        )}
-                      </AccordionContent>
-                    </AccordionItem>
-                    <AccordionItem value="endereco" className="mt-4">
-                      <AccordionTrigger>
-                        <div className="flex items-center gap-2 text-lg font-semibold">
-                          <MapPin className="w-5 h-5 text-primary" />
-                          Endereço
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="cep"
-                            render={({ field }) => (
-                              <FormItem className="md:col-span-1">
-                                <FormLabel>CEP</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    placeholder="00000-000"
-                                    {...field}
-                                    maxLength={9}
-                                    onChange={(e) => {
-                                      field.onChange(cepMask(e.target.value));
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="rua"
-                            render={({ field }) => (
-                              <FormItem className="md:col-span-4">
-                                <FormLabel>Logradouro</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="numero"
-                            render={({ field }) => (
-                              <FormItem className="md:col-span-1">
-                                <FormLabel>Número</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="bairro"
-                            render={({ field }) => (
-                              <FormItem className="md:col-span-4">
-                                <FormLabel>Bairro</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="cidade"
-                            render={({ field }) => (
-                              <FormItem className="md:col-span-3">
-                                <FormLabel>Cidade</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="estado"
-                            render={({ field }) => (
-                              <FormItem className="md:col-span-2">
-                                <FormLabel>Estado</FormLabel>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="UF" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="AC">Acre</SelectItem>
-                                    <SelectItem value="AL">Alagoas</SelectItem>
-                                    <SelectItem value="AP">Amapá</SelectItem>
-                                    <SelectItem value="AM">Amazonas</SelectItem>
-                                    <SelectItem value="BA">Bahia</SelectItem>
-                                    <SelectItem value="CE">Ceará</SelectItem>
-                                    <SelectItem value="DF">
-                                      Distrito Federal
-                                    </SelectItem>
-                                    <SelectItem value="ES">
-                                      Espírito Santo
-                                    </SelectItem>
-                                    <SelectItem value="GO">Goiás</SelectItem>
-                                    <SelectItem value="MA">Maranhão</SelectItem>
-                                    <SelectItem value="MT">
-                                      Mato Grosso
-                                    </SelectItem>
-                                    <SelectItem value="MS">
-                                      Mato Grosso do Sul
-                                    </SelectItem>
-                                    <SelectItem value="MG">
-                                      Minas Gerais
-                                    </SelectItem>
-                                    <SelectItem value="PA">Pará</SelectItem>
-                                    <SelectItem value="PB">Paraíba</SelectItem>
-                                    <SelectItem value="PR">Paraná</SelectItem>
-                                    <SelectItem value="PE">
-                                      Pernambuco
-                                    </SelectItem>
-                                    <SelectItem value="PI">Piauí</SelectItem>
-                                    <SelectItem value="RJ">
-                                      Rio de Janeiro
-                                    </SelectItem>
-                                    <SelectItem value="RN">
-                                      Rio Grande do Norte
-                                    </SelectItem>
-                                    <SelectItem value="RS">
-                                      Rio Grande do Sul
-                                    </SelectItem>
-                                    <SelectItem value="RO">Rondônia</SelectItem>
-                                    <SelectItem value="RR">Roraima</SelectItem>
-                                    <SelectItem value="SC">
-                                      Santa Catarina
-                                    </SelectItem>
-                                    <SelectItem value="SP">
-                                      São Paulo
-                                    </SelectItem>
-                                    <SelectItem value="SE">Sergipe</SelectItem>
-                                    <SelectItem value="TO">
-                                      Tocantins
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="referencia"
-                            render={({ field }) => (
-                              <FormItem className="col-span-1 md:col-span-5">
-                                <FormLabel>Referência</FormLabel>
-                                <FormControl>
-                                  <Textarea {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                  <div className="flex gap-4 pt-6">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsDialogOpen(false)}
-                      className="flex-1"
-                    >
-                      Cancelar
-                    </Button>
-                    <Button type="submit" disabled={loading} className="flex-1">
-                      {loading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Salvando...
-                        </>
-                      ) : editingEscola ? (
-                        "Atualizar"
-                      ) : (
-                        "Cadastrar"
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
+          <Button
+            onClick={() => {
+              resetForm();
+              setIsDialogOpen(true);
+            }}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Nova Escola
+          </Button>
         </div>
 
         <Card>
@@ -825,6 +546,20 @@ export default function Escolas() {
         confirmText="Confirmar"
         variant="destructive"
       />
+
+      {/* RENDERIZAÇÃO CONDICIONAL DO NOVO MODAL */}
+      {isDialogOpen && (
+        <EscolaFormDialog
+          isOpen={isDialogOpen}
+          onClose={() => {
+            setIsDialogOpen(false);
+            setEditingEscola(null);
+            resetForm(); // Limpa o form após fechar
+          }}
+          editingEscola={editingEscola}
+          onSuccess={handleSuccess}
+        />
+      )}
     </div>
   );
 }

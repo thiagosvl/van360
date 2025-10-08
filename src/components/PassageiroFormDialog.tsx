@@ -1,3 +1,4 @@
+import EscolaFormDialog from "@/components/EscolaFormDialog";
 import {
   Dialog,
   DialogContent,
@@ -94,6 +95,7 @@ export default function PassengerFormDialog({
   onSuccess,
 }: PassengerFormDialogProps) {
   const [escolasModal, setEscolasModal] = useState<Escola[]>([]);
+  const [isCreatingEscola, setIsCreatingEscola] = useState(false);
   const { toast } = useToast();
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "passageiro",
@@ -148,6 +150,15 @@ export default function PassengerFormDialog({
     } catch (error) {
       console.error("Erro ao buscar escolas (modal):", error);
     }
+  };
+
+  const handleEscolaCreated = (novaEscola: Escola) => {
+    fetchEscolasModal(novaEscola.id);
+
+    form.setValue("escola_id", novaEscola.id);
+    form.trigger("escola_id"); 
+
+    setIsCreatingEscola(false);
   };
 
   const onFormError = (errors: any) => {
@@ -250,6 +261,16 @@ export default function PassengerFormDialog({
     }
   };
 
+  if (isCreatingEscola) {
+    return (
+      <EscolaFormDialog
+        isOpen={isOpen}
+        onClose={() => setIsCreatingEscola(false)}
+        onSuccess={handleEscolaCreated}
+      />
+    );
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
@@ -301,7 +322,13 @@ export default function PassengerFormDialog({
                         <FormItem>
                           <FormLabel>Escola *</FormLabel>
                           <Select
-                            onValueChange={field.onChange}
+                            onValueChange={(value) => {
+                              if (value === "add-new-school") {
+                                setIsCreatingEscola(true); // <--- ATIVA A TROCA DE TELA
+                              } else {
+                                field.onChange(value);
+                              }
+                            }}
                             value={field.value}
                           >
                             <FormControl>
@@ -315,6 +342,12 @@ export default function PassengerFormDialog({
                                   {escola.nome}
                                 </SelectItem>
                               ))}
+                              <SelectItem
+                                value="add-new-school"
+                                className="font-semibold text-primary"
+                              >
+                                + Cadastrar Nova Escola
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
