@@ -326,7 +326,7 @@ const Dashboard = () => {
         ) : (
           <div className="mb-6 flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
             <div className="text-sm font-medium text-gray-500">
-              Nenhuma mensalidade registrada para {meses[mesFilter - 1]}
+              Não há mensalidades registradas referente ao mês indicado.
             </div>
           </div>
         )}

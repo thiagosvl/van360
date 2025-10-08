@@ -35,7 +35,13 @@ import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, Contact, Loader2, User } from "lucide-react";
+import {
+  AlertTriangle,
+  CalendarIcon,
+  Contact,
+  Loader2,
+  User,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -48,6 +54,7 @@ const cobrancaRetroativaSchema = z
     foi_pago: z.boolean().default(false),
     data_pagamento: z.date().optional(),
     tipo_pagamento: z.string().optional(),
+    is_future: z.boolean().default(false),
   })
   .refine((data) => !data.foi_pago || (data.foi_pago && data.data_pagamento), {
     message: "Campo obrigatório",
@@ -56,6 +63,11 @@ const cobrancaRetroativaSchema = z
   .refine((data) => !data.foi_pago || (data.foi_pago && data.tipo_pagamento), {
     message: "Campo obrigatório",
     path: ["tipo_pagamento"],
+  })
+  .refine((data) => !data.is_future || data.foi_pago, {
+    message:
+      "Para meses futuros, é obrigatório registrar o pagamento antecipado.",
+    path: ["foi_pago"],
   });
 
 type CobrancaRetroativaFormData = z.infer<typeof cobrancaRetroativaSchema>;
@@ -127,9 +139,35 @@ export default function CobrancaRetroativaDialog({
       data_pagamento: undefined,
       tipo_pagamento: "",
     },
+    mode: "onBlur",
+    shouldUnregister: false,
   });
 
   const foiPago = form.watch("foi_pago");
+
+  const mesSelecionado = form.watch("mes");
+  const anoSelecionado = form.watch("ano");
+
+  const isFutureMonth = (mes: string, ano: string) => {
+    if (!mes || !ano) return false;
+    const mesNum = parseInt(mes);
+    const anoNum = parseInt(ano);
+
+    const dataSelecionada = anoNum * 100 + mesNum;
+    const dataAtual = currentYear * 100 + (new Date().getMonth() + 1);
+
+    return dataSelecionada > dataAtual;
+  };
+
+  const isMesFuturo = isFutureMonth(mesSelecionado, anoSelecionado);
+
+  useEffect(() => {
+    form.setValue("is_future", isMesFuturo, { shouldValidate: true });
+
+    form.trigger("foi_pago");
+
+    form.trigger(["mes", "ano"]);
+  }, [isMesFuturo, form]);
 
   useEffect(() => {
     if (isOpen) {
@@ -143,6 +181,7 @@ export default function CobrancaRetroativaDialog({
         foi_pago: false,
         data_pagamento: undefined,
         tipo_pagamento: "",
+        is_future: false,
       });
     }
   }, [isOpen, valorMensalidade, form, currentYear]);
@@ -190,7 +229,7 @@ export default function CobrancaRetroativaDialog({
       };
       const { error } = await supabase.from("cobrancas").insert([cobrancaData]);
       if (error) throw error;
-      toast({ title: "Mensalidade retroativa registrada com sucesso." });
+      toast({ title: "Mensalidade registrada com sucesso." });
       onCobrancaAdded();
       handleClose();
     } catch (error) {
@@ -280,6 +319,17 @@ export default function CobrancaRetroativaDialog({
                 )}
               />
             </div>
+
+            {isMesFuturo && (
+              <div className="flex items-start gap-3 text-xs text-foreground bg-yellow-50 border border-yellow-200 p-3 rounded-md">
+                <AlertTriangle className="h-5 w-5 shrink-0 text-yellow-600 mt-0.5" />
+                <p className="leading-snug">
+                  <span className="font-bold">Aviso: Mês Futuro.</span> {" "}
+                  Essa mensalidade será gerada automaticamente no início do mês correspondente. Só é possível gera-la agora marcando a opção "Já foi pago?".
+                </p>
+              </div>
+            )}
+
             <FormField
               control={form.control}
               name="valor"
@@ -303,16 +353,22 @@ export default function CobrancaRetroativaDialog({
               control={form.control}
               name="foi_pago"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center space-x-3 space-y-0 pt-2">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel className="font-normal">Já foi pago?</FormLabel>
+                <FormItem className="flex flex-col space-y-2 pt-2">
+                  <div className="flex items-center space-x-3">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-normal">
+                        Já foi pago?
+                      </FormLabel>
+                    </div>
                   </div>
+
+                  <FormMessage className="mt-1 ml-6" />
                 </FormItem>
               )}
             />
