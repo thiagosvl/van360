@@ -12,9 +12,17 @@ export default defineConfig(({ mode }) => ({
         target: "https://api-sandbox.asaas.com/v3",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/asaas/, ""),
-        configure: (proxy) => {
+        configure: (proxy, options) => {
           proxy.on("proxyReq", (proxyReq, req) => {
             console.log("➡ Proxy request para:", proxyReq.getHeader("host") + proxyReq.path);
+
+            const asaasKey = proxyReq.getHeader("x-asaas-key");
+
+            if (asaasKey) {
+              proxyReq.setHeader("access_token", asaasKey);
+
+              proxyReq.removeHeader("x-asaas-key");
+            }
           });
         },
       },

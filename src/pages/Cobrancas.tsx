@@ -306,7 +306,7 @@ const Cobrancas = () => {
                   <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
                     <CheckCircle2 className="w-12 h-12 mb-4 text-gray-300" />
                     <p>
-                      Tudo em dia! Nenhuma mensalidade em aberto neste período.
+                      Tudo em dia! Não há mensalidades pendentes no mês indicado.
                     </p>
                   </div>
                 ) : cobrancasAbertasFiltradas.length === 0 ? (
@@ -349,7 +349,8 @@ const Cobrancas = () => {
                                   {cobranca.passageiros.nome}
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                  Responsável: {" "}{cobranca.passageiros.nome_responsavel || "-"}
+                                  Responsável:{" "}
+                                  {cobranca.passageiros.nome_responsavel || "-"}
                                 </div>
                               </td>
                               <td className="p-3 align-top">
@@ -622,7 +623,9 @@ const Cobrancas = () => {
                 ) : cobrancasPagas.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
                     <Archive className="w-12 h-12 mb-4 text-gray-300" />
-                    <p>Nenhum pagamento registrado neste período.</p>
+                    <p>
+                      Nenhum pagamento registrado no mês indicado.
+                    </p>
                   </div>
                 ) : cobrancasPagasFiltradas.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">

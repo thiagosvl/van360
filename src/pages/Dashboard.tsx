@@ -320,8 +320,7 @@ const Dashboard = () => {
           <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
             <CheckCircle className="h-5 w-5 text-green-600" />
             <div className="text-sm font-medium text-green-800">
-              Tudo em dia! Não há mensalidades pendentes em{" "}
-              {meses[mesFilter - 1]}. 🎉
+              Tudo em dia! Não há mensalidades pendentes no mês indicado.
             </div>
           </div>
         ) : (
