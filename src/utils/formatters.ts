@@ -36,9 +36,9 @@ export const formatProfile = (profile: string): string => {
 
 export const formatCobrancaOrigem = (origem: string): string => {
   if (origem === "automatica") {
-    return "Sistema";
+    return "Pelo sistema";
   }
-  return "Manual";
+  return "Por você";
 };
 
 export const formatDateTimeToBR = (

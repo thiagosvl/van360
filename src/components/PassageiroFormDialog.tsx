@@ -21,9 +21,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { asaasService } from "@/integrations/asaasService";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
+import { passageiroService } from "@/services/passageiroService";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { currentMonthInText } from "@/utils/formatters";
@@ -31,8 +31,7 @@ import {
   cepMask,
   cpfMask,
   moneyMask,
-  moneyToNumber,
-  phoneMask,
+  phoneMask
 } from "@/utils/masks";
 import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -228,232 +227,28 @@ export default function PassengerFormDialog({
 
   const handleSubmit = async (data: PassageiroFormData) => {
     try {
-      const { emitir_cobranca_mes_atual, ...pureData } = data;
-      const passageiroData = {
-        ...pureData,
-        valor_mensalidade: moneyToNumber(pureData.valor_mensalidade),
-        dia_vencimento: Number(pureData.dia_vencimento),
-        escola_id: pureData.escola_id || null,
-        ativo: pureData.ativo ?? true,
-        usuario_id: localStorage.getItem("app_user_id"),
-      };
-
       if (editingPassageiro) {
-        let rollbackNeeded = false;
-
-        const { data: oldPassageiro, error: fetchError } = await supabase
-          .from("passageiros")
-          .select("*")
-          .eq("id", editingPassageiro.id)
-          .single();
-
-        if (fetchError) throw fetchError;
-        const snapshotPassageiro = { ...oldPassageiro };
-
-        try {
-          const { error: updateError } = await supabase
-            .from("passageiros")
-            .update(passageiroData as PassageiroUpdate)
-            .eq("id", editingPassageiro.id);
-
-          if (updateError) throw updateError;
-
-          const { data: ultimaCobranca, error: cobrancaError } = await supabase
-            .from("cobrancas")
-            .select("*")
-            .eq("passageiro_id", editingPassageiro.id)
-            .neq("status", "pago")
-            .order("ano", { ascending: false })
-            .order("mes", { ascending: false })
-            .limit(1)
-            .single();
-
-          if (!cobrancaError && ultimaCobranca) {
-            const valorMudou =
-              passageiroData.valor_mensalidade !== ultimaCobranca.valor;
-
-            const vencimentoMudou =
-              passageiroData.dia_vencimento !==
-              editingPassageiro.dia_vencimento;
-
-            if (valorMudou || vencimentoMudou) {
-              const hoje = new Date();
-              hoje.setHours(0, 0, 0, 0);
-
-              const novaDataVencimento = new Date(
-                ultimaCobranca.ano,
-                ultimaCobranca.mes - 1,
-                passageiroData.dia_vencimento
-              );
-              novaDataVencimento.setHours(0, 0, 0, 0);
-
-              const podeAtualizarCobranca =
-                valorMudou || (vencimentoMudou && novaDataVencimento >= hoje);
-
-              if (podeAtualizarCobranca) {
-                const updatePayload = {
-                  value: passageiroData.valor_mensalidade,
-                  dueDate: novaDataVencimento.toISOString().split("T")[0],
-                  billingType: "UNDEFINED",
-                };
-
-                rollbackNeeded = true;
-
-                await asaasService.updatePayment(
-                  ultimaCobranca.asaas_payment_id,
-                  updatePayload,
-                  asaasApiKey
-                );
-
-                const { error: updateCobrancaError } = await supabase
-                  .from("cobrancas")
-                  .update({
-                    data_vencimento: vencimentoMudou
-                      ? novaDataVencimento.toISOString().split("T")[0]
-                      : ultimaCobranca.data_vencimento,
-                    valor: valorMudou
-                      ? passageiroData.valor_mensalidade
-                      : ultimaCobranca.valor,
-                    desativar_lembretes: !passageiroData.ativo,
-                  })
-                  .eq("id", ultimaCobranca.id);
-
-                if (updateCobrancaError) {
-                  rollbackNeeded = true;
-                  throw updateCobrancaError;
-                }
-              }
-            }
-          }
-
-          toast({ title: "Passageiro atualizado com sucesso." });
-        } catch (err) {
-          console.error("Erro ao editar passageiro:", err);
-
-          if (rollbackNeeded) {
-            try {
-              const { error: rollbackError } = await supabase
-                .from("passageiros")
-                .update(snapshotPassageiro)
-                .eq("id", editingPassageiro.id);
-
-              if (rollbackError) throw rollbackError;
-
-              console.log("Rollback da edição realizado com sucesso.");
-            } catch (rollbackErr) {
-              console.error("Erro no rollback da edição:", rollbackErr);
-            }
-          }
-
-          toast({
-            title: "Erro ao atualizar passageiro.",
-            description: "As alterações foram desfeitas.",
-            variant: "destructive",
-          });
-        }
+        await passageiroService.updatePassageiroComTransacao(
+          editingPassageiro.id,
+          data,
+          editingPassageiro
+        );
+        toast({ title: "Passageiro atualizado com sucesso." });
       } else {
-        let asaasCustomer: any = null;
-        let newPassageiro: any = null;
-        let payment: any = null;
-
-        try {
-          asaasCustomer = await asaasService.createCustomer(
-            {
-              name: passageiroData.nome,
-              cpfCnpj: passageiroData.cpf_responsavel,
-              mobilePhone: passageiroData.telefone_responsavel,
-              notificationDisabled: true,
-            },
-            asaasApiKey
-          );
-
-          passageiroData.asaas_customer_id = asaasCustomer.id;
-
-          const { data: insertedPassageiro, error: insertPassageiroError } =
-            await supabase
-              .from("passageiros")
-              .insert([passageiroData as PassageiroInsert])
-              .select()
-              .single();
-
-          if (insertPassageiroError) throw insertPassageiroError;
-          newPassageiro = insertedPassageiro;
-
-          if (emitir_cobranca_mes_atual) {
-            const currentDate = new Date();
-            const mes = currentDate.getMonth() + 1;
-            const ano = currentDate.getFullYear();
-            const diaInformado = Number(pureData.dia_vencimento);
-            const hoje = currentDate.getDate();
-            const vencimentoAjustado =
-              diaInformado < hoje ? hoje : diaInformado;
-            const dataVencimento = new Date(ano, mes - 1, vencimentoAjustado);
-
-            payment = await asaasService.createPayment(
-              {
-                customer: newPassageiro.asaas_customer_id,
-                billingType: "UNDEFINED",
-                value: moneyToNumber(pureData.valor_mensalidade),
-                dueDate: dataVencimento.toISOString().split("T")[0],
-                description: `Mensalidade ${mes}/${ano}`,
-                externalReference: newPassageiro.id,
-              },
-              asaasApiKey
-            );
-
-            const { error: cobrancaError } = await supabase
-              .from("cobrancas")
-              .insert([
-                {
-                  passageiro_id: newPassageiro.id,
-                  mes,
-                  ano,
-                  valor: moneyToNumber(pureData.valor_mensalidade),
-                  data_vencimento: dataVencimento.toISOString().split("T")[0],
-                  status: "pendente",
-                  usuario_id: localStorage.getItem("app_user_id"),
-                  origem: "automatica",
-                  asaas_payment_id: payment.id,
-                  asaas_invoice_url: payment.invoiceUrl,
-                  asaas_bankslip_url: payment.bankSlipUrl,
-                },
-              ]);
-
-            if (cobrancaError) throw cobrancaError;
-          }
-
-          toast({ title: "Passageiro cadastrado com sucesso." });
-        } catch (err) {
-          console.error("Erro ao cadastrar passageiro:", err);
-
-          try {
-            if (payment?.id)
-              await asaasService.deletePayment(payment.id, asaasApiKey);
-            if (newPassageiro?.id)
-              await supabase
-                .from("passageiros")
-                .delete()
-                .eq("id", newPassageiro.id);
-            if (asaasCustomer?.id)
-              await asaasService.deleteCustomer(asaasCustomer.id, asaasApiKey);
-          } catch (rollbackErr) {
-            console.error("Erro durante rollback:", rollbackErr);
-          }
-
-          toast({
-            title: "Erro ao salvar passageiro.",
-            description: "Todas as alterações foram desfeitas.",
-            variant: "destructive",
-          });
-        }
+        await passageiroService.createPassageiroComTransacao(data);
+        toast({ title: "Passageiro cadastrado com sucesso." });
       }
 
       onSuccess();
       onClose();
-    } catch (error) {
-      console.error("Erro geral:", error);
+    } catch (error: any) {
+      console.error("Erro ao salvar passageiro:", error);
       toast({
-        title: "Erro ao salvar passageiro.",
+        title: editingPassageiro
+          ? "Erro ao atualizar passageiro."
+          : "Erro ao cadastrar passageiro.",
+        description:
+          error.message || "As alterações foram desfeitas devido a um erro.",
         variant: "destructive",
       });
     }

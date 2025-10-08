@@ -61,6 +61,7 @@ export default function Passageiros() {
   const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(
     null
   );
+  const [isQuickRegister, setIsQuickRegister] = useState(false);
   const [selectedEscola, setSelectedEscola] = useState<string>("todas");
   const [selectedStatus, setSelectedStatus] = useState<string>("todos");
   const [searchTerm, setSearchTerm] = useState("");
@@ -170,22 +171,46 @@ export default function Passageiros() {
   };
 
   const handleCadastrarRapido = async () => {
+    if (!escolas || escolas.length === 0) {
+      toast({
+        title: "Operação Impossível.",
+        description:
+          "Cadastre pelo menos uma escola ativa antes de usar o Cadastro Rápido.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const hoje = new Date();
+    const valor = Math.floor(Math.random() * (200 - 100 + 1)) + 100;
+
     const fakeData = {
       nome: "Passag. Teste " + Math.floor(Math.random() * 1000),
-      nome_responsavel: "Resp. Teste",
+      nome_responsavel: "Resp. Teste Rápido",
       email_responsavel: "abiliodasvendas@gmail.com",
       telefone_responsavel: "11951186951",
       cpf_responsavel: "39542391838",
-      valor_mensalidade: (
-        Math.floor(Math.random() * (200 - 100 + 1)) + 100
-      ).toString(),
+      valor_mensalidade: valor.toString(),
       dia_vencimento: hoje.getDate().toString(),
-      escola_id: escolas[0]?.id || "",
+      escola_id: escolas[0].id,
       ativo: true,
       emitir_cobranca_mes_atual: true,
     };
-    await handleSubmit(fakeData as any);
+
+    try {
+      await passageiroService.createPassageiroComTransacao(fakeData);
+
+      toast({ title: "Passageiro cadastrado rapidamente com sucesso." });
+
+      fetchPassageiros();
+    } catch (error: any) {
+      console.error("Erro no Cadastro Rápido:", error);
+      toast({
+        title: "Erro no Cadastro Rápido.",
+        description: error.message || "Não foi possível concluir o cadastro.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleHistorico = (passageiro: Passageiro) => {
@@ -195,14 +220,6 @@ export default function Passageiros() {
   return (
     <div className="space-y-6">
       <div className="w-full">
-        <Button
-          onClick={handleCadastrarRapido}
-          variant="destructive"
-          className="gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Cadastrar Rápido
-        </Button>
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             Passageiros
@@ -225,6 +242,13 @@ export default function Passageiros() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Button
+                onClick={handleCadastrarRapido}
+                variant="destructive"
+                className="gap-2 text-uppercase text-white"
+              >
+                CADASTRO PREGUIÇOSO
+              </Button>
               <div className="space-y-2">
                 <Label htmlFor="search">Buscar por Nome</Label>
                 <div className="relative">

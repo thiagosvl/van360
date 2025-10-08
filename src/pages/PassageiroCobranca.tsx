@@ -375,7 +375,7 @@ export default function PassageiroCobranca() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="w-5 h-5" />
-              Detalhes da Transação
+              Detalhes da Cobrança
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -396,10 +396,10 @@ export default function PassageiroCobranca() {
               >
                 {cobranca.desativar_lembretes ? "Desativadas" : "Ativadas"}
               </InfoItem>
-              <InfoItem icon={ArrowRight} label="Origem">
+              <InfoItem icon={ArrowRight} label="Como foi registrada">
                 {formatCobrancaOrigem(cobranca.origem)}
               </InfoItem>
-              <InfoItem icon={BadgeCheck} label="Pgto. Manual">
+              <InfoItem icon={BadgeCheck} label="Registrou Pgto. Manual?">
                 {cobranca.pagamento_manual ? "Sim" : "Não"}
               </InfoItem>
             </div>
