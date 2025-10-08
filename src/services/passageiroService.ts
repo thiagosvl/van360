@@ -72,6 +72,9 @@ export const passageiroService = {
       telefone_responsavel: pureData.telefone_responsavel.replace(/\D/g, ""),
     };
 
+    
+      console.log('key', asaasApiKey);
+
     try {
       // --- 1. Criar Cliente ASAAS ---
       asaasCustomer = await asaasService.createCustomer(
