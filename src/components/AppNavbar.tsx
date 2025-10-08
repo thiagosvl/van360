@@ -24,6 +24,7 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
 
   const handleSignOut = async () => {
     localStorage.removeItem("app_role");
+    localStorage.removeItem("asaas_api_key");
     await supabase.auth.signOut();
     toast({
       title: "Logout realizado",
