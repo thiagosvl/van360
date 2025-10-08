@@ -162,14 +162,6 @@ export default function CobrancaRetroativaDialog({
   const isMesFuturo = isFutureMonth(mesSelecionado, anoSelecionado);
 
   useEffect(() => {
-    form.setValue("is_future", isMesFuturo, { shouldValidate: true });
-
-    form.trigger("foi_pago");
-
-    form.trigger(["mes", "ano"]);
-  }, [isMesFuturo, form]);
-
-  useEffect(() => {
     if (isOpen) {
       form.reset({
         mes: "",
@@ -201,7 +193,7 @@ export default function CobrancaRetroativaDialog({
       }
       if (existingCobranca) {
         toast({
-          title: "Já existe uma mensalidade no mês indicado.",
+          title: "Já existe uma mensalidade cadastrada no mês e ano indicado.",
           variant: "destructive",
         });
         return;
@@ -276,7 +268,21 @@ export default function CobrancaRetroativaDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Mês *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        const isFuture = isFutureMonth(value, anoSelecionado);
+
+                        form.setValue("is_future", isFuture, {
+                          shouldValidate: true,
+                        });
+
+                        if (!isFuture) {
+                          form.clearErrors("foi_pago");
+                        }
+                      }}
+                      value={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione..." />
@@ -300,7 +306,21 @@ export default function CobrancaRetroativaDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Ano *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        const isFuture = isFutureMonth(mesSelecionado, value);
+
+                        form.setValue("is_future", isFuture, {
+                          shouldValidate: true,
+                        });
+
+                        if (!isFuture) {
+                          form.clearErrors("foi_pago");
+                        }
+                      }}
+                      value={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione..." />
@@ -321,11 +341,12 @@ export default function CobrancaRetroativaDialog({
             </div>
 
             {isMesFuturo && (
-              <div className="flex items-start gap-3 text-xs text-foreground bg-yellow-50 border border-yellow-200 p-3 rounded-md">
-                <AlertTriangle className="h-5 w-5 shrink-0 text-yellow-600 mt-0.5" />
-                <p className="leading-snug">
-                  <span className="font-bold">Aviso: Mês Futuro.</span> {" "}
-                  Essa mensalidade será gerada automaticamente no início do mês correspondente. Só é possível gera-la agora marcando a opção "Já foi pago?".
+              <div className="flex items-start gap-2 text-xs text-yellow-900 bg-yellow-50 border border-yellow-200 p-3 rounded-md">
+                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-yellow-600" />
+                <p className="font-medium leading-snug">
+                  <span className="font-bold">Aviso: Mês Futuro.</span> Esta
+                  mensalidade será gerada automaticamente no início do mês selecionado.
+                  Registre agora apenas se for um adiantamento.
                 </p>
               </div>
             )}
@@ -368,7 +389,7 @@ export default function CobrancaRetroativaDialog({
                     </div>
                   </div>
 
-                  <FormMessage className="mt-1 ml-6" />
+                  <FormMessage className="mt-1 ml-6 text-xs" />
                 </FormItem>
               )}
             />
