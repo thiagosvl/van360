@@ -615,7 +615,7 @@ export default function Escolas() {
                 <p>
                   {searchTerm
                     ? `Nenhuma escola encontrada para "${searchTerm}"`
-                    : "Nenhuma escola cadastrada."}
+                    : "Nenhuma escola cadastrada"}
                 </p>
               </div>
             ) : (

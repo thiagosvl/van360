@@ -1,9 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Escola } from "@/types/escola";
 
-const userId = localStorage.getItem("app_user_id");
-
 const fetchPassageirosAtivosCount = async (escolaId: string): Promise<number> => {
+    const userId = localStorage.getItem("app_user_id");
+
     const { count, error } = await supabase
         .from("passageiros")
         .select("id", { count: "exact" })
@@ -16,6 +16,8 @@ const fetchPassageirosAtivosCount = async (escolaId: string): Promise<number> =>
 };
 
 export const fetchEscolasComContagemAtivos = async () => {
+    const userId = localStorage.getItem("app_user_id");
+
     const { data, error } = await supabase
         .from("escolas")
         .select(`*, passageiros(count)`)
@@ -32,6 +34,7 @@ export const fetchEscolasComContagemAtivos = async () => {
 };
 
 export const saveEscola = async (data: any, editingEscola: Escola | null): Promise<Escola> => {
+    const userId = localStorage.getItem("app_user_id");
 
     if (editingEscola && editingEscola.ativo && data.ativo === false) {
         const count = await fetchPassageirosAtivosCount(editingEscola.id);
@@ -67,6 +70,8 @@ export const saveEscola = async (data: any, editingEscola: Escola | null): Promi
 };
 
 export const deleteEscola = async (escolaId: string): Promise<void> => {
+    const userId = localStorage.getItem("app_user_id");
+    
     const { data: passageiros, error: checkError } = await supabase
         .from("passageiros")
         .select("id")

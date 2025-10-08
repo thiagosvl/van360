@@ -344,7 +344,7 @@ export default function Passageiros() {
                   <p>
                     {searchTerm
                       ? `Nenhum passageiro encontrado para "${searchTerm}"`
-                      : "Nenhum passageiro cadastrado."}
+                      : "Nenhum passageiro cadastrado"}
                   </p>
                 </div>
               ) : (

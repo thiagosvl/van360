@@ -436,7 +436,7 @@ export default function PassageiroCobranca() {
               ) : (
                 <Alert className="py-2">
                   <AlertTitle className="text-sm font-semibold mb-0">
-                    Nenhuma notificação foi enviada.
+                    Nenhuma notificação foi enviada
                   </AlertTitle>
                 </Alert>
               )}

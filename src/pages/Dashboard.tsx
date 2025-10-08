@@ -88,7 +88,7 @@ const PaymentStatsDisplay = ({
   if (activeMethods.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        Nenhuma mensalidade recebida no mês indicado.
+        Nenhuma mensalidade recebida no mês indicado
       </p>
     );
   }
@@ -326,7 +326,7 @@ const Dashboard = () => {
         ) : (
           <div className="mb-6 flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
             <div className="text-sm font-medium text-gray-500">
-              Nenhuma mensalidade registrada para {meses[mesFilter - 1]}.
+              Nenhuma mensalidade registrada para {meses[mesFilter - 1]}
             </div>
           </div>
         )}

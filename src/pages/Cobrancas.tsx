@@ -632,7 +632,7 @@ const Cobrancas = () => {
                 ) : cobrancasPagas.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
                     <Archive className="w-12 h-12 mb-4 text-gray-300" />
-                    <p>Nenhum pagamento registrado no mês indicado.</p>
+                    <p>Nenhum pagamento registrado no mês indicado</p>
                   </div>
                 ) : cobrancasPagasFiltradas.length === 0 ? (
                   <div className="text-center px-2 py-12 text-muted-foreground">
