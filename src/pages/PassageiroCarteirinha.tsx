@@ -505,6 +505,7 @@ export default function PassageiroCarteirinha() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                   <DropdownMenuItem
+                                    className="cursor-pointer"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       navigate(
@@ -515,6 +516,7 @@ export default function PassageiroCarteirinha() {
                                     Ver Mensalidade
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
+                                    className="cursor-pointer"
                                     disabled={disableRegistrarPagamento(
                                       cobranca
                                     )}
@@ -526,6 +528,7 @@ export default function PassageiroCarteirinha() {
                                     Registrar Pagamento
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
+                                    className="cursor-pointer"
                                     disabled={disableEnviarNotificacao(
                                       cobranca
                                     )}
@@ -537,6 +540,7 @@ export default function PassageiroCarteirinha() {
                                     Enviar Notificação
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
+                                    className="cursor-pointer"
                                     disabled={disableToggleLembretes(cobranca)}
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -548,6 +552,7 @@ export default function PassageiroCarteirinha() {
                                       : "Desativar Lembretes"}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
+                                    className="cursor-pointer"
                                     disabled={disableDesfazerPagamento(
                                       cobranca
                                     )}
@@ -559,7 +564,7 @@ export default function PassageiroCarteirinha() {
                                     Desfazer Pagamento
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    className="text-red-600"
+                                    className="text-red-600 cursor-pointer"
                                     disabled={disableExcluirMensalidade(
                                       cobranca
                                     )}

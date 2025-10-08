@@ -622,6 +622,7 @@ export default function Escolas() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent>
                                 <DropdownMenuItem
+                                  className="cursor-pointer"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleEdit(escola);
@@ -636,7 +637,7 @@ export default function Escolas() {
                                     e.stopPropagation();
                                     handleDeleteClick(escola);
                                   }}
-                                  className="text-red-600"
+                                  className="cursor-pointer text-red-600"
                                 >
                                   <Trash2 className="w-4 h-4 mr-2" />
                                   Excluir

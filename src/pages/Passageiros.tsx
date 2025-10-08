@@ -374,6 +374,7 @@ export default function Passageiros() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                   <DropdownMenuItem
+                                    className="cursor-pointer"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleHistorico(passageiro);
@@ -383,6 +384,7 @@ export default function Passageiros() {
                                     Ver Carteirinha
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
+                                    className="cursor-pointer"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleEdit(passageiro);
@@ -392,6 +394,7 @@ export default function Passageiros() {
                                     Editar
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
+                                    className="cursor-pointer text-red-600"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setDeleteDialog({
@@ -399,7 +402,6 @@ export default function Passageiros() {
                                         passageiroId: passageiro.id,
                                       });
                                     }}
-                                    className="text-red-600"
                                   >
                                     <Trash2 className="w-4 h-4 mr-2" />
                                     Excluir

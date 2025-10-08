@@ -508,6 +508,7 @@ export default function Gastos() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                               <DropdownMenuItem
+                                className="cursor-pointer"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   openDialog(gasto);
@@ -521,7 +522,7 @@ export default function Gastos() {
                                   e.stopPropagation();
                                   handleDelete(gasto.id);
                                 }}
-                                className="text-red-500"
+                                className="text-red-500 cursor-pointer"
                               >
                                 <Trash2 className="w-4 h-4 mr-2" />
                                 Excluir

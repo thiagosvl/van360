@@ -306,7 +306,8 @@ const Cobrancas = () => {
                   <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
                     <CheckCircle2 className="w-12 h-12 mb-4 text-gray-300" />
                     <p>
-                      Tudo em dia! Não há mensalidades pendentes no mês indicado.
+                      Tudo em dia! Não há mensalidades pendentes no mês
+                      indicado.
                     </p>
                   </div>
                 ) : cobrancasAbertasFiltradas.length === 0 ? (
@@ -415,6 +416,7 @@ const Cobrancas = () => {
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent>
                                     <DropdownMenuItem
+                                      className="cursor-pointer"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         navigateToDetails(cobranca);
@@ -423,6 +425,7 @@ const Cobrancas = () => {
                                       Ver Mensalidade
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
+                                      className="cursor-pointer"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         navigate(
@@ -433,6 +436,7 @@ const Cobrancas = () => {
                                       Ver Carteirinha
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
+                                      className="cursor-pointer"
                                       disabled={disableRegistrarPagamento(
                                         cobranca
                                       )}
@@ -444,6 +448,7 @@ const Cobrancas = () => {
                                       Registrar Pagamento
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
+                                      className="cursor-pointer"
                                       disabled={disableEnviarNotificacao(
                                         cobranca
                                       )}
@@ -458,6 +463,7 @@ const Cobrancas = () => {
                                       Enviar Notificação
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
+                                      className="cursor-pointer"
                                       disabled={disableEnviarNotificacao(
                                         cobranca
                                       )}
@@ -623,9 +629,7 @@ const Cobrancas = () => {
                 ) : cobrancasPagas.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
                     <Archive className="w-12 h-12 mb-4 text-gray-300" />
-                    <p>
-                      Nenhum pagamento registrado no mês indicado.
-                    </p>
+                    <p>Nenhum pagamento registrado no mês indicado.</p>
                   </div>
                 ) : cobrancasPagasFiltradas.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
@@ -709,6 +713,7 @@ const Cobrancas = () => {
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent>
                                     <DropdownMenuItem
+                                      className="cursor-pointer"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         navigateToDetails(cobranca);
@@ -717,6 +722,7 @@ const Cobrancas = () => {
                                       Ver Mensalidade
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
+                                      className="cursor-pointer"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         navigate(
@@ -727,6 +733,7 @@ const Cobrancas = () => {
                                       Ver Carteirinha
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
+                                      className="cursor-pointer"
                                       disabled={disableDesfazerPagamento(
                                         cobranca
                                       )}
