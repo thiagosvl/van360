@@ -124,8 +124,8 @@ export default function ManualPaymentDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-md max-h-[95vh] overflow-y-auto bg-white"
         onOpenAutoFocus={(e) => e.preventDefault()}
+        className="max-w-md max-h-[95vh] overflow-y-auto bg-white"
       >
         <DialogHeader>
           <DialogTitle>Registrar Pagamento Manual</DialogTitle>
@@ -179,7 +179,7 @@ export default function ManualPaymentDialog({
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
-                          variant={"outline"}
+                          variant="outline"
                           className={cn(
                             "pl-3 text-left font-normal",
                             !field.value && "text-muted-foreground"
@@ -188,13 +188,14 @@ export default function ManualPaymentDialog({
                           {field.value ? (
                             format(field.value, "dd/MM/yyyy")
                           ) : (
-                            <span>Selecione a data</span>
+                            <span className="text-black">Selecione a data</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+
+                    <PopoverContent align="start" className="w-auto p-0">
                       <Calendar
                         mode="single"
                         selected={field.value}
@@ -205,7 +206,6 @@ export default function ManualPaymentDialog({
                           }
                         }}
                         disabled={(date) => date > new Date()}
-                        initialFocus
                         locale={ptBR}
                       />
                     </PopoverContent>

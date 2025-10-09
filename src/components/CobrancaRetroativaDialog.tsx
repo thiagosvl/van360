@@ -242,7 +242,7 @@ export default function CobrancaRetroativaDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md max-h-[95vh] overflow-y-auto bg-white">
+      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-md max-h-[95vh] overflow-y-auto bg-white">
         <DialogHeader>
           <DialogTitle>Registrar Mensalidade</DialogTitle>
         </DialogHeader>
@@ -401,8 +401,8 @@ export default function CobrancaRetroativaDialog({
                   control={form.control}
                   name="data_pagamento"
                   render={({ field }) => (
-                    <FormItem className="">
-                      <FormLabel>Data de pagamento *</FormLabel>
+                    <FormItem>
+                      <FormLabel>Data do pagamento *</FormLabel>
                       <Popover
                         open={openCalendar}
                         onOpenChange={setOpenCalendar}
@@ -421,7 +421,7 @@ export default function CobrancaRetroativaDialog({
                               {field.value ? (
                                 format(field.value, "dd/MM/yyyy")
                               ) : (
-                                <span>Selecione a data</span>
+                                <span className="text-black">Selecione a data</span>
                               )}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>

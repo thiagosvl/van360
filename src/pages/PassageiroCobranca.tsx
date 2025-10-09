@@ -555,18 +555,20 @@ export default function PassageiroCobranca() {
         </Card>
       </div>
 
-      <ManualPaymentDialog
-        isOpen={paymentDialogOpen}
-        onClose={() => setPaymentDialogOpen(false)}
-        cobrancaId={cobranca_id}
-        passageiroNome={cobranca.passageiro_nome}
-        responsavelNome={cobranca.nome_responsavel}
-        valorOriginal={Number(cobranca.valor)}
-        onPaymentRecorded={() => {
-          setPaymentDialogOpen(false);
-          fetchCobranca();
-        }}
-      />
+      {paymentDialogOpen && (
+        <ManualPaymentDialog
+          isOpen={paymentDialogOpen}
+          onClose={() => setPaymentDialogOpen(false)}
+          cobrancaId={cobranca_id}
+          passageiroNome={cobranca.passageiro_nome}
+          responsavelNome={cobranca.nome_responsavel}
+          valorOriginal={Number(cobranca.valor)}
+          onPaymentRecorded={() => {
+            setPaymentDialogOpen(false);
+            fetchCobranca();
+          }}
+        />
+      )}
 
       <ConfirmationDialog
         open={confirmDialogDesfazer.open}

@@ -630,7 +630,12 @@ export default function PassageiroCarteirinha() {
                                     )}
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      openPaymentDialog(cobranca);
+                                      // Fecha o menu antes de abrir o dialog
+                                      document.body.click();
+                                      setTimeout(
+                                        () => openPaymentDialog(cobranca),
+                                        10
+                                      );
                                     }}
                                   >
                                     Registrar Pagamento
@@ -741,7 +746,12 @@ export default function PassageiroCarteirinha() {
                                 disabled={disableRegistrarPagamento(cobranca)}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  openPaymentDialog(cobranca);
+                                  // Fecha o menu antes de abrir o dialog
+                                  document.body.click();
+                                  setTimeout(
+                                    () => openPaymentDialog(cobranca),
+                                    10
+                                  );
                                 }}
                               >
                                 Registrar Pagamento

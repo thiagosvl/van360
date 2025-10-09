@@ -623,7 +623,7 @@ export default function Gastos() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-md max-h-[95vh] overflow-y-auto bg-white">
+        <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-md max-h-[95vh] overflow-y-auto bg-white">
           <DialogHeader>
             <DialogTitle>
               {editingGasto ? "Editar Gasto" : "Adicionar Gasto"}
@@ -712,7 +712,7 @@ export default function Gastos() {
                               {field.value ? (
                                 format(field.value, "dd/MM/yyyy")
                               ) : (
-                                <span>Selecione a data</span>
+                                <span className="text-black">Selecione a data</span>
                               )}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
