@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLayout } from "@/contexts/LayoutContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Cobranca } from "@/types/cobranca";
 import { PaymentStats } from "@/types/paymentStats";
@@ -145,6 +146,7 @@ const Dashboard = () => {
     cobrancasAtrasadas: 0,
     percentualRecebimento: 0,
   });
+  const { setPageTitle, setPageSubtitle } = useLayout();
 
   const [paymentStats, setPaymentStats] = useState<PaymentStats>({
     pix: { count: 0, total: 0 },
@@ -251,17 +253,14 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchStats();
-  }, [mesFilter, anoFilter]);
+
+    setPageTitle("Tela Inicial");
+    setPageSubtitle(`Resumo de ${meses[mesFilter - 1]} de ${anoFilter}`);
+  }, [mesFilter, anoFilter, setPageTitle, setPageSubtitle]);
 
   return (
     <div className="space-y-6">
       <div className="w-full">
-        <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-            Tela Inicial
-          </h1>
-        </div>
-
         <Card className="mb-6">
           <CardContent className="mt-4">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
@@ -315,7 +314,11 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         ) : latePayments.length > 0 ? (
-          <LatePaymentsAlert mes={mesFilter} ano={anoFilter} latePayments={latePayments} />
+          <LatePaymentsAlert
+            mes={mesFilter}
+            ano={anoFilter}
+            latePayments={latePayments}
+          />
         ) : stats.totalCobrancas > 0 ? (
           <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
             <CheckCircle className="h-5 w-5 text-green-600" />

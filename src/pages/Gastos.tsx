@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { useLayout } from "@/contexts/LayoutContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -55,8 +56,7 @@ import {
   MoreVertical,
   PieChart as PieChartIcon,
   Plus,
-  Receipt,
-  Trash2,
+  Trash2
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -164,6 +164,7 @@ const CustomLegend = (props: any) => {
 };
 
 export default function Gastos() {
+  const { setPageTitle, setPageSubtitle } = useLayout();
   const [gastos, setGastos] = useState<Gasto[]>([]);
   const [openCalendar, setOpenCalendar] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -183,39 +184,6 @@ export default function Gastos() {
   ];
 
   const form = useForm<GastoFormData>({ resolver: zodResolver(gastoSchema) });
-
-  useEffect(() => {
-    fetchGastos();
-  }, [mesFilter, anoFilter]);
-
-  const fetchGastos = async () => {
-    setLoading(true);
-    try {
-      const firstDay = new Date(anoFilter, mesFilter - 1, 1).toISOString();
-      const lastDay = new Date(
-        anoFilter,
-        mesFilter,
-        0,
-        23,
-        59,
-        59
-      ).toISOString();
-      const { data, error } = await supabase
-        .from("gastos")
-        .select("*")
-        .eq("usuario_id", localStorage.getItem("app_user_id"))
-        .gte("data", firstDay)
-        .lte("data", lastDay)
-        .order("data", { ascending: false });
-      if (error) throw error;
-      setGastos(data || []);
-    } catch (error) {
-      console.error("Erro ao buscar gastos:", error);
-      toast({ title: "Erro ao carregar gastos.", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const { totalGasto, principalCategoria, chartData } = useMemo(() => {
     const total = gastos.reduce((sum, g) => sum + Number(g.valor), 0);
@@ -250,6 +218,46 @@ export default function Gastos() {
       chartData: chart,
     };
   }, [gastos]);
+
+  useEffect(() => {
+    fetchGastos();
+    setPageTitle("Controle de Gastos");
+    setPageSubtitle(
+      `Total de ${totalGasto.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      })} em ${meses[mesFilter - 1]}`
+    );
+  }, [totalGasto, mesFilter, setPageTitle, setPageSubtitle]);
+
+  const fetchGastos = async () => {
+    setLoading(true);
+    try {
+      const firstDay = new Date(anoFilter, mesFilter - 1, 1).toISOString();
+      const lastDay = new Date(
+        anoFilter,
+        mesFilter,
+        0,
+        23,
+        59,
+        59
+      ).toISOString();
+      const { data, error } = await supabase
+        .from("gastos")
+        .select("*")
+        .eq("usuario_id", localStorage.getItem("app_user_id"))
+        .gte("data", firstDay)
+        .lte("data", lastDay)
+        .order("data", { ascending: false });
+      if (error) throw error;
+      setGastos(data || []);
+    } catch (error) {
+      console.error("Erro ao buscar gastos:", error);
+      toast({ title: "Erro ao carregar gastos.", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (data: GastoFormData) => {
     try {
@@ -317,14 +325,7 @@ export default function Gastos() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-          Controle de Gastos
-        </h1>
-        <Button onClick={() => openDialog()}>
-          <Plus className="w-4 h-4 mr-2" /> Adicionar Gasto
-        </Button>
-      </div>
+      {/* Filters */}
       <Card>
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -368,83 +369,24 @@ export default function Gastos() {
         </CardContent>
       </Card>
 
+      {/* Lista */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <PieChartIcon className="w-5 h-5" />
-            Resumo do Mês
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-          <div className="space-y-4">
-            <div>
-              <div className="text-sm text-muted-foreground">
-                Total Gasto no Mês
-              </div>
-              <div className="text-3xl font-bold text-red-600">
-                {totalGasto.toLocaleString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                })}
-              </div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">
-                Principal Categoria
-              </div>
-              <div className="text-xl font-bold">{principalCategoria}</div>
-            </div>
-          </div>
-          <div className="h-48 flex flex-col items-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={45}
-                  outerRadius={70}
-                  label={renderCustomizedLabel}
-                  labelLine={false}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value: number) => [
-                    value.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    }),
-                    "Total",
-                  ]}
-                />
-                <Legend
-                  content={<CustomLegend />}
-                  layout="vertical"
-                  align="right"
-                  verticalAlign="middle"
-                  wrapperStyle={{ width: "auto" }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+          <div className="flex justify-between items-center">
+            <CardTitle className="flex items-center gap-2">
+              <span>Gastos</span>
+              <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
+                {gastos.length}
+              </span>
+            </CardTitle>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Receipt className="w-5 h-5" />
-            Lista de Gastos
-          </CardTitle>
+            <Button onClick={() => openDialog()}>
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Novo Gasto</span>
+            </Button>
+          </div>
         </CardHeader>
+
         <CardContent>
           {loading ? (
             <Skeleton className="h-40 w-full" />
@@ -607,6 +549,77 @@ export default function Gastos() {
               </div>
             </>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Resumo */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <PieChartIcon className="w-5 h-5" />
+            Resumo do Mês
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+          <div className="space-y-4">
+            <div>
+              <div className="text-sm text-muted-foreground">
+                Total Gasto no Mês
+              </div>
+              <div className="text-3xl font-bold text-red-600">
+                {totalGasto.toLocaleString("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                })}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">
+                Principal Categoria
+              </div>
+              <div className="text-xl font-bold">{principalCategoria}</div>
+            </div>
+          </div>
+          <div className="h-48 flex flex-col items-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={45}
+                  outerRadius={70}
+                  label={renderCustomizedLabel}
+                  labelLine={false}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(value: number) => [
+                    value.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    }),
+                    "Total",
+                  ]}
+                />
+                <Legend
+                  content={<CustomLegend />}
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="middle"
+                  wrapperStyle={{ width: "auto" }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </CardContent>
       </Card>
 

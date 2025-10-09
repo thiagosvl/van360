@@ -1,3 +1,4 @@
+// src/components/AppNavbar.tsx
 import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,16 +14,18 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useLayout } from "@/contexts/LayoutContext"; // 1. Importar o hook
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, Menu, User } from "lucide-react";
-import { useState } from "react"; // 1. Importar o useState
+import { useState } from "react";
 
 export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [isSheetOpen, setIsSheetOpen] = useState(false); // 2. Criar o estado de controle
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const { pageTitle, pageSubtitle } = useLayout(); // 2. Usar o hook
 
   const handleSignOut = async () => {
     localStorage.removeItem("app_role");
@@ -35,29 +38,23 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
     });
   };
 
-  const title = role === "admin" ? "Van Admin" : "Van Motorista";
-
   return (
     <header className="flex h-16 items-center justify-between px-4 sm:px-6 bg-white border-b shadow-sm">
       <div className="flex items-center gap-3">
         <div className="md:hidden">
-          {/* 3. Controlar o Sheet com o estado */}
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-
             <SheetContent side="left" className="w-72 sm:w-80 p-0">
               <SheetHeader className="flex flex-col items-center justify-center py-4 border-b">
                 <SheetTitle className="text-lg font-semibold">
                   Sistema Transporte
                 </SheetTitle>
               </SheetHeader>
-
               <div className="p-4">
-                {/* 4. Passar uma função para o Sidebar saber como fechar o menu */}
                 <AppSidebar
                   role={role}
                   onLinkClick={() => setIsSheetOpen(false)}
@@ -68,10 +65,11 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
         </div>
 
         <div>
+          {/* 3. Exibir o título e subtítulo dinâmicos */}
           <h1 className="text-base sm:text-lg font-semibold leading-tight">
-            {title}
+            {pageTitle}
           </h1>
-          <p className="text-xs text-muted-foreground">Sistema de Transporte</p>
+          <p className="text-xs text-muted-foreground">{pageSubtitle}</p>
         </div>
       </div>
 

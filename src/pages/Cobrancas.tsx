@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLayout } from "@/contexts/LayoutContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cobrancaService } from "@/services/cobrancaService";
@@ -62,15 +63,16 @@ const ListSkeleton = () => (
 );
 
 const Cobrancas = () => {
+  const { setPageTitle, setPageSubtitle } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
   const [cobrancasAbertas, setCobrancasAbertas] = useState<Cobranca[]>([]);
   const [cobrancasPagas, setCobrancasPagas] = useState<Cobranca[]>([]);
-   const [mesFilter, setMesFilter] = useState(() => {
-    const mesParam = searchParams.get('mes');
+  const [mesFilter, setMesFilter] = useState(() => {
+    const mesParam = searchParams.get("mes");
     return mesParam ? Number(mesParam) : new Date().getMonth() + 1;
   });
   const [anoFilter, setAnoFilter] = useState(() => {
-    const anoParam = searchParams.get('ano');
+    const anoParam = searchParams.get("ano");
     return anoParam ? Number(anoParam) : new Date().getFullYear();
   });
   const [loading, setLoading] = useState(true);
@@ -192,6 +194,13 @@ const Cobrancas = () => {
   };
 
   useEffect(() => {
+    setPageTitle("Mensalidades");
+    setPageSubtitle(
+      `Referentes a ${meses[mesFilter - 1]} de ${anoFilter}`
+    );
+  }, [mesFilter, anoFilter, setPageTitle, setPageSubtitle]);
+
+  useEffect(() => {
     const params = {
       ano: anoFilter.toString(),
       mes: mesFilter.toString(),
@@ -227,11 +236,6 @@ const Cobrancas = () => {
   return (
     <div className="space-y-6">
       <div className="w-full">
-        <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-            Mensalidades
-          </h1>
-        </div>
         <Card className="mb-6">
           <CardContent className="mt-4">
             <div className="grid grid-cols-2 gap-4">

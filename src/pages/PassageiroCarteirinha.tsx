@@ -3,7 +3,6 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/PassageiroFormDialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { useLayout } from "@/contexts/LayoutContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cobrancaService } from "@/services/cobrancaService";
@@ -111,6 +111,7 @@ const CarteirinhaSkeleton = () => (
 );
 
 export default function PassageiroCarteirinha() {
+  const { setPageTitle, setPageSubtitle } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const navigate = useNavigate();
@@ -164,6 +165,13 @@ export default function PassageiroCarteirinha() {
       setObsText((passageiro as any).observacoes || "");
     }
   }, [passageiro, loading]);
+
+  useEffect(() => {
+    if (passageiro) {
+      setPageTitle(`${passageiro.nome}`);
+      setPageSubtitle(`Carteirinha Digital`);
+    }
+  }, [passageiro, setPageTitle, setPageSubtitle]);
 
   useEffect(() => {
     if (!loading) {
@@ -462,23 +470,6 @@ export default function PassageiroCarteirinha() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <UserCircle2 className="w-16 h-16 text-gray-300" strokeWidth={1} />
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              {passageiro.nome}
-            </h1>
-            <Badge
-              variant={passageiro.ativo ? "default" : "destructive"}
-              className="mt-1"
-            >
-              {passageiro.ativo ? "Ativo" : "Desativado"}
-            </Badge>
-          </div>
-        </div>
-      </div>
-
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:items-start">
         {/* Mensalidades */}
         <div className="order-1 lg:order-2 lg:col-span-2 lg:row-start-1 lg:h-full">
@@ -901,38 +892,41 @@ export default function PassageiroCarteirinha() {
               <InfoItem icon={Mail} label="E-mail">
                 {passageiro.email_responsavel || "Não informado"}
               </InfoItem>
-              <Button
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
-                disabled={!passageiro.telefone_responsavel}
-                onClick={() =>
-                  window.open(
-                    `https://wa.me/${passageiro.telefone_responsavel?.replace(
-                      /\D/g,
-                      ""
-                    )}`,
-                    "_blank"
-                  )
-                }
-              >
-                <MessageCircle className="h-4 w-4 mr-2" /> Falar no WhatsApp
-              </Button>
-              {passageiro.ativo ? (
+
+              <div className="space-y-2 pt-6 border-t">
                 <Button
-                  variant="outline"
-                  className="w-full mt-2 border-red-500 text-red-500 hover:bg-red-50"
-                  onClick={() => handleToggleClick(passageiro.ativo)}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  disabled={!passageiro.telefone_responsavel}
+                  onClick={() =>
+                    window.open(
+                      `https://wa.me/${passageiro.telefone_responsavel?.replace(
+                        /\D/g,
+                        ""
+                      )}`,
+                      "_blank"
+                    )
+                  }
                 >
-                  Desativar Passageiro
+                  <MessageCircle className="h-4 w-4 mr-2" /> Falar no WhatsApp
                 </Button>
-              ) : (
-                <Button
-                  variant="default"
-                  className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => handleToggleClick(passageiro.ativo)}
-                >
-                  Reativar Cadastro
-                </Button>
-              )}
+                {passageiro.ativo ? (
+                  <Button
+                    variant="outline"
+                    className="w-full mt-2 border-red-500 text-red-500 hover:bg-red-50"
+                    onClick={() => handleToggleClick(passageiro.ativo)}
+                  >
+                    Desativar Passageiro
+                  </Button>
+                ) : (
+                  <Button
+                    variant="default"
+                    className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={() => handleToggleClick(passageiro.ativo)}
+                  >
+                    Reativar Cadastro
+                  </Button>
+                )}
+              </div>
             </CardContent>
             <CardFooter>
               <Button

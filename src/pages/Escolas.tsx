@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLayout } from "@/contexts/LayoutContext";
 import { useToast } from "@/hooks/use-toast";
 import { escolaService } from "@/services/escolaService";
 import { Escola } from "@/types/escola";
@@ -51,9 +52,11 @@ const SchoolListSkeleton = () => (
 );
 
 export default function Escolas() {
+  const { setPageTitle, setPageSubtitle } = useLayout();
   const [escolas, setEscolas] = useState<
     (Escola & { passageiros_ativos_count?: number })[]
   >([]);
+  const [countEscolasAtivas, setCountEscolasAtivas] = useState<number>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEscola, setEditingEscola] = useState<Escola | null>(null);
   const [loadingPage, setLoadingPage] = useState(true);
@@ -69,6 +72,7 @@ export default function Escolas() {
     try {
       const data = await escolaService.fetchEscolasComContagemAtivos();
       setEscolas(data || []);
+      setCountEscolasAtivas(data.filter((e) => e.ativo).length);
     } catch (error) {
       console.error("Erro ao buscar escolas:", error);
       toast({ title: "Erro ao carregar escolas.", variant: "destructive" });
@@ -80,6 +84,22 @@ export default function Escolas() {
   useEffect(() => {
     fetchEscolas();
   }, []);
+
+  useEffect(() => {
+    let subTitle = "";
+    if (countEscolasAtivas) {
+      subTitle = `${
+        countEscolasAtivas === 1
+          ? "1 escola ativa"
+          : `${countEscolasAtivas} escolas ativas`
+      }`;
+    } else {
+      subTitle = "Carregando...";
+    }
+
+    setPageTitle("Escolas");
+    setPageSubtitle(subTitle);
+  }, [escolas, setPageTitle, setPageSubtitle]);
 
   const escolasFiltradas = useMemo(() => {
     let filtered = escolas;
@@ -167,30 +187,27 @@ export default function Escolas() {
   return (
     <div className="space-y-6">
       <div className="w-full">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-            Escolas
-          </h1>
-          <Button
-            onClick={() => {
-              setIsDialogOpen(true);
-            }}
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Nova Escola
-          </Button>
-        </div>
+        <div className="flex justify-end items-center mb-6"></div>
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Lista de Escolas
-              <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
-                {escolas.length}
-              </span>
-            </CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle className="flex items-center gap-2">
+                <span>Escolas</span>
+                {countEscolasAtivas && (
+                  <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
+                    {countEscolasAtivas}
+                  </span>
+                )}
+              </CardTitle>
+
+              <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Nova Escola</span>
+              </Button>
+            </div>
           </CardHeader>
+
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div className="space-y-2">

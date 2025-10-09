@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
+import { useLayout } from "@/contexts/LayoutContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cobrancaService } from "@/services/cobrancaService";
 import { CobrancaDetalhe } from "@/types/cobrancaDetalhe";
@@ -24,6 +25,7 @@ import {
   disableVerPaginaPagamento,
 } from "@/utils/disableActions";
 import {
+  formatarTelefone,
   formatCobrancaOrigem,
   formatDateToBR,
   formatPaymentType,
@@ -162,6 +164,7 @@ export default function PassageiroCobranca() {
     passageiro_id: string;
     cobranca_id: string;
   };
+  const { setPageTitle, setPageSubtitle } = useLayout();
   const [notificacoes, setNotificacoes] = useState<CobrancaNotificacao[]>([]);
   const [confirmDialogDesfazer, setConfirmDialogDesfazer] = useState({
     open: false,
@@ -273,6 +276,13 @@ export default function PassageiroCobranca() {
     fetchNotificacoes();
   }, [cobranca_id, navigate, toast]);
 
+  useEffect(() => {
+    if (cobranca) {
+      setPageTitle("Detalhes da Mensalidade");
+      setPageSubtitle(`${cobranca.passageiro_nome}`);
+    }
+  }, [cobranca, setPageTitle, setPageSubtitle]);
+
   if (loading) return <CobrancaDetalheSkeleton />;
 
   if (!cobranca) return null;
@@ -299,12 +309,6 @@ export default function PassageiroCobranca() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-          Detalhes da Mensalidade
-        </h1>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <Card className="lg:col-span-3 order-1">
           <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -372,7 +376,80 @@ export default function PassageiroCobranca() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 order-3 lg:order-2">
+        <Card className="lg:col-span-1 order-2 lg:order-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Contact className="w-5 h-5" />
+              Contato e Informações
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <InfoItem icon={User} label="Passageiro">
+              {cobranca.passageiro_nome}
+            </InfoItem>
+            <InfoItem icon={Contact} label="Responsável">
+              {cobranca.nome_responsavel}
+            </InfoItem>
+            <InfoItem icon={School} label="Escola">
+              {cobranca.escola_nome}
+            </InfoItem>
+            <InfoItem icon={MessageCircle} label="Telefone">
+              {formatarTelefone(cobranca.telefone_responsavel)}
+            </InfoItem>
+
+            <div className="space-y-2 pt-6 border-t">
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={() =>
+                  navigate(`/passageiros/${cobranca.passageiro_id}`)
+                }
+              >
+                <IdCard className="h-4 w-4 mr-2" /> Ver Carteirinha
+              </Button>
+              <Button
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                disabled={!cobranca.telefone_responsavel}
+                onClick={() =>
+                  window.open(
+                    `https://wa.me/${cobranca.telefone_responsavel?.replace(
+                      /\D/g,
+                      ""
+                    )}`,
+                    "_blank"
+                  )
+                }
+              >
+                <MessageCircle className="h-4 w-4 mr-2" /> Falar no WhatsApp
+              </Button>
+              <Button
+                className="w-full"
+                variant="outline"
+                disabled={disableEnviarNotificacao(cobranca)}
+                onClick={() => handleEnviarNotificacao()}
+              >
+                <Send className="h-4 w-4 mr-2" /> Enviar Notificação
+              </Button>
+              <Button
+                className="w-full"
+                variant="outline"
+                disabled={disableToggleLembretes(cobranca)}
+                onClick={() => handleToggleLembretes()}
+              >
+                {cobranca.desativar_lembretes ? (
+                  <Bell className="h-4 w-4 mr-2" />
+                ) : (
+                  <BellOff className="h-4 w-4 mr-2" />
+                )}
+                {cobranca.desativar_lembretes
+                  ? "Ativar Notificações"
+                  : "Desativar Notificações"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2 order-3 lg:order-3">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="w-5 h-5" />
@@ -475,76 +552,6 @@ export default function PassageiroCobranca() {
               <Trash2 className="w-3 h-3 mr-2" /> Excluir Mensalidade
             </Button>
           </CardFooter>
-        </Card>
-
-        <Card className="lg:col-span-1 order-2 lg:order-3">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Contact className="w-5 h-5" />
-              Contato e Informações
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <InfoItem icon={User} label="Passageiro">
-              {cobranca.passageiro_nome}
-            </InfoItem>
-            <InfoItem icon={Contact} label="Responsável">
-              {cobranca.nome_responsavel}
-            </InfoItem>
-            <InfoItem icon={School} label="Escola">
-              {cobranca.escola_nome}
-            </InfoItem>
-
-            <div className="space-y-2 pt-6 border-t">
-              <Button
-                className="w-full"
-                variant="outline"
-                onClick={() =>
-                  navigate(`/passageiros/${cobranca.passageiro_id}`)
-                }
-              >
-                <IdCard className="h-4 w-4 mr-2" /> Ver Carteirinha
-              </Button>
-              <Button
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
-                disabled={!cobranca.telefone_responsavel}
-                onClick={() =>
-                  window.open(
-                    `https://wa.me/${cobranca.telefone_responsavel?.replace(
-                      /\D/g,
-                      ""
-                    )}`,
-                    "_blank"
-                  )
-                }
-              >
-                <MessageCircle className="h-4 w-4 mr-2" /> Falar no WhatsApp
-              </Button>
-              <Button
-                className="w-full"
-                variant="outline"
-                disabled={disableEnviarNotificacao(cobranca)}
-                onClick={() => handleEnviarNotificacao()}
-              >
-                <Send className="h-4 w-4 mr-2" /> Enviar Notificação
-              </Button>
-              <Button
-                className="w-full"
-                variant="outline"
-                disabled={disableToggleLembretes(cobranca)}
-                onClick={() => handleToggleLembretes()}
-              >
-                {cobranca.desativar_lembretes ? (
-                  <Bell className="h-4 w-4 mr-2" />
-                ) : (
-                  <BellOff className="h-4 w-4 mr-2" />
-                )}
-                {cobranca.desativar_lembretes
-                  ? "Ativar Notificações"
-                  : "Desativar Notificações"}
-              </Button>
-            </div>
-          </CardContent>
         </Card>
       </div>
 

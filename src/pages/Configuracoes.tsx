@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useLayout } from "@/contexts/LayoutContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -113,6 +114,7 @@ const MessageEditor = ({
 type FormErrors = Partial<Record<keyof ConfiguracoesMotorista, string>>;
 
 export default function Configuracoes() {
+  const { setPageTitle, setPageSubtitle } = useLayout();
   const [configuracoes, setConfiguracoes] =
     useState<ConfiguracoesMotorista | null>(null);
   const [loadingPage, setLoadingPage] = useState(true);
@@ -136,6 +138,11 @@ export default function Configuracoes() {
   useEffect(() => {
     fetchConfiguracoes();
   }, []);
+
+  useEffect(() => {
+    setPageTitle("Configurações");
+    setPageSubtitle("Ajustes de notificações e sistema");
+  }, [setPageTitle, setPageSubtitle]);
 
   const fetchConfiguracoes = async () => {
     setLoadingPage(true);

@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLayout } from "@/contexts/LayoutContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { passageiroService } from "@/services/passageiroService";
@@ -37,8 +38,6 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const apiKey = localStorage.getItem("asaas_api_key");
-
 const PassengerListSkeleton = () => (
   <div className="space-y-3 mt-8">
     {[...Array(5)].map((_, i) => (
@@ -57,7 +56,10 @@ const PassengerListSkeleton = () => (
 );
 
 export default function Passageiros() {
+  const { setPageTitle, setPageSubtitle } = useLayout();
   const [passageiros, setPassageiros] = useState<Passageiro[]>([]);
+  const [countPassageirosAtivos, setcountPassageirosAtivos] =
+    useState<number>(null);
   const [escolas, setEscolas] = useState<Escola[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(
@@ -101,6 +103,7 @@ export default function Passageiros() {
       const { data, error } = await query;
       if (error) throw error;
       setPassageiros(data || []);
+      setcountPassageirosAtivos(data.filter((e) => e.ativo).length);
     } catch (error) {
       console.error("Erro ao buscar passageiros:", error);
       toast({ title: "Erro ao carregar passageiros.", variant: "destructive" });
@@ -119,6 +122,22 @@ export default function Passageiros() {
     }, 500);
     return () => clearTimeout(handler);
   }, [fetchPassageiros]);
+
+  useEffect(() => {
+    let subTitle = "";
+    if (countPassageirosAtivos) {
+      subTitle = `${
+        countPassageirosAtivos === 1
+          ? "1 passageiro ativo"
+          : `${countPassageirosAtivos} passageiros ativos`
+      }`;
+    } else {
+      subTitle = "Carregando...";
+    }
+
+    setPageTitle("Passageiros");
+    setPageSubtitle(subTitle);
+  }, [passageiros, setPageTitle, setPageSubtitle]);
 
   const handleDelete = async () => {
     try {
@@ -259,33 +278,35 @@ export default function Passageiros() {
   return (
     <div className="space-y-6">
       <div className="w-full">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-            Passageiros
-          </h1>
+        <div className="flex justify-end items-center mb-6">
           <div className="flex gap-2">
-            <Button onClick={handleOpenNewDialog} className="gap-2">
-              <Plus className="h-4 w-4" /> Novo Cadastro
+            <Button
+              onClick={handleCadastrarRapido}
+              variant="destructive"
+              className="gap-2 text-uppercase text-white"
+            >
+              CADASTRO PREGUIÇOSO
             </Button>
           </div>
         </div>
 
-        <Button
-          onClick={handleCadastrarRapido}
-          variant="destructive"
-          className="gap-2 text-uppercase text-white"
-        >
-          CADASTRO PREGUIÇOSO
-        </Button>
-
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Lista de Passageiros
-              <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
-                {passageiros.length}
-              </span>
-            </CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle className="flex items-center gap-2">
+                <span>Passageiros</span>
+                {countPassageirosAtivos && (
+                  <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
+                    {countPassageirosAtivos}
+                  </span>
+                )}
+              </CardTitle>
+
+              <Button onClick={handleOpenNewDialog} className="gap-2">
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Novo Passageiro</span>
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
