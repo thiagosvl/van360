@@ -515,10 +515,7 @@ export default function PassageiroCarteirinha() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button
-                    size="sm"
-                    onClick={() => handleOpenRetroativaDialog()}
-                  >
+                  <Button onClick={() => handleOpenRetroativaDialog()}>
                     <Plus className="w-4 h-4 md:mr-2" />
                     <span className="hidden md:block">
                       Registrar Mensalidade
@@ -904,12 +901,7 @@ export default function PassageiroCarteirinha() {
               <CardTitle className="text-lg">
                 Informações do Passageiro
               </CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleEditClick}
-                className="h-8 w-8"
-              >
+              <Button onClick={handleEditClick} className="gap-2">
                 <Pencil className="w-4 h-4" />
               </Button>
             </CardHeader>
@@ -995,9 +987,8 @@ export default function PassageiroCarteirinha() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Observações</CardTitle>
               <Button
-                variant="ghost"
-                size="icon"
                 onClick={() => setIsObservacoesEditing(true)}
+                className="gap-2"
               >
                 <Pencil className="w-4 h-4" />
               </Button>

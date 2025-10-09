@@ -302,7 +302,7 @@ export default function Passageiros() {
                 )}
               </CardTitle>
 
-              <Button onClick={handleOpenNewDialog} className="gap-2">
+              <Button onClick={handleOpenNewDialog}>
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">Novo Passageiro</span>
               </Button>
