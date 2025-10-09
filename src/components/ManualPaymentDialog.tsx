@@ -70,6 +70,7 @@ export default function ManualPaymentDialog({
   onPaymentRecorded,
 }: ManualPaymentDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [openCalendar, setOpenCalendar] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<PaymentFormData>({
@@ -100,7 +101,7 @@ export default function ManualPaymentDialog({
         data_pagamento: toLocalDateString(data.data_pagamento),
         tipo_pagamento: data.tipo_pagamento,
       };
-      
+
       await cobrancaService.registrarPagamentoManual(cobrancaId, pagamentoData);
 
       toast({
@@ -174,7 +175,7 @@ export default function ManualPaymentDialog({
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Data do Pagamento *</FormLabel>
-                  <Popover>
+                  <Popover open={openCalendar} onOpenChange={setOpenCalendar}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
@@ -200,6 +201,7 @@ export default function ManualPaymentDialog({
                         onSelect={(date) => {
                           if (date) {
                             field.onChange(date);
+                            setOpenCalendar(false);
                           }
                         }}
                         disabled={(date) => date > new Date()}
