@@ -3,6 +3,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/PassageiroFormDialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -61,7 +62,7 @@ import {
   Trash2,
   TrendingDown,
   TrendingUp,
-  UserCircle2,
+  User,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -181,6 +182,19 @@ export default function PassageiroCarteirinha() {
 
   const handleEditClick = () => {
     setIsFormOpen(true);
+  };
+
+  const handleOpenRetroativaDialog = () => {
+    if (passageiro.ativo) {
+      setRetroativaDialogOpen(true);
+    } else {
+      toast({
+        title: "O cadastro do passageiro está desativado.",
+        description:
+          "Só é possível registrar mensalidade de passageiros ativos.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSaveObservacoes = async () => {
@@ -493,17 +507,12 @@ export default function PassageiroCarteirinha() {
                       ))}
                     </SelectContent>
                   </Select>
-                  {passageiro.ativo && (
-                    <Button
-                      size="sm"
-                      onClick={() => setRetroativaDialogOpen(true)}
-                    >
-                      <Plus className="w-4 h-4 md:mr-2" />
-                      <span className="hidden md:block">
-                        Registrar Mensalidade
-                      </span>
-                    </Button>
-                  )}
+                  <Button size="sm" onClick={() => handleOpenRetroativaDialog()}>
+                    <Plus className="w-4 h-4 md:mr-2" />
+                    <span className="hidden md:block">
+                      Registrar Mensalidade
+                    </span>
+                  </Button>
                 </div>
               </div>
             </CardHeader>
@@ -877,14 +886,14 @@ export default function PassageiroCarteirinha() {
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              <InfoItem icon={School} label="Escola">
-                {passageiro.escolas?.nome || "Não informada"}
-              </InfoItem>
-              <InfoItem icon={UserCircle2} label="Gênero">
-                {passageiro.genero || "Não informado"}
+              <InfoItem icon={User} label="Passageiro">
+                {passageiro.nome}{" "}
               </InfoItem>
               <InfoItem icon={Contact} label="Responsável">
                 {passageiro.nome_responsavel}
+              </InfoItem>
+              <InfoItem icon={School} label="Escola">
+                {passageiro.escolas?.nome || "Não informada"}
               </InfoItem>
               <InfoItem icon={MessageCircle} label="Telefone">
                 {formatarTelefone(passageiro.telefone_responsavel)}
@@ -892,23 +901,16 @@ export default function PassageiroCarteirinha() {
               <InfoItem icon={Mail} label="E-mail">
                 {passageiro.email_responsavel || "Não informado"}
               </InfoItem>
+              <InfoItem icon={Contact} label="Status do cadastro">
+                <Badge
+                  variant={passageiro.ativo ? "default" : "destructive"}
+                  className={passageiro.ativo ? "bg-green-600 text-white" : ""}
+                >
+                  {passageiro.ativo ? "Ativo" : "Desativado"}
+                </Badge>
+              </InfoItem>
 
               <div className="space-y-2 pt-6 border-t">
-                <Button
-                  className="w-full bg-green-600 hover:bg-green-700 text-white"
-                  disabled={!passageiro.telefone_responsavel}
-                  onClick={() =>
-                    window.open(
-                      `https://wa.me/${passageiro.telefone_responsavel?.replace(
-                        /\D/g,
-                        ""
-                      )}`,
-                      "_blank"
-                    )
-                  }
-                >
-                  <MessageCircle className="h-4 w-4 mr-2" /> Falar no WhatsApp
-                </Button>
                 {passageiro.ativo ? (
                   <Button
                     variant="outline"
@@ -926,6 +928,22 @@ export default function PassageiroCarteirinha() {
                     Reativar Cadastro
                   </Button>
                 )}
+
+                <Button
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  disabled={!passageiro.telefone_responsavel}
+                  onClick={() =>
+                    window.open(
+                      `https://wa.me/${passageiro.telefone_responsavel?.replace(
+                        /\D/g,
+                        ""
+                      )}`,
+                      "_blank"
+                    )
+                  }
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" /> Falar no WhatsApp
+                </Button>
               </div>
             </CardContent>
             <CardFooter>
