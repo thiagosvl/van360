@@ -29,6 +29,7 @@ import {
   formatPaymentType,
   getStatusColor,
   getStatusText,
+  meses,
 } from "@/utils/formatters";
 import {
   ArrowRight,
@@ -309,7 +310,7 @@ export default function PassageiroCobranca() {
           <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <div className="text-sm text-muted-foreground">
-                Valor da Mensalidade
+                {meses[parseInt(cobranca.mes) - 1]}/{cobranca.ano}
               </div>
               <div className="text-4xl font-bold tracking-tight">
                 {cobranca.valor.toLocaleString("pt-BR", {
@@ -317,19 +318,19 @@ export default function PassageiroCobranca() {
                   currency: "BRL",
                 })}
               </div>
-              <div className="text-muted-foreground mt-1">
+              <div className="text-muted-foreground mt-3">
                 Vencimento em: {formatDateToBR(cobranca.data_vencimento)}
               </div>
-              {cobranca.status !== "pago" && (
-                <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                    cobranca.status,
-                    cobranca.data_vencimento
-                  )}`}
-                >
-                  {getStatusText(cobranca.status, cobranca.data_vencimento)}
-                </span>
-              )}
+              <span
+                className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                  cobranca.status,
+                  cobranca.data_vencimento
+                )}`}
+              >
+                {cobranca.status === "pago"
+                  ? `Pago em ${formatDateToBR(cobranca.data_pagamento)}`
+                  : getStatusText(cobranca.status, cobranca.data_vencimento)}
+              </span>
             </div>
             <div className="flex-shrink-0 w-full sm:w-auto">
               {!disableRegistrarPagamento(cobranca) ? (
@@ -517,7 +518,7 @@ export default function PassageiroCobranca() {
                   )
                 }
               >
-                <MessageCircle className="h-4 w-4 mr-2" /> Enviar WhatsApp
+                <MessageCircle className="h-4 w-4 mr-2" /> Falar no WhatsApp
               </Button>
               <Button
                 className="w-full"

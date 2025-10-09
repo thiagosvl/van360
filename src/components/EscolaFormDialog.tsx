@@ -37,11 +37,10 @@ import { Escola } from "@/types/escola";
 import { cepMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, Loader2, MapPin } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-// Definição do Schema (copiado do Escolas.tsx)
 const escolaSchema = z.object({
   nome: z.string().min(1, "Campo obrigatório"),
   rua: z.string().optional(),
@@ -59,21 +58,26 @@ interface EscolaFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
   editingEscola?: Escola | null;
-  // A função de sucesso agora retorna o objeto Escola criado
-  onSuccess: (escola: Escola) => void;
+  onSuccessSave: (escola: Escola) => void;
 }
 
 export default function EscolaFormDialog({
   isOpen,
   onClose,
   editingEscola = null,
-  onSuccess,
+  onSuccessSave,
 }: EscolaFormDialogProps) {
   const [loading, setLoading] = useState(false);
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "dados-escola",
   ]);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (editingEscola) {
+      setOpenAccordionItems(["dados-escola", "endereco"]);
+    }
+  }, [editingEscola]);
 
   const form = useForm<EscolaFormData>({
     resolver: zodResolver(escolaSchema),
@@ -102,7 +106,6 @@ export default function EscolaFormDialog({
   const handleSubmit = async (data: EscolaFormData) => {
     setLoading(true);
     try {
-      // CHAMA O SERVICE PARA SALVAR/ATUALIZAR
       const escolaSalva = await escolaService.saveEscola(data, editingEscola);
 
       toast({
@@ -111,8 +114,7 @@ export default function EscolaFormDialog({
         } com sucesso.`,
       });
 
-      // CHAMA O CALLBACK DE SUCESSO (PASSANDO O OBJETO ESCOLA)
-      onSuccess(escolaSalva);
+      onSuccessSave(escolaSalva);
     } catch (error: any) {
       console.error("Erro ao salvar escola:", error);
 

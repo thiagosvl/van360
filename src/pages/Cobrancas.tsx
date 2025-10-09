@@ -286,11 +286,11 @@ const Cobrancas = () => {
           <TabsContent value="em-aberto" className="mt-4">
             <Card>
               {cobrancasAbertas.length > 0 && (
-                <div className="p-4 border-b">
+                <div className="p-4">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Buscar por passageiro ou responsável..."
+                      placeholder="Pesquisar passageiro ou responsável..."
                       className="pl-10"
                       value={buscaAbertas}
                       onChange={(e) => setBuscaAbertas(e.target.value)}
@@ -626,11 +626,11 @@ const Cobrancas = () => {
           <TabsContent value="pagas" className="mt-4">
             <Card>
               {cobrancasPagas.length > 0 && (
-                <div className="p-4 border-b">
+                <div className="p-4">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Buscar por passageiro ou responsável..."
+                      placeholder="Pesquisar passageiro ou responsável..."
                       className="pl-10"
                       value={buscaPagas}
                       onChange={(e) => setBuscaPagas(e.target.value)}
@@ -853,7 +853,7 @@ const Cobrancas = () => {
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span>Forma</span>
+                              <span>Forma de Pagamento</span>
                               <span className="font-medium">
                                 {formatPaymentType(cobranca.tipo_pagamento)}
                               </span>

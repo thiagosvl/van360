@@ -516,7 +516,7 @@ export default function PassageiroCarteirinha() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="mt-4">
               {cobrancas.length > 0 ? (
                 <>
                   <div className="hidden md:block">
@@ -681,141 +681,147 @@ export default function PassageiroCarteirinha() {
                     </table>
                   </div>
                   <div className="md:hidden -mx-6 -mt-6 divide-y divide-gray-100">
-                     {cobrancas.map((cobranca) => (
-    <div
-      key={cobranca.id}
-      onClick={() =>
-        navigate(
-          `/passageiros/${passageiro.id}/mensalidade/${cobranca.id}`
-        )
-      }
-      // Aplicando padding e hover otimizados
-      className="py-2.5 px-3 active:bg-muted/50"
-    >
-      <div className="flex justify-between items-start">
-        
-        {/* LINHA 1: MÊS/ANO E VENCIMENTO (Coluna Esquerda) */}
-        <div className="flex flex-col pr-1 w-2/3">
-          <div className="font-semibold text-gray-800 text-sm overflow-hidden text-ellipsis whitespace-nowrap">
-            {getMesNome(cobranca.mes)}
-          </div>
-          <div className="text-xs text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
-            Vencimento:{" "}
-            <span className="font-medium text-gray-700">
-              {formatDateToBR(cobranca.data_vencimento)}
-            </span>
-          </div>
-        </div>
+                    {cobrancas.map((cobranca) => (
+                      <div
+                        key={cobranca.id}
+                        onClick={() =>
+                          navigate(
+                            `/passageiros/${passageiro.id}/mensalidade/${cobranca.id}`
+                          )
+                        }
+                        // Aplicando padding e hover otimizados
+                        className="py-2.5 px-3 active:bg-muted/50"
+                      >
+                        <div className="flex justify-between items-start">
+                          {/* LINHA 1: MÊS/ANO E VENCIMENTO (Coluna Esquerda) */}
+                          <div className="flex flex-col pr-1 w-2/3">
+                            <div className="font-semibold text-gray-800 text-sm overflow-hidden text-ellipsis whitespace-nowrap">
+                              {getMesNome(cobranca.mes)}
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
+                              Vencimento:{" "}
+                              <span className="font-medium text-gray-700">
+                                {formatDateToBR(cobranca.data_vencimento)}
+                              </span>
+                            </div>
+                          </div>
 
-        {/* LINHA 1: AÇÕES (Coluna Direita, topo) */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0 -mr-2 -mt-1" 
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {/* Mantendo as ações originais da carteirinha */}
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(
-                  `/passageiros/${passageiro.id}/mensalidade/${cobranca.id}`
-                );
-              }}
-            >
-              Ver Mensalidade
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              disabled={disableRegistrarPagamento(cobranca)}
-              onClick={(e) => {
-                e.stopPropagation();
-                openPaymentDialog(cobranca);
-              }}
-            >
-              Registrar Pagamento
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              disabled={disableEnviarNotificacao(cobranca)}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEnviarNotificacaoClick(cobranca.id);
-              }}
-            >
-              Enviar Notificação
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              disabled={disableToggleLembretes(cobranca)}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggleLembretes(cobranca);
-              }}
-            >
-              {cobranca.desativar_lembretes
-                ? "Ativar Notificações"
-                : "Desativar Notificações"}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              disabled={disableDesfazerPagamento(cobranca)}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDesfazerClick(cobranca.id);
-              }}
-            >
-              Desfazer Pagamento
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-red-600"
-              disabled={disableExcluirMensalidade(cobranca)}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteCobrancaClick(cobranca);
-              }}
-            >
-              Excluir Mensalidade
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+                          {/* LINHA 1: AÇÕES (Coluna Direita, topo) */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 shrink-0 -mr-2 -mt-1"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              {/* Mantendo as ações originais da carteirinha */}
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(
+                                    `/passageiros/${passageiro.id}/mensalidade/${cobranca.id}`
+                                  );
+                                }}
+                              >
+                                Ver Mensalidade
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={disableRegistrarPagamento(cobranca)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openPaymentDialog(cobranca);
+                                }}
+                              >
+                                Registrar Pagamento
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={disableEnviarNotificacao(cobranca)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEnviarNotificacaoClick(cobranca.id);
+                                }}
+                              >
+                                Enviar Notificação
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={disableToggleLembretes(cobranca)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleLembretes(cobranca);
+                                }}
+                              >
+                                {cobranca.desativar_lembretes
+                                  ? "Ativar Notificações"
+                                  : "Desativar Notificações"}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={disableDesfazerPagamento(cobranca)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDesfazerClick(cobranca.id);
+                                }}
+                              >
+                                Desfazer Pagamento
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                disabled={disableExcluirMensalidade(cobranca)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteCobrancaClick(cobranca);
+                                }}
+                              >
+                                Excluir Mensalidade
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
 
-      {/* LINHA 2: VALOR E STATUS/PAGAMENTO (Compactação Máxima) */}
-      <div className="flex justify-between items-end pt-1">
-        
-        {/* VALOR */}
-        <div className="font-bold text-base text-foreground">
-          {Number(cobranca.valor).toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          })}
-        </div>
-        
-        {/* STATUS/DATA DE PAGAMENTO */}
-        <span
-          className={`px-2 py-0.5 inline-block rounded-full text-xs font-medium ${getStatusColor(
-            cobranca.status,
-            cobranca.data_vencimento
-          )}`}
-        >
-          {cobranca.status === "pago"
-            ? `Pago em ${formatDateToBR(cobranca.data_pagamento)}`
-            : getStatusText(cobranca.status, cobranca.data_vencimento)}
-        </span>
-      </div>
-      
-      {/* NOTIFICAÇÕES SUSPENSAS (Bloco separado, se houver) */}
-      {cobranca.desativar_lembretes && cobranca.status !== "pago" && (
-        <div className="mt-2 flex items-center gap-2 text-xs p-1 rounded-md bg-yellow-50 text-yellow-800 border border-yellow-200">
-          <BellOff className="h-4 w-4 shrink-0" />
-          <span className="truncate">Lembretes Suspensos</span>
-        </div>
-      )}
-    </div>
-  ))}
+                        {/* LINHA 2: VALOR E STATUS/PAGAMENTO (Compactação Máxima) */}
+                        <div className="flex justify-between items-end pt-1">
+                          {/* VALOR */}
+                          <div className="font-bold text-base text-foreground">
+                            {Number(cobranca.valor).toLocaleString("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            })}
+                          </div>
+
+                          {/* STATUS/DATA DE PAGAMENTO */}
+                          <span
+                            className={`px-2 py-0.5 inline-block rounded-full text-xs font-medium ${getStatusColor(
+                              cobranca.status,
+                              cobranca.data_vencimento
+                            )}`}
+                          >
+                            {cobranca.status === "pago"
+                              ? `Pago em ${formatDateToBR(
+                                  cobranca.data_pagamento
+                                )}`
+                              : getStatusText(
+                                  cobranca.status,
+                                  cobranca.data_vencimento
+                                )}
+                          </span>
+                        </div>
+
+                        {/* NOTIFICAÇÕES SUSPENSAS (Bloco separado, se houver) */}
+                        {cobranca.desativar_lembretes &&
+                          cobranca.status !== "pago" && (
+                            <div className="mt-2 flex items-center gap-2 text-xs p-1 rounded-md bg-yellow-50 text-yellow-800 border border-yellow-200">
+                              <BellOff className="h-4 w-4 shrink-0" />
+                              <span className="truncate">
+                                Lembretes Suspensos
+                              </span>
+                            </div>
+                          )}
+                      </div>
+                    ))}
                   </div>
                 </>
               ) : (
@@ -908,7 +914,7 @@ export default function PassageiroCarteirinha() {
                   )
                 }
               >
-                <MessageCircle className="h-4 w-4 mr-2" /> Enviar WhatsApp
+                <MessageCircle className="h-4 w-4 mr-2" /> Falar no WhatsApp
               </Button>
               {passageiro.ativo ? (
                 <Button
@@ -961,12 +967,28 @@ export default function PassageiroCarteirinha() {
                 <Textarea
                   value={obsText}
                   onChange={(e) => setObsText(e.target.value)}
-                  rows={4}
+                  rows={5}
+                  placeholder="Ex: Alergia a amendoim, deixar na casa da avó às sextas, precisa de ajuda para colocar o cinto..."
+                  autoFocus
                 />
-              ) : (
+              ) : obsText ? (
                 <p className="text-sm text-gray-700 whitespace-pre-line">
-                  {obsText || "Nenhuma observação registrada."}
+                  {obsText}
                 </p>
+              ) : (
+                <div
+                  className="flex flex-col items-center justify-center text-center p-6 border-2 border-dashed rounded-lg text-muted-foreground cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => setIsObservacoesEditing(true)}
+                >
+                  <Info className="w-8 h-8 mb-3 text-gray-400" />
+                  <p className="font-semibold text-foreground">
+                    Adicionar Observações
+                  </p>
+                  <p className="text-sm mt-1">
+                    Clique aqui para anotar informações importantes sobre o
+                    passageiro. Isso é visível apenas para você.
+                  </p>
+                </div>
               )}
             </CardContent>
             {isObservacoesEditing && (

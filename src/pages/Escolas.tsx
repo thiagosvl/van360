@@ -21,7 +21,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { escolaService } from "@/services/escolaService";
 import { Escola } from "@/types/escola";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   MoreVertical,
   Pencil,
@@ -34,22 +33,6 @@ import {
   Users2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
-const escolaSchema = z.object({
-  nome: z.string().min(1, "Campo obrigatório"),
-  rua: z.string().optional(),
-  numero: z.string().optional(),
-  bairro: z.string().optional(),
-  cidade: z.string().optional(),
-  estado: z.string().optional(),
-  cep: z.string().optional(),
-  referencia: z.string().optional(),
-  ativo: z.boolean().optional(),
-});
-
-type EscolaFormData = z.infer<typeof escolaSchema>;
 
 const SchoolListSkeleton = () => (
   <div className="space-y-3">
@@ -73,31 +56,13 @@ export default function Escolas() {
   >([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEscola, setEditingEscola] = useState<Escola | null>(null);
-  const [loading, setLoading] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
   const [schoolToDelete, setSchoolToDelete] = useState<Escola | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [openAccordionItems, setOpenAccordionItems] = useState([
-    "dados-escola",
-  ]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("todos");
   const { toast } = useToast();
-
-  const form = useForm<EscolaFormData>({
-    resolver: zodResolver(escolaSchema),
-    defaultValues: {
-      nome: "",
-      rua: "",
-      numero: "",
-      bairro: "",
-      cidade: "",
-      estado: "",
-      cep: "",
-      referencia: "",
-      ativo: true,
-    },
-  });
 
   const fetchEscolas = useCallback(async () => {
     setLoadingPage(true);
@@ -139,66 +104,14 @@ export default function Escolas() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  const onFormError = (errors: any) => {
-    toast({
-      title: "Campos inválidos",
-      description: "Por favor, corrija os erros no formulário.",
-      variant: "destructive",
-    });
-    setOpenAccordionItems(["dados-escola", "endereco"]);
-  };
-
-  const handleSuccess = (escolaCriada: Escola) => {
+  const handleSuccessSave = (escolaCriada: Escola) => {
     fetchEscolas();
     setEditingEscola(null);
     setIsDialogOpen(false);
   };
 
-  const handleSubmit = async (data: EscolaFormData) => {
-    setLoading(true);
-    try {
-      await escolaService.saveEscola(data, editingEscola);
-
-      toast({
-        title: `Escola ${
-          editingEscola ? "atualizada" : "cadastrada"
-        } com sucesso.`,
-      });
-
-      await fetchEscolas();
-      resetForm();
-      setIsDialogOpen(false);
-    } catch (error: any) {
-      console.error("Erro ao salvar escola:", error);
-
-      if (error.message.includes("passageiros ativos")) {
-        toast({
-          title: "Não é possível desativar.",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({ title: "Erro ao salvar escola.", variant: "destructive" });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleEdit = (escola: Escola) => {
     setEditingEscola(escola);
-    setOpenAccordionItems(["dados-escola", "endereco"]);
-    form.reset({
-      nome: escola.nome,
-      rua: escola.rua || "",
-      numero: escola.numero || "",
-      bairro: escola.bairro || "",
-      cidade: escola.cidade || "",
-      estado: escola.estado || "",
-      cep: escola.cep || "",
-      referencia: escola.referencia || "",
-      ativo: escola.ativo,
-    });
     setIsDialogOpen(true);
   };
 
@@ -251,22 +164,6 @@ export default function Escolas() {
     }
   };
 
-  const resetForm = () => {
-    form.reset({
-      nome: "",
-      rua: "",
-      numero: "",
-      bairro: "",
-      cidade: "",
-      estado: "",
-      cep: "",
-      referencia: "",
-      ativo: true,
-    });
-    setEditingEscola(null);
-    setOpenAccordionItems(["dados-escola"]);
-  };
-
   return (
     <div className="space-y-6">
       <div className="w-full">
@@ -276,7 +173,6 @@ export default function Escolas() {
           </h1>
           <Button
             onClick={() => {
-              resetForm();
               setIsDialogOpen(true);
             }}
             className="gap-2"
@@ -547,17 +443,15 @@ export default function Escolas() {
         variant="destructive"
       />
 
-      {/* RENDERIZAÇÃO CONDICIONAL DO NOVO MODAL */}
       {isDialogOpen && (
         <EscolaFormDialog
           isOpen={isDialogOpen}
           onClose={() => {
             setIsDialogOpen(false);
             setEditingEscola(null);
-            resetForm(); // Limpa o form após fechar
           }}
           editingEscola={editingEscola}
-          onSuccess={handleSuccess}
+          onSuccessSave={handleSuccessSave}
         />
       )}
     </div>

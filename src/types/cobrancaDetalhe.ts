@@ -18,4 +18,6 @@ export interface CobrancaDetalhe {
   origem: string;
   pagamento_manual: boolean;
   escola_nome: string;
+  mes: string;
+  ano: string;
 }
