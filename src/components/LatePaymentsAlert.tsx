@@ -30,8 +30,7 @@ const LatePaymentsAlert = ({ latePayments, mes }: LatePaymentsAlertProps) => {
       <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="text-sm text-red-900">
           Há <span className="font-bold">{latePayments.length}</span>{" "}
-          {latePayments.length === 1 ? "cobrança" : "cobranças"} a receber
-          referentes a {meses[mes - 1]}.
+          {latePayments.length === 1 ? "cobrança" : "cobranças"} referentes a {meses[mes - 1]}.
         </p>
         <Button
           onClick={() => navigate("/mensalidades")}
