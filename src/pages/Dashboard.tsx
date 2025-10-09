@@ -315,7 +315,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         ) : latePayments.length > 0 ? (
-          <LatePaymentsAlert mes={mesFilter} latePayments={latePayments} />
+          <LatePaymentsAlert mes={mesFilter} ano={anoFilter} latePayments={latePayments} />
         ) : stats.totalCobrancas > 0 ? (
           <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
             <CheckCircle className="h-5 w-5 text-green-600" />

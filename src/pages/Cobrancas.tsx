@@ -44,7 +44,7 @@ import {
   Send,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const ListSkeleton = () => (
   <div className="space-y-4">
@@ -62,10 +62,17 @@ const ListSkeleton = () => (
 );
 
 const Cobrancas = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [cobrancasAbertas, setCobrancasAbertas] = useState<Cobranca[]>([]);
   const [cobrancasPagas, setCobrancasPagas] = useState<Cobranca[]>([]);
-  const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
-  const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
+   const [mesFilter, setMesFilter] = useState(() => {
+    const mesParam = searchParams.get('mes');
+    return mesParam ? Number(mesParam) : new Date().getMonth() + 1;
+  });
+  const [anoFilter, setAnoFilter] = useState(() => {
+    const anoParam = searchParams.get('ano');
+    return anoParam ? Number(anoParam) : new Date().getFullYear();
+  });
   const [loading, setLoading] = useState(true);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
@@ -185,6 +192,13 @@ const Cobrancas = () => {
   };
 
   useEffect(() => {
+    const params = {
+      ano: anoFilter.toString(),
+      mes: mesFilter.toString(),
+    };
+
+    setSearchParams(params, { replace: true });
+
     fetchCobrancas();
     setBuscaAbertas("");
     setBuscaPagas("");
