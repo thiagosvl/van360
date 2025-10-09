@@ -500,7 +500,7 @@ const Cobrancas = () => {
                                 {cobranca.passageiros.nome}
                               </div>
                               <div className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
-                                Resp:{" "}
+                                Responsável:{" "}
                                 {cobranca.passageiros.nome_responsavel || "-"}
                               </div>
                             </div>

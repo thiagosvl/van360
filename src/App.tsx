@@ -6,6 +6,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import AppLayout from "@/layouts/AppLayout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import ScrollToTop from "./components/ScrollToTop";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminSettings from "./pages/admin/Settings";
 import UsuariosAdmin from "./pages/admin/Usuarios";
@@ -29,6 +30,7 @@ const App = () => (
       <Sonner position="top-right" />
       <AuthProvider>
         <BrowserRouter>
+        <ScrollToTop />
           <Routes>
             {/* <Route path="/"  element={<Index />} /> */}
             <Route
