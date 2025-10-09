@@ -9,12 +9,14 @@ import {
 import { NavLink } from "react-router-dom";
 
 const adminItems = [
+  // ... (conteúdo do array adminItems permanece o mesmo)
   { title: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { title: "Usuários", href: "/admin/usuarios", icon: Users },
   { title: "Configurações", href: "/admin/configuracoes", icon: Settings },
 ];
 
 const motoristaItems = [
+  // ... (conteúdo do array motoristaItems permanece o mesmo)
   { title: "Início", href: "/dashboard", icon: LayoutDashboard },
   { title: "Mensalidades", href: "/mensalidades", icon: CreditCard },
   { title: "Passageiros", href: "/passageiros", icon: Users },
@@ -23,7 +25,13 @@ const motoristaItems = [
   { title: "Configurações", href: "/configuracoes", icon: Settings },
 ];
 
-export function AppSidebar({ role }: { role: "admin" | "motorista" }) {
+// 1. Definir as props que o componente vai receber, incluindo a nova função
+interface AppSidebarProps {
+  role: "admin" | "motorista";
+  onLinkClick: () => void;
+}
+
+export function AppSidebar({ role, onLinkClick }: AppSidebarProps) {
   const menuItems = role === "admin" ? adminItems : motoristaItems;
 
   return (
@@ -32,6 +40,8 @@ export function AppSidebar({ role }: { role: "admin" | "motorista" }) {
         <NavLink
           key={item.href}
           to={item.href}
+          // 2. Adicionar o onClick para chamar a função que fecha o menu
+          onClick={onLinkClick}
           className={({ isActive }) =>
             `flex items-center rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 ${
               isActive

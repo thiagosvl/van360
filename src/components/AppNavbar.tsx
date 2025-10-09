@@ -17,10 +17,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, Menu, User } from "lucide-react";
+import { useState } from "react"; // 1. Importar o useState
 
 export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [isSheetOpen, setIsSheetOpen] = useState(false); // 2. Criar o estado de controle
 
   const handleSignOut = async () => {
     localStorage.removeItem("app_role");
@@ -39,7 +41,8 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
     <header className="flex h-16 items-center justify-between px-4 sm:px-6 bg-white border-b shadow-sm">
       <div className="flex items-center gap-3">
         <div className="md:hidden">
-          <Sheet>
+          {/* 3. Controlar o Sheet com o estado */}
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu className="h-6 w-6" />
@@ -54,7 +57,11 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
               </SheetHeader>
 
               <div className="p-4">
-                <AppSidebar role={role} />
+                {/* 4. Passar uma função para o Sidebar saber como fechar o menu */}
+                <AppSidebar
+                  role={role}
+                  onLinkClick={() => setIsSheetOpen(false)}
+                />
               </div>
             </SheetContent>
           </Sheet>
