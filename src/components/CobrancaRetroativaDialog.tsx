@@ -214,7 +214,7 @@ export default function CobrancaRetroativaDialog({
         status: data.foi_pago ? "pago" : "pendente",
         data_pagamento:
           data.foi_pago && data.data_pagamento
-            ? toLocalDateString(data.data_pagamento.)
+            ? toLocalDateString(data.data_pagamento)
             : null,
         tipo_pagamento: data.foi_pago ? data.tipo_pagamento : null,
         pagamento_manual: data.foi_pago,
