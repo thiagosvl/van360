@@ -908,7 +908,7 @@ export default function PassageiroCarteirinha() {
               <InfoItem icon={User} label="Nome">
                 {passageiro.nome}{" "}
               </InfoItem>
-              <InfoItem icon={Contact} label="Status do cadastro">
+              <InfoItem icon={Contact} label="Status do Cadastro">
                 <Badge
                   variant={passageiro.ativo ? "default" : "destructive"}
                   className={passageiro.ativo ? "bg-green-600 text-white" : ""}

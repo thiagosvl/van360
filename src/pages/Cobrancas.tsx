@@ -92,10 +92,15 @@ const Cobrancas = () => {
 
   const navigate = useNavigate();
   const { toast } = useToast();
+  
   const currentYear = new Date().getFullYear();
-  const anos = Array.from({ length: 5 }, (_, i) =>
-    (currentYear - i).toString()
-  );
+  const anos = [
+    { value: currentYear.toString(), label: currentYear.toString() },
+    {
+      value: (currentYear - 1).toString(),
+      label: (currentYear - 1).toString(),
+    },
+  ];
 
   const fetchCobrancas = async () => {
     setLoading(true);
@@ -195,9 +200,7 @@ const Cobrancas = () => {
 
   useEffect(() => {
     setPageTitle("Mensalidades");
-    setPageSubtitle(
-      `Referentes a ${meses[mesFilter - 1]} de ${anoFilter}`
-    );
+    setPageSubtitle(`Referentes a ${meses[mesFilter - 1]} de ${anoFilter}`);
   }, [mesFilter, anoFilter, setPageTitle, setPageSubtitle]);
 
   useEffect(() => {
@@ -268,8 +271,8 @@ const Cobrancas = () => {
                   </SelectTrigger>
                   <SelectContent className="max-h-60 overflow-y-auto">
                     {anos.map((ano) => (
-                      <SelectItem key={ano} value={ano}>
-                        {ano}
+                      <SelectItem key={ano.value} value={ano.value}>
+                        {ano.label}
                       </SelectItem>
                     ))}
                   </SelectContent>

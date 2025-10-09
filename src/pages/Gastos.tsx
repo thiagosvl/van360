@@ -23,7 +23,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -56,7 +55,7 @@ import {
   MoreVertical,
   PieChart as PieChartIcon,
   Plus,
-  Trash2
+  Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -328,15 +327,15 @@ export default function Gastos() {
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-sm font-medium mb-2 block">Mês</Label>
+              <label className="text-sm font-medium mb-2 block">Mês</label>
               <Select
                 value={mesFilter.toString()}
                 onValueChange={(value) => setMesFilter(Number(value))}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Selecione o mês" />
                 </SelectTrigger>
                 <SelectContent className="max-h-60 overflow-y-auto">
                   {meses.map((mes, index) => (
@@ -348,13 +347,13 @@ export default function Gastos() {
               </Select>
             </div>
             <div>
-              <Label className="text-sm font-medium mb-2 block">Ano</Label>
+              <label className="text-sm font-medium mb-2 block">Ano</label>
               <Select
                 value={anoFilter.toString()}
                 onValueChange={(value) => setAnoFilter(Number(value))}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Selecione o ano" />
                 </SelectTrigger>
                 <SelectContent className="max-h-60 overflow-y-auto">
                   {anos.map((ano) => (
