@@ -850,8 +850,7 @@ export default function PassageiroCarteirinha() {
                           Nenhuma mensalidade... ainda!
                         </AlertTitle>
                         <AlertDescription className="text-sky-800 text-sm leading-relaxed">
-                          Não se preocupe! A primeira mensalidade deste
-                          passageiro aparecerá aqui{" "}
+                          Não se preocupe! A primeira mensalidade aparecerá aqui{" "}
                           <strong>no início do próximo mês</strong>, com o
                           vencimento para o dia programado.
                         </AlertDescription>
