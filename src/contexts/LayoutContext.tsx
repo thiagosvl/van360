@@ -11,8 +11,8 @@ interface LayoutContextType {
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
-  const [pageTitle, setPageTitle] = useState('Tela Inicial');
-  const [pageSubtitle, setPageSubtitle] = useState('Visão geral do seu negócio');
+  const [pageTitle, setPageTitle] = useState('Carregando...');
+  const [pageSubtitle, setPageSubtitle] = useState('Por favor, aguarde.');
 
   return (
     <LayoutContext.Provider value={{ pageTitle, setPageTitle, pageSubtitle, setPageSubtitle }}>
