@@ -847,7 +847,7 @@ export default function PassageiroCarteirinha() {
                       <Alert className="bg-sky-50 border-sky-200 text-sky-900 p-3 md:p-4 rounded-xl gap-3 shadow-sm">
                         <Info className="h-5 w-5 text-sky-500 mt-0.5" />
                         <AlertTitle className="text-sky-900 text-sm font-semibold">
-                          Nenhuma mensalidade por aqui... ainda!
+                          Nenhuma mensalidade... ainda!
                         </AlertTitle>
                         <AlertDescription className="text-sky-800 text-sm leading-relaxed">
                           Não se preocupe! A primeira mensalidade deste
