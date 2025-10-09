@@ -716,7 +716,76 @@ export default function PassageiroCarteirinha() {
                             </div>
                           </div>
                           <DropdownMenu>
-                            {/* ... DropdownMenu ... */}
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 shrink-0 -mr-2 -mt-1"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(
+                                    `/passageiros/${passageiro.id}/mensalidade/${cobranca.id}`
+                                  );
+                                }}
+                              >
+                                Ver Mensalidade
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={disableRegistrarPagamento(cobranca)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openPaymentDialog(cobranca);
+                                }}
+                              >
+                                Registrar Pagamento
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={disableEnviarNotificacao(cobranca)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEnviarNotificacaoClick(cobranca.id);
+                                }}
+                              >
+                                Enviar Notificação
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={disableToggleLembretes(cobranca)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleLembretes(cobranca);
+                                }}
+                              >
+                                {cobranca.desativar_lembretes
+                                  ? "Ativar Notificações"
+                                  : "Desativar Notificações"}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={disableDesfazerPagamento(cobranca)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDesfazerClick(cobranca.id);
+                                }}
+                              >
+                                Desfazer Pagamento
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                disabled={disableExcluirMensalidade(cobranca)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteCobrancaClick(cobranca);
+                                }}
+                              >
+                                Excluir Mensalidade
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
                         <div className="flex justify-between items-end pt-1">
@@ -800,8 +869,8 @@ export default function PassageiroCarteirinha() {
                           estiver desativado.
                         </p>
                         <p>
-                          Para voltar a gerar cobranças
-                          manuais e automáticas, reative o cadastro.
+                          Para voltar a gerar cobranças manuais e automáticas,
+                          reative o cadastro.
                         </p>
                         <Button
                           size="sm"
