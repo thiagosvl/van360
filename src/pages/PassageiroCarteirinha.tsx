@@ -875,7 +875,7 @@ export default function PassageiroCarteirinha() {
         <div className="order-2 lg:order-1 lg:col-start-1 lg:row-start-1">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <CardTitle className="text-lg">Informações</CardTitle>
+              <CardTitle className="text-lg">Informações do Passageiro</CardTitle>
               <Button
                 variant="ghost"
                 size="icon"
@@ -886,7 +886,7 @@ export default function PassageiroCarteirinha() {
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              <InfoItem icon={User} label="Passageiro">
+              <InfoItem icon={User} label="Nome">
                 {passageiro.nome}{" "}
               </InfoItem>
               <InfoItem icon={Contact} label="Responsável">
