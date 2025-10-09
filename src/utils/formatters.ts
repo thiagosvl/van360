@@ -13,6 +13,14 @@ export const meses = [
   "Dezembro",
 ];
 
+export const toLocalDateString = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+};
+
 export const formatDate = (date: string | Date) => {
   const d = new Date(date + "T00:00:00");
   return d;

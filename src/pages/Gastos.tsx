@@ -42,7 +42,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
-import { formatDateToBR, meses } from "@/utils/formatters";
+import { formatDateToBR, meses, toLocalDateString } from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -256,7 +256,7 @@ export default function Gastos() {
       const gastoData = {
         descricao: data.descricao,
         valor: moneyToNumber(data.valor),
-        data: data.data.toISOString().split("T")[0],
+        data: toLocalDateString(data.data),
         categoria: data.categoria,
         notas: data.notas,
         usuario_id: localStorage.getItem("app_user_id"),

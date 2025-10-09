@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { asaasService } from "@/services/asaasService";
+import { toLocalDateString } from "@/utils/formatters";
 import { moneyToNumber } from "@/utils/masks";
 
 export const passageiroService = {
@@ -106,7 +107,6 @@ export const passageiroService = {
         const ano = currentDate.getFullYear();
         const diaInformado = passageiroData.dia_vencimento;
         const hoje = currentDate.getDate();
-        // Lógica de vencimento: se o dia já passou, vence hoje, senão, no dia informado
         const vencimentoAjustado = diaInformado < hoje ? hoje : diaInformado;
         const dataVencimento = new Date(ano, mes - 1, vencimentoAjustado);
 
@@ -114,8 +114,8 @@ export const passageiroService = {
           {
             customer: newPassageiro.asaas_customer_id,
             billingType: "UNDEFINED",
-            value: passageiroData.valor_mensalidade, // Já é number
-            dueDate: dataVencimento.toISOString().split("T")[0],
+            value: passageiroData.valor_mensalidade,
+            dueDate: toLocalDateString(dataVencimento),
             description: `Mensalidade ${mes}/${ano}`,
             externalReference: newPassageiro.id,
           },
@@ -130,7 +130,7 @@ export const passageiroService = {
               mes,
               ano,
               valor: passageiroData.valor_mensalidade,
-              data_vencimento: dataVencimento.toISOString().split("T")[0],
+              data_vencimento: toLocalDateString(dataVencimento),
               status: "pendente",
               usuario_id: localStorage.getItem("app_user_id"),
               origem: "automatica",
@@ -239,7 +239,7 @@ export const passageiroService = {
             // 4. Atualizar o Payment no ASAAS
             const updatePayload = {
               value: passageiroData.valor_mensalidade,
-              dueDate: novaDataVencimento.toISOString().split("T")[0],
+              dueDate: toLocalDateString(novaDataVencimento),
               billingType: "UNDEFINED",
             };
 
@@ -254,7 +254,7 @@ export const passageiroService = {
               .from("cobrancas")
               .update({
                 data_vencimento: vencimentoMudou
-                  ? novaDataVencimento.toISOString().split("T")[0]
+                  ? toLocalDateString(novaDataVencimento)
                   : ultimaCobranca.data_vencimento,
                 valor: valorMudou
                   ? passageiroData.valor_mensalidade

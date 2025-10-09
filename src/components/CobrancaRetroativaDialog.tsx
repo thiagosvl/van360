@@ -31,6 +31,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { toLocalDateString } from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -209,11 +210,11 @@ export default function CobrancaRetroativaDialog({
         mes: parseInt(data.mes),
         ano: parseInt(data.ano),
         valor: moneyToNumber(data.valor),
-        data_vencimento: dataVencimento.toISOString().split("T")[0],
+        data_vencimento: toLocalDateString(dataVencimento),
         status: data.foi_pago ? "pago" : "pendente",
         data_pagamento:
           data.foi_pago && data.data_pagamento
-            ? data.data_pagamento.toISOString().split("T")[0]
+            ? toLocalDateString(data.data_pagamento.)
             : null,
         tipo_pagamento: data.foi_pago ? data.tipo_pagamento : null,
         pagamento_manual: data.foi_pago,

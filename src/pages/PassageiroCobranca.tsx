@@ -431,9 +431,7 @@ export default function PassageiroCobranca() {
                     >
                       {showFullHistory
                         ? "Ocultar histórico"
-                        : `+ Ver mais ${notificacoes.length - 1} evento${
-                            notificacoes.length > 1 ? "s" : ""
-                          }`}
+                        : `+ Ver histórico completo`}
                     </Button>
                   )}
                 </>

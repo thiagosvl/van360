@@ -30,6 +30,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { cobrancaService } from "@/services/cobrancaService";
+import { toLocalDateString } from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -92,13 +93,14 @@ export default function ManualPaymentDialog({
 
   const handleSubmit = async (data: PaymentFormData) => {
     setLoading(true);
+
     try {
       const pagamentoData = {
         valor_pago: moneyToNumber(data.valor_pago),
-        data_pagamento: data.data_pagamento.toISOString().split("T")[0],
+        data_pagamento: toLocalDateString(data.data_pagamento),
         tipo_pagamento: data.tipo_pagamento,
       };
-
+      
       await cobrancaService.registrarPagamentoManual(cobrancaId, pagamentoData);
 
       toast({
