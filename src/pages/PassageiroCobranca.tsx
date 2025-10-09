@@ -470,19 +470,19 @@ export default function PassageiroCobranca() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
               <InfoItem
                 icon={cobranca.desativar_lembretes ? BellOff : Bell}
-                label="Notificações Automáticas"
+                label="Notificações"
               >
                 {cobranca.desativar_lembretes ? "Desativadas" : "Ativadas"}
               </InfoItem>
-              <InfoItem icon={ArrowRight} label="Quem gerou a mensalidade?">
+              <InfoItem icon={ArrowRight} label="Quem gerou?">
                 {formatCobrancaOrigem(cobranca.origem)}
               </InfoItem>
-              <InfoItem icon={BadgeCheck} label="Quem registrou o pagamento?">
+              <InfoItem icon={BadgeCheck} label="Pagamento">
                 {cobranca.status === "pago"
                   ? cobranca.pagamento_manual
-                    ? "Você"
-                    : "Sistema"
-                  : "Ainda não foi paga"}
+                    ? "Registrado por você"
+                    : "Registrado pelo sistema"
+                  : "-"}
               </InfoItem>
             </div>
             <div className="pt-6 border-t">
