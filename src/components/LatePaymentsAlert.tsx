@@ -11,7 +11,11 @@ interface LatePaymentsAlertProps {
   ano: number;
 }
 
-const LatePaymentsAlert = ({ latePayments, mes, ano }: LatePaymentsAlertProps) => {
+const LatePaymentsAlert = ({
+  latePayments,
+  mes,
+  ano,
+}: LatePaymentsAlertProps) => {
   const navigate = useNavigate();
 
   return (
@@ -30,12 +34,19 @@ const LatePaymentsAlert = ({ latePayments, mes, ano }: LatePaymentsAlertProps) =
 
       <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="text-sm text-blue-900">
-          Você tem <span className="font-bold">{latePayments.length}</span>{" "}
-          {latePayments.length === 1 ? "cobrança" : "cobranças"} a receber referente{" "}
-          {meses[mes - 1]}.
+          {latePayments.length === 1 ? (
+            <>
+              Você tem <span className="font-bold">1</span> cobrança a receber
+              referente ao mês de {meses[mes - 1]}.
+            </>
+          ) : (
+            <>
+              Você tem <span className="font-bold">{latePayments.length}</span>{" "}
+              cobranças a receber referentes ao mês de {meses[mes - 1]}.
+            </>
+          )}
         </p>
         <Button
-          // 2. Ação do botão agora passa os parâmetros 'ano' e 'mes' na URL
           onClick={() => navigate(`/mensalidades?ano=${ano}&mes=${mes}`)}
           className="w-full sm:w-auto"
         >
