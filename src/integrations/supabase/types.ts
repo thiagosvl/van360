@@ -233,6 +233,8 @@ export type Database = {
           cep: string | null
           cidade: string | null
           cpf_responsavel: string
+          genero: string
+          observacoes: string | null
           created_at: string
           dia_vencimento: number
           escola_id: string
@@ -256,6 +258,8 @@ export type Database = {
           escola_id: string
           usuario_id: string
           nome: string
+          genero: string
+          observacoes?: string | null
           nome_responsavel: string
           email_responsavel: string
           telefone_responsavel: string
@@ -279,6 +283,8 @@ export type Database = {
           cep?: string | null
           cidade?: string | null
           cpf_responsavel?: string
+          genero: string
+          observacoes?: string | null
           created_at?: string
           dia_vencimento?: number
           escola_id?: string

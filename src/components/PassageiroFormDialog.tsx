@@ -30,7 +30,14 @@ import { currentMonthInText } from "@/utils/formatters";
 import { cepMask, cpfMask, moneyMask, phoneMask } from "@/utils/masks";
 import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangle, DollarSign, Loader2, MapPin, User } from "lucide-react";
+import {
+  AlertTriangle,
+  DollarSign,
+  FileText,
+  Loader2,
+  MapPin,
+  User,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -49,6 +56,11 @@ import { Textarea } from "./ui/textarea";
 const passageiroSchema = z.object({
   escola_id: z.string().min(1, "Campo obrigatório"),
   nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+
+  genero: z.enum(["Masculino", "Feminino"], {
+    required_error: "Campo obrigatório",
+  }),
+
   rua: z.string().optional(),
   numero: z.string().optional(),
   bairro: z.string().optional(),
@@ -56,6 +68,9 @@ const passageiroSchema = z.object({
   estado: z.string().optional(),
   cep: z.string().optional(),
   referencia: z.string().optional(),
+
+  observacoes: z.string().optional(),
+
   nome_responsavel: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
   email_responsavel: z
     .string()
@@ -72,6 +87,7 @@ const passageiroSchema = z.object({
       const cleaned = val.replace(/\D/g, "");
       return cleaned.length === 11;
     }, "O formato aceito é (00) 00000-0000"),
+
   valor_mensalidade: z.string().min(1, "Campo obrigatório"),
   dia_vencimento: z.string().min(1, "Campo obrigatório"),
   emitir_cobranca_mes_atual: z.boolean().optional(),
@@ -108,6 +124,10 @@ export default function PassengerFormDialog({
     defaultValues: {
       escola_id: "",
       nome: "",
+
+      genero: undefined,
+      observacoes: "",
+
       rua: "",
       numero: "",
       bairro: "",
@@ -156,7 +176,7 @@ export default function PassengerFormDialog({
     fetchEscolasModal(novaEscola.id);
 
     form.setValue("escola_id", novaEscola.id);
-    form.trigger("escola_id"); 
+    form.trigger("escola_id");
 
     setIsCreatingEscola(false);
   };
@@ -172,6 +192,7 @@ export default function PassengerFormDialog({
       "responsavel",
       "mensalidade",
       "endereco",
+      "observacoes",
     ]);
   };
 
@@ -181,6 +202,9 @@ export default function PassengerFormDialog({
         fetchEscolasModal(editingPassageiro.escola_id || undefined);
         form.reset({
           nome: editingPassageiro.nome,
+          genero: editingPassageiro.genero as any,
+          observacoes: (editingPassageiro as any).observacoes || "",
+
           rua: editingPassageiro.rua || "",
           numero: editingPassageiro.numero || "",
           bairro: editingPassageiro.bairro || "",
@@ -206,12 +230,17 @@ export default function PassengerFormDialog({
           "responsavel",
           "mensalidade",
           "endereco",
+          "observacoes",
         ]);
       } else {
         fetchEscolasModal();
         form.reset({
           escola_id: "",
           nome: "",
+
+          genero: undefined,
+          observacoes: "",
+
           rua: "",
           numero: "",
           bairro: "",
@@ -306,7 +335,7 @@ export default function PassengerFormDialog({
                       control={form.control}
                       name="nome"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="md:col-span-2">
                           <FormLabel>Nome do Passageiro *</FormLabel>
                           <FormControl>
                             <Input {...field} />
@@ -315,6 +344,9 @@ export default function PassengerFormDialog({
                         </FormItem>
                       )}
                     />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="escola_id"
@@ -324,7 +356,7 @@ export default function PassengerFormDialog({
                           <Select
                             onValueChange={(value) => {
                               if (value === "add-new-school") {
-                                setIsCreatingEscola(true); // <--- ATIVA A TROCA DE TELA
+                                setIsCreatingEscola(true);
                               } else {
                                 field.onChange(value);
                               }
@@ -354,7 +386,35 @@ export default function PassengerFormDialog({
                         </FormItem>
                       )}
                     />
+
+                    <FormField
+                      control={form.control}
+                      name="genero"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Gênero *</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value || undefined}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o gênero" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Masculino">
+                                Masculino
+                              </SelectItem>
+                              <SelectItem value="Feminino">Feminino</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
+
                   {editingPassageiro && (
                     <div className="mt-2">
                       <FormField
@@ -740,6 +800,35 @@ export default function PassengerFormDialog({
                       )}
                     />
                   </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="observacoes" className="mt-4">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-2 text-lg font-semibold">
+                    <FileText className="w-5 h-5 text-primary" />
+                    Observações
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="observacoes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Notas sobre o passageiro/rota (opcional)
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Ex: Alérgico a amendoim, entra pela porta lateral da escola, etc."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

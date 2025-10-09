@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cobrancaService } from "@/services/cobrancaService";
@@ -139,6 +140,8 @@ export default function PassageiroCarteirinha() {
   });
   const [availableYears, setAvailableYears] = useState<string[]>([currentYear]);
   const [yearFilter, setYearFilter] = useState(currentYear);
+  const [isObservacoesEditing, setIsObservacoesEditing] = useState(false);
+  const [obsText, setObsText] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -157,6 +160,12 @@ export default function PassageiroCarteirinha() {
   }, [passageiro_id]);
 
   useEffect(() => {
+    if (passageiro && !loading) {
+      setObsText((passageiro as any).observacoes || "");
+    }
+  }, [passageiro, loading]);
+
+  useEffect(() => {
     if (!loading) {
       fetchCobrancas(yearFilter);
     }
@@ -164,6 +173,34 @@ export default function PassageiroCarteirinha() {
 
   const handleEditClick = () => {
     setIsFormOpen(true);
+  };
+
+  const handleSaveObservacoes = async () => {
+    if (!passageiro_id) return;
+
+    try {
+      const { error } = await supabase
+        .from("passageiros")
+        .update({ observacoes: obsText })
+        .eq("id", passageiro_id);
+
+      if (error) throw error;
+
+      setPassageiro((prev) => ({
+        ...prev!,
+        observacoes: obsText,
+      }));
+      setIsObservacoesEditing(false);
+
+      toast({ title: "Observações salvas com sucesso." });
+    } catch (error) {
+      console.error("Erro ao salvar observações:", error);
+      toast({
+        title: "Erro ao salvar observações.",
+        variant: "destructive",
+      });
+      setObsText((passageiro as any)?.observacoes || "");
+    }
   };
 
   const handlePassageiroFormSuccess = () => {
@@ -443,8 +480,9 @@ export default function PassageiroCarteirinha() {
       </div>
 
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:items-start">
-        <div className="order-1 lg:order-2 lg:col-span-2 lg:row-start-1 lg:row-span-2">
-          <Card>
+        {/* Mensalidades */}
+        <div className="order-1 lg:order-2 lg:col-span-2 lg:row-start-1 lg:h-full">
+          <Card className="h-full">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Mensalidades</CardTitle>
@@ -486,7 +524,7 @@ export default function PassageiroCarteirinha() {
                       <thead>
                         <tr className="border-b">
                           <th className="p-4 text-left text-xs font-medium text-gray-600">
-                            Mês/Ano
+                            Mês
                           </th>
                           <th className="p-4 text-left text-xs font-medium text-gray-600">
                             Status
@@ -514,7 +552,7 @@ export default function PassageiroCarteirinha() {
                             className="hover:bg-muted/50 cursor-pointer"
                           >
                             <td className="p-4 align-top font-medium">
-                              {getMesNome(cobranca.mes)}/{cobranca.ano}
+                              {getMesNome(cobranca.mes)}
                             </td>
                             <td className="p-4 align-top">
                               <span
@@ -527,6 +565,11 @@ export default function PassageiroCarteirinha() {
                                   cobranca.status,
                                   cobranca.data_vencimento
                                 )}
+                                {cobranca.status === "pago"
+                                  ? ` em ${formatDateToBR(
+                                      cobranca.data_pagamento
+                                    )} `
+                                  : ""}
                               </span>
                               {cobranca.desativar_lembretes &&
                                 cobranca.status !== "pago" && (
@@ -638,149 +681,141 @@ export default function PassageiroCarteirinha() {
                     </table>
                   </div>
                   <div className="md:hidden -mx-6 -mt-6 divide-y divide-gray-100">
-                    {cobrancas.map((cobranca) => (
-                      <div
-                        key={cobranca.id}
-                        onClick={() =>
-                          navigate(
-                            `/passageiros/${passageiro.id}/mensalidade/${cobranca.id}`
-                          )
-                        }
-                        className="p-4 active:bg-muted/50"
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="pr-2">
-                            <div className="font-semibold text-gray-800">
-                              {getMesNome(cobranca.mes)}/{cobranca.ano}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              Vencimento:{" "}
-                              {formatDateToBR(cobranca.data_vencimento)}
-                            </div>
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 shrink-0 -mr-2"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate(
-                                    `/passageiros/${passageiro.id}/mensalidade/${cobranca.id}`
-                                  );
-                                }}
-                              >
-                                Ver Mensalidade
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                disabled={disableRegistrarPagamento(cobranca)}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openPaymentDialog(cobranca);
-                                }}
-                              >
-                                Registrar Pagamento
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                disabled={disableEnviarNotificacao(cobranca)}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEnviarNotificacaoClick(cobranca.id);
-                                }}
-                              >
-                                Enviar Notificação
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                disabled={disableToggleLembretes(cobranca)}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleToggleLembretes(cobranca);
-                                }}
-                              >
-                                {cobranca.desativar_lembretes
-                                  ? "Ativar Notificações"
-                                  : "Desativar Notificações"}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                disabled={disableDesfazerPagamento(cobranca)}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDesfazerClick(cobranca.id);
-                                }}
-                              >
-                                Desfazer Pagamento
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-red-600"
-                                disabled={disableExcluirMensalidade(cobranca)}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteCobrancaClick(cobranca);
-                                }}
-                              >
-                                Excluir Mensalidade
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
+                     {cobrancas.map((cobranca) => (
+    <div
+      key={cobranca.id}
+      onClick={() =>
+        navigate(
+          `/passageiros/${passageiro.id}/mensalidade/${cobranca.id}`
+        )
+      }
+      // Aplicando padding e hover otimizados
+      className="py-2.5 px-3 active:bg-muted/50"
+    >
+      <div className="flex justify-between items-start">
+        
+        {/* LINHA 1: MÊS/ANO E VENCIMENTO (Coluna Esquerda) */}
+        <div className="flex flex-col pr-1 w-2/3">
+          <div className="font-semibold text-gray-800 text-sm overflow-hidden text-ellipsis whitespace-nowrap">
+            {getMesNome(cobranca.mes)}
+          </div>
+          <div className="text-xs text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
+            Vencimento:{" "}
+            <span className="font-medium text-gray-700">
+              {formatDateToBR(cobranca.data_vencimento)}
+            </span>
+          </div>
+        </div>
 
-                        <div className="flex items-center justify-between">
-                          {cobranca.data_pagamento ? (
-                            <div className="text-sm">
-                              <span className="block text-xs text-muted-foreground">
-                                Pagou em:{" "}
-                              </span>
-                              <span className="font-semibold">
-                                {formatDateToBR(cobranca.data_pagamento)}
-                              </span>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="text-sm">
-                                <span className="block text-xs text-muted-foreground text-white">
-                                  ?
-                                </span>
-                                <span className="font-semibold text-white">
-                                  ?
-                                </span>
-                              </div>
-                            </>
-                          )}
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                              cobranca.status,
-                              cobranca.data_vencimento
-                            )}`}
-                          >
-                            {getStatusText(
-                              cobranca.status,
-                              cobranca.data_vencimento
-                            )}
-                          </span>
-                        </div>
-                        <div className="text-right text-muted-foreground text-sm mb-3">
-                          {Number(cobranca.valor).toLocaleString("pt-BR", {
-                            style: "currency",
-                            currency: "BRL",
-                          })}
-                        </div>
-                        {cobranca.desativar_lembretes &&
-                          cobranca.status !== "pago" && (
-                            <div className="mt-2 flex items-center gap-2 text-xs p-2 rounded-md bg-yellow-50 text-yellow-800 border border-yellow-200">
-                              <BellOff className="h-4 w-4 shrink-0" />
-                              <span>Notificações automáticas suspensas</span>
-                            </div>
-                          )}
-                      </div>
-                    ))}
+        {/* LINHA 1: AÇÕES (Coluna Direita, topo) */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0 -mr-2 -mt-1" 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {/* Mantendo as ações originais da carteirinha */}
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(
+                  `/passageiros/${passageiro.id}/mensalidade/${cobranca.id}`
+                );
+              }}
+            >
+              Ver Mensalidade
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={disableRegistrarPagamento(cobranca)}
+              onClick={(e) => {
+                e.stopPropagation();
+                openPaymentDialog(cobranca);
+              }}
+            >
+              Registrar Pagamento
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={disableEnviarNotificacao(cobranca)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEnviarNotificacaoClick(cobranca.id);
+              }}
+            >
+              Enviar Notificação
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={disableToggleLembretes(cobranca)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleToggleLembretes(cobranca);
+              }}
+            >
+              {cobranca.desativar_lembretes
+                ? "Ativar Notificações"
+                : "Desativar Notificações"}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={disableDesfazerPagamento(cobranca)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDesfazerClick(cobranca.id);
+              }}
+            >
+              Desfazer Pagamento
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-red-600"
+              disabled={disableExcluirMensalidade(cobranca)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteCobrancaClick(cobranca);
+              }}
+            >
+              Excluir Mensalidade
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* LINHA 2: VALOR E STATUS/PAGAMENTO (Compactação Máxima) */}
+      <div className="flex justify-between items-end pt-1">
+        
+        {/* VALOR */}
+        <div className="font-bold text-base text-foreground">
+          {Number(cobranca.valor).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}
+        </div>
+        
+        {/* STATUS/DATA DE PAGAMENTO */}
+        <span
+          className={`px-2 py-0.5 inline-block rounded-full text-xs font-medium ${getStatusColor(
+            cobranca.status,
+            cobranca.data_vencimento
+          )}`}
+        >
+          {cobranca.status === "pago"
+            ? `Pago em ${formatDateToBR(cobranca.data_pagamento)}`
+            : getStatusText(cobranca.status, cobranca.data_vencimento)}
+        </span>
+      </div>
+      
+      {/* NOTIFICAÇÕES SUSPENSAS (Bloco separado, se houver) */}
+      {cobranca.desativar_lembretes && cobranca.status !== "pago" && (
+        <div className="mt-2 flex items-center gap-2 text-xs p-1 rounded-md bg-yellow-50 text-yellow-800 border border-yellow-200">
+          <BellOff className="h-4 w-4 shrink-0" />
+          <span className="truncate">Lembretes Suspensos</span>
+        </div>
+      )}
+    </div>
+  ))}
                   </div>
                 </>
               ) : (
@@ -830,6 +865,7 @@ export default function PassageiroCarteirinha() {
           </Card>
         </div>
 
+        {/* Informações */}
         <div className="order-2 lg:order-1 lg:col-start-1 lg:row-start-1">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-4">
@@ -846,6 +882,9 @@ export default function PassageiroCarteirinha() {
             <CardContent className="space-y-4">
               <InfoItem icon={School} label="Escola">
                 {passageiro.escolas?.nome || "Não informada"}
+              </InfoItem>
+              <InfoItem icon={UserCircle2} label="Gênero">
+                {passageiro.genero || "Não informado"}
               </InfoItem>
               <InfoItem icon={Contact} label="Responsável">
                 {passageiro.nome_responsavel}
@@ -904,7 +943,51 @@ export default function PassageiroCarteirinha() {
           </Card>
         </div>
 
+        {/* Observações */}
         <div className="order-3 lg:order-3 lg:col-start-1 lg:row-start-2">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-lg">Observações</CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsObservacoesEditing(true)}
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {isObservacoesEditing ? (
+                <Textarea
+                  value={obsText}
+                  onChange={(e) => setObsText(e.target.value)}
+                  rows={4}
+                />
+              ) : (
+                <p className="text-sm text-gray-700 whitespace-pre-line">
+                  {obsText || "Nenhuma observação registrada."}
+                </p>
+              )}
+            </CardContent>
+            {isObservacoesEditing && (
+              <CardFooter className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setObsText(passageiro.observacoes || "");
+                    setIsObservacoesEditing(false);
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button onClick={handleSaveObservacoes}>Salvar</Button>
+              </CardFooter>
+            )}
+          </Card>
+        </div>
+
+        {/* Resumo Financeiro */}
+        <div className="order-4 lg:order-4 lg:col-span-2 lg:row-start-2">
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">

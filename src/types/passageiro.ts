@@ -8,6 +8,8 @@ export interface Passageiro {
   estado?: string;
   cep?: string;
   referencia?: string;
+  genero: string;
+  observacoes? : string;
   nome_responsavel: string;
   email_responsavel: string;
   telefone_responsavel: string;

@@ -97,7 +97,8 @@ const Cobrancas = () => {
         .eq("mes", mesFilter)
         .eq("ano", anoFilter)
         .eq("usuario_id", localStorage.getItem("app_user_id"))
-        .order("data_vencimento", { ascending: true });
+        .order("data_vencimento", { ascending: true })
+        .order("passageiros(nome)", { ascending: true });
       const cobrancas = (data as Cobranca[]) || [];
       const abertas = cobrancas.filter((c) => c.status !== "pago");
       const pagas = cobrancas.filter((c) => c.status === "pago");
@@ -489,18 +490,22 @@ const Cobrancas = () => {
                         <div
                           key={cobranca.id}
                           onClick={() => navigateToDetails(cobranca)}
-                          className="p-4 active:bg-muted/50"
+                          // Padding vertical bem reduzido
+                          className="py-2.5 px-3 active:bg-muted/50"
                         >
-                          <div className="flex justify-between items-start mb-3">
-                            <div className="pr-2">
-                              <div className="font-semibold text-gray-800">
+                          <div className="flex justify-between items-start">
+                            {/* LINHA 1: PASSAGEIRO E RESPONSÁVEL (Coluna Esquerda) */}
+                            <div className="flex flex-col pr-1 w-2/3">
+                              <div className="font-semibold text-gray-800 text-sm overflow-hidden text-ellipsis whitespace-nowrap">
                                 {cobranca.passageiros.nome}
                               </div>
-                              <div className="text-sm text-muted-foreground">
-                                Responsável:{" "}
+                              <div className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
+                                Resp:{" "}
                                 {cobranca.passageiros.nome_responsavel || "-"}
                               </div>
                             </div>
+
+                            {/* LINHA 1: AÇÕES (Coluna Direita, topo) */}
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
@@ -566,17 +571,29 @@ const Cobrancas = () => {
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
-                          <div className="flex items-center justify-between">
-                            <div className="text-sm">
-                              <span className="block text-xs text-muted-foreground">
+
+                          {/* LINHA 2: VALOR, STATUS E VENCIMENTO (Compactação Máxima) */}
+                          <div className="flex justify-between items-end pt-1">
+                            {/* Valor e Vencimento (Esquerda) */}
+                            <div className="flex flex-col">
+                              <div className="font-bold text-base text-foreground">
+                                {Number(cobranca.valor).toLocaleString(
+                                  "pt-BR",
+                                  {
+                                    style: "currency",
+                                    currency: "BRL",
+                                  }
+                                )}
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-0.5">
                                 Vencimento:{" "}
-                              </span>
-                              <span className="font-semibold">
                                 {formatDateToBR(cobranca.data_vencimento)}
-                              </span>
+                              </div>
                             </div>
+
+                            {/* Status (Direita) */}
                             <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              className={`px-2 py-0.5 inline-block rounded-full text-xs font-medium ${getStatusColor(
                                 cobranca.status,
                                 cobranca.data_vencimento
                               )}`}
@@ -587,19 +604,16 @@ const Cobrancas = () => {
                               )}
                             </span>
                           </div>
-                          <div className="text-right text-muted-foreground text-sm mb-3">
-                            {Number(cobranca.valor).toLocaleString("pt-BR", {
-                              style: "currency",
-                              currency: "BRL",
-                            })}
-                          </div>
-                          {cobranca.desativar_lembretes &&
-                            cobranca.status !== "pago" && (
-                              <div className="mt-2 flex items-center gap-2 text-xs p-2 rounded-md bg-yellow-50 text-yellow-800 border border-yellow-200">
-                                <BellOff className="h-4 w-4 shrink-0" />
-                                <span>Notificações automáticas suspensas</span>
-                              </div>
-                            )}
+
+                          {/* NOTIFICAÇÕES SUSPENSAS (Bloco separado, se houver) */}
+                          {cobranca.desativar_lembretes && (
+                            <div className="mt-2 flex items-center gap-2 text-xs p-1 rounded-md bg-yellow-50 text-yellow-800 border border-yellow-200">
+                              <BellOff className="h-4 w-4 shrink-0" />
+                              <span className="truncate">
+                                Notificações automáticas suspensas
+                              </span>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

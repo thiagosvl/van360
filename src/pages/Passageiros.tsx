@@ -219,12 +219,16 @@ export default function Passageiros() {
     const hoje = new Date();
     const valor = Math.floor(Math.random() * (200 - 100 + 1)) + 100;
 
+    const numeroPassageiro = Math.floor(Math.random() * 1000);
+
     const fakeData = {
-      nome: "Passag. Teste " + Math.floor(Math.random() * 1000),
-      nome_responsavel: "Resp. Teste Rápido",
+      nome: "Passag. Teste " + numeroPassageiro,
+      nome_responsavel: `Resp. do ${numeroPassageiro} `,
       email_responsavel: "abiliodasvendas@gmail.com",
       telefone_responsavel: "11951186951",
       cpf_responsavel: "39542391838",
+      genero: "Masculino",
+      observacoes: `teste do ${numeroPassageiro}`,
       valor_mensalidade: valor.toString(),
       dia_vencimento: hoje.getDate().toString(),
       escola_id: escolas[0].id,
