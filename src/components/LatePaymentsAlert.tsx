@@ -1,14 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Cobranca } from "@/types/cobranca";
+import { meses } from "@/utils/formatters";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface LatePaymentsAlertProps {
   latePayments: Cobranca[];
+  mes: number;
 }
 
-const LatePaymentsAlert = ({ latePayments }: LatePaymentsAlertProps) => {
+const LatePaymentsAlert = ({ latePayments, mes }: LatePaymentsAlertProps) => {
   const navigate = useNavigate();
 
   return (
@@ -27,14 +29,14 @@ const LatePaymentsAlert = ({ latePayments }: LatePaymentsAlertProps) => {
 
       <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="text-sm text-red-900">
-          Você possui{" "}
-          <span className="font-bold">{latePayments.length}</span>{" "}
-          {latePayments.length === 1
-            ? "mensalidade pendente"
-            : "mensalidades pendentes"}{" "}
-          este mês.
+          Há <span className="font-bold">{latePayments.length}</span>{" "}
+          {latePayments.length === 1 ? "cobrança" : "cobranças"} a receber
+          referentes a {meses[mes - 1]}.
         </p>
-        <Button onClick={() => navigate("/mensalidades")} className="w-full sm:w-auto">
+        <Button
+          onClick={() => navigate("/mensalidades")}
+          className="w-full sm:w-auto"
+        >
           Ver Pendências <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </CardContent>
