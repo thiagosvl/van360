@@ -125,7 +125,7 @@ export default function Passageiros() {
 
   useEffect(() => {
     let subTitle = "";
-    if (countPassageirosAtivos) {
+    if (countPassageirosAtivos != null) {
       subTitle = `${
         countPassageirosAtivos === 1
           ? "1 passageiro ativo"
@@ -134,6 +134,8 @@ export default function Passageiros() {
     } else {
       subTitle = "Carregando...";
     }
+
+    console.log('ativos', countPassageirosAtivos);
 
     setPageTitle("Passageiros");
     setPageSubtitle(subTitle);
@@ -295,7 +297,7 @@ export default function Passageiros() {
             <div className="flex justify-between items-center">
               <CardTitle className="flex items-center gap-2">
                 <span>Passageiros</span>
-                {countPassageirosAtivos && (
+                {countPassageirosAtivos > 0 && (
                   <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
                     {countPassageirosAtivos}
                   </span>

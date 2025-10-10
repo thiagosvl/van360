@@ -87,7 +87,7 @@ export default function Escolas() {
 
   useEffect(() => {
     let subTitle = "";
-    if (countEscolasAtivas) {
+    if (countEscolasAtivas != null) {
       subTitle = `${
         countEscolasAtivas === 1
           ? "1 escola ativa"
@@ -194,7 +194,7 @@ export default function Escolas() {
             <div className="flex justify-between items-center">
               <CardTitle className="flex items-center gap-2">
                 <span>Escolas</span>
-                {countEscolasAtivas && (
+                {countEscolasAtivas > 0 && (
                   <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
                     {countEscolasAtivas}
                   </span>
@@ -468,7 +468,7 @@ export default function Escolas() {
             setEditingEscola(null);
           }}
           editingEscola={editingEscola}
-          onSuccessSave={handleSuccessSave}
+          onSuccess={handleSuccessSave}
         />
       )}
     </div>

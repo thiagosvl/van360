@@ -58,14 +58,14 @@ interface EscolaFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
   editingEscola?: Escola | null;
-  onSuccessSave: (escola: Escola) => void;
+  onSuccess: (escola: Escola) => void;
 }
 
 export default function EscolaFormDialog({
   isOpen,
   onClose,
   editingEscola = null,
-  onSuccessSave,
+  onSuccess,
 }: EscolaFormDialogProps) {
   const [loading, setLoading] = useState(false);
   const [openAccordionItems, setOpenAccordionItems] = useState([
@@ -114,7 +114,7 @@ export default function EscolaFormDialog({
         } com sucesso.`,
       });
 
-      onSuccessSave(escolaSalva);
+      onSuccess(escolaSalva);
     } catch (error: any) {
       console.error("Erro ao salvar escola:", error);
 
