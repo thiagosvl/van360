@@ -51,7 +51,7 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
             <SheetContent side="left" className="w-72 sm:w-80 p-0">
               <SheetHeader className="flex flex-col items-center justify-center py-4 border-b">
                 <SheetTitle className="text-lg font-semibold">
-                  Sistema Transporte
+                  Zip Van
                 </SheetTitle>
               </SheetHeader>
               <div className="p-4">
