@@ -31,12 +31,6 @@ export const AppGate = ({ children }: AppGateProps) => {
           if (data.id) {
             localStorage.setItem("app_user_id", data.id);
           }
-          if (data?.asaas_subaccount_api_key) {
-            localStorage.setItem(
-              "asaas_api_key",
-              data.asaas_subaccount_api_key
-            );
-          }
         } finally {
         }
       }

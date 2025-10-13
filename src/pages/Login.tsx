@@ -77,7 +77,6 @@ export default function Login() {
 
       const usuarioData = usuario;
 
-      localStorage.removeItem("asaas_api_key");
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: usuarioData.email,
         password: data.senha,

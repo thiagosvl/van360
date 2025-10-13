@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLayout } from "@/contexts/LayoutContext";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Cobranca } from "@/types/cobranca";
 import { PaymentStats } from "@/types/paymentStats";
@@ -168,10 +169,21 @@ const Dashboard = () => {
   const [latePayments, setLatePayments] = useState<Cobranca[]>([]);
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
-  const [loading, setLoading] = useState(true);
+  const { user, loading: isAuthLoading } = useAuth();
+  const userId = user?.id || null;
+  const [isLoadingData, setIsLoadingData] = useState(false);
+  const loading = isAuthLoading || isLoadingData;
 
   const fetchStats = async () => {
-    setLoading(true);
+    const currentUserId = userId;
+
+    setIsLoadingData(true);
+
+    if (!currentUserId) {
+      console.warn("Usuário ID nulo, abortando fetchStats.");
+      setIsLoadingData(false);
+      return;
+    }
     try {
       const { data: cobrancasMes } = await supabase
         .from("cobrancas")
@@ -179,7 +191,7 @@ const Dashboard = () => {
           `*, passageiros (id, nome, nome_responsavel, valor_mensalidade, dia_vencimento)`
         )
         .eq("mes", mesFilter)
-        .eq("usuario_id", localStorage.getItem("app_user_id"))
+        .eq("usuario_id", currentUserId)
         .eq("ano", anoFilter);
       const totalPrevisto =
         cobrancasMes?.reduce((sum, c) => sum + Number(c.valor), 0) || 0;
@@ -247,16 +259,27 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Erro ao buscar estatísticas:", error);
     } finally {
-      setLoading(false);
+      setIsLoadingData(false);
     }
   };
 
   useEffect(() => {
-    fetchStats();
+    if (!isAuthLoading && userId) {
+      fetchStats();
+    } else if (!isAuthLoading && !userId) {
+      setIsLoadingData(false);
+    }
 
     setPageTitle("Tela Inicial");
     setPageSubtitle(`Resumo de ${meses[mesFilter - 1]} de ${anoFilter}`);
-  }, [mesFilter, anoFilter, setPageTitle, setPageSubtitle]);
+  }, [
+    mesFilter,
+    anoFilter,
+    userId,
+    isAuthLoading,
+    setPageTitle,
+    setPageSubtitle,
+  ]);
 
   return (
     <div className="space-y-6">
