@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -62,9 +63,8 @@ import {
   Trash2,
   TrendingDown,
   TrendingUp,
-  User,
 } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const currentYear = new Date().getFullYear().toString();
@@ -145,10 +145,22 @@ export default function PassageiroCarteirinha() {
   const [yearFilter, setYearFilter] = useState(currentYear);
   const [isObservacoesEditing, setIsObservacoesEditing] = useState(false);
   const [obsText, setObsText] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
 
   const [mostrarTodasMensalidades, setMostrarTodasMensalidades] =
     useState(false);
+
+  useEffect(() => {
+    if (isObservacoesEditing && textareaRef.current) {
+      const textarea = textareaRef.current;
+      const length = textarea.value.length;
+
+      textarea.focus();
+
+      textarea.setSelectionRange(length, length);
+    }
+  }, [isObservacoesEditing]);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -173,8 +185,10 @@ export default function PassageiroCarteirinha() {
 
   useEffect(() => {
     if (passageiro) {
-      setPageTitle(`${passageiro.nome}`);
-      setPageSubtitle(`Carteirinha Digital`);
+      setPageTitle(`Carteirinha Digital`);
+      setPageSubtitle(
+        `${passageiro.nome} (Responsável: ${passageiro.nome_responsavel})`
+      );
     }
   }, [passageiro, setPageTitle, setPageSubtitle]);
 
@@ -809,7 +823,7 @@ export default function PassageiroCarteirinha() {
                             )}`}
                           >
                             {cobranca.status === "pago"
-                              ? `Pago em ${formatDateToBR(
+                              ? `Paga em ${formatDateToBR(
                                   cobranca.data_pagamento
                                 )}`
                               : getStatusText(
@@ -898,27 +912,26 @@ export default function PassageiroCarteirinha() {
         <div className="order-2 lg:order-1 lg:col-start-1 lg:row-start-1">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <CardTitle className="text-lg">
-                Informações do Passageiro
-              </CardTitle>
-              <Button onClick={handleEditClick} className="gap-2">
-                <Pencil className="w-4 h-4" />
-              </Button>
+              <div>
+                <CardTitle className="text-lg">{passageiro.nome}</CardTitle>
+                <CardDescription className="text-xs">
+                  <b>Responsável:</b> {passageiro.nome_responsavel}
+                </CardDescription>
+              </div>
+              <div>
+                <Button onClick={handleEditClick} className="gap-2">
+                  <Pencil className="w-4 h-4" />
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <InfoItem icon={User} label="Nome">
-                {passageiro.nome}{" "}
-              </InfoItem>
-              <InfoItem icon={Contact} label="Status do Cadastro">
+              <InfoItem icon={Contact} label="Situação">
                 <Badge
-                  variant={passageiro.ativo ? "default" : "destructive"}
+                  variant={passageiro.ativo ? "outline" : "destructive"}
                   className={passageiro.ativo ? "bg-green-600 text-white" : ""}
                 >
                   {passageiro.ativo ? "Ativo" : "Desativado"}
                 </Badge>
-              </InfoItem>
-              <InfoItem icon={Contact} label="Responsável">
-                {passageiro.nome_responsavel}
               </InfoItem>
               <InfoItem icon={School} label="Escola">
                 {passageiro.escolas?.nome || "Não informada"}
@@ -996,11 +1009,11 @@ export default function PassageiroCarteirinha() {
             <CardContent>
               {isObservacoesEditing ? (
                 <Textarea
+                  ref={textareaRef}
                   value={obsText}
                   onChange={(e) => setObsText(e.target.value)}
                   rows={5}
                   placeholder="Ex: Alergia a amendoim, deixar na casa da avó às sextas, precisa de ajuda para colocar o cinto..."
-                  autoFocus
                 />
               ) : obsText ? (
                 <p className="text-sm text-gray-700 whitespace-pre-line">

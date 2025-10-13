@@ -135,8 +135,6 @@ export default function Passageiros() {
       subTitle = "Carregando...";
     }
 
-    console.log('ativos', countPassageirosAtivos);
-
     setPageTitle("Passageiros");
     setPageSubtitle(subTitle);
   }, [passageiros, setPageTitle, setPageSubtitle]);

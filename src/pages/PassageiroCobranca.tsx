@@ -278,8 +278,8 @@ export default function PassageiroCobranca() {
 
   useEffect(() => {
     if (cobranca) {
-      setPageTitle("Detalhes da Mensalidade");
-      setPageSubtitle(`${cobranca.passageiro_nome}`);
+      setPageTitle(`Mensalidade de ${meses[parseInt(cobranca.mes) - 1]}`);
+      setPageSubtitle(`${cobranca.passageiro_nome} (Responsável: ${cobranca.nome_responsavel})`);
     }
   }, [cobranca, setPageTitle, setPageSubtitle]);
 
@@ -332,7 +332,7 @@ export default function PassageiroCobranca() {
                 )}`}
               >
                 {cobranca.status === "pago"
-                  ? `Pago em ${formatDateToBR(cobranca.data_pagamento)}`
+                  ? `Paga em ${formatDateToBR(cobranca.data_pagamento)}`
                   : getStatusText(cobranca.status, cobranca.data_vencimento)}
               </span>
             </div>

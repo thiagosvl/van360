@@ -4,7 +4,7 @@ export const disableRegistrarPagamento = (cobranca): boolean => {
 };
 
 export const disableEnviarNotificacao = (cobranca): boolean => {
-    return cobranca.status === "pago" || cobranca.origem === "manual";
+    return cobranca.status === "pago";
 };
 
 export const disableToggleLembretes = (cobranca): boolean => {
@@ -16,7 +16,7 @@ export const disableDesfazerPagamento = (cobranca): boolean => {
 };
 
 export const disableExcluirMensalidade = (cobranca): boolean => {
-    return cobranca.status === "pago" || cobranca.origem === "automatica";
+    return cobranca.status === "pago";
 };
 
 export const disableBaixarBoleto = (cobranca): boolean => {

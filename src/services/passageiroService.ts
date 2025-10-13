@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { asaasService } from "@/services/asaasService";
 import { toLocalDateString } from "@/utils/formatters";
 import { moneyToNumber } from "@/utils/masks";
+import { AnyAaaaRecord } from "node:dns";
 
 export const passageiroService = {
 
@@ -20,6 +21,8 @@ export const passageiroService = {
   },
 
   async excluirPassageiro(passageiroId: string): Promise<void> {
+    const asaasApiKey = localStorage.getItem("asaas_api_key");
+
     const { data: passageiro, error: passageiroError } = await supabase
       .from("passageiros")
       .select("asaas_customer_id")
@@ -50,17 +53,15 @@ export const passageiroService = {
   },
 
   async createPassageiroComTransacao(
-    data: any // Use o tipo PassageiroFormData ou 'any' temporariamente
+    data: AnyAaaaRecord
   ): Promise<void> {
 
     const asaasApiKey = localStorage.getItem("asaas_api_key");
 
-    // As chaves de rollback que precisamos rastrear
     let asaasCustomer: any = null;
     let newPassageiro: any = null;
     let payment: any = null;
 
-    // Adaptação dos dados (retirada do Dialog)
     const { emitir_cobranca_mes_atual, ...pureData } = data;
     const passageiroData = {
       ...pureData,
@@ -69,16 +70,14 @@ export const passageiroService = {
       escola_id: pureData.escola_id || null,
       ativo: pureData.ativo ?? true,
       usuario_id: localStorage.getItem("app_user_id"),
-      // Garante que o CPF/Telefone estejam limpos, se a máscara estiver fora do service
       cpf_responsavel: pureData.cpf_responsavel.replace(/\D/g, ""),
       telefone_responsavel: pureData.telefone_responsavel.replace(/\D/g, ""),
     };
 
     try {
-      // --- 1. Criar Cliente ASAAS ---
       asaasCustomer = await asaasService.createCustomer(
         {
-          name: passageiroData.nome_responsavel, // Use o nome do responsável para o ASAAS
+          name: passageiroData.nome_responsavel,
           cpfCnpj: passageiroData.cpf_responsavel,
           mobilePhone: passageiroData.telefone_responsavel,
           notificationDisabled: true,
@@ -99,9 +98,7 @@ export const passageiroService = {
       if (insertPassageiroError) throw insertPassageiroError;
       newPassageiro = insertedPassageiro;
 
-      // --- 3. Criar Cobrança ASAAS e Supabase ---
       if (emitir_cobranca_mes_atual) {
-        // Toda a lógica de cálculo de data e vencimento do seu Dialog
         const currentDate = new Date();
         const mes = currentDate.getMonth() + 1;
         const ano = currentDate.getFullYear();
