@@ -344,7 +344,7 @@ export default function PassageiroCarteirinha() {
       if (numCobrancas > 0) {
         toast({
           title: "NEGADO: Passageiro possui mensalidades.",
-          description: `Mas você ainda pode desativa-lo editando o cadastro.`,
+          description: `Mas você ainda pode desativar o cadastro.`,
           variant: "destructive",
         });
         return;

@@ -55,7 +55,7 @@ export const formatCobrancaOrigem = (origem: string): string => {
   if (origem === "automatica") {
     return "Automática";
   }
-  return "Cadastro Manual";
+  return "Manual";
 };
 
 export const formatDateTimeToBR = (

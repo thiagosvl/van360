@@ -31,9 +31,9 @@ export const disableExcluirMensalidade = (cobranca): boolean => {
 };
 
 export const disableBaixarBoleto = (cobranca): boolean => {
-    return !cobranca.asaas_bankslip_url || seForPago(cobranca) || seOrigemManual(cobranca);
+    return !cobranca.asaas_bankslip_url || seForPago(cobranca);
 }
 
 export const disableVerPaginaPagamento = (cobranca): boolean => {
-    return !cobranca.asaas_invoice_url || seForPago(cobranca) || seOrigemManual(cobranca);
+    return !cobranca.asaas_invoice_url || seForPago(cobranca);
 }

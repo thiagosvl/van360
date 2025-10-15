@@ -136,8 +136,16 @@ export default function Escolas() {
   };
 
   const handleDeleteClick = (escola: Escola) => {
-    setSchoolToDelete(escola);
-    setIsDeleteDialogOpen(true);
+    if (escola.passageiros_ativos_count > 0) {
+      toast({
+        title: "Não é possível excluir.",
+        description: "A escola está vinculada a passageiros ativos.",
+        variant: "destructive",
+      });
+    } else {
+      setSchoolToDelete(escola);
+      setIsDeleteDialogOpen(true);
+    }
   };
 
   const handleDelete = async () => {
@@ -177,8 +185,7 @@ export default function Escolas() {
     } catch (error: any) {
       console.error("Erro ao alternar status:", error);
       toast({
-        title: "Erro ao alternar status.",
-        description: error.message,
+        title: error.message,
         variant: "destructive",
       });
     }
@@ -344,7 +351,6 @@ export default function Escolas() {
                                   )}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  disabled={escola.ativo}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleDeleteClick(escola);

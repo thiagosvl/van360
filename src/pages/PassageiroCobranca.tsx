@@ -25,8 +25,10 @@ import {
   disableRegistrarPagamento,
   disableToggleLembretes,
   disableVerPaginaPagamento,
+  seForPago,
 } from "@/utils/disableActions";
 import {
+  checkCobrancaJaVenceu,
   formatCobrancaOrigem,
   formatDateToBR,
   formatPaymentType,
@@ -41,6 +43,7 @@ import {
   BellOff,
   Bot,
   Calendar,
+  CalendarIcon,
   Contact,
   CreditCard,
   Download,
@@ -208,13 +211,22 @@ export default function PassageiroCobranca() {
   }, [cobranca]);
 
   const handleEnviarNotificacao = async () => {
-    try {
-      await cobrancaService.enviarNotificacao(cobranca);
-      toast({ title: "Notificação enviada com sucesso para o responsável" });
-      fetchNotificacoes();
-    } catch (error) {
-      console.error("Erro ao enviar notificação:", error);
-      toast({ title: "Erro ao enviar mensalidade.", variant: "destructive" });
+    if (disableEnviarNotificacao(cobranca)) {
+      toast({
+        title: "Não foi possível enviar a notificação.",
+        description:
+          "Só é possível enviar para mensalidades geradas automaticamente.",
+        variant: "destructive",
+      });
+    } else {
+      try {
+        await cobrancaService.enviarNotificacao(cobranca);
+        toast({ title: "Notificação enviada com sucesso para o responsável" });
+        fetchNotificacoes();
+      } catch (error) {
+        console.error("Erro ao enviar notificação:", error);
+        toast({ title: "Erro ao enviar mensalidade.", variant: "destructive" });
+      }
     }
   };
 
@@ -457,26 +469,27 @@ export default function PassageiroCobranca() {
               <Button
                 className="w-full"
                 variant="outline"
-                disabled={disableEnviarNotificacao(cobranca)}
+                disabled={seForPago(cobranca)}
                 onClick={() => handleEnviarNotificacao()}
               >
                 <Send className="h-4 w-4 mr-2" /> Enviar Notificação
               </Button>
-              <Button
-                className="w-full"
-                variant="outline"
-                disabled={disableToggleLembretes(cobranca)}
-                onClick={() => handleToggleLembretes()}
-              >
-                {cobranca.desativar_lembretes ? (
-                  <Bell className="h-4 w-4 mr-2" />
-                ) : (
-                  <BellOff className="h-4 w-4 mr-2" />
-                )}
-                {cobranca.desativar_lembretes
-                  ? "Ativar Notificações"
-                  : "Desativar Notificações"}
-              </Button>
+              {!disableToggleLembretes(cobranca) && (
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => handleToggleLembretes()}
+                >
+                  {cobranca.desativar_lembretes ? (
+                    <Bell className="h-4 w-4 mr-2" />
+                  ) : (
+                    <BellOff className="h-4 w-4 mr-2" />
+                  )}
+                  {cobranca.desativar_lembretes
+                    ? "Ativar Notificações"
+                    : "Desativar Notificações"}
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -506,17 +519,51 @@ export default function PassageiroCobranca() {
               >
                 {cobranca.desativar_lembretes ? "Desativadas" : "Ativadas"}
               </InfoItem>
-              <InfoItem icon={ArrowRight} label="Origem">
+              <InfoItem icon={ArrowRight} label="Origem Cadastro">
                 {formatCobrancaOrigem(cobranca.origem)}
               </InfoItem>
-              <InfoItem icon={BadgeCheck} label="Pagamento">
-                {cobranca.status === "pago"
-                  ? cobranca.pagamento_manual
-                    ? "Registrado por você"
-                    : "Registrado automaticamente"
-                  : "-"}
-              </InfoItem>
+              {(() => {
+                let IconComponent = CalendarIcon;
+
+                if (seForPago(cobranca)) {
+                  IconComponent = BadgeCheck;
+                } else if (checkCobrancaJaVenceu(cobranca.data_vencimento)) {
+                  IconComponent = XCircle;
+                }
+
+                return (
+                  <InfoItem icon={IconComponent} label="Pagamento">
+                    {cobranca.status === "pago"
+                      ? cobranca.pagamento_manual
+                        ? "Registrado por você"
+                        : "Registrado automaticamente"
+                      : "—"}
+                  </InfoItem>
+                );
+              })()}
             </div>
+            {!disableVerPaginaPagamento(cobranca) && !disableBaixarBoleto(cobranca) && (
+              <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t">
+                <Button
+                  disabled={disableVerPaginaPagamento(cobranca)}
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => goToExternalURL(cobranca.asaas_invoice_url)}
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" /> Ver Página de
+                  Pagamento
+                </Button>
+                <Button
+                  disabled={disableBaixarBoleto(cobranca)}
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => goToExternalURL(cobranca.asaas_bankslip_url)}
+                >
+                  <Download className="w-4 h-4 mr-2" /> Baixar Boleto
+                </Button>
+              </div>
+            )}
+
             <div className="pt-6 border-t">
               <h4 className="text-sm font-semibold mb-4 flex items-center gap-2 text-muted-foreground">
                 <HistoryIcon className="w-4 h-4" />
@@ -552,25 +599,6 @@ export default function PassageiroCobranca() {
                   </AlertTitle>
                 </Alert>
               )}
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t">
-              <Button
-                disabled={disableVerPaginaPagamento(cobranca)}
-                variant="outline"
-                className="flex-1"
-                onClick={() => goToExternalURL(cobranca.asaas_invoice_url)}
-              >
-                <ExternalLink className="w-4 h-4 mr-2" /> Ver Página de
-                Pagamento
-              </Button>
-              <Button
-                disabled={disableBaixarBoleto(cobranca)}
-                variant="outline"
-                className="flex-1"
-                onClick={() => goToExternalURL(cobranca.asaas_bankslip_url)}
-              >
-                <Download className="w-4 h-4 mr-2" /> Baixar Boleto
-              </Button>
             </div>
           </CardContent>
           <CardFooter>
