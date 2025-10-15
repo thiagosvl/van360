@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Zip Van</string>
-    <string name="title_activity_main">Zip Van</string>
-    <string name="package_name">com.tibis.zipvan</string>
-    <string name="custom_url_scheme">com.tibis.zipvan</string>
-</resources>
