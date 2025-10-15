@@ -383,7 +383,7 @@ export default function PassengerFormDialog({
                 >
                   <AlertTriangle className="h-4 w-4 mt-0.5" />
                   <AlertTitle className="font-semibold text-sm">
-                    Atenção, motorista!
+                    Atenção!
                   </AlertTitle>
                   <AlertDescription className="text-xs">
                     Finalize o cadastro preenchendo os campos restantes.
