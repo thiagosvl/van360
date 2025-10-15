@@ -222,8 +222,7 @@ export default function Configuracoes() {
   const handleSave = async () => {
     if (!validateForm() || !configuracoes) {
       toast({
-        title: "Campos inválidos",
-        description: "Por favor, corrija os campos destacados antes de salvar.",
+      title: "Por favor, corrija os erros no formulário.",
         variant: "destructive",
       });
       return;
@@ -237,14 +236,13 @@ export default function Configuracoes() {
         .eq("id", configuracoes.id);
       if (error) throw error;
       toast({
-        title: "Suas preferências foram atualizadas com sucesso.",
+        title: "Configurações atualizadas com sucesso.",
       });
     } catch (error) {
       console.error("Erro ao salvar configurações:", error);
       toast({
-        title: "Erro ao salvar",
-        description:
-          "Não foi possível salvar as configurações. Tente novamente.",
+        title:
+          "Não foi possível salvar as configurações.",
         variant: "destructive",
       });
     } finally {

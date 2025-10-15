@@ -1,9 +1,7 @@
-const API_BASE_URL =
-    import.meta.env.MODE === "development"
-        ? "/asaas"
-        : "/api/asaas";
-        
-const ASAAS_GENERAL_TOKEN = import.meta.env.VITE_ASAAS_TOKEN;
+import { supabase } from "@/integrations/supabase/client";
+
+const API_BASE_URL = "https://jztyffakurtekwxurclw.supabase.co/functions/v1/asaas-proxy";
+const GENERAL_API_BASE_URL = "https://jztyffakurtekwxurclw.supabase.co/functions/v1/asaas-general-proxy";
 
 export const asaasService = {
     async createCustomer(customer: {
@@ -12,13 +10,43 @@ export const asaasService = {
         email?: string;
         mobilePhone?: string;
         notificationDisabled?: boolean;
-    }, asaasApiKey?: string) {
+    }) {
+        const authHeaders = await this.getAuthHeaders();
+
         const res = await fetch(`${API_BASE_URL}/customers`, {
             method: "POST",
+            headers: authHeaders,
+            body: JSON.stringify(customer),
+        });
+
+        if (!res.ok) {
+            const errorText = await res.text();
+            let errorMessage = `Erro (${res.status}) ao criar cliente no Asaas: ${errorText}`;
+
+            try {
+                const err = JSON.parse(errorText);
+                errorMessage = err.errors?.[0]?.description || JSON.stringify(err);
+            } catch (e) {
+                errorMessage = `Falha de Conexão (${res.status} ${res.statusText || 'Erro Desconhecido'}): ${errorText}`;
+            }
+
+            throw new Error(errorMessage);
+        }
+
+        return res.json();
+    },
+
+    async createCustomerGeneral(customer: {
+        name: string;
+        cpfCnpj: string;
+        email?: string;
+        mobilePhone?: string;
+        notificationDisabled?: boolean;
+    }) {
+        const res = await fetch(`${GENERAL_API_BASE_URL}/customers`, {
+            method: "POST",
             headers: {
-                "accept": "application/json",
-                "content-type": "application/json",
-                "x-asaas-key": asaasApiKey, 
+                "Content-Type": "application/json",
             },
             body: JSON.stringify(customer),
         });
@@ -40,14 +68,12 @@ export const asaasService = {
         return res.json();
     },
 
-    async deletePayment(paymentId: string, asaasApiKey: string) {
+    async deletePayment(paymentId: string) {
+        const authHeaders = await this.getAuthHeaders();
+
         const res = await fetch(`${API_BASE_URL}/payments/${paymentId}`, {
             method: "DELETE",
-            headers: {
-                accept: "application/json",
-                "content-type": "application/json",
-                "x-asaas-key": asaasApiKey,
-            },
+            headers: authHeaders,
         });
 
         if (!res.ok) {
@@ -60,12 +86,27 @@ export const asaasService = {
         return res.json();
     },
 
-    async deleteCustomer(customerId: string, asaasApiKey: string) {
+    async deleteCustomer(customerId: string) {
+        const authHeaders = await this.getAuthHeaders();
+
         const res = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
             method: "DELETE",
+            headers: authHeaders,
+        },);
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.errors?.[0]?.description || "Erro ao excluir cliente no Asaas");
+        }
+
+        return res.json();
+    },
+
+    async deleteCustomerGeneral(customerId: string) {
+        const res = await fetch(`${GENERAL_API_BASE_URL}/customers/${customerId}`, {
+            method: "DELETE",
             headers: {
-                accept: "application/json",
-                "x-asaas-key": asaasApiKey,
+                "Content-Type": "application/json",
             },
         },);
 
@@ -77,24 +118,6 @@ export const asaasService = {
         return res.json();
     },
 
-    async createSubAccount(data: any) {
-        const response = await fetch(`${API_BASE_URL}/accounts`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "x-asaas-key": ASAAS_GENERAL_TOKEN!,
-            },
-            body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-            const err = await response.text();
-            throw new Error(`Erro ao criar subconta no Asaas: ${err}`);
-        }
-
-        return await response.json();
-    },
-
     async createPayment(
         payment: {
             customer: string;
@@ -103,16 +126,13 @@ export const asaasService = {
             dueDate: string;
             description?: string;
             externalReference?: string;
-        },
-        asaasApiKey: string
+        }
     ) {
+        const authHeaders = await this.getAuthHeaders();
+
         const res = await fetch(`${API_BASE_URL}/payments`, {
             method: "POST",
-            headers: {
-                accept: "application/json",
-                "content-type": "application/json",
-                "x-asaas-key": asaasApiKey,
-            },
+            headers: authHeaders,
             body: JSON.stringify(payment),
         });
 
@@ -126,46 +146,13 @@ export const asaasService = {
         return res.json();
     },
 
-    async createWebhook(subAccountasaasApiKey: string): Promise<any> {
-        try {
-            const response = await fetch("${API_BASE_URL}/customers/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-asaas-key": subAccountasaasApiKey,
-                },
-                body: JSON.stringify({
-                    name: "Webhook Mensalidade Passageiro Recebida",
-                    url: "https://jztyffakurtekwxurclw.supabase.co/functions/v1/pagamentoMensalidadePassageiro",
-                    email: null,
-                    enabled: true,
-                    interrupted: false,
-                    apiVersion: 3,
-                    sendType: "SEQUENTIALLY",
-                    events: ["PAYMENT_RECEIVED"],
-                    authToken: import.meta.env.VITE_ASAAS_WEBHOOK_TOKEN,
-                }),
-            });
+    async updatePayment(paymentId: string, body: any) {
+        const authHeaders = await this.getAuthHeaders();
 
-            if (!response.ok) {
-                throw new Error(`Erro ao criar webhook: ${response.statusText}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error("Erro ao criar webhook:", error);
-            throw error;
-        }
-    },
-
-    async updatePayment(paymentId: string, body: any, asaasApiKey: string) {
         try {
             const response = await fetch(`${API_BASE_URL}/payments/${paymentId}`, {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-asaas-key": asaasApiKey,
-                },
+                headers: authHeaders,
                 body: JSON.stringify(body),
             });
 
@@ -181,7 +168,9 @@ export const asaasService = {
         }
     },
 
-    async confirmPaymentInCash(paymentId: string, paymentDate: string, value: number, asaasApiKey: string) {
+    async confirmPaymentInCash(paymentId: string, paymentDate: string, value: number) {
+        const authHeaders = await this.getAuthHeaders();
+
         try {
             const payload = {
                 paymentDate,
@@ -191,10 +180,7 @@ export const asaasService = {
 
             const response = await fetch(`${API_BASE_URL}/payments/${paymentId}/receiveInCash`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-asaas-key": asaasApiKey,
-                },
+                headers: authHeaders,
                 body: JSON.stringify(payload),
             });
 
@@ -210,14 +196,13 @@ export const asaasService = {
         }
     },
 
-    async undoPaymentInCash(paymentId: string, asaasApiKey: string) {
+    async undoPaymentInCash(paymentId: string) {
+        const authHeaders = await this.getAuthHeaders();
+
         try {
             const response = await fetch(`${API_BASE_URL}/payments/${paymentId}/undoReceivedInCash`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-asaas-key": asaasApiKey,
-                },
+                headers: authHeaders,
             });
 
             if (!response.ok) {
@@ -232,19 +217,18 @@ export const asaasService = {
         }
     },
 
-    async obterPixAsaas(paymentId: string, asaasApiKey: string): Promise<{
+    async getPixAsaas(paymentId: string): Promise<{
         payload: string;
         encodedImage?: string;
         expirationDate?: string;
         description?: string;
     } | null> {
+        const authHeaders = await this.getAuthHeaders();
+
         try {
             const res = await fetch(`${API_BASE_URL}/payments/${paymentId}/pixQrCode`, {
                 method: "GET",
-                headers: {
-                    accept: "application/json",
-                    "x-asaas-key": asaasApiKey,
-                },
+                headers: authHeaders,
             });
             if (!res.ok) {
                 console.error("Asaas pixQrCode HTTP", res.status, await res.text());
@@ -264,20 +248,89 @@ export const asaasService = {
         }
     },
 
-    // async deleteSubAccount(id: string) {
-    //     const response = await fetch(`${API_BASE_URL}/customers/accounts/${id}`, {
-    //         method: "DELETE",
-    //         headers: {
-    //             "x-asaas-key": ASAAS_GENERAL_TOKEN!,
-    //         },
-    //     });
+    async createSubAccount(data: any) {
+        const response = await fetch(`${GENERAL_API_BASE_URL}/accounts`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        });
 
-    //     if (!response.ok) {
-    //         const err = await response.text();
-    //         throw new Error(`Erro ao excluir subconta no Asaas: ${err}`);
-    //     }
+        if (!response.ok) {
+            const err = await response.text();
+            throw new Error(`Erro ao criar subconta no Asaas: ${err}`);
+        }
 
-    //     return true;
-    // }
+        return await response.json();
+    },
+
+    async createWebhook(): Promise<any> {
+        const authHeaders = await this.getAuthHeaders();
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/webhooks/`, {
+                method: "POST",
+                headers: authHeaders,
+                body: JSON.stringify({
+                    name: "Webhook Mensalidade Passageiro Recebida",
+                    url: "https://jztyffakurtekwxurclw.supabase.co/functions/v1/pagamentoMensalidadePassageiro",
+                    email: null,
+                    enabled: true,
+                    interrupted: false,
+                    apiVersion: 3,
+                    sendType: "SEQUENTIALLY",
+                    events: ["PAYMENT_RECEIVED"],
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erro ao criar webhook: ${response.statusText}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Erro ao criar webhook:", error);
+            throw error;
+        }
+    },
+
+    async getAuthHeaders() {
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error || !session) {
+            throw new Error("Sessão de usuário não encontrada. Por favor, faça login novamente.");
+        }
+
+        const token = session.access_token;
+
+        return {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "accept": "application/json",
+        };
+    },
+
+    async provisionAsaasMotorista(usuarioDataDB: any, subAccountPayload: any): Promise<any> {
+        const PROVISION_API_URL = "https://jztyffakurtekwxurclw.supabase.co/functions/v1/asaasProvisioning";
+
+        const response = await fetch(PROVISION_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'accept': 'application/json',
+            },
+            body: JSON.stringify({
+                usuarioDataDB,
+                subAccountPayload
+            })
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error || "Falha ao provisionar recursos Asaas.");
+        }
+        return response.json();
+    }
 
 };

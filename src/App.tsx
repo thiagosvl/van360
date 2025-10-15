@@ -19,6 +19,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PassageiroCarteirinha from "./pages/PassageiroCarteirinha";
 import PassageiroCobranca from "./pages/PassageiroCobranca";
+import PassageiroExternalForm from "./pages/PassageiroExternalForm";
 import Passageiros from "./pages/Passageiros";
 
 const queryClient = new QueryClient();
@@ -28,15 +29,12 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner position="top-right" />
+      {/* AuthProvider deve ser o mais alto possível para envolver todas as rotas */}
       <AuthProvider>
         <BrowserRouter>
-        <ScrollToTop />
+          <ScrollToTop />
           <Routes>
-            {/* <Route path="/"  element={<Index />} /> */}
-            <Route
-              path="/"
-              element={<Navigate to="/dashboard" replace />}
-            />
+            {/* Rotas Públicas */}
             <Route
               path="/login"
               element={
@@ -45,8 +43,16 @@ const App = () => (
                 </AppGate>
               }
             />
+            {/* NOVO: Rota Pública para o cadastro iniciado pelo responsável */}
+            <Route
+              path="/cadastro-passageiro/:motoristaId"
+              element={<PassageiroExternalForm />}
+            />
 
-            {/* Protected routes */}
+            {/* Redirecionamento de / para rota padrão */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+            {/* Rotas Protegidas (Envolvem AppGate e AppLayout) */}
             <Route
               element={
                 <AppGate>

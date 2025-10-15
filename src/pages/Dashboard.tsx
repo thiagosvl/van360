@@ -169,18 +169,18 @@ const Dashboard = () => {
   const [latePayments, setLatePayments] = useState<Cobranca[]>([]);
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
-  const { user, loading: isAuthLoading } = useAuth();
-  const userId = user?.id || null;
+  const { loading: isAuthLoading, profile } = useAuth();
+  const systemUserId = profile?.id || null;
   const [isLoadingData, setIsLoadingData] = useState(false);
   const loading = isAuthLoading || isLoadingData;
 
   const fetchStats = async () => {
-    const currentUserId = userId;
+    const currentUserId = systemUserId;
 
     setIsLoadingData(true);
 
-    if (!currentUserId) {
-      console.warn("Usuário ID nulo, abortando fetchStats.");
+    if (!profile) {
+      console.warn("Usuário nulo, abortando fetchStats.");
       setIsLoadingData(false);
       return;
     }
@@ -264,9 +264,9 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    if (!isAuthLoading && userId) {
+    if (!isAuthLoading && systemUserId) {
       fetchStats();
-    } else if (!isAuthLoading && !userId) {
+    } else if (!isAuthLoading && !systemUserId) {
       setIsLoadingData(false);
     }
 
@@ -275,7 +275,7 @@ const Dashboard = () => {
   }, [
     mesFilter,
     anoFilter,
-    userId,
+    systemUserId,
     isAuthLoading,
     setPageTitle,
     setPageSubtitle,
@@ -437,83 +437,87 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CalendarDays className="w-5 h-5" />
-              Situação do Mês
-            </CardTitle>
-          </CardHeader>
+        <div className="grid xl:grid-cols-2 gap-4">
+          {/* Situação do mes */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarDays className="w-5 h-5" />
+                Situação do Mês
+              </CardTitle>
+            </CardHeader>
 
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="text-sm font-medium text-muted-foreground mb-1">
-                  Mensalidades
-                </div>
-                {loading ? (
-                  <Skeleton className="h-7 w-12" />
-                ) : (
-                  <div className="text-2xl font-bold">
-                    {stats.totalCobrancas}
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="text-sm font-medium text-muted-foreground mb-1">
+                    Mensalidades
                   </div>
-                )}
-              </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="text-sm font-medium text-muted-foreground mb-1">
-                  Pagas
+                  {loading ? (
+                    <Skeleton className="h-7 w-12" />
+                  ) : (
+                    <div className="text-2xl font-bold">
+                      {stats.totalCobrancas}
+                    </div>
+                  )}
                 </div>
-                {loading ? (
-                  <Skeleton className="h-7 w-12" />
-                ) : (
-                  <div className="text-2xl font-bold text-green-600">
-                    {stats.cobrancasPagas}
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="text-sm font-medium text-muted-foreground mb-1">
+                    Pagas
                   </div>
-                )}
-              </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="text-sm font-medium text-muted-foreground mb-1">
-                  A vencer
+                  {loading ? (
+                    <Skeleton className="h-7 w-12" />
+                  ) : (
+                    <div className="text-2xl font-bold text-green-600">
+                      {stats.cobrancasPagas}
+                    </div>
+                  )}
                 </div>
-                {loading ? (
-                  <Skeleton className="h-7 w-12" />
-                ) : (
-                  <div className="text-2xl font-bold text-orange-600">
-                    {stats.cobrancasPendentes}
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="text-sm font-medium text-muted-foreground mb-1">
+                    A vencer
                   </div>
-                )}
-              </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="text-sm font-medium text-muted-foreground mb-1">
-                  Em Atraso
+                  {loading ? (
+                    <Skeleton className="h-7 w-12" />
+                  ) : (
+                    <div className="text-2xl font-bold text-orange-600">
+                      {stats.cobrancasPendentes}
+                    </div>
+                  )}
                 </div>
-                {loading ? (
-                  <Skeleton className="h-7 w-12" />
-                ) : (
-                  <div className="text-2xl font-bold text-red-600">
-                    {stats.cobrancasAtrasadas}
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="text-sm font-medium text-muted-foreground mb-1">
+                    Em Atraso
                   </div>
-                )}
+                  {loading ? (
+                    <Skeleton className="h-7 w-12" />
+                  ) : (
+                    <div className="text-2xl font-bold text-red-600">
+                      {stats.cobrancasAtrasadas}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PieChart className="w-5 h-5" />
-              Origem dos Recebimentos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <PaymentStatsDisplay
-              stats={paymentStats}
-              totalRecebido={stats.totalRecebido}
-              loading={loading}
-            />
-          </CardContent>
-        </Card>
+          {/* Origem dos Recebimentos */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <PieChart className="w-5 h-5" />
+                Origem dos Recebimentos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PaymentStatsDisplay
+                stats={paymentStats}
+                totalRecebido={stats.totalRecebido}
+                loading={loading}
+              />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

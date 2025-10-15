@@ -13,12 +13,21 @@ export const meses = [
   "Dezembro",
 ];
 
+export const tiposPagamento = [
+  { value: "PIX", label: "PIX" },
+  { value: "dinheiro", label: "Dinheiro" },
+  { value: "cartao-debito", label: "Cartão de Débito" },
+  { value: "cartao-credito", label: "Cartão de Crédito" },
+  { value: "transferencia", label: "Transferência" },
+  { value: "boleto", label: "Boleto" },
+];
+
 export const toLocalDateString = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 };
 
 export const formatDate = (date: string | Date) => {
@@ -44,9 +53,9 @@ export const formatProfile = (profile: string): string => {
 
 export const formatCobrancaOrigem = (origem: string): string => {
   if (origem === "automatica") {
-    return "Sistema";
+    return "Automática";
   }
-  return "Você";
+  return "Cadastro Manual";
 };
 
 export const formatDateTimeToBR = (
@@ -107,14 +116,18 @@ export const getStatusText = (status: string, dataVencimento: string) => {
   return "A vencer";
 };
 
-export const getStatusColor = (status: string, dataVencimento: string) => {
-  if (status === "pago") return "bg-green-100 text-green-800";
-
+export const checkCobrancaJaVenceu = (dataVencimento: string) => {
   const vencimento = formatDate(dataVencimento);
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
 
-  return vencimento < hoje
+  return vencimento < hoje;
+}
+
+export const getStatusColor = (status: string, dataVencimento: string) => {
+  if (status === "pago") return "bg-green-100 text-green-800";
+
+  return checkCobrancaJaVenceu(dataVencimento)
     ? "bg-red-100 text-red-800"
     : "bg-orange-100 text-orange-800";
 };

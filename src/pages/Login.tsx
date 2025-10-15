@@ -15,7 +15,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cpfCnpjMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,7 +43,6 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
   const navigate = useNavigate();
 
   const form = useForm<LoginFormData>({

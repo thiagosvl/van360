@@ -73,8 +73,7 @@ export function UsuarioForm({ usuario, onSubmit, onClose }: UsuarioFormProps) {
       await onSubmit(data);
     } catch (error: any) {
       toast({
-        title: "Erro",
-        description: error.message || "Não foi possível salvar o usuário.",
+        title: error.message || "Não foi possível salvar o usuário.",
         variant: "destructive",
       });
     } finally {
@@ -179,6 +178,7 @@ export function UsuarioForm({ usuario, onSubmit, onClose }: UsuarioFormProps) {
                       <FormLabel>Perfil *</FormLabel>
                       <FormControl>
                         <Select
+                          disabled={usuario && usuario.role != null}
                           onValueChange={field.onChange}
                           value={field.value}
                         >

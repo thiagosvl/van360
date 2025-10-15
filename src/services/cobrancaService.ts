@@ -3,11 +3,16 @@ import { asaasService } from "@/services/asaasService";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaDetalhe } from "@/types/cobrancaDetalhe";
 import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
+import { toLocalDateString } from "@/utils/formatters";
+
+interface UpdatePayload {
+    valor: number;
+    data_vencimento: string;
+    tipo_pagamento?: string;
+}
 
 export const cobrancaService = {
     async desfazerPagamento(cobrancaId: string): Promise<void> {
-        const asaasApiKey = localStorage.getItem("asaas_api_key");
-
         const { data: cobranca, error: fetchError } = await supabase
             .from("cobrancas")
             .select("*")
@@ -34,9 +39,9 @@ export const cobrancaService = {
             throw new Error("Falha ao atualizar o status da cobrança no banco de dados.");
         }
 
-        if (cobranca.origem === "automatica" && cobranca.asaas_payment_id && asaasApiKey) {
+        if (cobranca.origem === "automatica" && cobranca.asaas_payment_id) {
             try {
-                await asaasService.undoPaymentInCash(cobranca.asaas_payment_id, asaasApiKey);
+                await asaasService.undoPaymentInCash(cobranca.asaas_payment_id);
             } catch (asaasErr) {
                 console.error("Erro ao desfazer o pagamento no Asaas. Iniciando rollback...", asaasErr);
                 await supabase
@@ -55,11 +60,9 @@ export const cobrancaService = {
     },
 
     async excluirCobranca(cobranca: Cobranca | CobrancaDetalhe): Promise<void> {
-        const asaasApiKey = localStorage.getItem("asaas_api_key");
-
-        if (cobranca.origem === "automatica" && cobranca.asaas_payment_id && asaasApiKey) {
+        if (cobranca.asaas_payment_id) {
             try {
-                await asaasService.deletePayment(cobranca.asaas_payment_id, asaasApiKey);
+                await asaasService.deletePayment(cobranca.asaas_payment_id);
             } catch (asaasErr) {
                 console.error("Erro ao excluir pagamento no Asaas. A operação foi abortada.", asaasErr);
                 throw new Error("Falha ao excluir a cobrança no provedor de pagamento.");
@@ -142,8 +145,6 @@ export const cobrancaService = {
     },
 
     async registrarPagamentoManual(cobrancaId: string, pagamentoData: any): Promise<void> {
-        const asaasApiKey = localStorage.getItem("asaas_api_key");
-        
         const { data: cobranca, error: fetchError } = await supabase
             .from("cobrancas")
             .select("id, origem, asaas_payment_id, data_vencimento")
@@ -154,13 +155,12 @@ export const cobrancaService = {
             throw new Error("Não foi possível localizar a mensalidade para registrar o pagamento.");
         }
 
-        if (cobranca.origem === "automatica" && cobranca.asaas_payment_id && asaasApiKey) {
+        if (cobranca.origem === "automatica" && cobranca.asaas_payment_id) {
             try {
                 await asaasService.confirmPaymentInCash(
                     cobranca.asaas_payment_id,
                     pagamentoData.data_pagamento,
-                    pagamentoData.valor_pago,
-                    asaasApiKey
+                    pagamentoData.valor_pago
                 );
             } catch (asaasErr) {
                 console.error("Erro ao confirmar pagamento no Asaas.", asaasErr);
@@ -180,9 +180,9 @@ export const cobrancaService = {
             .eq("id", cobrancaId);
 
         if (error) {
-            if (cobranca.origem === "automatica" && cobranca.asaas_payment_id && asaasApiKey) {
+            if (cobranca.origem === "automatica" && cobranca.asaas_payment_id) {
                 try {
-                    await asaasService.undoPaymentInCash(cobranca.asaas_payment_id, asaasApiKey);
+                    await asaasService.undoPaymentInCash(cobranca.asaas_payment_id);
                 } catch (undoErr) {
                     console.error("ERRO CRÍTICO: Falha ao registrar no Supabase e falha ao reverter no Asaas.", undoErr);
                 }
@@ -191,35 +191,114 @@ export const cobrancaService = {
         }
     },
 
-    async fetchAvailableYears(passageiroId: string): Promise<string[]> {
-    try {
-        const { data, error } = await supabase
-            .from('cobrancas')
-            .select('ano')
-            .eq('passageiro_id', passageiroId)
-            .order('ano', { ascending: false });
+    async editarCobrancaComTransacao(
+        cobrancaId: string,
+        payload: UpdatePayload,
+        cobrancaOriginal: Cobranca
+    ): Promise<void> {
 
-        if (error) throw error;
-        
-        const uniqueYears = Array.from(new Set(data.map(item => item.ano.toString())));
-        
-        const currentYear = new Date().getFullYear().toString();
-        
-        if (!uniqueYears.includes(currentYear)) {
-            uniqueYears.unshift(currentYear);
-        } else {
-            const index = uniqueYears.indexOf(currentYear);
-            if (index !== 0) {
-                uniqueYears.splice(index, 1);
-                uniqueYears.unshift(currentYear);
-            }
+        const isPaga = cobrancaOriginal.status === "pago";
+        const hasAsaasId = !!cobrancaOriginal.asaas_payment_id;
+        const novaDataVencimento = new Date(payload.data_vencimento);
+
+        const supabaseUpdatePayload: any = {
+            valor: payload.valor,
+            data_vencimento: payload.data_vencimento,
+        };
+
+        if (isPaga && cobrancaOriginal.pagamento_manual) {
+            supabaseUpdatePayload.tipo_pagamento = payload.tipo_pagamento;
         }
 
-        return uniqueYears;
+        let rollbackNeeded = false;
 
-    } catch (error) {
-        console.error("Erro ao buscar anos disponíveis:", error);
-        return [new Date().getFullYear().toString()];
+        try {
+            const { error: updateError } = await supabase
+                .from("cobrancas")
+                .update(supabaseUpdatePayload)
+                .eq("id", cobrancaId);
+
+            if (updateError) throw updateError;
+            rollbackNeeded = true;
+
+            if (hasAsaasId && !isPaga) {
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
+
+                const dataAlterada =
+                    payload.data_vencimento !== cobrancaOriginal.data_vencimento;
+
+                if (dataAlterada && new Date(payload.data_vencimento) < hoje) {
+                    throw new Error(
+                        "A nova data de vencimento deve ser igual ou posterior à data de hoje (exigência do provedor de pagamento)."
+                    );
+                }
+
+                const asaasUpdatePayload = {
+                    value: payload.valor,
+                    dueDate: payload.data_vencimento,
+                    billingType: "UNDEFINED",
+                };
+
+                await asaasService.updatePayment(
+                    cobrancaOriginal.asaas_payment_id!,
+                    asaasUpdatePayload
+                );
+            }
+
+        } catch (error: any) {
+            if (rollbackNeeded) {
+                try {
+                    const rollbackPayload: any = {
+                        valor: cobrancaOriginal.valor,
+                        data_vencimento: toLocalDateString(new Date(cobrancaOriginal.data_vencimento)),
+                        tipo_pagamento: cobrancaOriginal.tipo_pagamento,
+                    };
+
+                    await supabase
+                        .from("cobrancas")
+                        .update(rollbackPayload)
+                        .eq("id", cobrancaId);
+
+                    console.log("Rollback da edição de cobrança concluído.");
+
+                } catch (rollbackErr) {
+                    console.error("ERRO CRÍTICO no Rollback da Cobrança:", rollbackErr);
+                }
+            }
+            throw new Error(error.message || "Falha na edição da mensalidade. Verifique os logs.");
+        }
+    },
+
+    async fetchAvailableYears(passageiroId: string): Promise<string[]> {
+        try {
+            const { data, error } = await supabase
+                .from('cobrancas')
+                .select('ano')
+                .eq('passageiro_id', passageiroId)
+                .order('ano', { ascending: false });
+
+            if (error) throw error;
+
+            const uniqueYears = Array.from(new Set(data.map(item => item.ano.toString())));
+
+            const currentYear = new Date().getFullYear().toString();
+
+            if (!uniqueYears.includes(currentYear)) {
+                uniqueYears.unshift(currentYear);
+            } else {
+                const index = uniqueYears.indexOf(currentYear);
+                if (index !== 0) {
+                    uniqueYears.splice(index, 1);
+                    uniqueYears.unshift(currentYear);
+                }
+            }
+
+            return uniqueYears;
+
+        } catch (error) {
+            console.error("Erro ao buscar anos disponíveis:", error);
+            return [new Date().getFullYear().toString()];
+        }
     }
-}
 };

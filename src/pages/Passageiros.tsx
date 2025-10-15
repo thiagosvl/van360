@@ -1,5 +1,6 @@
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PassageiroFormDialog from "@/components/PassageiroFormDialog";
+import PrePassageiros from "@/components/PrePassageiros";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -18,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -135,9 +137,13 @@ export default function Passageiros() {
       subTitle = "Carregando...";
     }
 
-    setPageTitle("Passageiros");
+    setPageTitle("Passageiros e Pré-Cadastros");
     setPageSubtitle(subTitle);
   }, [passageiros, setPageTitle, setPageSubtitle]);
+
+  const handleFinalizeNewPrePassageiro = async () => {
+    fetchPassageiros();
+  };
 
   const handleDelete = async () => {
     try {
@@ -241,8 +247,8 @@ export default function Passageiros() {
     const numeroPassageiro = Math.floor(Math.random() * 1000);
 
     const fakeData = {
-      nome: "Passag. Teste " + numeroPassageiro,
-      nome_responsavel: `Resp. do ${numeroPassageiro} `,
+      nome: "Thiago " + numeroPassageiro,
+      nome_responsavel: `Monica ${numeroPassageiro}`,
       email_responsavel: "abiliodasvendas@gmail.com",
       telefone_responsavel: "11951186951",
       cpf_responsavel: "39542391838",
@@ -278,155 +284,262 @@ export default function Passageiros() {
   return (
     <div className="space-y-6">
       <div className="w-full">
-        <div className="flex justify-end items-center mb-6">
-          <div className="flex gap-2">
-            <Button
-              onClick={handleCadastrarRapido}
-              variant="destructive"
-              className="gap-2 text-uppercase text-white"
+        <Tabs defaultValue="passageiros" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger
+              value="passageiros"
+              className="data-[state=inactive]:text-muted-foreground/80"
             >
-              CADASTRO PREGUIÇOSO
-            </Button>
-          </div>
-        </div>
+              Passageiros
+            </TabsTrigger>
+            <TabsTrigger
+              value="pre-cadastros"
+              className="data-[state=inactive]:text-muted-foreground/80"
+            >
+              Pré-Cadastros
+            </TabsTrigger>
+          </TabsList>
 
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="flex items-center gap-2">
-                <span>Passageiros</span>
-                {countPassageirosAtivos > 0 && (
-                  <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
-                    {countPassageirosAtivos}
-                  </span>
-                )}
-              </CardTitle>
+          <TabsContent value="passageiros" className="mt-4">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center gap-2">
+                    <span>Passageiros</span>
+                    {countPassageirosAtivos > 0 && (
+                      <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
+                        {countPassageirosAtivos}
+                      </span>
+                    )}
+                  </CardTitle>
 
-              <Button onClick={handleOpenNewDialog}>
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Novo Passageiro</span>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="search">Buscar por Nome</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                  <Input
-                    id="search"
-                    placeholder="Nome do passageiro ou responsável..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+                  <Button onClick={handleOpenNewDialog}>
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Novo Passageiro</span>
+                  </Button>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="status-filter">Status</Label>
-                <Select
-                  value={selectedStatus}
-                  onValueChange={setSelectedStatus}
-                >
-                  <SelectTrigger id="status-filter">
-                    <SelectValue placeholder="Todos os status" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-60 overflow-y-auto">
-                    <SelectItem value="todos">Todos</SelectItem>
-                    <SelectItem value="ativo">Ativo</SelectItem>
-                    <SelectItem value="desativado">Desativado</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="escola-filter">Escola</Label>
-                <Select
-                  value={selectedEscola}
-                  onValueChange={setSelectedEscola}
-                >
-                  <SelectTrigger id="escola-filter">
-                    <SelectValue placeholder="Todas as escolas" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-60 overflow-y-auto">
-                    <SelectItem value="todas">Todas as escolas</SelectItem>
-                    {escolas.map((escola) => (
-                      <SelectItem key={escola.id} value={escola.id}>
-                        {escola.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="mt-8">
-              {loading ? (
-                <PassengerListSkeleton />
-              ) : passageiros.length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
-                  <Users2 className="w-12 h-12 mb-4 text-gray-300" />
-                  <p>
-                    {searchTerm
-                      ? `Nenhum passageiro encontrado para "${searchTerm}"`
-                      : "Nenhum passageiro cadastrado"}
-                  </p>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-7">
+                  <Button
+                    onClick={handleCadastrarRapido}
+                    variant="destructive"
+                    className="gap-2 w-full text-uppercase text-white"
+                  >
+                    CADASTRO PREGUIÇOSO
+                  </Button>
                 </div>
-              ) : (
-                <>
-                  <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="p-3 text-left text-xs font-medium text-gray-600">
-                            Nome
-                          </th>
-                          <th className="p-3 text-left text-xs font-medium text-gray-600">
-                            Status
-                          </th>
-                          <th className="p-3 text-left text-xs font-medium text-gray-600">
-                            Escola
-                          </th>
-                          <th className="p-3 text-center text-xs font-medium text-gray-600">
-                            Ações
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="search">Buscar por Nome</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                      <Input
+                        id="search"
+                        placeholder="Nome do passageiro ou responsável..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="status-filter">Status</Label>
+                    <Select
+                      value={selectedStatus}
+                      onValueChange={setSelectedStatus}
+                    >
+                      <SelectTrigger id="status-filter">
+                        <SelectValue placeholder="Todos os status" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60 overflow-y-auto">
+                        <SelectItem value="todos">Todos</SelectItem>
+                        <SelectItem value="ativo">Ativo</SelectItem>
+                        <SelectItem value="desativado">Desativado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="escola-filter">Escola</Label>
+                    <Select
+                      value={selectedEscola}
+                      onValueChange={setSelectedEscola}
+                    >
+                      <SelectTrigger id="escola-filter">
+                        <SelectValue placeholder="Todas as escolas" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60 overflow-y-auto">
+                        <SelectItem value="todas">Todas as escolas</SelectItem>
+                        {escolas.map((escola) => (
+                          <SelectItem key={escola.id} value={escola.id}>
+                            {escola.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="mt-8">
+                  {loading ? (
+                    <PassengerListSkeleton />
+                  ) : passageiros.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
+                      <Users2 className="w-12 h-12 mb-4 text-gray-300" />
+                      <p>
+                        {searchTerm
+                          ? `Nenhum passageiro encontrado para "${searchTerm}"`
+                          : "Nenhum passageiro cadastrado"}
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="p-3 text-left text-xs font-medium text-gray-600">
+                                Nome
+                              </th>
+                              <th className="p-3 text-left text-xs font-medium text-gray-600">
+                                Status
+                              </th>
+                              <th className="p-3 text-left text-xs font-medium text-gray-600">
+                                Escola
+                              </th>
+                              <th className="p-3 text-center text-xs font-medium text-gray-600">
+                                Ações
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {passageiros.map((passageiro) => (
+                              <tr
+                                key={passageiro.id}
+                                onClick={() => handleHistorico(passageiro)}
+                                className="hover:bg-muted/50 cursor-pointer"
+                              >
+                                <td className="p-3 align-top">
+                                  <div className="font-medium text-sm text-gray-900">
+                                    {passageiro.nome}
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    Responsável:{" "}
+                                    {passageiro.nome_responsavel || "-"}
+                                  </div>
+                                </td>
+                                <td className="p-3 align-top">
+                                  <span
+                                    className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
+                                      passageiro.ativo
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-red-100 text-red-800"
+                                    }`}
+                                  >
+                                    {passageiro.ativo ? "Ativo" : "Desativado"}
+                                  </span>
+                                </td>
+                                <td className="p-3 align-top">
+                                  <span className="text-sm text-muted-foreground">
+                                    {passageiro.escolas?.nome ||
+                                      "Não informada"}
+                                  </span>
+                                </td>
+                                <td className="p-3 text-center align-top">
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <MoreVertical className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                      <DropdownMenuItem
+                                        className="cursor-pointer"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleHistorico(passageiro);
+                                        }}
+                                      >
+                                        <CreditCard className="w-4 h-4 mr-2" />
+                                        Ver Carteirinha
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        className="cursor-pointer"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleEdit(passageiro);
+                                        }}
+                                      >
+                                        <Pencil className="w-4 h-4 mr-2" />
+                                        Editar
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        className="cursor-pointer"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleToggleClick(passageiro);
+                                        }}
+                                      >
+                                        {passageiro.ativo ? (
+                                          <>
+                                            <ToggleLeft className="w-4 h-4 mr-2" />
+                                            Desativar
+                                          </>
+                                        ) : (
+                                          <>
+                                            <ToggleRight className="w-4 h-4 mr-2" />
+                                            Reativar
+                                          </>
+                                        )}
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        className="cursor-pointer text-red-600"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setDeleteDialog({
+                                            open: true,
+                                            passageiroId: passageiro.id,
+                                          });
+                                        }}
+                                      >
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Excluir
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="md:hidden divide-y divide-gray-200">
                         {passageiros.map((passageiro) => (
-                          <tr
+                          <div
                             key={passageiro.id}
                             onClick={() => handleHistorico(passageiro)}
-                            className="hover:bg-muted/50 cursor-pointer"
+                            className="p-4 active:bg-muted/50"
                           >
-                            <td className="p-3 align-top">
-                              <div className="font-medium text-sm text-gray-900">
-                                {passageiro.nome}
+                            <div className="flex justify-between items-start">
+                              <div className="pr-2">
+                                <div className="font-semibold text-gray-800">
+                                  {passageiro.nome}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {passageiro.escolas?.nome || "Sem escola"}
+                                </div>
                               </div>
-                            </td>
-                            <td className="p-3 align-top">
-                              <span
-                                className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
-                                  passageiro.ativo
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {passageiro.ativo ? "Ativo" : "Desativado"}
-                              </span>
-                            </td>
-                            <td className="p-3 align-top">
-                              <span className="text-sm text-muted-foreground">
-                                {passageiro.escolas?.nome || "Não informada"}
-                              </span>
-                            </td>
-                            <td className="p-3 text-center align-top">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button
                                     variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
+                                    size="icon"
+                                    className="h-8 w-8 shrink-0"
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     <MoreVertical className="h-4 w-4" />
@@ -434,7 +547,6 @@ export default function Passageiros() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                   <DropdownMenuItem
-                                    className="cursor-pointer"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleHistorico(passageiro);
@@ -444,7 +556,6 @@ export default function Passageiros() {
                                     Ver Carteirinha
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    className="cursor-pointer"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleEdit(passageiro);
@@ -473,7 +584,6 @@ export default function Passageiros() {
                                     )}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    className="cursor-pointer text-red-600"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setDeleteDialog({
@@ -481,118 +591,41 @@ export default function Passageiros() {
                                         passageiroId: passageiro.id,
                                       });
                                     }}
+                                    className="text-red-600"
                                   >
                                     <Trash2 className="w-4 h-4 mr-2" />
                                     Excluir
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="md:hidden divide-y divide-gray-200">
-                    {passageiros.map((passageiro) => (
-                      <div
-                        key={passageiro.id}
-                        onClick={() => handleHistorico(passageiro)}
-                        className="p-4 active:bg-muted/50"
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="pr-2">
-                            <div className="font-semibold text-gray-800">
-                              {passageiro.nome}
                             </div>
-                            <div className="text-sm text-muted-foreground">
-                              {passageiro.escolas?.nome || "Sem escola"}
+                            <div className="mt-2">
+                              <span
+                                className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
+                                  passageiro.ativo
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}
+                              >
+                                {passageiro.ativo ? "Ativo" : "Desativado"}
+                              </span>
                             </div>
                           </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 shrink-0"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleHistorico(passageiro);
-                                }}
-                              >
-                                <CreditCard className="w-4 h-4 mr-2" />
-                                Ver Carteirinha
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEdit(passageiro);
-                                }}
-                              >
-                                <Pencil className="w-4 h-4 mr-2" />
-                                Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="cursor-pointer"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleToggleClick(passageiro);
-                                }}
-                              >
-                                {passageiro.ativo ? (
-                                  <>
-                                    <ToggleLeft className="w-4 h-4 mr-2" />
-                                    Desativar
-                                  </>
-                                ) : (
-                                  <>
-                                    <ToggleRight className="w-4 h-4 mr-2" />
-                                    Reativar
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setDeleteDialog({
-                                    open: true,
-                                    passageiroId: passageiro.id,
-                                  });
-                                }}
-                                className="text-red-600"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Excluir
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                        <div className="mt-2">
-                          <span
-                            className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
-                              passageiro.ativo
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {passageiro.ativo ? "Ativo" : "Desativado"}
-                          </span>
-                        </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="pre-cadastros" className="mt-4">
+            <PrePassageiros
+              onFinalizeNewPrePassageiro={handleFinalizeNewPrePassageiro}
+            ></PrePassageiros>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {isDialogOpen && (

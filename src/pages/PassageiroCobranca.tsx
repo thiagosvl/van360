@@ -1,3 +1,4 @@
+import CobrancaEditDialog from "@/components/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import { Alert, AlertTitle } from "@/components/ui/alert";
@@ -14,6 +15,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useLayout } from "@/contexts/LayoutContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cobrancaService } from "@/services/cobrancaService";
+import { Cobranca } from "@/types/cobranca";
 import { CobrancaDetalhe } from "@/types/cobrancaDetalhe";
 import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import {
@@ -25,7 +27,6 @@ import {
   disableVerPaginaPagamento,
 } from "@/utils/disableActions";
 import {
-  formatarTelefone,
   formatCobrancaOrigem,
   formatDateToBR,
   formatPaymentType,
@@ -48,13 +49,14 @@ import {
   History as HistoryIcon,
   IdCard,
   MessageCircle,
+  Pencil,
   School,
   Send,
   Trash2,
   User,
   XCircle,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const InfoItem = ({
@@ -164,6 +166,8 @@ export default function PassageiroCobranca() {
     passageiro_id: string;
     cobranca_id: string;
   };
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
   const { setPageTitle, setPageSubtitle } = useLayout();
   const [notificacoes, setNotificacoes] = useState<CobrancaNotificacao[]>([]);
   const [confirmDialogDesfazer, setConfirmDialogDesfazer] = useState({
@@ -183,6 +187,25 @@ export default function PassageiroCobranca() {
     if (!url) return;
     window.open(url, "_blank", "noopener,noreferrer");
   };
+
+  const handleEditCobrancaClick = () => {
+    if (cobrancaNormalizadaParaEdicao) {
+      setCobrancaToEdit(cobrancaNormalizadaParaEdicao);
+      setEditDialogOpen(true);
+    }
+  };
+
+  const cobrancaNormalizadaParaEdicao = useMemo(() => {
+    if (!cobranca) return null;
+
+    return {
+      ...cobranca,
+      passageiros: {
+        nome: cobranca.passageiro_nome,
+        nome_responsavel: cobranca.nome_responsavel,
+      },
+    } as Cobranca;
+  }, [cobranca]);
 
   const handleEnviarNotificacao = async () => {
     try {
@@ -278,8 +301,10 @@ export default function PassageiroCobranca() {
 
   useEffect(() => {
     if (cobranca) {
-      setPageTitle(`Mensalidade de ${meses[parseInt(cobranca.mes) - 1]}`);
-      setPageSubtitle(`${cobranca.passageiro_nome} (Responsável: ${cobranca.nome_responsavel})`);
+      setPageTitle(`Mensalidade de ${meses[cobranca.mes - 1]}`);
+      setPageSubtitle(
+        `${cobranca.passageiro_nome} (Responsável: ${cobranca.nome_responsavel})`
+      );
     }
   }, [cobranca, setPageTitle, setPageSubtitle]);
 
@@ -314,7 +339,7 @@ export default function PassageiroCobranca() {
           <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <div className="text-sm text-muted-foreground">
-                {meses[parseInt(cobranca.mes) - 1]}/{cobranca.ano}
+                {meses[cobranca.mes - 1]}/{cobranca.ano}
               </div>
               <div className="text-4xl font-bold tracking-tight">
                 {cobranca.valor.toLocaleString("pt-BR", {
@@ -377,11 +402,21 @@ export default function PassageiroCobranca() {
         </Card>
 
         <Card className="lg:col-span-1 order-2 lg:order-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Contact className="w-5 h-5" />
-              Contato e Informações
-            </CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <div>
+              <CardTitle className="text-lg">Mensalidade</CardTitle>
+            </div>
+            <div>
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditCobrancaClick();
+                }}
+                className="gap-2"
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-6">
             <InfoItem icon={User} label="Passageiro">
@@ -392,9 +427,6 @@ export default function PassageiroCobranca() {
             </InfoItem>
             <InfoItem icon={School} label="Escola">
               {cobranca.escola_nome}
-            </InfoItem>
-            <InfoItem icon={MessageCircle} label="Telefone">
-              {formatarTelefone(cobranca.telefone_responsavel)}
             </InfoItem>
 
             <div className="space-y-2 pt-6 border-t">
@@ -451,7 +483,7 @@ export default function PassageiroCobranca() {
 
         <Card className="lg:col-span-2 order-3 lg:order-3">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center text-lg gap-2">
               <FileText className="w-5 h-5" />
               Detalhes da Cobrança
             </CardTitle>
@@ -474,14 +506,14 @@ export default function PassageiroCobranca() {
               >
                 {cobranca.desativar_lembretes ? "Desativadas" : "Ativadas"}
               </InfoItem>
-              <InfoItem icon={ArrowRight} label="Quem gerou?">
+              <InfoItem icon={ArrowRight} label="Origem">
                 {formatCobrancaOrigem(cobranca.origem)}
               </InfoItem>
               <InfoItem icon={BadgeCheck} label="Pagamento">
                 {cobranca.status === "pago"
                   ? cobranca.pagamento_manual
                     ? "Registrado por você"
-                    : "Registrado pelo sistema"
+                    : "Registrado automaticamente"
                   : "-"}
               </InfoItem>
             </div>
@@ -591,6 +623,15 @@ export default function PassageiroCobranca() {
         confirmText="Excluir"
         variant="destructive"
       />
+
+      {cobrancaToEdit && (
+        <CobrancaEditDialog
+          isOpen={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          cobranca={cobrancaToEdit}
+          onCobrancaUpdated={fetchCobranca}
+        />
+      )}
     </div>
   );
 }

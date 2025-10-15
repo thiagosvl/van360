@@ -1,4 +1,5 @@
-import CobrancaRetroativaDialog from "@/components/CobrancaRetroativaDialog";
+import CobrancaDialog from "@/components/CobrancaDialog";
+import CobrancaEditDialog from "@/components/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/PassageiroFormDialog";
@@ -113,6 +114,8 @@ const CarteirinhaSkeleton = () => (
 );
 
 export default function PassageiroCarteirinha() {
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
   const { setPageTitle, setPageSubtitle } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -133,7 +136,7 @@ export default function PassageiroCarteirinha() {
     cobrancaId: "",
     action: "enviar",
   });
-  const [retroativaDialogOpen, setRetroativaDialogOpen] = useState(false);
+  const [cobrancaDialogOpen, setCobrancaDialogOpen] = useState(false);
   const [deleteCobrancaDialog, setDeleteCobrancaDialog] = useState({
     open: false,
     cobranca: null as Cobranca | null,
@@ -202,9 +205,9 @@ export default function PassageiroCarteirinha() {
     setIsFormOpen(true);
   };
 
-  const handleOpenRetroativaDialog = () => {
+  const handleOpenCobrancaDialog = () => {
     if (passageiro.ativo) {
-      setRetroativaDialogOpen(true);
+      setCobrancaDialogOpen(true);
     } else {
       toast({
         title: "O cadastro do passageiro está desativado.",
@@ -213,6 +216,16 @@ export default function PassageiroCarteirinha() {
         variant: "default",
       });
     }
+  };
+
+  const handleEditCobrancaClick = (cobranca: Cobranca) => {
+    setCobrancaToEdit(cobranca);
+    setEditDialogOpen(true);
+  };
+
+  const handleCobrancaUpdated = () => {
+    fetchCobrancas(yearFilter);
+    fetchAvailableYears();
   };
 
   const handleSaveObservacoes = async () => {
@@ -529,7 +542,7 @@ export default function PassageiroCarteirinha() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button onClick={() => handleOpenRetroativaDialog()}>
+                  <Button onClick={() => handleOpenCobrancaDialog()}>
                     <Plus className="w-4 h-4 md:mr-2" />
                     <span className="hidden md:block">
                       Registrar Mensalidade
@@ -636,57 +649,65 @@ export default function PassageiroCarteirinha() {
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     className="cursor-pointer"
-                                    disabled={disableRegistrarPagamento(
-                                      cobranca
-                                    )}
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      // Fecha o menu antes de abrir o dialog
-                                      document.body.click();
-                                      setTimeout(
-                                        () => openPaymentDialog(cobranca),
-                                        10
-                                      );
+                                      handleEditCobrancaClick(cobranca);
                                     }}
                                   >
-                                    Registrar Pagamento
+                                    Editar Mensalidade
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    className="cursor-pointer"
-                                    disabled={disableEnviarNotificacao(
-                                      cobranca
-                                    )}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleEnviarNotificacaoClick(cobranca.id);
-                                    }}
-                                  >
-                                    Enviar Notificação
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    className="cursor-pointer"
-                                    disabled={disableToggleLembretes(cobranca)}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleToggleLembretes(cobranca);
-                                    }}
-                                  >
-                                    {cobranca.desativar_lembretes
-                                      ? "Ativar Notificações"
-                                      : "Desativar Notificações"}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    className="cursor-pointer"
-                                    disabled={disableDesfazerPagamento(
-                                      cobranca
-                                    )}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDesfazerClick(cobranca.id);
-                                    }}
-                                  >
-                                    Desfazer Pagamento
-                                  </DropdownMenuItem>
+                                  {!disableRegistrarPagamento(cobranca) && (
+                                    <DropdownMenuItem
+                                      className="cursor-pointer"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        document.body.click();
+                                        setTimeout(
+                                          () => openPaymentDialog(cobranca),
+                                          10
+                                        );
+                                      }}
+                                    >
+                                      Registrar Pagamento
+                                    </DropdownMenuItem>
+                                  )}
+                                  {!disableEnviarNotificacao(cobranca) && (
+                                    <DropdownMenuItem
+                                      className="cursor-pointer"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEnviarNotificacaoClick(
+                                          cobranca.id
+                                        );
+                                      }}
+                                    >
+                                      Enviar Notificação
+                                    </DropdownMenuItem>
+                                  )}
+                                  {!disableToggleLembretes(cobranca) && (
+                                    <DropdownMenuItem
+                                      className="cursor-pointer"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleToggleLembretes(cobranca);
+                                      }}
+                                    >
+                                      {cobranca.desativar_lembretes
+                                        ? "Ativar Notificações"
+                                        : "Desativar Notificações"}
+                                    </DropdownMenuItem>
+                                  )}
+                                  {!disableDesfazerPagamento(cobranca) && (
+                                    <DropdownMenuItem
+                                      className="cursor-pointer"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDesfazerClick(cobranca.id);
+                                      }}
+                                    >
+                                      Desfazer Pagamento
+                                    </DropdownMenuItem>
+                                  )}
                                   <DropdownMenuItem
                                     className="text-red-600 cursor-pointer"
                                     disabled={disableExcluirMensalidade(
@@ -754,51 +775,63 @@ export default function PassageiroCarteirinha() {
                                 Ver Mensalidade
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                disabled={disableRegistrarPagamento(cobranca)}
+                                className="cursor-pointer"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  // Fecha o menu antes de abrir o dialog
-                                  document.body.click();
-                                  setTimeout(
-                                    () => openPaymentDialog(cobranca),
-                                    10
-                                  );
+                                  handleEditCobrancaClick(cobranca);
                                 }}
                               >
-                                Registrar Pagamento
+                                Editar Mensalidade
                               </DropdownMenuItem>
+                              {!disableRegistrarPagamento(cobranca) && (
+                                <DropdownMenuItem
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    document.body.click();
+                                    setTimeout(
+                                      () => openPaymentDialog(cobranca),
+                                      10
+                                    );
+                                  }}
+                                >
+                                  Registrar Pagamento
+                                </DropdownMenuItem>
+                              )}
+                              {!disableEnviarNotificacao(cobranca) && (
+                                <DropdownMenuItem
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEnviarNotificacaoClick(cobranca.id);
+                                  }}
+                                >
+                                  Enviar Notificação
+                                </DropdownMenuItem>
+                              )}
+                              {!disableToggleLembretes(cobranca) && (
+                                <DropdownMenuItem
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleLembretes(cobranca);
+                                  }}
+                                >
+                                  {cobranca.desativar_lembretes
+                                    ? "Ativar Notificações"
+                                    : "Desativar Notificações"}
+                                </DropdownMenuItem>
+                              )}
+                              {!disableDesfazerPagamento(cobranca) && (
+                                <DropdownMenuItem
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDesfazerClick(cobranca.id);
+                                  }}
+                                >
+                                  Desfazer Pagamento
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem
-                                disabled={disableEnviarNotificacao(cobranca)}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEnviarNotificacaoClick(cobranca.id);
-                                }}
-                              >
-                                Enviar Notificação
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                disabled={disableToggleLembretes(cobranca)}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleToggleLembretes(cobranca);
-                                }}
-                              >
-                                {cobranca.desativar_lembretes
-                                  ? "Ativar Notificações"
-                                  : "Desativar Notificações"}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                disabled={disableDesfazerPagamento(cobranca)}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDesfazerClick(cobranca.id);
-                                }}
-                              >
-                                Desfazer Pagamento
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-red-600"
                                 disabled={disableExcluirMensalidade(cobranca)}
+                                className="text-red-600"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDeleteCobrancaClick(cobranca);
@@ -1108,12 +1141,13 @@ export default function PassageiroCarteirinha() {
           onPaymentRecorded={handlePaymentRecorded}
         />
       )}
-      <CobrancaRetroativaDialog
-        isOpen={retroativaDialogOpen}
-        onClose={() => setRetroativaDialogOpen(false)}
+      <CobrancaDialog
+        isOpen={cobrancaDialogOpen}
+        onClose={() => setCobrancaDialogOpen(false)}
         passageiroId={passageiro.id}
         passageiroNome={passageiro.nome}
         passageiroResponsavelNome={passageiro.nome_responsavel}
+        passageiroAsaasCustomerId={passageiro.asaas_customer_id}
         valorMensalidade={passageiro.valor_mensalidade}
         diaVencimento={passageiro.dia_vencimento}
         onCobrancaAdded={() => handleCobrancaAdded()}
@@ -1176,6 +1210,15 @@ export default function PassageiroCarteirinha() {
           onClose={() => setIsFormOpen(false)}
           editingPassageiro={passageiro}
           onSuccess={handlePassageiroFormSuccess}
+          mode="edit"
+        />
+      )}
+      {cobrancaToEdit && (
+        <CobrancaEditDialog
+          isOpen={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          cobranca={cobrancaToEdit}
+          onCobrancaUpdated={handleCobrancaUpdated}
         />
       )}
     </div>

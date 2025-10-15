@@ -105,7 +105,7 @@ export default function ManualPaymentDialog({
       await cobrancaService.registrarPagamentoManual(cobrancaId, pagamentoData);
 
       toast({
-        title: `Pagamento de ${passageiroNome} registrado com sucesso.`,
+        title: `Pagamento registrado com sucesso.`,
       });
       onPaymentRecorded();
       onClose();
@@ -125,7 +125,7 @@ export default function ManualPaymentDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md max-h-[95vh] overflow-y-auto bg-white">
         <DialogHeader>
-          <DialogTitle>Registrar Pagamento Manual</DialogTitle>
+          <DialogTitle>Registrar Pagamento</DialogTitle>
         </DialogHeader>
 
         <div className="p-3 bg-muted/50 rounded-lg border space-y-2">

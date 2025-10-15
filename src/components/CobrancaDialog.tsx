@@ -31,7 +31,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { toLocalDateString } from "@/utils/formatters";
+import { asaasService } from "@/services/asaasService";
+import { tiposPagamento, toLocalDateString } from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -47,7 +48,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const cobrancaRetroativaSchema = z
+const cobrancaSchema = z
   .object({
     mes: z.string().min(1, "Campo obrigatório"),
     ano: z.string().min(1, "Campo obrigatório"),
@@ -71,14 +72,15 @@ const cobrancaRetroativaSchema = z
     path: ["foi_pago"],
   });
 
-type CobrancaRetroativaFormData = z.infer<typeof cobrancaRetroativaSchema>;
+type CobrancaFormData = z.infer<typeof cobrancaSchema>;
 
-interface CobrancaRetroativaDialogProps {
+interface CobrancaDialogProps {
   isOpen: boolean;
   onClose: () => void;
   passageiroId: string;
   passageiroNome: string;
   passageiroResponsavelNome: string;
+  passageiroAsaasCustomerId: string;
   valorMensalidade: number;
   diaVencimento: number;
   onCobrancaAdded: () => void;
@@ -99,25 +101,17 @@ const meses = [
   { value: "12", label: "Dezembro" },
 ];
 
-const tiposPagamento = [
-  { value: "PIX", label: "PIX" },
-  { value: "dinheiro", label: "Dinheiro" },
-  { value: "cartao-debito", label: "Cartão de Débito" },
-  { value: "cartao-credito", label: "Cartão de Crédito" },
-  { value: "transferencia", label: "Transferência" },
-  { value: "boleto", label: "Boleto" },
-];
-
-export default function CobrancaRetroativaDialog({
+export default function CobrancaDialog({
   isOpen,
   onClose,
   passageiroId,
   passageiroNome,
   passageiroResponsavelNome,
+  passageiroAsaasCustomerId,
   valorMensalidade,
   diaVencimento,
   onCobrancaAdded,
-}: CobrancaRetroativaDialogProps) {
+}: CobrancaDialogProps) {
   const { toast } = useToast();
   const [openCalendar, setOpenCalendar] = useState(false);
 
@@ -130,8 +124,8 @@ export default function CobrancaRetroativaDialog({
     },
   ];
 
-  const form = useForm<CobrancaRetroativaFormData>({
-    resolver: zodResolver(cobrancaRetroativaSchema),
+  const form = useForm<CobrancaFormData>({
+    resolver: zodResolver(cobrancaSchema),
     defaultValues: {
       mes: "",
       ano: currentYear.toString(),
@@ -179,7 +173,11 @@ export default function CobrancaRetroativaDialog({
     }
   }, [isOpen, valorMensalidade, form, currentYear]);
 
-  const handleSubmit = async (data: CobrancaRetroativaFormData) => {
+   const handleSubmit = async (data: CobrancaFormData) => {
+    let cobrancaIdSupabase: string | null = null;
+    let asaasPaymentId: string | null = null;
+    let rollbackNeeded = false;
+
     try {
       const { data: existingCobranca, error: checkError } = await supabase
         .from("cobrancas")
@@ -194,22 +192,27 @@ export default function CobrancaRetroativaDialog({
       }
       if (existingCobranca) {
         toast({
-          title:
-            "O passageiro já possui uma mensalidade desse mês e ano indicado",
+          title: "Essa mensalidade já foi cadastrada no sistema anteriormente.",
           variant: "destructive",
         });
         return;
       }
+      
       const dataVencimento = new Date(
         parseInt(data.ano),
         parseInt(data.mes) - 1,
         diaVencimento
       );
+      
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+
+      const valorNumerico = moneyToNumber(data.valor);
       const cobrancaData = {
         passageiro_id: passageiroId,
         mes: parseInt(data.mes),
         ano: parseInt(data.ano),
-        valor: moneyToNumber(data.valor),
+        valor: valorNumerico,
         data_vencimento: toLocalDateString(dataVencimento),
         status: data.foi_pago ? "pago" : "pendente",
         data_pagamento:
@@ -221,15 +224,73 @@ export default function CobrancaRetroativaDialog({
         usuario_id: localStorage.getItem("app_user_id"),
         origem: "manual",
       };
-      const { error } = await supabase.from("cobrancas").insert([cobrancaData]);
-      if (error) throw error;
+
+      const { data: insertData, error: insertError } = await supabase
+        .from("cobrancas")
+        .insert([cobrancaData])
+        .select("id")
+        .single();
+        
+      if (insertError) throw insertError;
+      cobrancaIdSupabase = insertData.id;
+      rollbackNeeded = true;
+
+      const isPendente = cobrancaData.status === "pendente";
+      const vencimentoEValido = dataVencimento >= hoje;
+      
+      const shouldGenerateAsaas = isPendente && vencimentoEValido;
+
+      if (shouldGenerateAsaas) {
+        if (!passageiroAsaasCustomerId) {
+            console.warn("Cliente ASAAS não encontrado. Cobrança não gerada externamente.");
+        } else {
+            const payment = await asaasService.createPayment({
+                customer: passageiroAsaasCustomerId,
+                billingType: "UNDEFINED",
+                value: valorNumerico,
+                dueDate: toLocalDateString(dataVencimento),
+                description: `Mensalidade ${data.mes}/${data.ano} - ${passageiroNome}`,
+                externalReference: cobrancaIdSupabase,
+            });
+
+            asaasPaymentId = payment.id;
+
+            const { error: updateError } = await supabase
+              .from("cobrancas")
+              .update({
+                asaas_payment_id: payment.id,
+                asaas_invoice_url: payment.invoiceUrl,
+                asaas_bankslip_url: payment.bankSlipUrl,
+              })
+              .eq("id", cobrancaIdSupabase);
+
+            if (updateError) throw updateError;
+        }
+      }
+
       toast({ title: "Mensalidade registrada com sucesso." });
       onCobrancaAdded();
       handleClose();
-    } catch (error) {
-      console.error("Erro ao registrar mensalidade:", error);
+
+    } catch (error: any) {
+      console.error("Erro ao registrar mensalidade. Iniciando Rollback:", error);
+
+      if (rollbackNeeded && cobrancaIdSupabase) {
+        try {
+          if (asaasPaymentId) {
+            await asaasService.deletePayment(asaasPaymentId);
+          }
+          await supabase.from("cobrancas").delete().eq("id", cobrancaIdSupabase);
+          
+          console.log("Rollback da mensalidade manual concluído.");
+        } catch (rollbackErr) {
+          console.error("Erro no processo de Rollback:", rollbackErr);
+        }
+      }
+      
       toast({
         title: "Erro ao registrar mensalidade.",
+        description: error.message || "Verifique o console para mais detalhes.",
         variant: "destructive",
       });
     }

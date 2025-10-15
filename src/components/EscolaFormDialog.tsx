@@ -1,5 +1,3 @@
-// src/components/EscolaFormDialog.tsx
-
 import {
   Accordion,
   AccordionContent,
@@ -96,8 +94,7 @@ export default function EscolaFormDialog({
 
   const onFormError = (errors: any) => {
     toast({
-      title: "Campos inválidos",
-      description: "Por favor, corrija os erros no formulário.",
+      title: "Por favor, corrija os erros no formulário.",
       variant: "destructive",
     });
     setOpenAccordionItems(["dados-escola", "endereco"]);

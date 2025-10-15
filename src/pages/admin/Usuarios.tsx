@@ -1,20 +1,20 @@
 import { UsuarioForm, UsuarioFormData } from "@/components/admin/UsuarioForm";
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,7 +63,6 @@ export default function UsuariosAdmin() {
     setShowForm(false);
     setSelectedUsuario(null);
   };
-
 
   const handleCreateUsuario = async (data: UsuarioFormData) => {
     const cpfcnpjDigits = data.cpfcnpj.replace(/\D/g, "");
@@ -125,7 +124,20 @@ export default function UsuariosAdmin() {
         .eq("id", usuarioData.id);
 
       if (data.role === "motorista") {
-        const subAccount = await asaasService.createSubAccount({
+        const customer = await asaasService.createCustomerGeneral({
+          name: data.nome,
+          email: data.email,
+          cpfCnpj: cpfcnpjDigits,
+          mobilePhone: data.telefone,
+          notificationDisabled: true,
+        });
+
+        await supabase
+          .from("usuarios")
+          .update({ asaas_root_customer_id: customer.id })
+          .eq("id", usuarioData.id);
+
+        const subAccountPayload = {
           name: data.nome,
           email: data.email,
           cpfCnpj: cpfcnpjDigits,
@@ -139,35 +151,20 @@ export default function UsuariosAdmin() {
           province: "Bom Retiro",
           postalCode: "89223005",
           incomeValue: 1000,
-        });
+        };
 
-        createdSubAccount = subAccount;
+        const provisionResult = await asaasService.provisionAsaasMotorista(
+          { id: usuarioData.id },
+          subAccountPayload
+        );
 
-        await supabase
-          .from("usuarios")
-          .update({
-            asaas_subaccount_id: subAccount.id,
-            asaas_subaccount_api_key: subAccount.apiKey,
-          })
-          .eq("id", usuarioData.id);
-
-        await asaasService.createWebhook(subAccount.apiKey);
-
-        const customer = await asaasService.createCustomer({
-          name: data.nome,
-          email: data.email,
-          cpfCnpj: cpfcnpjDigits,
-          mobilePhone: data.telefone,
-          notificationDisabled: true,
-        });
-
-        await supabase
-          .from("usuarios")
-          .update({ asaas_root_customer_id: customer.id })
-          .eq("id", usuarioData.id);
+        createdSubAccount = {
+          id: provisionResult.subAccountId,
+          apiKey: provisionResult.subApiKey,
+        };
       }
 
-      toast({  title: "Usuário criado com sucesso!" });
+      toast({ title: "Usuário criado com sucesso!" });
       await fetchUsuarios();
       closeForm();
     } catch (error) {
@@ -184,13 +181,6 @@ export default function UsuariosAdmin() {
         }
       }
       throw error;
-      // if (createdSubAccount) {
-      //   try {
-      //     await asaasService.deleteSubAccount(createdSubAccount.id);
-      //   } catch (err) {
-      //     console.warn("Erro ao deletar subconta no rollback:", err);
-      //   }
-      // }
     }
   };
 

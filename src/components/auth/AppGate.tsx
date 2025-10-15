@@ -1,6 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 
 interface AppGateProps {
@@ -8,44 +7,21 @@ interface AppGateProps {
 }
 
 export const AppGate = ({ children }: AppGateProps) => {
-  const { user, session, loading } = useAuth();
+  const { user, session, loading, profile } = useAuth();
   const location = useLocation();
 
-  const [roleDb, setRoleDb] = useState<string | null>(null);
-
+  const role = profile?.role; 
+  
   useEffect(() => {
-    let active = true;
-
-    async function loadRole() {
-      if (user) {
-        try {
-          const { data } = await supabase
-            .from("usuarios")
-            .select("id, role, asaas_subaccount_api_key")
-            .eq("email", user.email as string)
-            .single();
-          if (active && data?.role) {
-            setRoleDb(data.role);
-            localStorage.setItem("app_role", data.role);
-          }
-          if (data.id) {
-            localStorage.setItem("app_user_id", data.id);
-          }
-        } finally {
-        }
-      }
+    if (profile) {
+      localStorage.setItem("app_user_id", profile.id);
+      localStorage.setItem("app_role", profile.role);
+    } else if (!user && !session && !loading) {
+      localStorage.removeItem("app_user_id");
+      localStorage.removeItem("app_role");
     }
+  }, [profile, user, session, loading]);
 
-    loadRole();
-    return () => {
-      active = false;
-    };
-  }, [user?.email]);
-
-  const role =
-    (user?.app_metadata?.role as string | undefined) ??
-    roleDb ??
-    (localStorage.getItem("app_role") || undefined);
 
   if (loading) {
     return (
@@ -56,21 +32,28 @@ export const AppGate = ({ children }: AppGateProps) => {
   }
 
   if (!session || !user) {
-    if (location.pathname.startsWith("/admin")) {
+    const isProtected = 
+        location.pathname.startsWith("/admin") || 
+        (location.pathname !== "/" && location.pathname !== "/login");
+    
+    if (isProtected) {
       return <Navigate to="/login" replace />;
     }
-    if (location.pathname !== "/" && location.pathname !== "/login") {
-      return <Navigate to="/login" replace />;
-    }
+    
     return <>{children}</>;
   }
 
   if (location.pathname === "/login") {
+    if (!role) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
+      
     if (role === "admin") {
       return <Navigate to="/admin/dashboard" replace />;
-    }
-    if (role === "motorista") {
-      return <Navigate to="/dashboard" replace />;
     }
     return <Navigate to="/dashboard" replace />;
   }
@@ -82,8 +65,7 @@ export const AppGate = ({ children }: AppGateProps) => {
     if (!location.pathname.startsWith("/admin")) {
       return <Navigate to="/admin/dashboard" replace />;
     }
-  }
-  else if (role === "motorista") {
+  } else if (role === "motorista") {
     const allowedRoutes = [
       "/dashboard",
       "/passageiros",
@@ -92,18 +74,20 @@ export const AppGate = ({ children }: AppGateProps) => {
       "/configuracoes",
       "/gastos",
     ];
+    
     const isAllowedRoute = allowedRoutes.some(
       (route) =>
-        location.pathname === route || location.pathname.startsWith(route + "/")
+        location.pathname === route || location.pathname.startsWith(`${route}/`)
     );
 
+    if (location.pathname.startsWith("/admin")) {
+      return <Navigate to="/dashboard" replace />;
+    }
+    
     if (!isAllowedRoute) {
       return <Navigate to="/dashboard" replace />;
     }
   }
-  else {
-    return <Navigate to="/login" replace />;
-  }
-
+  
   return <>{children}</>;
 };

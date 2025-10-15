@@ -1,4 +1,3 @@
-// src/components/AppNavbar.tsx
 import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useLayout } from "@/contexts/LayoutContext"; // 1. Importar o hook
+import { useLayout } from "@/contexts/LayoutContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,19 +21,16 @@ import { LogOut, Menu, User } from "lucide-react";
 import { useState } from "react";
 
 export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   const { toast } = useToast();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const { pageTitle, pageSubtitle } = useLayout(); // 2. Usar o hook
+  const { pageTitle, pageSubtitle } = useLayout();
 
   const handleSignOut = async () => {
     localStorage.removeItem("app_role");
     localStorage.removeItem("app_user_id");
+    localStorage.removeItem("app_user_name");
     await supabase.auth.signOut();
-    toast({
-      title: "Logout realizado",
-      description: "Você foi desconectado com sucesso.",
-    });
   };
 
   return (
@@ -76,7 +72,7 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="flex items-center space-x-2">
             <User className="h-4 w-4" />
-            <span className="hidden sm:inline">{user?.email}</span>
+            <span className="hidden sm:inline">{profile.nome}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

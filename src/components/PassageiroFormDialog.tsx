@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { passageiroService } from "@/services/passageiroService";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
+import { PrePassageiro } from "@/types/prePassageiro";
 import { currentMonthInText } from "@/utils/formatters";
 import { cepMask, cpfMask, moneyMask, phoneMask } from "@/utils/masks";
 import { isValidCPF } from "@/utils/validators";
@@ -101,6 +102,8 @@ interface PassengerFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
   editingPassageiro: Passageiro | null;
+  mode?: "create" | "edit" | "finalize";
+  prePassageiro?: PrePassageiro | null;
   onSuccess: () => void;
 }
 
@@ -108,6 +111,8 @@ export default function PassengerFormDialog({
   isOpen,
   onClose,
   editingPassageiro,
+  mode,
+  prePassageiro,
   onSuccess,
 }: PassengerFormDialogProps) {
   const [escolasModal, setEscolasModal] = useState<Escola[]>([]);
@@ -183,8 +188,7 @@ export default function PassengerFormDialog({
 
   const onFormError = (errors: any) => {
     toast({
-      title: "Campos inválidos",
-      description: "Por favor, corrija os erros no formulário.",
+      title: "Por favor, corrija os erros no formulário.",
       variant: "destructive",
     });
     setOpenAccordionItems([
@@ -197,14 +201,27 @@ export default function PassengerFormDialog({
   };
 
   useEffect(() => {
+    fetchEscolasModal();
+
     if (isOpen) {
-      if (editingPassageiro) {
+      const isFinalizeMode = mode === "finalize" && prePassageiro;
+
+      if (editingPassageiro && mode !== "finalize") {
         fetchEscolasModal(editingPassageiro.escola_id || undefined);
         form.reset({
           nome: editingPassageiro.nome,
-          genero: editingPassageiro.genero as any,
-          observacoes: (editingPassageiro as any).observacoes || "",
-
+          genero: (editingPassageiro.genero as any) || undefined,
+          nome_responsavel: editingPassageiro.nome_responsavel,
+          email_responsavel: editingPassageiro.email_responsavel,
+          cpf_responsavel: editingPassageiro.cpf_responsavel,
+          telefone_responsavel: phoneMask(
+            editingPassageiro.telefone_responsavel
+          ),
+          valor_mensalidade: editingPassageiro.valor_mensalidade
+            ? moneyMask((editingPassageiro.valor_mensalidade * 100).toString())
+            : "",
+          dia_vencimento: editingPassageiro.dia_vencimento?.toString() || "",
+          observacoes: editingPassageiro.observacoes || "",
           rua: editingPassageiro.rua || "",
           numero: editingPassageiro.numero || "",
           bairro: editingPassageiro.bairro || "",
@@ -212,17 +229,8 @@ export default function PassengerFormDialog({
           estado: editingPassageiro.estado || "",
           cep: editingPassageiro.cep || "",
           referencia: editingPassageiro.referencia || "",
-          nome_responsavel: editingPassageiro.nome_responsavel,
-          telefone_responsavel: phoneMask(
-            editingPassageiro.telefone_responsavel
-          ),
-          email_responsavel: editingPassageiro.email_responsavel,
-          cpf_responsavel: editingPassageiro.cpf_responsavel,
-          valor_mensalidade: moneyMask(
-            (editingPassageiro.valor_mensalidade * 100).toString()
-          ),
-          dia_vencimento: editingPassageiro.dia_vencimento.toString(),
           escola_id: editingPassageiro.escola_id || "",
+          emitir_cobranca_mes_atual: false,
           ativo: editingPassageiro.ativo,
         });
         setOpenAccordionItems([
@@ -232,15 +240,58 @@ export default function PassengerFormDialog({
           "endereco",
           "observacoes",
         ]);
+      } else if (isFinalizeMode) {
+        form.reset({
+          nome: prePassageiro.nome,
+          genero: (prePassageiro.genero as any) || undefined,
+          nome_responsavel: prePassageiro.nome_responsavel,
+          email_responsavel: prePassageiro.email_responsavel,
+          cpf_responsavel: prePassageiro.cpf_responsavel,
+          telefone_responsavel: phoneMask(prePassageiro.telefone_responsavel),
+
+          rua: prePassageiro.rua || "",
+          numero: prePassageiro.numero || "",
+          bairro: prePassageiro.bairro || "",
+          cidade: prePassageiro.cidade || "",
+          estado: prePassageiro.estado || "",
+          cep: prePassageiro.cep || "",
+          referencia: prePassageiro.referencia || "",
+          observacoes: prePassageiro.observacoes || "",
+
+          escola_id: prePassageiro.escola_id || "",
+          valor_mensalidade: prePassageiro.valor_mensalidade
+            ? moneyMask((prePassageiro.valor_mensalidade * 100).toString())
+            : "",
+          dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
+
+          emitir_cobranca_mes_atual: false,
+          ativo: true,
+        });
+
+        form.trigger([
+          "escola_id",
+          "valor_mensalidade",
+          "dia_vencimento",
+          "nome",
+          "nome_responsavel",
+          "email_responsavel",
+          "cpf_responsavel",
+          "telefone_responsavel",
+        ]);
+
+        setOpenAccordionItems([
+          "passageiro",
+          "responsavel",
+          "mensalidade",
+          "endereco",
+          "observacoes",
+        ]);
       } else {
-        fetchEscolasModal();
         form.reset({
           escola_id: "",
           nome: "",
-
           genero: undefined,
           observacoes: "",
-
           rua: "",
           numero: "",
           bairro: "",
@@ -259,34 +310,38 @@ export default function PassengerFormDialog({
         });
       }
     }
-  }, [isOpen, editingPassageiro, form]);
+  }, [isOpen, editingPassageiro, form, prePassageiro, mode]);
 
   const handleSubmit = async (data: PassageiroFormData) => {
+    const { emitir_cobranca_mes_atual, ...purePayload } = data;
+    
     try {
-      if (editingPassageiro) {
+      if (mode === "finalize" && prePassageiro) {
+        await passageiroService.finalizePreCadastro(
+          prePassageiro.id,
+          purePayload,
+          prePassageiro.usuario_id,
+          emitir_cobranca_mes_atual
+        );
+        toast({ title: "Passageiro finalizado e cadastrado com sucesso." });
+      } else if (editingPassageiro) {
         await passageiroService.updatePassageiroComTransacao(
           editingPassageiro.id,
-          data,
-          editingPassageiro
+          purePayload
         );
-        toast({ title: "Passageiro atualizado com sucesso." });
+        toast({ title: "Cadastro atualizado com sucesso." });
       } else {
-        await passageiroService.createPassageiroComTransacao(data);
+        await passageiroService.createPassageiroComTransacao({
+            ...purePayload,
+            emitir_cobranca_mes_atual
+        });
         toast({ title: "Passageiro cadastrado com sucesso." });
       }
 
       onSuccess();
       onClose();
     } catch (error: any) {
-      console.error("Erro ao salvar passageiro:", error);
-      toast({
-        title: editingPassageiro
-          ? "Erro ao atualizar passageiro."
-          : "Erro ao cadastrar passageiro.",
-        description:
-          error.message || "As alterações foram desfeitas devido a um erro.",
-        variant: "destructive",
-      });
+        // ... (bloco de erro)
     }
   };
 
@@ -308,7 +363,11 @@ export default function PassengerFormDialog({
       >
         <DialogHeader>
           <DialogTitle>
-            {editingPassageiro ? "Editar Passageiro" : "Novo Cadastro"}
+            {mode === "finalize"
+              ? "Finalizar Cadastro"
+              : mode === "edit"
+              ? "Editar Passageiro"
+              : "Novo Cadastro"}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -316,6 +375,23 @@ export default function PassengerFormDialog({
             onSubmit={form.handleSubmit(handleSubmit, onFormError)}
             className="space-y-6"
           >
+            {mode === "finalize" && prePassageiro && (
+              <div className="mb-6">
+                <Alert
+                  variant="default"
+                  className="bg-orange-50 border-orange-200 text-orange-900 [&>svg]:text-orange-600 mb-6"
+                >
+                  <AlertTriangle className="h-4 w-4 mt-0.5" />
+                  <AlertTitle className="font-semibold text-sm">
+                    Atenção, motorista!
+                  </AlertTitle>
+                  <AlertDescription className="text-xs">
+                    Finalize o cadastro preenchendo os campos restantes.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
+
             <Accordion
               type="multiple"
               value={openAccordionItems}
@@ -482,7 +558,7 @@ export default function PassengerFormDialog({
                       name="telefone_responsavel"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Telefone *</FormLabel>
+                          <FormLabel>Telefone (WhatsApp) *</FormLabel>
                           <FormControl>
                             <Input
                               {...field}
@@ -506,6 +582,7 @@ export default function PassengerFormDialog({
                           <FormControl>
                             <Input
                               {...field}
+                              placeholder="000.000.000-00"
                               onChange={(e) =>
                                 field.onChange(cpfMask(e.target.value))
                               }
@@ -649,7 +726,7 @@ export default function PassengerFormDialog({
                 <AccordionTrigger>
                   <div className="flex items-center gap-2 text-lg font-semibold">
                     <MapPin className="w-5 h-5 text-primary" />
-                    Endereço
+                    Endereço (Opcional)
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
@@ -681,7 +758,10 @@ export default function PassengerFormDialog({
                         <FormItem className="md:col-span-4">
                           <FormLabel>Logradouro</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input
+                              {...field}
+                              placeholder="Ex: Rua Comendador"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -807,7 +887,7 @@ export default function PassengerFormDialog({
                 <AccordionTrigger>
                   <div className="flex items-center gap-2 text-lg font-semibold">
                     <FileText className="w-5 h-5 text-primary" />
-                    Observações
+                    Observações (Opcional)
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">

@@ -1,20 +1,21 @@
-// src/layouts/AppLayout.tsx
 import { AppNavbar } from "@/components/AppNavbar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { LayoutProvider } from "@/contexts/LayoutContext"; // 1. Importar
+import { LayoutProvider } from "@/contexts/LayoutContext";
 import { useAuth } from "@/hooks/useAuth";
 import { Outlet } from "react-router-dom";
 
 export default function AppLayout() {
-  const { user } = useAuth();
-  const role =
-    (user?.app_metadata?.role as string | undefined) ??
-    (localStorage.getItem("app_role") || undefined);
+  const { profile, loading } = useAuth();
 
-  if (!role) return null;
+  if (loading) {
+      return null;
+  }
+  
+  const role = profile?.role;
+
+  if (!role) return null; 
 
   return (
-    // 2. Envolver tudo com o LayoutProvider
     <LayoutProvider>
       <div className="min-h-screen w-full bg-background">
         <div className="flex h-screen">
@@ -29,7 +30,7 @@ export default function AppLayout() {
 
           <div className="flex-1 flex flex-col">
             <AppNavbar role={role as "admin" | "motorista"} />
-            <main className="flex-1 overflow-auto p-4 sm:p-6">
+            <main className="flex-1 overflow-y-auto p-4 md:p-6">
               <Outlet />
             </main>
           </div>
