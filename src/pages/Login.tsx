@@ -67,7 +67,7 @@ export default function Login() {
       if (usuarioError || !usuario) {
         form.setError("cpfcnpj", {
           type: "manual",
-          message: "Usuário não encontrado",
+          message: "CPF não encontrado",
         });
         setLoading(false);
         return;
