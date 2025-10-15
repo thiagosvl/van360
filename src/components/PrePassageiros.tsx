@@ -64,7 +64,8 @@ export default function PrePassageiros({
   const [selectedPrePassageiro, setSelectedPrePassageiro] =
     useState<PrePassageiro | null>(null);
 
-  const GENERIC_CADASTRO_LINK = `${window.location.origin}/cadastro-passageiro/${profile.id}`;
+  const BASE_DOMAIN = import.meta.env.VITE_PUBLIC_APP_DOMAIN;
+  const GENERIC_CADASTRO_LINK = `${BASE_DOMAIN}/cadastro-passageiro/${profile.id}`;
 
   const handleCadastrarRapidoLink = async () => {
     const motoristaId = localStorage.getItem("app_user_id");

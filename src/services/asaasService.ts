@@ -1,7 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const API_BASE_URL = "https://jztyffakurtekwxurclw.supabase.co/functions/v1/asaas-proxy";
-const GENERAL_API_BASE_URL = "https://jztyffakurtekwxurclw.supabase.co/functions/v1/asaas-general-proxy";
+const SUPABASE_BASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const API_BASE_URL = `${SUPABASE_BASE_URL}/functions/v1/asaas-proxy`;
+const GENERAL_API_BASE_URL = `${SUPABASE_BASE_URL}/functions/v1/asaas-general-proxy`;
 
 export const asaasService = {
     async createCustomer(customer: {
@@ -274,7 +275,7 @@ export const asaasService = {
                 headers: authHeaders,
                 body: JSON.stringify({
                     name: "Webhook Mensalidade Passageiro Recebida",
-                    url: "https://jztyffakurtekwxurclw.supabase.co/functions/v1/pagamentoMensalidadePassageiro",
+                    url: `${SUPABASE_BASE_URL}/functions/v1/pagamentoMensalidadePassageiro`,
                     email: null,
                     enabled: true,
                     interrupted: false,
@@ -312,7 +313,7 @@ export const asaasService = {
     },
 
     async provisionAsaasMotorista(usuarioDataDB: any, subAccountPayload: any): Promise<any> {
-        const PROVISION_API_URL = "https://jztyffakurtekwxurclw.supabase.co/functions/v1/asaasProvisioning";
+        const PROVISION_API_URL = `${SUPABASE_BASE_URL}/functions/v1/asaasProvisioning`;
 
         const response = await fetch(PROVISION_API_URL, {
             method: 'POST',
