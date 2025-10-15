@@ -196,8 +196,7 @@ export default function PassageiroExternalForm() {
           Cadastro realizado com sucesso!
         </h2>
         <p className="text-gray-700">
-          O motorista será notificado que você
-concluiu o cadastro.
+          O motorista será notificado que você concluiu o cadastro.
         </p>
       </div>
     );
@@ -209,12 +208,9 @@ concluiu o cadastro.
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
           Cadastro de Passageiro
         </h1>
-        <p className="text-center text-gray-600 mb-6">
-          Preencha seus dados para realizar o cadastro com seu motorista:
-          <span className="font-semibold text-primary block">
-            {motoristaNome}
-          </span>
-        </p>
+        <span className="text-center font-semibold text-primary block">
+          {motoristaNome}
+        </span>
 
         <Form {...form}>
           <form

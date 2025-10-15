@@ -439,7 +439,7 @@ const Dashboard = () => {
 
         <div className="grid xl:grid-cols-2 gap-4">
           {/* Situação do mes */}
-          <Card className="mb-6">
+          <Card className="mb-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CalendarDays className="w-5 h-5" />
