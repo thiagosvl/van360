@@ -120,17 +120,15 @@ const App = () => {
             url: url_zip,
           });
 
-          // Marca para aplicar na próxima inicialização
           await CapacitorUpdater.next({ id: version.id });
 
-          toast({
-            title: "Atualização instalada",
-            description:
-              "Ela será aplicada quando você reiniciar o aplicativo.",
-          });
+          localStorage.setItem("pendingUpdate", version.version);
 
-          // Importante: só notifica appReady após o next()
-          await CapacitorUpdater.notifyAppReady();
+          toast({
+            title: "Atualização baixada",
+            description:
+              "Ela será aplicada automaticamente quando o app for reiniciado.",
+          });
         } catch (err) {
           console.error("[OTA] Erro em atualização silenciosa:", err);
         }
@@ -145,15 +143,17 @@ const App = () => {
   useEffect(() => {
     const notifyReady = async () => {
       try {
+        const current = await CapacitorUpdater.current();
+        const pending = localStorage.getItem("pendingUpdate");
+
+        // 1. Primeiro, confirma que a versão atual iniciou sem falhas
         await CapacitorUpdater.notifyAppReady();
         console.log("[OTA] notifyAppReady enviado com sucesso.");
 
-        const current = await CapacitorUpdater.current();
-        const updatedVersion = current?.bundle?.version;
-        const lastShown = localStorage.getItem("lastUpdatedVersion");
-
-        if (updatedVersion && updatedVersion !== lastShown) {
-          localStorage.setItem("lastUpdatedVersion", updatedVersion);
+        // 2. Se a versão pendente foi aplicada, notifica o usuário
+        if (pending && pending === current?.bundle?.version) {
+          localStorage.removeItem("pendingUpdate");
+          console.log(`[OTA] Versão ${pending} aplicada com sucesso!`);
           toast({
             title: "Aplicativo atualizado",
             description: "A nova versão foi instalada com sucesso.",
@@ -163,6 +163,7 @@ const App = () => {
         console.error("[OTA] Erro ao enviar notifyAppReady:", err);
       }
     };
+
     notifyReady();
   }, []);
 
