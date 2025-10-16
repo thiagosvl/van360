@@ -73,18 +73,15 @@ const App = () => {
 
         // 🔹 Atualização obrigatória
         if (force_update) {
-          const confirmUpdate = window.confirm(
-            "Uma nova versão do aplicativo está disponível e é obrigatória.\nDeseja atualizar agora?"
+          // Mostra um alerta informando o início da atualização obrigatória
+          alert(
+            "Uma nova versão obrigatória do aplicativo está disponível.\nA atualização será iniciada agora."
           );
-          if (!confirmUpdate) {
-            console.log("[OTA] Usuário adiou a atualização obrigatória.");
-            return;
-          }
 
           setUpdating(true);
           setProgress(0);
 
-          // listener de progresso
+          // listener de progresso (corrigido para percent)
           const listener = await CapacitorUpdater.addListener(
             "download",
             (info: any) => {
@@ -100,7 +97,7 @@ const App = () => {
               version: latest_version,
               url: url_zip,
             });
-            listener.remove();
+            await listener.remove();
 
             toast({
               title: "Atualização concluída",
@@ -113,6 +110,7 @@ const App = () => {
             console.error("[OTA] Erro ao aplicar atualização forçada:", err);
             setUpdating(false);
           }
+
           return;
         }
 
