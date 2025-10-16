@@ -56,6 +56,20 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
+          # 1. Extrair a mensagem do commit
+          COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
+
+          # 2. Definir a flag force_update: 'true' se [FORCE] estiver na mensagem, senão 'false'
+          if [[ "$COMMIT_MESSAGE" == *"[FORCE]"* ]]; then
+            FORCE_UPDATE_VALUE="true"
+          else
+            FORCE_UPDATE_VALUE="false"
+          fi
+
+          echo "[INFO] Mensagem do Commit: $COMMIT_MESSAGE"
+          echo "[INFO] Force Update set to: $FORCE_UPDATE_VALUE"
+
+          # 3. Construir o payload e enviar a requisição
           PUBLIC_URL="$SUPABASE_URL/storage/v1/object/public/ota/app-${VERSION}.zip"
           curl -X POST "$SUPABASE_URL/rest/v1/app_updates" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
@@ -64,7 +78,8 @@ jobs:
             -d '{
               "platform": "android",
               "latest_version": "'${VERSION}'",
-              "url_zip": "'${PUBLIC_URL}'"
+              "url_zip": "'${PUBLIC_URL}'",
+              "force_update": '${FORCE_UPDATE_VALUE}'
             }'
 
       - name: Limpar versões antigas (manter apenas as 3 mais recentes)
@@ -73,7 +88,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           echo "[INFO] Limpando versões antigas..."
-          
+
           # 1. Faz a requisição e armazena o JSON na variável 'RESPONSE'
           RESPONSE=$(curl -s -X POST "$SUPABASE_URL/storage/v1/object/list/ota" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
