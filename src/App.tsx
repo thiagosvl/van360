@@ -29,27 +29,37 @@ import { CapacitorUpdater } from "@capgo/capacitor-updater";
 const queryClient = new QueryClient();
 
 const App = () => {
-   useEffect(() => {
+  useEffect(() => {
     const runUpdater = async () => {
-      console.log("[OTA] Iniciando verificação de ambiente...");
       if (!Capacitor.isNativePlatform()) {
-        console.log("[OTA] Ambiente web detectado — atualização ignorada.");
+        console.log("[OTA] Ignorado — ambiente web");
         return;
       }
 
+      const targetVersion = "1.0.1";
+      const targetUrl = `https://scxjzvblqnamfvasjaug.supabase.co/storage/v1/object/public/ota/app-v${targetVersion}.zip`;
+
       try {
-        console.log("[OTA] Chamando notifyAppReady...");
-        await CapacitorUpdater.notifyAppReady();
-        console.log("[OTA] notifyAppReady confirmado com sucesso.");
+        const current = await CapacitorUpdater.current();
+        const currentVersion = current?.bundle?.version || current?.native;
 
-        console.log("[OTA] Iniciando download do pacote...");
+        console.log("[OTA] Versão atual:", currentVersion);
+
+        // evita download se o app embutido já for equivalente
+        if (currentVersion === targetVersion || currentVersion === "builtin") {
+          console.log(
+            "[OTA] Já está na versão mais recente ou é a versão base."
+          );
+          return;
+        }
+
+        console.log("[OTA] Iniciando atualização OTA...");
         const version = await CapacitorUpdater.download({
-          version: "1.0.2",
-          url: "https://scxjzvblqnamfvasjaug.supabase.co/storage/v1/object/public/ota/app-v1.0.2.zip",
+          version: targetVersion,
+          url: targetUrl,
         });
-        console.log("[OTA] Download concluído:", version);
 
-        console.log("[OTA] Aplicando nova versão...");
+        console.log("[OTA] Download concluído:", version);
         await CapacitorUpdater.set(version);
         console.log("[OTA] Atualização aplicada com sucesso.");
       } catch (err) {
@@ -58,6 +68,18 @@ const App = () => {
     };
 
     runUpdater();
+  }, []);
+
+  useEffect(() => {
+    const notifyReady = async () => {
+      try {
+        await CapacitorUpdater.notifyAppReady();
+        console.log("[OTA] notifyAppReady enviado com sucesso.");
+      } catch (err) {
+        console.error("[OTA] Erro ao enviar notifyAppReady:", err);
+      }
+    };
+    notifyReady();
   }, []);
 
   return (
