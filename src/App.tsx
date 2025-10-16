@@ -2,11 +2,12 @@ import { AppGate } from "@/components/auth/AppGate";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
 import { AuthProvider } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/layouts/AppLayout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -26,10 +27,15 @@ import Passageiros from "./pages/Passageiros";
 
 import { Capacitor } from "@capacitor/core";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
+import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
 
 const App = () => {
+  const { toast } = useToast();
+  const [updating, setUpdating] = useState(false);
+  const [progress, setProgress] = useState(0);
+
   useEffect(() => {
     const runUpdater = async () => {
       if (!Capacitor.isNativePlatform()) {
@@ -65,37 +71,69 @@ const App = () => {
           return;
         }
 
-        // 🔹 Caso atualização obrigatória
+        // 🔹 Atualização obrigatória
         if (force_update) {
-          alert(
-            "Uma nova versão do aplicativo está disponível e é obrigatória. O app será atualizado agora."
+          const confirmUpdate = window.confirm(
+            "Uma nova versão do aplicativo está disponível e é obrigatória.\nDeseja atualizar agora?"
           );
+          if (!confirmUpdate) {
+            console.log("[OTA] Usuário adiou a atualização obrigatória.");
+            return;
+          }
+
+          setUpdating(true);
+          setProgress(0);
+
+          // listener de progresso
+          const listener = await CapacitorUpdater.addListener(
+            "download",
+            (event: any) => {
+              if (event?.progress) {
+                const pct = Math.round(event.progress * 100);
+                setProgress(pct);
+              }
+            }
+          );
+
           try {
             const version = await CapacitorUpdater.download({
               version: latest_version,
               url: url_zip,
             });
+            listener.remove();
+
+            toast({
+              title: "Atualização concluída",
+              description: "O aplicativo será reiniciado.",
+            });
+
             await CapacitorUpdater.set(version);
             await CapacitorUpdater.reload();
           } catch (err) {
             console.error("[OTA] Erro ao aplicar atualização forçada:", err);
+            setUpdating(false);
           }
           return;
         }
 
-        // 🔹 Caso atualização silenciosa (em background)
+        // 🔹 Atualização silenciosa
         try {
-          console.log(
-            "[OTA] Atualização silenciosa — baixando em background..."
-          );
+          toast({
+            title: "Atualização disponível",
+            description: "Baixando em segundo plano...",
+          });
+
           const version = await CapacitorUpdater.download({
             version: latest_version,
             url: url_zip,
           });
-          console.log(
-            "[OTA] Atualização baixada, será aplicada no próximo uso."
-          );
+
           await CapacitorUpdater.set(version);
+
+          toast({
+            title: "Atualização instalada",
+            description: "Ela será aplicada quando você reabrir o aplicativo.",
+          });
         } catch (err) {
           console.error("[OTA] Erro em atualização silenciosa:", err);
         }
@@ -184,6 +222,17 @@ const App = () => {
             </Routes>
           </BrowserRouter>
         </AuthProvider>
+
+        {/* 🔹 Overlay de atualização forçada */}
+        {updating && (
+          <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 text-white">
+            <Loader2 className="animate-spin w-10 h-10 mb-3" />
+            <p className="text-lg font-medium mb-2">
+              Atualizando o aplicativo...
+            </p>
+            <p className="text-sm opacity-80">{progress}% concluído</p>
+          </div>
+        )}
       </TooltipProvider>
     </QueryClientProvider>
   );

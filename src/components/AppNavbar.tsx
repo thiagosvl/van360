@@ -14,7 +14,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useLayout } from "@/contexts/LayoutContext";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, Menu, User } from "lucide-react";
@@ -22,7 +21,6 @@ import { useState } from "react";
 
 export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
   const { profile } = useAuth();
-  const { toast } = useToast();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { pageTitle, pageSubtitle } = useLayout();
 
