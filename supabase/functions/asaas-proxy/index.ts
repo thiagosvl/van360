@@ -69,7 +69,6 @@ serve(async (req) => {
     headers.set("accept", "application/json");
     headers.set("access_token", ASAAS_API_KEY_MOTORISTA);
     headers.delete("Authorization");
-    headers.delete("x-asaas-key");
     let requestBody;
     if (req.method !== "GET" && req.method !== "HEAD") {
       try {

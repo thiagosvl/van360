@@ -28,7 +28,6 @@ serve(async (req) => {
   const path = url.pathname.replace('/asaas-general-proxy', '');
   try {
     const headers = new Headers(req.headers);
-    headers.delete("x-asaas-key");
     headers.set("accept", "application/json");
     headers.set("access_token", ASAAS_GENERAL_TOKEN);
 
