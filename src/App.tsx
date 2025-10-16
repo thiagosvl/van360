@@ -122,11 +122,11 @@ const App = () => {
             description: "Baixando em segundo plano...",
           });
 
-          // apenas baixa, não ativa
-          await CapacitorUpdater.download({
+          const version = await CapacitorUpdater.download({
             version: latest_version,
             url: url_zip,
           });
+          await CapacitorUpdater.next({ id: version.id });
 
           toast({
             title: "Atualização instalada",

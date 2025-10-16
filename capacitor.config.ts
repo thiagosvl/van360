@@ -1,19 +1,20 @@
-import { CapacitorConfig } from "@capacitor/cli";
+import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: "com.tibis.zipvan",
-  appName: "Zip Van",
-  webDir: "dist",
-
-  server: {
-    androidScheme: "https",
-  },
-
+  appId: 'com.tibis.zipvan',
+  appName: 'ZipVan',
+  webDir: 'dist',
   plugins: {
     CapacitorUpdater: {
-      autoUpdate: false, // 🔧 Desativado, pois o update é manual via código
-      resetWhenUpdate: false, // mantém dados e cache do app
-      autoDeleteFailed: true, // limpa bundles corrompidos automaticamente
+      autoUpdate: false,
+      autoDeleteFailed: true,
+      autoDeletePrevious: true,
+      resetWhenUpdate: false,
+      appReadyTimeout: 10000,
+      responseTimeout: 20,
+      keepUrlPathAfterReload: false,
+      disableJSLogging: false,
+      shakeMenu: false,
     },
   },
 };
