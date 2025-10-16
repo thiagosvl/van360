@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Usuario } from "@/types/usuario";
-import { cpfCnpjMask, phoneMask } from "@/utils/masks";
-import { isValidCpfCnpj } from "@/utils/validators";
+import { cpfMask, phoneMask } from "@/utils/masks";
+import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -37,7 +37,7 @@ export const usuarioSchema = z.object({
   cpfcnpj: z
     .string()
     .min(1, "Campo obrigatório")
-    .refine((val) => isValidCpfCnpj(val), "CPF/CNPJ inválido"),
+    .refine((val) => isValidCPF(val), "CPF inválido"),
   telefone: z
     .string()
     .min(1, "Campo obrigatório")
@@ -128,12 +128,12 @@ export function UsuarioForm({ usuario, onSubmit, onClose }: UsuarioFormProps) {
                   name="cpfcnpj"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CPF/CNPJ *</FormLabel>
+                      <FormLabel>CPF *</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
                           onChange={(e) =>
-                            field.onChange(cpfCnpjMask(e.target.value))
+                            field.onChange(cpfMask(e.target.value))
                           }
                           disabled={!!usuario}
                           placeholder="000.000.000-00"

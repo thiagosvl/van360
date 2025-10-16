@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { cpfMask } from "@/utils/masks";
+import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -24,18 +25,10 @@ import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 const loginSchema = z.object({
-  cpfcnpj: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .refine(
-      (value) => {
-        const digits = value.replace(/\D/g, "");
-        return digits.length === 11 || digits.length === 14;
-      },
-      {
-        message: "CPF 11 dígitos ou CNPJ 14 dígitos",
-      }
-    ),
+    cpfcnpj: z
+        .string()
+        .min(1, "Campo obrigatório")
+        .refine((val) => isValidCPF(val), "CPF inválido"),
   senha: z.string().min(6, "Mínimo de 6 caracteres"),
 });
 
@@ -186,3 +179,7 @@ export default function Login() {
     </div>
   );
 }
+function isValidCpf(val: string): unknown {
+  throw new Error("Function not implemented.");
+}
+
