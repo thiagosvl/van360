@@ -75,7 +75,7 @@ serve(async (req) => {
     });
 
     if (authError) {
-      const errorMessage = authError.message.includes("User already registered") ? "Email já existe no sistema de autenticação" : `Erro ao criar usuário: ${authError.message}`;
+      const errorMessage = authError.message.includes("has already been registere") ? "Email já existe no sistema de autenticação" : `Erro ao criar usuário: ${authError.message}`;
       
       return new Response(JSON.stringify({
         error: errorMessage
@@ -88,8 +88,6 @@ serve(async (req) => {
       });
     }
     const auth_uid = authData.user.id;
-    console.log(`Created auth user ${email} with auth_uid ${auth_uid}`);
-    console.log('DEBUG', { usuario_id, auth_uid });
     const { error: updateError } = await supabase.from('usuarios').update({
       auth_uid: auth_uid
     }).eq('id', usuario_id);

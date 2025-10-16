@@ -73,9 +73,7 @@ export default function UsuariosAdmin() {
     const { data: existingUsers, error: existingError } = await supabase
       .from("usuarios")
       .select("cpfcnpj,email")
-      .or(
-        `cpfcnpj.eq.${cpfcnpjDigits},email.eq.${encodeURIComponent(data.email)}`
-      );
+      .or(`cpfcnpj.eq.${cpfcnpjDigits},email.eq.${data.email}`);
 
     if (existingError) throw new Error(existingError.message);
     if (existingUsers && existingUsers.length > 0) {

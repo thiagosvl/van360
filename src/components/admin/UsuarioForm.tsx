@@ -10,6 +10,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Usuario } from "@/types/usuario";
 import { cpfCnpjMask, phoneMask } from "@/utils/masks";
+import { isValidCpfCnpj } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -33,11 +34,23 @@ import {
 
 export const usuarioSchema = z.object({
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  cpfcnpj: z.string().min(11, "CPF/CNPJ é obrigatório"),
-  telefone: z.string().min(10, "Telefone é obrigatório"),
-  email: z.string().email("Email inválido"),
+  cpfcnpj: z
+    .string()
+    .min(1, "Campo obrigatório")
+    .refine((val) => isValidCpfCnpj(val), "CPF/CNPJ inválido"),
+  telefone: z
+    .string()
+    .min(1, "Campo obrigatório")
+    .refine((val) => {
+      const cleaned = val.replace(/\D/g, "");
+      return cleaned.length === 11;
+    }, "O formato aceito é (00) 00000-0000"),
+  email: z
+    .string()
+    .min(1, "Campo obrigatório")
+    .email("E-mail inválido"),
   role: z.enum(["admin", "motorista"], {
-    errorMap: () => ({ message: "Selecione o perfil" }),
+    errorMap: () => ({ message: "Campo obrigatório" }),
   }),
 });
 
