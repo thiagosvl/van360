@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/layouts/AppLayout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -30,45 +31,52 @@ const queryClient = new QueryClient();
 
 const App = () => {
   useEffect(() => {
-    const runUpdater = async () => {
-      if (!Capacitor.isNativePlatform()) {
-        console.log("[OTA] Ignorado — ambiente web");
+  const runUpdater = async () => {
+    if (!Capacitor.isNativePlatform()) {
+      console.log("[OTA] Ignorado — ambiente web");
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("app_updates")
+        .select("latest_version, url_zip")
+        .eq("platform", Capacitor.getPlatform())
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error || !data) {
+        console.warn("[OTA] Nenhuma atualização encontrada:", error?.message);
         return;
       }
 
-      const targetVersion = "1.0.1";
-      const targetUrl = `https://scxjzvblqnamfvasjaug.supabase.co/storage/v1/object/public/ota/app-v${targetVersion}.zip`;
+      const { latest_version, url_zip } = data;
+      const current = await CapacitorUpdater.current();
+      const currentVersion =
+        current?.bundle?.version || current?.native || "builtin";
 
-      try {
-        const current = await CapacitorUpdater.current();
-        const currentVersion = current?.bundle?.version || current?.native;
+      console.log("[OTA] Versão atual:", currentVersion);
+      console.log("[OTA] Versão disponível:", latest_version);
 
-        console.log("[OTA] Versão atual:", currentVersion);
-
-        // evita download se o app embutido já for equivalente
-        if (currentVersion === targetVersion || currentVersion === "builtin") {
-          console.log(
-            "[OTA] Já está na versão mais recente ou é a versão base."
-          );
-          return;
-        }
-
-        console.log("[OTA] Iniciando atualização OTA...");
+      if (currentVersion !== latest_version) {
+        console.log("[OTA] Nova versão detectada, iniciando download...");
         const version = await CapacitorUpdater.download({
-          version: targetVersion,
-          url: targetUrl,
+          version: latest_version,
+          url: url_zip,
         });
-
-        console.log("[OTA] Download concluído:", version);
         await CapacitorUpdater.set(version);
         console.log("[OTA] Atualização aplicada com sucesso.");
-      } catch (err) {
-        console.error("[OTA] Erro no processo OTA:", err);
+      } else {
+        console.log("[OTA] Já está na versão mais recente:", currentVersion);
       }
-    };
+    } catch (err) {
+      console.error("[OTA] Erro no processo OTA:", err);
+    }
+  };
 
-    runUpdater();
-  }, []);
+  runUpdater();
+}, []);
 
   useEffect(() => {
     const notifyReady = async () => {
