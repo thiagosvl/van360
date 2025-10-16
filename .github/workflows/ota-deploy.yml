@@ -8,6 +8,9 @@ jobs:
   build-and-upload:
     runs-on: ubuntu-latest
 
+    env:
+      VERSION: v${{ github.run_id }}
+
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
@@ -25,36 +28,33 @@ jobs:
 
       - name: Compactar bundle
         run: |
-          VERSION=$(date +"%Y%m%d%H%M%S")
           mkdir -p dist_zip
-          cd dist && zip -r ../dist_zip/app-v$VERSION.zip .
+          cd dist && zip -r ../dist_zip/app-${VERSION}.zip .
 
       - name: Enviar para Supabase Storage
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          VERSION=$(date +"%Y%m%d%H%M%S")
-          curl -X POST "$SUPABASE_URL/storage/v1/object/ota/app-v$VERSION.zip" \
+          curl -X POST "$SUPABASE_URL/storage/v1/object/ota/app-${VERSION}.zip" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Content-Type: application/zip" \
-            --data-binary @dist_zip/app-v$VERSION.zip
+            --data-binary @dist_zip/app-${VERSION}.zip
 
       - name: Registrar nova versão no banco
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          VERSION=$(date +"%Y%m%d%H%M%S")
-          PUBLIC_URL="$SUPABASE_URL/storage/v1/object/public/ota/app-v$VERSION.zip"
+          PUBLIC_URL="$SUPABASE_URL/storage/v1/object/public/ota/app-${VERSION}.zip"
           curl -X POST "$SUPABASE_URL/rest/v1/app_updates" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Content-Type: application/json" \
             -d '{
               "platform": "android",
-              "latest_version": "'$VERSION'",
-              "url_zip": "'$PUBLIC_URL'"
+              "latest_version": "'${VERSION}'",
+              "url_zip": "'${PUBLIC_URL}'"
             }'
 
       - name: Limpar versões antigas (manter apenas as 3 mais recentes)
