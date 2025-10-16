@@ -71,9 +71,8 @@ const App = () => {
           return;
         }
 
-        // 🔹 Atualização obrigatória
+        // 🔴 Atualização obrigatória
         if (force_update) {
-          // Mostra um alerta informando o início da atualização obrigatória
           alert(
             "Uma nova versão obrigatória do aplicativo está disponível.\nA atualização será iniciada agora."
           );
@@ -81,7 +80,6 @@ const App = () => {
           setUpdating(true);
           setProgress(0);
 
-          // listener de progresso (corrigido para percent)
           const listener = await CapacitorUpdater.addListener(
             "download",
             (info: any) => {
@@ -97,6 +95,7 @@ const App = () => {
               version: latest_version,
               url: url_zip,
             });
+
             await listener.remove();
 
             toast({
@@ -114,6 +113,7 @@ const App = () => {
           return;
         }
 
+        // 🟡 Atualização silenciosa
         try {
           toast({
             title: "Atualização disponível",
@@ -124,13 +124,18 @@ const App = () => {
             version: latest_version,
             url: url_zip,
           });
+
+          // Marca para aplicar na próxima inicialização
           await CapacitorUpdater.next({ id: version.id });
 
           toast({
             title: "Atualização instalada",
             description:
-              "Será aplicada na próxima vez que você abrir o aplicativo.",
+              "Ela será aplicada quando você reiniciar o aplicativo.",
           });
+
+          // Importante: só notifica appReady após o next()
+          await CapacitorUpdater.notifyAppReady();
         } catch (err) {
           console.error("[OTA] Erro em atualização silenciosa:", err);
         }
