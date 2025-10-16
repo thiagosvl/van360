@@ -189,9 +189,7 @@ export default function PassageiroCarteirinha() {
   useEffect(() => {
     if (passageiro) {
       setPageTitle(`Carteirinha Digital`);
-      setPageSubtitle(
-        `${passageiro.nome} (Responsável: ${passageiro.nome_responsavel})`
-      );
+      setPageSubtitle(`${passageiro.nome} (${passageiro.nome_responsavel})`);
     }
   }, [passageiro, setPageTitle, setPageSubtitle]);
 
@@ -948,7 +946,7 @@ export default function PassageiroCarteirinha() {
               <div>
                 <CardTitle className="text-lg">{passageiro.nome}</CardTitle>
                 <CardDescription className="text-xs">
-                  <b>Responsável:</b> {passageiro.nome_responsavel}
+                  {passageiro.nome_responsavel}
                 </CardDescription>
               </div>
               <div>

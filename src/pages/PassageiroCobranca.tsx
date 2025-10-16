@@ -315,7 +315,7 @@ export default function PassageiroCobranca() {
     if (cobranca) {
       setPageTitle(`Mensalidade de ${meses[cobranca.mes - 1]}`);
       setPageSubtitle(
-        `${cobranca.passageiro_nome} (Responsável: ${cobranca.nome_responsavel})`
+        `${cobranca.passageiro_nome} (${cobranca.nome_responsavel})`
       );
     }
   }, [cobranca, setPageTitle, setPageSubtitle]);
