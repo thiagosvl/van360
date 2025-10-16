@@ -2,7 +2,7 @@ name: OTA Deploy
 
 on:
   push:
-    branches: ["main"]   # ou ajuste para a branch que você usa para produção
+    branches: ["main"] # ou ajuste para a branch que você usa para produção
 
 jobs:
   build-and-upload:
@@ -41,13 +41,14 @@ jobs:
           --data-binary @dist_zip/app-v$VERSION.zip
 
       - name: Registrar nova versão no banco
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: |
-          VERSION=$(date +"%Y%m%d%H%M%S")
-          PUBLIC_URL="$SUPABASE_URL/storage/v1/object/public/ota/app-v$VERSION.zip"
-          curl -X POST "$SUPABASE_URL/rest/v1/app_updates" \
-          -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
-          -H "Content-Type: application/json" \
-          -d "{\"platform\":\"android\",\"latest_version\":\"$VERSION\",\"url_zip\":\"$PUBLIC_URL\"}"
+  env:
+    SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+    SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+  run: |
+    VERSION=$(date +"%Y%m%d%H%M%S")
+    PUBLIC_URL="$SUPABASE_URL/storage/v1/object/public/ota/app-v$VERSION.zip"
+    curl -X POST "$SUPABASE_URL/rest/v1/app_updates" \
+      -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+      -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+      -H "Content-Type: application/json" \
+      -d "{\"platform\":\"android\",\"latest_version\":\"$VERSION\",\"url_zip\":\"$PUBLIC_URL\"}"
