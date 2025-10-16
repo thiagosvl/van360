@@ -116,23 +116,22 @@ const App = () => {
           return;
         }
 
-        // 🔹 Atualização silenciosa
         try {
           toast({
             title: "Atualização disponível",
             description: "Baixando em segundo plano...",
           });
 
-          const version = await CapacitorUpdater.download({
+          // apenas baixa, não ativa
+          await CapacitorUpdater.download({
             version: latest_version,
             url: url_zip,
           });
 
-          await CapacitorUpdater.set(version);
-
           toast({
             title: "Atualização instalada",
-            description: "Ela será aplicada quando você reabrir o aplicativo.",
+            description:
+              "Será aplicada na próxima vez que você abrir o aplicativo.",
           });
         } catch (err) {
           console.error("[OTA] Erro em atualização silenciosa:", err);
