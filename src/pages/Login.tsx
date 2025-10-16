@@ -2,9 +2,8 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
+  CardTitle
 } from "@/components/ui/card";
 import {
   Form,
@@ -122,9 +121,6 @@ export default function Login() {
           <CardTitle className="text-2xl font-bold text-center">
             Login
           </CardTitle>
-          <CardDescription className="text-center">
-            Entre com seu CPF/CNPJ e senha
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
