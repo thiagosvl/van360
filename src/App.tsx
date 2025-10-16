@@ -98,11 +98,6 @@ const App = () => {
 
             await listener.remove();
 
-            toast({
-              title: "Atualização concluída",
-              description: "O aplicativo será reiniciado.",
-            });
-
             await CapacitorUpdater.set(version);
             await CapacitorUpdater.reload();
           } catch (err) {
@@ -152,6 +147,18 @@ const App = () => {
       try {
         await CapacitorUpdater.notifyAppReady();
         console.log("[OTA] notifyAppReady enviado com sucesso.");
+
+        const current = await CapacitorUpdater.current();
+        const updatedVersion = current?.bundle?.version;
+        const lastShown = localStorage.getItem("lastUpdatedVersion");
+
+        if (updatedVersion && updatedVersion !== lastShown) {
+          localStorage.setItem("lastUpdatedVersion", updatedVersion);
+          toast({
+            title: "Aplicativo atualizado",
+            description: "A nova versão foi instalada com sucesso.",
+          });
+        }
       } catch (err) {
         console.error("[OTA] Erro ao enviar notifyAppReady:", err);
       }
