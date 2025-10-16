@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from "@/components/ui/card";
 import {
   Form,
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { cpfCnpjMask } from "@/utils/masks";
+import { cpfMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -121,6 +122,9 @@ export default function Login() {
           <CardTitle className="text-2xl font-bold text-center">
             Login
           </CardTitle>
+          <CardDescription className="text-center">
+            Entre com seu CPF e senha
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -130,14 +134,14 @@ export default function Login() {
                 name="cpfcnpj"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>CPF/CNPJ *</FormLabel>
+                    <FormLabel>CPF *</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         placeholder="000.000.000-00"
                         autoComplete="username"
                         onChange={(e) => {
-                          const masked = cpfCnpjMask(e.target.value);
+                          const masked = cpfMask(e.target.value);
                           field.onChange(masked);
                         }}
                       />
