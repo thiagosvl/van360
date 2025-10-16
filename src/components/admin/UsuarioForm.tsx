@@ -168,7 +168,7 @@ export function UsuarioForm({ usuario, onSubmit, onClose }: UsuarioFormProps) {
                   name="telefone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Telefone *</FormLabel>
+                      <FormLabel>Telefone (WhatsApp) *</FormLabel>
                       <FormControl>
                         <Input
                           {...field}

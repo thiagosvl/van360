@@ -146,7 +146,7 @@ const Cobrancas = () => {
       const novoStatus = await cobrancaService.toggleNotificacoes(cobranca);
 
       toast({
-        title: `Notificações ${
+        title: `Notificações automáticas ${
           novoStatus ? "desativadas" : "ativadas"
         } com sucesso.`,
       });
@@ -643,7 +643,6 @@ const Cobrancas = () => {
                             </span>
                           </div>
 
-                          {/* NOTIFICAÇÕES SUSPENSAS (Bloco separado, se houver) */}
                           {cobranca.desativar_lembretes && (
                             <div className="mt-2 flex items-center gap-2 text-xs p-1 rounded-md bg-yellow-50 text-yellow-800 border border-yellow-200">
                               <BellOff className="h-4 w-4 shrink-0" />

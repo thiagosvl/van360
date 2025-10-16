@@ -404,8 +404,8 @@ export default function PassageiroCarteirinha() {
       if (error) throw error;
 
       toast({
-        title: `Lembretes ${
-          novoStatus ? "desativados" : "ativados"
+        title: `Notificações automáticas ${
+          novoStatus ? "desativadas" : "ativadas"
         } com sucesso.`,
       });
 
@@ -608,7 +608,9 @@ export default function PassageiroCarteirinha() {
                                 cobranca.status !== "pago" && (
                                   <div className="text-xs text-yellow-800 mt-2 flex items-center gap-1">
                                     <BellOff className="w-3 h-3" />
-                                    Notificações automáticas suspensas
+                                    <span className="truncate">
+                                      Notificações automáticas suspensas
+                                    </span>
                                   </div>
                                 )}
                             </td>
@@ -868,7 +870,7 @@ export default function PassageiroCarteirinha() {
                             <div className="mt-2 flex items-center gap-2 text-xs p-1 rounded-md bg-yellow-50 text-yellow-800 border border-yellow-200">
                               <BellOff className="h-4 w-4 shrink-0" />
                               <span className="truncate">
-                                Lembretes Suspensos
+                                Notificações automáticas suspensas
                               </span>
                             </div>
                           )}

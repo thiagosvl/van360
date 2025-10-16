@@ -235,7 +235,7 @@ export default function PassageiroCobranca() {
       const novoStatus = await cobrancaService.toggleNotificacoes(cobranca);
 
       toast({
-        title: `Notificações ${
+        title: `Notificações automáticas ${
           novoStatus ? "desativadas" : "ativadas"
         } com sucesso.`,
       });

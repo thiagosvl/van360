@@ -147,7 +147,7 @@ export const cobrancaService = {
     async registrarPagamentoManual(cobrancaId: string, pagamentoData: any): Promise<void> {
         const { data: cobranca, error: fetchError } = await supabase
             .from("cobrancas")
-            .select("id, origem, asaas_payment_id, data_vencimento")
+            .select("id, origem, asaas_payment_id, data_vencimento, created_at")
             .eq("id", cobrancaId)
             .single();
 
@@ -155,11 +155,33 @@ export const cobrancaService = {
             throw new Error("Não foi possível localizar a mensalidade para registrar o pagamento.");
         }
 
-        if (cobranca.origem === "automatica" && cobranca.asaas_payment_id) {
+        if (cobranca.asaas_payment_id !== null && cobranca.asaas_payment_id) {
             try {
+                const { data: cobrancaData } = await supabase
+                    .from("cobrancas")
+                    .select("created_at")
+                    .eq("id", cobrancaId)
+                    .single();
+
+                const dataPagamentoUTC = new Date(pagamentoData.data_pagamento)
+                    .toISOString()
+                    .slice(0, 10);
+                const dataCriacaoUTC = new Date(cobrancaData.created_at)
+                    .toISOString()
+                    .slice(0, 10);
+                const dataHojeUTC = new Date().toISOString().slice(0, 10);
+
+                let dataEnvio = dataPagamentoUTC;
+                if (dataPagamentoUTC < dataCriacaoUTC) {
+                    console.warn(
+                        `⚠️ Pagamento indicado antes da criação (${dataPagamentoUTC} < ${dataCriacaoUTC}). Substituindo por data atual UTC (${dataHojeUTC}).`
+                    );
+                    dataEnvio = dataHojeUTC;
+                }
+
                 await asaasService.confirmPaymentInCash(
                     cobranca.asaas_payment_id,
-                    pagamentoData.data_pagamento,
+                    dataEnvio,
                     pagamentoData.valor_pago
                 );
             } catch (asaasErr) {
@@ -167,6 +189,7 @@ export const cobrancaService = {
                 throw new Error("Falha ao registrar o pagamento no provedor externo.");
             }
         }
+
 
         const { error } = await supabase
             .from("cobrancas")
