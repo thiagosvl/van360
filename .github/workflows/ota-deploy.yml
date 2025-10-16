@@ -73,17 +73,32 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           echo "[INFO] Limpando versões antigas..."
-          FILES=$(curl -s "$SUPABASE_URL/storage/v1/object/list/ota?limit=1000" \
+          
+          # 1. Faz a requisição e armazena o JSON na variável 'RESPONSE'
+          RESPONSE=$(curl -s -X POST "$SUPABASE_URL/storage/v1/object/list/ota" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
-            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" | jq -r '.[].name' | sort -r)
-          COUNT=0
-          for FILE in $FILES; do
-            COUNT=$((COUNT+1))
-            if [ $COUNT -gt 3 ]; then
-              echo "Deletando versão antiga: $FILE"
-              curl -s -X DELETE "$SUPABASE_URL/storage/v1/object/ota/$FILE" \
-                -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
-                -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" > /dev/null
-            fi
-          done
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"prefix": ""}') # Use prefix vazio para listar todos, se necessário
+
+          # 2. Verifica se a resposta é um JSON válido (array) e filtra os nomes
+          # O filtro '.[] | select(.name != "..." ) | .name' garante que apenas objetos válidos sejam processados
+          FILES=$(echo "$RESPONSE" | jq -r '.[].name' 2>/dev/null | sort -r)
+
+          if [ -z "$FILES" ]; then
+            echo "[INFO] Não há arquivos para limpar ou a resposta do servidor está vazia/inválida."
+          else
+            COUNT=0
+            # A leitura é feita linha por linha
+            echo "$FILES" | while read FILE; do
+              COUNT=$((COUNT+1))
+              if [ $COUNT -gt 3 ]; then
+                echo "Deletando versão antiga: $FILE"
+                # DELETE
+                curl -s -X DELETE "$SUPABASE_URL/storage/v1/object/ota/$FILE" \
+                  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+                  -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" > /dev/null
+              fi
+            done
+          fi
           echo "[INFO] Limpeza concluída."
