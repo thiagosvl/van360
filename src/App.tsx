@@ -31,52 +31,81 @@ const queryClient = new QueryClient();
 
 const App = () => {
   useEffect(() => {
-  const runUpdater = async () => {
-    if (!Capacitor.isNativePlatform()) {
-      console.log("[OTA] Ignorado — ambiente web");
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from("app_updates")
-        .select("latest_version, url_zip")
-        .eq("platform", Capacitor.getPlatform())
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      if (error || !data) {
-        console.warn("[OTA] Nenhuma atualização encontrada:", error?.message);
+    const runUpdater = async () => {
+      if (!Capacitor.isNativePlatform()) {
+        console.log("[OTA] Ignorado — ambiente web");
         return;
       }
 
-      const { latest_version, url_zip } = data;
-      const current = await CapacitorUpdater.current();
-      const currentVersion =
-        current?.bundle?.version || current?.native || "builtin";
+      try {
+        const { data, error } = await supabase
+          .from("app_updates")
+          .select("latest_version, url_zip, force_update")
+          .eq("platform", Capacitor.getPlatform())
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
 
-      console.log("[OTA] Versão atual:", currentVersion);
-      console.log("[OTA] Versão disponível:", latest_version);
+        if (error || !data) {
+          console.warn("[OTA] Nenhuma atualização encontrada:", error?.message);
+          return;
+        }
 
-      if (currentVersion !== latest_version) {
-        console.log("[OTA] Nova versão detectada, iniciando download...");
-        const version = await CapacitorUpdater.download({
-          version: latest_version,
-          url: url_zip,
-        });
-        await CapacitorUpdater.set(version);
-        console.log("[OTA] Atualização aplicada com sucesso.");
-      } else {
-        console.log("[OTA] Já está na versão mais recente:", currentVersion);
+        const { latest_version, url_zip, force_update } = data;
+        const current = await CapacitorUpdater.current();
+        const currentVersion =
+          current?.bundle?.version || current?.native || "builtin";
+
+        console.log("[OTA] Versão atual:", currentVersion);
+        console.log("[OTA] Versão disponível:", latest_version);
+        console.log("[OTA] Atualização obrigatória:", force_update);
+
+        if (currentVersion === latest_version) {
+          console.log("[OTA] Já está na versão mais recente:", currentVersion);
+          return;
+        }
+
+        // 🔹 Caso atualização obrigatória
+        if (force_update) {
+          alert(
+            "Uma nova versão do aplicativo está disponível e é obrigatória. O app será atualizado agora."
+          );
+          try {
+            const version = await CapacitorUpdater.download({
+              version: latest_version,
+              url: url_zip,
+            });
+            await CapacitorUpdater.set(version);
+            await CapacitorUpdater.reload();
+          } catch (err) {
+            console.error("[OTA] Erro ao aplicar atualização forçada:", err);
+          }
+          return;
+        }
+
+        // 🔹 Caso atualização silenciosa (em background)
+        try {
+          console.log(
+            "[OTA] Atualização silenciosa — baixando em background..."
+          );
+          const version = await CapacitorUpdater.download({
+            version: latest_version,
+            url: url_zip,
+          });
+          console.log(
+            "[OTA] Atualização baixada, será aplicada no próximo uso."
+          );
+          await CapacitorUpdater.set(version);
+        } catch (err) {
+          console.error("[OTA] Erro em atualização silenciosa:", err);
+        }
+      } catch (err) {
+        console.error("[OTA] Erro no processo OTA:", err);
       }
-    } catch (err) {
-      console.error("[OTA] Erro no processo OTA:", err);
-    }
-  };
+    };
 
-  runUpdater();
-}, []);
+    runUpdater();
+  }, []);
 
   useEffect(() => {
     const notifyReady = async () => {

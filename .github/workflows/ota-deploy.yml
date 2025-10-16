@@ -2,7 +2,7 @@ name: OTA Deploy
 
 on:
   push:
-    branches: ["main"] # ou ajuste para a branch que você usa para produção
+    branches: ["main"]
 
 jobs:
   build-and-upload:
@@ -18,7 +18,7 @@ jobs:
           node-version: 20
 
       - name: Instalar dependências
-        run: npm ci
+        run: npm install
 
       - name: Build do app
         run: npm run build
@@ -36,9 +36,9 @@ jobs:
         run: |
           VERSION=$(date +"%Y%m%d%H%M%S")
           curl -X POST "$SUPABASE_URL/storage/v1/object/ota/app-v$VERSION.zip" \
-          -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
-          -H "Content-Type: application/zip" \
-          --data-binary @dist_zip/app-v$VERSION.zip
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/zip" \
+            --data-binary @dist_zip/app-v$VERSION.zip
 
       - name: Registrar nova versão no banco
         env:
@@ -47,7 +47,6 @@ jobs:
         run: |
           VERSION=$(date +"%Y%m%d%H%M%S")
           PUBLIC_URL="$SUPABASE_URL/storage/v1/object/public/ota/app-v$VERSION.zip"
-
           curl -X POST "$SUPABASE_URL/rest/v1/app_updates" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
@@ -57,3 +56,24 @@ jobs:
               "latest_version": "'$VERSION'",
               "url_zip": "'$PUBLIC_URL'"
             }'
+
+      - name: Limpar versões antigas (manter apenas as 3 mais recentes)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          echo "[INFO] Limpando versões antigas..."
+          FILES=$(curl -s "$SUPABASE_URL/storage/v1/object/list/ota?limit=1000" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" | jq -r '.[].name' | sort -r)
+          COUNT=0
+          for FILE in $FILES; do
+            COUNT=$((COUNT+1))
+            if [ $COUNT -gt 3 ]; then
+              echo "Deletando versão antiga: $FILE"
+              curl -s -X DELETE "$SUPABASE_URL/storage/v1/object/ota/$FILE" \
+                -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+                -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" > /dev/null
+            fi
+          done
+          echo "[INFO] Limpeza concluída."
