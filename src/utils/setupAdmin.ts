@@ -15,7 +15,6 @@ const supabase = createClient(supabaseUrl, serviceRoleKey);
 export const createAdminAuthUser = async () => {
   console.log('Anon key:', supabaseAnonKey.slice(0, 15) + '...');
   console.log('Service key:', serviceRoleKey.slice(0, 15) + '...');
-  // 1️⃣ Criar o registro base na tabela `usuarios`
   const { data: usuario, error: insertError } = await supabase
     .from('usuarios')
     .insert({
@@ -35,7 +34,6 @@ export const createAdminAuthUser = async () => {
 
   console.log('✅ Usuário criado na tabela "usuarios" com ID:', usuario.id);
 
-  // 2️⃣ Chamar a função Edge `adminCreateUser`
   const { data, error } = await supabase.functions.invoke('adminCreateUser', {
     body: {
       email: 'thiago-svl@hotmail.com',
@@ -48,7 +46,6 @@ export const createAdminAuthUser = async () => {
     },
   });
 
-  // 3️⃣ Tratamento de erro + rollback
   if (error) {
     console.error('❌ Erro ao criar usuário Auth via função:', error);
     console.log('🧹 Executando rollback — removendo registro da tabela "usuarios"...');

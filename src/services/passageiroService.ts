@@ -105,7 +105,6 @@ export const passageiroService = {
           .eq("id", prePassageiroId);
 
         if (deletePreError) {
-          // Se falhar o DELETE (último passo), lançamos o erro.
           throw new Error("Falha crítica ao finalizar o pré-cadastro. Acionando reversão.");
         }
       }

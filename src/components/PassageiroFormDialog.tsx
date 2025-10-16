@@ -341,7 +341,6 @@ export default function PassengerFormDialog({
       onSuccess();
       onClose();
     } catch (error: any) {
-        // ... (bloco de erro)
     }
   };
 
