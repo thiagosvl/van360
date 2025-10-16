@@ -87,9 +87,9 @@ const App = () => {
           // listener de progresso
           const listener = await CapacitorUpdater.addListener(
             "download",
-            (event: any) => {
-              if (event?.progress) {
-                const pct = Math.round(event.progress * 100);
+            (info: any) => {
+              if (info?.percent !== undefined) {
+                const pct = Math.round(info.percent);
                 setProgress(pct);
               }
             }
