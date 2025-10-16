@@ -74,7 +74,7 @@ export default function UsuariosAdmin() {
       .from("usuarios")
       .select("cpfcnpj,email")
       .or(
-        `cpfcnpj.eq.${cpfcnpjDigits}`
+        `cpfcnpj.eq.${cpfcnpjDigits},email.eq.${encodeURIComponent(data.email)}`
       );
 
     if (existingError) throw new Error(existingError.message);
