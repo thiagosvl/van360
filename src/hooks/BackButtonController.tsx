@@ -23,13 +23,16 @@ const BackButtonController = () => {
         const currentPath = location.pathname;
 
         if (homeRoutes.includes(currentPath)) {
-          console.log("Back Button: Fechando/Minimizando o app.");
+          // Tela inicial = sempre fechar/minimizar
           App.exitApp();
-        } else {
-          console.log(
-            `Back Button: Navegando para a tela anterior a ${currentPath}.`
-          );
+        } else if (window.history.length > 1) {
+          // ⭐️ NOVO: Verifica o histórico REAL do navegador
+          // Se não está na tela inicial, mas tem histórico para onde voltar, usa navigate.
           navigate(-1);
+        } else {
+          // Se não está na tela inicial, mas o histórico está vazio (ex: deep link), fecha o app.
+          // Isso garante que o usuário não fique preso.
+          App.exitApp();
         }
       });
     };
