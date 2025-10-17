@@ -8,12 +8,12 @@ export default function AppLayout() {
   const { profile, loading } = useAuth();
 
   if (loading) {
-      return null;
+    return null;
   }
-  
+
   const role = profile?.role;
 
-  if (!role) return null; 
+  if (!role) return null;
 
   return (
     <LayoutProvider>
@@ -30,7 +30,12 @@ export default function AppLayout() {
 
           <div className="flex-1 flex flex-col">
             <AppNavbar role={role as "admin" | "motorista"} />
-            <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            <main
+              className="flex-1 overflow-y-auto p-4 md:p-6"
+              style={{
+                paddingBottom: "env(safe-area-inset-bottom, 20px)",
+              }}
+            >
               <Outlet />
             </main>
           </div>

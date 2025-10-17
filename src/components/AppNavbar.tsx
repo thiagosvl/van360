@@ -32,7 +32,12 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between px-4 sm:px-6 bg-white border-b shadow-sm">
+    <header
+      className="flex h-16 items-center justify-between px-4 sm:px-6 bg-white border-b shadow-sm"
+      style={{
+        paddingTop: "env(safe-area-inset-top, 0px)",
+      }}
+    >
       <div className="flex items-center gap-3">
         <div className="md:hidden">
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
