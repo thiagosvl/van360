@@ -29,6 +29,7 @@ import Relatorios from "./pages/Relatorios";
 import { Capacitor } from "@capacitor/core";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { Loader2 } from "lucide-react";
+import BackButtonController from "./hooks/BackButtonController";
 
 const queryClient = new QueryClient();
 
@@ -170,6 +171,7 @@ const App = () => {
         <Sonner position="top-right" />
         <AuthProvider>
           <BrowserRouter>
+            <BackButtonController />
             <ScrollToTop />
             <Routes>
               {/* Rotas Públicas */}
