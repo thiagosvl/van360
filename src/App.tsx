@@ -39,11 +39,20 @@ const App = () => {
   const [updating, setUpdating] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  // ⭐️ INÍCIO DO AJUSTE DE STATUS BAR
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
+      // Força os ícones nativos (hora, bateria) a serem escuros (DARK),
+      // garantindo o contraste contra o fundo branco da Navbar.
       StatusBar.setStyle({ style: Style.Dark });
+
+      // Em Android, garante que a webview esteja 'flutuando' por baixo da Status Bar
+      // (a parte onde fica a hora) para que o fundo branco do app seja visível.
+      // A separação será feita com o CSS no AppLayout.
+      StatusBar.setOverlaysWebView({ overlay: true });
     }
   }, []);
+  // ⭐️ FIM DO AJUSTE DE STATUS BAR
 
   useEffect(() => {
     const runUpdater = async () => {
