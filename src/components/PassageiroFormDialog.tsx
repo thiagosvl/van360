@@ -895,9 +895,6 @@ export default function PassengerFormDialog({
                     name="observacoes"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
-                          Notas sobre o passageiro/rota (opcional)
-                        </FormLabel>
                         <FormControl>
                           <Textarea
                             placeholder="Ex: Alérgico a amendoim, entra pela porta lateral da escola, etc."
