@@ -47,6 +47,7 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
               style={{
                 paddingTop: "env(safe-area-inset-top)",
                 paddingBottom: "env(safe-area-inset-bottom)",
+                backgroundColor: "#ffffff",
               }}
             >
               <SheetHeader className="flex flex-col items-center justify-center py-4 border-b">

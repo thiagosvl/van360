@@ -2,9 +2,11 @@ import { AppNavbar } from "@/components/AppNavbar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { LayoutProvider } from "@/contexts/LayoutContext";
 import { useAuth } from "@/hooks/useAuth";
+import { Capacitor } from "@capacitor/core";
 import { Outlet } from "react-router-dom";
 
 export default function AppLayout() {
+  const isNative = Capacitor.isNativePlatform();
   const { profile, loading } = useAuth();
 
   if (loading) {
@@ -21,8 +23,9 @@ export default function AppLayout() {
         className="w-full bg-background"
         style={{
           minHeight: "100vh",
-          paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: "env(safe-area-inset-bottom)",
+          paddingTop: isNative ? "env(safe-area-inset-top)" : undefined,
+          paddingBottom: isNative ? "env(safe-area-inset-bottom)" : undefined,
+          backgroundColor: isNative ? "#ffffff" : undefined,
         }}
       >
         <div className="flex flex-col h-full">
