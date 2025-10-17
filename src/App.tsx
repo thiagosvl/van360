@@ -9,7 +9,7 @@ import AppLayout from "@/layouts/AppLayout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
+import ScrollToTop from "./hooks/ScrollToTop";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminSettings from "./pages/admin/Settings";
 import UsuariosAdmin from "./pages/admin/Usuarios";
@@ -74,7 +74,7 @@ const App = () => {
 
         if (force_update) {
           alert(
-            "Uma nova versão obrigatória do aplicativo está disponível.\nA atualização será iniciada agora."
+            "Nova versão obrigatória disponível. O aplicativo será atualizado agora para garantir o funcionamento."
           );
 
           setUpdating(true);
@@ -107,8 +107,8 @@ const App = () => {
 
         try {
           toast({
-            title: "Atualização disponível",
-            description: "Baixando em segundo plano...",
+            title: "Atualização de App",
+            description: "Baixando melhorias em segundo plano...",
           });
 
           const version = await CapacitorUpdater.download({
@@ -120,9 +120,9 @@ const App = () => {
           localStorage.setItem("pendingUpdate", version.id);
 
           toast({
-            title: "Atualização baixada",
+            title: "Melhorias Prontas!",
             description:
-              "Ela será aplicada automaticamente quando o app for reiniciado.",
+              "A nova versão será aplicada na próxima vez que você abrir o app.",
           });
         } catch (err) {
           console.error("[OTA] Erro em atualização silenciosa:", err);
@@ -149,8 +149,9 @@ const App = () => {
           localStorage.removeItem("pendingUpdate");
           console.log(`[OTA] Versão ${pending} agora ativa!`);
           toast({
-            title: "Aplicativo atualizado",
-            description: "A nova versão foi instalada com sucesso.",
+            title: "Pronto!",
+            description:
+              "O aplicativo foi atualizado com sucesso para a versão mais recente.",
           });
         }
 

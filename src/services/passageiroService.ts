@@ -202,6 +202,8 @@ export const passageiroService = {
       dia_vencimento: Number(pureData.dia_vencimento),
       escola_id: pureData.escola_id || null,
       ativo: pureData.ativo ?? true,
+      cpf_responsavel: pureData.cpf_responsavel.replace(/\D/g, ""),
+      telefone_responsavel: pureData.telefone_responsavel.replace(/\D/g, ""),
     };
 
     let rollbackNeeded = false;
@@ -216,6 +218,24 @@ export const passageiroService = {
 
       if (fetchError) throw fetchError;
       snapshotPassageiro = { ...oldPassageiro };
+
+      if (oldPassageiro.asaas_customer_id) {
+        
+        const nomeMudou = oldPassageiro.nome_responsavel !== passageiroData.nome_responsavel;
+        const cpfMudou = oldPassageiro.cpf_responsavel !== passageiroData.cpf_responsavel;
+        const telefoneMudou = oldPassageiro.telefone_responsavel !== passageiroData.telefone_responsavel;
+        const emailMudou = oldPassageiro.email_responsavel !== passageiroData.email_responsavel;
+
+        if (nomeMudou || cpfMudou || telefoneMudou || emailMudou) {
+          
+          await asaasService.updateCustomer(oldPassageiro.asaas_customer_id, {
+            name: passageiroData.nome_responsavel,
+            cpfCnpj: passageiroData.cpf_responsavel,
+            mobilePhone: passageiroData.telefone_responsavel,
+            email: passageiroData.email_responsavel,
+          });
+        }
+      }
 
       const { error: updateError } = await supabase
         .from("passageiros")

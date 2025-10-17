@@ -37,6 +37,44 @@ export const asaasService = {
         return res.json();
     },
 
+    async updateCustomer(customerId: string, customer: {
+        name: string;
+        cpfCnpj: string;
+        mobilePhone?: string;
+        email?: string;
+    }) {
+        const authHeaders = await this.getAuthHeaders();
+
+        const payload = {
+            name: customer.name,
+            cpfCnpj: customer.cpfCnpj,
+            mobilePhone: customer.mobilePhone,
+            email: customer.email,
+        };
+
+        const res = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
+            method: "PUT",
+            headers: authHeaders,
+            body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+            const errorText = await res.text();
+            let errorMessage = `Erro (${res.status}) ao atualizar cliente no Asaas: ${errorText}`;
+
+            try {
+                const err = JSON.parse(errorText);
+                errorMessage = err.errors?.[0]?.description || JSON.stringify(err);
+            } catch (e) {
+                errorMessage = `Falha de Conexão (${res.status} ${res.statusText || 'Erro Desconhecido'}): ${errorText}`;
+            }
+
+            throw new Error(errorMessage);
+        }
+
+        return res.json();
+    },
+
     async createCustomerGeneral(customer: {
         name: string;
         cpfCnpj: string;
