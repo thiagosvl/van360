@@ -32,7 +32,7 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between px-4 sm:px-6 bg-white border-b shadow-sm w-full z-10">
+    <header className="flex h-16 items-center justify-between px-4 sm:px-6 bg-white border-b shadow-sm">
       <div className="flex items-center gap-3">
         <div className="md:hidden">
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -41,15 +41,7 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent
-              side="left"
-              className="w-72 sm:w-80 p-0"
-              style={{
-                paddingTop: "env(safe-area-inset-top)",
-                paddingBottom: "env(safe-area-inset-bottom)",
-                backgroundColor: "#ffffff",
-              }} 
-            >
+            <SheetContent side="left" className="w-72 sm:w-80 p-0">
               <SheetHeader className="flex flex-col items-center justify-center py-4 border-b">
                 <SheetTitle className="text-lg font-semibold">
                   Zip Van
@@ -66,12 +58,14 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
         </div>
 
         <div>
+          {/* 3. Exibir o título e subtítulo dinâmicos */}
           <h1 className="text-base sm:text-lg font-semibold leading-tight">
             {pageTitle}
           </h1>
           <p className="text-xs text-muted-foreground">{pageSubtitle}</p>
         </div>
       </div>
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="flex items-center space-x-2">

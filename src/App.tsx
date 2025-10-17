@@ -6,7 +6,6 @@ import { useToast } from "@/hooks/use-toast";
 import { AuthProvider } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/layouts/AppLayout";
-import { StatusBar, Style } from "@capacitor/status-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
@@ -38,14 +37,6 @@ const App = () => {
   const { toast } = useToast();
   const [updating, setUpdating] = useState(false);
   const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
-      StatusBar.setOverlaysWebView({ overlay: false });
-      StatusBar.setStyle({ style: Style.Dark });
-      StatusBar.setBackgroundColor({ color: "#ffffff" });
-    }
-  }, []);
 
   useEffect(() => {
     const runUpdater = async () => {
