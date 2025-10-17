@@ -33,7 +33,7 @@ export default function AppLayout() {
             <main
               className="flex-1 overflow-y-auto p-4 md:p-6"
               style={{
-                paddingBottom: "env(safe-area-inset-bottom, 20px)",
+                paddingBottom: "calc(1rem + env(safe-area-inset-bottom, 20px))",
               }}
             >
               <Outlet />

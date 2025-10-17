@@ -33,17 +33,21 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
 
   return (
     <header
-      className="flex flex-col justify-end bg-white border-b shadow-sm w-full z-10"
+      className="flex items-end justify-between bg-white border-b shadow-sm w-full z-10"
       style={{
-        // 2. Adiciona o padding topo igual à área de segurança
+        // Define a altura mínima base do conteúdo (4rem = 64px) + a área segura
+        minHeight: "calc(4rem + env(safe-area-inset-top, 0px))",
+        // Adiciona o padding superior da safe-area.
         paddingTop: "env(safe-area-inset-top, 0px)",
-        // Opcional: Adiciona padding lateral de segurança (útil em celulares com notch)
-        paddingLeft: "env(safe-area-inset-left, 0px)",
-        paddingRight: "env(safe-area-inset-right, 0px)",
+        // Adiciona padding lateral (sem usar o flexbox para isso, usamos o px-4/sm:px-6)
       }}
     >
-      {/* 3. ENVOLVA o conteúdo original em uma div com a altura fixa 'h-16' */}
-      <div className="flex h-16 items-center justify-between px-4 sm:px-6">
+      {/* 2. Removemos a div interna 'h-16' desnecessária. O padding horizontal (px-4/sm:px-6)
+             e o alinhamento vertical (items-end) fazem o trabalho. */}
+
+      <div className="flex h-16 items-center justify-between px-4 sm:px-6 w-full">
+        {" "}
+        {/* <- Adicionado w-full para espaçar */}
         <div className="flex items-center gap-3">
           <div className="md:hidden">
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -76,21 +80,20 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
             <p className="text-xs text-muted-foreground">{pageSubtitle}</p>
           </div>
         </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex items-center space-x-2">
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">{profile.nome}</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+              <LogOut className="mr-2 h-4 w-4" /> Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="flex items-center space-x-2">
-            <User className="h-4 w-4" />
-            <span className="hidden sm:inline">{profile.nome}</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
-            <LogOut className="mr-2 h-4 w-4" /> Sair
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
     </header>
   );
 }

@@ -40,11 +40,16 @@ const App = () => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      StatusBar.setStyle({ style: Style.Dark });
+    }
+  }, []);
+
+  useEffect(() => {
     const runUpdater = async () => {
       if (!Capacitor.isNativePlatform()) {
         return;
       }
-      StatusBar.setStyle({ style: Style.Dark });
 
       try {
         const { data, error } = await supabase
