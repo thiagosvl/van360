@@ -33,41 +33,48 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
 
   return (
     <header
-      className="flex h-16 items-center justify-between px-4 sm:px-6 bg-white border-b shadow-sm"
+      className="flex flex-col justify-end bg-white border-b shadow-sm w-full z-10"
       style={{
+        // 2. Adiciona o padding topo igual à área de segurança
         paddingTop: "env(safe-area-inset-top, 0px)",
+        // Opcional: Adiciona padding lateral de segurança (útil em celulares com notch)
+        paddingLeft: "env(safe-area-inset-left, 0px)",
+        paddingRight: "env(safe-area-inset-right, 0px)",
       }}
     >
-      <div className="flex items-center gap-3">
-        <div className="md:hidden">
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-72 sm:w-80 p-0">
-              <SheetHeader className="flex flex-col items-center justify-center py-4 border-b">
-                <SheetTitle className="text-lg font-semibold">
-                  Zip Van
-                </SheetTitle>
-              </SheetHeader>
-              <div className="p-4">
-                <AppSidebar
-                  role={role}
-                  onLinkClick={() => setIsSheetOpen(false)}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
+      {/* 3. ENVOLVA o conteúdo original em uma div com a altura fixa 'h-16' */}
+      <div className="flex h-16 items-center justify-between px-4 sm:px-6">
+        <div className="flex items-center gap-3">
+          <div className="md:hidden">
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72 sm:w-80 p-0">
+                <SheetHeader className="flex flex-col items-center justify-center py-4 border-b">
+                  <SheetTitle className="text-lg font-semibold">
+                    Zip Van
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="p-4">
+                  <AppSidebar
+                    role={role}
+                    onLinkClick={() => setIsSheetOpen(false)}
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
 
-        <div>
-          {/* 3. Exibir o título e subtítulo dinâmicos */}
-          <h1 className="text-base sm:text-lg font-semibold leading-tight">
-            {pageTitle}
-          </h1>
-          <p className="text-xs text-muted-foreground">{pageSubtitle}</p>
+          <div>
+            {/* 3. Exibir o título e subtítulo dinâmicos */}
+            <h1 className="text-base sm:text-lg font-semibold leading-tight">
+              {pageTitle}
+            </h1>
+            <p className="text-xs text-muted-foreground">{pageSubtitle}</p>
+          </div>
         </div>
       </div>
 

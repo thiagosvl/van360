@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AuthProvider } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/layouts/AppLayout";
+import { StatusBar, Style } from "@capacitor/status-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
@@ -43,6 +44,7 @@ const App = () => {
       if (!Capacitor.isNativePlatform()) {
         return;
       }
+      StatusBar.setStyle({ style: Style.Dark });
 
       try {
         const { data, error } = await supabase
