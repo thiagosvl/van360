@@ -36,127 +36,137 @@ const App = () => {
   const [updating, setUpdating] = useState(false);
   const [progress, setProgress] = useState(0);
 
-useEffect(() => {
-  const runUpdater = async () => {
-    if (!Capacitor.isNativePlatform()) {
-      console.log("[OTA] Ignorado — ambiente web");
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from("app_updates")
-        .select("latest_version, url_zip, force_update")
-        .eq("platform", Capacitor.getPlatform())
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      if (error || !data) {
-        console.warn("[OTA] Nenhuma atualização encontrada:", error?.message);
+  useEffect(() => {
+    const runUpdater = async () => {
+      if (!Capacitor.isNativePlatform()) {
+        console.log("[OTA] Ignorado — ambiente web");
         return;
       }
 
-      const { latest_version, url_zip, force_update } = data;
-      const current = await CapacitorUpdater.current();
-      const currentVersion =
-        current?.bundle?.version || current?.native || "builtin";
+      try {
+        const { data, error } = await supabase
+          .from("app_updates")
+          .select("latest_version, url_zip, force_update")
+          .eq("platform", Capacitor.getPlatform())
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
 
-      console.log("[OTA] Versão atual:", currentVersion);
-      console.log("[OTA] Versão disponível:", latest_version);
-      console.log("[OTA] Atualização obrigatória:", force_update);
+        if (error || !data) {
+          console.warn("[OTA] Nenhuma atualização encontrada:", error?.message);
+          return;
+        }
 
-      if (currentVersion === latest_version) {
-        console.log("[OTA] Já está na versão mais recente:", currentVersion);
-        return;
-      }
+        const { latest_version, url_zip, force_update } = data;
+        const current = await CapacitorUpdater.current();
+        const currentVersion =
+          current?.bundle?.version || current?.native || "builtin";
 
-      // 🔴 Atualização obrigatória
-      if (force_update) {
-        alert(
-          "Uma nova versão obrigatória do aplicativo está disponível.\nA atualização será iniciada agora."
-        );
+        console.log("[OTA] Versão atual:", currentVersion);
+        console.log("[OTA] Versão disponível:", latest_version);
+        console.log("[OTA] Atualização obrigatória:", force_update);
 
-        setUpdating(true);
-        setProgress(0);
+        if (currentVersion === latest_version) {
+          console.log("[OTA] Já está na versão mais recente:", currentVersion);
+          return;
+        }
 
-        const listener = await CapacitorUpdater.addListener("download", (info: any) => {
-          if (info?.percent !== undefined) setProgress(Math.round(info.percent));
-        });
+        // 🔴 Atualização obrigatória
+        if (force_update) {
+          alert(
+            "Uma nova versão obrigatória do aplicativo está disponível.\nA atualização será iniciada agora."
+          );
 
+          setUpdating(true);
+          setProgress(0);
+
+          const listener = await CapacitorUpdater.addListener(
+            "download",
+            (info: any) => {
+              if (info?.percent !== undefined)
+                setProgress(Math.round(info.percent));
+            }
+          );
+
+          try {
+            const version = await CapacitorUpdater.download({
+              version: latest_version,
+              url: url_zip,
+            });
+
+            await listener.remove();
+            await CapacitorUpdater.set(version);
+            await CapacitorUpdater.reload();
+          } catch (err) {
+            console.error("[OTA] Erro ao aplicar atualização forçada:", err);
+            setUpdating(false);
+          }
+
+          return;
+        }
+
+        // 🟡 Atualização silenciosa
         try {
+          toast({
+            title: "Atualização disponível",
+            description: "Baixando em segundo plano...",
+          });
+
           const version = await CapacitorUpdater.download({
             version: latest_version,
             url: url_zip,
           });
 
-          await listener.remove();
-          await CapacitorUpdater.set(version);
-          await CapacitorUpdater.reload();
+          await CapacitorUpdater.next({ id: version.id });
+          localStorage.setItem("pendingUpdate", version.id);
+
+          toast({
+            title: "Atualização baixada",
+            description:
+              "Ela será aplicada automaticamente quando o app for reiniciado.",
+          });
         } catch (err) {
-          console.error("[OTA] Erro ao aplicar atualização forçada:", err);
-          setUpdating(false);
+          console.error("[OTA] Erro em atualização silenciosa:", err);
+        }
+      } catch (err) {
+        console.error("[OTA] Erro no processo OTA:", err);
+      }
+    };
+
+    runUpdater();
+  }, []);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) {
+      console.log("[OTA] Ignorado — ambiente web");
+      return;
+    }
+
+    const notifyReady = async () => {
+      try {
+        const current = await CapacitorUpdater.current();
+        const pending = localStorage.getItem("pendingUpdate");
+
+        // Se o bundle atual é o pendente → agora ele foi ativado
+        if (pending && pending === current?.bundle?.id) {
+          localStorage.removeItem("pendingUpdate");
+          console.log(`[OTA] Versão ${pending} agora ativa!`);
+          toast({
+            title: "Aplicativo atualizado",
+            description: "A nova versão foi instalada com sucesso.",
+          });
         }
 
-        return;
-      }
-
-      // 🟡 Atualização silenciosa
-      try {
-        toast({
-          title: "Atualização disponível",
-          description: "Baixando em segundo plano...",
-        });
-
-        const version = await CapacitorUpdater.download({
-          version: latest_version,
-          url: url_zip,
-        });
-
-        await CapacitorUpdater.next({ id: version.id });
-        localStorage.setItem("pendingUpdate", version.id);
-
-        toast({
-          title: "Atualização baixada",
-          description: "Ela será aplicada automaticamente quando o app for reiniciado.",
-        });
+        // Só depois confirmar que o bundle atual iniciou bem
+        await CapacitorUpdater.notifyAppReady();
+        console.log("[OTA] notifyAppReady enviado com sucesso.");
       } catch (err) {
-        console.error("[OTA] Erro em atualização silenciosa:", err);
+        console.error("[OTA] Erro ao enviar notifyAppReady:", err);
       }
-    } catch (err) {
-      console.error("[OTA] Erro no processo OTA:", err);
-    }
-  };
+    };
 
-  runUpdater();
-}, []);
-
-useEffect(() => {
-  const notifyReady = async () => {
-    try {
-      const current = await CapacitorUpdater.current();
-      const pending = localStorage.getItem("pendingUpdate");
-
-      // Se o bundle atual é o pendente → agora ele foi ativado
-      if (pending && pending === current?.bundle?.id) {
-        localStorage.removeItem("pendingUpdate");
-        console.log(`[OTA] Versão ${pending} agora ativa!`);
-        toast({
-          title: "Aplicativo atualizado",
-          description: "A nova versão foi instalada com sucesso.",
-        });
-      }
-
-      // Só depois confirmar que o bundle atual iniciou bem
-      await CapacitorUpdater.notifyAppReady();
-      console.log("[OTA] notifyAppReady enviado com sucesso.");
-    } catch (err) {
-      console.error("[OTA] Erro ao enviar notifyAppReady:", err);
-    }
-  };
-
-  notifyReady();
-}, []);
+    notifyReady();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
