@@ -237,7 +237,7 @@ export default function Escolas() {
                   onValueChange={setSelectedStatus}
                 >
                   <SelectTrigger id="status-filter">
-                    <SelectValue placeholder="Todos os status" />
+                    <SelectValue placeholder="Todos" />
                   </SelectTrigger>
                   <SelectContent className="max-h-60 overflow-y-auto">
                     <SelectItem value="todos">Todos</SelectItem>

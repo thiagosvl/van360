@@ -38,9 +38,10 @@ import {
   meses,
 } from "@/utils/formatters";
 import {
-  Archive,
   BellOff,
   CheckCircle2,
+  DollarSign,
+  Inbox,
   MoreVertical,
   Search,
   Send,
@@ -68,6 +69,7 @@ const Cobrancas = () => {
   const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
   const { setPageTitle, setPageSubtitle } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [todasCobrancas, setTodasCobrancas] = useState<Cobranca[]>([]);
   const [cobrancasAbertas, setCobrancasAbertas] = useState<Cobranca[]>([]);
   const [cobrancasPagas, setCobrancasPagas] = useState<Cobranca[]>([]);
   const [mesFilter, setMesFilter] = useState(() => {
@@ -119,6 +121,7 @@ const Cobrancas = () => {
       const cobrancas = (data as Cobranca[]) || [];
       const abertas = cobrancas.filter((c) => c.status !== "pago");
       const pagas = cobrancas.filter((c) => c.status === "pago");
+      setTodasCobrancas(cobrancas);
       setCobrancasAbertas(abertas);
       setCobrancasPagas(pagas);
     } catch (error) {
@@ -300,7 +303,7 @@ const Cobrancas = () => {
               className="data-[state=inactive]:text-muted-foreground/80"
             >
               Em Aberto{" "}
-              <Badge variant="destructive" className="ml-2">
+              <Badge variant="destructive" className={todasCobrancas.length === 0 ? "bg-transparent text-secondary-foreground ml-2" : cobrancasAbertas.length === 0 ? "bg-green-600 ml-2" : "ml-2"}>
                 {cobrancasAbertas.length}
               </Badge>
             </TabsTrigger>
@@ -308,8 +311,8 @@ const Cobrancas = () => {
               value="pagas"
               className="data-[state=inactive]:text-muted-foreground/80"
             >
-              Pagas{" "}
-              <Badge variant="secondary" className="ml-2">
+              Pagas{" "}              
+              <Badge variant="secondary" className={todasCobrancas.length === 0 ? "bg-transparent text-secondary-foreground ml-2" : "bg-neutral-200 ml-2"}>
                 {cobrancasPagas.length}
               </Badge>
             </TabsTrigger>
@@ -335,11 +338,18 @@ const Cobrancas = () => {
                   <div className="p-4">
                     <ListSkeleton />
                   </div>
+                ) : todasCobrancas.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center text-center px-2 py-12 text-muted-foreground">
+                    <Inbox className="w-12 h-12 mb-4 text-gray-300" />
+                    <p>
+                      Não há mensalidades em aberto ou pagas no mes indicado.
+                    </p>
+                  </div>
                 ) : cobrancasAbertas.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center px-2 py-12 text-muted-foreground">
-                    <CheckCircle2 className="w-12 h-12 mb-4 text-gray-300" />
+                    <CheckCircle2 className="w-12 h-12 mb-4 text-green-600" />
                     <p>
-                      Tudo em dia! Não há mensalidades pendentes no mês
+                      Tudo em dia! <br /> Não há mensalidades pendentes no mês
                       indicado.
                     </p>
                   </div>
@@ -680,10 +690,17 @@ const Cobrancas = () => {
                   <div className="p-4">
                     <ListSkeleton />
                   </div>
+                ) : todasCobrancas.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center text-center px-2 py-12 text-muted-foreground">
+                    <Inbox className="w-12 h-12 mb-4 text-gray-300" />
+                    <p>
+                      Não há mensalidades em aberto ou pagas no mes indicado.
+                    </p>
+                  </div>
                 ) : cobrancasPagas.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
-                    <Archive className="w-12 h-12 mb-4 text-gray-300" />
-                    <p>Nenhum pagamento registrado no mês indicado</p>
+                    <DollarSign className="w-12 h-12 mb-4 text-gray-300" />
+                    <p>Não há mensalidades pagas no mês indicado.</p>
                   </div>
                 ) : cobrancasPagasFiltradas.length === 0 ? (
                   <div className="text-center px-2 py-12 text-muted-foreground">
