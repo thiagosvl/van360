@@ -10,37 +10,31 @@ const BackButtonController = () => {
     if (!Capacitor.isNativePlatform()) {
       return;
     }
-
-    let handler: any;
-
-    const setupListener = async () => {
-      // ⭐️ IMPORTANTE: Usamos App.addListener() sem dependências complexas
-      handler = await App.addListener("backButton", () => {
+    
+    // Assinatura imediata (sem async/await no useEffect)
+    const handler = App.addListener("backButton", () => {
         
-        // 1. Verifica se há algum histórico para onde voltar
-        //    (Length > 1 geralmente significa que há uma página ANTES da atual)
+        // Use a lógica "Se tem histórico para onde voltar, volte. Caso contrário, feche."
         if (window.history.length > 1) {
-          
-          console.log(`[BACK] Histórico > 1. Tentando voltar de: ${location.pathname}`);
-          // 2. Tenta voltar para a tela anterior (comportamento do browser)
-          window.history.back(); 
-          
+            // Se tem histórico no webview, volte. Isso simula o comportamento do navegador.
+            console.log(`[BACK] voltando de: ${location.pathname}. Histórico: ${window.history.length}`);
+            window.history.back(); 
+            
         } else {
-          // 3. Se não houver histórico, fecha o app (último recurso)
-          console.log(`[BACK] Histórico vazio. Fechando o app em: ${location.pathname}`);
-          App.exitApp();
+            // Último item na pilha = Fechar o app
+            console.log(`[BACK] Histórico Vazio. Fechando o app em: ${location.pathname}`);
+            App.exitApp();
         }
-      });
-    };
+    });
 
-    setupListener();
-
+    // O retorno agora é síncrono e limpa o listener
     return () => {
-      if (handler) {
-        handler.remove();
-      }
+        // Remove o listener de forma assíncrona, se ele foi criado
+        handler.then(h => h.remove()); 
     };
-  }, []); // ⭐️ ARRAY DE DEPENDÊNCIAS VAZIO!
+    
+    // Dependências vazias (o melhor para listeners de app)
+  }, []); 
 
   return null;
 };
