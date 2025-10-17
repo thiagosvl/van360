@@ -2,6 +2,7 @@ import { QuickStartCard } from "@/components/QuickStartCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
+import { useAuth } from "@/hooks/useAuth";
 import {
   CreditCard,
   GraduationCap,
@@ -51,6 +52,7 @@ const AccessCard = ({
 // --- Componente Principal: Início ---
 const Inicio = () => {
   const { setPageTitle, setPageSubtitle } = useLayout();
+  const { profile } = useAuth();
 
   // --- 2. Dados Estáticos para Acessos Rápidos (na ordem do menu) ---
   const ACCESS_CARDS_DATA = [
@@ -99,8 +101,8 @@ const Inicio = () => {
   ];
 
   useEffect(() => {
-    setPageTitle("Início");
-    setPageSubtitle("Acesso rápido e próximos passos");
+    setPageTitle(profile.id ? `Olá, ${profile.nome.split(' ')[0]}` : "Carregando...");
+    setPageSubtitle("")
   }, [setPageTitle, setPageSubtitle]);
 
   const pullToRefreshReload = async () => {
