@@ -21,8 +21,8 @@ export default function AppLayout() {
         className="w-full bg-background"
         style={{
           minHeight: "100vh",
-          paddingTop: "env(safe-area-inset-top, 0px)",
-          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
         <div className="flex flex-col h-full">
@@ -37,7 +37,12 @@ export default function AppLayout() {
 
           <div className="flex-1 flex flex-col">
             <AppNavbar role={role as "admin" | "motorista"} />
-            <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            <main
+              className="flex-1 overflow-y-auto p-4 md:p-6"
+              style={{
+                paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)",
+              }}
+            >
               <Outlet />
             </main>
           </div>
