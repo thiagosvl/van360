@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-interface DashboardStats {
+interface ReportsStats {
   totalPrevisto: number;
   totalRecebido: number;
   totalAReceber: number;
@@ -136,8 +136,8 @@ const PaymentStatsDisplay = ({
   );
 };
 
-const Dashboard = () => {
-  const [stats, setStats] = useState<DashboardStats>({
+const Relatorios = () => {
+  const [stats, setStats] = useState<ReportsStats>({
     totalPrevisto: 0,
     totalRecebido: 0,
     totalAReceber: 0,
@@ -270,8 +270,8 @@ const Dashboard = () => {
       setIsLoadingData(false);
     }
 
-    setPageTitle("Tela Inicial");
-    setPageSubtitle(`Resumo de ${meses[mesFilter - 1]} de ${anoFilter}`);
+    setPageTitle("Relatórios");
+    setPageSubtitle(`Exibindo resumo de ${meses[mesFilter - 1]}/${anoFilter}`);
   }, [
     mesFilter,
     anoFilter,
@@ -523,4 +523,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Relatorios;

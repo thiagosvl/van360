@@ -952,7 +952,11 @@ export default function PassageiroCarteirinha() {
                 </CardDescription>
               </div>
               <div>
-                <Button onClick={handleEditClick} className="gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleEditClick}
+                  className="gap-2"
+                >
                   <Pencil className="w-4 h-4" />
                 </Button>
               </div>
@@ -988,7 +992,7 @@ export default function PassageiroCarteirinha() {
                 ) : (
                   <Button
                     variant="default"
-                    className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white"
+                    className="w-full mt-2 bg-green-600 hover:bg-green-700"
                     onClick={() => handleToggleClick(passageiro.ativo)}
                   >
                     Reativar Cadastro
@@ -996,7 +1000,8 @@ export default function PassageiroCarteirinha() {
                 )}
 
                 <Button
-                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  variant="outline"
+                  className="w-full bg-green-50 border-green-500 text-green-500 hover:text-green-500 hover:bg-green-100"
                   disabled={!passageiro.telefone_responsavel}
                   onClick={() =>
                     window.open(
@@ -1033,6 +1038,7 @@ export default function PassageiroCarteirinha() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Observações</CardTitle>
               <Button
+                variant="outline"
                 onClick={() => setIsObservacoesEditing(true)}
                 className="gap-2"
               >
@@ -1162,9 +1168,7 @@ export default function PassageiroCarteirinha() {
         }
         description={`Deseja realmente ${confirmToggleDialog.action} o cadastro de ${passageiro.nome}? Esta ação pode afetar a geração de cobranças.`}
         onConfirm={handleToggleConfirm}
-        confirmText={
-          confirmToggleDialog.action === "ativar" ? "Reativar" : "Desativar"
-        }
+        confirmText="Confirmar"
         variant={
           confirmToggleDialog.action === "desativar" ? "destructive" : "default"
         }
@@ -1192,7 +1196,7 @@ export default function PassageiroCarteirinha() {
         title="Excluir"
         description="Deseja excluir permanentemente essa mensalidade?"
         onConfirm={handleDeleteCobranca}
-        confirmText="Excluir"
+        confirmText="Confirmar"
         variant="destructive"
       />
       <ConfirmationDialog
@@ -1201,7 +1205,7 @@ export default function PassageiroCarteirinha() {
         title="Excluir Passageiro"
         description="Deseja excluir permanentemente este passageiro?"
         onConfirm={handleDelete}
-        confirmText="Excluir"
+        confirmText="Confirmar"
         variant="destructive"
       />
       {isFormOpen && (

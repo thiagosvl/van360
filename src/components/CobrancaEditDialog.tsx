@@ -191,7 +191,7 @@ export default function CobrancaEditDialog({
           : undefined,
       };
 
-      await cobrancaService.editarCobrancaComTransacao(
+      await cobrancaService.updateCobrancaComTransacao(
         cobranca.id,
         updatePayload,
         cobranca

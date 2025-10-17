@@ -154,31 +154,34 @@ export default function PassengerFormDialog({
   const emitirCobranca = form.watch("emitir_cobranca_mes_atual");
   const diaVencimento = form.watch("dia_vencimento");
 
-  const fetchEscolasModal = async (escolaId?: string) => {
+  const fetchEscolas = async (escolaId?: string) => {
+    const userId = localStorage.getItem("app_user_id");
+
     try {
       let query = supabase
         .from("escolas")
         .select("*")
-        .eq("ativo", true)
-        .eq("usuario_id", localStorage.getItem("app_user_id"))
+        .eq("usuario_id", userId)
         .order("nome");
+
       if (escolaId) {
-        query = supabase
-          .from("escolas")
-          .select("*")
-          .or(`ativo.eq.true,id.eq.${escolaId}`)
-          .order("nome");
+        query = query.or(`ativo.eq.true,id.eq.${escolaId}`);
+      } else {
+        query = query.eq("ativo", true);
       }
+
       const { data, error } = await query;
       if (error) throw error;
+
       setEscolasModal(data || []);
     } catch (error) {
       console.error("Erro ao buscar escolas (modal):", error);
+      setEscolasModal([]);
     }
   };
 
   const handleEscolaCreated = (novaEscola: Escola) => {
-    fetchEscolasModal(novaEscola.id);
+    fetchEscolas(novaEscola.id);
 
     form.setValue("escola_id", novaEscola.id);
     form.trigger("escola_id");
@@ -201,13 +204,11 @@ export default function PassengerFormDialog({
   };
 
   useEffect(() => {
-    fetchEscolasModal();
-
     if (isOpen) {
       const isFinalizeMode = mode === "finalize" && prePassageiro;
 
-      if (editingPassageiro && mode !== "finalize") {
-        fetchEscolasModal(editingPassageiro.escola_id || undefined);
+      if (editingPassageiro && mode === "edit") {
+        fetchEscolas(editingPassageiro.escola_id || undefined);
         form.reset({
           nome: editingPassageiro.nome,
           genero: (editingPassageiro.genero as any) || undefined,
@@ -241,6 +242,7 @@ export default function PassengerFormDialog({
           "observacoes",
         ]);
       } else if (isFinalizeMode) {
+        fetchEscolas();
         form.reset({
           nome: prePassageiro.nome,
           genero: (prePassageiro.genero as any) || undefined,
@@ -287,6 +289,7 @@ export default function PassengerFormDialog({
           "observacoes",
         ]);
       } else {
+        fetchEscolas();
         form.reset({
           escola_id: "",
           nome: "",
@@ -314,7 +317,7 @@ export default function PassengerFormDialog({
 
   const handleSubmit = async (data: PassageiroFormData) => {
     const { emitir_cobranca_mes_atual, ...purePayload } = data;
-    
+
     try {
       if (mode === "finalize" && prePassageiro) {
         await passageiroService.finalizePreCadastro(
@@ -332,16 +335,15 @@ export default function PassengerFormDialog({
         toast({ title: "Cadastro atualizado com sucesso." });
       } else {
         await passageiroService.createPassageiroComTransacao({
-            ...purePayload,
-            emitir_cobranca_mes_atual
+          ...purePayload,
+          emitir_cobranca_mes_atual,
         });
         toast({ title: "Passageiro cadastrado com sucesso." });
       }
 
       onSuccess();
       onClose();
-    } catch (error: any) {
-    }
+    } catch (error: any) {}
   };
 
   if (isCreatingEscola) {
@@ -363,7 +365,7 @@ export default function PassengerFormDialog({
         <DialogHeader>
           <DialogTitle>
             {mode === "finalize"
-              ? "Finalizar Cadastro"
+              ? "Continuar Cadastro"
               : mode === "edit"
               ? "Editar Passageiro"
               : "Novo Cadastro"}
@@ -385,7 +387,7 @@ export default function PassengerFormDialog({
                     Atenção!
                   </AlertTitle>
                   <AlertDescription className="text-xs">
-                    Finalize o cadastro preenchendo os campos restantes.
+                    Para concluir o cadastro, preencha os campos destacados em vermelho.
                   </AlertDescription>
                 </Alert>
               </div>

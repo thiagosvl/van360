@@ -210,7 +210,6 @@ export default function Passageiros() {
       const { data, error } = await supabase
         .from("escolas")
         .select("*")
-        .eq("ativo", true)
         .eq("usuario_id", localStorage.getItem("app_user_id"))
         .order("nome");
       if (error) throw error;
@@ -323,10 +322,10 @@ export default function Passageiros() {
                 <div className="mb-7">
                   <Button
                     onClick={handleCadastrarRapido}
-                    variant="destructive"
-                    className="gap-2 w-full text-uppercase text-white"
+                    variant="outline"
+                    className="gap-2 text-uppercase"
                   >
-                    CADASTRO PREGUIÇOSO
+                    GERAR PASSAGEIRO FAKE
                   </Button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -634,6 +633,7 @@ export default function Passageiros() {
           onClose={() => setIsDialogOpen(false)}
           editingPassageiro={editingPassageiro}
           onSuccess={fetchPassageiros}
+          mode="edit"
         />
       )}
 
@@ -653,9 +653,7 @@ export default function Passageiros() {
           confirmToggleDialog.passageiro?.nome || "este passageiro"
         }? Esta ação pode afetar a geração de cobranças.`}
         onConfirm={handleToggleConfirm}
-        confirmText={
-          confirmToggleDialog.action === "ativar" ? "Ativar" : "Desativar"
-        }
+        confirmText="Confirmar"
         variant={
           confirmToggleDialog.action === "desativar" ? "destructive" : "default"
         }
@@ -667,7 +665,7 @@ export default function Passageiros() {
         title="Excluir Passageiro"
         description="Deseja excluir permanentemente este passageiro?"
         onConfirm={handleDelete}
-        confirmText="Excluir"
+        confirmText="Confirmar"
         variant="destructive"
       />
     </div>

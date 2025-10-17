@@ -230,8 +230,8 @@ export default function PrePassageiros({
             <div className="mb-7">
               <Button
                 onClick={handleCadastrarRapidoLink}
-                variant="destructive"
-                className="gap-2 w-full text-uppercase text-white"
+                variant="outline"
+                className="gap-2 text-uppercase"
               >
                 GERAR PRÉ-CADASTRO FAKE
               </Button>
@@ -291,14 +291,14 @@ export default function PrePassageiros({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
                           <DropdownMenuItem
-                            className="cursor-pointer font-semibold text-green-600"
+                            className="cursor-pointer"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleFinalizeClick(prePassageiro);
                             }}
                           >
                             <CheckCircle className="w-4 h-4 mr-2" />
-                            Finalizar Cadastro
+                            Continuar Cadastro
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="cursor-pointer text-red-600"
@@ -341,7 +341,7 @@ export default function PrePassageiros({
         title="Excluir Pré-Cadastro"
         description="Deseja excluir permanentemente este registro de pré-cadastro? Essa ação não pode ser desfeita."
         onConfirm={handleDelete}
-        confirmText="Excluir"
+        confirmText="Confirmar"
         variant="destructive"
       />
     </div>

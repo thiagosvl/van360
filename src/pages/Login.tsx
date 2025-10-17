@@ -96,7 +96,7 @@ export default function Login() {
       if (role === "admin") {
         navigate("/admin/dashboard", { replace: true });
       } else {
-        navigate("/dashboard", { replace: true });
+        navigate("/inicio", { replace: true });
       }
     } catch (error) {
       console.error("Login error:", error);

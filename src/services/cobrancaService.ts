@@ -3,6 +3,7 @@ import { asaasService } from "@/services/asaasService";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaDetalhe } from "@/types/cobrancaDetalhe";
 import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
+import { seForPago } from "@/utils/disableActions";
 import { toLocalDateString } from "@/utils/formatters";
 
 interface UpdatePayload {
@@ -214,15 +215,14 @@ export const cobrancaService = {
         }
     },
 
-    async editarCobrancaComTransacao(
+    async updateCobrancaComTransacao(
         cobrancaId: string,
         payload: UpdatePayload,
         cobrancaOriginal: Cobranca
     ): Promise<void> {
 
-        const isPaga = cobrancaOriginal.status === "pago";
+        const isPaga = seForPago(cobrancaOriginal);
         const hasAsaasId = !!cobrancaOriginal.asaas_payment_id;
-        const novaDataVencimento = new Date(payload.data_vencimento);
 
         const supabaseUpdatePayload: any = {
             valor: payload.valor,
@@ -236,6 +236,8 @@ export const cobrancaService = {
         let rollbackNeeded = false;
 
         try {
+            console.log(hasAsaasId, isPaga);
+            return;
             const { error: updateError } = await supabase
                 .from("cobrancas")
                 .update(supabaseUpdatePayload)

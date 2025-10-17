@@ -275,7 +275,7 @@ export default function PassageiroCobranca() {
           title: "Mensalidade não encontrada.",
           variant: "destructive",
         });
-        navigate("/dashboard");
+        navigate("/mensalidades");
         return;
       }
       setCobranca(data as CobrancaDetalhe);
@@ -377,7 +377,7 @@ export default function PassageiroCobranca() {
               {!disableRegistrarPagamento(cobranca) ? (
                 <Button
                   size="lg"
-                  className="w-full"
+                  className="w-full hover:bg-blue-600"
                   onClick={(e) => {
                     e.stopPropagation();
                     setPaymentDialogOpen(true);
@@ -389,7 +389,7 @@ export default function PassageiroCobranca() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="w-full"
+                  className="w-full border-red-600 text-red-500 hover:text-red-600"
                   onClick={() =>
                     setConfirmDialogDesfazer({
                       open: true,
@@ -420,6 +420,7 @@ export default function PassageiroCobranca() {
             </div>
             <div>
               <Button
+                variant="outline"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleEditCobrancaClick();
@@ -444,7 +445,7 @@ export default function PassageiroCobranca() {
             <div className="space-y-2 pt-6 border-t">
               <Button
                 className="w-full"
-                variant="outline"
+                variant="default"
                 onClick={() =>
                   navigate(`/passageiros/${cobranca.passageiro_id}`)
                 }
@@ -452,7 +453,8 @@ export default function PassageiroCobranca() {
                 <IdCard className="h-4 w-4 mr-2" /> Ver Carteirinha
               </Button>
               <Button
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                variant="outline"
+                className="w-full bg-green-50 border-green-500 text-green-500 hover:text-green-500 hover:bg-green-100"
                 disabled={!cobranca.telefone_responsavel}
                 onClick={() =>
                   window.open(
@@ -542,27 +544,28 @@ export default function PassageiroCobranca() {
                 );
               })()}
             </div>
-            {!disableVerPaginaPagamento(cobranca) && !disableBaixarBoleto(cobranca) && (
-              <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t">
-                <Button
-                  disabled={disableVerPaginaPagamento(cobranca)}
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => goToExternalURL(cobranca.asaas_invoice_url)}
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" /> Ver Página de
-                  Pagamento
-                </Button>
-                <Button
-                  disabled={disableBaixarBoleto(cobranca)}
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => goToExternalURL(cobranca.asaas_bankslip_url)}
-                >
-                  <Download className="w-4 h-4 mr-2" /> Baixar Boleto
-                </Button>
-              </div>
-            )}
+            {!disableVerPaginaPagamento(cobranca) &&
+              !disableBaixarBoleto(cobranca) && (
+                <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t">
+                  <Button
+                    disabled={disableVerPaginaPagamento(cobranca)}
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => goToExternalURL(cobranca.asaas_invoice_url)}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" /> Ver Página de
+                    Pagamento
+                  </Button>
+                  <Button
+                    disabled={disableBaixarBoleto(cobranca)}
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => goToExternalURL(cobranca.asaas_bankslip_url)}
+                  >
+                    <Download className="w-4 h-4 mr-2" /> Baixar Boleto
+                  </Button>
+                </div>
+              )}
 
             <div className="pt-6 border-t">
               <h4 className="text-sm font-semibold mb-4 flex items-center gap-2 text-muted-foreground">
@@ -639,7 +642,7 @@ export default function PassageiroCobranca() {
         description="Deseja realmente desfazer o pagamento desta mensalidade?"
         onConfirm={desfazerPagamento}
         variant="destructive"
-        confirmText="Desfazer Pagamento"
+        confirmText="Confirmar"
       />
 
       <ConfirmationDialog
@@ -648,7 +651,7 @@ export default function PassageiroCobranca() {
         title="Excluir"
         description="Deseja excluir permanentemente essa mensalidade?"
         onConfirm={deleteCobranca}
-        confirmText="Excluir"
+        confirmText="Confirmar"
         variant="destructive"
       />
 

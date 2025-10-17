@@ -55,7 +55,7 @@ export const AppGate = ({ children }: AppGateProps) => {
     if (role === "admin") {
       return <Navigate to="/admin/dashboard" replace />;
     }
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/inicio" replace />;
   }
 
   if (role === "admin") {
@@ -67,12 +67,13 @@ export const AppGate = ({ children }: AppGateProps) => {
     }
   } else if (role === "motorista") {
     const allowedRoutes = [
-      "/dashboard",
+      "/inicio",
       "/passageiros",
       "/mensalidades",
       "/escolas",
       "/configuracoes",
       "/gastos",
+      "/relatorios"
     ];
     
     const isAllowedRoute = allowedRoutes.some(
@@ -81,11 +82,11 @@ export const AppGate = ({ children }: AppGateProps) => {
     );
 
     if (location.pathname.startsWith("/admin")) {
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/inicio" replace />;
     }
     
     if (!isAllowedRoute) {
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/inicio" replace />;
     }
   }
   

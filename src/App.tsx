@@ -15,15 +15,16 @@ import AdminSettings from "./pages/admin/Settings";
 import UsuariosAdmin from "./pages/admin/Usuarios";
 import Cobrancas from "./pages/Cobrancas";
 import Configuracoes from "./pages/Configuracoes";
-import Dashboard from "./pages/Dashboard";
 import Escolas from "./pages/Escolas";
 import Gastos from "./pages/Gastos";
+import Inicio from "./pages/Inicio";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PassageiroCarteirinha from "./pages/PassageiroCarteirinha";
 import PassageiroCobranca from "./pages/PassageiroCobranca";
 import PassageiroExternalForm from "./pages/PassageiroExternalForm";
 import Passageiros from "./pages/Passageiros";
+import Relatorios from "./pages/Relatorios";
 
 import { Capacitor } from "@capacitor/core";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
@@ -39,7 +40,6 @@ const App = () => {
   useEffect(() => {
     const runUpdater = async () => {
       if (!Capacitor.isNativePlatform()) {
-        console.log("[OTA] Ignorado — ambiente web");
         return;
       }
 
@@ -71,7 +71,6 @@ const App = () => {
           return;
         }
 
-        // 🔴 Atualização obrigatória
         if (force_update) {
           alert(
             "Uma nova versão obrigatória do aplicativo está disponível.\nA atualização será iniciada agora."
@@ -105,7 +104,6 @@ const App = () => {
           return;
         }
 
-        // 🟡 Atualização silenciosa
         try {
           toast({
             title: "Atualização disponível",
@@ -138,7 +136,6 @@ const App = () => {
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) {
-      console.log("[OTA] Ignorado — ambiente web");
       return;
     }
 
@@ -147,7 +144,6 @@ const App = () => {
         const current = await CapacitorUpdater.current();
         const pending = localStorage.getItem("pendingUpdate");
 
-        // Se o bundle atual é o pendente → agora ele foi ativado
         if (pending && pending === current?.bundle?.id) {
           localStorage.removeItem("pendingUpdate");
           console.log(`[OTA] Versão ${pending} agora ativa!`);
@@ -157,7 +153,6 @@ const App = () => {
           });
         }
 
-        // Só depois confirmar que o bundle atual iniciou bem
         await CapacitorUpdater.notifyAppReady();
         console.log("[OTA] notifyAppReady enviado com sucesso.");
       } catch (err) {
@@ -193,7 +188,7 @@ const App = () => {
               />
 
               {/* Redirecionamento padrão */}
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/" element={<Navigate to="/inicio" replace />} />
 
               {/* Rotas Protegidas */}
               <Route
@@ -213,7 +208,7 @@ const App = () => {
                 <Route path="admin/configuracoes" element={<AdminSettings />} />
 
                 {/* Motorista */}
-                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="inicio" element={<Inicio />} />
                 <Route path="passageiros" element={<Passageiros />} />
                 <Route
                   path="passageiros/:passageiro_id"
@@ -226,6 +221,7 @@ const App = () => {
                 <Route path="mensalidades" element={<Cobrancas />} />
                 <Route path="escolas" element={<Escolas />} />
                 <Route path="gastos" element={<Gastos />} />
+                <Route path="relatorios" element={<Relatorios />} />
                 <Route path="configuracoes" element={<Configuracoes />} />
               </Route>
 

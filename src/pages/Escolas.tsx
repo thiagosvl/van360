@@ -269,10 +269,10 @@ export default function Escolas() {
                           Nome
                         </th>
                         <th className="p-3 text-left text-xs font-medium text-gray-600">
-                          Passageiros Ativos
+                          Status
                         </th>
                         <th className="p-3 text-left text-xs font-medium text-gray-600">
-                          Status
+                          Passageiros Ativos
                         </th>
                         <th className="p-3 text-center text-xs font-medium text-gray-600">
                           Ações
@@ -292,12 +292,6 @@ export default function Escolas() {
                             </div>
                           </td>
                           <td className="p-3 align-top">
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                              <Users2 className="w-4 h-4" />
-                              {escola.passageiros_ativos_count}
-                            </div>
-                          </td>
-                          <td className="p-3 align-top">
                             <span
                               className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
                                 escola.ativo
@@ -307,6 +301,12 @@ export default function Escolas() {
                             >
                               {escola.ativo ? "Ativa" : "Desativada"}
                             </span>
+                          </td>
+                          <td className="p-3 align-top">
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Users2 className="w-4 h-4" />
+                              {escola.passageiros_ativos_count}
+                            </div>
                           </td>
                           <td className="p-3 text-center align-top">
                             <DropdownMenu>

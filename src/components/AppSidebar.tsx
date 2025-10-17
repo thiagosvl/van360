@@ -1,4 +1,5 @@
 import {
+  ChartArea,
   CreditCard,
   GraduationCap,
   LayoutDashboard,
@@ -15,12 +16,13 @@ const adminItems = [
 ];
 
 const motoristaItems = [
-  { title: "Início", href: "/dashboard", icon: LayoutDashboard },
+  { title: "Início", href: "/inicio", icon: LayoutDashboard },
   { title: "Mensalidades", href: "/mensalidades", icon: CreditCard },
   { title: "Passageiros e Pré-Cadastros", href: "/passageiros", icon: Users },
+  { title: "Relatórios", href: "/relatorios", icon: ChartArea },
+  { title: "Configurações", href: "/configuracoes", icon: Settings },
   { title: "Escolas", href: "/escolas", icon: GraduationCap },
   { title: "Gastos", href: "/gastos", icon: Wallet },
-  { title: "Configurações", href: "/configuracoes", icon: Settings },
 ];
 
 interface AppSidebarProps {

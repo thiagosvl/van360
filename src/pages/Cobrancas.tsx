@@ -947,7 +947,7 @@ const Cobrancas = () => {
         description="Deseja realmente desfazer o pagamento desta mensalidade? Essa ação moverá a mensalidade de volta para a lista de em aberto."
         onConfirm={desfazerPagamento}
         variant="destructive"
-        confirmText="Desfazer Pagamento"
+        confirmText="Confirmar"
       />
 
       {cobrancaToEdit && (

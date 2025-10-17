@@ -38,7 +38,6 @@ export const passageiroService = {
     let asaasCustomer: any = null;
     let newPassageiro: any = null;
     let payment: any = null;
-    let rollbackPreCadastro = false;
 
     try {
       asaasCustomer = await asaasService.createCustomer({
