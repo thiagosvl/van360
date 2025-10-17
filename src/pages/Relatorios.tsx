@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLayout } from "@/contexts/LayoutContext";
+import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Cobranca } from "@/types/cobranca";
@@ -90,7 +91,7 @@ const PaymentStatsDisplay = ({
   if (activeMethods.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        Nenhuma mensalidade recebida no mês indicado
+        Nenhuma mensalidade recebida no mês indicado.
       </p>
     );
   }
@@ -281,7 +282,12 @@ const Relatorios = () => {
     setPageSubtitle,
   ]);
 
+  const pullToRefreshReload = async () => {
+    fetchStats();
+  };
+
   return (
+      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
     <div className="space-y-6">
       <div className="w-full">
         <Card className="mb-6">
@@ -520,6 +526,7 @@ const Relatorios = () => {
         </div>
       </div>
     </div>
+    </PullToRefreshWrapper>
   );
 };
 

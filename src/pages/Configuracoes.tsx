@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useLayout } from "@/contexts/LayoutContext";
+import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -281,8 +282,13 @@ export default function Configuracoes() {
     );
   }
 
+  const pullToRefreshReload = async () => {
+    fetchConfiguracoes();
+  };
+
   return (
     <>
+        <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
@@ -458,6 +464,7 @@ export default function Configuracoes() {
           </div>
         </DialogContent>
       </Dialog>
+      </PullToRefreshWrapper>
     </>
   );
 }

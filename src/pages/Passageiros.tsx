@@ -21,6 +21,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLayout } from "@/contexts/LayoutContext";
+import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { passageiroService } from "@/services/passageiroService";
@@ -280,7 +281,13 @@ export default function Passageiros() {
     navigate(`/passageiros/${passageiro.id}`);
   };
 
+  const pullToRefreshReload = async () => {
+    fetchPassageiros();
+    fetchEscolas();
+  };
+
   return (
+      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
     <div className="space-y-6">
       <div className="w-full">
         <Tabs defaultValue="passageiros" className="w-full">
@@ -669,5 +676,6 @@ export default function Passageiros() {
         variant="destructive"
       />
     </div>
+    </PullToRefreshWrapper>
   );
 }
