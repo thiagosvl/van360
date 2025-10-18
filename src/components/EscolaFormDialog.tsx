@@ -68,6 +68,7 @@ export default function EscolaFormDialog({
   const [loading, setLoading] = useState(false);
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "dados-escola",
+    "endereco",
   ]);
   const { toast } = useToast();
 
@@ -76,6 +77,22 @@ export default function EscolaFormDialog({
       setOpenAccordionItems(["dados-escola", "endereco"]);
     }
   }, [editingEscola]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      form.reset({
+        nome: "",
+        rua: "",
+        numero: "",
+        bairro: "",
+        cidade: "",
+        estado: "",
+        cep: "",
+        referencia: "",
+        ativo: true,
+      });
+    }
+  }, [isOpen]);
 
   const form = useForm<EscolaFormData>({
     resolver: zodResolver(escolaSchema),
@@ -112,6 +129,7 @@ export default function EscolaFormDialog({
       });
 
       onSuccess(escolaSalva);
+      onClose();
     } catch (error: any) {
       console.error("Erro ao salvar escola:", error);
 
@@ -199,7 +217,7 @@ export default function EscolaFormDialog({
                 <AccordionTrigger>
                   <div className="flex items-center gap-2 text-lg font-semibold">
                     <MapPin className="w-5 h-5 text-primary" />
-                    Endereço
+                    Endereço (Opcional)
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">

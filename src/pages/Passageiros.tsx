@@ -1,4 +1,5 @@
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import EscolaFormDialog from "@/components/EscolaFormDialog";
 import PassageiroFormDialog from "@/components/PassageiroFormDialog";
 import PrePassageiros from "@/components/PrePassageiros";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { passageiroService } from "@/services/passageiroService";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
+import { safeOpenDialog } from "@/utils/dialogCallback";
 import {
   CreditCard,
   MoreVertical,
@@ -59,6 +61,8 @@ const PassengerListSkeleton = () => (
 );
 
 export default function Passageiros() {
+  const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
+  const [isCreatingEscola, setIsCreatingEscola] = useState(false);
   const { setPageTitle, setPageSubtitle } = useLayout();
   const [passageiros, setPassageiros] = useState<Passageiro[]>([]);
   const [countPassageirosAtivos, setcountPassageirosAtivos] =
@@ -70,6 +74,7 @@ export default function Passageiros() {
   );
   const [selectedEscola, setSelectedEscola] = useState<string>("todas");
   const [selectedStatus, setSelectedStatus] = useState<string>("todos");
+  const [modePassageiroFormDialog, setModePassageiroFormDialog] = useState<string>("create");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -141,6 +146,29 @@ export default function Passageiros() {
     setPageTitle("Passageiros e Pré-Cadastros");
     setPageSubtitle(subTitle);
   }, [passageiros, setPageTitle, setPageSubtitle]);
+
+  const handleSuccessCreatePassageiro = () => {
+    setNovaEscolaId(null);
+    fetchPassageiros();
+  }
+
+  const handleClosePassageiroFormDialog = () => {
+    safeOpenDialog(() => {
+      setNovaEscolaId(null);
+      setIsDialogOpen(false);
+    });
+  };
+
+  const handleCloseEscolaFormDialog = () => {
+    safeOpenDialog(() => {
+      setIsCreatingEscola(false);
+    });
+  };
+
+  const handleEscolaCreated = (novaEscola) => {
+    setIsCreatingEscola(false);
+    setNovaEscolaId(novaEscola.id);
+  };
 
   const handleFinalizeNewPrePassageiro = async () => {
     fetchPassageiros();
@@ -221,13 +249,19 @@ export default function Passageiros() {
   };
 
   const handleEdit = (passageiro: Passageiro) => {
-    setEditingPassageiro(passageiro);
-    setIsDialogOpen(true);
+    safeOpenDialog(() => {
+      setEditingPassageiro(passageiro);
+      setModePassageiroFormDialog("edit");
+      setIsDialogOpen(true);
+    });
   };
 
   const handleOpenNewDialog = () => {
-    setEditingPassageiro(null);
-    setIsDialogOpen(true);
+    safeOpenDialog(() => {
+      setEditingPassageiro(null);
+      setModePassageiroFormDialog("create");
+      setIsDialogOpen(true);
+    });
   };
 
   const handleCadastrarRapido = async () => {
@@ -287,395 +321,407 @@ export default function Passageiros() {
   };
 
   return (
-      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-    <div className="space-y-6">
-      <div className="w-full">
-        <Tabs defaultValue="passageiros" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger
-              value="passageiros"
-              className="data-[state=inactive]:text-muted-foreground/80"
-            >
-              Passageiros
-            </TabsTrigger>
-            <TabsTrigger
-              value="pre-cadastros"
-              className="data-[state=inactive]:text-muted-foreground/80"
-            >
-              Pré-Cadastros
-            </TabsTrigger>
-          </TabsList>
+    <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
+      <div className="space-y-6">
+        <div className="w-full">
+          <Tabs defaultValue="passageiros" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger
+                value="passageiros"
+                className="data-[state=inactive]:text-muted-foreground/80"
+              >
+                Passageiros
+              </TabsTrigger>
+              <TabsTrigger
+                value="pre-cadastros"
+                className="data-[state=inactive]:text-muted-foreground/80"
+              >
+                Pré-Cadastros
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="passageiros" className="mt-4">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle className="flex items-center gap-2">
-                    <span>Passageiros</span>
-                    {countPassageirosAtivos > 0 && (
-                      <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
-                        {countPassageirosAtivos}
-                      </span>
-                    )}
-                  </CardTitle>
+            <TabsContent value="passageiros" className="mt-4">
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="flex items-center gap-2">
+                      <span>Passageiros</span>
+                      {countPassageirosAtivos > 0 && (
+                        <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
+                          {countPassageirosAtivos}
+                        </span>
+                      )}
+                    </CardTitle>
 
-                  <Button onClick={handleOpenNewDialog}>
-                    <Plus className="h-4 w-4" />
-                    <span className="hidden sm:inline">Novo Passageiro</span>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-7">
-                  <Button
-                    onClick={handleCadastrarRapido}
-                    variant="outline"
-                    className="gap-2 text-uppercase"
-                  >
-                    GERAR PASSAGEIRO FAKE
-                  </Button>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="search">Buscar por Nome</Label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                      <Input
-                        id="search"
-                        placeholder="Nome do passageiro ou responsável..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10"
-                      />
+                    <Button onClick={handleOpenNewDialog}>
+                      <Plus className="h-4 w-4" />
+                      <span className="hidden sm:inline">Novo Passageiro</span>
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-7">
+                    <Button
+                      onClick={handleCadastrarRapido}
+                      variant="outline"
+                      className="gap-2 text-uppercase"
+                    >
+                      GERAR PASSAGEIRO FAKE
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="search">Buscar por Nome</Label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                        <Input
+                          id="search"
+                          placeholder="Nome do passageiro ou responsável..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="status-filter">Status</Label>
+                      <Select
+                        value={selectedStatus}
+                        onValueChange={setSelectedStatus}
+                      >
+                        <SelectTrigger id="status-filter">
+                          <SelectValue placeholder="Todos" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60 overflow-y-auto">
+                          <SelectItem value="todos">Todos</SelectItem>
+                          <SelectItem value="ativo">Ativo</SelectItem>
+                          <SelectItem value="desativado">Desativado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="escola-filter">Escola</Label>
+                      <Select
+                        value={selectedEscola}
+                        onValueChange={setSelectedEscola}
+                      >
+                        <SelectTrigger id="escola-filter">
+                          <SelectValue placeholder="Todas" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60 overflow-y-auto">
+                          <SelectItem value="todas">Todas</SelectItem>
+                          {escolas.map((escola) => (
+                            <SelectItem key={escola.id} value={escola.id}>
+                              {escola.nome}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="status-filter">Status</Label>
-                    <Select
-                      value={selectedStatus}
-                      onValueChange={setSelectedStatus}
-                    >
-                      <SelectTrigger id="status-filter">
-                        <SelectValue placeholder="Todos" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60 overflow-y-auto">
-                        <SelectItem value="todos">Todos</SelectItem>
-                        <SelectItem value="ativo">Ativo</SelectItem>
-                        <SelectItem value="desativado">Desativado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="escola-filter">Escola</Label>
-                    <Select
-                      value={selectedEscola}
-                      onValueChange={setSelectedEscola}
-                    >
-                      <SelectTrigger id="escola-filter">
-                        <SelectValue placeholder="Todas" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60 overflow-y-auto">
-                        <SelectItem value="todas">Todas</SelectItem>
-                        {escolas.map((escola) => (
-                          <SelectItem key={escola.id} value={escola.id}>
-                            {escola.nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
 
-                <div className="mt-8">
-                  {loading ? (
-                    <PassengerListSkeleton />
-                  ) : passageiros.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
-                      <Users2 className="w-12 h-12 mb-4 text-gray-300" />
-                      <p>
-                        {searchTerm
-                          ? `Nenhum passageiro encontrado para "${searchTerm}"`
-                          : "Nenhum passageiro cadastrado"}
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="hidden md:block overflow-x-auto">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b">
-                              <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                Nome
-                              </th>
-                              <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                Status
-                              </th>
-                              <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                Escola
-                              </th>
-                              <th className="p-3 text-center text-xs font-medium text-gray-600">
-                                Ações
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-gray-200">
-                            {passageiros.map((passageiro) => (
-                              <tr
-                                key={passageiro.id}
-                                onClick={() => handleHistorico(passageiro)}
-                                className="hover:bg-muted/50 cursor-pointer"
-                              >
-                                <td className="p-3 align-top">
-                                  <div className="font-medium text-sm text-gray-900">
+                  <div className="mt-8">
+                    {loading ? (
+                      <PassengerListSkeleton />
+                    ) : passageiros.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
+                        <Users2 className="w-12 h-12 mb-4 text-gray-300" />
+                        <p>
+                          {searchTerm
+                            ? `Nenhum passageiro encontrado para "${searchTerm}"`
+                            : "Nenhum passageiro cadastrado"}
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="hidden md:block overflow-x-auto">
+                          <table className="w-full">
+                            <thead>
+                              <tr className="border-b">
+                                <th className="p-3 text-left text-xs font-medium text-gray-600">
+                                  Nome
+                                </th>
+                                <th className="p-3 text-left text-xs font-medium text-gray-600">
+                                  Status
+                                </th>
+                                <th className="p-3 text-left text-xs font-medium text-gray-600">
+                                  Escola
+                                </th>
+                                <th className="p-3 text-center text-xs font-medium text-gray-600">
+                                  Ações
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                              {passageiros.map((passageiro) => (
+                                <tr
+                                  key={passageiro.id}
+                                  onClick={() => handleHistorico(passageiro)}
+                                  className="hover:bg-muted/50 cursor-pointer"
+                                >
+                                  <td className="p-3 align-top">
+                                    <div className="font-medium text-sm text-gray-900">
+                                      {passageiro.nome}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      Responsável:{" "}
+                                      {passageiro.nome_responsavel || "-"}
+                                    </div>
+                                  </td>
+                                  <td className="p-3 align-top">
+                                    <span
+                                      className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
+                                        passageiro.ativo
+                                          ? "bg-green-100 text-green-800"
+                                          : "bg-red-100 text-red-800"
+                                      }`}
+                                    >
+                                      {passageiro.ativo
+                                        ? "Ativo"
+                                        : "Desativado"}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 align-top">
+                                    <span className="text-sm text-muted-foreground">
+                                      {passageiro.escolas?.nome ||
+                                        "Não informada"}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 text-center align-top">
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 w-8 p-0"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent>
+                                        <DropdownMenuItem
+                                          className="cursor-pointer"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleHistorico(passageiro);
+                                          }}
+                                        >
+                                          <CreditCard className="w-4 h-4 mr-2" />
+                                          Ver Carteirinha
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                          className="cursor-pointer"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEdit(passageiro);
+                                          }}
+                                        >
+                                          <Pencil className="w-4 h-4 mr-2" />
+                                          Editar
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                          className="cursor-pointer"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleToggleClick(passageiro);
+                                          }}
+                                        >
+                                          {passageiro.ativo ? (
+                                            <>
+                                              <ToggleLeft className="w-4 h-4 mr-2" />
+                                              Desativar
+                                            </>
+                                          ) : (
+                                            <>
+                                              <ToggleRight className="w-4 h-4 mr-2" />
+                                              Reativar
+                                            </>
+                                          )}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                          className="cursor-pointer text-red-600"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setDeleteDialog({
+                                              open: true,
+                                              passageiroId: passageiro.id,
+                                            });
+                                          }}
+                                        >
+                                          <Trash2 className="w-4 h-4 mr-2" />
+                                          Excluir
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div className="md:hidden divide-y divide-gray-200">
+                          {passageiros.map((passageiro) => (
+                            <div
+                              key={passageiro.id}
+                              onClick={() => handleHistorico(passageiro)}
+                              className="p-4 active:bg-muted/50"
+                            >
+                              <div className="flex justify-between items-start">
+                                <div className="pr-2">
+                                  <div className="font-semibold text-gray-800">
                                     {passageiro.nome}
                                   </div>
-                                  <div className="text-xs text-gray-500">
-                                    Responsável:{" "}
-                                    {passageiro.nome_responsavel || "-"}
+                                  <div className="text-sm text-muted-foreground">
+                                    {passageiro.escolas?.nome || "Sem escola"}
                                   </div>
-                                </td>
-                                <td className="p-3 align-top">
-                                  <span
-                                    className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
-                                      passageiro.ativo
-                                        ? "bg-green-100 text-green-800"
-                                        : "bg-red-100 text-red-800"
-                                    }`}
-                                  >
-                                    {passageiro.ativo ? "Ativo" : "Desativado"}
-                                  </span>
-                                </td>
-                                <td className="p-3 align-top">
-                                  <span className="text-sm text-muted-foreground">
-                                    {passageiro.escolas?.nome ||
-                                      "Não informada"}
-                                  </span>
-                                </td>
-                                <td className="p-3 text-center align-top">
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-8 w-8 p-0"
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        <MoreVertical className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                      <DropdownMenuItem
-                                        className="cursor-pointer"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleHistorico(passageiro);
-                                        }}
-                                      >
-                                        <CreditCard className="w-4 h-4 mr-2" />
-                                        Ver Carteirinha
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        className="cursor-pointer"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleEdit(passageiro);
-                                        }}
-                                      >
-                                        <Pencil className="w-4 h-4 mr-2" />
-                                        Editar
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        className="cursor-pointer"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleToggleClick(passageiro);
-                                        }}
-                                      >
-                                        {passageiro.ativo ? (
-                                          <>
-                                            <ToggleLeft className="w-4 h-4 mr-2" />
-                                            Desativar
-                                          </>
-                                        ) : (
-                                          <>
-                                            <ToggleRight className="w-4 h-4 mr-2" />
-                                            Reativar
-                                          </>
-                                        )}
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        className="cursor-pointer text-red-600"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setDeleteDialog({
-                                            open: true,
-                                            passageiroId: passageiro.id,
-                                          });
-                                        }}
-                                      >
-                                        <Trash2 className="w-4 h-4 mr-2" />
-                                        Excluir
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                      <div className="md:hidden divide-y divide-gray-200">
-                        {passageiros.map((passageiro) => (
-                          <div
-                            key={passageiro.id}
-                            onClick={() => handleHistorico(passageiro)}
-                            className="p-4 active:bg-muted/50"
-                          >
-                            <div className="flex justify-between items-start">
-                              <div className="pr-2">
-                                <div className="font-semibold text-gray-800">
-                                  {passageiro.nome}
                                 </div>
-                                <div className="text-sm text-muted-foreground">
-                                  {passageiro.escolas?.nome || "Sem escola"}
-                                </div>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 shrink-0"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent>
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleHistorico(passageiro);
+                                      }}
+                                    >
+                                      <CreditCard className="w-4 h-4 mr-2" />
+                                      Ver Carteirinha
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEdit(passageiro);
+                                      }}
+                                    >
+                                      <Pencil className="w-4 h-4 mr-2" />
+                                      Editar
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      className="cursor-pointer"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleToggleClick(passageiro);
+                                      }}
+                                    >
+                                      {passageiro.ativo ? (
+                                        <>
+                                          <ToggleLeft className="w-4 h-4 mr-2" />
+                                          Desativar
+                                        </>
+                                      ) : (
+                                        <>
+                                          <ToggleRight className="w-4 h-4 mr-2" />
+                                          Reativar
+                                        </>
+                                      )}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDeleteDialog({
+                                          open: true,
+                                          passageiroId: passageiro.id,
+                                        });
+                                      }}
+                                      className="text-red-600"
+                                    >
+                                      <Trash2 className="w-4 h-4 mr-2" />
+                                      Excluir
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 shrink-0"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                  <DropdownMenuItem
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleHistorico(passageiro);
-                                    }}
-                                  >
-                                    <CreditCard className="w-4 h-4 mr-2" />
-                                    Ver Carteirinha
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleEdit(passageiro);
-                                    }}
-                                  >
-                                    <Pencil className="w-4 h-4 mr-2" />
-                                    Editar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    className="cursor-pointer"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleToggleClick(passageiro);
-                                    }}
-                                  >
-                                    {passageiro.ativo ? (
-                                      <>
-                                        <ToggleLeft className="w-4 h-4 mr-2" />
-                                        Desativar
-                                      </>
-                                    ) : (
-                                      <>
-                                        <ToggleRight className="w-4 h-4 mr-2" />
-                                        Reativar
-                                      </>
-                                    )}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setDeleteDialog({
-                                        open: true,
-                                        passageiroId: passageiro.id,
-                                      });
-                                    }}
-                                    className="text-red-600"
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Excluir
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              <div className="mt-2">
+                                <span
+                                  className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
+                                    passageiro.ativo
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {passageiro.ativo ? "Ativo" : "Desativado"}
+                                </span>
+                              </div>
                             </div>
-                            <div className="mt-2">
-                              <span
-                                className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
-                                  passageiro.ativo
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {passageiro.ativo ? "Ativo" : "Desativado"}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          <TabsContent value="pre-cadastros" className="mt-4">
-            <PrePassageiros
-              onFinalizeNewPrePassageiro={handleFinalizeNewPrePassageiro}
-            ></PrePassageiros>
-          </TabsContent>
-        </Tabs>
-      </div>
+            <TabsContent value="pre-cadastros" className="mt-4">
+              <PrePassageiros
+                onFinalizeNewPrePassageiro={handleFinalizeNewPrePassageiro}
+              ></PrePassageiros>
+            </TabsContent>
+          </Tabs>
+        </div>
 
-      {isDialogOpen && (
-        <PassageiroFormDialog
-          isOpen={isDialogOpen}
-          onClose={() => setIsDialogOpen(false)}
-          editingPassageiro={editingPassageiro}
-          onSuccess={fetchPassageiros}
-          mode="edit"
+        {isDialogOpen && (
+          <PassageiroFormDialog
+            isOpen={isDialogOpen}
+            onClose={handleClosePassageiroFormDialog}
+            onSuccess={() => handleSuccessCreatePassageiro()}
+            editingPassageiro={editingPassageiro}
+            onCreateEscola={() => setIsCreatingEscola(true)}
+            mode={modePassageiroFormDialog}
+            novaEscolaId={novaEscolaId}
+          />
+        )}
+
+        <EscolaFormDialog
+          isOpen={isCreatingEscola}
+          onClose={handleCloseEscolaFormDialog}
+          onSuccess={handleEscolaCreated}
         />
-      )}
 
-      <ConfirmationDialog
-        open={confirmToggleDialog.open}
-        onOpenChange={(open) =>
-          setConfirmToggleDialog({ open, passageiro: null, action: "" })
-        }
-        title={
-          confirmToggleDialog.action === "ativar"
-            ? "Reativar Passageiro"
-            : "Desativar Passageiro"
-        }
-        description={`Deseja realmente ${
-          confirmToggleDialog.action
-        } o cadastro de ${
-          confirmToggleDialog.passageiro?.nome || "este passageiro"
-        }? Esta ação pode afetar a geração de cobranças.`}
-        onConfirm={handleToggleConfirm}
-        confirmText="Confirmar"
-        variant={
-          confirmToggleDialog.action === "desativar" ? "destructive" : "default"
-        }
-      />
+        <ConfirmationDialog
+          open={confirmToggleDialog.open}
+          onOpenChange={(open) =>
+            setConfirmToggleDialog({ open, passageiro: null, action: "" })
+          }
+          title={
+            confirmToggleDialog.action === "ativar"
+              ? "Reativar Passageiro"
+              : "Desativar Passageiro"
+          }
+          description={`Deseja realmente ${
+            confirmToggleDialog.action
+          } o cadastro de ${
+            confirmToggleDialog.passageiro?.nome || "este passageiro"
+          }? Esta ação pode afetar a geração de cobranças.`}
+          onConfirm={handleToggleConfirm}
+          confirmText="Confirmar"
+          variant={
+            confirmToggleDialog.action === "desativar"
+              ? "destructive"
+              : "default"
+          }
+        />
 
-      <ConfirmationDialog
-        open={deleteDialog.open}
-        onOpenChange={(open) => setDeleteDialog({ open, passageiroId: "" })}
-        title="Excluir Passageiro"
-        description="Deseja excluir permanentemente este passageiro?"
-        onConfirm={handleDelete}
-        confirmText="Confirmar"
-        variant="destructive"
-      />
-    </div>
+        <ConfirmationDialog
+          open={deleteDialog.open}
+          onOpenChange={(open) => setDeleteDialog({ open, passageiroId: "" })}
+          title="Excluir Passageiro"
+          description="Deseja excluir permanentemente este passageiro?"
+          onConfirm={handleDelete}
+          confirmText="Confirmar"
+          variant="destructive"
+        />
+      </div>
     </PullToRefreshWrapper>
   );
 }

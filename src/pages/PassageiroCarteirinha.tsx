@@ -37,6 +37,7 @@ import { cobrancaService } from "@/services/cobrancaService";
 import { passageiroService } from "@/services/passageiroService";
 import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
+import { safeOpenDialog } from "@/utils/dialogCallback";
 import {
   disableDesfazerPagamento,
   disableEnviarNotificacao,
@@ -152,8 +153,7 @@ export default function PassageiroCarteirinha() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
 
-  const [mostrarTodasCobrancas, setMostrarTodasCobrancas] =
-    useState(false);
+  const [mostrarTodasCobrancas, setMostrarTodasCobrancas] = useState(false);
 
   useEffect(() => {
     if (isObservacoesEditing && textareaRef.current) {
@@ -210,16 +210,17 @@ export default function PassageiroCarteirinha() {
     } else {
       toast({
         title: "O cadastro do passageiro está desativado.",
-        description:
-          "Só é possível registrar cobrança de passageiros ativos.",
+        description: "Só é possível registrar cobrança de passageiros ativos.",
         variant: "default",
       });
     }
   };
 
   const handleEditCobrancaClick = (cobranca: Cobranca) => {
-    setCobrancaToEdit(cobranca);
-    setEditDialogOpen(true);
+    safeOpenDialog(() => {
+      setCobrancaToEdit(cobranca);
+      setEditDialogOpen(true);
+    });
   };
 
   const handleCobrancaUpdated = () => {
@@ -890,9 +891,7 @@ export default function PassageiroCarteirinha() {
                           variant="link"
                           className="text-primary"
                           onClick={() =>
-                            setMostrarTodasCobrancas(
-                              !mostrarTodasCobrancas
-                            )
+                            setMostrarTodasCobrancas(!mostrarTodasCobrancas)
                           }
                         >
                           {mostrarTodasCobrancas
@@ -912,9 +911,9 @@ export default function PassageiroCarteirinha() {
                             Nenhuma cobrança... ainda!
                           </AlertTitle>
                           <AlertDescription className="text-sky-800 text-sm leading-relaxed">
-                            Não se preocupe! A primeira cobrança aparecerá
-                            aqui <strong>no início do próximo mês</strong>, com
-                            o vencimento para o dia programado.
+                            Não se preocupe! A primeira cobrança aparecerá aqui{" "}
+                            <strong>no início do próximo mês</strong>, com o
+                            vencimento para o dia programado.
                           </AlertDescription>
                         </Alert>
                       </>
@@ -1223,7 +1222,7 @@ export default function PassageiroCarteirinha() {
         {isFormOpen && (
           <PassageiroFormDialog
             isOpen={isFormOpen}
-            onClose={() => setIsFormOpen(false)}
+            onClose={() => safeOpenDialog(() => setIsFormOpen(false))}
             editingPassageiro={passageiro}
             onSuccess={handlePassageiroFormSuccess}
             mode="edit"

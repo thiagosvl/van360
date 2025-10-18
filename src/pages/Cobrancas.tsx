@@ -26,6 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cobrancaService } from "@/services/cobrancaService";
 import { Cobranca } from "@/types/cobranca";
+import { safeOpenDialog } from "@/utils/dialogCallback";
 import {
   disableDesfazerPagamento,
   disableEnviarNotificacao,
@@ -137,8 +138,10 @@ const Cobrancas = () => {
   };
 
   const handleEditCobrancaClick = (cobranca: Cobranca) => {
-    setCobrancaToEdit(cobranca);
-    setEditDialogOpen(true);
+    safeOpenDialog(() => {
+      setCobrancaToEdit(cobranca);
+      setEditDialogOpen(true);
+    });
   };
 
   const handleCobrancaUpdated = () => {
@@ -174,7 +177,10 @@ const Cobrancas = () => {
       toast({ title: "Notificação enviada para o responsável com sucesso." });
     } catch (error) {
       console.error("Erro ao enviar notificação:", error);
-      toast({ title: "Erro ao enviar notificação de cobrança.", variant: "destructive" });
+      toast({
+        title: "Erro ao enviar notificação de cobrança.",
+        variant: "destructive",
+      });
     }
     setConfirmDialogEnvioNotificacao({
       open: false,
@@ -208,9 +214,7 @@ const Cobrancas = () => {
   };
 
   const navigateToDetails = (cobranca: Cobranca) => {
-    navigate(
-      `/passageiros/${cobranca.passageiros.id}/cobranca/${cobranca.id}`
-    );
+    navigate(`/passageiros/${cobranca.passageiros.id}/cobranca/${cobranca.id}`);
   };
 
   useEffect(() => {

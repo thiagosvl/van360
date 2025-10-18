@@ -39,7 +39,7 @@ export const saveEscola = async (data: any, editingEscola: Escola | null): Promi
     if (editingEscola && editingEscola.ativo && data.ativo === false) {
         const count = await fetchPassageirosAtivosCount(editingEscola.id);
         if (count > 0) {
-            throw new Error(`Não é possível desativar. Existem ${count} passageiros ativos vinculados a esta escola.`);
+            throw new Error(`Não é possível desativar. Existem passageiros ativos vinculados a esta escola.`);
         }
     }
 

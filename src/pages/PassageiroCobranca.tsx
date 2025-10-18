@@ -19,6 +19,7 @@ import { cobrancaService } from "@/services/cobrancaService";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaDetalhe } from "@/types/cobrancaDetalhe";
 import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
+import { safeOpenDialog } from "@/utils/dialogCallback";
 import {
   disableBaixarBoleto,
   disableEnviarNotificacao,
@@ -194,8 +195,10 @@ export default function PassageiroCobranca() {
 
   const handleEditCobrancaClick = () => {
     if (cobrancaNormalizadaParaEdicao) {
-      setCobrancaToEdit(cobrancaNormalizadaParaEdicao);
-      setEditDialogOpen(true);
+      safeOpenDialog(() => {
+        setCobrancaToEdit(cobrancaNormalizadaParaEdicao);
+        setEditDialogOpen(true);
+      });
     }
   };
 

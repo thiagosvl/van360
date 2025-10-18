@@ -1,4 +1,3 @@
-import EscolaFormDialog from "@/components/EscolaFormDialog";
 import {
   Dialog,
   DialogContent,
@@ -105,6 +104,8 @@ interface PassengerFormDialogProps {
   mode?: "create" | "edit" | "finalize";
   prePassageiro?: PrePassageiro | null;
   onSuccess: () => void;
+  onCreateEscola: () => void;
+  novaEscolaId?: string | null;
 }
 
 export default function PassengerFormDialog({
@@ -114,9 +115,11 @@ export default function PassengerFormDialog({
   mode,
   prePassageiro,
   onSuccess,
+  onCreateEscola,
+  novaEscolaId,
 }: PassengerFormDialogProps) {
+  const [selectedEscola, setSelectedEscola] = useState<string | null>(null);
   const [escolasModal, setEscolasModal] = useState<Escola[]>([]);
-  const [isCreatingEscola, setIsCreatingEscola] = useState(false);
   const { toast } = useToast();
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "passageiro",
@@ -180,15 +183,6 @@ export default function PassengerFormDialog({
     }
   };
 
-  const handleEscolaCreated = (novaEscola: Escola) => {
-    fetchEscolas(novaEscola.id);
-
-    form.setValue("escola_id", novaEscola.id);
-    form.trigger("escola_id");
-
-    setIsCreatingEscola(false);
-  };
-
   const onFormError = (errors: any) => {
     toast({
       title: "Por favor, corrija os erros no formulário.",
@@ -202,6 +196,17 @@ export default function PassengerFormDialog({
       "observacoes",
     ]);
   };
+
+  useEffect(() => {
+    if (novaEscolaId) {
+      fetchEscolas(novaEscolaId).then((_) => {
+        setTimeout(() => {
+          form.setValue("escola_id", novaEscolaId, { shouldValidate: true });
+          setSelectedEscola(novaEscolaId);
+        }, 20);
+      });
+    }
+  }, [novaEscolaId]);
 
   useEffect(() => {
     if (isOpen) {
@@ -346,16 +351,6 @@ export default function PassengerFormDialog({
     } catch (error: any) {}
   };
 
-  if (isCreatingEscola) {
-    return (
-      <EscolaFormDialog
-        isOpen={isOpen}
-        onClose={() => setIsCreatingEscola(false)}
-        onSuccess={handleEscolaCreated}
-      />
-    );
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
@@ -387,7 +382,8 @@ export default function PassengerFormDialog({
                     Atenção!
                   </AlertTitle>
                   <AlertDescription className="text-xs">
-                    Para concluir o cadastro, preencha os campos destacados em vermelho.
+                    Para concluir o cadastro, preencha os campos destacados em
+                    vermelho.
                   </AlertDescription>
                 </Alert>
               </div>
@@ -431,14 +427,15 @@ export default function PassengerFormDialog({
                         <FormItem>
                           <FormLabel>Escola *</FormLabel>
                           <Select
+                            value={selectedEscola || field.value}
                             onValueChange={(value) => {
                               if (value === "add-new-school") {
-                                setIsCreatingEscola(true);
-                              } else {
-                                field.onChange(value);
+                                setTimeout(() => onCreateEscola(), 80);
+                                return;
                               }
+                              field.onChange(value);
+                              setSelectedEscola(value);
                             }}
-                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -453,7 +450,7 @@ export default function PassengerFormDialog({
                               ))}
                               <SelectItem
                                 value="add-new-school"
-                                className="font-semibold text-primary"
+                                className="font-semibold text-primary cursor-pointer"
                               >
                                 + Cadastrar Nova Escola
                               </SelectItem>
@@ -706,9 +703,8 @@ export default function PassengerFormDialog({
                                       <strong>vencerá hoje</strong>.
                                     </li>
                                     <li>
-                                      As próximas cobranças vencerão
-                                      normalmente no{" "}
-                                      <strong>dia {diaInformado}</strong> de
+                                      As próximas cobranças vencerão normalmente
+                                      no <strong>dia {diaInformado}</strong> de
                                       cada mês.
                                     </li>
                                   </ul>

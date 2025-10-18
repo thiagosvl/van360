@@ -23,6 +23,7 @@ import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useToast } from "@/hooks/use-toast";
 import { escolaService } from "@/services/escolaService";
 import { Escola } from "@/types/escola";
+import { safeOpenDialog } from "@/utils/dialogCallback";
 import {
   MoreVertical,
   Pencil,
@@ -132,8 +133,10 @@ export default function Escolas() {
   };
 
   const handleEdit = (escola: Escola) => {
-    setEditingEscola(escola);
-    setIsDialogOpen(true);
+    safeOpenDialog(() => {
+      setEditingEscola(escola);
+      setIsDialogOpen(true);
+    });
   };
 
   const handleDeleteClick = (escola: Escola) => {
