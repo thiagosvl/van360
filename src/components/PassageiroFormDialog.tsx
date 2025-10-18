@@ -706,7 +706,7 @@ export default function PassengerFormDialog({
                                       <strong>vencerá hoje</strong>.
                                     </li>
                                     <li>
-                                      As próximas mensalidades vencerão
+                                      As próximas cobranças vencerão
                                       normalmente no{" "}
                                       <strong>dia {diaInformado}</strong> de
                                       cada mês.

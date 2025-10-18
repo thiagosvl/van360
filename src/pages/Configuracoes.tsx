@@ -305,11 +305,11 @@ export default function Configuracoes() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="w-5 h-5" />
-                Agendamento de Lembretes
+                Agendamento de Notificações
               </CardTitle>
               <CardDescription>
-                Defina quando e com que frequência os lembretes automáticos
-                serão enviados.
+                Defina quando e com que frequência as notificações automáticas
+                serão enviadas.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">

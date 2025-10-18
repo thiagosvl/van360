@@ -352,13 +352,13 @@ const Relatorios = () => {
           <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
             <CheckCircle className="h-5 w-5 text-green-600" />
             <div className="text-sm font-medium text-green-800">
-              Tudo em dia! Não há mensalidades pendentes no mês indicado.
+              Tudo em dia! Não há cobranças pendentes no mês indicado.
             </div>
           </div>
         ) : (
           <div className="mb-6 flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
             <div className="text-sm font-medium text-gray-500">
-              Não há mensalidades referentes ao mês indicado.
+              Não há cobranças referentes ao mês indicado.
             </div>
           </div>
         )}
@@ -457,7 +457,7 @@ const Relatorios = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="text-sm font-medium text-muted-foreground mb-1">
-                    Mensalidades
+                    Cobranças
                   </div>
                   {loading ? (
                     <Skeleton className="h-7 w-12" />

@@ -18,7 +18,6 @@ export function PullToRefreshWrapper({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const isScrollAtTop = useCallback(() => {
-    // Agora, containerRef.current é o único que rola.
     return containerRef.current ? containerRef.current.scrollTop === 0 : true;
   }, []);
 

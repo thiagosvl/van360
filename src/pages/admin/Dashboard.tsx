@@ -48,7 +48,7 @@ export default function AdminDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">
-              Mensalidades pendentes
+              Cobranças pendentes
             </p>
           </CardContent>
         </Card>

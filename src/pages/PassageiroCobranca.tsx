@@ -216,7 +216,7 @@ export default function PassageiroCobranca() {
       toast({
         title: "Não foi possível enviar a notificação.",
         description:
-          "Só é possível enviar para mensalidades geradas automaticamente.",
+          "Só é possível enviar para cobranças geradas automaticamente.",
         variant: "destructive",
       });
     } else {
@@ -243,7 +243,7 @@ export default function PassageiroCobranca() {
 
       cobranca.desativar_lembretes = !cobranca.desativar_lembretes;
     } catch (error: any) {
-      console.error("Erro ao alterar lembretes:", error);
+      console.error("Erro ao alterar notificações:", error);
       toast({
         title: "Erro ao alterar notificações.",
         description: error.message || "Não foi possível concluir a operação.",
@@ -276,7 +276,7 @@ export default function PassageiroCobranca() {
           title: "Mensalidade não encontrada.",
           variant: "destructive",
         });
-        navigate("/mensalidades");
+        navigate("/cobrancas");
         return;
       }
       setCobranca(data as CobrancaDetalhe);
@@ -475,14 +475,15 @@ export default function PassageiroCobranca() {
                 >
                   <MessageCircle className="h-4 w-4 mr-2" /> Falar no WhatsApp
                 </Button>
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  disabled={seForPago(cobranca)}
-                  onClick={() => handleEnviarNotificacao()}
-                >
-                  <Send className="h-4 w-4 mr-2" /> Enviar Notificação
-                </Button>
+                {!seForPago(cobranca) && (
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={() => handleEnviarNotificacao()}
+                  >
+                    <Send className="h-4 w-4 mr-2" /> Enviar Notificação
+                  </Button>
+                )}
                 {!disableToggleLembretes(cobranca) && (
                   <Button
                     className="w-full"

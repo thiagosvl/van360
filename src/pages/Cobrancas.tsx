@@ -126,9 +126,9 @@ const Cobrancas = () => {
       setCobrancasAbertas(abertas);
       setCobrancasPagas(pagas);
     } catch (error) {
-      console.error("Erro ao buscar mensalidades:", error);
+      console.error("Erro ao buscar cobranças:", error);
       toast({
-        title: "Não foi possível carregar as mensalidades.",
+        title: "Não foi possível carregar as cobranças.",
         variant: "destructive",
       });
     } finally {
@@ -157,7 +157,7 @@ const Cobrancas = () => {
 
       fetchCobrancas();
     } catch (error: any) {
-      console.error("Erro ao alterar lembretes:", error);
+      console.error("Erro ao alterar notificações:", error);
       toast({
         title: "Erro ao alterar envio de notificações.",
         description: error.message || "Não foi possível concluir a operação.",
@@ -214,7 +214,7 @@ const Cobrancas = () => {
   };
 
   useEffect(() => {
-    setPageTitle("Mensalidades");
+    setPageTitle("Cobranças");
     setPageSubtitle(`Referentes a ${meses[mesFilter - 1]} de ${anoFilter}`);
   }, [mesFilter, anoFilter, setPageTitle, setPageSubtitle]);
 
@@ -364,14 +364,14 @@ const Cobrancas = () => {
                     <div className="flex flex-col items-center justify-center text-center px-2 py-12 text-muted-foreground">
                       <Inbox className="w-12 h-12 mb-4 text-gray-300" />
                       <p>
-                        Não há mensalidades em aberto ou pagas no mes indicado.
+                        Não há cobranças em aberto ou pagas no mes indicado.
                       </p>
                     </div>
                   ) : cobrancasAbertas.length === 0 ? (
                     <div className="flex flex-col items-center justify-center text-center px-2 py-12 text-muted-foreground">
                       <CheckCircle2 className="w-12 h-12 mb-4 text-green-600" />
                       <p>
-                        Tudo em dia! <br /> Não há mensalidades pendentes no mês
+                        Tudo em dia! <br /> Não há cobranças pendentes no mês
                         indicado.
                       </p>
                     </div>
@@ -719,13 +719,13 @@ const Cobrancas = () => {
                     <div className="flex flex-col items-center justify-center text-center px-2 py-12 text-muted-foreground">
                       <Inbox className="w-12 h-12 mb-4 text-gray-300" />
                       <p>
-                        Não há mensalidades em aberto ou pagas no mes indicado.
+                        Não há cobranças em aberto ou pagas no mes indicado.
                       </p>
                     </div>
                   ) : cobrancasPagas.length === 0 ? (
                     <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
                       <DollarSign className="w-12 h-12 mb-4 text-gray-300" />
-                      <p>Não há mensalidades pagas no mês indicado.</p>
+                      <p>Não há cobranças pagas no mês indicado.</p>
                     </div>
                   ) : cobrancasPagasFiltradas.length === 0 ? (
                     <div className="text-center px-2 py-12 text-muted-foreground">

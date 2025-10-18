@@ -70,7 +70,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const currentYear = new Date().getFullYear().toString();
-const MENSALIDADES_LIMIT = 2;
+const COBRANCAS_LIMIT = 2;
 
 const InfoItem = ({
   icon: Icon,
@@ -152,7 +152,7 @@ export default function PassageiroCarteirinha() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
 
-  const [mostrarTodasMensalidades, setMostrarTodasMensalidades] =
+  const [mostrarTodasCobrancas, setMostrarTodasCobrancas] =
     useState(false);
 
   useEffect(() => {
@@ -342,7 +342,7 @@ export default function PassageiroCarteirinha() {
 
       if (numCobrancas > 0) {
         toast({
-          title: "NEGADO: Passageiro possui mensalidades.",
+          title: "NEGADO: Passageiro possui cobranças.",
           description: `Mas você ainda pode desativar o cadastro.`,
           variant: "destructive",
         });
@@ -412,9 +412,9 @@ export default function PassageiroCarteirinha() {
 
       fetchCobrancas(yearFilter);
     } catch (err) {
-      console.error("Erro ao alternar lembretes:", err);
+      console.error("Erro ao alternar notificações:", err);
       toast({
-        title: "Não foi possível atualizar o status dos lembretes.",
+        title: "Não foi possível atualizar o status das notificações.",
         variant: "destructive",
       });
     }
@@ -508,9 +508,9 @@ export default function PassageiroCarteirinha() {
     );
   }, [cobrancas]);
 
-  const mensalidadesParaExibir = mostrarTodasMensalidades
+  const cobrancasParaExibir = mostrarTodasCobrancas
     ? cobrancas
-    : cobrancas.slice(0, MENSALIDADES_LIMIT);
+    : cobrancas.slice(0, COBRANCAS_LIMIT);
 
   if (loading || !passageiro) {
     return <CarteirinhaSkeleton />;
@@ -524,12 +524,12 @@ export default function PassageiroCarteirinha() {
     <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
       <div className="space-y-6">
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:items-start">
-          {/* Mensalidades */}
+          {/* Cobranças */}
           <div className="order-1 lg:order-2 lg:col-span-2 lg:row-start-1 lg:h-full">
             <Card className="h-full">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Mensalidades</CardTitle>
+                  <CardTitle className="text-lg">Cobranças</CardTitle>
                   <div className="flex items-center gap-2">
                     <label className="text-xs text-muted-foreground hidden sm:block">
                       Ano:
@@ -735,7 +735,7 @@ export default function PassageiroCarteirinha() {
                       </table>
                     </div>
                     <div className="md:hidden -mx-6 -mt-6 divide-y divide-gray-100">
-                      {mensalidadesParaExibir.map((cobranca) => (
+                      {cobrancasParaExibir.map((cobranca) => (
                         <div
                           key={cobranca.id}
                           onClick={() =>
@@ -884,20 +884,20 @@ export default function PassageiroCarteirinha() {
                       ))}
                     </div>
 
-                    {cobrancas.length > MENSALIDADES_LIMIT && (
+                    {cobrancas.length > COBRANCAS_LIMIT && (
                       <div className="mt-4 text-center md:hidden">
                         <Button
                           variant="link"
                           className="text-primary"
                           onClick={() =>
-                            setMostrarTodasMensalidades(
-                              !mostrarTodasMensalidades
+                            setMostrarTodasCobrancas(
+                              !mostrarTodasCobrancas
                             )
                           }
                         >
-                          {mostrarTodasMensalidades
+                          {mostrarTodasCobrancas
                             ? "Ver menos"
-                            : `Ver todas as ${cobrancas.length} mensalidades`}
+                            : `Ver todas as ${cobrancas.length} cobranças`}
                         </Button>
                       </div>
                     )}
@@ -926,7 +926,7 @@ export default function PassageiroCarteirinha() {
                         </AlertTitle>
                         <AlertDescription className="space-y-3">
                           <p>
-                            Este passageiro não terá novas mensalidades enquanto
+                            Este passageiro não terá novas cobranças enquanto
                             estiver desativado.
                           </p>
                           <p>
@@ -1135,7 +1135,7 @@ export default function PassageiroCarteirinha() {
                 <div>
                   <div className="text-sm text-muted-foreground flex items-center gap-2">
                     <Hash className="w-4 h-4" />{" "}
-                    <span>Mensalidades em Atraso</span>
+                    <span>Cobranças em Atraso</span>
                   </div>
                   <div className="text-2xl font-bold mt-1">
                     {yearlySummary.emAtraso}

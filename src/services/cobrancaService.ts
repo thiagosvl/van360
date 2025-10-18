@@ -89,7 +89,7 @@ export const cobrancaService = {
             .eq("id", cobranca.id);
 
         if (error) {
-            throw new Error("Falha ao atualizar o status dos lembretes no banco de dados.");
+            throw new Error("Falha ao atualizar o status das notificações no banco de dados.");
         }
 
         return novoStatus;

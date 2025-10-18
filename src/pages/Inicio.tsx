@@ -14,7 +14,6 @@ import {
 import { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 
-// --- Componente: Cards de Acesso Rápido ---
 const AccessCard = ({
   title,
   subtitle,
@@ -32,7 +31,7 @@ const AccessCard = ({
           <Icon className={`h-10 w-10 mb-2 ${color}`} />
 
           <div className="text-center">
-            <p className="text-base font-bold text-foreground leading-tight">
+            <p className="text-xl font-extrabold text-foreground leading-snug">
               {title}
             </p>
 
@@ -50,13 +49,13 @@ const Inicio = () => {
 
   const ACCESS_CARDS_DATA = [
     {
-      title: "Mensalidades",
+      title: "Cobranças",
       description:
-        "Gerencie o status de pagamentos, boletos, PIX e envie lembretes.",
-      href: "/mensalidades",
+        "Visualize e gerencie as cobranças, registre pagamentos e envie notificações.",
+      href: "/cobrancas",
       icon: CreditCard,
-      color: "text-blue-600",
-      bg: "bg-blue-100",
+      color: "text-blue-700",
+      bg: "bg-blue-50",
     },
     {
       title: "Passageiros",
@@ -64,15 +63,15 @@ const Inicio = () => {
         "Cadastre, edite e ative/desative passageiros e responsáveis.",
       href: "/passageiros",
       icon: Users,
-      color: "text-green-600",
-      bg: "bg-green-100",
+      color: "text-green-700",
+      bg: "bg-green-50",
     },
     {
       title: "Relatórios",
       description: "Visualize faturamento, inadimplência e projeções mensais.",
       href: "/relatorios",
       icon: LayoutDashboard,
-      color: "text-purple-600",
+      color: "text-purple-700",
       bg: "bg-purple-100",
     },
     {
@@ -81,16 +80,16 @@ const Inicio = () => {
         "Ajuste notificações, preferências de cobrança e dados do motorista.",
       href: "/configuracoes",
       icon: Settings,
-      color: "text-gray-600",
-      bg: "bg-gray-200",
+      color: "text-red-700",
+      bg: "bg-red-50",
     },
     {
       title: "Escolas",
       description: "Gerencie a lista de escolas atendidas e seus detalhes.",
       href: "/escolas",
       icon: GraduationCap,
-      color: "text-yellow-600",
-      bg: "bg-yellow-50",
+      color: "text-yellow-700",
+      bg: "bg-yellow-100",
     },
     {
       title: "Gastos",
@@ -98,8 +97,8 @@ const Inicio = () => {
         "Registre despesas operacionais e visualize o balanço financeiro.",
       href: "/gastos",
       icon: Wallet,
-      color: "text-red-600",
-      bg: "bg-red-100",
+      color: "text-indigo-700",
+      bg: "bg-indigo-100",
     },
   ];
 
@@ -126,12 +125,15 @@ const Inicio = () => {
 
         <section>
           <h2 className="text-xl font-semibold mb-4">Acessos Rápidos</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {accessCardsWithSubtitles.map((card) => (
-              <div key={card.href} className="px-2 pb-4">
-                <AccessCard key={card.href} {...card} />
-              </div>
-            ))}
+
+          <div className="overflow-x-hidden">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 -mx-4">
+              {accessCardsWithSubtitles.map((card) => (
+                <div key={card.href} className="px-4 pb-4">
+                  <AccessCard {...card} />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       </div>

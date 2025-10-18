@@ -221,7 +221,7 @@ const App = () => {
                   path="passageiros/:passageiro_id/mensalidade/:cobranca_id"
                   element={<PassageiroCobranca />}
                 />
-                <Route path="mensalidades" element={<Cobrancas />} />
+                <Route path="cobrancas" element={<Cobrancas />} />
                 <Route path="escolas" element={<Escolas />} />
                 <Route path="gastos" element={<Gastos />} />
                 <Route path="relatorios" element={<Relatorios />} />

@@ -24,7 +24,7 @@ const LatePaymentsAlert = ({
         <div className="flex items-center gap-3">
           <InfoIcon className="h-5 w-5 text-blue-600" />
           <CardTitle className="text-lg font-semibold text-gray-800">
-            Mensalidades Pendentes
+            Cobranças Pendentes
           </CardTitle>
         </div>
         <span className="text-sm font-semibold bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
@@ -47,10 +47,10 @@ const LatePaymentsAlert = ({
           )}
         </p>
         <Button
-          onClick={() => navigate(`/mensalidades?ano=${ano}&mes=${mes}`)}
+          onClick={() => navigate(`/cobrancas?ano=${ano}&mes=${mes}`)}
           className="w-full sm:w-auto"
         >
-          Ver Mensalidades <ArrowRight className="w-4 h-4 ml-2" />
+          Ver Cobranças <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </CardContent>
     </Card>

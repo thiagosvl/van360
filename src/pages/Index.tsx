@@ -26,10 +26,10 @@ const Index = () => {
         <div className="py-12 sm:py-16 lg:py-20">
           <div className="text-center">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-              Organize suas mensalidades com facilidade
+              Organize suas cobranças com facilidade
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              Sistema feito para motoristas de van escolar gerenciarem passageiros e mensalidades de forma simples e intuitiva
+              Sistema feito para motoristas de van escolar gerenciarem passageiros e cobranças de forma simples e intuitiva
             </p>
             <Link to="/login">
               <Button size="lg" className="text-lg px-8 py-3">
@@ -75,10 +75,10 @@ const Index = () => {
                     <CheckCircle className="h-6 w-6 text-primary" />
                   </div>
                   <h3 className="text-lg font-semibold text-foreground">
-                    Status das Mensalidades
+                    Status das Cobranças
                   </h3>
                   <p className="text-muted-foreground">
-                    Monitore facilmente quais mensalidades estão em dia, pendentes ou em atraso
+                    Monitore facilmente quais cobranças estão em dia, pendentes ou em atraso
                   </p>
                 </CardContent>
               </Card>

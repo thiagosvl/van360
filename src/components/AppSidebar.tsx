@@ -17,7 +17,7 @@ const adminItems = [
 
 const motoristaItems = [
   { title: "Início", href: "/inicio", icon: LayoutDashboard },
-  { title: "Mensalidades", href: "/mensalidades", icon: CreditCard },
+  { title: "Cobranças", href: "/cobrancas", icon: CreditCard },
   { title: "Passageiros e Pré-Cadastros", href: "/passageiros", icon: Users },
   { title: "Relatórios", href: "/relatorios", icon: ChartArea },
   { title: "Configurações", href: "/configuracoes", icon: Settings },

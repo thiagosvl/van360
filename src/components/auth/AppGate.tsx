@@ -69,7 +69,7 @@ export const AppGate = ({ children }: AppGateProps) => {
     const allowedRoutes = [
       "/inicio",
       "/passageiros",
-      "/mensalidades",
+      "/cobrancas",
       "/escolas",
       "/configuracoes",
       "/gastos",
