@@ -567,7 +567,7 @@ const Cobrancas = () => {
                           <div
                             key={cobranca.id}
                             onClick={() => navigateToDetails(cobranca)}
-                            className="py-2.5 px-3 active:bg-muted/50"
+                            className="py-2.5 px-6 active:bg-muted/50"
                           >
                             <div className="flex justify-between items-start">
                               <div className="flex flex-col pr-1 w-2/3">
