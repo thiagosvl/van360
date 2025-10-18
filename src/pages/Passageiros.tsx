@@ -74,7 +74,8 @@ export default function Passageiros() {
   );
   const [selectedEscola, setSelectedEscola] = useState<string>("todas");
   const [selectedStatus, setSelectedStatus] = useState<string>("todos");
-  const [modePassageiroFormDialog, setModePassageiroFormDialog] = useState<string>("create");
+  const [modePassageiroFormDialog, setModePassageiroFormDialog] =
+    useState<string>("create");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -150,7 +151,7 @@ export default function Passageiros() {
   const handleSuccessCreatePassageiro = () => {
     setNovaEscolaId(null);
     fetchPassageiros();
-  }
+  };
 
   const handleClosePassageiroFormDialog = () => {
     safeOpenDialog(() => {
@@ -166,8 +167,10 @@ export default function Passageiros() {
   };
 
   const handleEscolaCreated = (novaEscola) => {
-    setIsCreatingEscola(false);
-    setNovaEscolaId(novaEscola.id);
+    safeOpenDialog(() => {
+      setIsCreatingEscola(false);
+      setNovaEscolaId(novaEscola.id);
+    });
   };
 
   const handleFinalizeNewPrePassageiro = async () => {
@@ -565,7 +568,7 @@ export default function Passageiros() {
                             <div
                               key={passageiro.id}
                               onClick={() => handleHistorico(passageiro)}
-                              className="p-4 active:bg-muted/50"
+                              className="py-4 px-0 active:bg-muted/50"
                             >
                               <div className="flex justify-between items-start">
                                 <div className="pr-2">

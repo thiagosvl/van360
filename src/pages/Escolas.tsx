@@ -203,7 +203,7 @@ export default function Escolas() {
     <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
       <div className="space-y-6">
         <div className="w-full">
-          <div className="flex justify-end items-center mb-6"></div>
+          <div className="flex justify-end items-center"></div>
 
           <Card>
             <CardHeader>
