@@ -6,7 +6,7 @@ export default function AdminDashboard() {
       <div>
         <h1 className="text-3xl font-bold">Painel Administrativo</h1>
         <p className="text-muted-foreground">
-          Bem-vindo ao painel de administração do Zip Van.
+          Bem-vindo ao painel de administração do Van360.
         </p>
       </div>
 

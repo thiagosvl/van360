@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.tibis.zipvan',
-  appName: 'ZipVan',
+  appId: 'com.tibis.van360',
+  appName: 'Van360',
   webDir: 'dist',
   plugins: {
     CapacitorUpdater: {

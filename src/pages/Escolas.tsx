@@ -383,7 +383,7 @@ export default function Escolas() {
                       <div
                         key={escola.id}
                         onClick={() => handleEdit(escola)}
-                        className="flex items-center p-4 active:bg-muted/50"
+                        className="flex items-center py-4 px-0 active:bg-muted/50"
                       >
                         <div className="flex-1 pr-4">
                           <div className="font-semibold text-gray-800">
@@ -479,8 +479,10 @@ export default function Escolas() {
           <EscolaFormDialog
             isOpen={isDialogOpen}
             onClose={() => {
-              setIsDialogOpen(false);
-              setEditingEscola(null);
+              safeOpenDialog(() => {
+                setIsDialogOpen(false);
+                setEditingEscola(null);
+              });
             }}
             editingEscola={editingEscola}
             onSuccess={handleSuccessSave}

@@ -21,7 +21,7 @@ export default function AppLayout() {
         <div className="flex h-screen">
           <aside className="hidden md:flex md:w-64 md:flex-col md:border-r bg-white">
             <div className="p-6 border-b">
-              <h2 className="text-lg font-semibold">Zip Van</h2>
+              <h2 className="text-lg font-semibold">Van360</h2>
             </div>
             <div className="flex-1 overflow-y-auto px-3 py-4">
               <AppSidebar role={role as "admin" | "motorista"} />

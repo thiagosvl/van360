@@ -104,7 +104,7 @@ interface PassengerFormDialogProps {
   mode?: "create" | "edit" | "finalize";
   prePassageiro?: PrePassageiro | null;
   onSuccess: () => void;
-  onCreateEscola: () => void;
+  onCreateEscola?: () => void;
   novaEscolaId?: string | null;
 }
 

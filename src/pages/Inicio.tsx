@@ -127,9 +127,9 @@ const Inicio = () => {
           <h2 className="text-xl font-semibold mb-4">Acessos Rápidos</h2>
 
           <div className="overflow-x-hidden">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 -mx-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-1 -mx-4">
               {accessCardsWithSubtitles.map((card) => (
-                <div key={card.href} className="px-4 pb-4">
+                <div key={card.href} className="px-2 pb-4">
                   <AccessCard {...card} />
                 </div>
               ))}

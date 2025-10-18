@@ -1002,7 +1002,7 @@ const Cobrancas = () => {
         {cobrancaToEdit && (
           <CobrancaEditDialog
             isOpen={editDialogOpen}
-            onClose={() => setEditDialogOpen(false)}
+            onClose={() => safeOpenDialog(() => setEditDialogOpen(false))}
             cobranca={cobrancaToEdit}
             onCobrancaUpdated={handleCobrancaUpdated}
           />
