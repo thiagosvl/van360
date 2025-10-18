@@ -26,21 +26,16 @@ const AccessCard = ({
   return (
     <NavLink to={href} className="col-span-1">
       <Card
-        // Ajuste: Transição mais suave e hover mais nítido
         className={`transition-all duration-300 hover:scale-[1.03] hover:shadow-xl h-full ${bg} border-2 border-transparent hover:border-gray-20`}
       >
-        {/* Adicionado padding extra para 'respirar' e alinhamento melhorado */}
         <CardContent className="p-5 flex flex-col justify-center items-center text-center space-y-3 h-full">
-          {/* Ajuste: Ícone maior e mais impactante */}
           <Icon className={`h-10 w-10 mb-2 ${color}`} />
 
           <div className="text-center">
-            {/* Ajuste: Título mais compacto (menos leading) */}
             <p className="text-base font-bold text-foreground leading-tight">
               {title}
             </p>
 
-            {/* Ajuste: Subtítulo mais sutil */}
             <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
           </div>
         </CardContent>
@@ -49,43 +44,49 @@ const AccessCard = ({
   );
 };
 
-// --- Componente Principal: Início ---
 const Inicio = () => {
   const { setPageTitle, setPageSubtitle } = useLayout();
   const { profile } = useAuth();
 
-  // --- 2. Dados Estáticos para Acessos Rápidos (na ordem do menu) ---
   const ACCESS_CARDS_DATA = [
     {
       title: "Mensalidades",
+      description:
+        "Gerencie o status de pagamentos, boletos, PIX e envie lembretes.",
       href: "/mensalidades",
       icon: CreditCard,
       color: "text-blue-600",
-      bg: "bg-blue-50",
+      bg: "bg-blue-100",
     },
     {
       title: "Passageiros",
+      description:
+        "Cadastre, edite e ative/desative passageiros e responsáveis.",
       href: "/passageiros",
       icon: Users,
       color: "text-green-600",
-      bg: "bg-green-50",
+      bg: "bg-green-100",
     },
     {
       title: "Relatórios",
+      description: "Visualize faturamento, inadimplência e projeções mensais.",
       href: "/relatorios",
       icon: LayoutDashboard,
       color: "text-purple-600",
-      bg: "bg-purple-50",
+      bg: "bg-purple-100",
     },
     {
       title: "Configurações",
+      description:
+        "Ajuste notificações, preferências de cobrança e dados do motorista.",
       href: "/configuracoes",
       icon: Settings,
-      color: "text-red-600",
-      bg: "bg-red-50",
+      color: "text-gray-600",
+      bg: "bg-gray-200",
     },
     {
       title: "Escolas",
+      description: "Gerencie a lista de escolas atendidas e seus detalhes.",
       href: "/escolas",
       icon: GraduationCap,
       color: "text-yellow-600",
@@ -93,16 +94,20 @@ const Inicio = () => {
     },
     {
       title: "Gastos",
+      description:
+        "Registre despesas operacionais e visualize o balanço financeiro.",
       href: "/gastos",
       icon: Wallet,
-      color: "text-indigo-600",
-      bg: "bg-indigo-50",
+      color: "text-red-600",
+      bg: "bg-red-100",
     },
   ];
 
   useEffect(() => {
-    setPageTitle(profile.id ? `Olá, ${profile.nome.split(' ')[0]}` : "Carregando...");
-    setPageSubtitle("")
+    setPageTitle(
+      profile.id ? `Olá, ${profile.nome.split(" ")[0]}` : "Carregando..."
+    );
+    setPageSubtitle("");
   }, [setPageTitle, setPageSubtitle]);
 
   const pullToRefreshReload = async () => {
@@ -111,7 +116,7 @@ const Inicio = () => {
 
   const accessCardsWithSubtitles = ACCESS_CARDS_DATA.map((card) => ({
     ...card,
-    subtitle: `Acesse o módulo de ${card.title.toLowerCase()}.`,
+    subtitle: card.description,
   }));
 
   return (
@@ -123,7 +128,9 @@ const Inicio = () => {
           <h2 className="text-xl font-semibold mb-4">Acessos Rápidos</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {accessCardsWithSubtitles.map((card) => (
-              <AccessCard key={card.href} {...card} />
+              <div key={card.href} className="px-2 pb-4">
+                <AccessCard key={card.href} {...card} />
+              </div>
             ))}
           </div>
         </section>
