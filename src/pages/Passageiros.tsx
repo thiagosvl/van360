@@ -155,7 +155,7 @@ export default function Passageiros() {
       if (numCobrancas > 0) {
         toast({
           title: "Não foi possível excluir.",
-          description: `Este passageiro possui ${numCobrancas} mensalidade(s) em seu histórico.`,
+          description: `Este passageiro possui ${numCobrancas} cobrança(s) em seu histórico.`,
           variant: "destructive",
         });
         return;
@@ -254,7 +254,7 @@ export default function Passageiros() {
       cpf_responsavel: "39542391838",
       genero: "Masculino",
       observacoes: `teste do ${numeroPassageiro}`,
-      valor_mensalidade: valor.toString(),
+      valor_cobranca: valor.toString(),
       dia_vencimento: hoje.getDate().toString(),
       escola_id: escolas[0].id,
       ativo: true,

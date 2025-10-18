@@ -218,7 +218,7 @@ const App = () => {
                   element={<PassageiroCarteirinha />}
                 />
                 <Route
-                  path="passageiros/:passageiro_id/mensalidade/:cobranca_id"
+                  path="passageiros/:passageiro_id/cobranca/:cobranca_id"
                   element={<PassageiroCobranca />}
                 />
                 <Route path="cobrancas" element={<Cobrancas />} />

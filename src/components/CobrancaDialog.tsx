@@ -81,7 +81,7 @@ interface CobrancaDialogProps {
   passageiroNome: string;
   passageiroResponsavelNome: string;
   passageiroAsaasCustomerId: string;
-  valorMensalidade: number;
+  valorCobranca: number;
   diaVencimento: number;
   onCobrancaAdded: () => void;
 }
@@ -108,7 +108,7 @@ export default function CobrancaDialog({
   passageiroNome,
   passageiroResponsavelNome,
   passageiroAsaasCustomerId,
-  valorMensalidade,
+  valorCobranca,
   diaVencimento,
   onCobrancaAdded,
 }: CobrancaDialogProps) {
@@ -162,8 +162,8 @@ export default function CobrancaDialog({
         mes: "",
         ano: currentYear.toString(),
         valor:
-          valorMensalidade > 0
-            ? moneyMask((valorMensalidade * 100).toString())
+          valorCobranca > 0
+            ? moneyMask((valorCobranca * 100).toString())
             : "",
         foi_pago: false,
         data_pagamento: undefined,
@@ -171,7 +171,7 @@ export default function CobrancaDialog({
         is_future: false,
       });
     }
-  }, [isOpen, valorMensalidade, form, currentYear]);
+  }, [isOpen, valorCobranca, form, currentYear]);
 
    const handleSubmit = async (data: CobrancaFormData) => {
     let cobrancaIdSupabase: string | null = null;
@@ -192,7 +192,7 @@ export default function CobrancaDialog({
       }
       if (existingCobranca) {
         toast({
-          title: "Essa mensalidade já foi cadastrada no sistema anteriormente.",
+          title: "Essa cobrança já foi cadastrada no sistema anteriormente.",
           variant: "destructive",
         });
         return;
@@ -249,7 +249,7 @@ export default function CobrancaDialog({
                 billingType: "UNDEFINED",
                 value: valorNumerico,
                 dueDate: toLocalDateString(dataVencimento),
-                description: `Mensalidade ${data.mes}/${data.ano} - ${passageiroNome}`,
+                description: `Cobrança ${data.mes}/${data.ano} - ${passageiroNome}`,
                 externalReference: cobrancaIdSupabase,
             });
 
@@ -268,12 +268,12 @@ export default function CobrancaDialog({
         }
       }
 
-      toast({ title: "Mensalidade registrada com sucesso." });
+      toast({ title: "Cobrança registrada com sucesso." });
       onCobrancaAdded();
       handleClose();
 
     } catch (error: any) {
-      console.error("Erro ao registrar mensalidade. Iniciando Rollback:", error);
+      console.error("Erro ao registrar cobrança. Iniciando Rollback:", error);
 
       if (rollbackNeeded && cobrancaIdSupabase) {
         try {
@@ -282,14 +282,14 @@ export default function CobrancaDialog({
           }
           await supabase.from("cobrancas").delete().eq("id", cobrancaIdSupabase);
           
-          console.log("Rollback da mensalidade manual concluído.");
+          console.log("Rollback da cobrança manual concluído.");
         } catch (rollbackErr) {
           console.error("Erro no processo de Rollback:", rollbackErr);
         }
       }
       
       toast({
-        title: "Erro ao registrar mensalidade.",
+        title: "Erro ao registrar cobrança.",
         description: error.message || "Verifique o console para mais detalhes.",
         variant: "destructive",
       });
@@ -305,7 +305,7 @@ export default function CobrancaDialog({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-md max-h-[95vh] overflow-y-auto bg-white">
         <DialogHeader>
-          <DialogTitle>Registrar Mensalidade</DialogTitle>
+          <DialogTitle>Registrar Cobrança</DialogTitle>
         </DialogHeader>
         <div className="p-3 bg-muted/50 rounded-lg border space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -408,7 +408,7 @@ export default function CobrancaDialog({
                 <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-yellow-600" />
                 <p className="font-medium leading-snug">
                   <span className="font-bold">Aviso: Mês Futuro.</span> Esta
-                  mensalidade será gerada automaticamente no início do mês
+                  cobrança será gerada automaticamente no início do mês
                   selecionado. Registre agora apenas se for um adiantamento.
                 </p>
               </div>

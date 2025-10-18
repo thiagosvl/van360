@@ -60,7 +60,7 @@ export const prePassageiroService = {
             {
                 ...payload,
                 escola_id: null,
-                valor_mensalidade: null,
+                valor_cobranca: null,
                 dia_vencimento: null,
             }
         ]);

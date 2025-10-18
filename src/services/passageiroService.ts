@@ -13,7 +13,7 @@ export const passageiroService = {
   ): Promise<void> {
     const passageiroData = {
       ...data,
-      valor_mensalidade: moneyToNumber(data.valor_mensalidade),
+      valor_cobranca: moneyToNumber(data.valor_cobranca),
       dia_vencimento: Number(data.dia_vencimento),
       escola_id: data.escola_id || null,
       ativo: true,
@@ -70,9 +70,9 @@ export const passageiroService = {
         payment = await asaasService.createPayment({
           customer: newPassageiro.asaas_customer_id,
           billingType: "UNDEFINED",
-          value: data.valor_mensalidade,
+          value: data.valor_cobranca,
           dueDate: toLocalDateString(dataVencimento),
-          description: `Mensalidade ${mes}/${ano}`,
+          description: `Cobrança ${mes}/${ano}`,
           externalReference: newPassageiro.id,
         });
 
@@ -83,7 +83,7 @@ export const passageiroService = {
               passageiro_id: newPassageiro.id,
               mes,
               ano,
-              valor: data.valor_mensalidade,
+              valor: data.valor_cobranca,
               data_vencimento: toLocalDateString(dataVencimento),
               status: "pendente",
               usuario_id: data.usuario_id,
@@ -131,7 +131,7 @@ export const passageiroService = {
 
     const passageiroData = {
       ...pureData,
-      valor_mensalidade: moneyToNumber(pureData.valor_mensalidade),
+      valor_cobranca: moneyToNumber(pureData.valor_cobranca),
       dia_vencimento: Number(pureData.dia_vencimento),
       escola_id: pureData.escola_id || null,
       ativo: pureData.ativo ?? true,
@@ -198,7 +198,7 @@ export const passageiroService = {
     const { emitir_cobranca_mes_atual, ...pureData } = data;
     const passageiroData = {
       ...pureData,
-      valor_mensalidade: moneyToNumber(pureData.valor_mensalidade),
+      valor_cobranca: moneyToNumber(pureData.valor_cobranca),
       dia_vencimento: Number(pureData.dia_vencimento),
       escola_id: pureData.escola_id || null,
       ativo: pureData.ativo ?? true,

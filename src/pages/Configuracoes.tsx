@@ -434,14 +434,14 @@ export default function Configuracoes() {
               />
               <MessageEditor
                 id="mensagem_lembrete_atraso"
-                label="Mensagem Mensalidade Atrasada"
+                label="Mensagem Cobrança Atrasada"
                 value={configuracoes?.mensagem_lembrete_atraso || ""}
                 onChange={handleChange}
                 variables={commonVariables}
                 error={errors.mensagem_lembrete_atraso}
                 onPreview={() =>
                   handlePreview(
-                    "Mensalidade Atrasada",
+                    "Cobrança Atrasada",
                     configuracoes?.mensagem_lembrete_atraso || ""
                   )
                 }

@@ -240,7 +240,7 @@ CREATE TABLE IF NOT EXISTS "public"."passageiros" (
     "nome" "text" NOT NULL,
     "nome_responsavel" "text" NOT NULL,
     "telefone_responsavel" "text" NOT NULL,
-    "valor_mensalidade" numeric(10,2) NOT NULL,
+    "valor_cobranca" numeric(10,2) NOT NULL,
     "dia_vencimento" integer NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
@@ -284,7 +284,7 @@ CREATE TABLE IF NOT EXISTS "public"."pre_passageiros" (
     "referencia" "text",
     "observacoes" "text",
     "escola_id" "uuid",
-    "valor_mensalidade" numeric,
+    "valor_cobranca" numeric,
     "dia_vencimento" integer,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL

@@ -91,7 +91,7 @@ const PaymentStatsDisplay = ({
   if (activeMethods.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        Nenhuma mensalidade recebida no mês indicado.
+        Nenhuma cobrança recebida no mês indicado.
       </p>
     );
   }
@@ -189,7 +189,7 @@ const Relatorios = () => {
       const { data: cobrancasMes } = await supabase
         .from("cobrancas")
         .select(
-          `*, passageiros (id, nome, nome_responsavel, valor_mensalidade, dia_vencimento)`
+          `*, passageiros (id, nome, nome_responsavel, valor_cobranca, dia_vencimento)`
         )
         .eq("mes", mesFilter)
         .eq("usuario_id", currentUserId)

@@ -89,7 +89,7 @@ const passageiroSchema = z.object({
       return cleaned.length === 11;
     }, "O formato aceito é (00) 00000-0000"),
 
-  valor_mensalidade: z.string().min(1, "Campo obrigatório"),
+  valor_cobranca: z.string().min(1, "Campo obrigatório"),
   dia_vencimento: z.string().min(1, "Campo obrigatório"),
   emitir_cobranca_mes_atual: z.boolean().optional(),
   ativo: z.boolean().optional(),
@@ -121,7 +121,7 @@ export default function PassengerFormDialog({
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "passageiro",
     "responsavel",
-    "mensalidade",
+    "cobranca",
   ]);
 
   const form = useForm<PassageiroFormData>({
@@ -144,7 +144,7 @@ export default function PassengerFormDialog({
       email_responsavel: "",
       telefone_responsavel: "",
       cpf_responsavel: "",
-      valor_mensalidade: "",
+      valor_cobranca: "",
       dia_vencimento: "",
       emitir_cobranca_mes_atual: false,
       ativo: true,
@@ -197,7 +197,7 @@ export default function PassengerFormDialog({
     setOpenAccordionItems([
       "passageiro",
       "responsavel",
-      "mensalidade",
+      "cobranca",
       "endereco",
       "observacoes",
     ]);
@@ -218,8 +218,8 @@ export default function PassengerFormDialog({
           telefone_responsavel: phoneMask(
             editingPassageiro.telefone_responsavel
           ),
-          valor_mensalidade: editingPassageiro.valor_mensalidade
-            ? moneyMask((editingPassageiro.valor_mensalidade * 100).toString())
+          valor_cobranca: editingPassageiro.valor_cobranca
+            ? moneyMask((editingPassageiro.valor_cobranca * 100).toString())
             : "",
           dia_vencimento: editingPassageiro.dia_vencimento?.toString() || "",
           observacoes: editingPassageiro.observacoes || "",
@@ -237,7 +237,7 @@ export default function PassengerFormDialog({
         setOpenAccordionItems([
           "passageiro",
           "responsavel",
-          "mensalidade",
+          "cobranca",
           "endereco",
           "observacoes",
         ]);
@@ -261,8 +261,8 @@ export default function PassengerFormDialog({
           observacoes: prePassageiro.observacoes || "",
 
           escola_id: prePassageiro.escola_id || "",
-          valor_mensalidade: prePassageiro.valor_mensalidade
-            ? moneyMask((prePassageiro.valor_mensalidade * 100).toString())
+          valor_cobranca: prePassageiro.valor_cobranca
+            ? moneyMask((prePassageiro.valor_cobranca * 100).toString())
             : "",
           dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
 
@@ -272,7 +272,7 @@ export default function PassengerFormDialog({
 
         form.trigger([
           "escola_id",
-          "valor_mensalidade",
+          "valor_cobranca",
           "dia_vencimento",
           "nome",
           "nome_responsavel",
@@ -284,7 +284,7 @@ export default function PassengerFormDialog({
         setOpenAccordionItems([
           "passageiro",
           "responsavel",
-          "mensalidade",
+          "cobranca",
           "endereco",
           "observacoes",
         ]);
@@ -306,7 +306,7 @@ export default function PassengerFormDialog({
           email_responsavel: "",
           telefone_responsavel: "",
           cpf_responsavel: "",
-          valor_mensalidade: "",
+          valor_cobranca: "",
           dia_vencimento: "",
           emitir_cobranca_mes_atual: false,
           ativo: true,
@@ -596,18 +596,18 @@ export default function PassengerFormDialog({
                   </div>
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="mensalidade" className="mt-4">
+              <AccordionItem value="cobranca" className="mt-4">
                 <AccordionTrigger>
                   <div className="flex items-center gap-2 text-lg font-semibold">
                     <DollarSign className="w-5 h-5 text-primary" />
-                    Mensalidade
+                    Cobrança
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="valor_mensalidade"
+                      name="valor_cobranca"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Valor *</FormLabel>
@@ -702,7 +702,7 @@ export default function PassengerFormDialog({
                                   <ul className="list-disc pl-4 mt-2 space-y-1">
                                     <li>
                                       Como o dia <strong>{diaInformado}</strong>{" "}
-                                      já passou, a primeira mensalidade{" "}
+                                      já passou, a primeira cobrança{" "}
                                       <strong>vencerá hoje</strong>.
                                     </li>
                                     <li>

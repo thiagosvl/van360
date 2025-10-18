@@ -21,6 +21,6 @@ export interface PrePassageiro {
     observacoes: string | null;
 
     escola_id: string | null;
-    valor_mensalidade: number | null;
+    valor_cobranca: number | null;
     dia_vencimento: number | null;
 }

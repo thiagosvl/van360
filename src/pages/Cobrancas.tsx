@@ -174,7 +174,7 @@ const Cobrancas = () => {
       toast({ title: "Notificação enviada para o responsável com sucesso." });
     } catch (error) {
       console.error("Erro ao enviar notificação:", error);
-      toast({ title: "Erro ao enviar mensalidade.", variant: "destructive" });
+      toast({ title: "Erro ao enviar notificação de cobrança.", variant: "destructive" });
     }
     setConfirmDialogEnvioNotificacao({
       open: false,
@@ -209,7 +209,7 @@ const Cobrancas = () => {
 
   const navigateToDetails = (cobranca: Cobranca) => {
     navigate(
-      `/passageiros/${cobranca.passageiros.id}/mensalidade/${cobranca.id}`
+      `/passageiros/${cobranca.passageiros.id}/cobranca/${cobranca.id}`
     );
   };
 
@@ -501,7 +501,7 @@ const Cobrancas = () => {
                                           navigateToDetails(cobranca);
                                         }}
                                       >
-                                        Ver Mensalidade
+                                        Ver Cobrança
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
                                         className="cursor-pointer"
@@ -510,7 +510,7 @@ const Cobrancas = () => {
                                           handleEditCobrancaClick(cobranca);
                                         }}
                                       >
-                                        Editar Mensalidade
+                                        Editar Cobrança
                                       </DropdownMenuItem>
                                       {!disableRegistrarPagamento(cobranca) && (
                                         <DropdownMenuItem
@@ -594,7 +594,7 @@ const Cobrancas = () => {
                                       navigateToDetails(cobranca);
                                     }}
                                   >
-                                    Ver Mensalidade
+                                    Ver Cobrança
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={(e) => {
@@ -816,7 +816,7 @@ const Cobrancas = () => {
                                           navigateToDetails(cobranca);
                                         }}
                                       >
-                                        Ver Mensalidade
+                                        Ver Cobrança
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
                                         className="cursor-pointer"
@@ -887,7 +887,7 @@ const Cobrancas = () => {
                                       navigateToDetails(cobranca);
                                     }}
                                   >
-                                    Ver Mensalidade
+                                    Ver Cobrança
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={(e) => {
@@ -989,7 +989,7 @@ const Cobrancas = () => {
             setConfirmDialogDesfazer({ open, cobrancaId: "" })
           }
           title="Desfazer Pagamento"
-          description="Deseja realmente desfazer o pagamento desta mensalidade? Essa ação moverá a mensalidade de volta para a lista de em aberto."
+          description="Deseja realmente desfazer o pagamento desta cobrança?"
           onConfirm={desfazerPagamento}
           variant="destructive"
           confirmText="Confirmar"

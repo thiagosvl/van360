@@ -22,7 +22,7 @@ import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import {
   disableBaixarBoleto,
   disableEnviarNotificacao,
-  disableExcluirMensalidade,
+  disableExcluirCobranca,
   disableRegistrarPagamento,
   disableToggleLembretes,
   disableVerPaginaPagamento,
@@ -125,7 +125,7 @@ const NotificationTimeline = ({ items }: { items: CobrancaNotificacao[] }) => {
       case "AVISO_VENCIMENTO":
         return "Cobrança enviada no vencimento";
       case "AVISO_ANTECIPADO":
-        return "Aviso de mensalidade já disponível para pagamento";
+        return "Aviso de cobrança já disponível para pagamento";
       default:
         return `Ação de Notificação: ${tipoEvento} (Tipo desconhecido)`;
     }
@@ -226,7 +226,7 @@ export default function PassageiroCobranca() {
         fetchNotificacoes();
       } catch (error) {
         console.error("Erro ao enviar notificação:", error);
-        toast({ title: "Erro ao enviar mensalidade.", variant: "destructive" });
+        toast({ title: "Erro ao enviar cobrança.", variant: "destructive" });
       }
     }
   };
@@ -273,7 +273,7 @@ export default function PassageiroCobranca() {
         .single();
       if (error || !data) {
         toast({
-          title: "Mensalidade não encontrada.",
+          title: "Cobrança não encontrada.",
           variant: "destructive",
         });
         navigate("/cobrancas");
@@ -314,7 +314,7 @@ export default function PassageiroCobranca() {
 
   useEffect(() => {
     if (cobranca) {
-      setPageTitle(`Mensalidade de ${meses[cobranca.mes - 1]}`);
+      setPageTitle(`Cobrança de ${meses[cobranca.mes - 1]}`);
       setPageSubtitle(
         `${cobranca.passageiro_nome} (${cobranca.nome_responsavel})`
       );
@@ -330,13 +330,13 @@ export default function PassageiroCobranca() {
       await cobrancaService.excluirCobranca(cobranca);
 
       toast({
-        title: "Mensalidade excluída com sucesso.",
+        title: "Cobrança excluída com sucesso.",
       });
       navigate(`/passageiros/${cobranca.passageiro_id}`);
     } catch (error: any) {
-      console.error("Erro ao excluir mensalidade:", error);
+      console.error("Erro ao excluir cobrança:", error);
       toast({
-        title: "Erro ao excluir mensalidade.",
+        title: "Erro ao excluir cobrança.",
         description: error.message || "Não foi possível concluir a operação.",
         variant: "destructive",
       });
@@ -423,7 +423,7 @@ export default function PassageiroCobranca() {
           <Card className="lg:col-span-1 order-2 lg:order-2">
             <CardHeader className="flex flex-row items-center justify-between pb-4">
               <div>
-                <CardTitle className="text-lg">Mensalidade</CardTitle>
+                <CardTitle className="text-lg">Cobrança</CardTitle>
               </div>
               <div>
                 <Button
@@ -621,10 +621,10 @@ export default function PassageiroCobranca() {
                 variant="ghost"
                 size="sm"
                 className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
-                disabled={disableExcluirMensalidade(cobranca)}
+                disabled={disableExcluirCobranca(cobranca)}
                 onClick={() => setDeleteDialog({ open: true })}
               >
-                <Trash2 className="w-3 h-3 mr-2" /> Excluir Mensalidade
+                <Trash2 className="w-3 h-3 mr-2" /> Excluir Cobrança
               </Button>
             </CardFooter>
           </Card>
@@ -651,7 +651,7 @@ export default function PassageiroCobranca() {
             setConfirmDialogDesfazer({ open, cobrancaId: "" })
           }
           title="Desfazer Pagamento"
-          description="Deseja realmente desfazer o pagamento desta mensalidade?"
+          description="Deseja realmente desfazer o pagamento desta cobrança?"
           onConfirm={desfazerPagamento}
           variant="destructive"
           confirmText="Confirmar"
@@ -661,7 +661,7 @@ export default function PassageiroCobranca() {
           open={deleteDialog.open}
           onOpenChange={(open) => setDeleteDialog({ open })}
           title="Excluir"
-          description="Deseja excluir permanentemente essa mensalidade?"
+          description="Deseja excluir permanentemente essa cobrança?"
           onConfirm={deleteCobranca}
           confirmText="Confirmar"
           variant="destructive"

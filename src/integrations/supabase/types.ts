@@ -249,7 +249,7 @@ export type Database = {
           rua: string | null
           telefone_responsavel: string
           updated_at: string
-          valor_mensalidade: number
+          valor_cobranca: number
         }
         Insert: {
           asaas_customer_id: string
@@ -263,7 +263,7 @@ export type Database = {
           nome_responsavel: string
           email_responsavel: string
           telefone_responsavel: string
-          valor_mensalidade: number
+          valor_cobranca: number
           ativo?: boolean
           bairro?: string | null
           cep?: string | null
@@ -299,7 +299,7 @@ export type Database = {
           rua?: string | null
           telefone_responsavel?: string
           updated_at?: string
-          valor_mensalidade?: number
+          valor_cobranca?: number
         }
         Relationships: [
           {

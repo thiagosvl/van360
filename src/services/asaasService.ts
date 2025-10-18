@@ -118,7 +118,7 @@ export const asaasService = {
         if (!res.ok) {
             const err = await res.json();
             throw new Error(
-                err.errors?.[0]?.description || "Erro ao excluir mensalidade no Asaas"
+                err.errors?.[0]?.description || "Erro ao excluir cobrança no Asaas"
             );
         }
 
@@ -178,7 +178,7 @@ export const asaasService = {
         if (!res.ok) {
             const err = await res.json();
             throw new Error(
-                err.errors?.[0]?.description || "Erro ao criar mensalidade no Asaas"
+                err.errors?.[0]?.description || "Erro ao criar cobrança no Asaas"
             );
         }
 
@@ -197,7 +197,7 @@ export const asaasService = {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(`Erro ao atualizar mensalidade: ${JSON.stringify(errorData)}`);
+                throw new Error(`Erro ao atualizar cobrança: ${JSON.stringify(errorData)}`);
             }
 
             return await response.json();
@@ -312,7 +312,7 @@ export const asaasService = {
                 method: "POST",
                 headers: authHeaders,
                 body: JSON.stringify({
-                    name: "Webhook Mensalidade Passageiro Recebida",
+                    name: "Webhook Cobrança Passageiro Recebida",
                     url: `${SUPABASE_BASE_URL}/functions/v1/pagamentoMensalidadePassageiro`,
                     email: null,
                     enabled: true,

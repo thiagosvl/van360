@@ -80,19 +80,29 @@ const cobrancaEditSchema = z
     is_paga: z.boolean(),
     has_asaas: z.boolean(),
     cobranca_mes_ano: z.date(),
+    cobranca_data_original_str: z.string(),
   })
   .refine(
     (data) => {
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
 
+      const dataVencimentoFormString = format(
+        data.data_vencimento,
+        "yyyy-MM-dd"
+      );
+
+      const dataFoiAlterada =
+        dataVencimentoFormString !== data.cobranca_data_original_str;
+
       if (data.is_paga) return true;
 
-      if (
-        data.has_asaas &&
-        data.data_vencimento.getTime() !== data.cobranca_mes_ano.getTime()
-      ) {
-        return data.data_vencimento >= hoje;
+      if (data.has_asaas) {
+        if (!dataFoiAlterada) {
+          return true;
+        }
+
+        return data.data_vencimento.getTime() >= hoje.getTime();
       }
 
       return true;
@@ -143,6 +153,7 @@ export default function CobrancaEditDialog({
       is_paga: isPaga,
       has_asaas: hasAsaasId,
       cobranca_mes_ano: cobrancaMesAnoDate,
+      cobranca_data_original_str: cobranca.data_vencimento,
     },
     mode: "onBlur",
   });
@@ -158,6 +169,7 @@ export default function CobrancaEditDialog({
         is_paga: isPaga,
         has_asaas: hasAsaasId,
         cobranca_mes_ano: cobrancaMesAnoDate,
+        cobranca_data_original_str: cobranca.data_vencimento,
       });
       form.clearErrors();
       form.setValue("is_paga", isPaga);
@@ -169,8 +181,10 @@ export default function CobrancaEditDialog({
     try {
       const valorAlterado =
         local_moneyToNumber(data.valor) !== Number(cobranca.valor);
+
       const vencimentoAlterado =
         format(data.data_vencimento, "yyyy-MM-dd") !== cobranca.data_vencimento;
+
       const tipoPagamentoAlterado =
         (data.tipo_pagamento || "") !== (cobranca.tipo_pagamento || "");
 
@@ -197,13 +211,13 @@ export default function CobrancaEditDialog({
         cobranca
       );
 
-      toast({ title: "Mensalidade atualizada com sucesso." });
+      toast({ title: "Cobrança atualizada com sucesso." });
       local_onCobrancaUpdated();
       onClose();
     } catch (error: any) {
-      console.error("Erro ao editar mensalidade:", error);
+      console.error("Erro ao editar cobrança:", error);
       toast({
-        title: "Erro ao editar mensalidade.",
+        title: "Erro ao editar cobrança.",
         description: error.message || "Não foi possível concluir a operação.",
         variant: "destructive",
       });
@@ -220,6 +234,14 @@ export default function CobrancaEditDialog({
       hoje.setHours(0, 0, 0, 0);
 
       if (hasAsaasId) {
+        const dateString = format(date, "yyyy-MM-dd");
+
+        const isOriginalDate = dateString === cobranca.data_vencimento;
+
+        if (isOriginalDate) {
+          return false;
+        }
+
         return isBefore(date, hoje);
       }
 
@@ -233,7 +255,7 @@ export default function CobrancaEditDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md max-h-[95vh] overflow-y-auto bg-white">
         <DialogHeader>
-          <DialogTitle>Edição de Mensalidade</DialogTitle>
+          <DialogTitle>Edição de Cobrança</DialogTitle>
         </DialogHeader>
 
         <div className="p-3 bg-muted/50 rounded-lg border space-y-2">

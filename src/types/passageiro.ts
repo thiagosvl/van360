@@ -14,7 +14,7 @@ export interface Passageiro {
   email_responsavel: string;
   telefone_responsavel: string;
   cpf_responsavel: string;
-  valor_mensalidade: number;
+  valor_cobranca: number;
   dia_vencimento: number;
   escola_id?: string;
   usuario_id?: string;

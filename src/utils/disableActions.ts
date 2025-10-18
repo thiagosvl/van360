@@ -26,7 +26,7 @@ export const disableDesfazerPagamento = (cobranca): boolean => {
     return !seForPago(cobranca) || !cobranca.pagamento_manual;
 };
 
-export const disableExcluirMensalidade = (cobranca): boolean => {
+export const disableExcluirCobranca = (cobranca): boolean => {
     return seForPago(cobranca);
 };
 

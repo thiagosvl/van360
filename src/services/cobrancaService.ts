@@ -4,7 +4,6 @@ import { Cobranca } from "@/types/cobranca";
 import { CobrancaDetalhe } from "@/types/cobrancaDetalhe";
 import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import { seForPago } from "@/utils/disableActions";
-import { toLocalDateString } from "@/utils/formatters";
 
 interface UpdatePayload {
     valor: number;
@@ -21,7 +20,7 @@ export const cobrancaService = {
             .single();
 
         if (fetchError || !cobranca) {
-            throw new Error("Não foi possível localizar a mensalidade para desfazer o pagamento.");
+            throw new Error("Não foi possível localizar a cobrança para desfazer o pagamento.");
         }
 
         const originalState = { ...cobranca };
@@ -153,7 +152,7 @@ export const cobrancaService = {
             .single();
 
         if (fetchError || !cobranca) {
-            throw new Error("Não foi possível localizar a mensalidade para registrar o pagamento.");
+            throw new Error("Não foi possível localizar a cobrança para registrar o pagamento.");
         }
 
         if (cobranca.asaas_payment_id !== null && cobranca.asaas_payment_id) {
@@ -236,8 +235,6 @@ export const cobrancaService = {
         let rollbackNeeded = false;
 
         try {
-            console.log(hasAsaasId, isPaga);
-            return;
             const { error: updateError } = await supabase
                 .from("cobrancas")
                 .update(supabaseUpdatePayload)
@@ -253,7 +250,14 @@ export const cobrancaService = {
                 const dataAlterada =
                     payload.data_vencimento !== cobrancaOriginal.data_vencimento;
 
-                if (dataAlterada && new Date(payload.data_vencimento) < hoje) {
+                const partes = payload.data_vencimento.split('-');
+                const ano = parseInt(partes[0]);
+                const mes = parseInt(partes[1]) - 1;
+                const dia = parseInt(partes[2]);
+
+                const novaDataVencimento = new Date(ano, mes, dia);
+
+                if (dataAlterada && novaDataVencimento.getTime() < hoje.getTime()) {
                     throw new Error(
                         "A nova data de vencimento deve ser igual ou posterior à data de hoje (exigência do provedor de pagamento)."
                     );
@@ -276,9 +280,12 @@ export const cobrancaService = {
                 try {
                     const rollbackPayload: any = {
                         valor: cobrancaOriginal.valor,
-                        data_vencimento: toLocalDateString(new Date(cobrancaOriginal.data_vencimento)),
-                        tipo_pagamento: cobrancaOriginal.tipo_pagamento,
+                        data_vencimento: cobrancaOriginal.data_vencimento,
                     };
+
+                    if (cobrancaOriginal.tipo_pagamento) {
+                        rollbackPayload.tipo_pagamento = cobrancaOriginal.tipo_pagamento;
+                    }
 
                     await supabase
                         .from("cobrancas")
@@ -291,7 +298,7 @@ export const cobrancaService = {
                     console.error("ERRO CRÍTICO no Rollback da Cobrança:", rollbackErr);
                 }
             }
-            throw new Error(error.message || "Falha na edição da mensalidade. Verifique os logs.");
+            throw new Error(error.message || "Falha na edição da cobrança. Verifique os logs.");
         }
     },
 

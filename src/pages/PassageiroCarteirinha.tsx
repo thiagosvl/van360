@@ -40,7 +40,7 @@ import { Passageiro } from "@/types/passageiro";
 import {
   disableDesfazerPagamento,
   disableEnviarNotificacao,
-  disableExcluirMensalidade,
+  disableExcluirCobranca,
   disableRegistrarPagamento,
   disableToggleLembretes,
 } from "@/utils/disableActions";
@@ -211,7 +211,7 @@ export default function PassageiroCarteirinha() {
       toast({
         title: "O cadastro do passageiro está desativado.",
         description:
-          "Só é possível registrar mensalidade de passageiros ativos.",
+          "Só é possível registrar cobrança de passageiros ativos.",
         variant: "default",
       });
     }
@@ -427,7 +427,7 @@ export default function PassageiroCarteirinha() {
       await cobrancaService.excluirCobranca(deleteCobrancaDialog.cobranca);
 
       toast({
-        title: "Mensalidade excluída com sucesso.",
+        title: "Cobrança excluída com sucesso.",
       });
 
       const newFilterYear = await fetchAvailableYears();
@@ -436,9 +436,9 @@ export default function PassageiroCarteirinha() {
         await fetchCobrancas(yearFilter);
       }
     } catch (error: any) {
-      console.error("Erro ao excluir mensalidade:", error);
+      console.error("Erro ao excluir cobrança:", error);
       toast({
-        title: "Erro ao excluir mensalidade.",
+        title: "Erro ao excluir cobrança.",
         description: error.message || "Não foi possível concluir a operação.",
         variant: "destructive",
       });
@@ -549,7 +549,7 @@ export default function PassageiroCarteirinha() {
                     <Button onClick={() => handleOpenCobrancaDialog()}>
                       <Plus className="w-4 h-4 md:mr-2" />
                       <span className="hidden md:block">
-                        Registrar Mensalidade
+                        Registrar Cobrança
                       </span>
                     </Button>
                   </div>
@@ -585,7 +585,7 @@ export default function PassageiroCarteirinha() {
                               key={cobranca.id}
                               onClick={() =>
                                 navigate(
-                                  `/passageiros/${passageiro.id}/mensalidade/${cobranca.id}`
+                                  `/passageiros/${passageiro.id}/cobranca/${cobranca.id}`
                                 )
                               }
                               className="hover:bg-muted/50 cursor-pointer"
@@ -647,11 +647,11 @@ export default function PassageiroCarteirinha() {
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         navigate(
-                                          `/passageiros/${passageiro.id}/mensalidade/${cobranca.id}`
+                                          `/passageiros/${passageiro.id}/cobranca/${cobranca.id}`
                                         );
                                       }}
                                     >
-                                      Ver Mensalidade
+                                      Ver Cobrança
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                       className="cursor-pointer"
@@ -660,7 +660,7 @@ export default function PassageiroCarteirinha() {
                                         handleEditCobrancaClick(cobranca);
                                       }}
                                     >
-                                      Editar Mensalidade
+                                      Editar Cobrança
                                     </DropdownMenuItem>
                                     {!disableRegistrarPagamento(cobranca) && (
                                       <DropdownMenuItem
@@ -716,7 +716,7 @@ export default function PassageiroCarteirinha() {
                                     )}
                                     <DropdownMenuItem
                                       className="text-red-600 cursor-pointer"
-                                      disabled={disableExcluirMensalidade(
+                                      disabled={disableExcluirCobranca(
                                         cobranca
                                       )}
                                       onClick={(e) => {
@@ -724,7 +724,7 @@ export default function PassageiroCarteirinha() {
                                         handleDeleteCobrancaClick(cobranca);
                                       }}
                                     >
-                                      Excluir Mensalidade
+                                      Excluir Cobrança
                                     </DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
@@ -740,7 +740,7 @@ export default function PassageiroCarteirinha() {
                           key={cobranca.id}
                           onClick={() =>
                             navigate(
-                              `/passageiros/${passageiro.id}/mensalidade/${cobranca.id}`
+                              `/passageiros/${passageiro.id}/cobranca/${cobranca.id}`
                             )
                           }
                           className="py-2.5 px-3 active:bg-muted/50"
@@ -774,11 +774,11 @@ export default function PassageiroCarteirinha() {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     navigate(
-                                      `/passageiros/${passageiro.id}/mensalidade/${cobranca.id}`
+                                      `/passageiros/${passageiro.id}/cobranca/${cobranca.id}`
                                     );
                                   }}
                                 >
-                                  Ver Mensalidade
+                                  Ver Cobrança
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="cursor-pointer"
@@ -787,7 +787,7 @@ export default function PassageiroCarteirinha() {
                                     handleEditCobrancaClick(cobranca);
                                   }}
                                 >
-                                  Editar Mensalidade
+                                  Editar Cobrança
                                 </DropdownMenuItem>
                                 {!disableRegistrarPagamento(cobranca) && (
                                   <DropdownMenuItem
@@ -836,14 +836,14 @@ export default function PassageiroCarteirinha() {
                                   </DropdownMenuItem>
                                 )}
                                 <DropdownMenuItem
-                                  disabled={disableExcluirMensalidade(cobranca)}
+                                  disabled={disableExcluirCobranca(cobranca)}
                                   className="text-red-600"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleDeleteCobrancaClick(cobranca);
                                   }}
                                 >
-                                  Excluir Mensalidade
+                                  Excluir Cobrança
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -909,10 +909,10 @@ export default function PassageiroCarteirinha() {
                         <Alert className="bg-sky-50 border-sky-200 text-sky-900 p-3 md:p-4 rounded-xl gap-3 shadow-sm">
                           <Info className="h-5 w-5 text-sky-500 mt-0.5" />
                           <AlertTitle className="text-sky-900 text-sm font-semibold">
-                            Nenhuma mensalidade... ainda!
+                            Nenhuma cobrança... ainda!
                           </AlertTitle>
                           <AlertDescription className="text-sky-800 text-sm leading-relaxed">
-                            Não se preocupe! A primeira mensalidade aparecerá
+                            Não se preocupe! A primeira cobrança aparecerá
                             aqui <strong>no início do próximo mês</strong>, com
                             o vencimento para o dia programado.
                           </AlertDescription>
@@ -1164,7 +1164,7 @@ export default function PassageiroCarteirinha() {
           passageiroNome={passageiro.nome}
           passageiroResponsavelNome={passageiro.nome_responsavel}
           passageiroAsaasCustomerId={passageiro.asaas_customer_id}
-          valorMensalidade={passageiro.valor_mensalidade}
+          valorCobranca={passageiro.valor_cobranca}
           diaVencimento={passageiro.dia_vencimento}
           onCobrancaAdded={() => handleCobrancaAdded()}
         />
@@ -1206,7 +1206,7 @@ export default function PassageiroCarteirinha() {
             setDeleteCobrancaDialog({ ...deleteCobrancaDialog, open })
           }
           title="Excluir"
-          description="Deseja excluir permanentemente essa mensalidade?"
+          description="Deseja excluir permanentemente essa cobrança?"
           onConfirm={handleDeleteCobranca}
           confirmText="Confirmar"
           variant="destructive"
