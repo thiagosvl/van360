@@ -18,6 +18,7 @@ export function PullToRefreshWrapper({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const isScrollAtTop = useCallback(() => {
+    // Agora, containerRef.current é o único que rola.
     return containerRef.current ? containerRef.current.scrollTop === 0 : true;
   }, []);
 
@@ -41,12 +42,14 @@ export function PullToRefreshWrapper({
     const currentY = e.touches[0].clientY;
     let distance = currentY - startY.current;
 
-    if (distance < 0) distance = 0;
+    if (distance < 0) {
+      return;
+    }
 
     distance = Math.min(distance, MAX_PULL_DISTANCE);
 
     if (distance > 0) {
-      e.preventDefault(); 
+      e.preventDefault();
       e.stopPropagation();
     }
 
@@ -115,10 +118,12 @@ export function PullToRefreshWrapper({
       return (
         <div className="flex flex-col items-center">
           <Loader2
-            className={`h-6 w-6 text-gray-400 transition-transform duration-100 ${canRefresh ? 'rotate-180' : ''}`}
+            className={`h-6 w-6 text-gray-400 transition-transform duration-100 ${
+              canRefresh ? "rotate-180" : ""
+            }`}
           />
           <span className="text-xs text-gray-500 mt-1">
-            {canRefresh ? 'Solte para atualizar' : 'Puxe para atualizar'}
+            {canRefresh ? "Solte para atualizar" : "Puxe para atualizar"}
           </span>
         </div>
       );
@@ -127,10 +132,7 @@ export function PullToRefreshWrapper({
   })();
 
   return (
-    <div
-      className="relative h-screen overflow-y-auto"
-      ref={containerRef}
-    >
+    <div className="relative h-full overflow-y-auto" ref={containerRef}>
       <div
         className="absolute w-full flex justify-center items-center"
         style={{
@@ -140,7 +142,7 @@ export function PullToRefreshWrapper({
         }}
       >
         <div
-          className="text-gray-500 flex items-center space-x-2"
+          className="flex justify-center items-center"
           style={{
             opacity: finalOpacity,
             transform: `scale(${finalScale})`,
@@ -151,8 +153,8 @@ export function PullToRefreshWrapper({
       </div>
 
       <div
-        style={{ transform: `translateY(${pullDistance}px)` }}
         className="touch-action-pan-y"
+        style={{ transform: `translateY(${pullDistance}px)` }}
       >
         {children}
       </div>
