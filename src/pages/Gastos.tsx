@@ -71,11 +71,10 @@ import {
 import { z } from "zod";
 
 const gastoSchema = z.object({
-  descricao: z.string().min(1, "A descrição é obrigatória."),
   valor: z.string().min(1, "O valor é obrigatório."),
   data: z.date({ required_error: "A data é obrigatória." }),
   categoria: z.string().min(1, "A categoria é obrigatória."),
-  notas: z.string().optional(),
+  descricao: z.string().optional(),
 });
 
 type GastoFormData = z.infer<typeof gastoSchema>;
@@ -87,6 +86,7 @@ const categoriasGastos = [
   "Limpeza",
   "Seguro",
   "Alimentação",
+  "Salário",
   "Outros",
 ];
 const COLORS = [
@@ -262,11 +262,10 @@ export default function Gastos() {
   const handleSubmit = async (data: GastoFormData) => {
     try {
       const gastoData = {
-        descricao: data.descricao,
         valor: moneyToNumber(data.valor),
         data: toLocalDateString(data.data),
         categoria: data.categoria,
-        notas: data.notas,
+        descricao: data.descricao,
         usuario_id: localStorage.getItem("app_user_id"),
       };
       if (editingGasto) {
@@ -305,19 +304,17 @@ export default function Gastos() {
     setEditingGasto(gasto);
     if (gasto) {
       form.reset({
-        descricao: gasto.descricao,
         valor: moneyMask((gasto.valor * 100).toString()),
         data: new Date(new Date(gasto.data).valueOf() + 1000 * 3600 * 24),
         categoria: gasto.categoria,
-        notas: gasto.notas || "",
+        descricao: gasto.descricao || "",
       });
     } else {
       form.reset({
-        descricao: "",
         valor: "",
         data: undefined,
         categoria: "",
-        notas: "",
+        descricao: "",
       });
     }
     setIsDialogOpen(true);
@@ -330,303 +327,288 @@ export default function Gastos() {
   return (
     <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
       <div className="space-y-6">
-        {/* Filters */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Mês</label>
-                <Select
-                  value={mesFilter.toString()}
-                  onValueChange={(value) => setMesFilter(Number(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o mês" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-60 overflow-y-auto">
-                    {meses.map((mes, index) => (
-                      <SelectItem key={index} value={(index + 1).toString()}>
-                        {mes}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Ano</label>
-                <Select
-                  value={anoFilter.toString()}
-                  onValueChange={(value) => setAnoFilter(Number(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o ano" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-60 overflow-y-auto">
-                    {anos.map((ano) => (
-                      <SelectItem key={ano.value} value={ano.value}>
-                        {ano.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="w-full">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center gap-2">
+                  <span>Gastos</span>
+                  <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
+                    {gastos.length}
+                  </span>
+                </CardTitle>
 
-        {/* Lista */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="flex items-center gap-2">
-                <span>Gastos</span>
-                <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
-                  {gastos.length}
-                </span>
-              </CardTitle>
-
-              <Button onClick={() => openDialog()}>
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Novo Gasto</span>
-              </Button>
-            </div>
-          </CardHeader>
-
-          <CardContent>
-            {loading ? (
-              <Skeleton className="h-40 w-full" />
-            ) : gastos.length === 0 ? (
-              <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
-                <FileText className="w-12 h-12 mb-4 text-gray-300" />
-                <p>Nenhum gasto registrado no mês indicado.</p>
+                <Button onClick={() => openDialog()}>
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Novo Gasto</span>
+                </Button>
               </div>
-            ) : (
-              <>
-                <div className="hidden md:block -mx-6">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="p-4 text-left text-xs font-medium text-gray-600">
-                          Categoria
-                        </th>
-                        <th className="p-4 text-left text-xs font-medium text-gray-600">
-                          Descrição
-                        </th>
-                        <th className="p-4 text-left text-xs font-medium text-gray-600">
-                          Data
-                        </th>
-                        <th className="p-4 text-left text-xs font-medium text-gray-600">
-                          Valor
-                        </th>
-                        <th className="p-4 text-center text-xs font-medium text-gray-600">
-                          Ações
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {gastos.map((gasto) => (
-                        <tr key={gasto.id} className="hover:bg-muted/50">
-                          <td className="p-4 align-top">
-                            <Badge variant="outline">{gasto.categoria}</Badge>
-                          </td>
-                          <td className="p-4 align-top">
-                            <div className="font-medium text-sm">
-                              {gasto.descricao}
-                            </div>
-                          </td>
-                          <td className="p-4 align-top">
-                            {formatDateToBR(gasto.data)}
-                          </td>
-                          <td className="p-4 align-top">
-                            {gasto.valor.toLocaleString("pt-BR", {
-                              style: "currency",
-                              currency: "BRL",
-                            })}
-                          </td>
-                          <td className="p-4 text-center align-top">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent>
-                                <DropdownMenuItem
-                                  className="cursor-pointer"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    openDialog(gasto);
-                                  }}
-                                >
-                                  <Edit className="w-4 h-4 mr-2" />
-                                  Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDelete(gasto.id);
-                                  }}
-                                  className="text-red-500 cursor-pointer"
-                                >
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  Excluir
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </td>
-                        </tr>
+            </CardHeader>
+
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Mês</label>
+                  <Select
+                    value={mesFilter.toString()}
+                    onValueChange={(value) => setMesFilter(Number(value))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o mês" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60 overflow-y-auto">
+                      {meses.map((mes, index) => (
+                        <SelectItem key={index} value={(index + 1).toString()}>
+                          {mes}
+                        </SelectItem>
                       ))}
-                    </tbody>
-                  </table>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="md:hidden divide-y divide-gray-100 -mx-6">
-                  {gastos.map((gasto) => (
-                    <div key={gasto.id} className="p-4 active:bg-muted/50">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="pr-2">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Ano</label>
+                  <Select
+                    value={anoFilter.toString()}
+                    onValueChange={(value) => setAnoFilter(Number(value))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o ano" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60 overflow-y-auto">
+                      {anos.map((ano) => (
+                        <SelectItem key={ano.value} value={ano.value}>
+                          {ano.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {loading ? (
+                <Skeleton className="h-40 w-full" />
+              ) : gastos.length === 0 ? (
+                <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
+                  <FileText className="w-12 h-12 mb-4 text-gray-300" />
+                  <p>Nenhum gasto registrado no mês indicado.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="hidden md:block">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="p-4 text-left text-xs font-medium text-gray-600">
+                            Tipo de Gasto
+                          </th>
+                          <th className="p-4 text-left text-xs font-medium text-gray-600">
+                            Data
+                          </th>
+                          <th className="p-4 text-left text-xs font-medium text-gray-600">
+                            Valor
+                          </th>
+                          <th className="p-4 text-center text-xs font-medium text-gray-600">
+                            Ações
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {gastos.map((gasto) => (
+                          <tr key={gasto.id} className="hover:bg-muted/50">
+                            <td className="p-4 align-top">
+                              <Badge variant="outline">{gasto.categoria}</Badge>
+                            </td>
+                            <td className="p-4 align-top">
+                              {formatDateToBR(gasto.data)}
+                            </td>
+                            <td className="p-4 align-top">
+                              {gasto.valor.toLocaleString("pt-BR", {
+                                style: "currency",
+                                currency: "BRL",
+                              })}
+                            </td>
+                            <td className="p-4 text-center align-top">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openDialog(gasto);
+                                    }}
+                                  >
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Editar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDelete(gasto.id);
+                                    }}
+                                    className="text-red-500 cursor-pointer"
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Excluir
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="md:hidden divide-y divide-gray-100">
+                    {gastos.map((gasto) => (
+                      <div
+                        key={gasto.id}
+                        className="py-4 px-0 active:bg-muted/50"
+                        onClick={() => openDialog(gasto)}
+                      >
+                        <div className="flex justify-between items-start">
                           <div className="font-semibold text-gray-800">
                             {gasto.categoria}
                           </div>
+
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openDialog(gasto);
+                                }}
+                              >
+                                <Edit className="w-4 h-4 mr-2" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(gasto.id);
+                                }}
+                                className="text-red-500 cursor-pointer"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Excluir
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
 
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                            >
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuItem
-                              className="cursor-pointer"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openDialog(gasto);
-                              }}
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(gasto.id);
-                              }}
-                              className="text-red-500 cursor-pointer"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Excluir
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm">
-                          <span className="block text-xs text-muted-foreground">
-                            Cadastrou em:{" "}
-                          </span>
-                          <span className="font-semibold">
-                            {formatDateToBR(gasto.data)}
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm">
+                            <span className="block text-xs text-muted-foreground">
+                              Registrado em:{" "}
+                            </span>
+                            <span className="font-semibold">
+                              {formatDateToBR(gasto.data)}
+                            </span>
+                          </div>
+                          <span className="text-right text-muted-foreground text-sm">
+                            {Number(gasto.valor).toLocaleString("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            })}
                           </span>
                         </div>
-                        <span
-                          className={`px-2 pr-0 py-1 rounded-full text-xs font-medium`}
-                        >
-                          <Badge variant="outline">{gasto.descricao}</Badge>
-                        </span>
                       </div>
-                      <div className="text-right text-muted-foreground text-sm mb-3">
-                        {Number(gasto.valor).toLocaleString("pt-BR", {
+                    ))}
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Resumo */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <PieChartIcon className="w-5 h-5" />
+                Resumo do Mês
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+              <div className="space-y-4">
+                <div>
+                  <div className="text-sm text-muted-foreground">
+                    Total Gasto no Mês
+                  </div>
+                  <div className="text-3xl font-bold text-red-600">
+                    {totalGasto.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">
+                    Principal Categoria
+                  </div>
+                  <div className="text-xl font-bold">{principalCategoria}</div>
+                </div>
+              </div>
+              <div className="h-48 flex flex-col items-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={45}
+                      outerRadius={70}
+                      label={renderCustomizedLabel}
+                      labelLine={false}
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: number) => [
+                        value.toLocaleString("pt-BR", {
                           style: "currency",
                           currency: "BRL",
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Resumo */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PieChartIcon className="w-5 h-5" />
-              Resumo do Mês
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-            <div className="space-y-4">
-              <div>
-                <div className="text-sm text-muted-foreground">
-                  Total Gasto no Mês
-                </div>
-                <div className="text-3xl font-bold text-red-600">
-                  {totalGasto.toLocaleString("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                  })}
-                </div>
+                        }),
+                        "Total",
+                      ]}
+                    />
+                    <Legend
+                      content={<CustomLegend />}
+                      layout="vertical"
+                      align="right"
+                      verticalAlign="middle"
+                      wrapperStyle={{ width: "auto" }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-              <div>
-                <div className="text-sm text-muted-foreground">
-                  Principal Categoria
-                </div>
-                <div className="text-xl font-bold">{principalCategoria}</div>
-              </div>
-            </div>
-            <div className="h-48 flex flex-col items-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={45}
-                    outerRadius={70}
-                    label={renderCustomizedLabel}
-                    labelLine={false}
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value: number) => [
-                      value.toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      }),
-                      "Total",
-                    ]}
-                  />
-                  <Legend
-                    content={<CustomLegend />}
-                    layout="vertical"
-                    align="right"
-                    verticalAlign="middle"
-                    wrapperStyle={{ width: "auto" }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent
@@ -666,19 +648,6 @@ export default function Gastos() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="descricao"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel>Descrição *</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -754,10 +723,10 @@ export default function Gastos() {
                 </div>
                 <FormField
                   control={form.control}
-                  name="notas"
+                  name="descricao"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notas</FormLabel>
+                      <FormLabel>Descrição</FormLabel>
                       <FormControl>
                         <Textarea {...field} />
                       </FormControl>

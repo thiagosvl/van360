@@ -224,11 +224,10 @@ CREATE TABLE IF NOT EXISTS "public"."gastos" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"(),
     "usuario_id" "uuid",
-    "descricao" "text" NOT NULL,
     "valor" numeric(10,2) NOT NULL,
     "data" "date" NOT NULL,
     "categoria" "text" NOT NULL,
-    "notas" "text"
+    "descricao" "text"
 );
 
 

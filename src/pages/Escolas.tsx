@@ -203,7 +203,6 @@ export default function Escolas() {
     <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
       <div className="space-y-6">
         <div className="w-full">
-          <div className="flex justify-end items-center"></div>
 
           <Card>
             <CardHeader>
@@ -378,7 +377,7 @@ export default function Escolas() {
                     </table>
                   </div>
 
-                  <div className="md:hidden divide-y divide-gray-200">
+                  <div className="md:hidden divide-y divide-gray-100">
                     {escolasFiltradas.map((escola) => (
                       <div
                         key={escola.id}
@@ -445,7 +444,6 @@ export default function Escolas() {
                               )}
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              disabled={escola.ativo}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDeleteClick(escola);
