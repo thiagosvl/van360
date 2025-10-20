@@ -144,7 +144,7 @@ export default function Passageiros() {
       subTitle = "Carregando...";
     }
 
-    setPageTitle("Passageiros e Pré-Cadastros");
+    setPageTitle("Passageiros");
     setPageSubtitle(subTitle);
   }, [passageiros, setPageTitle, setPageSubtitle]);
 
@@ -331,13 +331,19 @@ export default function Passageiros() {
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger
                 value="passageiros"
-                className="data-[state=inactive]:text-muted-foreground/80"
+                className="data-[state=inactive]:text-gray-600 
+            data-[state=active]:bg-primary 
+            data-[state=active]:text-white 
+            hover:bg-gray-100"
               >
                 Passageiros
               </TabsTrigger>
               <TabsTrigger
                 value="pre-cadastros"
-                className="data-[state=inactive]:text-muted-foreground/80"
+                className="data-[state=inactive]:text-gray-600 
+            data-[state=active]:bg-primary 
+            data-[state=active]:text-white 
+            hover:bg-gray-100"
               >
                 Pré-Cadastros
               </TabsTrigger>
@@ -463,7 +469,7 @@ export default function Passageiros() {
                                   className="hover:bg-muted/50 cursor-pointer"
                                 >
                                   <td className="p-3 align-top">
-                                    <div className="font-medium text-sm text-gray-900">
+                                    <div className="font-semibold text-sm text-gray-800">
                                       {passageiro.nome}
                                     </div>
                                     <div className="text-xs text-gray-500">

@@ -303,65 +303,57 @@ const Cobrancas = () => {
                   </Select>
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          <Tabs defaultValue="em-aberto" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger
-                value="em-aberto"
-                className="data-[state=inactive]:text-muted-foreground/80"
-              >
-                Em Aberto{" "}
-                <Badge
-                  variant="destructive"
-                  className={
-                    todasCobrancas.length === 0
-                      ? "bg-transparent text-secondary-foreground ml-2"
-                      : cobrancasAbertas.length === 0
-                      ? "bg-green-600 ml-2"
-                      : "ml-2"
-                  }
-                >
-                  {cobrancasAbertas.length}
-                </Badge>
-              </TabsTrigger>
-              <TabsTrigger
-                value="pagas"
-                className="data-[state=inactive]:text-muted-foreground/80"
-              >
-                Pagas{" "}
-                <Badge
-                  variant="secondary"
-                  className={
-                    todasCobrancas.length === 0
-                      ? "bg-transparent text-secondary-foreground ml-2"
-                      : "bg-neutral-200 ml-2"
-                  }
-                >
-                  {cobrancasPagas.length}
-                </Badge>
-              </TabsTrigger>
-            </TabsList>
+              <Tabs defaultValue="em-aberto" className="w-full mt-6">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger
+                    value="em-aberto"
+                    className="data-[state=inactive]:text-gray-600 
+            data-[state=active]:bg-primary 
+            data-[state=active]:text-white 
+            hover:bg-gray-100"
+                  >
+                    Em Aberto{" "}
+                    <Badge
+                      variant="secondary"
+                      className="ml-2 bg-neutral-200"
+                    >
+                      {cobrancasAbertas.length}
+                    </Badge>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="pagas"
+                    className="data-[state=inactive]:text-gray-600 
+            data-[state=active]:bg-primary 
+            data-[state=active]:text-white 
+            hover:bg-gray-100"
+                  >
+                    Pagas{" "}
+                    <Badge
+                      variant="secondary"
+                      className="ml-2 bg-neutral-200"
+                    >
+                      {cobrancasPagas.length}
+                    </Badge>
+                  </TabsTrigger>
+                </TabsList>
 
-            <TabsContent value="em-aberto" className="mt-4">
-              <Card>
-                {cobrancasAbertas.length > 0 && (
-                  <div className="p-4">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Pesquisar passageiro ou responsável..."
-                        className="pl-10"
-                        value={buscaAbertas}
-                        onChange={(e) => setBuscaAbertas(e.target.value)}
-                      />
+                <TabsContent value="em-aberto" className="mt-4">
+                  {cobrancasAbertas.length > 0 && (
+                    <div className="py-4">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Pesquisar passageiro ou responsável..."
+                          className="pl-10"
+                          value={buscaAbertas}
+                          onChange={(e) => setBuscaAbertas(e.target.value)}
+                        />
+                      </div>
                     </div>
-                  </div>
-                )}
-                <CardContent className="p-0">
+                  )}
                   {loading ? (
-                    <div className="p-4">
+                    <div className="py-4">
                       <ListSkeleton />
                     </div>
                   ) : todasCobrancas.length === 0 ? (
@@ -415,7 +407,7 @@ const Cobrancas = () => {
                                 className="hover:bg-muted/50 cursor-pointer"
                               >
                                 <td className="p-3 align-top">
-                                  <div className="font-medium text-sm text-gray-900">
+                                  <div className="font-semibold text-sm text-gray-800">
                                     {cobranca.passageiros.nome}
                                   </div>
                                   <div className="text-xs text-gray-500">
@@ -567,7 +559,7 @@ const Cobrancas = () => {
                           <div
                             key={cobranca.id}
                             onClick={() => navigateToDetails(cobranca)}
-                            className="py-2.5 px-6 active:bg-muted/50"
+                            className="py-2.5 active:bg-muted/50"
                           >
                             <div className="flex justify-between items-start">
                               <div className="flex flex-col pr-1 w-2/3">
@@ -695,28 +687,24 @@ const Cobrancas = () => {
                       </div>
                     </>
                   )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </TabsContent>
 
-            <TabsContent value="pagas" className="mt-4">
-              <Card>
-                {cobrancasPagas.length > 0 && (
-                  <div className="p-4">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Pesquisar passageiro ou responsável..."
-                        className="pl-10"
-                        value={buscaPagas}
-                        onChange={(e) => setBuscaPagas(e.target.value)}
-                      />
+                <TabsContent value="pagas" className="mt-4">
+                  {cobrancasPagas.length > 0 && (
+                    <div className="py-4">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Pesquisar passageiro ou responsável..."
+                          className="pl-10"
+                          value={buscaPagas}
+                          onChange={(e) => setBuscaPagas(e.target.value)}
+                        />
+                      </div>
                     </div>
-                  </div>
-                )}
-                <CardContent className="p-0">
+                  )}
                   {loading ? (
-                    <div className="p-4">
+                    <div className="py-4">
                       <ListSkeleton />
                     </div>
                   ) : todasCobrancas.length === 0 ? (
@@ -767,7 +755,7 @@ const Cobrancas = () => {
                                 className="hover:bg-muted/50 cursor-pointer"
                               >
                                 <td className="p-3 align-top">
-                                  <div className="font-medium text-sm text-gray-900">
+                                  <div className="font-semibold text-sm text-gray-800">
                                     {cobranca.passageiros.nome}
                                   </div>
                                   <div className="text-xs text-gray-500">
@@ -861,14 +849,14 @@ const Cobrancas = () => {
                           <div
                             key={cobranca.id}
                             onClick={() => navigateToDetails(cobranca)}
-                            className="p-4 active:bg-muted/50"
+                            className="py-2.5 active:bg-muted/50"
                           >
                             <div className="flex justify-between items-start mb-3">
                               <div className="pr-2">
-                                <div className="font-semibold text-gray-800">
+                                <div className="font-semibold text-gray-800 text-sm overflow-hidden text-ellipsis whitespace-nowrap">
                                   {cobranca.passageiros.nome}
                                 </div>
-                                <div className="text-sm text-muted-foreground">
+                                <div className="text-xs text-muted-foreground">
                                   Responsável:{" "}
                                   {cobranca.passageiros.nome_responsavel || "-"}
                                 </div>
@@ -922,7 +910,7 @@ const Cobrancas = () => {
                             </div>
                             <div className="space-y-2 text-sm">
                               <div className="flex justify-between">
-                                <span>Pagou em</span>
+                                <span className="text-muted-foreground">Pagou em</span>
                                 <span className="font-medium">
                                   {cobranca.data_pagamento
                                     ? formatDateToBR(cobranca.data_pagamento)
@@ -930,7 +918,7 @@ const Cobrancas = () => {
                                 </span>
                               </div>
                               <div className="flex justify-between">
-                                <span>Valor</span>
+                                <span className="text-muted-foreground">Valor</span>
                                 <span className="font-medium">
                                   {Number(cobranca.valor).toLocaleString(
                                     "pt-BR",
@@ -939,7 +927,7 @@ const Cobrancas = () => {
                                 </span>
                               </div>
                               <div className="flex justify-between">
-                                <span>Forma de Pagamento</span>
+                                <span className="text-muted-foreground">Forma de Pagamento</span>
                                 <span className="font-medium">
                                   {formatPaymentType(cobranca.tipo_pagamento)}
                                 </span>
@@ -955,10 +943,10 @@ const Cobrancas = () => {
                       </div>
                     </>
                   )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         </div>
 
         {selectedCobranca && (

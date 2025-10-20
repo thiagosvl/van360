@@ -268,14 +268,14 @@ export default function PrePassageiros({
                       handleFinalizeClick(prePassageiro);
                     }}
                     key={prePassageiro.id}
-                    className="p-4 active:bg-muted/50 border-b md:border-b-0 cursor-pointer hover:bg-muted/50"
+                    className="py-4 active:bg-muted/50 border-b md:border-b-0 cursor-pointer hover:bg-muted/50"
                   >
                     <div className="flex justify-between items-start">
                       <div className="pr-2">
-                        <div className="font-semibold text-gray-800">
+                        <div className="font-semibold text-sm text-gray-800">
                           {prePassageiro.nome}
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-xs text-muted-foreground">
                           Responsável: {prePassageiro.nome_responsavel}
                         </div>
                       </div>
