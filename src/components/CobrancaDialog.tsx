@@ -237,7 +237,7 @@ export default function CobrancaDialog({
 
       const isPendente = cobrancaData.status === "pendente";
       const vencimentoEValido = dataVencimento >= hoje;
-      
+
       const shouldGenerateAsaas = isPendente && vencimentoEValido;
 
       if (shouldGenerateAsaas) {

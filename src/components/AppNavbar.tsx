@@ -14,13 +14,11 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useLayout } from "@/contexts/LayoutContext";
-import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, Menu, User } from "lucide-react";
 import { useState } from "react";
 
 export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
-  const { profile } = useAuth();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { pageTitle, pageSubtitle } = useLayout();
 
@@ -58,7 +56,6 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
         </div>
 
         <div>
-          {/* 3. Exibir o título e subtítulo dinâmicos */}
           <h1 className="text-base sm:text-lg font-semibold leading-tight">
             {pageTitle}
           </h1>

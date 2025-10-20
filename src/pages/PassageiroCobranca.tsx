@@ -85,15 +85,16 @@ const InfoItem = ({
 );
 
 const CobrancaDetalheSkeleton = () => (
-  <div className="space-y-6">
-    <div className="flex items-center justify-between mb-6">
-      <Skeleton className="h-9 w-64" />
-      <Skeleton className="h-10 w-24" />
+  <div className="space-y-6 overflow-hidden w-full max-w-full">
+    <div className="flex items-center justify-between mb-6 overflow-hidden">
+      <Skeleton className="h-9 w-full max-w-[16rem]" />
+      <Skeleton className="h-10 w-full max-w-[6rem]" />
     </div>
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-      <Skeleton className="lg:col-span-3 h-32 w-full" />
-      <Skeleton className="lg:col-span-2 h-64 w-full" />
-      <Skeleton className="lg:col-span-1 h-64 w-full" />
+
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start overflow-hidden">
+      <Skeleton className="lg:col-span-3 h-32 w-full max-w-full" />
+      <Skeleton className="lg:col-span-2 h-64 w-full max-w-full" />
+      <Skeleton className="lg:col-span-1 h-64 w-full max-w-full" />
     </div>
   </div>
 );
@@ -186,6 +187,8 @@ export default function PassageiroCobranca() {
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
   });
+  const [confirmDialogEnvioNotificacao, setConfirmDialogEnvioNotificacao] =
+    useState({ open: false, cobranca: null });
   const { toast } = useToast();
 
   const goToExternalURL = (url: string) => {
@@ -324,7 +327,13 @@ export default function PassageiroCobranca() {
     }
   }, [cobranca, setPageTitle, setPageSubtitle]);
 
-  if (loading) return <CobrancaDetalheSkeleton />;
+  if (loading) {
+    return (
+      <div className="overflow-hidden w-full max-w-full h-full">
+        <CobrancaDetalheSkeleton />
+      </div>
+    );
+  }
 
   if (!cobranca) return null;
 
@@ -356,7 +365,7 @@ export default function PassageiroCobranca() {
   return (
     <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
       <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start overflow-hidden">
           <Card className="lg:col-span-3 order-1">
             <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
@@ -420,13 +429,40 @@ export default function PassageiroCobranca() {
                   </div>
                 )}
               </div>
+              
+              {!disableVerPaginaPagamento(cobranca) &&
+                !disableBaixarBoleto(cobranca) && (
+                  <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t md:hidden w-full">
+                    <Button
+                      disabled={disableVerPaginaPagamento(cobranca)}
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() =>
+                        goToExternalURL(cobranca.asaas_invoice_url)
+                      }
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" /> Ver Página de
+                      Pagamento
+                    </Button>
+                    <Button
+                      disabled={disableBaixarBoleto(cobranca)}
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() =>
+                        goToExternalURL(cobranca.asaas_bankslip_url)
+                      }
+                    >
+                      <Download className="w-4 h-4 mr-2" /> Baixar Boleto
+                    </Button>
+                  </div>
+                )}
             </CardContent>
           </Card>
 
           <Card className="lg:col-span-1 order-2 lg:order-2">
             <CardHeader className="flex flex-row items-center justify-between pb-4">
               <div>
-                <CardTitle className="text-lg">Cobrança</CardTitle>
+                <CardTitle className="text-lg">Passageiro</CardTitle>
               </div>
               <div>
                 <Button
@@ -441,8 +477,8 @@ export default function PassageiroCobranca() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <InfoItem icon={User} label="Passageiro">
+            <CardContent className="space-y-4">
+              <InfoItem icon={User} label="Nome">
                 {cobranca.passageiro_nome}
               </InfoItem>
               <InfoItem icon={Contact} label="Responsável">
@@ -482,7 +518,13 @@ export default function PassageiroCobranca() {
                   <Button
                     className="w-full"
                     variant="outline"
-                    onClick={() => handleEnviarNotificacao()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setConfirmDialogEnvioNotificacao({
+                        open: true,
+                        cobranca,
+                      });
+                    }}
                   >
                     <Send className="h-4 w-4 mr-2" /> Enviar Notificação
                   </Button>
@@ -557,7 +599,7 @@ export default function PassageiroCobranca() {
               </div>
               {!disableVerPaginaPagamento(cobranca) &&
                 !disableBaixarBoleto(cobranca) && (
-                  <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t">
+                  <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t hidden md:flex">
                     <Button
                       disabled={disableVerPaginaPagamento(cobranca)}
                       variant="outline"
@@ -649,6 +691,19 @@ export default function PassageiroCobranca() {
             }}
           />
         )}
+
+        <ConfirmationDialog
+          open={confirmDialogEnvioNotificacao.open}
+          onOpenChange={(open) =>
+            setConfirmDialogEnvioNotificacao({
+              open,
+              cobranca: null,
+            })
+          }
+          title="Enviar Notificação"
+          description="Deseja enviar esta notificação para o responsável?"
+          onConfirm={handleEnviarNotificacao}
+        />
 
         <ConfirmationDialog
           open={confirmDialogDesfazer.open}

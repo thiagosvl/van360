@@ -97,8 +97,10 @@ const CarteirinhaSkeleton = () => (
       <div className="flex items-center gap-4">
         <Skeleton className="h-16 w-16 rounded-full" />
         <div className="space-y-2">
-          <Skeleton className="h-7 w-48" />
-          <Skeleton className="h-5 w-24" />
+          <div className="flex flex-col gap-2 overflow-hidden">
+            <Skeleton className="h-7 w-full max-w-[12rem]" />
+            <Skeleton className="h-5 w-full max-w-[6rem]" />
+          </div>
         </div>
       </div>
       <Skeleton className="h-10 w-32" />
@@ -514,7 +516,11 @@ export default function PassageiroCarteirinha() {
     : cobrancas.slice(0, COBRANCAS_LIMIT);
 
   if (loading || !passageiro) {
-    return <CarteirinhaSkeleton />;
+    return (
+      <div className="overflow-hidden w-full max-w-full h-full">
+        <CarteirinhaSkeleton />
+      </div>
+    );
   }
 
   const pullToRefreshReload = async () => {
@@ -1153,7 +1159,9 @@ export default function PassageiroCarteirinha() {
             passageiroNome={passageiro.nome}
             responsavelNome={passageiro.nome_responsavel}
             valorOriginal={Number(selectedCobranca.valor)}
-            onPaymentRecorded={() => safeCloseDialog(() => handlePaymentRecorded)}
+            onPaymentRecorded={() =>
+              safeCloseDialog(() => handlePaymentRecorded)
+            }
           />
         )}
         <CobrancaDialog

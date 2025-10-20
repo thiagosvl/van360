@@ -220,14 +220,19 @@ export default function Gastos() {
   }, [gastos]);
 
   useEffect(() => {
-    fetchGastos();
-    setPageTitle("Controle de Gastos");
-    setPageSubtitle(
-      `Total de ${totalGasto.toLocaleString("pt-BR", {
+    let subTitle = "";
+    if (loading) {
+      subTitle = "Carregando...";
+    } else {
+      subTitle = `Total de ${totalGasto.toLocaleString("pt-BR", {
         style: "currency",
         currency: "BRL",
-      })} em ${meses[mesFilter - 1]}`
-    );
+      })} em ${meses[mesFilter - 1]}`;
+    }
+
+    fetchGastos();
+    setPageTitle("Controle de Gastos");
+    setPageSubtitle(subTitle);
   }, [totalGasto, mesFilter, setPageTitle, setPageSubtitle]);
 
   const fetchGastos = async () => {

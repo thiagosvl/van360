@@ -61,12 +61,12 @@ const passageiroSchema = z.object({
     required_error: "Campo obrigatório",
   }),
 
-  rua: z.string().optional(),
-  numero: z.string().optional(),
-  bairro: z.string().optional(),
-  cidade: z.string().optional(),
-  estado: z.string().optional(),
-  cep: z.string().optional(),
+  rua: z.string().min(1, "Campo obrigatório"),
+  numero: z.string().min(1, "Campo obrigatório"),
+  bairro: z.string().min(1, "Campo obrigatório"),
+  cidade: z.string().min(1, "Campo obrigatório"),
+  estado: z.string().min(1, "Campo obrigatório"),
+  cep: z.string().min(1, "Campo obrigatório"),
   referencia: z.string().optional(),
 
   observacoes: z.string().optional(),
@@ -125,6 +125,7 @@ export default function PassengerFormDialog({
     "passageiro",
     "responsavel",
     "cobranca",
+    "endereco"
   ]);
 
   const form = useForm<PassageiroFormData>({
@@ -723,7 +724,7 @@ export default function PassengerFormDialog({
                 <AccordionTrigger>
                   <div className="flex items-center gap-2 text-lg font-semibold">
                     <MapPin className="w-5 h-5 text-primary" />
-                    Endereço (Opcional)
+                    Endereço
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
@@ -733,7 +734,7 @@ export default function PassengerFormDialog({
                       name="cep"
                       render={({ field }) => (
                         <FormItem className="md:col-span-1">
-                          <FormLabel>CEP</FormLabel>
+                          <FormLabel>CEP *</FormLabel>
                           <FormControl>
                             <Input
                               {...field}
@@ -753,7 +754,7 @@ export default function PassengerFormDialog({
                       name="rua"
                       render={({ field }) => (
                         <FormItem className="md:col-span-4">
-                          <FormLabel>Logradouro</FormLabel>
+                          <FormLabel>Logradouro *</FormLabel>
                           <FormControl>
                             <Input
                               {...field}
@@ -770,7 +771,7 @@ export default function PassengerFormDialog({
                       name="numero"
                       render={({ field }) => (
                         <FormItem className="md:col-span-1">
-                          <FormLabel>Número</FormLabel>
+                          <FormLabel>Número *</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -783,7 +784,7 @@ export default function PassengerFormDialog({
                       name="bairro"
                       render={({ field }) => (
                         <FormItem className="md:col-span-4">
-                          <FormLabel>Bairro</FormLabel>
+                          <FormLabel>Bairro *</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -797,7 +798,7 @@ export default function PassengerFormDialog({
                       name="cidade"
                       render={({ field }) => (
                         <FormItem className="md:col-span-3">
-                          <FormLabel>Cidade</FormLabel>
+                          <FormLabel>Cidade *</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -810,7 +811,7 @@ export default function PassengerFormDialog({
                       name="estado"
                       render={({ field }) => (
                         <FormItem className="md:col-span-2">
-                          <FormLabel>Estado</FormLabel>
+                          <FormLabel>Estado *</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             value={field.value}

@@ -280,6 +280,7 @@ export default function Passageiros() {
 
     const hoje = new Date();
     const valor = Math.floor(Math.random() * (200 - 100 + 1)) + 100;
+    const valorInString = `R$ ${valor},00`;
 
     const numeroPassageiro = Math.floor(Math.random() * 1000);
 
@@ -291,11 +292,17 @@ export default function Passageiros() {
       cpf_responsavel: "39542391838",
       genero: "Masculino",
       observacoes: `teste do ${numeroPassageiro}`,
-      valor_cobranca: valor.toString(),
-      dia_vencimento: hoje.getDate().toString(),
+      valor_cobranca: valorInString,
+      dia_vencimento: hoje.getDate(),
       escola_id: escolas[0].id,
       ativo: true,
       emitir_cobranca_mes_atual: true,
+      rua: "Rua Comendador Artur Capodaglio",
+      numero: "433",
+      bairro: "Americanopolis",
+      cidade: "São Paulo",
+      estado: "SP",
+      cep: "04410080",
     };
 
     try {
@@ -454,6 +461,9 @@ export default function Passageiros() {
                                   Status
                                 </th>
                                 <th className="p-3 text-left text-xs font-medium text-gray-600">
+                                  Valor Cobrança
+                                </th>
+                                <th className="p-3 text-left text-xs font-medium text-gray-600">
                                   Escola
                                 </th>
                                 <th className="p-3 text-center text-xs font-medium text-gray-600">
@@ -489,6 +499,16 @@ export default function Passageiros() {
                                         ? "Ativo"
                                         : "Desativado"}
                                     </span>
+                                  </td>
+                                  <td className="p-3 align-top">
+                                    <div className="font-semibold text-sm text-gray-800">
+                                      {Number(
+                                        passageiro.valor_cobranca
+                                      ).toLocaleString("pt-BR", {
+                                        style: "currency",
+                                        currency: "BRL",
+                                      })}
+                                    </div>
                                   </td>
                                   <td className="p-3 align-top">
                                     <span className="text-sm text-muted-foreground">
@@ -576,12 +596,12 @@ export default function Passageiros() {
                               onClick={() => handleHistorico(passageiro)}
                               className="py-4 px-0 active:bg-muted/50"
                             >
-                              <div className="flex justify-between items-start">
-                                <div className="pr-2">
-                                  <div className="font-semibold text-gray-800">
+                              <div className="flex justify-between items-start mb-3">
+                                <div className="">
+                                  <div className="font-semibold text-gray-800 text-sm overflow-hidden text-ellipsis whitespace-nowrap">
                                     {passageiro.nome}
                                   </div>
-                                  <div className="text-sm text-muted-foreground">
+                                  <div className="text-xs text-muted-foreground">
                                     {passageiro.escolas?.nome || "Sem escola"}
                                   </div>
                                 </div>
@@ -650,16 +670,36 @@ export default function Passageiros() {
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               </div>
-                              <div className="mt-2">
-                                <span
-                                  className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
-                                    passageiro.ativo
-                                      ? "bg-green-100 text-green-800"
-                                      : "bg-red-100 text-red-800"
-                                  }`}
-                                >
-                                  {passageiro.ativo ? "Ativo" : "Desativado"}
-                                </span>
+                              <div className="space-y-2 text-sm">
+                                <div className="text-sm flex justify-between">
+                                  <span className="text-muted-foreground">
+                                    Valor Cobrança
+                                  </span>
+                                  <span className="font-medium">
+                                    {Number(
+                                      passageiro.valor_cobranca
+                                    ).toLocaleString("pt-BR", {
+                                      style: "currency",
+                                      currency: "BRL",
+                                    })}
+                                  </span>
+                                </div>
+
+                                <div className="text-sm flex justify-between">
+                                  <span className="text-muted-foreground">
+                                    Status
+                                  </span>
+
+                                  <span
+                                    className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
+                                      passageiro.ativo
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-red-100 text-red-800"
+                                    }`}
+                                  >
+                                    {passageiro.ativo ? "Ativo" : "Desativado"}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           ))}
