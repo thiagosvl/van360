@@ -40,7 +40,6 @@ const prePassageiroSchema = z.object({
     .enum(["Masculino", "Feminino"], {
       errorMap: () => ({ message: "Campo obrigatório" }),
     })
-    .optional()
     .refine((val) => val && val.length > 0, { message: "Campo obrigatório" }),
   nome_responsavel: z.string().min(2, "Campo obrigatório"),
   email_responsavel: z
@@ -56,12 +55,12 @@ const prePassageiroSchema = z.object({
     .min(1, "Campo obrigatório")
     .refine((val) => val.replace(/\D/g, "").length === 11, "Telefone inválido"),
 
-  rua: z.string().optional(),
-  numero: z.string().optional(),
-  bairro: z.string().optional(),
-  cidade: z.string().optional(),
-  estado: z.string().optional(),
-  cep: z.string().optional(),
+  rua: z.string().min(1, "Campo obrigatório"),
+  numero: z.string().min(1, "Campo obrigatório"),
+  bairro: z.string().min(1, "Campo obrigatório"),
+  cidade: z.string().min(1, "Campo obrigatório"),
+  estado: z.string().min(1, "Campo obrigatório"),
+  cep: z.string().min(1, "Campo obrigatório"),
   referencia: z.string().optional(),
   observacoes: z.string().optional(),
 });
@@ -204,7 +203,7 @@ export default function PassageiroExternalForm() {
 
   return (
     <div className="min-h-screen bg-gray-50 sm:py-10">
-      <div className="max-w-xl mx-auto bg-white shadow-lg rounded-xl p-7 sm:p-8">
+      <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-xl p-7 sm:p-5">
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
           Cadastro de Passageiro
         </h1>
@@ -394,8 +393,8 @@ export default function PassageiroExternalForm() {
                       control={form.control}
                       name="cep"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>CEP</FormLabel>
+                        <FormItem className="md:col-span-1">
+                          <FormLabel>CEP *</FormLabel>
                           <FormControl>
                             <Input
                               {...field}
@@ -414,8 +413,8 @@ export default function PassageiroExternalForm() {
                       control={form.control}
                       name="rua"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-3">
-                          <FormLabel>Logradouro</FormLabel>
+                        <FormItem className="md:col-span-4">
+                          <FormLabel>Logradouro *</FormLabel>
                           <FormControl>
                             <Input
                               {...field}
@@ -430,8 +429,8 @@ export default function PassageiroExternalForm() {
                       control={form.control}
                       name="numero"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-1">
-                          <FormLabel>Número</FormLabel>
+                        <FormItem className="md:col-span-2">
+                          <FormLabel>Número *</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -443,8 +442,8 @@ export default function PassageiroExternalForm() {
                       control={form.control}
                       name="bairro"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-4">
-                          <FormLabel>Bairro</FormLabel>
+                        <FormItem className="md:col-span-3">
+                          <FormLabel>Bairro *</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -457,7 +456,7 @@ export default function PassageiroExternalForm() {
                       name="cidade"
                       render={({ field }) => (
                         <FormItem className="md:col-span-3">
-                          <FormLabel>Cidade</FormLabel>
+                          <FormLabel>Cidade *</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -470,7 +469,7 @@ export default function PassageiroExternalForm() {
                       name="estado"
                       render={({ field }) => (
                         <FormItem className="md:col-span-2">
-                          <FormLabel>Estado</FormLabel>
+                          <FormLabel>Estado *</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             value={field.value}
@@ -529,7 +528,7 @@ export default function PassageiroExternalForm() {
                         <FormItem className="md:col-span-5">
                           <FormLabel>Referência</FormLabel>
                           <FormControl>
-                            <Textarea {...field} />
+                            <Textarea placeholder="Ex: próximo ao mercado" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

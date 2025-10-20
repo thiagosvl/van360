@@ -1,3 +1,5 @@
+import { Passageiro } from "@/types/passageiro";
+
 export const meses = [
   "Janeiro",
   "Fevereiro",
@@ -161,4 +163,32 @@ export function formatarTelefone(telefone: string): string {
   const parte2 = numeros.slice(7);
 
   return `(${ddd}) ${parte1}-${parte2}`;
+}
+
+export function formatarCEP(cep: string): string {
+  if (!cep || cep === "") return "";
+  const onlyNumbers = cep.replace(/\D/g, "");
+  if (onlyNumbers.length !== 8) return cep;
+  return onlyNumbers.replace(/(\d{5})(\d{3})/, "$1-$2");
+}
+
+
+export function formatarEnderecoCompleto(passageiro: Passageiro): string {
+  const cep = formatarCEP(passageiro.cep);
+  const endereco = passageiro.rua;
+  const bairro = passageiro.bairro;
+  const cidade = passageiro.cidade;
+  const estado = passageiro.estado;
+  const numero = passageiro.numero;
+  const referencia = passageiro.referencia;
+
+  let enderecoCompleto;
+
+  if (referencia != "" && referencia != null) {
+    enderecoCompleto = `${endereco}, ${numero} (${referencia}) - ${bairro}, ${cidade} - ${estado}, ${cep}`;
+  } else {
+    enderecoCompleto = `${endereco}, ${numero} - ${bairro}, ${cidade} - ${estado}, ${cep}`;
+  }
+
+  return enderecoCompleto;
 }

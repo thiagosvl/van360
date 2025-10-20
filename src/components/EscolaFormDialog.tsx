@@ -361,7 +361,7 @@ export default function EscolaFormDialog({
                         <FormItem className="col-span-1 md:col-span-5">
                           <FormLabel>Referência</FormLabel>
                           <FormControl>
-                            <Textarea {...field} />
+                            <Textarea placeholder="Ex: próximo ao mercado" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

@@ -732,7 +732,7 @@ export default function PassageiroCobranca() {
             isOpen={editDialogOpen}
             onClose={() => safeCloseDialog(() => setEditDialogOpen(false))}
             cobranca={cobrancaToEdit}
-            onCobrancaUpdated={fetchCobranca}
+            onCobrancaUpdated={fetchCobranca()}
           />
         )}
       </div>

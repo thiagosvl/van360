@@ -125,7 +125,7 @@ export default function PassengerFormDialog({
     "passageiro",
     "responsavel",
     "cobranca",
-    "endereco"
+    "endereco",
   ]);
 
   const form = useForm<PassageiroFormData>({
@@ -234,7 +234,7 @@ export default function PassengerFormDialog({
           bairro: editingPassageiro.bairro || "",
           cidade: editingPassageiro.cidade || "",
           estado: editingPassageiro.estado || "",
-          cep: editingPassageiro.cep || "",
+          cep: editingPassageiro.cep ? cepMask(editingPassageiro.cep) : "",
           referencia: editingPassageiro.referencia || "",
           escola_id: editingPassageiro.escola_id || "",
           emitir_cobranca_mes_atual: false,
@@ -739,6 +739,7 @@ export default function PassengerFormDialog({
                             <Input
                               {...field}
                               maxLength={9}
+                              placeholder="00000-000"
                               onChange={(e) => {
                                 const maskedValue = cepMask(e.target.value);
                                 field.onChange(maskedValue);
@@ -871,7 +872,7 @@ export default function PassengerFormDialog({
                         <FormItem className="md:col-span-5">
                           <FormLabel>Referência</FormLabel>
                           <FormControl>
-                            <Textarea {...field} />
+                            <Textarea placeholder="Ex: próximo ao mercado" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

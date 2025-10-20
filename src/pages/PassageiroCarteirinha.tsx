@@ -46,18 +46,20 @@ import {
   disableToggleLembretes,
 } from "@/utils/disableActions";
 import {
+  formatarEnderecoCompleto,
   formatarTelefone,
   formatDateToBR,
   getStatusColor,
   getStatusText,
 } from "@/utils/formatters";
 import {
+  AlertCircle,
   AlertTriangle,
   BellOff,
   Contact,
-  Hash,
   Info,
   Mail,
+  MapPin,
   MessageCircle,
   MoreVertical,
   Pencil,
@@ -65,7 +67,7 @@ import {
   School,
   Trash2,
   TrendingDown,
-  TrendingUp,
+  TrendingUp
 } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -988,7 +990,11 @@ export default function PassageiroCarteirinha() {
                 <InfoItem icon={School} label="Escola">
                   {passageiro.escolas?.nome || "Não informada"}
                 </InfoItem>
-                <InfoItem icon={MessageCircle} label="Telefone">
+                <InfoItem icon={MapPin} label="Endereço">
+                  <span className="text-sm">{formatarEnderecoCompleto(passageiro)}
+                    </span>
+                </InfoItem>
+                <InfoItem icon={MessageCircle} label="Telefone (WhatsApp)">
                   {formatarTelefone(passageiro.telefone_responsavel)}
                 </InfoItem>
                 <InfoItem icon={Mail} label="E-mail">
@@ -1139,7 +1145,7 @@ export default function PassageiroCarteirinha() {
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground flex items-center gap-2">
-                    <Hash className="w-4 h-4" />{" "}
+                    <AlertCircle className="w-4 h-4" />{" "}
                     <span>Cobranças em Atraso</span>
                   </div>
                   <div className="text-2xl font-bold mt-1">
@@ -1160,7 +1166,7 @@ export default function PassageiroCarteirinha() {
             responsavelNome={passageiro.nome_responsavel}
             valorOriginal={Number(selectedCobranca.valor)}
             onPaymentRecorded={() =>
-              safeCloseDialog(() => handlePaymentRecorded)
+              safeCloseDialog(() => handlePaymentRecorded())
             }
           />
         )}
