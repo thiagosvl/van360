@@ -203,7 +203,6 @@ export default function Escolas() {
     <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
       <div className="space-y-6">
         <div className="w-full">
-
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -409,7 +408,7 @@ export default function Escolas() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 shrink-0"
+                              className="shrink-0 w-2"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <MoreVertical className="h-4 w-4" />

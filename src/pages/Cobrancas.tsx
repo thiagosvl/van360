@@ -577,7 +577,7 @@ const Cobrancas = () => {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 shrink-0"
+                                    className="shrink-0 w-2"
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     <MoreVertical className="h-4 w-4" />
@@ -641,9 +641,7 @@ const Cobrancas = () => {
                               </DropdownMenu>
                             </div>
 
-                            {/* LINHA 2: VALOR, STATUS E VENCIMENTO (Compactação Máxima) */}
                             <div className="flex justify-between items-end pt-1">
-                              {/* Valor e Vencimento (Esquerda) */}
                               <div className="flex flex-col">
                                 <div className="font-bold text-base text-foreground">
                                   {Number(cobranca.valor).toLocaleString(
@@ -852,7 +850,7 @@ const Cobrancas = () => {
                             className="py-2.5 active:bg-muted/50"
                           >
                             <div className="flex justify-between items-start mb-3">
-                              <div className="pr-2">
+                              <div className="">
                                 <div className="font-semibold text-gray-800 text-sm overflow-hidden text-ellipsis whitespace-nowrap">
                                   {cobranca.passageiros.nome}
                                 </div>
@@ -866,7 +864,7 @@ const Cobrancas = () => {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 shrink-0"
+                                    className="shrink-0 w-2"
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     <MoreVertical className="h-4 w-4" />
