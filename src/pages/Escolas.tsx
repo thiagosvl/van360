@@ -23,7 +23,7 @@ import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useToast } from "@/hooks/use-toast";
 import { escolaService } from "@/services/escolaService";
 import { Escola } from "@/types/escola";
-import { safeOpenDialog } from "@/utils/dialogCallback";
+import { safeCloseDialog } from "@/utils/dialogCallback";
 import {
   MoreVertical,
   Pencil,
@@ -127,13 +127,15 @@ export default function Escolas() {
   }, [searchTerm]);
 
   const handleSuccessSave = (escolaCriada: Escola) => {
-    fetchEscolas();
-    setEditingEscola(null);
-    setIsDialogOpen(false);
+    safeCloseDialog(() => {
+      fetchEscolas();
+      setEditingEscola(null);
+      setIsDialogOpen(false);
+    });
   };
 
   const handleEdit = (escola: Escola) => {
-    safeOpenDialog(() => {
+    safeCloseDialog(() => {
       setEditingEscola(escola);
       setIsDialogOpen(true);
     });
@@ -476,7 +478,7 @@ export default function Escolas() {
           <EscolaFormDialog
             isOpen={isDialogOpen}
             onClose={() => {
-              safeOpenDialog(() => {
+              safeCloseDialog(() => {
                 setIsDialogOpen(false);
                 setEditingEscola(null);
               });

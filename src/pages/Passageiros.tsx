@@ -28,7 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { passageiroService } from "@/services/passageiroService";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
-import { safeOpenDialog } from "@/utils/dialogCallback";
+import { safeCloseDialog } from "@/utils/dialogCallback";
 import {
   CreditCard,
   MoreVertical,
@@ -154,20 +154,20 @@ export default function Passageiros() {
   };
 
   const handleClosePassageiroFormDialog = () => {
-    safeOpenDialog(() => {
+    safeCloseDialog(() => {
       setNovaEscolaId(null);
       setIsDialogOpen(false);
     });
   };
 
   const handleCloseEscolaFormDialog = () => {
-    safeOpenDialog(() => {
+    safeCloseDialog(() => {
       setIsCreatingEscola(false);
     });
   };
 
   const handleEscolaCreated = (novaEscola) => {
-    safeOpenDialog(() => {
+    safeCloseDialog(() => {
       setIsCreatingEscola(false);
       setNovaEscolaId(novaEscola.id);
     });
@@ -252,7 +252,7 @@ export default function Passageiros() {
   };
 
   const handleEdit = (passageiro: Passageiro) => {
-    safeOpenDialog(() => {
+    safeCloseDialog(() => {
       setEditingPassageiro(passageiro);
       setModePassageiroFormDialog("edit");
       setIsDialogOpen(true);
@@ -260,7 +260,7 @@ export default function Passageiros() {
   };
 
   const handleOpenNewDialog = () => {
-    safeOpenDialog(() => {
+    safeCloseDialog(() => {
       setEditingPassageiro(null);
       setModePassageiroFormDialog("create");
       setIsDialogOpen(true);

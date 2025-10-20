@@ -253,7 +253,7 @@ export default function CobrancaEditDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[95vh] overflow-y-auto bg-white">
+      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-md max-h-[95vh] overflow-y-auto bg-white">
         <DialogHeader>
           <DialogTitle>Edição de Cobrança</DialogTitle>
         </DialogHeader>

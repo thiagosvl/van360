@@ -26,7 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cobrancaService } from "@/services/cobrancaService";
 import { Cobranca } from "@/types/cobranca";
-import { safeOpenDialog } from "@/utils/dialogCallback";
+import { safeCloseDialog } from "@/utils/dialogCallback";
 import {
   disableDesfazerPagamento,
   disableEnviarNotificacao,
@@ -138,7 +138,7 @@ const Cobrancas = () => {
   };
 
   const handleEditCobrancaClick = (cobranca: Cobranca) => {
-    safeOpenDialog(() => {
+    safeCloseDialog(() => {
       setCobrancaToEdit(cobranca);
       setEditDialogOpen(true);
     });
@@ -314,10 +314,7 @@ const Cobrancas = () => {
             hover:bg-gray-100"
                   >
                     Em Aberto{" "}
-                    <Badge
-                      variant="secondary"
-                      className="ml-2 bg-neutral-200"
-                    >
+                    <Badge variant="secondary" className="ml-2 bg-neutral-200">
                       {cobrancasAbertas.length}
                     </Badge>
                   </TabsTrigger>
@@ -329,10 +326,7 @@ const Cobrancas = () => {
             hover:bg-gray-100"
                   >
                     Pagas{" "}
-                    <Badge
-                      variant="secondary"
-                      className="ml-2 bg-neutral-200"
-                    >
+                    <Badge variant="secondary" className="ml-2 bg-neutral-200">
                       {cobrancasPagas.length}
                     </Badge>
                   </TabsTrigger>
@@ -908,7 +902,9 @@ const Cobrancas = () => {
                             </div>
                             <div className="space-y-2 text-sm">
                               <div className="flex justify-between">
-                                <span className="text-muted-foreground">Pagou em</span>
+                                <span className="text-muted-foreground">
+                                  Pagou em
+                                </span>
                                 <span className="font-medium">
                                   {cobranca.data_pagamento
                                     ? formatDateToBR(cobranca.data_pagamento)
@@ -916,7 +912,9 @@ const Cobrancas = () => {
                                 </span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-muted-foreground">Valor</span>
+                                <span className="text-muted-foreground">
+                                  Valor
+                                </span>
                                 <span className="font-medium">
                                   {Number(cobranca.valor).toLocaleString(
                                     "pt-BR",
@@ -925,7 +923,9 @@ const Cobrancas = () => {
                                 </span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-muted-foreground">Forma de Pagamento</span>
+                                <span className="text-muted-foreground">
+                                  Forma de Pagamento
+                                </span>
                                 <span className="font-medium">
                                   {formatPaymentType(cobranca.tipo_pagamento)}
                                 </span>
@@ -947,10 +947,10 @@ const Cobrancas = () => {
           </Card>
         </div>
 
-        {selectedCobranca && (
+        {paymentDialogOpen && (
           <ManualPaymentDialog
             isOpen={paymentDialogOpen}
-            onClose={() => setPaymentDialogOpen(false)}
+            onClose={() => safeCloseDialog(() => setPaymentDialogOpen(false))}
             cobrancaId={selectedCobranca.id}
             passageiroNome={selectedCobranca.passageiros.nome}
             responsavelNome={selectedCobranca.passageiros.nome_responsavel}
@@ -961,6 +961,7 @@ const Cobrancas = () => {
             }}
           />
         )}
+
         <ConfirmationDialog
           open={confirmDialogEnvioNotificacao.open}
           onOpenChange={(open) =>
@@ -988,7 +989,7 @@ const Cobrancas = () => {
         {cobrancaToEdit && (
           <CobrancaEditDialog
             isOpen={editDialogOpen}
-            onClose={() => safeOpenDialog(() => setEditDialogOpen(false))}
+            onClose={() => safeCloseDialog(() => setEditDialogOpen(false))}
             cobranca={cobrancaToEdit}
             onCobrancaUpdated={handleCobrancaUpdated}
           />

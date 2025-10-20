@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { prePassageiroService } from "@/services/prePassageiroService";
 import { PrePassageiro } from "@/types/prePassageiro";
-import { safeOpenDialog } from "@/utils/dialogCallback";
+import { safeCloseDialog } from "@/utils/dialogCallback";
 import {
   CheckCircle,
   Copy,
@@ -328,7 +328,7 @@ export default function PrePassageiros({
       {isFinalizeDialogOpen && selectedPrePassageiro && (
         <PassageiroFormDialog
           isOpen={isFinalizeDialogOpen}
-          onClose={() => safeOpenDialog(() => setIsFinalizeDialogOpen(false))}
+          onClose={() => safeCloseDialog(() => setIsFinalizeDialogOpen(false))}
           prePassageiro={selectedPrePassageiro}
           editingPassageiro={null}
           onSuccess={handleFinalizeSuccess}

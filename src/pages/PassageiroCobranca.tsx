@@ -19,7 +19,7 @@ import { cobrancaService } from "@/services/cobrancaService";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaDetalhe } from "@/types/cobrancaDetalhe";
 import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
-import { safeOpenDialog } from "@/utils/dialogCallback";
+import { safeCloseDialog } from "@/utils/dialogCallback";
 import {
   disableBaixarBoleto,
   disableEnviarNotificacao,
@@ -195,7 +195,7 @@ export default function PassageiroCobranca() {
 
   const handleEditCobrancaClick = () => {
     if (cobrancaNormalizadaParaEdicao) {
-      safeOpenDialog(() => {
+      safeCloseDialog(() => {
         setCobrancaToEdit(cobrancaNormalizadaParaEdicao);
         setEditDialogOpen(true);
       });
@@ -636,14 +636,16 @@ export default function PassageiroCobranca() {
         {paymentDialogOpen && (
           <ManualPaymentDialog
             isOpen={paymentDialogOpen}
-            onClose={() => setPaymentDialogOpen(false)}
+            onClose={() => safeCloseDialog(() => setPaymentDialogOpen(false))}
             cobrancaId={cobranca_id}
             passageiroNome={cobranca.passageiro_nome}
             responsavelNome={cobranca.nome_responsavel}
             valorOriginal={Number(cobranca.valor)}
             onPaymentRecorded={() => {
-              setPaymentDialogOpen(false);
-              fetchCobranca();
+              safeCloseDialog(() => {
+                setPaymentDialogOpen(false);
+                fetchCobranca();
+              });
             }}
           />
         )}
@@ -673,7 +675,7 @@ export default function PassageiroCobranca() {
         {cobrancaToEdit && (
           <CobrancaEditDialog
             isOpen={editDialogOpen}
-            onClose={() => safeOpenDialog(() => setEditDialogOpen(false))}
+            onClose={() => safeCloseDialog(() => setEditDialogOpen(false))}
             cobranca={cobrancaToEdit}
             onCobrancaUpdated={fetchCobranca}
           />

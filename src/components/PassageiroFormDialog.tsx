@@ -430,7 +430,7 @@ export default function PassengerFormDialog({
                             value={selectedEscola || field.value}
                             onValueChange={(value) => {
                               if (value === "add-new-school") {
-                                setTimeout(() => onCreateEscola(), 80);
+                                setTimeout(() => onCreateEscola(), 50);
                                 return;
                               }
                               field.onChange(value);

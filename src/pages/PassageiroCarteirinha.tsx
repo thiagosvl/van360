@@ -37,7 +37,7 @@ import { cobrancaService } from "@/services/cobrancaService";
 import { passageiroService } from "@/services/passageiroService";
 import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
-import { safeOpenDialog } from "@/utils/dialogCallback";
+import { safeCloseDialog } from "@/utils/dialogCallback";
 import {
   disableDesfazerPagamento,
   disableEnviarNotificacao,
@@ -217,7 +217,7 @@ export default function PassageiroCarteirinha() {
   };
 
   const handleEditCobrancaClick = (cobranca: Cobranca) => {
-    safeOpenDialog(() => {
+    safeCloseDialog(() => {
       setCobrancaToEdit(cobranca);
       setEditDialogOpen(true);
     });
@@ -1148,24 +1148,24 @@ export default function PassageiroCarteirinha() {
         {selectedCobranca && (
           <ManualPaymentDialog
             isOpen={paymentDialogOpen}
-            onClose={() => setPaymentDialogOpen(false)}
+            onClose={() => safeCloseDialog(() => setPaymentDialogOpen(false))}
             cobrancaId={selectedCobranca.id}
             passageiroNome={passageiro.nome}
             responsavelNome={passageiro.nome_responsavel}
             valorOriginal={Number(selectedCobranca.valor)}
-            onPaymentRecorded={handlePaymentRecorded}
+            onPaymentRecorded={() => safeCloseDialog(() => handlePaymentRecorded)}
           />
         )}
         <CobrancaDialog
           isOpen={cobrancaDialogOpen}
-          onClose={() => setCobrancaDialogOpen(false)}
+          onClose={() => safeCloseDialog(() => setCobrancaDialogOpen(false))}
           passageiroId={passageiro.id}
           passageiroNome={passageiro.nome}
           passageiroResponsavelNome={passageiro.nome_responsavel}
           passageiroAsaasCustomerId={passageiro.asaas_customer_id}
           valorCobranca={passageiro.valor_cobranca}
           diaVencimento={passageiro.dia_vencimento}
-          onCobrancaAdded={() => handleCobrancaAdded()}
+          onCobrancaAdded={() => safeCloseDialog(() => handleCobrancaAdded())}
         />
         <ConfirmationDialog
           open={confirmToggleDialog.open}
@@ -1222,7 +1222,7 @@ export default function PassageiroCarteirinha() {
         {isFormOpen && (
           <PassageiroFormDialog
             isOpen={isFormOpen}
-            onClose={() => safeOpenDialog(() => setIsFormOpen(false))}
+            onClose={() => safeCloseDialog(() => setIsFormOpen(false))}
             editingPassageiro={passageiro}
             onSuccess={handlePassageiroFormSuccess}
             mode="edit"
@@ -1231,7 +1231,7 @@ export default function PassageiroCarteirinha() {
         {cobrancaToEdit && (
           <CobrancaEditDialog
             isOpen={editDialogOpen}
-            onClose={() => safeOpenDialog(() => setEditDialogOpen(false))}
+            onClose={() => safeCloseDialog(() => setEditDialogOpen(false))}
             cobranca={cobrancaToEdit}
             onCobrancaUpdated={handleCobrancaUpdated}
           />
