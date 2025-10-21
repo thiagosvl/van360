@@ -24,6 +24,7 @@ import {
   Users2,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { LoadingOverlay } from "./LoadingOverlay";
 import PassageiroFormDialog from "./PassageiroFormDialog";
 
 const PrePassengerListSkeleton = () => (
@@ -54,6 +55,7 @@ export default function PrePassageiros({
   const [searchTerm, setSearchTerm] = useState("");
   const { profile } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const { toast } = useToast();
 
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -78,6 +80,8 @@ export default function PrePassageiros({
       });
       return;
     }
+
+    setRefreshing(true);
 
     const numeroAleatorio = Math.floor(Math.random() * 1000);
     const fakeNome = `Passag. Rápido ${numeroAleatorio}`;
@@ -119,34 +123,41 @@ export default function PrePassageiros({
           error.message || "Não foi possível criar o registro temporário.",
         variant: "destructive",
       });
+    } finally {
+      setRefreshing(false);
     }
   };
 
-  const fetchPrePassageiros = useCallback(async () => {
-    setLoading(true);
+  const fetchPrePassageiros = useCallback(
+    async (isRefresh = false) => {
+      if (!isRefresh) setLoading(true);
+      else setRefreshing(true);
 
-    try {
-      const data = await prePassageiroService.fetchPreCadastros(searchTerm);
+      try {
+        const data = await prePassageiroService.fetchPreCadastros(searchTerm);
 
-      setPrePassageiros(data || []);
+        setPrePassageiros(data || []);
 
-      const filteredData = data.filter(
-        (p) =>
-          p.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          p.nome_responsavel.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+        const filteredData = data.filter(
+          (p) =>
+            p.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            p.nome_responsavel.toLowerCase().includes(searchTerm.toLowerCase())
+        );
 
-      setPrePassageiros(filteredData);
-    } catch (error) {
-      console.error("Erro ao buscar pré-cadastros:", error);
-      toast({
-        title: "Erro ao carregar pré-cadastros.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [searchTerm, toast]);
+        setPrePassageiros(filteredData);
+      } catch (error) {
+        console.error("Erro ao buscar pré-cadastros:", error);
+        toast({
+          title: "Erro ao carregar pré-cadastros.",
+          variant: "destructive",
+        });
+      } finally {
+        if (!isRefresh) setLoading(false);
+        else setRefreshing(false);
+      }
+    },
+    [searchTerm, toast]
+  );
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -156,13 +167,14 @@ export default function PrePassageiros({
   }, [fetchPrePassageiros]);
 
   const handleDelete = async () => {
+    setRefreshing(true);
     try {
       await prePassageiroService.excluirPreCadastro(
         deleteDialog.prePassageiroId
       );
 
       toast({ title: "Pré-cadastro excluído com sucesso." });
-      fetchPrePassageiros();
+      fetchPrePassageiros(true);
     } catch (error: any) {
       console.error("Erro ao excluir pré-cadastro:", error);
       toast({
@@ -172,6 +184,7 @@ export default function PrePassageiros({
       });
     } finally {
       setDeleteDialog({ open: false, prePassageiroId: "" });
+      setRefreshing(false);
     }
   };
 
@@ -200,147 +213,154 @@ export default function PrePassageiros({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="w-full">
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="flex items-center gap-2">
-                <span>Pré-Cadastros</span>
-                {prePassageiros.length > 0 && (
-                  <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
-                    {prePassageiros.length}
+    <>
+      <div className="space-y-6">
+        <div className="w-full">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center gap-2">
+                  <span>Pré-Cadastros</span>
+                  {prePassageiros.length > 0 && (
+                    <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
+                      {prePassageiros.length}
+                    </span>
+                  )}
+                </CardTitle>
+
+                <Button onClick={handleCopyLink}>
+                  <Copy className="h-4 w-4" />
+                  <span className="hidden sm:inline">
+                    Copiar Link de Cadastro
                   </span>
-                )}
-              </CardTitle>
-
-              <Button onClick={handleCopyLink}>
-                <Copy className="h-4 w-4" />
-                <span className="hidden sm:inline">
-                  Copiar Link de Cadastro
-                </span>
-              </Button>
-            </div>
-          </CardHeader>
-
-          <CardContent>
-            <div className="mb-7">
-              <Button
-                onClick={handleCadastrarRapidoLink}
-                variant="outline"
-                className="gap-2 text-uppercase"
-              >
-                GERAR PRÉ-CADASTRO FAKE
-              </Button>
-            </div>
-
-            <div className="space-y-2 mb-4">
-              <Label htmlFor="search">Buscar por Nome</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  id="search"
-                  placeholder="Nome do passageiro ou responsável..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+                </Button>
               </div>
-            </div>
+            </CardHeader>
 
-            {loading ? (
-              <PrePassengerListSkeleton />
-            ) : prePassageiros.length === 0 ? (
-              <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
-                <Users2 className="w-12 h-12 mb-4 text-gray-300" />
-                <p>Nenhum pré-cadastro pendente.</p>
+            <CardContent>
+              <div className="mb-7">
+                <Button
+                  onClick={handleCadastrarRapidoLink}
+                  variant="outline"
+                  className="gap-2 text-uppercase"
+                >
+                  GERAR PRÉ-CADASTRO FAKE
+                </Button>
               </div>
-            ) : (
-              <div className="md:divide-y divide-gray-200">
-                {prePassageiros.map((prePassageiro) => (
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFinalizeClick(prePassageiro);
-                    }}
-                    key={prePassageiro.id}
-                    className="py-4 active:bg-muted/50 border-b md:border-b-0 cursor-pointer hover:bg-muted/50"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="pr-2">
-                        <div className="font-semibold text-sm text-gray-800">
-                          {prePassageiro.nome}
+
+              <div className="space-y-2 mb-4">
+                <Label htmlFor="search">Buscar por Nome</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    id="search"
+                    placeholder="Nome do passageiro ou responsável..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {loading ? (
+                <PrePassengerListSkeleton />
+              ) : prePassageiros.length === 0 ? (
+                <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
+                  <Users2 className="w-12 h-12 mb-4 text-gray-300" />
+                  <p>Nenhum pré-cadastro pendente.</p>
+                </div>
+              ) : (
+                <div className="md:divide-y divide-gray-200">
+                  {prePassageiros.map((prePassageiro) => (
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleFinalizeClick(prePassageiro);
+                      }}
+                      key={prePassageiro.id}
+                      className="py-4 active:bg-muted/50 border-b md:border-b-0 cursor-pointer hover:bg-muted/50"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="pr-2">
+                          <div className="font-semibold text-sm text-gray-800">
+                            {prePassageiro.nome}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Responsável: {prePassageiro.nome_responsavel}
+                          </div>
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          Responsável: {prePassageiro.nome_responsavel}
-                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 shrink-0"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem
+                              className="cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleFinalizeClick(prePassageiro);
+                              }}
+                            >
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              Continuar Cadastro
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="cursor-pointer text-red-600"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteDialog({
+                                  open: true,
+                                  prePassageiroId: prePassageiro.id,
+                                });
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 shrink-0"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem
-                            className="cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleFinalizeClick(prePassageiro);
-                            }}
-                          >
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Continuar Cadastro
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="cursor-pointer text-red-600"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeleteDialog({
-                                open: true,
-                                prePassageiroId: prePassageiro.id,
-                              });
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-      {isFinalizeDialogOpen && selectedPrePassageiro && (
-        <PassageiroFormDialog
-          isOpen={isFinalizeDialogOpen}
-          onClose={() => safeCloseDialog(() => setIsFinalizeDialogOpen(false))}
-          prePassageiro={selectedPrePassageiro}
-          editingPassageiro={null}
-          onSuccess={handleFinalizeSuccess}
-          mode="finalize"
+        {isFinalizeDialogOpen && selectedPrePassageiro && (
+          <PassageiroFormDialog
+            isOpen={isFinalizeDialogOpen}
+            onClose={() =>
+              safeCloseDialog(() => setIsFinalizeDialogOpen(false))
+            }
+            prePassageiro={selectedPrePassageiro}
+            editingPassageiro={null}
+            onSuccess={handleFinalizeSuccess}
+            mode="finalize"
+          />
+        )}
+
+        <ConfirmationDialog
+          open={deleteDialog.open}
+          onOpenChange={(open) =>
+            setDeleteDialog({ open, prePassageiroId: "" })
+          }
+          title="Excluir Pré-Cadastro"
+          description="Deseja excluir permanentemente este registro de pré-cadastro? Essa ação não pode ser desfeita."
+          onConfirm={handleDelete}
+          confirmText="Confirmar"
+          variant="destructive"
         />
-      )}
-
-      <ConfirmationDialog
-        open={deleteDialog.open}
-        onOpenChange={(open) => setDeleteDialog({ open, prePassageiroId: "" })}
-        title="Excluir Pré-Cadastro"
-        description="Deseja excluir permanentemente este registro de pré-cadastro? Essa ação não pode ser desfeita."
-        onConfirm={handleDelete}
-        confirmText="Confirmar"
-        variant="destructive"
-      />
-    </div>
+      </div>
+      <LoadingOverlay active={refreshing} text="Aguarde..." />
+    </>
   );
 }

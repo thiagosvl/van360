@@ -1,5 +1,6 @@
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import EscolaFormDialog from "@/components/EscolaFormDialog";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 import PassageiroFormDialog from "@/components/PassageiroFormDialog";
 import PrePassageiros from "@/components/PrePassageiros";
 import { Button } from "@/components/ui/button";
@@ -78,6 +79,7 @@ export default function Passageiros() {
     useState<string>("create");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -90,36 +92,44 @@ export default function Passageiros() {
     action: "" as "ativar" | "desativar" | "",
   });
 
-  const fetchPassageiros = useCallback(async () => {
-    setLoading(true);
-    try {
-      let query = supabase
-        .from("passageiros")
-        .select(`*, escolas(nome)`)
-        .eq("usuario_id", localStorage.getItem("app_user_id"))
-        .order("nome");
-      if (selectedEscola !== "todas") {
-        query = query.eq("escola_id", selectedEscola);
+  const fetchPassageiros = useCallback(
+    async (isRefresh = false) => {
+      if (!isRefresh) setLoading(true);
+      else setRefreshing(true);
+      try {
+        let query = supabase
+          .from("passageiros")
+          .select(`*, escolas(nome)`)
+          .eq("usuario_id", localStorage.getItem("app_user_id"))
+          .order("nome");
+        if (selectedEscola !== "todas") {
+          query = query.eq("escola_id", selectedEscola);
+        }
+        if (searchTerm.length >= 2) {
+          query = query.or(
+            `nome.ilike.%${searchTerm}%,nome_responsavel.ilike.%${searchTerm}%`
+          );
+        }
+        if (selectedStatus !== "todos") {
+          query = query.eq("ativo", selectedStatus === "ativo");
+        }
+        const { data, error } = await query;
+        if (error) throw error;
+        setPassageiros(data || []);
+        setcountPassageirosAtivos(data.filter((e) => e.ativo).length);
+      } catch (error) {
+        console.error("Erro ao buscar passageiros:", error);
+        toast({
+          title: "Erro ao carregar passageiros.",
+          variant: "destructive",
+        });
+      } finally {
+        if (!isRefresh) setLoading(false);
+        else setRefreshing(false);
       }
-      if (searchTerm.length >= 2) {
-        query = query.or(
-          `nome.ilike.%${searchTerm}%,nome_responsavel.ilike.%${searchTerm}%`
-        );
-      }
-      if (selectedStatus !== "todos") {
-        query = query.eq("ativo", selectedStatus === "ativo");
-      }
-      const { data, error } = await query;
-      if (error) throw error;
-      setPassageiros(data || []);
-      setcountPassageirosAtivos(data.filter((e) => e.ativo).length);
-    } catch (error) {
-      console.error("Erro ao buscar passageiros:", error);
-      toast({ title: "Erro ao carregar passageiros.", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  }, [searchTerm, selectedEscola, selectedStatus, toast]);
+    },
+    [searchTerm, selectedEscola, selectedStatus, toast]
+  );
 
   useEffect(() => {
     fetchEscolas();
@@ -150,7 +160,7 @@ export default function Passageiros() {
 
   const handleSuccessCreatePassageiro = () => {
     setNovaEscolaId(null);
-    fetchPassageiros();
+    fetchPassageiros(true);
   };
 
   const handleClosePassageiroFormDialog = () => {
@@ -174,7 +184,7 @@ export default function Passageiros() {
   };
 
   const handleFinalizeNewPrePassageiro = async () => {
-    fetchPassageiros();
+    fetchPassageiros(true);
   };
 
   const handleDelete = async () => {
@@ -185,17 +195,19 @@ export default function Passageiros() {
 
       if (numCobrancas > 0) {
         toast({
-          title: "Não foi possível excluir.",
-          description: `Este passageiro possui ${numCobrancas} cobrança(s) em seu histórico.`,
+          title: "Não é possível excluir.",
+          description: `Este passageiro possui cobranças em seu histórico.`,
           variant: "destructive",
         });
         return;
       }
 
+      setRefreshing(true);
+
       await passageiroService.excluirPassageiro(deleteDialog.passageiroId);
 
       toast({ title: "Passageiro excluído com sucesso." });
-      fetchPassageiros();
+      fetchPassageiros(true);
     } catch (error: any) {
       console.error("Erro ao excluir passageiro:", error);
       toast({
@@ -205,6 +217,7 @@ export default function Passageiros() {
       });
     } finally {
       setDeleteDialog({ open: false, passageiroId: "" });
+      setRefreshing(false);
     }
   };
 
@@ -217,6 +230,8 @@ export default function Passageiros() {
     const p = confirmToggleDialog.passageiro;
     if (!p) return;
 
+    setRefreshing(true);
+
     try {
       await passageiroService.toggleAtivo(p.id, p.ativo);
 
@@ -224,7 +239,7 @@ export default function Passageiros() {
         title: `Passageiro ${confirmToggleDialog.action} com sucesso.`,
       });
 
-      fetchPassageiros();
+      fetchPassageiros(true);
     } catch (error: any) {
       console.error("Erro ao alternar status:", error);
       toast({
@@ -234,6 +249,7 @@ export default function Passageiros() {
       });
     } finally {
       setConfirmToggleDialog({ open: false, passageiro: null, action: "" });
+      setRefreshing(false);
     }
   };
 
@@ -278,6 +294,8 @@ export default function Passageiros() {
       return;
     }
 
+    setRefreshing(true);
+
     const hoje = new Date();
     const valor = Math.floor(Math.random() * (200 - 100 + 1)) + 100;
     const valorInString = `R$ ${valor},00`;
@@ -310,7 +328,7 @@ export default function Passageiros() {
 
       toast({ title: "Passageiro cadastrado rapidamente com sucesso." });
 
-      fetchPassageiros();
+      fetchPassageiros(true);
     } catch (error: any) {
       console.error("Erro no Cadastro Rápido:", error);
       toast({
@@ -318,6 +336,8 @@ export default function Passageiros() {
         description: error.message || "Não foi possível concluir o cadastro.",
         variant: "destructive",
       });
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -331,163 +351,370 @@ export default function Passageiros() {
   };
 
   return (
-    <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-      <div className="space-y-6">
-        <div className="w-full">
-          <Tabs defaultValue="passageiros" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger
-                value="passageiros"
-                className="data-[state=inactive]:text-gray-600 
+    <>
+      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
+        <div className="space-y-6">
+          <div className="w-full">
+            <Tabs defaultValue="passageiros" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger
+                  value="passageiros"
+                  className="data-[state=inactive]:text-gray-600 
             data-[state=active]:bg-primary 
             data-[state=active]:text-white 
             hover:bg-gray-100"
-              >
-                Passageiros
-              </TabsTrigger>
-              <TabsTrigger
-                value="pre-cadastros"
-                className="data-[state=inactive]:text-gray-600 
+                >
+                  Passageiros
+                </TabsTrigger>
+                <TabsTrigger
+                  value="pre-cadastros"
+                  className="data-[state=inactive]:text-gray-600 
             data-[state=active]:bg-primary 
             data-[state=active]:text-white 
             hover:bg-gray-100"
-              >
-                Pré-Cadastros
-              </TabsTrigger>
-            </TabsList>
+                >
+                  Pré-Cadastros
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="passageiros" className="mt-4">
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="flex items-center gap-2">
-                      <span>Passageiros</span>
-                      {countPassageirosAtivos > 0 && (
-                        <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
-                          {countPassageirosAtivos}
+              <TabsContent value="passageiros" className="mt-4">
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="flex items-center gap-2">
+                        <span>Passageiros</span>
+                        {countPassageirosAtivos > 0 && (
+                          <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
+                            {countPassageirosAtivos}
+                          </span>
+                        )}
+                      </CardTitle>
+
+                      <Button onClick={handleOpenNewDialog}>
+                        <Plus className="h-4 w-4" />
+                        <span className="hidden sm:inline">
+                          Novo Passageiro
                         </span>
-                      )}
-                    </CardTitle>
-
-                    <Button onClick={handleOpenNewDialog}>
-                      <Plus className="h-4 w-4" />
-                      <span className="hidden sm:inline">Novo Passageiro</span>
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-7">
-                    <Button
-                      onClick={handleCadastrarRapido}
-                      variant="outline"
-                      className="gap-2 text-uppercase"
-                    >
-                      GERAR PASSAGEIRO FAKE
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="search">Buscar por Nome</Label>
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                        <Input
-                          id="search"
-                          placeholder="Nome do passageiro ou responsável..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10"
-                        />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="mb-7">
+                      <Button
+                        onClick={handleCadastrarRapido}
+                        variant="outline"
+                        className="gap-2 text-uppercase"
+                      >
+                        GERAR PASSAGEIRO FAKE
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="search">Buscar por Nome</Label>
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                          <Input
+                            id="search"
+                            placeholder="Nome do passageiro ou responsável..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-10"
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="status-filter">Status</Label>
-                      <Select
-                        value={selectedStatus}
-                        onValueChange={setSelectedStatus}
-                      >
-                        <SelectTrigger id="status-filter">
-                          <SelectValue placeholder="Todos" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-60 overflow-y-auto">
-                          <SelectItem value="todos">Todos</SelectItem>
-                          <SelectItem value="ativo">Ativo</SelectItem>
-                          <SelectItem value="desativado">Desativado</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="escola-filter">Escola</Label>
-                      <Select
-                        value={selectedEscola}
-                        onValueChange={setSelectedEscola}
-                      >
-                        <SelectTrigger id="escola-filter">
-                          <SelectValue placeholder="Todas" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-60 overflow-y-auto">
-                          <SelectItem value="todas">Todas</SelectItem>
-                          {escolas.map((escola) => (
-                            <SelectItem key={escola.id} value={escola.id}>
-                              {escola.nome}
+                      <div className="space-y-2">
+                        <Label htmlFor="status-filter">Status</Label>
+                        <Select
+                          value={selectedStatus}
+                          onValueChange={setSelectedStatus}
+                        >
+                          <SelectTrigger id="status-filter">
+                            <SelectValue placeholder="Todos" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-60 overflow-y-auto">
+                            <SelectItem value="todos">Todos</SelectItem>
+                            <SelectItem value="ativo">Ativo</SelectItem>
+                            <SelectItem value="desativado">
+                              Desativado
                             </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="mt-8">
-                    {loading ? (
-                      <PassengerListSkeleton />
-                    ) : passageiros.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
-                        <Users2 className="w-12 h-12 mb-4 text-gray-300" />
-                        <p>
-                          {searchTerm
-                            ? `Nenhum passageiro encontrado para "${searchTerm}"`
-                            : "Nenhum passageiro cadastrado"}
-                        </p>
+                          </SelectContent>
+                        </Select>
                       </div>
-                    ) : (
-                      <>
-                        <div className="hidden md:block overflow-x-auto">
-                          <table className="w-full">
-                            <thead>
-                              <tr className="border-b">
-                                <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                  Nome
-                                </th>
-                                <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                  Status
-                                </th>
-                                <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                  Valor Cobrança
-                                </th>
-                                <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                  Escola
-                                </th>
-                                <th className="p-3 text-center text-xs font-medium text-gray-600">
-                                  Ações
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                              {passageiros.map((passageiro) => (
-                                <tr
-                                  key={passageiro.id}
-                                  onClick={() => handleHistorico(passageiro)}
-                                  className="hover:bg-muted/50 cursor-pointer"
-                                >
-                                  <td className="p-3 align-top">
-                                    <div className="font-semibold text-sm text-gray-800">
+                      <div className="space-y-2">
+                        <Label htmlFor="escola-filter">Escola</Label>
+                        <Select
+                          value={selectedEscola}
+                          onValueChange={setSelectedEscola}
+                        >
+                          <SelectTrigger id="escola-filter">
+                            <SelectValue placeholder="Todas" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-60 overflow-y-auto">
+                            <SelectItem value="todas">Todas</SelectItem>
+                            {escolas.map((escola) => (
+                              <SelectItem key={escola.id} value={escola.id}>
+                                {escola.nome}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="mt-8">
+                      {loading ? (
+                        <PassengerListSkeleton />
+                      ) : passageiros.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
+                          <Users2 className="w-12 h-12 mb-4 text-gray-300" />
+                          <p>
+                            {searchTerm
+                              ? `Nenhum passageiro encontrado para "${searchTerm}"`
+                              : "Nenhum passageiro cadastrado"}
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="hidden md:block overflow-x-auto">
+                            <table className="w-full">
+                              <thead>
+                                <tr className="border-b">
+                                  <th className="p-3 text-left text-xs font-medium text-gray-600">
+                                    Nome
+                                  </th>
+                                  <th className="p-3 text-left text-xs font-medium text-gray-600">
+                                    Status
+                                  </th>
+                                  <th className="p-3 text-left text-xs font-medium text-gray-600">
+                                    Valor Cobrança
+                                  </th>
+                                  <th className="p-3 text-left text-xs font-medium text-gray-600">
+                                    Escola
+                                  </th>
+                                  <th className="p-3 text-center text-xs font-medium text-gray-600">
+                                    Ações
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-200">
+                                {passageiros.map((passageiro) => (
+                                  <tr
+                                    key={passageiro.id}
+                                    onClick={() => handleHistorico(passageiro)}
+                                    className="hover:bg-muted/50 cursor-pointer"
+                                  >
+                                    <td className="p-3 align-top">
+                                      <div className="font-semibold text-sm text-gray-800">
+                                        {passageiro.nome}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        Responsável:{" "}
+                                        {passageiro.nome_responsavel || "-"}
+                                      </div>
+                                    </td>
+                                    <td className="p-3 align-top">
+                                      <span
+                                        className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
+                                          passageiro.ativo
+                                            ? "bg-green-100 text-green-800"
+                                            : "bg-red-100 text-red-800"
+                                        }`}
+                                      >
+                                        {passageiro.ativo
+                                          ? "Ativo"
+                                          : "Desativado"}
+                                      </span>
+                                    </td>
+                                    <td className="p-3 align-top">
+                                      <div className="font-semibold text-sm text-gray-800">
+                                        {Number(
+                                          passageiro.valor_cobranca
+                                        ).toLocaleString("pt-BR", {
+                                          style: "currency",
+                                          currency: "BRL",
+                                        })}
+                                      </div>
+                                    </td>
+                                    <td className="p-3 align-top">
+                                      <span className="text-sm text-muted-foreground">
+                                        {passageiro.escolas?.nome ||
+                                          "Não informada"}
+                                      </span>
+                                    </td>
+                                    <td className="p-3 text-center align-top">
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 w-8 p-0"
+                                            onClick={(e) => e.stopPropagation()}
+                                          >
+                                            <MoreVertical className="h-4 w-4" />
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                          <DropdownMenuItem
+                                            className="cursor-pointer"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleHistorico(passageiro);
+                                            }}
+                                          >
+                                            <CreditCard className="w-4 h-4 mr-2" />
+                                            Ver Carteirinha
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                            className="cursor-pointer"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleEdit(passageiro);
+                                            }}
+                                          >
+                                            <Pencil className="w-4 h-4 mr-2" />
+                                            Editar
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                            className="cursor-pointer"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleToggleClick(passageiro);
+                                            }}
+                                          >
+                                            {passageiro.ativo ? (
+                                              <>
+                                                <ToggleLeft className="w-4 h-4 mr-2" />
+                                                Desativar
+                                              </>
+                                            ) : (
+                                              <>
+                                                <ToggleRight className="w-4 h-4 mr-2" />
+                                                Reativar
+                                              </>
+                                            )}
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                            className="cursor-pointer text-red-600"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setDeleteDialog({
+                                                open: true,
+                                                passageiroId: passageiro.id,
+                                              });
+                                            }}
+                                          >
+                                            <Trash2 className="w-4 h-4 mr-2" />
+                                            Excluir
+                                          </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          <div className="md:hidden divide-y divide-gray-200">
+                            {passageiros.map((passageiro) => (
+                              <div
+                                key={passageiro.id}
+                                onClick={() => handleHistorico(passageiro)}
+                                className="py-4 px-0 active:bg-muted/50"
+                              >
+                                <div className="flex justify-between items-start mb-3">
+                                  <div className="">
+                                    <div className="font-semibold text-gray-800 text-sm overflow-hidden text-ellipsis whitespace-nowrap">
                                       {passageiro.nome}
                                     </div>
-                                    <div className="text-xs text-gray-500">
-                                      Responsável:{" "}
-                                      {passageiro.nome_responsavel || "-"}
+                                    <div className="text-xs text-muted-foreground">
+                                      {passageiro.escolas?.nome || "Sem escola"}
                                     </div>
-                                  </td>
-                                  <td className="p-3 align-top">
+                                  </div>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="shrink-0 w-2"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <MoreVertical className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                      <DropdownMenuItem
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleHistorico(passageiro);
+                                        }}
+                                      >
+                                        <CreditCard className="w-4 h-4 mr-2" />
+                                        Ver Carteirinha
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleEdit(passageiro);
+                                        }}
+                                      >
+                                        <Pencil className="w-4 h-4 mr-2" />
+                                        Editar
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        className="cursor-pointer"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleToggleClick(passageiro);
+                                        }}
+                                      >
+                                        {passageiro.ativo ? (
+                                          <>
+                                            <ToggleLeft className="w-4 h-4 mr-2" />
+                                            Desativar
+                                          </>
+                                        ) : (
+                                          <>
+                                            <ToggleRight className="w-4 h-4 mr-2" />
+                                            Reativar
+                                          </>
+                                        )}
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setDeleteDialog({
+                                            open: true,
+                                            passageiroId: passageiro.id,
+                                          });
+                                        }}
+                                        className="text-red-600"
+                                      >
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Excluir
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
+                                <div className="space-y-2 text-sm">
+                                  <div className="text-sm flex justify-between">
+                                    <span className="text-muted-foreground">
+                                      Valor Cobrança
+                                    </span>
+                                    <span className="font-medium">
+                                      {Number(
+                                        passageiro.valor_cobranca
+                                      ).toLocaleString("pt-BR", {
+                                        style: "currency",
+                                        currency: "BRL",
+                                      })}
+                                    </span>
+                                  </div>
+
+                                  <div className="text-sm flex justify-between">
+                                    <span className="text-muted-foreground">
+                                      Status
+                                    </span>
+
                                     <span
                                       className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
                                         passageiro.ativo
@@ -499,278 +726,80 @@ export default function Passageiros() {
                                         ? "Ativo"
                                         : "Desativado"}
                                     </span>
-                                  </td>
-                                  <td className="p-3 align-top">
-                                    <div className="font-semibold text-sm text-gray-800">
-                                      {Number(
-                                        passageiro.valor_cobranca
-                                      ).toLocaleString("pt-BR", {
-                                        style: "currency",
-                                        currency: "BRL",
-                                      })}
-                                    </div>
-                                  </td>
-                                  <td className="p-3 align-top">
-                                    <span className="text-sm text-muted-foreground">
-                                      {passageiro.escolas?.nome ||
-                                        "Não informada"}
-                                    </span>
-                                  </td>
-                                  <td className="p-3 text-center align-top">
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-8 w-8 p-0"
-                                          onClick={(e) => e.stopPropagation()}
-                                        >
-                                          <MoreVertical className="h-4 w-4" />
-                                        </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent>
-                                        <DropdownMenuItem
-                                          className="cursor-pointer"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleHistorico(passageiro);
-                                          }}
-                                        >
-                                          <CreditCard className="w-4 h-4 mr-2" />
-                                          Ver Carteirinha
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          className="cursor-pointer"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleEdit(passageiro);
-                                          }}
-                                        >
-                                          <Pencil className="w-4 h-4 mr-2" />
-                                          Editar
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          className="cursor-pointer"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleToggleClick(passageiro);
-                                          }}
-                                        >
-                                          {passageiro.ativo ? (
-                                            <>
-                                              <ToggleLeft className="w-4 h-4 mr-2" />
-                                              Desativar
-                                            </>
-                                          ) : (
-                                            <>
-                                              <ToggleRight className="w-4 h-4 mr-2" />
-                                              Reativar
-                                            </>
-                                          )}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          className="cursor-pointer text-red-600"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setDeleteDialog({
-                                              open: true,
-                                              passageiroId: passageiro.id,
-                                            });
-                                          }}
-                                        >
-                                          <Trash2 className="w-4 h-4 mr-2" />
-                                          Excluir
-                                        </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                        <div className="md:hidden divide-y divide-gray-200">
-                          {passageiros.map((passageiro) => (
-                            <div
-                              key={passageiro.id}
-                              onClick={() => handleHistorico(passageiro)}
-                              className="py-4 px-0 active:bg-muted/50"
-                            >
-                              <div className="flex justify-between items-start mb-3">
-                                <div className="">
-                                  <div className="font-semibold text-gray-800 text-sm overflow-hidden text-ellipsis whitespace-nowrap">
-                                    {passageiro.nome}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {passageiro.escolas?.nome || "Sem escola"}
                                   </div>
                                 </div>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="shrink-0 w-2"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent>
-                                    <DropdownMenuItem
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleHistorico(passageiro);
-                                      }}
-                                    >
-                                      <CreditCard className="w-4 h-4 mr-2" />
-                                      Ver Carteirinha
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleEdit(passageiro);
-                                      }}
-                                    >
-                                      <Pencil className="w-4 h-4 mr-2" />
-                                      Editar
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      className="cursor-pointer"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleToggleClick(passageiro);
-                                      }}
-                                    >
-                                      {passageiro.ativo ? (
-                                        <>
-                                          <ToggleLeft className="w-4 h-4 mr-2" />
-                                          Desativar
-                                        </>
-                                      ) : (
-                                        <>
-                                          <ToggleRight className="w-4 h-4 mr-2" />
-                                          Reativar
-                                        </>
-                                      )}
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setDeleteDialog({
-                                          open: true,
-                                          passageiroId: passageiro.id,
-                                        });
-                                      }}
-                                      className="text-red-600"
-                                    >
-                                      <Trash2 className="w-4 h-4 mr-2" />
-                                      Excluir
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
                               </div>
-                              <div className="space-y-2 text-sm">
-                                <div className="text-sm flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    Valor Cobrança
-                                  </span>
-                                  <span className="font-medium">
-                                    {Number(
-                                      passageiro.valor_cobranca
-                                    ).toLocaleString("pt-BR", {
-                                      style: "currency",
-                                      currency: "BRL",
-                                    })}
-                                  </span>
-                                </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-                                <div className="text-sm flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    Status
-                                  </span>
+              <TabsContent value="pre-cadastros" className="mt-4">
+                <PrePassageiros
+                  onFinalizeNewPrePassageiro={handleFinalizeNewPrePassageiro}
+                ></PrePassageiros>
+              </TabsContent>
+            </Tabs>
+          </div>
 
-                                  <span
-                                    className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
-                                      passageiro.ativo
-                                        ? "bg-green-100 text-green-800"
-                                        : "bg-red-100 text-red-800"
-                                    }`}
-                                  >
-                                    {passageiro.ativo ? "Ativo" : "Desativado"}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+          {isDialogOpen && (
+            <PassageiroFormDialog
+              isOpen={isDialogOpen}
+              onClose={handleClosePassageiroFormDialog}
+              onSuccess={() => handleSuccessCreatePassageiro()}
+              editingPassageiro={editingPassageiro}
+              onCreateEscola={() => setIsCreatingEscola(true)}
+              mode={modePassageiroFormDialog}
+              novaEscolaId={novaEscolaId}
+            />
+          )}
 
-            <TabsContent value="pre-cadastros" className="mt-4">
-              <PrePassageiros
-                onFinalizeNewPrePassageiro={handleFinalizeNewPrePassageiro}
-              ></PrePassageiros>
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {isDialogOpen && (
-          <PassageiroFormDialog
-            isOpen={isDialogOpen}
-            onClose={handleClosePassageiroFormDialog}
-            onSuccess={() => handleSuccessCreatePassageiro()}
-            editingPassageiro={editingPassageiro}
-            onCreateEscola={() => setIsCreatingEscola(true)}
-            mode={modePassageiroFormDialog}
-            novaEscolaId={novaEscolaId}
+          <EscolaFormDialog
+            isOpen={isCreatingEscola}
+            onClose={handleCloseEscolaFormDialog}
+            onSuccess={handleEscolaCreated}
           />
-        )}
 
-        <EscolaFormDialog
-          isOpen={isCreatingEscola}
-          onClose={handleCloseEscolaFormDialog}
-          onSuccess={handleEscolaCreated}
-        />
+          <ConfirmationDialog
+            open={confirmToggleDialog.open}
+            onOpenChange={(open) =>
+              setConfirmToggleDialog({ open, passageiro: null, action: "" })
+            }
+            title={
+              confirmToggleDialog.action === "ativar"
+                ? "Reativar Passageiro"
+                : "Desativar Passageiro"
+            }
+            description={`Deseja realmente ${
+              confirmToggleDialog.action
+            } o cadastro de ${
+              confirmToggleDialog.passageiro?.nome || "este passageiro"
+            }? Esta ação pode afetar a geração de cobranças.`}
+            onConfirm={handleToggleConfirm}
+            confirmText="Confirmar"
+            variant={
+              confirmToggleDialog.action === "desativar"
+                ? "destructive"
+                : "default"
+            }
+          />
 
-        <ConfirmationDialog
-          open={confirmToggleDialog.open}
-          onOpenChange={(open) =>
-            setConfirmToggleDialog({ open, passageiro: null, action: "" })
-          }
-          title={
-            confirmToggleDialog.action === "ativar"
-              ? "Reativar Passageiro"
-              : "Desativar Passageiro"
-          }
-          description={`Deseja realmente ${
-            confirmToggleDialog.action
-          } o cadastro de ${
-            confirmToggleDialog.passageiro?.nome || "este passageiro"
-          }? Esta ação pode afetar a geração de cobranças.`}
-          onConfirm={handleToggleConfirm}
-          confirmText="Confirmar"
-          variant={
-            confirmToggleDialog.action === "desativar"
-              ? "destructive"
-              : "default"
-          }
-        />
-
-        <ConfirmationDialog
-          open={deleteDialog.open}
-          onOpenChange={(open) => setDeleteDialog({ open, passageiroId: "" })}
-          title="Excluir Passageiro"
-          description="Deseja excluir permanentemente este passageiro?"
-          onConfirm={handleDelete}
-          confirmText="Confirmar"
-          variant="destructive"
-        />
-      </div>
-    </PullToRefreshWrapper>
+          <ConfirmationDialog
+            open={deleteDialog.open}
+            onOpenChange={(open) => setDeleteDialog({ open, passageiroId: "" })}
+            title="Excluir Passageiro"
+            description="Deseja excluir permanentemente este passageiro?"
+            onConfirm={handleDelete}
+            confirmText="Confirmar"
+            variant="destructive"
+          />
+        </div>
+      </PullToRefreshWrapper>
+      <LoadingOverlay active={refreshing} text="Aguarde..." />
+    </>
   );
 }

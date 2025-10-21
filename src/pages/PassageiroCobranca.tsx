@@ -1,5 +1,6 @@
 import CobrancaEditDialog from "@/components/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,7 @@ import {
   Send,
   Trash2,
   User,
-  XCircle
+  XCircle,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -181,6 +182,7 @@ export default function PassageiroCobranca() {
     cobrancaId: "",
   });
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [cobranca, setCobranca] = useState<CobrancaDetalhe | null>(null);
   const [showFullHistory, setShowFullHistory] = useState(false);
@@ -291,27 +293,29 @@ export default function PassageiroCobranca() {
       });
   };
 
-  const fetchCobranca = async () => {
-    setLoading(true);
+  const fetchCobranca = async (isRefresh = false) => {
+    if (!isRefresh) setLoading(true);
+    else setRefreshing(true);
+
     try {
       const { data, error } = await supabase
         .from("vw_cobrancas_detalhes")
         .select("*")
         .eq("id", cobranca_id)
         .single();
+
       if (error || !data) {
-        toast({
-          title: "Cobrança não encontrada.",
-          variant: "destructive",
-        });
+        toast({ title: "Cobrança não encontrada.", variant: "destructive" });
         navigate("/cobrancas");
         return;
       }
+
       setCobranca(data as CobrancaDetalhe);
-    } catch (error) {
-      console.error("Erro ao buscar detalhes da cobrança:", error);
+    } catch (err) {
+      console.error("Erro ao buscar detalhes:", err);
     } finally {
-      setLoading(false);
+      if (!isRefresh) setLoading(false);
+      else setRefreshing(false);
     }
   };
 
@@ -322,7 +326,7 @@ export default function PassageiroCobranca() {
       toast({
         title: "Pagamento desfeito com sucesso.",
       });
-      fetchCobranca();
+      fetchCobranca(true);
     } catch (error: any) {
       console.error("Erro ao desfazer pagamento:", error);
       toast({
@@ -360,6 +364,7 @@ export default function PassageiroCobranca() {
   if (!cobranca) return null;
 
   const deleteCobranca = async () => {
+    setRefreshing(true);
     try {
       await cobrancaService.excluirCobranca(cobranca);
 
@@ -376,6 +381,7 @@ export default function PassageiroCobranca() {
       });
     } finally {
       setDeleteDialog({ open: false });
+      setRefreshing(false);
     }
   };
 
@@ -385,370 +391,385 @@ export default function PassageiroCobranca() {
   };
 
   return (
-    <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start overflow-hidden">
-          <Card className="lg:col-span-3 order-1">
-            <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <div className="text-sm text-muted-foreground">
-                  {meses[cobranca.mes - 1]}/{cobranca.ano}
-                </div>
-                <div className="text-4xl font-bold tracking-tight">
-                  {cobranca.valor.toLocaleString("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                  })}
-                </div>
-                <div className="text-muted-foreground mt-3">
-                  Vencimento em: {formatDateToBR(cobranca.data_vencimento)}
-                </div>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                    cobranca.status,
-                    cobranca.data_vencimento
-                  )}`}
-                >
-                  {cobranca.status === "pago"
-                    ? `Paga em ${formatDateToBR(cobranca.data_pagamento)}`
-                    : getStatusText(cobranca.status, cobranca.data_vencimento)}
-                </span>
-              </div>
-              <div className="flex-shrink-0 w-full sm:w-auto">
-                {!disableRegistrarPagamento(cobranca) ? (
-                  <Button
-                    size="lg"
-                    className="w-full hover:bg-blue-600"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPaymentDialogOpen(true);
-                    }}
-                  >
-                    <BadgeCheck className="w-5 h-5 mr-2" /> Registrar Pagamento
-                  </Button>
-                ) : cobranca.pagamento_manual ? (
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full border-red-600 text-red-500 hover:text-red-600"
-                    onClick={() =>
-                      setConfirmDialogDesfazer({
-                        open: true,
-                        cobrancaId: cobranca_id,
-                      })
-                    }
-                  >
-                    <XCircle className="w-5 h-5 mr-2" /> Desfazer Pagamento
-                  </Button>
-                ) : (
-                  <div
-                    className={`flex items-center justify-center px-4 py-2 rounded-md text-base font-medium ${getStatusColor(
+    <>
+      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start overflow-hidden">
+            <Card className="lg:col-span-3 order-1">
+              <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <div className="text-sm text-muted-foreground">
+                    {meses[cobranca.mes - 1]}/{cobranca.ano}
+                  </div>
+                  <div className="text-4xl font-bold tracking-tight">
+                    {cobranca.valor.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
+                  </div>
+                  <div className="text-muted-foreground mt-3">
+                    Vencimento em: {formatDateToBR(cobranca.data_vencimento)}
+                  </div>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
                       cobranca.status,
                       cobranca.data_vencimento
                     )}`}
                   >
-                    {getStatusText(cobranca.status, cobranca.data_vencimento)}
-                  </div>
-                )}
-              </div>
-
-              {!disableVerPaginaPagamento(cobranca) &&
-                !disableBaixarBoleto(cobranca) && (
-                  <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t md:hidden w-full">
+                    {cobranca.status === "pago"
+                      ? `Paga em ${formatDateToBR(cobranca.data_pagamento)}`
+                      : getStatusText(
+                          cobranca.status,
+                          cobranca.data_vencimento
+                        )}
+                  </span>
+                </div>
+                <div className="flex-shrink-0 w-full sm:w-auto">
+                  {!disableRegistrarPagamento(cobranca) ? (
                     <Button
-                      disabled={disableVerPaginaPagamento(cobranca)}
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => handleCopyLink(cobranca.asaas_invoice_url)}
+                      size="lg"
+                      className="w-full hover:bg-blue-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPaymentDialogOpen(true);
+                      }}
                     >
-                      <Copy className="w-4 h-4 mr-2" /> Copiar Link de Pagamento
+                      <BadgeCheck className="w-5 h-5 mr-2" /> Registrar
+                      Pagamento
                     </Button>
+                  ) : cobranca.pagamento_manual ? (
                     <Button
-                      disabled={disableBaixarBoleto(cobranca)}
+                      size="lg"
                       variant="outline"
-                      className="flex-1"
+                      className="w-full border-red-600 text-red-500 hover:text-red-600"
                       onClick={() =>
-                        goToExternalURL(cobranca.asaas_bankslip_url)
+                        setConfirmDialogDesfazer({
+                          open: true,
+                          cobrancaId: cobranca_id,
+                        })
                       }
                     >
-                      <Download className="w-4 h-4 mr-2" /> Baixar Boleto
+                      <XCircle className="w-5 h-5 mr-2" /> Desfazer Pagamento
                     </Button>
-                  </div>
-                )}
-            </CardContent>
-          </Card>
+                  ) : (
+                    <div
+                      className={`flex items-center justify-center px-4 py-2 rounded-md text-base font-medium ${getStatusColor(
+                        cobranca.status,
+                        cobranca.data_vencimento
+                      )}`}
+                    >
+                      {getStatusText(cobranca.status, cobranca.data_vencimento)}
+                    </div>
+                  )}
+                </div>
 
-          <Card className="lg:col-span-1 order-2 lg:order-2">
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <div>
-                <CardTitle className="text-lg">Passageiro</CardTitle>
-              </div>
-              <div>
-                <Button
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEditCobrancaClick();
-                  }}
-                  className="gap-2"
-                >
-                  <Pencil className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <InfoItem icon={User} label="Nome">
-                {cobranca.passageiro_nome}
-              </InfoItem>
-              <InfoItem icon={Contact} label="Responsável">
-                {cobranca.nome_responsavel}
-              </InfoItem>
-              <InfoItem icon={School} label="Escola">
-                {cobranca.escola_nome}
-              </InfoItem>
+                {!disableVerPaginaPagamento(cobranca) &&
+                  !disableBaixarBoleto(cobranca) && (
+                    <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t md:hidden w-full">
+                      <Button
+                        disabled={disableVerPaginaPagamento(cobranca)}
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() =>
+                          handleCopyLink(cobranca.asaas_invoice_url)
+                        }
+                      >
+                        <Copy className="w-4 h-4 mr-2" /> Copiar Link de
+                        Pagamento
+                      </Button>
+                      <Button
+                        disabled={disableBaixarBoleto(cobranca)}
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() =>
+                          goToExternalURL(cobranca.asaas_bankslip_url)
+                        }
+                      >
+                        <Download className="w-4 h-4 mr-2" /> Baixar Boleto
+                      </Button>
+                    </div>
+                  )}
+              </CardContent>
+            </Card>
 
-              <div className="space-y-2 pt-6 border-t">
-                <Button
-                  className="w-full"
-                  variant="default"
-                  onClick={() =>
-                    navigate(`/passageiros/${cobranca.passageiro_id}`)
-                  }
-                >
-                  <IdCard className="h-4 w-4 mr-2" /> Ver Carteirinha
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full bg-green-50 border-green-500 text-green-500 hover:text-green-500 hover:bg-green-100"
-                  disabled={!cobranca.telefone_responsavel}
-                  onClick={() =>
-                    window.open(
-                      `https://wa.me/${cobranca.telefone_responsavel}`,
-                      "_blank"
-                    )
-                  }
-                >
-                  <MessageCircle className="h-4 w-4 mr-2" /> Falar no WhatsApp
-                </Button>
-                {!seForPago(cobranca) && (
+            <Card className="lg:col-span-1 order-2 lg:order-2">
+              <CardHeader className="flex flex-row items-center justify-between pb-4">
+                <div>
+                  <CardTitle className="text-lg">Cobrança</CardTitle>
+                </div>
+                <div>
                   <Button
-                    className="w-full"
                     variant="outline"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setConfirmDialogEnvioNotificacao({
-                        open: true,
-                        cobranca,
-                      });
+                      handleEditCobrancaClick();
                     }}
+                    className="gap-2"
                   >
-                    <Send className="h-4 w-4 mr-2" /> Enviar Notificação
+                    <Pencil className="w-4 h-4" />
                   </Button>
-                )}
-                {!disableToggleLembretes(cobranca) && (
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <InfoItem icon={User} label="Nome">
+                  {cobranca.passageiro_nome}
+                </InfoItem>
+                <InfoItem icon={Contact} label="Responsável">
+                  {cobranca.nome_responsavel}
+                </InfoItem>
+                <InfoItem icon={School} label="Escola">
+                  {cobranca.escola_nome}
+                </InfoItem>
+
+                <div className="space-y-2 pt-6 border-t">
                   <Button
                     className="w-full"
-                    variant="outline"
-                    onClick={() => handleToggleLembretes()}
+                    variant="default"
+                    onClick={() =>
+                      navigate(`/passageiros/${cobranca.passageiro_id}`)
+                    }
                   >
-                    {cobranca.desativar_lembretes ? (
-                      <Bell className="h-4 w-4 mr-2" />
-                    ) : (
-                      <BellOff className="h-4 w-4 mr-2" />
-                    )}
-                    {cobranca.desativar_lembretes
-                      ? "Ativar Notificações"
-                      : "Desativar Notificações"}
+                    <IdCard className="h-4 w-4 mr-2" /> Ver Carteirinha
                   </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="lg:col-span-2 order-3 lg:order-3">
-            <CardHeader>
-              <CardTitle className="flex items-center text-lg gap-2">
-                <FileText className="w-5 h-5" />
-                Detalhes da Cobrança
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 border rounded-lg bg-muted/50">
-                <InfoItem icon={CreditCard} label="Forma de Pagamento">
-                  {formatPaymentType(cobranca.tipo_pagamento)}
-                </InfoItem>
-                <InfoItem icon={Calendar} label="Data do Pagamento">
-                  {cobranca.data_pagamento
-                    ? formatDateToBR(cobranca.data_pagamento)
-                    : "-"}
-                </InfoItem>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-                <InfoItem
-                  icon={cobranca.desativar_lembretes ? BellOff : Bell}
-                  label="Notificações"
-                >
-                  {cobranca.desativar_lembretes ? "Desativadas" : "Ativadas"}
-                </InfoItem>
-                <InfoItem icon={ArrowRight} label="Origem Cadastro">
-                  {formatCobrancaOrigem(cobranca.origem)}
-                </InfoItem>
-                {(() => {
-                  let IconComponent = CalendarIcon;
-
-                  if (seForPago(cobranca)) {
-                    IconComponent = BadgeCheck;
-                  } else if (checkCobrancaJaVenceu(cobranca.data_vencimento)) {
-                    IconComponent = XCircle;
-                  }
-
-                  return (
-                    <InfoItem icon={IconComponent} label="Pagamento">
-                      {cobranca.status === "pago"
-                        ? cobranca.pagamento_manual
-                          ? "Registrado por você"
-                          : "Registrado automaticamente"
-                        : "—"}
-                    </InfoItem>
-                  );
-                })()}
-              </div>
-              {!disableVerPaginaPagamento(cobranca) &&
-                !disableBaixarBoleto(cobranca) && (
-                  <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t hidden md:flex">
+                  <Button
+                    variant="outline"
+                    className="w-full bg-green-50 border-green-500 text-green-500 hover:text-green-500 hover:bg-green-100"
+                    disabled={!cobranca.telefone_responsavel}
+                    onClick={() =>
+                      window.open(
+                        `https://wa.me/${cobranca.telefone_responsavel}`,
+                        "_blank"
+                      )
+                    }
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" /> Falar no WhatsApp
+                  </Button>
+                  {!seForPago(cobranca) && (
                     <Button
-                      disabled={disableVerPaginaPagamento(cobranca)}
+                      className="w-full"
                       variant="outline"
-                      className="flex-1"
-                      onClick={() => handleCopyLink(cobranca.asaas_invoice_url)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setConfirmDialogEnvioNotificacao({
+                          open: true,
+                          cobranca,
+                        });
+                      }}
                     >
-                      <Copy className="w-4 h-4 mr-2" /> Copiar Link de Pagamento
+                      <Send className="h-4 w-4 mr-2" /> Enviar Notificação
                     </Button>
+                  )}
+                  {!disableToggleLembretes(cobranca) && (
                     <Button
-                      disabled={disableBaixarBoleto(cobranca)}
+                      className="w-full"
                       variant="outline"
-                      className="flex-1"
-                      onClick={() =>
-                        goToExternalURL(cobranca.asaas_bankslip_url)
-                      }
+                      onClick={() => handleToggleLembretes()}
                     >
-                      <Download className="w-4 h-4 mr-2" /> Baixar Boleto
+                      {cobranca.desativar_lembretes ? (
+                        <Bell className="h-4 w-4 mr-2" />
+                      ) : (
+                        <BellOff className="h-4 w-4 mr-2" />
+                      )}
+                      {cobranca.desativar_lembretes
+                        ? "Ativar Notificações"
+                        : "Desativar Notificações"}
                     </Button>
-                  </div>
-                )}
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-              <div className="pt-6 border-t">
-                <h4 className="text-sm font-semibold mb-4 flex items-center gap-2 text-muted-foreground">
-                  <HistoryIcon className="w-4 h-4" />
-                  Histórico de Notificações
-                </h4>
+            <Card className="lg:col-span-2 order-3 lg:order-3">
+              <CardHeader>
+                <CardTitle className="flex items-center text-lg gap-2">
+                  <FileText className="w-5 h-5" />
+                  Detalhes da Cobrança
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 border rounded-lg bg-muted/50">
+                  <InfoItem icon={CreditCard} label="Forma de Pagamento">
+                    {formatPaymentType(cobranca.tipo_pagamento)}
+                  </InfoItem>
+                  <InfoItem icon={Calendar} label="Data do Pagamento">
+                    {cobranca.data_pagamento
+                      ? formatDateToBR(cobranca.data_pagamento)
+                      : "-"}
+                  </InfoItem>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                  <InfoItem
+                    icon={cobranca.desativar_lembretes ? BellOff : Bell}
+                    label="Notificações"
+                  >
+                    {cobranca.desativar_lembretes ? "Desativadas" : "Ativadas"}
+                  </InfoItem>
+                  <InfoItem icon={ArrowRight} label="Origem Cadastro">
+                    {formatCobrancaOrigem(cobranca.origem)}
+                  </InfoItem>
+                  {(() => {
+                    let IconComponent = CalendarIcon;
 
-                {notificacoes && notificacoes.length > 0 ? (
-                  <>
-                    <NotificationTimeline items={[notificacoes[0]]} />
+                    if (seForPago(cobranca)) {
+                      IconComponent = BadgeCheck;
+                    } else if (
+                      checkCobrancaJaVenceu(cobranca.data_vencimento)
+                    ) {
+                      IconComponent = XCircle;
+                    }
 
-                    {showFullHistory && notificacoes.length > 1 && (
-                      <div className="mt-6">
-                        <NotificationTimeline items={notificacoes.slice(1)} />
-                      </div>
-                    )}
-
-                    {notificacoes.length > 1 && (
+                    return (
+                      <InfoItem icon={IconComponent} label="Pagamento">
+                        {cobranca.status === "pago"
+                          ? cobranca.pagamento_manual
+                            ? "Registrado por você"
+                            : "Registrado automaticamente"
+                          : "—"}
+                      </InfoItem>
+                    );
+                  })()}
+                </div>
+                {!disableVerPaginaPagamento(cobranca) &&
+                  !disableBaixarBoleto(cobranca) && (
+                    <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t hidden md:flex">
                       <Button
-                        variant="link"
-                        className="p-0 h-auto text-xs mt-4"
-                        onClick={() => setShowFullHistory(!showFullHistory)}
+                        disabled={disableVerPaginaPagamento(cobranca)}
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() =>
+                          handleCopyLink(cobranca.asaas_invoice_url)
+                        }
                       >
-                        {showFullHistory
-                          ? "Ocultar histórico"
-                          : `+ Ver histórico completo`}
+                        <Copy className="w-4 h-4 mr-2" /> Copiar Link de
+                        Pagamento
                       </Button>
-                    )}
-                  </>
-                ) : (
-                  <Alert className="py-2">
-                    <AlertTitle className="text-xs font-semibold text-muted-foreground mb-0">
-                      Nenhuma notificação foi enviada
-                    </AlertTitle>
-                  </Alert>
-                )}
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
-                disabled={disableExcluirCobranca(cobranca)}
-                onClick={() => setDeleteDialog({ open: true })}
-              >
-                <Trash2 className="w-3 h-3 mr-2" /> Excluir Cobrança
-              </Button>
-            </CardFooter>
-          </Card>
+                      <Button
+                        disabled={disableBaixarBoleto(cobranca)}
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() =>
+                          goToExternalURL(cobranca.asaas_bankslip_url)
+                        }
+                      >
+                        <Download className="w-4 h-4 mr-2" /> Baixar Boleto
+                      </Button>
+                    </div>
+                  )}
+
+                <div className="pt-6 border-t">
+                  <h4 className="text-sm font-semibold mb-4 flex items-center gap-2 text-muted-foreground">
+                    <HistoryIcon className="w-4 h-4" />
+                    Histórico de Notificações
+                  </h4>
+
+                  {notificacoes && notificacoes.length > 0 ? (
+                    <>
+                      <NotificationTimeline items={[notificacoes[0]]} />
+
+                      {showFullHistory && notificacoes.length > 1 && (
+                        <div className="mt-6">
+                          <NotificationTimeline items={notificacoes.slice(1)} />
+                        </div>
+                      )}
+
+                      {notificacoes.length > 1 && (
+                        <Button
+                          variant="link"
+                          className="p-0 h-auto text-xs mt-4"
+                          onClick={() => setShowFullHistory(!showFullHistory)}
+                        >
+                          {showFullHistory
+                            ? "Ocultar histórico"
+                            : `+ Ver histórico completo`}
+                        </Button>
+                      )}
+                    </>
+                  ) : (
+                    <Alert className="py-2">
+                      <AlertTitle className="text-xs font-semibold text-muted-foreground mb-0">
+                        Nenhuma notificação foi enviada
+                      </AlertTitle>
+                    </Alert>
+                  )}
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                  disabled={disableExcluirCobranca(cobranca)}
+                  onClick={() => setDeleteDialog({ open: true })}
+                >
+                  <Trash2 className="w-3 h-3 mr-2" /> Excluir Cobrança
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+
+          {paymentDialogOpen && (
+            <ManualPaymentDialog
+              isOpen={paymentDialogOpen}
+              onClose={() => safeCloseDialog(() => setPaymentDialogOpen(false))}
+              cobrancaId={cobranca_id}
+              passageiroNome={cobranca.passageiro_nome}
+              responsavelNome={cobranca.nome_responsavel}
+              valorOriginal={Number(cobranca.valor)}
+              onPaymentRecorded={() => {
+                safeCloseDialog(() => {
+                  setPaymentDialogOpen(false);
+                  fetchCobranca(true);
+                });
+              }}
+            />
+          )}
+
+          <ConfirmationDialog
+            open={confirmDialogEnvioNotificacao.open}
+            onOpenChange={(open) =>
+              setConfirmDialogEnvioNotificacao({
+                open,
+                cobranca: null,
+              })
+            }
+            title="Enviar Notificação"
+            description="Deseja enviar esta notificação para o responsável?"
+            onConfirm={handleEnviarNotificacao}
+          />
+
+          <ConfirmationDialog
+            open={confirmDialogDesfazer.open}
+            onOpenChange={(open) =>
+              setConfirmDialogDesfazer({ open, cobrancaId: "" })
+            }
+            title="Desfazer Pagamento"
+            description="Deseja realmente desfazer o pagamento desta cobrança?"
+            onConfirm={desfazerPagamento}
+            variant="destructive"
+            confirmText="Confirmar"
+          />
+
+          <ConfirmationDialog
+            open={deleteDialog.open}
+            onOpenChange={(open) => setDeleteDialog({ open })}
+            title="Excluir"
+            description="Deseja excluir permanentemente essa cobrança?"
+            onConfirm={deleteCobranca}
+            confirmText="Confirmar"
+            variant="destructive"
+          />
+
+          {cobrancaToEdit && (
+            <CobrancaEditDialog
+              isOpen={editDialogOpen}
+              onClose={() => safeCloseDialog(() => setEditDialogOpen(false))}
+              cobranca={cobrancaToEdit}
+              onCobrancaUpdated={() => fetchCobranca(true)}
+            />
+          )}
         </div>
-
-        {paymentDialogOpen && (
-          <ManualPaymentDialog
-            isOpen={paymentDialogOpen}
-            onClose={() => safeCloseDialog(() => setPaymentDialogOpen(false))}
-            cobrancaId={cobranca_id}
-            passageiroNome={cobranca.passageiro_nome}
-            responsavelNome={cobranca.nome_responsavel}
-            valorOriginal={Number(cobranca.valor)}
-            onPaymentRecorded={() => {
-              safeCloseDialog(() => {
-                setPaymentDialogOpen(false);
-                fetchCobranca();
-              });
-            }}
-          />
-        )}
-
-        <ConfirmationDialog
-          open={confirmDialogEnvioNotificacao.open}
-          onOpenChange={(open) =>
-            setConfirmDialogEnvioNotificacao({
-              open,
-              cobranca: null,
-            })
-          }
-          title="Enviar Notificação"
-          description="Deseja enviar esta notificação para o responsável?"
-          onConfirm={handleEnviarNotificacao}
-        />
-
-        <ConfirmationDialog
-          open={confirmDialogDesfazer.open}
-          onOpenChange={(open) =>
-            setConfirmDialogDesfazer({ open, cobrancaId: "" })
-          }
-          title="Desfazer Pagamento"
-          description="Deseja realmente desfazer o pagamento desta cobrança?"
-          onConfirm={desfazerPagamento}
-          variant="destructive"
-          confirmText="Confirmar"
-        />
-
-        <ConfirmationDialog
-          open={deleteDialog.open}
-          onOpenChange={(open) => setDeleteDialog({ open })}
-          title="Excluir"
-          description="Deseja excluir permanentemente essa cobrança?"
-          onConfirm={deleteCobranca}
-          confirmText="Confirmar"
-          variant="destructive"
-        />
-
-        {cobrancaToEdit && (
-          <CobrancaEditDialog
-            isOpen={editDialogOpen}
-            onClose={() => safeCloseDialog(() => setEditDialogOpen(false))}
-            cobranca={cobrancaToEdit}
-            onCobrancaUpdated={fetchCobranca}
-          />
-        )}
-      </div>
-    </PullToRefreshWrapper>
+      </PullToRefreshWrapper>
+      <LoadingOverlay active={refreshing} text="Aguarde..." />
+    </>
   );
 }

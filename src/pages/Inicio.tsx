@@ -81,7 +81,7 @@ const Inicio = () => {
     {
       title: "Configurações",
       description:
-        "Ajuste notificações, preferências de cobrança e dados do motorista.",
+        "Ajuste notificações, preferências de cobrança e dados do condutor.",
       href: "/configuracoes",
       icon: Settings,
       color: "text-purple-700",

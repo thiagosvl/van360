@@ -192,3 +192,14 @@ export function formatarEnderecoCompleto(passageiro: Passageiro): string {
 
   return enderecoCompleto;
 }
+
+export function cleanString(value?: string, collapseInternalSpaces = false): string {
+  if (!value) return "";
+  let cleaned = value.trim();
+
+  if (collapseInternalSpaces) {
+    cleaned = cleaned.replace(/\s+/g, " ");
+  }
+
+  return cleaned;
+}

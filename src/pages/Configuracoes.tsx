@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { configuracoesMotoristaService } from "@/services/configuracoesMotoristaService";
 
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -120,7 +121,8 @@ export default function Configuracoes() {
   const { setPageTitle, setPageSubtitle } = useLayout();
   const [configuracoes, setConfiguracoes] =
     useState<ConfiguracoesMotorista | null>(null);
-  const [loadingPage, setLoadingPage] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [previewData, setPreviewData] = useState({
@@ -147,8 +149,10 @@ export default function Configuracoes() {
     setPageSubtitle("Ajustes de notificações e sistema");
   }, [setPageTitle, setPageSubtitle]);
 
-  const fetchConfiguracoes = async () => {
-    setLoadingPage(true);
+  const fetchConfiguracoes = async (isRefresh = false) => {
+    if (!isRefresh) setLoading(true);
+    else setRefreshing(true);
+
     try {
       const { data, error } = await supabase
         .from("configuracoes_motoristas")
@@ -174,7 +178,8 @@ export default function Configuracoes() {
         variant: "destructive",
       });
     } finally {
-      setLoadingPage(false);
+      if (!isRefresh) setLoading(false);
+      else setRefreshing(false);
     }
   };
 
@@ -272,7 +277,7 @@ export default function Configuracoes() {
     });
   };
 
-  if (loadingPage) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center h-40">
         <Loader2 className="w-6 h-6 animate-spin" />
@@ -464,6 +469,7 @@ export default function Configuracoes() {
           </DialogContent>
         </Dialog>
       </PullToRefreshWrapper>
+      <LoadingOverlay active={refreshing} text="Aguarde..." />
     </>
   );
 }

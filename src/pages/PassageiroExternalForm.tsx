@@ -195,7 +195,7 @@ export default function PassageiroExternalForm() {
           Cadastro realizado com sucesso!
         </h2>
         <p className="text-gray-700">
-          O motorista será notificado que você concluiu o cadastro.
+          O condutor será notificado que você concluiu o cadastro.
         </p>
       </div>
     );
@@ -208,7 +208,7 @@ export default function PassageiroExternalForm() {
           Cadastro de Passageiro
         </h1>
         <span className="text-center font-semibold text-primary block">
-          {motoristaNome}
+          Condutor: {motoristaNome}
         </span>
 
         <Form {...form}>
@@ -384,7 +384,7 @@ export default function PassageiroExternalForm() {
                 <AccordionTrigger>
                   <div className="flex items-center gap-2 text-lg font-semibold">
                     <MapPin className="w-5 h-5 text-primary" />
-                    Endereço (Opcional)
+                    Endereço
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
