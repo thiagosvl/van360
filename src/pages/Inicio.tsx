@@ -3,10 +3,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useAuth } from "@/hooks/useAuth";
+
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import {
+  Copy,
   CreditCard,
   GraduationCap,
   LayoutDashboard,
+  LinkIcon,
   Settings,
   Users,
   Wallet,
@@ -44,6 +49,7 @@ const AccessCard = ({
 const Inicio = () => {
   const { setPageTitle, setPageSubtitle } = useLayout();
   const { profile } = useAuth();
+  const { toast } = useToast();
 
   const ACCESS_CARDS_DATA = [
     {
@@ -107,6 +113,27 @@ const Inicio = () => {
     setPageSubtitle("");
   }, [setPageTitle, setPageSubtitle]);
 
+  const BASE_DOMAIN =
+    import.meta.env.VITE_PUBLIC_APP_DOMAIN || window.location.origin;
+
+  const handleCopyLink = () => {
+    const linkToCopy = `${BASE_DOMAIN}/cadastro-passageiro/${profile.id}`;
+    try {
+      navigator.clipboard.writeText(linkToCopy);
+      toast({
+        title: "Link copiado!",
+        description: "Envie este link para o responsável iniciar o cadastro.",
+      });
+    } catch (error) {
+      console.error("Erro ao copiar link:", error);
+      toast({
+        title: "Falha ao copiar.",
+        description: "Tente copiar o link manualmente.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const pullToRefreshReload = async () => {
     console.log("Atualizando dados da tela inicial...");
   };
@@ -120,6 +147,31 @@ const Inicio = () => {
     <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
       <div className="space-y-8">
         <QuickStartCard />
+
+        <section>
+          <Card className="p-5 bg-blue-50 border-blue-200">
+            <CardContent className="p-0 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-3">
+                <LinkIcon className="h-6 w-6 text-blue-700 shrink-0" />
+                <div>
+                  <p className="text-lg font-bold text-blue-700 leading-snug">
+                    Link de Cadastro Rápido
+                  </p>
+                  <p className="text-sm text-blue-900 break-all mt-1">
+                    {BASE_DOMAIN}/cadastro-passageiro/{profile.id}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="text-blue-700 border-blue-300 hover:bg-blue-100 shrink-0"
+                onClick={handleCopyLink}
+              >
+                <Copy className="h-4 w-4 mr-2" /> Copiar Link
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
 
         <section>
           <h2 className="text-xl font-semibold mb-4">Acessos Rápidos</h2>
