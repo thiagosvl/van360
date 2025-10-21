@@ -1,7 +1,7 @@
 export interface Escola {
   id: string;
   nome: string;
-  rua?: string;
+  logradouro?: string;
   numero?: string;
   bairro?: string;
   cidade?: string;

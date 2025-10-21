@@ -55,7 +55,7 @@ const prePassageiroSchema = z.object({
     .min(1, "Campo obrigatório")
     .refine((val) => val.replace(/\D/g, "").length === 11, "Telefone inválido"),
 
-  rua: z.string().min(1, "Campo obrigatório"),
+  logradouro: z.string().min(1, "Campo obrigatório"),
   numero: z.string().min(1, "Campo obrigatório"),
   bairro: z.string().min(1, "Campo obrigatório"),
   cidade: z.string().min(1, "Campo obrigatório"),
@@ -92,7 +92,7 @@ export default function PassageiroExternalForm() {
       email_responsavel: "",
       cpf_responsavel: "",
       telefone_responsavel: "",
-      rua: "",
+      logradouro: "",
       numero: "",
       bairro: "",
       cidade: "",
@@ -411,7 +411,7 @@ export default function PassageiroExternalForm() {
                     />
                     <FormField
                       control={form.control}
-                      name="rua"
+                      name="logradouro"
                       render={({ field }) => (
                         <FormItem className="md:col-span-4">
                           <FormLabel>Logradouro *</FormLabel>

@@ -41,7 +41,7 @@ import { z } from "zod";
 
 const escolaSchema = z.object({
   nome: z.string().min(1, "Campo obrigatório"),
-  rua: z.string().optional(),
+  logradouro: z.string().optional(),
   numero: z.string().optional(),
   bairro: z.string().optional(),
   cidade: z.string().optional(),
@@ -82,7 +82,7 @@ export default function EscolaFormDialog({
     if (!isOpen) {
       form.reset({
         nome: "",
-        rua: "",
+        logradouro: "",
         numero: "",
         bairro: "",
         cidade: "",
@@ -98,7 +98,7 @@ export default function EscolaFormDialog({
     resolver: zodResolver(escolaSchema),
     defaultValues: {
       nome: editingEscola?.nome || "",
-      rua: editingEscola?.rua || "",
+      logradouro: editingEscola?.logradouro || "",
       numero: editingEscola?.numero || "",
       bairro: editingEscola?.bairro || "",
       cidade: editingEscola?.cidade || "",
@@ -244,7 +244,7 @@ export default function EscolaFormDialog({
                     />
                     <FormField
                       control={form.control}
-                      name="rua"
+                      name="logradouro"
                       render={({ field }) => (
                         <FormItem className="md:col-span-4">
                           <FormLabel>Logradouro</FormLabel>

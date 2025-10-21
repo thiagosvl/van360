@@ -79,6 +79,7 @@ export default function Passageiros() {
     useState<string>("create");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -315,7 +316,7 @@ export default function Passageiros() {
       escola_id: escolas[0].id,
       ativo: true,
       emitir_cobranca_mes_atual: true,
-      rua: "Rua Comendador Artur Capodaglio",
+      logradouro: "Rua Comendador Artur Capodaglio",
       numero: "433",
       bairro: "Americanopolis",
       cidade: "São Paulo",
@@ -348,6 +349,7 @@ export default function Passageiros() {
   const pullToRefreshReload = async () => {
     fetchPassageiros();
     fetchEscolas();
+    setRefreshKey((prev) => prev + 1);
   };
 
   return (
@@ -740,6 +742,7 @@ export default function Passageiros() {
 
               <TabsContent value="pre-cadastros" className="mt-4">
                 <PrePassageiros
+                  refreshKey={refreshKey}
                   onFinalizeNewPrePassageiro={handleFinalizeNewPrePassageiro}
                 ></PrePassageiros>
               </TabsContent>

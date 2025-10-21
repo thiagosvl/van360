@@ -61,7 +61,7 @@ const passageiroSchema = z.object({
     required_error: "Campo obrigatório",
   }),
 
-  rua: z.string().min(1, "Campo obrigatório"),
+  logradouro: z.string().min(1, "Campo obrigatório"),
   numero: z.string().min(1, "Campo obrigatório"),
   bairro: z.string().min(1, "Campo obrigatório"),
   cidade: z.string().min(1, "Campo obrigatório"),
@@ -137,7 +137,7 @@ export default function PassengerFormDialog({
       genero: undefined,
       observacoes: "",
 
-      rua: "",
+      logradouro: "",
       numero: "",
       bairro: "",
       cidade: "",
@@ -229,7 +229,7 @@ export default function PassengerFormDialog({
             : "",
           dia_vencimento: editingPassageiro.dia_vencimento?.toString() || "",
           observacoes: editingPassageiro.observacoes || "",
-          rua: editingPassageiro.rua || "",
+          logradouro: editingPassageiro.logradouro || "",
           numero: editingPassageiro.numero || "",
           bairro: editingPassageiro.bairro || "",
           cidade: editingPassageiro.cidade || "",
@@ -257,7 +257,7 @@ export default function PassengerFormDialog({
           cpf_responsavel: prePassageiro.cpf_responsavel,
           telefone_responsavel: phoneMask(prePassageiro.telefone_responsavel),
 
-          rua: prePassageiro.rua || "",
+          logradouro: prePassageiro.logradouro || "",
           numero: prePassageiro.numero || "",
           bairro: prePassageiro.bairro || "",
           cidade: prePassageiro.cidade || "",
@@ -301,7 +301,7 @@ export default function PassengerFormDialog({
           nome: "",
           genero: undefined,
           observacoes: "",
-          rua: "",
+          logradouro: "",
           numero: "",
           bairro: "",
           cidade: "",
@@ -752,7 +752,7 @@ export default function PassengerFormDialog({
                     />
                     <FormField
                       control={form.control}
-                      name="rua"
+                      name="logradouro"
                       render={({ field }) => (
                         <FormItem className="md:col-span-4">
                           <FormLabel>Logradouro *</FormLabel>

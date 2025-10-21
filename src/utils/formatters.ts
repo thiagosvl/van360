@@ -175,7 +175,7 @@ export function formatarCEP(cep: string): string {
 
 export function formatarEnderecoCompleto(passageiro: Passageiro): string {
   const cep = formatarCEP(passageiro.cep);
-  const endereco = passageiro.rua;
+  const lograoduro = passageiro.logradouro;
   const bairro = passageiro.bairro;
   const cidade = passageiro.cidade;
   const estado = passageiro.estado;
@@ -185,9 +185,9 @@ export function formatarEnderecoCompleto(passageiro: Passageiro): string {
   let enderecoCompleto;
 
   if (referencia != "" && referencia != null) {
-    enderecoCompleto = `${endereco}, ${numero} (${referencia}) - ${bairro}, ${cidade} - ${estado}, ${cep}`;
+    enderecoCompleto = `${lograoduro}, ${numero} (${referencia}) - ${bairro}, ${cidade} - ${estado}, ${cep}`;
   } else {
-    enderecoCompleto = `${endereco}, ${numero} - ${bairro}, ${cidade} - ${estado}, ${cep}`;
+    enderecoCompleto = `${lograoduro}, ${numero} - ${bairro}, ${cidade} - ${estado}, ${cep}`;
   }
 
   return enderecoCompleto;

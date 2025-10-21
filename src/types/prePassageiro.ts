@@ -11,7 +11,7 @@ export interface PrePassageiro {
     telefone_responsavel: string;
     genero: string;
 
-    rua: string | null;
+    logradouro: string | null;
     numero: string | null;
     bairro: string | null;
     cidade: string | null;

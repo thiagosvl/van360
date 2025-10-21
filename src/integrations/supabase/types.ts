@@ -145,7 +145,7 @@ export type Database = {
           nome: string
           numero: string | null
           referencia: string | null
-          rua: string | null
+          logradouro: string | null
           updated_at: string
         }
         Insert: {
@@ -159,7 +159,7 @@ export type Database = {
           nome: string
           numero?: string | null
           referencia?: string | null
-          rua?: string | null
+          logradouro?: string | null
           updated_at?: string
         }
         Update: {
@@ -173,7 +173,7 @@ export type Database = {
           nome?: string
           numero?: string | null
           referencia?: string | null
-          rua?: string | null
+          logradouro?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -246,7 +246,7 @@ export type Database = {
           email_responsavel: string
           numero: string | null
           referencia: string | null
-          rua: string | null
+          logradouro: string | null
           telefone_responsavel: string
           updated_at: string
           valor_cobranca: number
@@ -273,7 +273,7 @@ export type Database = {
           id?: string
           numero?: string | null
           referencia?: string | null
-          rua?: string | null
+          logradouro?: string | null
           updated_at?: string
         }
         Update: {
@@ -296,7 +296,7 @@ export type Database = {
           email_responsavel?: string
           numero?: string | null
           referencia?: string | null
-          rua?: string | null
+          logradouro?: string | null
           telefone_responsavel?: string
           updated_at?: string
           valor_cobranca?: number

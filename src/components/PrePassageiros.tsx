@@ -46,10 +46,12 @@ const PrePassengerListSkeleton = () => (
 
 interface PrePassageirosProps {
   onFinalizeNewPrePassageiro: () => void;
+  refreshKey?: number;
 }
 
 export default function PrePassageiros({
   onFinalizeNewPrePassageiro,
+  refreshKey
 }: PrePassageirosProps) {
   const [prePassageiros, setPrePassageiros] = useState<PrePassageiro[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,6 +71,12 @@ export default function PrePassageiros({
 
   const BASE_DOMAIN = import.meta.env.VITE_PUBLIC_APP_DOMAIN;
   const GENERIC_CADASTRO_LINK = `${BASE_DOMAIN}/cadastro-passageiro/${profile.id}`;
+
+  useEffect(() => {
+  if (refreshKey !== undefined) {
+    fetchPrePassageiros();
+  }
+}, [refreshKey]);
 
   const handleCadastrarRapidoLink = async () => {
     const motoristaId = localStorage.getItem("app_user_id");
@@ -97,7 +105,7 @@ export default function PrePassageiros({
       genero: Math.random() > 0.5 ? "Masculino" : "Feminino",
       usuario_id: motoristaId,
       observacoes: `observacoes do ${fakeNome}`,
-      rua: `Rua do ${fakeNome}`,
+      logradouro: `Rua do ${fakeNome}`,
       numero: "433",
       bairro: `Bairro do ${fakeNome}`,
       cidade: `Cidade do ${fakeNome}`,
@@ -158,13 +166,6 @@ export default function PrePassageiros({
     },
     [searchTerm, toast]
   );
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      fetchPrePassageiros();
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [fetchPrePassageiros]);
 
   const handleDelete = async () => {
     setRefreshing(true);
