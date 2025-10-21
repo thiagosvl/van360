@@ -47,9 +47,9 @@ import {
   Calendar,
   CalendarIcon,
   Contact,
+  Copy,
   CreditCard,
   Download,
-  ExternalLink,
   FileText,
   History as HistoryIcon,
   IdCard,
@@ -59,7 +59,7 @@ import {
   Send,
   Trash2,
   User,
-  XCircle,
+  XCircle
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -190,6 +190,32 @@ export default function PassageiroCobranca() {
   const [confirmDialogEnvioNotificacao, setConfirmDialogEnvioNotificacao] =
     useState({ open: false, cobranca: null });
   const { toast } = useToast();
+
+  const handleCopyLink = async (link: string) => {
+    if (!link) {
+      toast({
+        title: "Link indisponível.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(link);
+      toast({
+        title: "Link de pagamento copiado!",
+        description: "O link foi copiado para a área de transferência.",
+      });
+    } catch (err) {
+      console.error("Erro ao copiar link:", err);
+      toast({
+        title: "Erro ao copiar link.",
+        description:
+          "Não foi possível copiar o link para a área de transferência.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const goToExternalURL = (url: string) => {
     if (!url) return;
@@ -429,7 +455,7 @@ export default function PassageiroCobranca() {
                   </div>
                 )}
               </div>
-              
+
               {!disableVerPaginaPagamento(cobranca) &&
                 !disableBaixarBoleto(cobranca) && (
                   <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t md:hidden w-full">
@@ -437,12 +463,9 @@ export default function PassageiroCobranca() {
                       disabled={disableVerPaginaPagamento(cobranca)}
                       variant="outline"
                       className="flex-1"
-                      onClick={() =>
-                        goToExternalURL(cobranca.asaas_invoice_url)
-                      }
+                      onClick={() => handleCopyLink(cobranca.asaas_invoice_url)}
                     >
-                      <ExternalLink className="w-4 h-4 mr-2" /> Ver Página de
-                      Pagamento
+                      <Copy className="w-4 h-4 mr-2" /> Copiar Link de Pagamento
                     </Button>
                     <Button
                       disabled={disableBaixarBoleto(cobranca)}
@@ -604,12 +627,9 @@ export default function PassageiroCobranca() {
                       disabled={disableVerPaginaPagamento(cobranca)}
                       variant="outline"
                       className="flex-1"
-                      onClick={() =>
-                        goToExternalURL(cobranca.asaas_invoice_url)
-                      }
+                      onClick={() => handleCopyLink(cobranca.asaas_invoice_url)}
                     >
-                      <ExternalLink className="w-4 h-4 mr-2" /> Ver Página de
-                      Pagamento
+                      <Copy className="w-4 h-4 mr-2" /> Copiar Link de Pagamento
                     </Button>
                     <Button
                       disabled={disableBaixarBoleto(cobranca)}
@@ -732,7 +752,7 @@ export default function PassageiroCobranca() {
             isOpen={editDialogOpen}
             onClose={() => safeCloseDialog(() => setEditDialogOpen(false))}
             cobranca={cobrancaToEdit}
-            onCobrancaUpdated={fetchCobranca()}
+            onCobrancaUpdated={fetchCobranca}
           />
         )}
       </div>

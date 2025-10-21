@@ -111,7 +111,7 @@ export default function EscolaFormDialog({
 
   const onFormError = (errors: any) => {
     toast({
-      title: "Por favor, corrija os erros no formulário.",
+      title: "Corrija os erros no formulário.",
       variant: "destructive",
     });
     setOpenAccordionItems(["dados-escola", "endereco"]);

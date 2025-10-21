@@ -1,12 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+
+import { Form, FormLabel } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
 import { ChevronRight } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -45,8 +43,16 @@ export const QuickStartCard = () => {
     defaultValues: defaultValues,
   });
 
-  const watchedSteps = form.watch("stepsStatus");
-  const completedSteps = Object.values(watchedSteps).filter(Boolean).length;
+  const { profile } = useAuth();
+
+  const [loading, setLoading] = useState(true);
+  const [stepsStatus, setStepsStatus] = useState({
+    step_escolas: false, // escolas
+    step_passageiros: false, // passageiros
+    step_configuracoes: false, // configuracoes
+  });
+
+  const completedSteps = Object.values(stepsStatus).filter(Boolean).length;
   const totalSteps = QUICK_START_STEPS.length;
   const progressValue = (completedSteps / totalSteps) * 100;
 
@@ -55,9 +61,61 @@ export const QuickStartCard = () => {
     formKey: `stepsStatus.step_${step.id}`,
   }));
 
+  useEffect(() => {
+    if (!profile || !profile.id) return;
+
+    fetchData();
+  }, [profile]);
+
+  const fetchData = async () => {
+    try {
+      const storageKey = `app_quickstart_status`;
+      const cached = localStorage.getItem(storageKey);
+
+      if (cached) {
+        setStepsStatus(JSON.parse(cached));
+        setLoading(false);
+        return;
+      }
+
+      const [escolas, passageiros, configuracoes] = await Promise.all([
+        supabase
+          .from("escolas")
+          .select("*", { count: "exact", head: true })
+          .eq("usuario_id", profile.id),
+        supabase
+          .from("passageiros")
+          .select("*", { count: "exact", head: true })
+          .eq("usuario_id", profile.id),
+        supabase
+          .from("configuracoes_motoristas")
+          .select("*", { count: "exact", head: true })
+          .eq("usuario_id", profile.id),
+      ]);
+
+      const data = {
+        step_escolas: (escolas.count ?? 0) > 0,
+        step_passageiros: (passageiros.count ?? 0) > 0,
+        step_configuracoes: (configuracoes.count ?? 0) > 0,
+      };
+
+      setStepsStatus(data);
+      localStorage.setItem(storageKey, JSON.stringify(data));
+    } catch (error) {
+      console.error("Erro ao carregar QuickStart:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = (data: QuickStartFormValues) => {
     console.log("Status de Primeiros Passos Salvo:", data.stepsStatus);
   };
+
+  if (loading) return null;
+
+  const allCompleted = Object.values(stepsStatus).every(Boolean);
+  if (allCompleted) return null;
 
   return (
     <Card>
@@ -86,33 +144,30 @@ export const QuickStartCard = () => {
                 key={step.id}
                 className="flex items-center justify-between py-2 border-b last:border-b-0 transition-colors rounded-sm"
               >
-                <FormField
-                  control={form.control}
-                  name={step.formKey as keyof QuickStartFormValues}
-                  render={({ field }) => (
-                    <div className="flex items-center space-x-3">
-                      <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            className="h-5 w-5 rounded focus:ring-primary shrink-0"
-                          />
-                        </FormControl>
+                <div className="flex items-center space-x-3">
+                  <Checkbox
+                    checked={
+                      (step.id === 1 && stepsStatus.step_escolas) ||
+                      (step.id === 2 && stepsStatus.step_passageiros) ||
+                      (step.id === 3 && stepsStatus.step_configuracoes)
+                    }
+                    disabled
+                    onCheckedChange={() => {}}
+                    className="h-5 w-5 rounded focus:ring-primary shrink-0 cursor-default opacity-80"
+                  />
 
-                        <FormLabel
-                          className={`text-base font-semibold transition-colors cursor-pointer leading-snug ${
-                            field.value
-                              ? "text-gray-500 line-through"
-                              : "text-foreground"
-                          }`}
-                        >
-                          {step.title}
-                        </FormLabel>
-                      </FormItem>
-                    </div>
-                  )}
-                />
+                  <FormLabel
+                    className={`text-base font-semibold transition-colors leading-snug ${
+                      (step.id === 1 && stepsStatus.step_escolas) ||
+                      (step.id === 2 && stepsStatus.step_passageiros) ||
+                      (step.id === 3 && stepsStatus.step_configuracoes)
+                        ? "text-gray-500 line-through"
+                        : "text-foreground"
+                    }`}
+                  >
+                    {step.title}
+                  </FormLabel>
+                </div>
 
                 <NavLink to={step.href}>
                   <ChevronRight className="h-5 w-5 text-primary hover:text-primary/80 transition-colors" />

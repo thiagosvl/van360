@@ -338,7 +338,7 @@ export const asaasService = {
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error || !session) {
-            throw new Error("Sessão de usuário não encontrada. Por favor, faça login novamente.");
+            throw new Error("Sessão de usuário não encontrada. Faça login novamente.");
         }
 
         const token = session.access_token;

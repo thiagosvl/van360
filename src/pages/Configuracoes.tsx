@@ -1,4 +1,6 @@
 import { Badge } from "@/components/ui/badge";
+import { configuracoesMotoristaService } from "@/services/configuracoesMotoristaService";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,7 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { ConfiguracoesMotorista } from "@/types/configuracoesMotorista";
-import { Clock, Eye, Loader2, Mail } from "lucide-react";
+import { Eye, Loader2, Mail } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const MessageEditor = ({
@@ -223,27 +225,23 @@ export default function Configuracoes() {
   const handleSave = async () => {
     if (!validateForm() || !configuracoes) {
       toast({
-      title: "Por favor, corrija os erros no formulário.",
+        title: "Corrija os erros no formulário.",
         variant: "destructive",
       });
       return;
     }
+
     setSaving(true);
     setErrors({});
     try {
-      const { error } = await supabase
-        .from("configuracoes_motoristas")
-        .update({ ...configuracoes, updated_at: new Date().toISOString() })
-        .eq("id", configuracoes.id);
-      if (error) throw error;
+      await configuracoesMotoristaService.saveConfiguracoes(configuracoes);
       toast({
         title: "Configurações atualizadas com sucesso.",
       });
     } catch (error) {
       console.error("Erro ao salvar configurações:", error);
       toast({
-        title:
-          "Não foi possível salvar as configurações.",
+        title: "Não foi possível salvar as configurações.",
         variant: "destructive",
       });
     } finally {
@@ -288,182 +286,183 @@ export default function Configuracoes() {
 
   return (
     <>
-        <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-            Configurações
-          </h1>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Salvar Alterações
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                Agendamento de Notificações
-              </CardTitle>
-              <CardDescription>
-                Defina quando e com que frequência as notificações automáticas
-                serão enviadas.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="horario_envio">
-                  Horário de envio dos lembretes
-                </Label>
-                <Input
-                  id="horario_envio"
-                  type="time"
-                  value={configuracoes?.horario_envio || ""}
-                  onChange={(e) =>
-                    handleChange("horario_envio", e.target.value)
-                  }
-                  className={cn(
-                    errors.horario_envio &&
-                      "border-red-500 focus-visible:ring-red-500"
-                  )}
-                />
-                {errors.horario_envio && (
-                  <p className="text-sm text-red-500">{errors.horario_envio}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="dias_antes_vencimento">
-                  Lembrete antecipado (dias antes)
-                </Label>
-                <Input
-                  id="dias_antes_vencimento"
-                  type="number"
-                  min="1"
-                  max="7"
-                  value={configuracoes?.dias_antes_vencimento ?? 1}
-                  onChange={(e) =>
-                    handleChange("dias_antes_vencimento", e.target.value)
-                  }
-                  className={cn(
-                    errors.dias_antes_vencimento &&
-                      "border-red-500 focus-visible:ring-red-500"
-                  )}
-                />
-                {errors.dias_antes_vencimento ? (
-                  <p className="text-sm text-red-500">
-                    {errors.dias_antes_vencimento}
-                  </p>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Mínimo de 1 e máximo de 7 dias.
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="dias_apos_vencimento">
-                  Lembrete de atraso (dias após)
-                </Label>
-                <Input
-                  id="dias_apos_vencimento"
-                  type="number"
-                  min="1"
-                  max="7"
-                  value={configuracoes?.dias_apos_vencimento ?? 1}
-                  onChange={(e) =>
-                    handleChange("dias_apos_vencimento", e.target.value)
-                  }
-                  className={cn(
-                    errors.dias_apos_vencimento &&
-                      "border-red-500 focus-visible:ring-red-500"
-                  )}
-                />
-                {errors.dias_apos_vencimento ? (
-                  <p className="text-sm text-red-500">
-                    {errors.dias_apos_vencimento}
-                  </p>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Mínimo de 1 e máximo de 7 dias.
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Mail className="w-5 h-5" />
-                Modelos de Mensagem
-              </CardTitle>
-              <CardDescription>
-                Personalize o texto que será enviado aos seus clientes em cada
-                etapa da cobrança.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <MessageEditor
-                id="mensagem_lembrete_antecipada"
-                label="Mensagem Notificação Antecipada"
-                value={configuracoes?.mensagem_lembrete_antecipada || ""}
-                onChange={handleChange}
-                variables={commonVariables}
-                error={errors.mensagem_lembrete_antecipada}
-                onPreview={() =>
-                  handlePreview(
-                    "Notificação Antecipada",
-                    configuracoes?.mensagem_lembrete_antecipada || ""
-                  )
-                }
-              />
-              <MessageEditor
-                id="mensagem_lembrete_dia"
-                label="Mensagem Dia de Vencimento"
-                value={configuracoes?.mensagem_lembrete_dia || ""}
-                onChange={handleChange}
-                variables={commonVariables}
-                error={errors.mensagem_lembrete_dia}
-                onPreview={() =>
-                  handlePreview(
-                    "Dia de Vencimento",
-                    configuracoes?.mensagem_lembrete_dia || ""
-                  )
-                }
-              />
-              <MessageEditor
-                id="mensagem_lembrete_atraso"
-                label="Mensagem Cobrança Atrasada"
-                value={configuracoes?.mensagem_lembrete_atraso || ""}
-                onChange={handleChange}
-                variables={commonVariables}
-                error={errors.mensagem_lembrete_atraso}
-                onPreview={() =>
-                  handlePreview(
-                    "Cobrança Atrasada",
-                    configuracoes?.mensagem_lembrete_atraso || ""
-                  )
-                }
-              />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      <Dialog
-        open={previewData.isOpen}
-        onOpenChange={(isOpen) => setPreviewData({ ...previewData, isOpen })}
-      >
-        <DialogContent className="sm:max-w-md max-h-[95vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{previewData.title}</DialogTitle>
-          </DialogHeader>
-          <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap rounded-md border bg-muted p-4 text-sm">
-            <p>{previewData.content}</p>
+      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+              Configurações
+            </h1>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Salvar Alterações
+            </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  Escolas
+                </CardTitle>
+                <CardDescription>
+                  Defina quando e com que frequência as notificações automáticas
+                  serão enviadas.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="horario_envio">
+                    Horário de envio dos lembretes
+                  </Label>
+                  <Input
+                    id="horario_envio"
+                    type="time"
+                    value={configuracoes?.horario_envio || ""}
+                    onChange={(e) =>
+                      handleChange("horario_envio", e.target.value)
+                    }
+                    className={cn(
+                      errors.horario_envio &&
+                        "border-red-500 focus-visible:ring-red-500"
+                    )}
+                  />
+                  {errors.horario_envio && (
+                    <p className="text-sm text-red-500">
+                      {errors.horario_envio}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dias_antes_vencimento">
+                    Lembrete antecipado (dias antes)
+                  </Label>
+                  <Input
+                    id="dias_antes_vencimento"
+                    type="number"
+                    min="1"
+                    max="7"
+                    value={configuracoes?.dias_antes_vencimento ?? 1}
+                    onChange={(e) =>
+                      handleChange("dias_antes_vencimento", e.target.value)
+                    }
+                    className={cn(
+                      errors.dias_antes_vencimento &&
+                        "border-red-500 focus-visible:ring-red-500"
+                    )}
+                  />
+                  {errors.dias_antes_vencimento ? (
+                    <p className="text-sm text-red-500">
+                      {errors.dias_antes_vencimento}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Mínimo de 1 e máximo de 7 dias.
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dias_apos_vencimento">
+                    Lembrete de atraso (dias após)
+                  </Label>
+                  <Input
+                    id="dias_apos_vencimento"
+                    type="number"
+                    min="1"
+                    max="7"
+                    value={configuracoes?.dias_apos_vencimento ?? 1}
+                    onChange={(e) =>
+                      handleChange("dias_apos_vencimento", e.target.value)
+                    }
+                    className={cn(
+                      errors.dias_apos_vencimento &&
+                        "border-red-500 focus-visible:ring-red-500"
+                    )}
+                  />
+                  {errors.dias_apos_vencimento ? (
+                    <p className="text-sm text-red-500">
+                      {errors.dias_apos_vencimento}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Mínimo de 1 e máximo de 7 dias.
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="w-5 h-5" />
+                  Modelos de Mensagem
+                </CardTitle>
+                <CardDescription>
+                  Personalize o texto que será enviado aos seus clientes em cada
+                  etapa da cobrança.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <MessageEditor
+                  id="mensagem_lembrete_antecipada"
+                  label="Mensagem Notificação Antecipada"
+                  value={configuracoes?.mensagem_lembrete_antecipada || ""}
+                  onChange={handleChange}
+                  variables={commonVariables}
+                  error={errors.mensagem_lembrete_antecipada}
+                  onPreview={() =>
+                    handlePreview(
+                      "Notificação Antecipada",
+                      configuracoes?.mensagem_lembrete_antecipada || ""
+                    )
+                  }
+                />
+                <MessageEditor
+                  id="mensagem_lembrete_dia"
+                  label="Mensagem Dia de Vencimento"
+                  value={configuracoes?.mensagem_lembrete_dia || ""}
+                  onChange={handleChange}
+                  variables={commonVariables}
+                  error={errors.mensagem_lembrete_dia}
+                  onPreview={() =>
+                    handlePreview(
+                      "Dia de Vencimento",
+                      configuracoes?.mensagem_lembrete_dia || ""
+                    )
+                  }
+                />
+                <MessageEditor
+                  id="mensagem_lembrete_atraso"
+                  label="Mensagem Cobrança Atrasada"
+                  value={configuracoes?.mensagem_lembrete_atraso || ""}
+                  onChange={handleChange}
+                  variables={commonVariables}
+                  error={errors.mensagem_lembrete_atraso}
+                  onPreview={() =>
+                    handlePreview(
+                      "Cobrança Atrasada",
+                      configuracoes?.mensagem_lembrete_atraso || ""
+                    )
+                  }
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        <Dialog
+          open={previewData.isOpen}
+          onOpenChange={(isOpen) => setPreviewData({ ...previewData, isOpen })}
+        >
+          <DialogContent className="sm:max-w-md max-h-[95vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{previewData.title}</DialogTitle>
+            </DialogHeader>
+            <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap rounded-md border bg-muted p-4 text-sm">
+              <p>{previewData.content}</p>
+            </div>
+          </DialogContent>
+        </Dialog>
       </PullToRefreshWrapper>
     </>
   );

@@ -25,17 +25,15 @@ const AccessCard = ({
   return (
     <NavLink to={href} className="col-span-1">
       <Card
-        className={`transition-all duration-300 hover:scale-[1.03] hover:shadow-xl h-full ${bg} border-2 border-transparent hover:border-gray-20`}
+        className={`transition-all duration-300 hover:scale-[1.03] hover:shadow-md h-full ${bg} border-2 border-transparent hover:border-gray-20`}
       >
         <CardContent className="p-5 flex flex-col justify-center items-center text-center space-y-3 h-full">
           <Icon className={`h-10 w-10 mb-2 ${color}`} />
 
           <div className="text-center">
-            <p className="text-xl font-extrabold text-foreground leading-snug">
+            <p className="text-xl font-bold text-foreground leading-snug">
               {title}
             </p>
-
-            <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
           </div>
         </CardContent>
       </Card>

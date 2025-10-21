@@ -57,6 +57,7 @@ import {
   AlertTriangle,
   BellOff,
   Contact,
+  Copy,
   Info,
   Mail,
   MapPin,
@@ -67,7 +68,7 @@ import {
   School,
   Trash2,
   TrendingDown,
-  TrendingUp
+  TrendingUp,
 } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -206,6 +207,23 @@ export default function PassageiroCarteirinha() {
 
   const handleEditClick = () => {
     setIsFormOpen(true);
+  };
+
+  const handleCopyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: `${label} copiado!`,
+        description: `"${text}" foi copiado para a área de transferência.`,
+      });
+    } catch (err) {
+      console.error("Erro ao copiar:", err);
+      toast({
+        title: "Erro ao copiar.",
+        description: "Não foi possível copiar o texto.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleOpenCobrancaDialog = () => {
@@ -499,17 +517,27 @@ export default function PassageiroCarteirinha() {
     return cobrancas.reduce(
       (acc, c) => {
         if (c.status === "pago") {
-          acc.pago += Number(c.valor);
+          acc.valorPago += Number(c.valor);
+          acc.qtdPago++;
         } else {
-          acc.pendente += Number(c.valor);
+          acc.qtdPendente++;
+          acc.valorPendente += Number(c.valor);
           const vencimento = new Date(c.data_vencimento);
           if (vencimento < hoje) {
-            acc.emAtraso += 1;
+            acc.qtdEmAtraso += 1;
+            acc.valorEmAtraso += Number(c.valor);
           }
         }
         return acc;
       },
-      { pago: 0, pendente: 0, emAtraso: 0 }
+      {
+        qtdPago: 0,
+        valorPago: 0,
+        qtdPendente: 0,
+        valorPendente: 0,
+        qtdEmAtraso: 0,
+        valorEmAtraso: 0,
+      }
     );
   }, [cobrancas]);
 
@@ -991,12 +1019,46 @@ export default function PassageiroCarteirinha() {
                   {passageiro.escolas?.nome || "Não informada"}
                 </InfoItem>
                 <InfoItem icon={MapPin} label="Endereço">
-                  <span className="text-sm">{formatarEnderecoCompleto(passageiro)}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">
+                      {formatarEnderecoCompleto(passageiro)}
                     </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-muted-foreground hover:text-primary"
+                      onClick={() =>
+                        handleCopyToClipboard(
+                          formatarEnderecoCompleto(passageiro),
+                          "Endereço"
+                        )
+                      }
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </InfoItem>
                 <InfoItem icon={MessageCircle} label="Telefone (WhatsApp)">
-                  {formatarTelefone(passageiro.telefone_responsavel)}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">
+                      {formatarTelefone(passageiro.telefone_responsavel)}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-muted-foreground hover:text-primary"
+                      onClick={() =>
+                        handleCopyToClipboard(
+                          formatarTelefone(passageiro.telefone_responsavel),
+                          "Telefone"
+                        )
+                      }
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </InfoItem>
+
                 <InfoItem icon={Mail} label="E-mail">
                   {passageiro.email_responsavel || "Não informado"}
                 </InfoItem>
@@ -1123,13 +1185,15 @@ export default function PassageiroCarteirinha() {
               <CardContent className="space-y-4">
                 <div>
                   <div className="text-sm text-muted-foreground flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4" /> <span>Total Pago</span>
+                    <TrendingUp className="w-4 h-4" /> <span>Pago</span>
                   </div>
-                  <div className="text-2xl font-bold mt-1">
-                    {yearlySummary.pago.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
+                  <div className="">
+                    <span className="text-2xl font-bold mt-1">
+                      {yearlySummary.valorPago.toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      })}
+                    </span>
                   </div>
                 </div>
                 <div>
@@ -1137,7 +1201,7 @@ export default function PassageiroCarteirinha() {
                     <TrendingDown className="w-4 h-4" /> <span>Pendente</span>
                   </div>
                   <div className="text-2xl font-bold mt-1">
-                    {yearlySummary.pendente.toLocaleString("pt-BR", {
+                    {yearlySummary.valorPendente.toLocaleString("pt-BR", {
                       style: "currency",
                       currency: "BRL",
                     })}
@@ -1149,7 +1213,19 @@ export default function PassageiroCarteirinha() {
                     <span>Cobranças em Atraso</span>
                   </div>
                   <div className="text-2xl font-bold mt-1">
-                    {yearlySummary.emAtraso}
+                    {yearlySummary.qtdEmAtraso}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />{" "}
+                    <span>Valor em Atraso</span>
+                  </div>
+                  <div className="text-2xl font-bold mt-1">
+                    {yearlySummary.valorEmAtraso.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
                   </div>
                 </div>
               </CardContent>

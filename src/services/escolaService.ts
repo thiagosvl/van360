@@ -22,7 +22,7 @@ export const fetchEscolasComContagemAtivos = async () => {
         .from("escolas")
         .select(`*, passageiros(count)`)
         .eq("usuario_id", userId)
-         .eq("passageiros.ativo", true)
+        .eq("passageiros.ativo", true)
         .order("nome");
 
     if (error) throw error;
@@ -65,13 +65,26 @@ export const saveEscola = async (data: any, editingEscola: Escola | null): Promi
             .single();
 
         if (error) throw error;
+
+        try {
+            const storageKey = "app_quickstart_status";
+            const cached = localStorage.getItem(storageKey);
+            const status = cached ? JSON.parse(cached) : {};
+
+            status.step_escolas = true;
+
+            localStorage.setItem(storageKey, JSON.stringify(status));
+        } catch (e) {
+            console.error("Erro ao atualizar QuickStart no localStorage:", e);
+        }
+
         return createdData as Escola;
     }
 };
 
 export const deleteEscola = async (escolaId: string): Promise<void> => {
     const userId = localStorage.getItem("app_user_id");
-    
+
     const { data: passageiros, error: checkError } = await supabase
         .from("passageiros")
         .select("id")

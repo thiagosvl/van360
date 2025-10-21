@@ -136,7 +136,7 @@ export default function PassageiroExternalForm() {
 
   const onFormError = (errors: any) => {
     toast({
-      title: "Por favor, corrija os erros no formulário.",
+      title: "Corrija os erros no formulário.",
       variant: "destructive",
     });
     setOpenAccordionItems([

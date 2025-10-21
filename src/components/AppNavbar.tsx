@@ -26,6 +26,7 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
     localStorage.removeItem("app_role");
     localStorage.removeItem("app_user_id");
     localStorage.removeItem("app_user_name");
+    localStorage.removeItem("app_quickstart_status");
     await supabase.auth.signOut();
   };
 

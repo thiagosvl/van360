@@ -39,6 +39,10 @@ export const passageiroService = {
     let newPassageiro: any = null;
     let payment: any = null;
 
+    const storageKey = "app_quickstart_status";
+    const cached = localStorage.getItem(storageKey);
+    const previousStatus = cached ? JSON.parse(cached) : null;
+
     try {
       asaasCustomer = await asaasService.createCustomer({
         name: data.nome_responsavel,
@@ -57,6 +61,14 @@ export const passageiroService = {
 
       if (insertPassageiroError) throw insertPassageiroError;
       newPassageiro = insertedPassageiro;
+
+      try {
+        const status = previousStatus ? { ...previousStatus } : {};
+        status.step_passageiros = true;
+        localStorage.setItem(storageKey, JSON.stringify(status));
+      } catch (e) {
+        console.error("Erro ao atualizar QuickStart (passageiro):", e);
+      }
 
       if (emitirCobranca) {
         const currentDate = new Date();
@@ -112,6 +124,17 @@ export const passageiroService = {
 
     } catch (err: any) {
       console.error("Falha no processo. Iniciando Rollback:", err);
+
+      try {
+        if (previousStatus) {
+          localStorage.setItem(storageKey, JSON.stringify(previousStatus));
+          window.dispatchEvent(new Event("storage"));
+          console.log("↩️ QuickStart revertido ao estado anterior.");
+        }
+      } catch (rollbackVisualErr) {
+        console.error("Erro ao reverter QuickStart (passageiro):", rollbackVisualErr);
+      }
+
       try {
         if (payment?.id) await asaasService.deletePayment(payment.id);
         if (newPassageiro?.id) await supabase.from("passageiros").delete().eq("id", newPassageiro.id);
@@ -220,14 +243,14 @@ export const passageiroService = {
       snapshotPassageiro = { ...oldPassageiro };
 
       if (oldPassageiro.asaas_customer_id) {
-        
+
         const nomeMudou = oldPassageiro.nome_responsavel !== passageiroData.nome_responsavel;
         const cpfMudou = oldPassageiro.cpf_responsavel !== passageiroData.cpf_responsavel;
         const telefoneMudou = oldPassageiro.telefone_responsavel !== passageiroData.telefone_responsavel;
         const emailMudou = oldPassageiro.email_responsavel !== passageiroData.email_responsavel;
 
         if (nomeMudou || cpfMudou || telefoneMudou || emailMudou) {
-          
+
           await asaasService.updateCustomer(oldPassageiro.asaas_customer_id, {
             name: passageiroData.nome_responsavel,
             cpfCnpj: passageiroData.cpf_responsavel,
