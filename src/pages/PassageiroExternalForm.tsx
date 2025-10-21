@@ -25,6 +25,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { cepService } from "@/services/cepService";
 import { cepMask, cpfMask, phoneMask } from "@/utils/masks";
 import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -73,6 +74,7 @@ export default function PassageiroExternalForm() {
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
+  const [loadingCep, setLoadingCep] = useState(false);
   const [motoristaNome, setMotoristaNome] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -133,6 +135,38 @@ export default function PassageiroExternalForm() {
 
     validateMotorista();
   }, [motoristaId, navigate, toast]);
+
+  const handleCepChange = async (value: string) => {
+    form.setValue("cep", value);
+    const cleanCep = value.replace(/\D/g, "");
+    if (cleanCep.length === 8) {
+      try {
+        setLoadingCep(true);
+        const endereco = await cepService.buscarEndereco(cleanCep);
+        if (endereco) {
+          form.setValue("logradouro", endereco.logradouro);
+          form.setValue("bairro", endereco.bairro);
+          form.setValue("cidade", endereco.cidade);
+          form.setValue("estado", endereco.estado);
+        } else {
+          toast({
+            title: "CEP não encontrado na base de dados.",
+            description: "Preencha o endereço manualmente.",
+            variant: "destructive",
+          });
+        }
+      } catch (error: any) {
+        console.error("Erro ao consultar CEP:", error);
+        toast({
+          title: "Erro ao consultar CEP.",
+          description: error.message || "Não foi possível concluir a operação.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingCep(false);
+      }
+    }
+  };
 
   const onFormError = (errors: any) => {
     toast({
@@ -401,7 +435,8 @@ export default function PassageiroExternalForm() {
                               placeholder="00000-000"
                               maxLength={9}
                               onChange={(e) => {
-                                field.onChange(cepMask(e.target.value));
+                                const masked = cepMask(e.target.value);
+                                handleCepChange(masked);
                               }}
                             />
                           </FormControl>
@@ -418,6 +453,7 @@ export default function PassageiroExternalForm() {
                           <FormControl>
                             <Input
                               {...field}
+                              disabled={loadingCep}
                               placeholder="Ex: Rua Comendador"
                             />
                           </FormControl>
@@ -445,7 +481,7 @@ export default function PassageiroExternalForm() {
                         <FormItem className="md:col-span-3">
                           <FormLabel>Bairro *</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input disabled={loadingCep} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -458,7 +494,7 @@ export default function PassageiroExternalForm() {
                         <FormItem className="md:col-span-3">
                           <FormLabel>Cidade *</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input disabled={loadingCep} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -471,6 +507,7 @@ export default function PassageiroExternalForm() {
                         <FormItem className="md:col-span-2">
                           <FormLabel>Estado *</FormLabel>
                           <Select
+                            disabled={loadingCep}
                             onValueChange={field.onChange}
                             value={field.value}
                           >
@@ -528,7 +565,10 @@ export default function PassageiroExternalForm() {
                         <FormItem className="md:col-span-5">
                           <FormLabel>Referência</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="Ex: próximo ao mercado" {...field} />
+                            <Textarea
+                              placeholder="Ex: próximo ao mercado"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

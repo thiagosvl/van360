@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { cepService } from "@/services/cepService";
 import { passageiroService } from "@/services/passageiroService";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
@@ -119,6 +120,7 @@ export default function PassengerFormDialog({
   novaEscolaId,
 }: PassengerFormDialogProps) {
   const [selectedEscola, setSelectedEscola] = useState<string | null>(null);
+  const [loadingCep, setLoadingCep] = useState(false);
   const [escolasModal, setEscolasModal] = useState<Escola[]>([]);
   const { toast } = useToast();
   const [openAccordionItems, setOpenAccordionItems] = useState([
@@ -157,46 +159,6 @@ export default function PassengerFormDialog({
 
   const emitirCobranca = form.watch("emitir_cobranca_mes_atual");
   const diaVencimento = form.watch("dia_vencimento");
-
-  const fetchEscolas = async (escolaId?: string) => {
-    const userId = localStorage.getItem("app_user_id");
-
-    try {
-      let query = supabase
-        .from("escolas")
-        .select("*")
-        .eq("usuario_id", userId)
-        .order("nome");
-
-      if (escolaId) {
-        query = query.or(`ativo.eq.true,id.eq.${escolaId}`);
-      } else {
-        query = query.eq("ativo", true);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      setEscolasModal(data || []);
-    } catch (error) {
-      console.error("Erro ao buscar escolas (modal):", error);
-      setEscolasModal([]);
-    }
-  };
-
-  const onFormError = (errors: any) => {
-    toast({
-      title: "Corrija os erros no formulário.",
-      variant: "destructive",
-    });
-    setOpenAccordionItems([
-      "passageiro",
-      "responsavel",
-      "cobranca",
-      "endereco",
-      "observacoes",
-    ]);
-  };
 
   useEffect(() => {
     if (novaEscolaId) {
@@ -320,6 +282,78 @@ export default function PassengerFormDialog({
       }
     }
   }, [isOpen, editingPassageiro, form, prePassageiro, mode]);
+
+  const fetchEscolas = async (escolaId?: string) => {
+    const userId = localStorage.getItem("app_user_id");
+
+    try {
+      let query = supabase
+        .from("escolas")
+        .select("*")
+        .eq("usuario_id", userId)
+        .order("nome");
+
+      if (escolaId) {
+        query = query.or(`ativo.eq.true,id.eq.${escolaId}`);
+      } else {
+        query = query.eq("ativo", true);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      setEscolasModal(data || []);
+    } catch (error) {
+      console.error("Erro ao buscar escolas (modal):", error);
+      setEscolasModal([]);
+    }
+  };
+
+  const onFormError = (errors: any) => {
+    toast({
+      title: "Corrija os erros no formulário.",
+      variant: "destructive",
+    });
+    setOpenAccordionItems([
+      "passageiro",
+      "responsavel",
+      "cobranca",
+      "endereco",
+      "observacoes",
+    ]);
+  };
+
+  const handleCepChange = async (value: string) => {
+    form.setValue("cep", value);
+    const cleanCep = value.replace(/\D/g, "");
+    if (cleanCep.length === 8) {
+      try {
+        setLoadingCep(true);
+        const endereco = await cepService.buscarEndereco(cleanCep);
+        if (endereco) {
+          form.setValue("logradouro", endereco.logradouro);
+          form.setValue("bairro", endereco.bairro);
+          form.setValue("cidade", endereco.cidade);
+          form.setValue("estado", endereco.estado);
+        } else {
+          toast({
+            title: "CEP não encontrado na base de dados.",
+            description: "Preencha o endereço manualmente.",
+            variant: "destructive",
+          });
+        }
+      } catch (error: any) {
+        console.error("Erro ao consultar CEP:", error);
+        toast({
+          title: "Erro ao consultar CEP.",
+          description: error.message || "Não foi possível concluir a operação.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingCep(false);
+      }
+    }
+  };
 
   const handleSubmit = async (data: PassageiroFormData) => {
     const { emitir_cobranca_mes_atual, ...purePayload } = data;
@@ -742,7 +776,7 @@ export default function PassengerFormDialog({
                               placeholder="00000-000"
                               onChange={(e) => {
                                 const maskedValue = cepMask(e.target.value);
-                                field.onChange(maskedValue);
+                                handleCepChange(maskedValue);
                               }}
                             />
                           </FormControl>
@@ -759,6 +793,7 @@ export default function PassengerFormDialog({
                           <FormControl>
                             <Input
                               {...field}
+                              disabled={loadingCep}
                               placeholder="Ex: Rua Comendador"
                             />
                           </FormControl>
@@ -787,7 +822,7 @@ export default function PassengerFormDialog({
                         <FormItem className="md:col-span-4">
                           <FormLabel>Bairro *</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input disabled={loadingCep} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -801,7 +836,7 @@ export default function PassengerFormDialog({
                         <FormItem className="md:col-span-3">
                           <FormLabel>Cidade *</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input disabled={loadingCep} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -814,6 +849,7 @@ export default function PassengerFormDialog({
                         <FormItem className="md:col-span-2">
                           <FormLabel>Estado *</FormLabel>
                           <Select
+                            disabled={loadingCep}
                             onValueChange={field.onChange}
                             value={field.value}
                           >
@@ -872,7 +908,10 @@ export default function PassengerFormDialog({
                         <FormItem className="md:col-span-5">
                           <FormLabel>Referência</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="Ex: próximo ao mercado" {...field} />
+                            <Textarea
+                              placeholder="Ex: próximo ao mercado"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
