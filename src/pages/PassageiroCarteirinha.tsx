@@ -366,6 +366,7 @@ export default function PassageiroCarteirinha() {
   };
 
   const handleDelete = async () => {
+    setRefreshing(true);
     try {
       const numCobrancas = await passageiroService.getNumeroCobrancas(
         passageiro_id
@@ -380,6 +381,8 @@ export default function PassageiroCarteirinha() {
         return;
       }
 
+      setRefreshing(true);
+
       await passageiroService.excluirPassageiro(passageiro_id);
 
       toast({ title: "Passageiro excluído com sucesso." });
@@ -391,6 +394,8 @@ export default function PassageiroCarteirinha() {
         description: error.message || "Não foi possível concluir a operação.",
         variant: "destructive",
       });
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -456,6 +461,7 @@ export default function PassageiroCarteirinha() {
   const handleDeleteCobranca = async () => {
     if (!deleteCobrancaDialog.cobranca) return;
 
+    setRefreshing(true);
     try {
       await cobrancaService.excluirCobranca(deleteCobrancaDialog.cobranca);
 
@@ -477,6 +483,7 @@ export default function PassageiroCarteirinha() {
       });
     } finally {
       setDeleteCobrancaDialog({ open: false, cobranca: null });
+      setRefreshing(false);
     }
   };
 
@@ -487,18 +494,12 @@ export default function PassageiroCarteirinha() {
     setConfirmDialog({ open: true, cobrancaId, action: "desfazer" });
 
   const handleConfirmAction = async () => {
+    setRefreshing(true);
     try {
       if (confirmDialog.action === "enviar") {
-        toast({
-          title: "Notificação enviada com sucesso para o responsável",
-        });
+        enviarNotificacaoCobranca(confirmDialog.cobrancaId);
       } else if (confirmDialog.action === "desfazer") {
-        await cobrancaService.desfazerPagamento(confirmDialog.cobrancaId);
-
-        toast({
-          title: "Pagamento desfeito com sucesso.",
-        });
-        fetchCobrancas(yearFilter);
+        desfazerPagamento(confirmDialog.cobrancaId);
       }
     } catch (error: any) {
       console.error("Erro ao processar ação:", error);
@@ -509,6 +510,74 @@ export default function PassageiroCarteirinha() {
       });
     } finally {
       setConfirmDialog({ open: false, cobrancaId: "", action: "enviar" });
+    }
+  };
+
+  const enviarNotificacaoCobranca = async (cobrancaId: string) => {
+    try {
+      const { data: cobranca, error: checkError } = await supabase
+        .from("cobrancas")
+        .select("*")
+        .eq("id", cobrancaId)
+        .single();
+
+      if (checkError) {
+        throw checkError;
+      }
+
+      if (disableEnviarNotificacao(cobranca)) {
+        toast({
+          title: "Não foi possível enviar a notificação.",
+          description:
+            "Só é possível enviar para cobranças geradas automaticamente.",
+          variant: "destructive",
+        });
+      } else {
+        setRefreshing(true);
+        try {
+          await cobrancaService.enviarNotificacao(cobranca);
+          toast({
+            title: "Notificação enviada com sucesso para o responsável",
+          });
+        } catch (error) {
+          console.error("Erro ao enviar notificação:", error);
+          toast({
+            title: "Erro ao enviar notificação da cobranca.",
+            variant: "destructive",
+          });
+        } finally {
+          setRefreshing(false);
+        }
+      }
+    } catch (error: any) {
+      console.error("Erro ao processar ação:", error);
+      toast({
+        title: "Erro ao processar a ação.",
+        description: error.message || "Não foi possível concluir a operação.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const desfazerPagamento = async (cobrancaId: string) => {
+    setRefreshing(true);
+    try {
+      await cobrancaService.desfazerPagamento(cobrancaId);
+
+      toast({
+        title: "Pagamento desfeito com sucesso.",
+      });
+
+      fetchCobrancas(yearFilter);
+    } catch (error: any) {
+      console.error("Erro ao processar ação:", error);
+      toast({
+        title: "Erro ao processar a ação.",
+        description: error.message || "Não foi possível concluir a operação.",
+        variant: "destructive",
+      });
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -1044,6 +1113,7 @@ export default function PassageiroCarteirinha() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        title="Copiar"
                         className="h-6 w-6 text-muted-foreground hover:text-primary"
                         onClick={() =>
                           handleCopyToClipboard(
@@ -1064,6 +1134,7 @@ export default function PassageiroCarteirinha() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        title="Copiar"
                         className="h-6 w-6 text-muted-foreground hover:text-primary"
                         onClick={() =>
                           handleCopyToClipboard(

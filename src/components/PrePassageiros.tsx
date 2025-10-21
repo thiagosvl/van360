@@ -229,7 +229,7 @@ export default function PrePassageiros({
                   )}
                 </CardTitle>
 
-                <Button onClick={handleCopyLink}>
+                <Button title="Copiar" onClick={handleCopyLink}>
                   <Copy className="h-4 w-4" />
                   <span className="hidden sm:inline">
                     Copiar Link de Cadastro

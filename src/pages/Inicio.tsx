@@ -161,6 +161,7 @@ const Inicio = () => {
               </div>
               <Button
                 variant="outline"
+                title="Copiar"
                 className="text-blue-700 border-blue-300 hover:bg-blue-100 shrink-0"
                 onClick={handleCopyLink}
               >

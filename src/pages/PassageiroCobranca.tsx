@@ -257,7 +257,10 @@ export default function PassageiroCobranca() {
         fetchNotificacoes();
       } catch (error) {
         console.error("Erro ao enviar notificação:", error);
-        toast({ title: "Erro ao enviar cobrança.", variant: "destructive" });
+        toast({
+          title: "Erro ao enviar notificação da cobranca.",
+          variant: "destructive",
+        });
       } finally {
         setRefreshing(false);
       }
@@ -478,6 +481,7 @@ export default function PassageiroCobranca() {
                         disabled={disableVerPaginaPagamento(cobranca)}
                         variant="outline"
                         className="flex-1"
+                        title="Copiar"
                         onClick={() =>
                           handleCopyLink(cobranca.asaas_invoice_url)
                         }
@@ -644,6 +648,7 @@ export default function PassageiroCobranca() {
                         disabled={disableVerPaginaPagamento(cobranca)}
                         variant="outline"
                         className="flex-1"
+                        title="Copiar"
                         onClick={() =>
                           handleCopyLink(cobranca.asaas_invoice_url)
                         }
