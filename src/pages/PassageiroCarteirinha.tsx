@@ -212,10 +212,6 @@ export default function PassageiroCarteirinha() {
   const handleCopyToClipboard = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast({
-        title: `${label} copiado!`,
-        description: `"${text}" foi copiado para a área de transferência.`,
-      });
     } catch (err) {
       console.error("Erro ao copiar:", err);
       toast({

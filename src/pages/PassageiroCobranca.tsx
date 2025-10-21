@@ -202,10 +202,6 @@ export default function PassageiroCobranca() {
 
     try {
       await navigator.clipboard.writeText(link);
-      toast({
-        title: "Link de pagamento copiado!",
-        description: "O link foi copiado para a área de transferência.",
-      });
     } catch (err) {
       console.error("Erro ao copiar link:", err);
       toast({
