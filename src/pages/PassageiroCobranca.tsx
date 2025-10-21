@@ -250,6 +250,7 @@ export default function PassageiroCobranca() {
         variant: "destructive",
       });
     } else {
+      setRefreshing(true);
       try {
         await cobrancaService.enviarNotificacao(cobranca);
         toast({ title: "Notificação enviada com sucesso para o responsável" });
@@ -257,11 +258,14 @@ export default function PassageiroCobranca() {
       } catch (error) {
         console.error("Erro ao enviar notificação:", error);
         toast({ title: "Erro ao enviar cobrança.", variant: "destructive" });
+      } finally {
+        setRefreshing(false);
       }
     }
   };
 
   const handleToggleLembretes = async () => {
+    setRefreshing(true);
     try {
       const novoStatus = await cobrancaService.toggleNotificacoes(cobranca);
 
@@ -279,6 +283,8 @@ export default function PassageiroCobranca() {
         description: error.message || "Não foi possível concluir a operação.",
         variant: "destructive",
       });
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -320,6 +326,7 @@ export default function PassageiroCobranca() {
   };
 
   const desfazerPagamento = async () => {
+    setRefreshing(true);
     try {
       await cobrancaService.desfazerPagamento(cobranca_id);
 
@@ -336,6 +343,7 @@ export default function PassageiroCobranca() {
       });
     } finally {
       setConfirmDialogDesfazer({ open: false, cobrancaId: "" });
+      setRefreshing(false);
     }
   };
 
