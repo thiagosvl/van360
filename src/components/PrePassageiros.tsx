@@ -178,10 +178,6 @@ export default function PrePassageiros({
   const handleCopyLink = () => {
     try {
       navigator.clipboard.writeText(GENERIC_CADASTRO_LINK);
-      toast({
-        title: "Link copiado!",
-        description: "Envie este link para o responsável iniciar o cadastro.",
-      });
     } catch (error) {
       console.error("Erro ao copiar link:", error);
       toast({
