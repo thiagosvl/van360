@@ -523,10 +523,7 @@ export default function PassageiroCobranca() {
                   disabled={!cobranca.telefone_responsavel}
                   onClick={() =>
                     window.open(
-                      `https://wa.me/${cobranca.telefone_responsavel?.replace(
-                        /\D/g,
-                        ""
-                      )}`,
+                      `https://wa.me/${cobranca.telefone_responsavel}`,
                       "_blank"
                     )
                   }

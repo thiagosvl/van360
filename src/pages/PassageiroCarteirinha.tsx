@@ -1084,10 +1084,7 @@ export default function PassageiroCarteirinha() {
                     disabled={!passageiro.telefone_responsavel}
                     onClick={() =>
                       window.open(
-                        `https://wa.me/${passageiro.telefone_responsavel?.replace(
-                          /\D/g,
-                          ""
-                        )}`,
+                        `https://wa.me/${passageiro.telefone_responsavel}`,
                         "_blank"
                       )
                     }

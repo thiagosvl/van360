@@ -120,10 +120,6 @@ const Inicio = () => {
     const linkToCopy = `${BASE_DOMAIN}/cadastro-passageiro/${profile.id}`;
     try {
       navigator.clipboard.writeText(linkToCopy);
-      toast({
-        title: "Link copiado!",
-        description: "Envie este link para o responsável iniciar o cadastro.",
-      });
     } catch (error) {
       console.error("Erro ao copiar link:", error);
       toast({
