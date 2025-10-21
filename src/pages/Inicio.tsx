@@ -157,7 +157,7 @@ const Inicio = () => {
                   <p className="text-lg font-bold text-blue-700 leading-snug">
                     Link de Cadastro Rápido
                   </p>
-                  <p className="text-sm text-blue-900 break-all mt-1">
+                  <p className="text-sm text-blue-900 mt-1">
                     Copie o link abaixo e envie-o ao responsável do passageiro
                     para que ele inicie o cadastro.
                   </p>
