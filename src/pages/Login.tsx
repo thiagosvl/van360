@@ -41,7 +41,7 @@ export default function Login() {
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      cpfcnpj: "71043808094",
+      cpfcnpj: "710.438.080-94",
       senha: "AomRRfMnJF",
     },
   });

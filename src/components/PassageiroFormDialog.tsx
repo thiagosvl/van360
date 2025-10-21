@@ -762,23 +762,31 @@ export default function PassengerFormDialog({
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                     <FormField
                       control={form.control}
                       name="cep"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-1">
+                        <FormItem className="md:col-span-2">
                           <FormLabel>CEP *</FormLabel>
                           <FormControl>
-                            <Input
-                              {...field}
-                              maxLength={9}
-                              placeholder="00000-000"
-                              onChange={(e) => {
-                                const maskedValue = cepMask(e.target.value);
-                                handleCepChange(maskedValue);
-                              }}
-                            />
+                            <div className="relative">
+                              <Input
+                                {...field}
+                                placeholder="00000-000"
+                                maxLength={9}
+                                className="pr-8"
+                                onChange={(e) => {
+                                  const masked = cepMask(e.target.value);
+                                  handleCepChange(masked);
+                                }}
+                              />
+                              {loadingCep && (
+                                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                </div>
+                              )}
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -806,7 +814,7 @@ export default function PassengerFormDialog({
                       control={form.control}
                       name="numero"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-1">
+                        <FormItem className="md:col-span-2">
                           <FormLabel>Número *</FormLabel>
                           <FormControl>
                             <Input {...field} />
@@ -833,7 +841,7 @@ export default function PassengerFormDialog({
                       control={form.control}
                       name="cidade"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-3">
+                        <FormItem className="md:col-span-4">
                           <FormLabel>Cidade *</FormLabel>
                           <FormControl>
                             <Input disabled={loadingCep} {...field} />
@@ -905,7 +913,7 @@ export default function PassengerFormDialog({
                       control={form.control}
                       name="referencia"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-5">
+                        <FormItem className="md:col-span-6">
                           <FormLabel>Referência</FormLabel>
                           <FormControl>
                             <Textarea

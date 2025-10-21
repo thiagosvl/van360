@@ -236,394 +236,412 @@ export default function PassageiroExternalForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 sm:py-10">
-      <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-xl p-7 sm:p-5">
-        <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
-          Cadastro de Passageiro
-        </h1>
-        <span className="text-center font-semibold text-primary block">
-          Condutor: {motoristaNome}
-        </span>
+    <>
+      <div className="min-h-screen bg-gray-50 sm:py-10">
+        <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-xl p-7 sm:p-5">
+          <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
+            Cadastro de Passageiro
+          </h1>
+          <span className="text-center font-semibold text-primary block">
+            Condutor: {motoristaNome}
+          </span>
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-            className="space-y-6"
-          >
-            <Accordion
-              type="multiple"
-              value={openAccordionItems}
-              onValueChange={setOpenAccordionItems}
-              className="w-full"
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit, onFormError)}
+              className="space-y-6"
             >
-              {/* DADOS DO PASSAGEIRO */}
-              <AccordionItem value="passageiro">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2 text-lg font-semibold">
-                    <User className="w-5 h-5 text-primary" />
-                    Passageiro
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="nome"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-3">
-                          <FormLabel>Nome do Passageiro *</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Ex: Maria da Silva"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="genero"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Gênero</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value || undefined}
-                          >
+              <Accordion
+                type="multiple"
+                value={openAccordionItems}
+                onValueChange={setOpenAccordionItems}
+                className="w-full"
+              >
+                {/* DADOS DO PASSAGEIRO */}
+                <AccordionItem value="passageiro">
+                  <AccordionTrigger>
+                    <div className="flex items-center gap-2 text-lg font-semibold">
+                      <User className="w-5 h-5 text-primary" />
+                      Passageiro
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="nome"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-3">
+                            <FormLabel>Nome do Passageiro *</FormLabel>
                             <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione o gênero" />
-                              </SelectTrigger>
+                              <Input
+                                {...field}
+                                placeholder="Ex: Maria da Silva"
+                              />
                             </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Masculino">
-                                Masculino
-                              </SelectItem>
-                              <SelectItem value="Feminino">Feminino</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-              {/* DADOS DO RESPONSÁVEL */}
-              <AccordionItem value="responsavel" className="mt-4">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2 text-lg font-semibold">
-                    <User className="w-5 h-5 text-primary" />
-                    Responsável
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                  <Alert
-                    variant="default"
-                    className="bg-blue-50 border-blue-200 text-blue-900 [&>svg]:text-blue-500"
-                  >
-                    <AlertTriangle className="h-4 w-4 mt-0.5" />
-                    <AlertTitle className="font-semibold text-sm">
-                      Atenção!
-                    </AlertTitle>
-                    <AlertDescription className="text-xs">
-                      Preencha com os dados do responsável financeiro e legal do
-                      passageiro.
-                    </AlertDescription>
-                  </Alert>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="nome_responsavel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome do Responsável *</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="email_responsavel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>E-mail *</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="exemplo@email.com"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                      <FormField
+                        control={form.control}
+                        name="genero"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel>Gênero</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value || undefined}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione o gênero" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="Masculino">
+                                  Masculino
+                                </SelectItem>
+                                <SelectItem value="Feminino">
+                                  Feminino
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="telefone_responsavel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Telefone (WhatsApp) *</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="(00) 00000-0000"
-                              maxLength={15}
-                              onChange={(e) => {
-                                field.onChange(phoneMask(e.target.value));
-                              }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="cpf_responsavel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>CPF *</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="000.000.000-00"
-                              maxLength={14}
-                              onChange={(e) =>
-                                field.onChange(cpfMask(e.target.value))
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+                {/* DADOS DO RESPONSÁVEL */}
+                <AccordionItem value="responsavel" className="mt-4">
+                  <AccordionTrigger>
+                    <div className="flex items-center gap-2 text-lg font-semibold">
+                      <User className="w-5 h-5 text-primary" />
+                      Responsável
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
+                    <Alert
+                      variant="default"
+                      className="bg-blue-50 border-blue-200 text-blue-900 [&>svg]:text-blue-500"
+                    >
+                      <AlertTriangle className="h-4 w-4 mt-0.5" />
+                      <AlertTitle className="font-semibold text-sm">
+                        Atenção!
+                      </AlertTitle>
+                      <AlertDescription className="text-xs">
+                        Preencha com os dados do responsável financeiro e legal
+                        do passageiro.
+                      </AlertDescription>
+                    </Alert>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="nome_responsavel"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome do Responsável *</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="email_responsavel"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>E-mail *</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="email"
+                                placeholder="exemplo@email.com"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-              {/* ENDEREÇO */}
-              <AccordionItem value="endereco" className="mt-4">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2 text-lg font-semibold">
-                    <MapPin className="w-5 h-5 text-primary" />
-                    Endereço
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="cep"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-1">
-                          <FormLabel>CEP *</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="00000-000"
-                              maxLength={9}
-                              onChange={(e) => {
-                                const masked = cepMask(e.target.value);
-                                handleCepChange(masked);
-                              }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="logradouro"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-4">
-                          <FormLabel>Logradouro *</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="telefone_responsavel"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Telefone (WhatsApp) *</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="(00) 00000-0000"
+                                maxLength={15}
+                                onChange={(e) => {
+                                  field.onChange(phoneMask(e.target.value));
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="cpf_responsavel"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>CPF *</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="000.000.000-00"
+                                maxLength={14}
+                                onChange={(e) =>
+                                  field.onChange(cpfMask(e.target.value))
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* ENDEREÇO */}
+                <AccordionItem value="endereco" className="mt-4">
+                  <AccordionTrigger>
+                    <div className="flex items-center gap-2 text-lg font-semibold">
+                      <MapPin className="w-5 h-5 text-primary" />
+                      Endereço
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="cep"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel>CEP *</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Input
+                                  {...field}
+                                  placeholder="00000-000"
+                                  maxLength={9}
+                                  className="pr-8"
+                                  onChange={(e) => {
+                                    const masked = cepMask(e.target.value);
+                                    handleCepChange(masked);
+                                  }}
+                                />
+                                {loadingCep && (
+                                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                  </div>
+                                )}
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="logradouro"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-4">
+                            <FormLabel>Logradouro *</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                disabled={loadingCep}
+                                placeholder="Ex: Rua Comendador"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="numero"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel>Número *</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="bairro"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-4">
+                            <FormLabel>Bairro *</FormLabel>
+                            <FormControl>
+                              <Input disabled={loadingCep} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="cidade"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-4">
+                            <FormLabel>Cidade *</FormLabel>
+                            <FormControl>
+                              <Input disabled={loadingCep} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="estado"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel>Estado *</FormLabel>
+                            <Select
                               disabled={loadingCep}
-                              placeholder="Ex: Rua Comendador"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="numero"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Número *</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="bairro"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-3">
-                          <FormLabel>Bairro *</FormLabel>
-                          <FormControl>
-                            <Input disabled={loadingCep} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="cidade"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-3">
-                          <FormLabel>Cidade *</FormLabel>
-                          <FormControl>
-                            <Input disabled={loadingCep} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="estado"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Estado *</FormLabel>
-                          <Select
-                            disabled={loadingCep}
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="UF" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="max-h-60 overflow-y-auto">
+                                <SelectItem value="AC">Acre</SelectItem>
+                                <SelectItem value="AL">Alagoas</SelectItem>
+                                <SelectItem value="AP">Amapá</SelectItem>
+                                <SelectItem value="AM">Amazonas</SelectItem>
+                                <SelectItem value="BA">Bahia</SelectItem>
+                                <SelectItem value="CE">Ceará</SelectItem>
+                                <SelectItem value="DF">
+                                  Distrito Federal
+                                </SelectItem>
+                                <SelectItem value="ES">
+                                  Espírito Santo
+                                </SelectItem>
+                                <SelectItem value="GO">Goiás</SelectItem>
+                                <SelectItem value="MA">Maranhão</SelectItem>
+                                <SelectItem value="MT">Mato Grosso</SelectItem>
+                                <SelectItem value="MS">
+                                  Mato Grosso do Sul
+                                </SelectItem>
+                                <SelectItem value="MG">Minas Gerais</SelectItem>
+                                <SelectItem value="PA">Pará</SelectItem>
+                                <SelectItem value="PB">Paraíba</SelectItem>
+                                <SelectItem value="PR">Paraná</SelectItem>
+                                <SelectItem value="PE">Pernambuco</SelectItem>
+                                <SelectItem value="PI">Piauí</SelectItem>
+                                <SelectItem value="RJ">
+                                  Rio de Janeiro
+                                </SelectItem>
+                                <SelectItem value="RN">
+                                  Rio Grande do Norte
+                                </SelectItem>
+                                <SelectItem value="RS">
+                                  Rio Grande do Sul
+                                </SelectItem>
+                                <SelectItem value="RO">Rondônia</SelectItem>
+                                <SelectItem value="RR">Roraima</SelectItem>
+                                <SelectItem value="SC">
+                                  Santa Catarina
+                                </SelectItem>
+                                <SelectItem value="SP">São Paulo</SelectItem>
+                                <SelectItem value="SE">Sergipe</SelectItem>
+                                <SelectItem value="TO">Tocantins</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="referencia"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-6">
+                            <FormLabel>Referência</FormLabel>
                             <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="UF" />
-                              </SelectTrigger>
+                              <Textarea
+                                placeholder="Ex: próximo ao mercado"
+                                {...field}
+                              />
                             </FormControl>
-                            <SelectContent className="max-h-60 overflow-y-auto">
-                              <SelectItem value="AC">Acre</SelectItem>
-                              <SelectItem value="AL">Alagoas</SelectItem>
-                              <SelectItem value="AP">Amapá</SelectItem>
-                              <SelectItem value="AM">Amazonas</SelectItem>
-                              <SelectItem value="BA">Bahia</SelectItem>
-                              <SelectItem value="CE">Ceará</SelectItem>
-                              <SelectItem value="DF">
-                                Distrito Federal
-                              </SelectItem>
-                              <SelectItem value="ES">Espírito Santo</SelectItem>
-                              <SelectItem value="GO">Goiás</SelectItem>
-                              <SelectItem value="MA">Maranhão</SelectItem>
-                              <SelectItem value="MT">Mato Grosso</SelectItem>
-                              <SelectItem value="MS">
-                                Mato Grosso do Sul
-                              </SelectItem>
-                              <SelectItem value="MG">Minas Gerais</SelectItem>
-                              <SelectItem value="PA">Pará</SelectItem>
-                              <SelectItem value="PB">Paraíba</SelectItem>
-                              <SelectItem value="PR">Paraná</SelectItem>
-                              <SelectItem value="PE">Pernambuco</SelectItem>
-                              <SelectItem value="PI">Piauí</SelectItem>
-                              <SelectItem value="RJ">Rio de Janeiro</SelectItem>
-                              <SelectItem value="RN">
-                                Rio Grande do Norte
-                              </SelectItem>
-                              <SelectItem value="RS">
-                                Rio Grande do Sul
-                              </SelectItem>
-                              <SelectItem value="RO">Rondônia</SelectItem>
-                              <SelectItem value="RR">Roraima</SelectItem>
-                              <SelectItem value="SC">Santa Catarina</SelectItem>
-                              <SelectItem value="SP">São Paulo</SelectItem>
-                              <SelectItem value="SE">Sergipe</SelectItem>
-                              <SelectItem value="TO">Tocantins</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* OBSERVAÇÕES */}
+                <AccordionItem value="observacoes" className="mt-4">
+                  <AccordionTrigger>
+                    <div className="flex items-center gap-2 text-lg font-semibold">
+                      <FileText className="w-5 h-5 text-primary" />
+                      Observações (Opcional)
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
                     <FormField
                       control={form.control}
-                      name="referencia"
+                      name="observacoes"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-5">
-                          <FormLabel>Referência</FormLabel>
+                        <FormItem>
                           <FormControl>
                             <Textarea
-                              placeholder="Ex: próximo ao mercado"
+                              placeholder="Ex: Alérgico a amendoim, entra pela porta lateral da escola, etc."
                               {...field}
+                              rows={4}
                             />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
-              {/* OBSERVAÇÕES */}
-              <AccordionItem value="observacoes" className="mt-4">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2 text-lg font-semibold">
-                    <FileText className="w-5 h-5 text-primary" />
-                    Observações (Opcional)
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="observacoes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Ex: Alérgico a amendoim, entra pela porta lateral da escola, etc."
-                            {...field}
-                            rows={4}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-
-            <Button
-              type="submit"
-              disabled={submitting}
-              className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Enviando...
-                </>
-              ) : (
-                "Enviar"
-              )}
-            </Button>
-          </form>
-        </Form>
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Enviando...
+                  </>
+                ) : (
+                  "Enviar"
+                )}
+              </Button>
+            </form>
+          </Form>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
