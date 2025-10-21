@@ -24,6 +24,7 @@ import {
   Users2,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import EscolaFormDialog from "./EscolaFormDialog";
 import { LoadingOverlay } from "./LoadingOverlay";
 import PassageiroFormDialog from "./PassageiroFormDialog";
 
@@ -51,11 +52,13 @@ interface PrePassageirosProps {
 
 export default function PrePassageiros({
   onFinalizeNewPrePassageiro,
-  refreshKey
+  refreshKey,
 }: PrePassageirosProps) {
   const [prePassageiros, setPrePassageiros] = useState<PrePassageiro[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const { profile } = useAuth();
+  const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
+  const [isCreatingEscola, setIsCreatingEscola] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { toast } = useToast();
@@ -73,10 +76,23 @@ export default function PrePassageiros({
   const GENERIC_CADASTRO_LINK = `${BASE_DOMAIN}/cadastro-passageiro/${profile.id}`;
 
   useEffect(() => {
-  if (refreshKey !== undefined) {
-    fetchPrePassageiros();
-  }
-}, [refreshKey]);
+    if (refreshKey !== undefined) {
+      fetchPrePassageiros();
+    }
+  }, [refreshKey]);
+
+  const handleCloseEscolaFormDialog = () => {
+    safeCloseDialog(() => {
+      setIsCreatingEscola(false);
+    });
+  };
+
+  const handleEscolaCreated = (novaEscola) => {
+    safeCloseDialog(() => {
+      setIsCreatingEscola(false);
+      setNovaEscolaId(novaEscola.id);
+    });
+  };
 
   const handleCadastrarRapidoLink = async () => {
     const motoristaId = localStorage.getItem("app_user_id");
@@ -208,6 +224,7 @@ export default function PrePassageiros({
   };
 
   const handleFinalizeSuccess = () => {
+    setNovaEscolaId(null);
     setIsFinalizeDialogOpen(false);
     fetchPrePassageiros();
     onFinalizeNewPrePassageiro();
@@ -340,14 +357,25 @@ export default function PrePassageiros({
           <PassageiroFormDialog
             isOpen={isFinalizeDialogOpen}
             onClose={() =>
-              safeCloseDialog(() => setIsFinalizeDialogOpen(false))
+              safeCloseDialog(() => {
+                setNovaEscolaId(null);
+                setIsFinalizeDialogOpen(false);
+              })
             }
+            onSuccess={handleFinalizeSuccess}
             prePassageiro={selectedPrePassageiro}
             editingPassageiro={null}
-            onSuccess={handleFinalizeSuccess}
+            onCreateEscola={() => setIsCreatingEscola(true)}
             mode="finalize"
+            novaEscolaId={novaEscolaId}
           />
         )}
+
+        <EscolaFormDialog
+          isOpen={isCreatingEscola}
+          onClose={handleCloseEscolaFormDialog}
+          onSuccess={handleEscolaCreated}
+        />
 
         <ConfirmationDialog
           open={deleteDialog.open}

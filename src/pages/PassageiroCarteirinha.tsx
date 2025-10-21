@@ -1,6 +1,7 @@
 import CobrancaDialog from "@/components/CobrancaDialog";
 import CobrancaEditDialog from "@/components/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import EscolaFormDialog from "@/components/EscolaFormDialog";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/PassageiroFormDialog";
@@ -122,6 +123,8 @@ const CarteirinhaSkeleton = () => (
 );
 
 export default function PassageiroCarteirinha() {
+  const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
+  const [isCreatingEscola, setIsCreatingEscola] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
   const { setPageTitle, setPageSubtitle } = useLayout();
@@ -207,6 +210,19 @@ export default function PassageiroCarteirinha() {
     setLoading(false);
   };
 
+  const handleCloseEscolaFormDialog = () => {
+    safeCloseDialog(() => {
+      setIsCreatingEscola(false);
+    });
+  };
+
+  const handleEscolaCreated = (novaEscola) => {
+    safeCloseDialog(() => {
+      setIsCreatingEscola(false);
+      setNovaEscolaId(novaEscola.id);
+    });
+  };
+
   const handleEditClick = () => {
     setIsFormOpen(true);
   };
@@ -281,6 +297,7 @@ export default function PassageiroCarteirinha() {
   };
 
   const handlePassageiroFormSuccess = () => {
+    setNovaEscolaId(null);
     fetchPassageiro();
     fetchCobrancas(yearFilter, true);
     fetchAvailableYears();
@@ -1403,12 +1420,24 @@ export default function PassageiroCarteirinha() {
           {isFormOpen && (
             <PassageiroFormDialog
               isOpen={isFormOpen}
-              onClose={() => safeCloseDialog(() => setIsFormOpen(false))}
-              editingPassageiro={passageiro}
+              onClose={() =>
+                safeCloseDialog(() => {
+                  setNovaEscolaId(null);
+                  setIsFormOpen(false);
+                })
+              }
               onSuccess={handlePassageiroFormSuccess}
+              editingPassageiro={passageiro}
+              onCreateEscola={() => setIsCreatingEscola(true)}
               mode="edit"
+              novaEscolaId={novaEscolaId}
             />
           )}
+          <EscolaFormDialog
+            isOpen={isCreatingEscola}
+            onClose={handleCloseEscolaFormDialog}
+            onSuccess={handleEscolaCreated}
+          />
           {cobrancaToEdit && (
             <CobrancaEditDialog
               isOpen={editDialogOpen}
