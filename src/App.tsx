@@ -74,7 +74,7 @@ const App = () => {
 
         if (force_update) {
           alert(
-            "Nova versão obrigatória disponível. O aplicativo será atualizado agora para garantir o funcionamento."
+            "Nova versão disponível. O aplicativo será atualizado agora para garantir o funcionamento."
           );
 
           setUpdating(true);
