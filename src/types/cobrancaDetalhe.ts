@@ -18,6 +18,7 @@ export interface CobrancaDetalhe {
   origem: string;
   pagamento_manual: boolean;
   escola_nome: string;
+  veiculo_placa: string;
   mes: number;
   ano: number;
 }

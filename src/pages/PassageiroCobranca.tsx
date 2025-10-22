@@ -39,6 +39,7 @@ import {
   getStatusText,
   meses,
 } from "@/utils/formatters";
+import { formatarPlacaExibicao } from "@/utils/placaUtils";
 import {
   ArrowRight,
   BadgeCheck,
@@ -47,6 +48,7 @@ import {
   Bot,
   Calendar,
   CalendarIcon,
+  Car,
   Contact,
   Copy,
   CreditCard,
@@ -532,6 +534,9 @@ export default function PassageiroCobranca() {
                 </InfoItem>
                 <InfoItem icon={School} label="Escola">
                   {cobranca.escola_nome}
+                </InfoItem>
+                <InfoItem icon={Car} label="Veículo">
+                  {formatarPlacaExibicao(cobranca.veiculo_placa)}
                 </InfoItem>
 
                 <div className="space-y-2 pt-6 border-t">

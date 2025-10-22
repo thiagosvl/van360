@@ -569,7 +569,7 @@ export default function PassengerFormDialog({
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Selecione uma escola" />
+                                <SelectValue placeholder="Selecione a escola" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent className="max-h-60 overflow-y-auto">
