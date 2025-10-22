@@ -29,7 +29,9 @@ import Relatorios from "./pages/Relatorios";
 import { Capacitor } from "@capacitor/core";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { Loader2 } from "lucide-react";
+import ResponsavelGate from "./components/auth/ResponsavelGate";
 import BackButtonController from "./hooks/BackButtonController";
+import ResponsavelLayout from "./layouts/ResponsavelLayout";
 import Veiculos from "./pages/Veiculos";
 
 const queryClient = new QueryClient();
@@ -193,6 +195,15 @@ const App = () => {
 
               {/* Redirecionamento padrão */}
               <Route path="/" element={<Navigate to="/inicio" replace />} />
+
+              <Route
+                path="/responsavel/*"
+                element={
+                  <ResponsavelGate>
+                    <ResponsavelLayout />
+                  </ResponsavelGate>
+                }
+              />
 
               {/* Rotas Protegidas */}
               <Route

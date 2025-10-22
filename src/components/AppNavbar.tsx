@@ -24,12 +24,37 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
   const { pageTitle, pageSubtitle } = useLayout();
 
   const handleSignOut = async () => {
-    localStorage.removeItem("app_role");
-    localStorage.removeItem("app_user_id");
-    localStorage.removeItem(STORAGE_KEY_QUICKSTART_STATUS);
+    try {
+      const { data } = await supabase.auth.getSession();
 
-    if (supabase.auth.getSession()) {
-      await supabase.auth.signOut();
+      if (data?.session) {
+        const { error } = await supabase.auth.signOut();
+        if (error) console.error("Erro ao realizar logout:", error);
+      } else {
+        console.warn(
+          "Nenhuma sessão ativa encontrada, limpando localStorage..."
+        );
+      }
+    } catch (err) {
+      console.error("Erro inesperado ao tentar logout:", err);
+    } finally {
+      const keys = [
+        "app_role",
+        "app_user_id",
+        STORAGE_KEY_QUICKSTART_STATUS,
+        "user",
+        "authTokens",
+      ];
+
+      keys.forEach((k) => localStorage.removeItem(k));
+
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith("sb-") && key.includes("-auth-token")) {
+          localStorage.removeItem(key);
+        }
+      });
+
+      window.location.href = "/login";
     }
   };
 

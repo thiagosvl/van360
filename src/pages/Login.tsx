@@ -15,7 +15,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { responsavelService } from "@/services/responsavelService";
 import { cpfMask } from "@/utils/masks";
 import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,34 +27,62 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
-const loginSchema = z.object({
-  cpfcnpj: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .refine((val) => isValidCPF(val), "CPF inválido"),
-  senha: z.string().min(6, "Mínimo de 6 caracteres"),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
-
 export default function Login() {
+  const [tab, setTab] = useState("motorista");
+  const [cpf, setCpf] = useState("");
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const formMotoristaSchema = z.object({
+    cpfcnpj: z
+      .string()
+      .min(1, "Campo obrigatório")
+      .refine((val) => isValidCPF(val), "CPF inválido"),
+    senha: z.string().min(1, "Senha obrigatória"),
+  });
+
+  const formResponsavelSchema = z.object({
+    cpf_responsavel: z
+      .string()
+      .min(1, "Campo obrigatório")
+      .refine((val) => isValidCPF(val), "CPF inválido"),
+    email_responsavel: z
+      .string()
+      .min(1, "Campo obrigatório")
+      .email("E-mail inválido"),
+  });
 
   const inDevelopment = import.meta.env.MODE === "development";
 
-  const cpfTest = !inDevelopment ? "710.438.080-94" : "909.269.840-71";
-  const senhaTest = !inDevelopment ? "AomRRfMnJF" : "kS8qexSdS2";
+  const cpfMotoristaTest = !inDevelopment ? "710.438.080-94" : "909.269.840-71";
+  const senhaMotoristaTest = !inDevelopment ? "AomRRfMnJF" : "kS8qexSdS2";
 
-  const form = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+  const formMotorista = useForm<z.infer<typeof formMotoristaSchema>>({
+    resolver: zodResolver(formMotoristaSchema),
     defaultValues: {
-      cpfcnpj: cpfTest,
-      senha: senhaTest,
+      cpfcnpj: cpfMotoristaTest,
+      senha: senhaMotoristaTest,
     },
   });
 
-  const onSubmit = async (data: LoginFormData) => {
+  const cpfResponsavelTest = !inDevelopment
+    ? "395.423.918-38"
+    : "395.423.918-38";
+  const emailResponsavelTest = !inDevelopment
+    ? "abiliodasvendas@gmail.com"
+    : "abiliodasvendas@gmail.com";
+
+  const formResponsavel = useForm<z.infer<typeof formResponsavelSchema>>({
+    resolver: zodResolver(formResponsavelSchema),
+    defaultValues: {
+      cpf_responsavel: cpfResponsavelTest,
+      email_responsavel: emailResponsavelTest,
+    },
+  });
+
+  const handleLoginMotorista = async (data: any) => {
     setLoading(true);
 
     try {
@@ -63,7 +94,7 @@ export default function Login() {
         .single();
 
       if (usuarioError || !usuario) {
-        form.setError("cpfcnpj", {
+        formMotorista.setError("cpfcnpj", {
           type: "manual",
           message: "CPF não encontrado",
         });
@@ -80,12 +111,12 @@ export default function Login() {
 
       if (signInError) {
         if (signInError.message.includes("Invalid login credentials")) {
-          form.setError("senha", {
+          formMotorista.setError("senha", {
             type: "manual",
             message: "Senha incorreta",
           });
         } else {
-          form.setError("root", {
+          formMotorista.setError("root", {
             type: "manual",
             message: "Erro inesperado: " + signInError.message,
           });
@@ -105,7 +136,7 @@ export default function Login() {
       }
     } catch (error) {
       console.error("Login error:", error);
-      form.setError("root", {
+      formMotorista.setError("root", {
         type: "manual",
         message: "Erro inesperado",
       });
@@ -113,77 +144,206 @@ export default function Login() {
     }
   };
 
+  const handleLoginResponsavel = async (
+    data: z.infer<typeof formResponsavelSchema>
+  ) => {
+    const cpf = data.cpf_responsavel.replace(/\D/g, "");
+    const email = data.email_responsavel.trim();
+
+    setLoading(true);
+    try {
+      const passageiros = await responsavelService.loginPorCpfEmail(cpf, email);
+      if (!passageiros || passageiros.length === 0) {
+        toast({
+          title: "Nenhum passageiro encontrado",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      localStorage.setItem("responsavel_cpf", cpf);
+      localStorage.setItem("responsavel_email", email);
+      localStorage.setItem("responsavel_is_logged", "true");
+
+      if (passageiros.length === 1) {
+        const p = passageiros[0];
+        localStorage.setItem("responsavel_id", p.id);
+        localStorage.setItem("responsavel_usuario_id", p.usuario_id);
+        navigate("/responsavel/carteirinha");
+      } else {
+        navigate("/responsavel/selecionar", { state: { passageiros } });
+      }
+    } catch {
+      toast({
+        title: "Erro ao fazer login",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            Login
-          </CardTitle>
-          <CardDescription className="text-center">
-            Entre com seu CPF e senha
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="cpfcnpj"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>CPF *</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="000.000.000-00"
-                        autoComplete="username"
-                        onChange={(e) => {
-                          const masked = cpfMask(e.target.value);
-                          field.onChange(masked);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+      <Tabs value={tab} onValueChange={setTab} className="w-full max-w-md mb-4">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger
+            value="motorista"
+            className="data-[state=inactive]:text-gray-600 
+            data-[state=active]:bg-primary 
+            data-[state=active]:text-white 
+            hover:bg-gray-100"
+          >
+            Sou Condutor
+          </TabsTrigger>
+          <TabsTrigger
+            value="responsavel"
+            className="data-[state=inactive]:text-gray-600 
+            data-[state=active]:bg-primary 
+            data-[state=active]:text-white 
+            hover:bg-gray-100"
+          >
+            Sou Responsável
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {tab === "motorista" && (
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">
+              Login do Condutor
+            </CardTitle>
+            <CardDescription className="text-center">
+              Entre com CPF e senha
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...formMotorista}>
+              <form
+                onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={formMotorista.control}
+                  name="cpfcnpj"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CPF *</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="000.000.000-00"
+                          autoComplete="username"
+                          onChange={(e) =>
+                            field.onChange(cpfMask(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={formMotorista.control}
+                  name="senha"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Senha *</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="password"
+                          placeholder="Digite sua senha"
+                          autoComplete="current-password"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {formMotorista.formState.errors.root && (
+                  <div className="text-sm text-destructive">
+                    {formMotorista.formState.errors.root.message}
+                  </div>
                 )}
-              />
 
-              <FormField
-                control={form.control}
-                name="senha"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Senha *</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="password"
-                        placeholder="Digite sua senha"
-                        autoComplete="current-password"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Entrando..." : "Entrar"}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      )}
 
-              {form.formState.errors.root && (
-                <div className="text-sm text-destructive">
-                  {form.formState.errors.root.message}
-                </div>
-              )}
+      {tab === "responsavel" && (
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">
+              Login do Responsável
+            </CardTitle>
+            <CardDescription className="text-center">
+              Entre com CPF e Email
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...formResponsavel}>
+              <form
+                onSubmit={formResponsavel.handleSubmit(handleLoginResponsavel)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={formResponsavel.control}
+                  name="cpf_responsavel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CPF *</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="000.000.000-00"
+                          maxLength={14}
+                          value={cpfMask(field.value || "")}
+                          onChange={(e) =>
+                            field.onChange(cpfMask(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Entrando..." : "Entrar"}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+                <FormField
+                  control={formResponsavel.control}
+                  name="email_responsavel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Digite o email do responsável"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button type="submit" disabled={loading} className="w-full">
+                  {loading ? "Entrar..." : "Entrar"}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
-}
-function isValidCpf(val: string): unknown {
-  throw new Error("Function not implemented.");
 }

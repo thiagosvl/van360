@@ -167,6 +167,14 @@ export const currentMonthInText = () => {
   return meses[date.getMonth()];
 }
 
+export const getMesNome = (mes: number) => {
+  const currentYear = new Date().getFullYear();
+  const nomeMes = new Date(currentYear, mes - 1).toLocaleDateString("pt-BR", {
+    month: "long",
+  });
+  return nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
+};
+
 export function formatarTelefone(telefone: string): string {
   const numeros = telefone.replace(/\D/g, "");
   if (numeros.length !== 11) return telefone;

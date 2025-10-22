@@ -52,6 +52,7 @@ import {
   formatarEnderecoCompleto,
   formatarTelefone,
   formatDateToBR,
+  getMesNome,
   getStatusColor,
   getStatusText,
 } from "@/utils/formatters";
@@ -165,10 +166,9 @@ export default function PassageiroCarteirinha() {
   const [yearFilter, setYearFilter] = useState(currentYear);
   const [isObservacoesEditing, setIsObservacoesEditing] = useState(false);
   const [obsText, setObsText] = useState("");
+  const [mostrarTodasCobrancas, setMostrarTodasCobrancas] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
-
-  const [mostrarTodasCobrancas, setMostrarTodasCobrancas] = useState(false);
 
   useEffect(() => {
     if (isObservacoesEditing && textareaRef.current) {
@@ -353,6 +353,11 @@ export default function PassageiroCarteirinha() {
       setCobrancas(data || []);
     } catch (error) {
       console.error("Erro ao buscar histórico:", error);
+      toast({
+        title: "Erro ao buscar histórico.",
+        description: error.message || "Não foi possível concluir a operação.",
+        variant: "destructive",
+      });
     } finally {
       setRefreshing(false);
     }
@@ -374,15 +379,13 @@ export default function PassageiroCarteirinha() {
       return newYearFilter;
     } catch (error) {
       console.error("Erro ao buscar anos disponíveis:", error);
+      toast({
+        title: "Erro ao buscar anos disponíveis.",
+        description: error.message || "Não foi possível concluir a operação.",
+        variant: "destructive",
+      });
       return yearFilter;
     }
-  };
-
-  const getMesNome = (mes: number) => {
-    const nomeMes = new Date(2024, mes - 1).toLocaleDateString("pt-BR", {
-      month: "long",
-    });
-    return nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
   };
 
   const handleDeleteCobrancaClick = (cobranca: Cobranca) => {
@@ -687,7 +690,10 @@ export default function PassageiroCarteirinha() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <Button disabled={!passageiro.ativo} onClick={() => setCobrancaDialogOpen(true)}>
+                      <Button
+                        disabled={!passageiro.ativo}
+                        onClick={() => setCobrancaDialogOpen(true)}
+                      >
                         <Plus className="w-4 h-4 md:mr-2" />
                         <span className="hidden md:block">
                           Registrar Cobrança
