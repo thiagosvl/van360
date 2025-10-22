@@ -1,5 +1,5 @@
 import { QuickStartCard } from "@/components/QuickStartCard";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,8 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Cobranca } from "@/types/cobranca";
+import { meses } from "@/utils/formatters";
 import {
   Car,
+  CheckCircle,
   Copy,
   CreditCard,
   GraduationCap,
@@ -56,6 +58,7 @@ const Inicio = () => {
   const { profile } = useAuth();
   const { toast } = useToast();
   const [latePayments, setLatePayments] = useState<Cobranca[]>([]);
+  const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
   const [mesAtual, setMesAtual] = useState(new Date().getMonth() + 1);
   const [anoAtual, setAnoAtual] = useState(new Date().getFullYear());
   const [loadingFinances, setLoadingFinances] = useState(true);
@@ -171,6 +174,7 @@ const Inicio = () => {
         return vencimento < hoje;
       });
 
+      setCobrancas(cobrancas);
       setLatePayments(cobrancasAtrasadasList);
     } catch (error) {
       console.error("Erro ao buscar cobranças para Alerta:", error);
@@ -211,17 +215,28 @@ const Inicio = () => {
         {/* Cobranças Pendentes */}
         {loadingFinances ? (
           <Card className="mb-6">
-            <CardContent className="p-5">
-              <Skeleton className="h-6 w-full" />
+            <CardHeader>
+              <Skeleton className="h-6 w-48" />
+            </CardHeader>
+            <CardContent className="">
+              <Skeleton className="h-10 w-full" />
             </CardContent>
           </Card>
+        ) : latePayments.length > 0 ? (
+          <LatePaymentsAlert
+            mes={mesAtual}
+            ano={anoAtual}
+            latePayments={latePayments}
+          />
         ) : (
-          latePayments.length > 0 && (
-            <LatePaymentsAlert
-              latePayments={latePayments}
-              mes={mesAtual}
-              ano={anoAtual}
-            />
+          cobrancas.length > 0 && (
+            <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              <div className="text-sm font-medium text-green-800">
+                Tudo em dia! Não há cobranças pendentes em {meses[mesAtual - 1]}
+                .
+              </div>
+            </div>
           )
         )}
 
@@ -252,7 +267,6 @@ const Inicio = () => {
             </CardContent>
           </Card>
         </section>
-
         {/* Acessos Rápidos */}
         <section>
           <h2 className="text-xl font-semibold mb-4">Acessos Rápidos</h2>
