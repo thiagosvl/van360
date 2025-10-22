@@ -8,6 +8,7 @@ import { seForPago } from "@/utils/disableActions";
 interface UpdatePayload {
     valor: number;
     data_vencimento: string;
+    data_pagamento?: string;
     tipo_pagamento?: string;
 }
 
@@ -190,7 +191,6 @@ export const cobrancaService = {
             }
         }
 
-
         const { error } = await supabase
             .from("cobrancas")
             .update({
@@ -230,6 +230,9 @@ export const cobrancaService = {
 
         if (isPaga && cobrancaOriginal.pagamento_manual) {
             supabaseUpdatePayload.tipo_pagamento = payload.tipo_pagamento;
+        }
+        if (payload.data_pagamento != null) {
+            supabaseUpdatePayload.data_pagamento = payload.data_pagamento;
         }
 
         let rollbackNeeded = false;

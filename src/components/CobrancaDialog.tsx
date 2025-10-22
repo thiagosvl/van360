@@ -32,7 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { asaasService } from "@/services/asaasService";
-import { tiposPagamento, toLocalDateString } from "@/utils/formatters";
+import { anos, tiposPagamento, toLocalDateString } from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -116,13 +116,7 @@ export default function CobrancaDialog({
   const [openCalendar, setOpenCalendar] = useState(false);
 
   const currentYear = new Date().getFullYear();
-  const anos = [
-    { value: currentYear.toString(), label: currentYear.toString() },
-    {
-      value: (currentYear - 1).toString(),
-      label: (currentYear - 1).toString(),
-    },
-  ];
+  
 
   const form = useForm<CobrancaFormData>({
     resolver: zodResolver(cobrancaSchema),
@@ -162,9 +156,7 @@ export default function CobrancaDialog({
         mes: "",
         ano: currentYear.toString(),
         valor:
-          valorCobranca > 0
-            ? moneyMask((valorCobranca * 100).toString())
-            : "",
+          valorCobranca > 0 ? moneyMask((valorCobranca * 100).toString()) : "",
         foi_pago: false,
         data_pagamento: undefined,
         tipo_pagamento: "",
@@ -173,7 +165,7 @@ export default function CobrancaDialog({
     }
   }, [isOpen, valorCobranca, form, currentYear]);
 
-   const handleSubmit = async (data: CobrancaFormData) => {
+  const handleSubmit = async (data: CobrancaFormData) => {
     let cobrancaIdSupabase: string | null = null;
     let asaasPaymentId: string | null = null;
     let rollbackNeeded = false;
@@ -197,13 +189,13 @@ export default function CobrancaDialog({
         });
         return;
       }
-      
+
       const dataVencimento = new Date(
         parseInt(data.ano),
         parseInt(data.mes) - 1,
         diaVencimento
       );
-      
+
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
 
@@ -230,7 +222,7 @@ export default function CobrancaDialog({
         .insert([cobrancaData])
         .select("id")
         .single();
-        
+
       if (insertError) throw insertError;
       cobrancaIdSupabase = insertData.id;
       rollbackNeeded = true;
@@ -242,36 +234,37 @@ export default function CobrancaDialog({
 
       if (shouldGenerateAsaas) {
         if (!passageiroAsaasCustomerId) {
-            console.warn("Cliente ASAAS não encontrado. Cobrança não gerada externamente.");
+          console.warn(
+            "Cliente ASAAS não encontrado. Cobrança não gerada externamente."
+          );
         } else {
-            const payment = await asaasService.createPayment({
-                customer: passageiroAsaasCustomerId,
-                billingType: "UNDEFINED",
-                value: valorNumerico,
-                dueDate: toLocalDateString(dataVencimento),
-                description: `Cobrança ${data.mes}/${data.ano} - ${passageiroNome}`,
-                externalReference: cobrancaIdSupabase,
-            });
+          const payment = await asaasService.createPayment({
+            customer: passageiroAsaasCustomerId,
+            billingType: "UNDEFINED",
+            value: valorNumerico,
+            dueDate: toLocalDateString(dataVencimento),
+            description: `Cobrança ${data.mes}/${data.ano} - ${passageiroNome}`,
+            externalReference: cobrancaIdSupabase,
+          });
 
-            asaasPaymentId = payment.id;
+          asaasPaymentId = payment.id;
 
-            const { error: updateError } = await supabase
-              .from("cobrancas")
-              .update({
-                asaas_payment_id: payment.id,
-                asaas_invoice_url: payment.invoiceUrl,
-                asaas_bankslip_url: payment.bankSlipUrl,
-              })
-              .eq("id", cobrancaIdSupabase);
+          const { error: updateError } = await supabase
+            .from("cobrancas")
+            .update({
+              asaas_payment_id: payment.id,
+              asaas_invoice_url: payment.invoiceUrl,
+              asaas_bankslip_url: payment.bankSlipUrl,
+            })
+            .eq("id", cobrancaIdSupabase);
 
-            if (updateError) throw updateError;
+          if (updateError) throw updateError;
         }
       }
 
       toast({ title: "Cobrança registrada com sucesso." });
       onCobrancaAdded();
       handleClose();
-
     } catch (error: any) {
       console.error("Erro ao registrar cobrança. Iniciando Rollback:", error);
 
@@ -280,14 +273,17 @@ export default function CobrancaDialog({
           if (asaasPaymentId) {
             await asaasService.deletePayment(asaasPaymentId);
           }
-          await supabase.from("cobrancas").delete().eq("id", cobrancaIdSupabase);
-          
+          await supabase
+            .from("cobrancas")
+            .delete()
+            .eq("id", cobrancaIdSupabase);
+
           console.log("Rollback da cobrança manual concluído.");
         } catch (rollbackErr) {
           console.error("Erro no processo de Rollback:", rollbackErr);
         }
       }
-      
+
       toast({
         title: "Erro ao registrar cobrança.",
         description: error.message || "Verifique o console para mais detalhes.",
@@ -303,7 +299,10 @@ export default function CobrancaDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-md max-h-[95vh] overflow-y-auto bg-white">
+      <DialogContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="max-w-md max-h-[95vh] overflow-y-auto bg-white"
+      >
         <DialogHeader>
           <DialogTitle>Registrar Cobrança</DialogTitle>
         </DialogHeader>
@@ -482,7 +481,9 @@ export default function CobrancaDialog({
                               {field.value ? (
                                 format(field.value, "dd/MM/yyyy")
                               ) : (
-                                <span className="text-black">Selecione a data</span>
+                                <span className="text-black">
+                                  Selecione a data
+                                </span>
                               )}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>

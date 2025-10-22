@@ -44,7 +44,7 @@ import {
   Trash2,
   Users2,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const PassengerListSkeleton = () => (
@@ -99,33 +99,42 @@ export default function Passageiros() {
     passageiro: null as Passageiro | null,
     action: "" as "ativar" | "desativar" | "",
   });
+  const firstRender = useRef(true);
 
   const fetchPassageiros = useCallback(
-    async (isRefresh = false) => {
+    async (
+      isRefresh = false,
+      filtros?: {
+        search?: string;
+        escola?: string;
+        veiculo?: string;
+        status?: string;
+      }
+    ) => {
       if (!isRefresh) setLoading(true);
       else setRefreshing(true);
+
       try {
+        const { search, escola, veiculo, status } = filtros || {};
         let query = supabase
           .from("passageiros")
           .select(`*, escolas(nome), veiculos(placa)`)
           .eq("usuario_id", localStorage.getItem("app_user_id"))
           .order("nome");
-        if (selectedEscola !== "todas") {
-          query = query.eq("escola_id", selectedEscola);
-        }
-        if (selectedVeiculo !== "todas") {
-          query = query.eq("veiculo_id", selectedVeiculo);
-        }
-        if (searchTerm.length >= 2) {
+
+        if (escola && escola !== "todas") query = query.eq("escola_id", escola);
+        if (veiculo && veiculo !== "todas")
+          query = query.eq("veiculo_id", veiculo);
+        if (search && search.length > 0)
           query = query.or(
-            `nome.ilike.%${searchTerm}%,nome_responsavel.ilike.%${searchTerm}%`
+            `nome.ilike.%${search}%,nome_responsavel.ilike.%${search}%`
           );
-        }
-        if (selectedStatus !== "todos") {
-          query = query.eq("ativo", selectedStatus === "ativo");
-        }
+        if (status && status !== "todos")
+          query = query.eq("ativo", status === "ativo");
+
         const { data, error } = await query;
         if (error) throw error;
+
         setPassageiros(data || []);
         setcountPassageirosAtivos(data.filter((e) => e.ativo).length);
       } catch (error) {
@@ -139,7 +148,7 @@ export default function Passageiros() {
         else setRefreshing(false);
       }
     },
-    [searchTerm, selectedEscola, selectedVeiculo, selectedStatus, toast]
+    []
   );
 
   useEffect(() => {
@@ -148,11 +157,43 @@ export default function Passageiros() {
   }, []);
 
   useEffect(() => {
+    fetchPassageiros(false, {
+      search: searchTerm,
+      escola: selectedEscola,
+      veiculo: selectedVeiculo,
+      status: selectedStatus,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (firstRender.current) return;
+    fetchPassageiros(true, {
+      search: searchTerm,
+      escola: selectedEscola,
+      veiculo: selectedVeiculo,
+      status: selectedStatus,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEscola, selectedVeiculo, selectedStatus]);
+
+  // Campo de busca -> aplica debounce
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
     const handler = setTimeout(() => {
-      fetchPassageiros();
+      fetchPassageiros(true, {
+        search: searchTerm,
+        escola: selectedEscola,
+        veiculo: selectedVeiculo,
+        status: selectedStatus,
+      });
     }, 500);
     return () => clearTimeout(handler);
-  }, [fetchPassageiros]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
   useEffect(() => {
     let subTitle = "";
@@ -474,7 +515,7 @@ export default function Passageiros() {
                         showMobileFilters ? "max-h-[500px]" : "max-h-0"
                       } md:max-h-full`}
                     >
-                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-1">
                         <div className="space-y-2">
                           <Label htmlFor="search">Buscar por Nome</Label>
                           <div className="relative">
@@ -555,7 +596,7 @@ export default function Passageiros() {
                           <Users2 className="w-12 h-12 mb-4 text-gray-300" />
                           <p>
                             {searchTerm
-                              ? `Nenhum passageiro encontrado para "${searchTerm}"`
+                              ? `Nenhum passageiro ou responsável encontrado com o nome "${searchTerm}"`
                               : "Nenhum passageiro cadastrado"}
                           </p>
                         </div>

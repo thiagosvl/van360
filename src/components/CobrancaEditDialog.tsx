@@ -76,6 +76,12 @@ const cobrancaEditSchema = z
     data_vencimento: z.date({
       required_error: "A data de vencimento é obrigatória.",
     }),
+    data_pagamento: z
+      .date()
+      .optional()
+      .refine((date) => !date || date <= new Date(), {
+        message: "A data não pode ser futura.",
+      }),
     tipo_pagamento: z.string().optional(),
     is_paga: z.boolean(),
     has_asaas: z.boolean(),
@@ -128,7 +134,7 @@ export default function CobrancaEditDialog({
   const hasAsaasId = !!cobranca.asaas_payment_id;
   const isPagamentoManual = cobranca.pagamento_manual;
 
-  const cobrancaMesAnoDate = new Date(cobranca.data_vencimento);
+  const cobrancaMesAnoDate = new Date(cobranca.data_vencimento + "T00:00:00");
 
   const shouldDisableValueDate = isPaga && !isPagamentoManual;
   const isCobrancaMonthPast = isBefore(
@@ -149,6 +155,9 @@ export default function CobrancaEditDialog({
     defaultValues: {
       valor: "",
       data_vencimento: cobrancaMesAnoDate,
+      data_pagamento: cobranca?.data_pagamento
+        ? new Date(cobranca.data_pagamento + "T00:00:00")
+        : undefined,
       tipo_pagamento: isPaga ? cobranca.tipo_pagamento || "" : undefined,
       is_paga: isPaga,
       has_asaas: hasAsaasId,
@@ -165,6 +174,9 @@ export default function CobrancaEditDialog({
       form.reset({
         valor: moneyMask(String(valorEmCentavos)),
         data_vencimento: formatDate(cobranca.data_vencimento),
+        data_pagamento: cobranca?.data_pagamento
+          ? new Date(cobranca.data_pagamento + "T00:00:00")
+          : undefined,
         tipo_pagamento: cobranca.tipo_pagamento || "",
         is_paga: isPaga,
         has_asaas: hasAsaasId,
@@ -183,13 +195,21 @@ export default function CobrancaEditDialog({
         local_moneyToNumber(data.valor) !== Number(cobranca.valor);
 
       const vencimentoAlterado =
+        data.data_vencimento !== null &&
         format(data.data_vencimento, "yyyy-MM-dd") !== cobranca.data_vencimento;
+
+      const dataPagamentoAlterado =
+        data.data_pagamento &&
+        format(data.data_pagamento, "yyyy-MM-dd") !== cobranca.data_pagamento;
 
       const tipoPagamentoAlterado =
         (data.tipo_pagamento || "") !== (cobranca.tipo_pagamento || "");
 
       const houveAlteracao =
-        valorAlterado || vencimentoAlterado || tipoPagamentoAlterado;
+        valorAlterado ||
+        vencimentoAlterado ||
+        tipoPagamentoAlterado ||
+        dataPagamentoAlterado;
 
       if (!houveAlteracao) {
         toast({ title: "Nenhuma alteração detectada.", variant: "default" });
@@ -197,13 +217,17 @@ export default function CobrancaEditDialog({
         return;
       }
 
-      const updatePayload = {
+      const updatePayload: any = {
         valor: local_moneyToNumber(data.valor),
         data_vencimento: toLocalDateString(data.data_vencimento),
         tipo_pagamento: shouldShowTipoPagamentoEdit
           ? data.tipo_pagamento
           : undefined,
       };
+
+      if (cobranca.pagamento_manual && data.data_pagamento) {
+        updatePayload.data_pagamento = toLocalDateString(data.data_pagamento);
+      }
 
       await cobrancaService.updateCobrancaComTransacao(
         cobranca.id,
@@ -253,7 +277,10 @@ export default function CobrancaEditDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-md max-h-[95vh] overflow-y-auto bg-white">
+      <DialogContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="max-w-md max-h-[95vh] overflow-y-auto bg-white"
+      >
         <DialogHeader>
           <DialogTitle>Edição de Cobrança</DialogTitle>
         </DialogHeader>
@@ -385,7 +412,7 @@ export default function CobrancaEditDialog({
                 name="tipo_pagamento"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Forma de pagamento</FormLabel>
+                    <FormLabel>Forma de pagamento *</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
@@ -403,6 +430,51 @@ export default function CobrancaEditDialog({
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {cobranca?.pagamento_manual && (
+              <FormField
+                control={form.control}
+                name="data_pagamento"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Data do Pagamento</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "dd/MM/yyyy")
+                            ) : (
+                              <span>Selecione a data</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+
+                      <PopoverContent align="start" className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={(date) => {
+                            if (date) field.onChange(date);
+                          }}
+                          disabled={(date) => date > new Date()}
+                          locale={ptBR}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}

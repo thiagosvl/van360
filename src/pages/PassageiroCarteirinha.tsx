@@ -608,7 +608,7 @@ export default function PassageiroCarteirinha() {
         } else {
           acc.qtdPendente++;
           acc.valorPendente += Number(c.valor);
-          const vencimento = new Date(c.data_vencimento);
+          const vencimento = new Date(c.data_vencimento + "T00:00:00");
           if (vencimento < hoje) {
             acc.qtdEmAtraso += 1;
             acc.valorEmAtraso += Number(c.valor);

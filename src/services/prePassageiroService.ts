@@ -19,18 +19,19 @@ export const prePassageiroService = {
 
         let query = supabase
             .from("pre_passageiros")
-            .select(`*`)
+            .select("*")
             .eq("usuario_id", userId)
             .order("nome");
 
-        if (searchTerm.length >= 2) {
+        const term = searchTerm.trim();
+        if (term.length > 0) {
             query = query.or(
-                `nome.ilike.%${searchTerm}%,nome_responsavel.ilike.%${searchTerm}%`
+                `nome.ilike.%${term}%,nome_responsavel.ilike.%${term}%`
             );
         }
 
         const { data, error } = await query;
-        
+
         if (error) {
             console.error("Erro ao buscar pré-cadastros:", error);
             throw new Error("Falha ao carregar a lista de pré-cadastros.");
@@ -38,11 +39,7 @@ export const prePassageiroService = {
 
         return data as PrePassageiro[];
     },
-    
-    /**
-     * Exclui permanentemente um registro da tabela de pré-cadastros.
-     * @param prePassageiroId ID do registro temporário a ser excluído.
-     */
+
     async excluirPreCadastro(prePassageiroId: string): Promise<void> {
         const { error } = await supabase
             .from("pre_passageiros")
@@ -54,7 +51,7 @@ export const prePassageiroService = {
             throw new Error("Falha ao excluir o registro temporário.");
         }
     },
-    
+
     async createPreCadastroRapido(payload: QuickPreCadastroPayload): Promise<void> {
         const { error } = await supabase.from("pre_passageiros").insert([
             {

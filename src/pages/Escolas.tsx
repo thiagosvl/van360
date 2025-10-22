@@ -271,7 +271,7 @@ export default function Escolas() {
                     showMobileFilters ? "max-h-[500px]" : "max-h-0"
                   } md:max-h-full`}
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-1 mb-6">
                     <div className="space-y-2">
                       <Label htmlFor="search">Buscar por Nome</Label>
                       <div className="relative">

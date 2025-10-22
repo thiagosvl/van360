@@ -109,6 +109,7 @@ interface PassengerFormDialogProps {
   onSuccess: () => void;
   onCreateEscola?: () => void;
   novaEscolaId?: string | null;
+  novoVeiculoId?: string | null;
 }
 
 export default function PassengerFormDialog({
@@ -120,6 +121,7 @@ export default function PassengerFormDialog({
   onSuccess,
   onCreateEscola,
   novaEscolaId,
+  novoVeiculoId,
 }: PassengerFormDialogProps) {
   const [selectedEscola, setSelectedEscola] = useState<string | null>(null);
   const [selectedVeiculo, setSelectedVeiculo] = useState<string | null>(null);
@@ -175,6 +177,17 @@ export default function PassengerFormDialog({
       });
     }
   }, [novaEscolaId]);
+
+  useEffect(() => {
+    if (novoVeiculoId) {
+      fetchVeiculos(novoVeiculoId).then((_) => {
+        setTimeout(() => {
+          form.setValue("veiculo_id", novoVeiculoId, { shouldValidate: true });
+          setSelectedEscola(novoVeiculoId);
+        }, 20);
+      });
+    }
+  }, [novoVeiculoId]);
 
   useEffect(() => {
     if (isOpen) {

@@ -15,6 +15,19 @@ export const meses = [
   "Dezembro",
 ];
 
+const currentYear = new Date().getFullYear();
+export const anos = [
+  {
+    value: (currentYear - 1).toString(),
+    label: (currentYear - 1).toString(),
+  },
+  { value: currentYear.toString(), label: currentYear.toString() },
+  {
+    value: (currentYear + 1).toString(),
+    label: (currentYear + 1).toString(),
+  },
+];
+
 export const tiposPagamento = [
   { value: "PIX", label: "PIX" },
   { value: "dinheiro", label: "Dinheiro" },

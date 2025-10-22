@@ -170,7 +170,7 @@ const Inicio = () => {
 
       const cobrancasAtrasadasList = cobrancas.filter((c: Cobranca) => {
         if (c.status === "pago") return false;
-        const vencimento = new Date(c.data_vencimento);
+        const vencimento = new Date(c.data_vencimento + "T00:00:00");
         return vencimento < hoje;
       });
 

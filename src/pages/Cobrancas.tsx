@@ -35,6 +35,7 @@ import {
   disableRegistrarPagamento,
 } from "@/utils/disableActions";
 import {
+  anos,
   formatDateToBR,
   formatPaymentType,
   getStatusColor,
@@ -102,15 +103,6 @@ const Cobrancas = () => {
 
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const currentYear = new Date().getFullYear();
-  const anos = [
-    { value: currentYear.toString(), label: currentYear.toString() },
-    {
-      value: (currentYear - 1).toString(),
-      label: (currentYear - 1).toString(),
-    },
-  ];
 
   const fetchCobrancas = async (isRefresh = false) => {
     if (!isRefresh) setLoading(true);

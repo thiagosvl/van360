@@ -85,6 +85,40 @@ export default function PrePassageiros({
     }
   }, [refreshKey]);
 
+  useEffect(() => {
+    if (loading) return;
+
+    const term = searchTerm.trim();
+    const handler = setTimeout(() => {
+      fetchPrePassageiros(true);
+    }, 500);
+
+    return () => clearTimeout(handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
+
+  const fetchPrePassageiros = useCallback(
+    async (isRefresh = false) => {
+      if (!isRefresh) setLoading(true);
+      else setRefreshing(true);
+
+      try {
+        const data = await prePassageiroService.fetchPreCadastros(searchTerm);
+        setPrePassageiros(data || []);
+      } catch (error) {
+        console.error("Erro ao buscar pré-cadastros:", error);
+        toast({
+          title: "Erro ao carregar pré-cadastros.",
+          variant: "destructive",
+        });
+      } finally {
+        if (!isRefresh) setLoading(false);
+        else setRefreshing(false);
+      }
+    },
+    [searchTerm, toast]
+  );
+
   const handleCloseEscolaFormDialog = () => {
     safeCloseDialog(() => {
       setIsCreatingEscola(false);
@@ -155,37 +189,6 @@ export default function PrePassageiros({
       setRefreshing(false);
     }
   };
-
-  const fetchPrePassageiros = useCallback(
-    async (isRefresh = false) => {
-      if (!isRefresh) setLoading(true);
-      else setRefreshing(true);
-
-      try {
-        const data = await prePassageiroService.fetchPreCadastros(searchTerm);
-
-        setPrePassageiros(data || []);
-
-        const filteredData = data.filter(
-          (p) =>
-            p.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            p.nome_responsavel.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-
-        setPrePassageiros(filteredData);
-      } catch (error) {
-        console.error("Erro ao buscar pré-cadastros:", error);
-        toast({
-          title: "Erro ao carregar pré-cadastros.",
-          variant: "destructive",
-        });
-      } finally {
-        if (!isRefresh) setLoading(false);
-        else setRefreshing(false);
-      }
-    },
-    [searchTerm, toast]
-  );
 
   const handleDelete = async () => {
     setRefreshing(true);
@@ -312,7 +315,7 @@ export default function PrePassageiros({
                   </Card>
                 </section>
 
-                <div className="space-y-2 mb-4">
+                <div className="space-y-2 mb-4 p-1">
                   <Label htmlFor="search">Buscar por Nome</Label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />

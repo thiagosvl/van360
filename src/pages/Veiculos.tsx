@@ -274,7 +274,7 @@ export default function Veiculos() {
                     showMobileFilters ? "max-h-[500px]" : "max-h-0"
                   } md:max-h-full`}
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-1 mb-6">
                     <div className="space-y-2">
                       <Label htmlFor="search">Buscar por Placa</Label>
                       <div className="relative">
@@ -314,7 +314,7 @@ export default function Veiculos() {
                     <Car className="w-12 h-12 mb-4 text-gray-300" />
                     <p>
                       {searchTerm
-                        ? `Nenhum veículo encontrado para "${searchTerm}"`
+                        ? `Nenhum veículo encontrado com a placa "${searchTerm}"`
                         : "Nenhum veículo cadastrado"}
                     </p>
                   </div>

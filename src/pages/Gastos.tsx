@@ -45,7 +45,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
 import { safeCloseDialog } from "@/utils/dialogCallback";
-import { formatDateToBR, meses, toLocalDateString } from "@/utils/formatters";
+import {
+  anos,
+  formatDateToBR,
+  meses,
+  toLocalDateString,
+} from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -180,13 +185,6 @@ export default function Gastos() {
   const { toast } = useToast();
 
   const currentYear = new Date().getFullYear();
-  const anos = [
-    { value: currentYear.toString(), label: currentYear.toString() },
-    {
-      value: (currentYear - 1).toString(),
-      label: (currentYear - 1).toString(),
-    },
-  ];
 
   const form = useForm<GastoFormData>({ resolver: zodResolver(gastoSchema) });
 
@@ -393,7 +391,7 @@ export default function Gastos() {
                     showMobileFilters ? "max-h-[500px]" : "max-h-0"
                   } md:max-h-full`}
                 >
-                  <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="grid grid-cols-2 gap-4 p-1 mb-6">
                     <div>
                       <label className="text-sm font-medium mb-2 block">
                         Mês
