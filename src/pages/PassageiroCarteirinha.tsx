@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import VeiculoFormDialog from "@/components/VeiculoFormDialog";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useToast } from "@/hooks/use-toast";
@@ -126,7 +127,9 @@ const CarteirinhaSkeleton = () => (
 
 export default function PassageiroCarteirinha() {
   const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
+  const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
   const [isCreatingEscola, setIsCreatingEscola] = useState(false);
+  const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
   const { setPageTitle, setPageSubtitle } = useLayout();
@@ -218,10 +221,23 @@ export default function PassageiroCarteirinha() {
     });
   };
 
+  const handleCloseVeiculoFormDialog = () => {
+    safeCloseDialog(() => {
+      setIsCreatingVeiculo(false);
+    });
+  };
+
   const handleEscolaCreated = (novaEscola) => {
     safeCloseDialog(() => {
       setIsCreatingEscola(false);
       setNovaEscolaId(novaEscola.id);
+    });
+  };
+
+  const handleVeiculoCreated = (novoVeiculo) => {
+    safeCloseDialog(() => {
+      setIsCreatingVeiculo(false);
+      setNovoVeiculoId(novoVeiculo.id);
     });
   };
 
@@ -287,6 +303,7 @@ export default function PassageiroCarteirinha() {
   };
 
   const handlePassageiroFormSuccess = () => {
+    setNovoVeiculoId(null);
     setNovaEscolaId(null);
     fetchPassageiro();
     fetchCobrancas(yearFilter, true);
@@ -1419,6 +1436,7 @@ export default function PassageiroCarteirinha() {
               isOpen={isFormOpen}
               onClose={() =>
                 safeCloseDialog(() => {
+                  setNovoVeiculoId(null);
                   setNovaEscolaId(null);
                   setIsFormOpen(false);
                 })
@@ -1426,14 +1444,21 @@ export default function PassageiroCarteirinha() {
               onSuccess={handlePassageiroFormSuccess}
               editingPassageiro={passageiro}
               onCreateEscola={() => setIsCreatingEscola(true)}
+              onCreateVeiculo={() => setIsCreatingVeiculo(true)}
               mode="edit"
               novaEscolaId={novaEscolaId}
+              novoVeiculoId={novoVeiculoId}
             />
           )}
           <EscolaFormDialog
             isOpen={isCreatingEscola}
             onClose={handleCloseEscolaFormDialog}
             onSuccess={handleEscolaCreated}
+          />
+          <VeiculoFormDialog
+            isOpen={isCreatingVeiculo}
+            onClose={handleCloseVeiculoFormDialog}
+            onSuccess={handleVeiculoCreated}
           />
           {cobrancaToEdit && (
             <CobrancaEditDialog

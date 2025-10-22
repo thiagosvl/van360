@@ -29,6 +29,7 @@ import { useCallback, useEffect, useState } from "react";
 import EscolaFormDialog from "./EscolaFormDialog";
 import { LoadingOverlay } from "./LoadingOverlay";
 import PassageiroFormDialog from "./PassageiroFormDialog";
+import VeiculoFormDialog from "./VeiculoFormDialog";
 
 const PrePassengerListSkeleton = () => (
   <div className="space-y-3 mt-8">
@@ -60,7 +61,9 @@ export default function PrePassageiros({
   const [searchTerm, setSearchTerm] = useState("");
   const { profile } = useAuth();
   const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
+  const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
   const [isCreatingEscola, setIsCreatingEscola] = useState(false);
+  const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -125,10 +128,23 @@ export default function PrePassageiros({
     });
   };
 
+  const handleCloseVeiculoFormDialog = () => {
+    safeCloseDialog(() => {
+      setIsCreatingVeiculo(false);
+    });
+  };
+
   const handleEscolaCreated = (novaEscola) => {
     safeCloseDialog(() => {
       setIsCreatingEscola(false);
       setNovaEscolaId(novaEscola.id);
+    });
+  };
+
+  const handleVeiculoCreated = (novoVeiculo) => {
+    safeCloseDialog(() => {
+      setIsCreatingVeiculo(false);
+      setNovoVeiculoId(novoVeiculo.id);
     });
   };
 
@@ -231,6 +247,7 @@ export default function PrePassageiros({
   };
 
   const handleFinalizeSuccess = () => {
+    setNovoVeiculoId(null);
     setNovaEscolaId(null);
     setIsFinalizeDialogOpen(false);
     fetchPrePassageiros();
@@ -408,6 +425,7 @@ export default function PrePassageiros({
             isOpen={isFinalizeDialogOpen}
             onClose={() =>
               safeCloseDialog(() => {
+                setNovoVeiculoId(null);
                 setNovaEscolaId(null);
                 setIsFinalizeDialogOpen(false);
               })
@@ -416,8 +434,10 @@ export default function PrePassageiros({
             prePassageiro={selectedPrePassageiro}
             editingPassageiro={null}
             onCreateEscola={() => setIsCreatingEscola(true)}
+            onCreateVeiculo={() => setIsCreatingVeiculo(true)}
             mode="finalize"
             novaEscolaId={novaEscolaId}
+            novoVeiculoId={novoVeiculoId}
           />
         )}
 
@@ -425,6 +445,12 @@ export default function PrePassageiros({
           isOpen={isCreatingEscola}
           onClose={handleCloseEscolaFormDialog}
           onSuccess={handleEscolaCreated}
+        />
+
+        <VeiculoFormDialog
+          isOpen={isCreatingVeiculo}
+          onClose={handleCloseVeiculoFormDialog}
+          onSuccess={handleVeiculoCreated}
         />
 
         <ConfirmationDialog

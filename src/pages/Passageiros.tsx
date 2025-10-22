@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import VeiculoFormDialog from "@/components/VeiculoFormDialog";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useToast } from "@/hooks/use-toast";
@@ -66,7 +67,9 @@ const PassengerListSkeleton = () => (
 
 export default function Passageiros() {
   const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
+  const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
   const [isCreatingEscola, setIsCreatingEscola] = useState(false);
+  const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
   const { setPageTitle, setPageSubtitle } = useLayout();
   const [passageiros, setPassageiros] = useState<Passageiro[]>([]);
   const [countPassageirosAtivos, setcountPassageirosAtivos] =
@@ -212,12 +215,14 @@ export default function Passageiros() {
   }, [passageiros, setPageTitle, setPageSubtitle]);
 
   const handleSuccessCreatePassageiro = () => {
+    setNovoVeiculoId(null);
     setNovaEscolaId(null);
     fetchPassageiros(true);
   };
 
   const handleClosePassageiroFormDialog = () => {
     safeCloseDialog(() => {
+      setNovoVeiculoId(null);
       setNovaEscolaId(null);
       setIsDialogOpen(false);
     });
@@ -229,10 +234,23 @@ export default function Passageiros() {
     });
   };
 
+  const handleCloseVeiculoFormDialog = () => {
+    safeCloseDialog(() => {
+      setIsCreatingVeiculo(false);
+    });
+  };
+
   const handleEscolaCreated = (novaEscola) => {
     safeCloseDialog(() => {
       setIsCreatingEscola(false);
       setNovaEscolaId(novaEscola.id);
+    });
+  };
+
+  const handleVeiculoCreated = (novoVeiculo) => {
+    safeCloseDialog(() => {
+      setIsCreatingVeiculo(false);
+      setNovoVeiculoId(novoVeiculo.id);
     });
   };
 
@@ -915,8 +933,10 @@ export default function Passageiros() {
               onSuccess={() => handleSuccessCreatePassageiro()}
               editingPassageiro={editingPassageiro}
               onCreateEscola={() => setIsCreatingEscola(true)}
+              onCreateVeiculo={() => setIsCreatingVeiculo(true)}
               mode={modePassageiroFormDialog}
               novaEscolaId={novaEscolaId}
+              novoVeiculoId={novoVeiculoId}
             />
           )}
 
@@ -924,6 +944,12 @@ export default function Passageiros() {
             isOpen={isCreatingEscola}
             onClose={handleCloseEscolaFormDialog}
             onSuccess={handleEscolaCreated}
+          />
+
+          <VeiculoFormDialog
+            isOpen={isCreatingVeiculo}
+            onClose={handleCloseVeiculoFormDialog}
+            onSuccess={handleVeiculoCreated}
           />
 
           <ConfirmationDialog

@@ -30,6 +30,7 @@ import { PrePassageiro } from "@/types/prePassageiro";
 import { Veiculo } from "@/types/veiculo";
 import { currentMonthInText } from "@/utils/formatters";
 import { cepMask, cpfMask, moneyMask, phoneMask } from "@/utils/masks";
+import { formatarPlacaExibicao } from "@/utils/placaUtils";
 import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -108,6 +109,7 @@ interface PassengerFormDialogProps {
   prePassageiro?: PrePassageiro | null;
   onSuccess: () => void;
   onCreateEscola?: () => void;
+  onCreateVeiculo?: () => void;
   novaEscolaId?: string | null;
   novoVeiculoId?: string | null;
 }
@@ -120,6 +122,7 @@ export default function PassengerFormDialog({
   prePassageiro,
   onSuccess,
   onCreateEscola,
+  onCreateVeiculo,
   novaEscolaId,
   novoVeiculoId,
 }: PassengerFormDialogProps) {
@@ -183,7 +186,7 @@ export default function PassengerFormDialog({
       fetchVeiculos(novoVeiculoId).then((_) => {
         setTimeout(() => {
           form.setValue("veiculo_id", novoVeiculoId, { shouldValidate: true });
-          setSelectedEscola(novoVeiculoId);
+          setSelectedVeiculo(novoVeiculoId);
         }, 20);
       });
     }
@@ -541,6 +544,10 @@ export default function PassengerFormDialog({
                           <Select
                             value={selectedVeiculo || field.value}
                             onValueChange={(value) => {
+                              if (value === "add-new-vehicle") {
+                                setTimeout(() => onCreateVeiculo(), 50);
+                                return;
+                              }
                               field.onChange(value);
                               setSelectedVeiculo(value);
                             }}
@@ -553,9 +560,15 @@ export default function PassengerFormDialog({
                             <SelectContent className="max-h-60 overflow-y-auto">
                               {veiculosModal.map((veiculo) => (
                                 <SelectItem key={veiculo.id} value={veiculo.id}>
-                                  {veiculo.placa}
+                                  {formatarPlacaExibicao(veiculo.placa)}
                                 </SelectItem>
                               ))}
+                              <SelectItem
+                                value="add-new-vehicle"
+                                className="font-semibold text-primary cursor-pointer"
+                              >
+                                + Cadastrar Novo Veículo
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />

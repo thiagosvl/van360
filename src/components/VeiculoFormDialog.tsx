@@ -160,7 +160,7 @@ export default function VeiculoFormDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-3xl max-h-[95vh] overflow-y-auto bg-white"
+        className="max-w-2xl max-h-[95vh] overflow-y-auto bg-white"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
