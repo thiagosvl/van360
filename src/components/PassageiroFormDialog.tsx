@@ -204,7 +204,7 @@ export default function PassengerFormDialog({
           genero: (editingPassageiro.genero as any) || undefined,
           nome_responsavel: editingPassageiro.nome_responsavel,
           email_responsavel: editingPassageiro.email_responsavel,
-          cpf_responsavel: editingPassageiro.cpf_responsavel,
+          cpf_responsavel: cpfMask(editingPassageiro.cpf_responsavel),
           telefone_responsavel: phoneMask(
             editingPassageiro.telefone_responsavel
           ),
