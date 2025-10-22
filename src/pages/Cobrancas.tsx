@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -361,11 +362,13 @@ const Cobrancas = () => {
 
                   <TabsContent value="em-aberto" className="mt-4">
                     {cobrancasAbertas.length > 0 && (
-                      <div className="py-4">
+                      <div className="py-4 space-y-2">
+                        <Label htmlFor="search-abertas">Buscar por Nome</Label>
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
-                            placeholder="Pesquisar passageiro ou responsável..."
+                            id="search-abertas"
+                            placeholder="Passageiro ou responsável..."
                             className="pl-10"
                             value={buscaAbertas}
                             onChange={(e) => setBuscaAbertas(e.target.value)}
@@ -717,11 +720,13 @@ const Cobrancas = () => {
 
                   <TabsContent value="pagas" className="mt-4">
                     {cobrancasPagas.length > 0 && (
-                      <div className="py-4">
+                      <div className="py-4 space-y-2">
+                        <Label htmlFor="search-pagas">Buscar por Nome</Label>
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
-                            placeholder="Pesquisar passageiro ou responsável..."
+                            id="search-pagas"
+                            placeholder="Passageiro ou responsável..."
                             className="pl-10"
                             value={buscaPagas}
                             onChange={(e) => setBuscaPagas(e.target.value)}
@@ -971,8 +976,10 @@ const Cobrancas = () => {
                                 </div>
                               </div>
                               {cobranca.pagamento_manual && (
-                                <div className="text-xs text-muted-foreground mt-2 pt-2 border-t">
-                                  Pagamento registrado manualmente
+                                <div className="mt-2">
+                                  <span className="text-xs p-1 rounded-md text-muted-foreground inline-block bg-muted">
+                                    Pagamento registrado manualmente
+                                  </span>
                                 </div>
                               )}
                             </div>

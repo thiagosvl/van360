@@ -54,6 +54,7 @@ import {
   CalendarIcon,
   Edit,
   FileText,
+  Filter,
   Loader2,
   MoreVertical,
   PieChart as PieChartIcon,
@@ -167,6 +168,7 @@ const CustomLegend = (props: any) => {
 
 export default function Gastos() {
   const { setPageTitle, setPageSubtitle } = useLayout();
+  const [showMobileFilters, setShowMobileFilters] = useState(true);
   const [gastos, setGastos] = useState<Gasto[]>([]);
   const [openCalendar, setOpenCalendar] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -357,58 +359,84 @@ export default function Gastos() {
                       {gastos.length}
                     </span>
                   </CardTitle>
-
-                  <Button onClick={() => openDialog()}>
-                    <Plus className="w-4 h-4" />
-                    <span className="hidden sm:inline">Novo Gasto</span>
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setShowMobileFilters(!showMobileFilters)}
+                      className={`md:hidden`}
+                      title={
+                        showMobileFilters
+                          ? "Esconder Filtros"
+                          : "Mostrar Filtros"
+                      }
+                    >
+                      <Filter
+                        className={`h-4 w-4 ${
+                          showMobileFilters
+                            ? "text-blue-600 border-primary"
+                            : ""
+                        }`}
+                      />
+                    </Button>
+                    <Button onClick={() => openDialog()}>
+                      <Plus className="w-4 h-4" />
+                      <span className="hidden sm:inline">Novo Gasto</span>
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
 
               <CardContent>
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">
-                      Mês
-                    </label>
-                    <Select
-                      value={mesFilter.toString()}
-                      onValueChange={(value) => setMesFilter(Number(value))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o mês" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60 overflow-y-auto">
-                        {meses.map((mes, index) => (
-                          <SelectItem
-                            key={index}
-                            value={(index + 1).toString()}
-                          >
-                            {mes}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">
-                      Ano
-                    </label>
-                    <Select
-                      value={anoFilter.toString()}
-                      onValueChange={(value) => setAnoFilter(Number(value))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o ano" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60 overflow-y-auto">
-                        {anos.map((ano) => (
-                          <SelectItem key={ano.value} value={ano.value}>
-                            {ano.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                <div
+                  className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                    showMobileFilters ? "max-h-[500px]" : "max-h-0"
+                  } md:max-h-full`}
+                >
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        Mês
+                      </label>
+                      <Select
+                        value={mesFilter.toString()}
+                        onValueChange={(value) => setMesFilter(Number(value))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o mês" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60 overflow-y-auto">
+                          {meses.map((mes, index) => (
+                            <SelectItem
+                              key={index}
+                              value={(index + 1).toString()}
+                            >
+                              {mes}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        Ano
+                      </label>
+                      <Select
+                        value={anoFilter.toString()}
+                        onValueChange={(value) => setAnoFilter(Number(value))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o ano" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60 overflow-y-auto">
+                          {anos.map((ano) => (
+                            <SelectItem key={ano.value} value={ano.value}>
+                              {ano.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
 

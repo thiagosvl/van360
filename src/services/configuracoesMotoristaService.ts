@@ -1,8 +1,9 @@
+import { STORAGE_KEY_QUICKSTART_STATUS } from "@/constants";
 import { supabase } from "@/integrations/supabase/client";
 
 export const configuracoesMotoristaService = {
     async saveConfiguracoes(configuracoes: any) {
-        const storageKey = "app_quickstart_status";
+        const storageKey = STORAGE_KEY_QUICKSTART_STATUS;
         const cached = localStorage.getItem(storageKey);
         const previousStatus = cached ? JSON.parse(cached) : null;
 
@@ -31,7 +32,6 @@ export const configuracoesMotoristaService = {
             try {
                 if (previousStatus) {
                     localStorage.setItem(storageKey, JSON.stringify(previousStatus));
-                    window.dispatchEvent(new Event("storage"));
                     console.log("↩️ QuickStart revertido ao estado anterior (configurações).");
                 }
             } catch (rollbackErr) {

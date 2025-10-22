@@ -1,5 +1,4 @@
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import EscolaFormDialog from "@/components/EscolaFormDialog";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,18 +18,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import VeiculoFormDialog from "@/components/VeiculoFormDialog";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useToast } from "@/hooks/use-toast";
-import { escolaService } from "@/services/escolaService";
-import { Escola } from "@/types/escola";
+import { veiculoService } from "@/services/veiculoService";
+import { Veiculo } from "@/types/veiculo";
 import { safeCloseDialog } from "@/utils/dialogCallback";
+import { formatarPlacaExibicao, limparPlaca } from "@/utils/placaUtils";
 import {
+  Car,
   Filter,
   MoreVertical,
   Pencil,
   Plus,
-  School,
   Search,
   ToggleLeft,
   ToggleRight,
@@ -55,17 +56,17 @@ const SchoolListSkeleton = () => (
   </div>
 );
 
-export default function Escolas() {
+export default function Veiculos() {
   const { setPageTitle, setPageSubtitle } = useLayout();
-  const [escolas, setEscolas] = useState<
-    (Escola & { passageiros_ativos_count?: number })[]
+  const [veiculos, setVeiculos] = useState<
+    (Veiculo & { passageiros_ativos_count?: number })[]
   >([]);
-  const [countEscolasAtivas, setCountEscolasAtivas] = useState<number>(null);
+  const [countVeiculosAtivos, setCountVeiculosAtivos] = useState<number>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingEscola, setEditingEscola] = useState<Escola | null>(null);
+  const [editingVeiculo, setEditingVeiculo] = useState<Veiculo | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [schoolToDelete, setSchoolToDelete] = useState<Escola | null>(null);
+  const [schoolToDelete, setSchoolToDelete] = useState<Veiculo | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(true);
 
@@ -73,18 +74,18 @@ export default function Escolas() {
   const [selectedStatus, setSelectedStatus] = useState("todos");
   const { toast } = useToast();
 
-  const fetchEscolas = useCallback(
+  const fetchVeiculos = useCallback(
     async (isRefresh = false) => {
       if (!isRefresh) setLoading(true);
       else setRefreshing(true);
 
       try {
-        const data = await escolaService.fetchEscolasComContagemAtivos();
-        setEscolas(data || []);
-        setCountEscolasAtivas(data.filter((e) => e.ativo).length);
+        const data = await veiculoService.fetchVeiculosComContagemAtivos();
+        setVeiculos(data || []);
+        setCountVeiculosAtivos(data.filter((e) => e.ativo).length);
       } catch (error) {
-        console.error("Erro ao buscar escolas:", error);
-        toast({ title: "Erro ao carregar escolas.", variant: "destructive" });
+        console.error("Erro ao buscar veiculos:", error);
+        toast({ title: "Erro ao carregar veiculos.", variant: "destructive" });
       } finally {
         if (!isRefresh) setLoading(false);
         else setRefreshing(false);
@@ -94,72 +95,74 @@ export default function Escolas() {
   );
 
   useEffect(() => {
-    fetchEscolas();
+    fetchVeiculos();
   }, []);
 
   useEffect(() => {
     let subTitle = "";
-    if (countEscolasAtivas != null) {
+    if (countVeiculosAtivos != null) {
       subTitle = `${
-        countEscolasAtivas === 1
-          ? "1 escola ativa"
-          : `${countEscolasAtivas} escolas ativas`
+        countVeiculosAtivos === 1
+          ? "1 veiculo ativo"
+          : `${countVeiculosAtivos} veiculos ativos`
       }`;
     } else {
       subTitle = "Carregando...";
     }
 
-    setPageTitle("Escolas");
+    setPageTitle("Veículos");
     setPageSubtitle(subTitle);
-  }, [escolas, setPageTitle, setPageSubtitle]);
+  }, [veiculos, setPageTitle, setPageSubtitle]);
 
-  const escolasFiltradas = useMemo(() => {
-    let filtered = escolas;
+  const veiculosFiltrados = useMemo(() => {
+    let filtered = veiculos;
 
     if (selectedStatus !== "todos") {
-      const status = selectedStatus === "ativa";
-      filtered = filtered.filter((escola) => escola.ativo === status);
+      const status = selectedStatus === "ativo";
+      filtered = filtered.filter((veiculo) => veiculo.ativo === status);
     }
 
     if (searchTerm) {
       const lowerCaseSearch = searchTerm.toLowerCase();
-      filtered = filtered.filter((escola) =>
-        escola.nome.toLowerCase().includes(lowerCaseSearch)
+      filtered = filtered.filter((veiculo) =>
+        limparPlaca(veiculo.placa)
+          .toLowerCase()
+          .includes(limparPlaca(searchTerm).toLowerCase())
       );
     }
 
     return filtered;
-  }, [escolas, selectedStatus, searchTerm]);
+  }, [veiculos, selectedStatus, searchTerm]);
 
   useEffect(() => {
     const handler = setTimeout(() => {}, 500);
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  const handleSuccessSave = (escolaCriada: Escola) => {
+  const handleSuccessSave = (veiculoCriado: Veiculo) => {
     safeCloseDialog(() => {
-      fetchEscolas(true);
-      setEditingEscola(null);
+      fetchVeiculos(true);
+      setEditingVeiculo(null);
       setIsDialogOpen(false);
     });
   };
 
-  const handleEdit = (escola: Escola) => {
+  const handleEdit = (veiculo: Veiculo) => {
     safeCloseDialog(() => {
-      setEditingEscola(escola);
+      setEditingVeiculo(veiculo);
       setIsDialogOpen(true);
     });
   };
 
-  const handleDeleteClick = (escola: Escola) => {
-    if (escola.passageiros_ativos_count > 0) {
+  const handleDeleteClick = (veiculo: Veiculo) => {
+    if (veiculo.passageiros_ativos_count > 0) {
       toast({
         title: "Não é possível excluir.",
-        description: "A escola está vinculada a passageiros ativos.",
+        description: "O veículo está vinculado a passageiros ativos.",
         variant: "destructive",
       });
     } else {
-      setSchoolToDelete(escola);
+      setSchoolToDelete(veiculo);
       setIsDeleteDialogOpen(true);
     }
   };
@@ -169,21 +172,21 @@ export default function Escolas() {
 
     setRefreshing(true);
     try {
-      await escolaService.deleteEscola(schoolToDelete.id);
+      await veiculoService.deleteVeiculo(schoolToDelete.id);
 
-      await fetchEscolas(true);
-      toast({ title: "Escola excluída permanentemente." });
+      await fetchVeiculos(true);
+      toast({ title: "Veiculo excluído permanentemente." });
     } catch (error: any) {
-      console.error("Erro ao excluir escola:", error);
+      console.error("Erro ao excluir veiculo:", error);
 
       if (error.message.includes("passageiros vinculados")) {
         toast({
-          title: "Erro ao excluir escola.",
+          title: "Erro ao excluir veiculo.",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        toast({ title: "Erro ao excluir escola.", variant: "destructive" });
+        toast({ title: "Erro ao excluir veiculo.", variant: "destructive" });
       }
     } finally {
       setIsDeleteDialogOpen(false);
@@ -192,16 +195,16 @@ export default function Escolas() {
     }
   };
 
-  const handleToggleAtivo = async (escola: Escola) => {
+  const handleToggleAtivo = async (veiculo: Veiculo) => {
     setRefreshing(true);
     try {
-      const novoStatus = await escolaService.toggleAtivo(escola);
+      const novoStatus = await veiculoService.toggleAtivo(veiculo);
 
       toast({
-        title: `Escola ${novoStatus ? "ativada" : "desativada"} com sucesso.`,
+        title: `Veiculo ${novoStatus ? "ativado" : "desativado"} com sucesso.`,
       });
 
-      fetchEscolas(true);
+      fetchVeiculos(true);
     } catch (error: any) {
       console.error("Erro ao alternar status:", error);
       toast({
@@ -214,7 +217,7 @@ export default function Escolas() {
   };
 
   const pullToRefreshReload = async () => {
-    fetchEscolas();
+    fetchVeiculos();
   };
 
   return (
@@ -226,10 +229,10 @@ export default function Escolas() {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle className="flex items-center gap-2">
-                    <span>Escolas</span>
-                    {countEscolasAtivas > 0 && (
+                    <span>Veículos</span>
+                    {countVeiculosAtivos > 0 && (
                       <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
-                        {countEscolasAtivas}
+                        {countVeiculosAtivos}
                       </span>
                     )}
                   </CardTitle>
@@ -259,7 +262,7 @@ export default function Escolas() {
                       className="gap-2"
                     >
                       <Plus className="h-4 w-4" />
-                      <span className="hidden sm:inline">Nova Escola</span>
+                      <span className="hidden sm:inline">Novo Veiculo</span>
                     </Button>
                   </div>
                 </div>
@@ -273,12 +276,12 @@ export default function Escolas() {
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <div className="space-y-2">
-                      <Label htmlFor="search">Buscar por Nome</Label>
+                      <Label htmlFor="search">Buscar por Placa</Label>
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                         <Input
                           id="search"
-                          placeholder="Nome da escola..."
+                          placeholder=""
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
                           className="pl-10"
@@ -296,8 +299,8 @@ export default function Escolas() {
                         </SelectTrigger>
                         <SelectContent className="max-h-60 overflow-y-auto">
                           <SelectItem value="todos">Todos</SelectItem>
-                          <SelectItem value="ativa">Ativa</SelectItem>
-                          <SelectItem value="desativada">Desativada</SelectItem>
+                          <SelectItem value="ativo">Ativo</SelectItem>
+                          <SelectItem value="desativado">Desativado</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -306,13 +309,13 @@ export default function Escolas() {
 
                 {loading ? (
                   <SchoolListSkeleton />
-                ) : escolasFiltradas.length === 0 ? (
+                ) : veiculosFiltrados.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
-                    <School className="w-12 h-12 mb-4 text-gray-300" />
+                    <Car className="w-12 h-12 mb-4 text-gray-300" />
                     <p>
                       {searchTerm
-                        ? `Nenhuma escola encontrada para "${searchTerm}"`
-                        : "Nenhuma escola cadastrada"}
+                        ? `Nenhum veículo encontrado para "${searchTerm}"`
+                        : "Nenhum veículo cadastrado"}
                     </p>
                   </div>
                 ) : (
@@ -322,7 +325,7 @@ export default function Escolas() {
                         <thead>
                           <tr className="border-b">
                             <th className="p-3 text-left text-xs font-medium text-gray-600">
-                              Nome
+                              Placa
                             </th>
                             <th className="p-3 text-left text-xs font-medium text-gray-600">
                               Passageiros Ativos
@@ -330,39 +333,55 @@ export default function Escolas() {
                             <th className="p-3 text-left text-xs font-medium text-gray-600">
                               Status
                             </th>
+                            <th className="p-3 text-left text-xs font-medium text-gray-600">
+                              Marca
+                            </th>
+                            <th className="p-3 text-left text-xs font-medium text-gray-600">
+                              Modelo
+                            </th>
                             <th className="p-3 text-center text-xs font-medium text-gray-600">
                               Ações
                             </th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                          {escolasFiltradas.map((escola) => (
+                          {veiculosFiltrados.map((veiculo) => (
                             <tr
-                              key={escola.id}
-                              onClick={() => handleEdit(escola)}
+                              key={veiculo.id}
+                              onClick={() => handleEdit(veiculo)}
                               className="hover:bg-muted/50 cursor-pointer"
                             >
                               <td className="p-3 align-top">
                                 <div className="font-medium text-sm text-gray-900">
-                                  {escola.nome}
+                                  {formatarPlacaExibicao(veiculo.placa)}
                                 </div>
                               </td>
                               <td className="p-3 align-top">
                                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                   <Users2 className="w-4 h-4" />
-                                  {escola.passageiros_ativos_count}
+                                  {veiculo.passageiros_ativos_count}
                                 </div>
                               </td>
                               <td className="p-3 align-top">
                                 <span
                                   className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
-                                    escola.ativo
+                                    veiculo.ativo
                                       ? "bg-green-100 text-green-800"
                                       : "bg-red-100 text-red-800"
                                   }`}
                                 >
-                                  {escola.ativo ? "Ativa" : "Desativada"}
+                                  {veiculo.ativo ? "Ativo" : "Desativado"}
                                 </span>
+                              </td>
+                              <td className="p-3 align-top">
+                                <div className="font-medium text-sm text-gray-900">
+                                  {veiculo.marca}
+                                </div>
+                              </td>
+                              <td className="p-3 align-top">
+                                <div className="font-medium text-sm text-gray-900">
+                                  {veiculo.modelo}
+                                </div>
                               </td>
                               <td className="p-3 text-center align-top">
                                 <DropdownMenu>
@@ -381,7 +400,7 @@ export default function Escolas() {
                                       className="cursor-pointer"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        handleEdit(escola);
+                                        handleEdit(veiculo);
                                       }}
                                     >
                                       <Pencil className="w-4 h-4 mr-2" />
@@ -391,10 +410,10 @@ export default function Escolas() {
                                       className="cursor-pointer"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        handleToggleAtivo(escola);
+                                        handleToggleAtivo(veiculo);
                                       }}
                                     >
-                                      {escola.ativo ? (
+                                      {veiculo.ativo ? (
                                         <>
                                           <ToggleLeft className="w-4 h-4 mr-2" />
                                           Desativar
@@ -409,7 +428,7 @@ export default function Escolas() {
                                     <DropdownMenuItem
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        handleDeleteClick(escola);
+                                        handleDeleteClick(veiculo);
                                       }}
                                       className="cursor-pointer text-red-600"
                                     >
@@ -426,29 +445,36 @@ export default function Escolas() {
                     </div>
 
                     <div className="md:hidden divide-y divide-gray-100">
-                      {escolasFiltradas.map((escola) => (
+                      {veiculosFiltrados.map((veiculo) => (
                         <div
-                          key={escola.id}
-                          onClick={() => handleEdit(escola)}
+                          key={veiculo.id}
+                          onClick={() => handleEdit(veiculo)}
                           className="flex items-center py-4 px-0 active:bg-muted/50"
                         >
                           <div className="flex-1 pr-4">
                             <div className="font-semibold text-gray-800">
-                              {escola.nome}
+                              {formatarPlacaExibicao(veiculo.placa)}{" "}
+                              <span className="text-xs text-muted-foreground">
+                                ({veiculo.marca} {veiculo.modelo}
+                                {veiculo.ano_modelo
+                                  ? `/${veiculo.ano_modelo}`
+                                  : ""}
+                                )
+                              </span>
                             </div>
                             <div className="mt-1 flex items-center gap-3">
                               <span
                                 className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
-                                  escola.ativo
+                                  veiculo.ativo
                                     ? "bg-green-100 text-green-800"
                                     : "bg-red-100 text-red-800"
                                 }`}
                               >
-                                {escola.ativo ? "Ativa" : "Desativada"}
+                                {veiculo.ativo ? "Ativo" : "Desativado"}
                               </span>
                               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                 <Users2 className="w-4 h-4" />
-                                {escola.passageiros_ativos_count} ativos
+                                {veiculo.passageiros_ativos_count} ativos
                               </div>
                             </div>
                           </div>
@@ -467,7 +493,7 @@ export default function Escolas() {
                               <DropdownMenuItem
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleEdit(escola);
+                                  handleEdit(veiculo);
                                 }}
                               >
                                 <Pencil className="w-4 h-4 mr-2" />
@@ -476,10 +502,10 @@ export default function Escolas() {
                               <DropdownMenuItem
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleToggleAtivo(escola);
+                                  handleToggleAtivo(veiculo);
                                 }}
                               >
-                                {escola.ativo ? (
+                                {veiculo.ativo ? (
                                   <>
                                     <ToggleLeft className="w-4 h-4 mr-2" />
                                     Desativar
@@ -494,7 +520,7 @@ export default function Escolas() {
                               <DropdownMenuItem
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleDeleteClick(escola);
+                                  handleDeleteClick(veiculo);
                                 }}
                                 className="text-red-600"
                               >
@@ -515,22 +541,22 @@ export default function Escolas() {
             open={isDeleteDialogOpen}
             onOpenChange={setIsDeleteDialogOpen}
             title="Confirmar exclusão"
-            description="Deseja excluir permanentemente esta escola?"
+            description="Deseja excluir permanentemente este veiculo?"
             onConfirm={handleDelete}
             confirmText="Confirmar"
             variant="destructive"
           />
 
           {isDialogOpen && (
-            <EscolaFormDialog
+            <VeiculoFormDialog
               isOpen={isDialogOpen}
               onClose={() => {
                 safeCloseDialog(() => {
                   setIsDialogOpen(false);
-                  setEditingEscola(null);
+                  setEditingVeiculo(null);
                 });
               }}
-              editingEscola={editingEscola}
+              editingVeiculo={editingVeiculo}
               onSuccess={handleSuccessSave}
             />
           )}

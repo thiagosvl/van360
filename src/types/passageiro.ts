@@ -18,10 +18,12 @@ export interface Passageiro {
   created_at?: string;
   updated_at?: string;
   escola_id?: string;
+   veiculo_id: string; 
   usuario_id?: string;
   ativo?: boolean;
   referencia?: string;
   observacoes? : string;
   escolas?: { nome: string };
+  veiculos?: { placa: string };
   emitir_cobranca_mes_atual? : boolean;
 }

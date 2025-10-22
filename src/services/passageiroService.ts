@@ -1,3 +1,4 @@
+import { STORAGE_KEY_QUICKSTART_STATUS } from "@/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { asaasService } from "@/services/asaasService";
 import { toLocalDateString } from "@/utils/formatters";
@@ -39,7 +40,7 @@ export const passageiroService = {
     let newPassageiro: any = null;
     let payment: any = null;
 
-    const storageKey = "app_quickstart_status";
+    const storageKey = STORAGE_KEY_QUICKSTART_STATUS;
     const cached = localStorage.getItem(storageKey);
     const previousStatus = cached ? JSON.parse(cached) : null;
 
@@ -128,12 +129,12 @@ export const passageiroService = {
       try {
         if (previousStatus) {
           localStorage.setItem(storageKey, JSON.stringify(previousStatus));
-          window.dispatchEvent(new Event("storage"));
-          console.log("↩️ QuickStart revertido ao estado anterior.");
+          console.warn("QuickStart revertido ao estado anterior (passageiro).");
         }
-      } catch (rollbackVisualErr) {
-        console.error("Erro ao reverter QuickStart (passageiro):", rollbackVisualErr);
+      } catch (storageErr) {
+        console.error("Erro ao restaurar QuickStart:", storageErr);
       }
+
 
       try {
         if (payment?.id) await asaasService.deletePayment(payment.id);

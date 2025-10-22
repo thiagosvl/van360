@@ -27,6 +27,7 @@ import { passageiroService } from "@/services/passageiroService";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
+import { Veiculo } from "@/types/veiculo";
 import { currentMonthInText } from "@/utils/formatters";
 import { cepMask, cpfMask, moneyMask, phoneMask } from "@/utils/masks";
 import { isValidCPF } from "@/utils/validators";
@@ -56,6 +57,7 @@ import { Textarea } from "./ui/textarea";
 
 const passageiroSchema = z.object({
   escola_id: z.string().min(1, "Campo obrigatório"),
+  veiculo_id: z.string().min(1, "Campo obrigatório"),
   nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
 
   genero: z.enum(["Masculino", "Feminino"], {
@@ -120,8 +122,10 @@ export default function PassengerFormDialog({
   novaEscolaId,
 }: PassengerFormDialogProps) {
   const [selectedEscola, setSelectedEscola] = useState<string | null>(null);
+  const [selectedVeiculo, setSelectedVeiculo] = useState<string | null>(null);
   const [loadingCep, setLoadingCep] = useState(false);
   const [escolasModal, setEscolasModal] = useState<Escola[]>([]);
+  const [veiculosModal, setVeiculosModal] = useState<Veiculo[]>([]);
   const { toast } = useToast();
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "passageiro",
@@ -134,6 +138,7 @@ export default function PassengerFormDialog({
     resolver: zodResolver(passageiroSchema),
     defaultValues: {
       escola_id: "",
+      veiculo_id: "",
       nome: "",
 
       genero: undefined,
@@ -177,6 +182,7 @@ export default function PassengerFormDialog({
 
       if (editingPassageiro && mode === "edit") {
         fetchEscolas(editingPassageiro.escola_id || undefined);
+        fetchVeiculos(editingPassageiro.veiculo_id || undefined);
         form.reset({
           nome: editingPassageiro.nome,
           genero: (editingPassageiro.genero as any) || undefined,
@@ -199,6 +205,7 @@ export default function PassengerFormDialog({
           cep: editingPassageiro.cep ? cepMask(editingPassageiro.cep) : "",
           referencia: editingPassageiro.referencia || "",
           escola_id: editingPassageiro.escola_id || "",
+          veiculo_id: editingPassageiro.veiculo_id || "",
           emitir_cobranca_mes_atual: false,
           ativo: editingPassageiro.ativo,
         });
@@ -211,6 +218,7 @@ export default function PassengerFormDialog({
         ]);
       } else if (isFinalizeMode) {
         fetchEscolas();
+        fetchVeiculos();
         form.reset({
           nome: prePassageiro.nome,
           genero: (prePassageiro.genero as any) || undefined,
@@ -228,6 +236,7 @@ export default function PassengerFormDialog({
           referencia: prePassageiro.referencia || "",
           observacoes: prePassageiro.observacoes || "",
 
+          veiculo_id: prePassageiro.veiculo_id || "",
           escola_id: prePassageiro.escola_id || "",
           valor_cobranca: prePassageiro.valor_cobranca
             ? moneyMask((prePassageiro.valor_cobranca * 100).toString())
@@ -240,6 +249,8 @@ export default function PassengerFormDialog({
 
         form.trigger([
           "escola_id",
+          "veiculo_id",
+          "genero",
           "valor_cobranca",
           "dia_vencimento",
           "nome",
@@ -258,8 +269,10 @@ export default function PassengerFormDialog({
         ]);
       } else {
         fetchEscolas();
+        fetchVeiculos();
         form.reset({
           escola_id: "",
+          veiculo_id: "",
           nome: "",
           genero: undefined,
           observacoes: "",
@@ -282,6 +295,31 @@ export default function PassengerFormDialog({
       }
     }
   }, [isOpen, editingPassageiro, form, prePassageiro, mode]);
+
+  const fetchVeiculos = async (veiculoId?: string) => {
+    const userId = localStorage.getItem("app_user_id");
+    try {
+      let query = supabase
+        .from("veiculos")
+        .select("*")
+        .eq("usuario_id", userId)
+        .order("placa");
+
+      if (veiculoId) {
+        query = query.or(`ativo.eq.true,id.eq.${veiculoId}`);
+      } else {
+        query = query.eq("ativo", true);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setVeiculosModal(data || []);
+    } catch (err) {
+      console.error("Erro ao buscar veículos:", err);
+      setVeiculosModal([]);
+    }
+  };
 
   const fetchEscolas = async (escolaId?: string) => {
     const userId = localStorage.getItem("app_user_id");
@@ -372,7 +410,7 @@ export default function PassengerFormDialog({
           editingPassageiro.id,
           purePayload
         );
-        toast({ title: "Cadastro atualizado com sucesso." });
+        toast({ title: "Passageiro atualizado com sucesso." });
       } else {
         await passageiroService.createPassageiroComTransacao({
           ...purePayload,
@@ -443,7 +481,7 @@ export default function PassengerFormDialog({
                       control={form.control}
                       name="nome"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-2">
+                        <FormItem className="md:col-span-1">
                           <FormLabel>Nome do Passageiro *</FormLabel>
                           <FormControl>
                             <Input {...field} />
@@ -452,9 +490,66 @@ export default function PassengerFormDialog({
                         </FormItem>
                       )}
                     />
+                    <FormField
+                      control={form.control}
+                      name="genero"
+                      render={({ field }) => (
+                        <FormItem className="md:col-span-1">
+                          <FormLabel>Gênero *</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value || undefined}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o gênero" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Masculino">
+                                Masculino
+                              </SelectItem>
+                              <SelectItem value="Feminino">Feminino</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="veiculo_id"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Veículo *</FormLabel>
+                          <Select
+                            value={selectedVeiculo || field.value}
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              setSelectedVeiculo(value);
+                            }}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o veículo" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="max-h-60 overflow-y-auto">
+                              {veiculosModal.map((veiculo) => (
+                                <SelectItem key={veiculo.id} value={veiculo.id}>
+                                  {veiculo.placa}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <FormField
                       control={form.control}
                       name="escola_id"
@@ -489,33 +584,6 @@ export default function PassengerFormDialog({
                               >
                                 + Cadastrar Nova Escola
                               </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="genero"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Gênero *</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value || undefined}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione o gênero" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Masculino">
-                                Masculino
-                              </SelectItem>
-                              <SelectItem value="Feminino">Feminino</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />

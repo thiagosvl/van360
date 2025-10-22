@@ -25,10 +25,10 @@ import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 const loginSchema = z.object({
-    cpfcnpj: z
-        .string()
-        .min(1, "Campo obrigatório")
-        .refine((val) => isValidCPF(val), "CPF inválido"),
+  cpfcnpj: z
+    .string()
+    .min(1, "Campo obrigatório")
+    .refine((val) => isValidCPF(val), "CPF inválido"),
   senha: z.string().min(6, "Mínimo de 6 caracteres"),
 });
 
@@ -38,11 +38,16 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const inDevelopment = import.meta.env.MODE === "development";
+
+  const cpfTest = !inDevelopment ? "710.438.080-94" : "909.269.840-71";
+  const senhaTest = !inDevelopment ? "AomRRfMnJF" : "kS8qexSdS2";
+
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      cpfcnpj: "710.438.080-94",
-      senha: "AomRRfMnJF",
+      cpfcnpj: cpfTest,
+      senha: senhaTest,
     },
   });
 
@@ -182,4 +187,3 @@ export default function Login() {
 function isValidCpf(val: string): unknown {
   throw new Error("Function not implemented.");
 }
-

@@ -3,10 +3,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
+import LatePaymentsAlert from "@/components/LatePaymentsAlert";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { Cobranca } from "@/types/cobranca";
 import {
+  Car,
   Copy,
   CreditCard,
   GraduationCap,
@@ -16,7 +21,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 
 const AccessCard = ({
@@ -50,6 +55,10 @@ const Inicio = () => {
   const { setPageTitle, setPageSubtitle } = useLayout();
   const { profile } = useAuth();
   const { toast } = useToast();
+  const [latePayments, setLatePayments] = useState<Cobranca[]>([]);
+  const [mesAtual, setMesAtual] = useState(new Date().getMonth() + 1);
+  const [anoAtual, setAnoAtual] = useState(new Date().getFullYear());
+  const [loadingFinances, setLoadingFinances] = useState(true);
 
   const ACCESS_CARDS_DATA = [
     {
@@ -69,6 +78,14 @@ const Inicio = () => {
       icon: Users,
       color: "text-green-700",
       bg: "bg-green-100",
+    },
+    {
+      title: "Veículos",
+      description: "Gerencie a lista de veículos.",
+      href: "/veiculos",
+      icon: Car,
+      color: "text-orange-700",
+      bg: "bg-orange-100",
     },
     {
       title: "Relatórios",
@@ -106,6 +123,9 @@ const Inicio = () => {
     },
   ];
 
+  const BASE_DOMAIN =
+    import.meta.env.VITE_PUBLIC_APP_DOMAIN || window.location.origin;
+
   useEffect(() => {
     setPageTitle(
       profile.id ? `Olá, ${profile.nome.split(" ")[0]}` : "Carregando..."
@@ -113,8 +133,51 @@ const Inicio = () => {
     setPageSubtitle("");
   }, [setPageTitle, setPageSubtitle]);
 
-  const BASE_DOMAIN =
-    import.meta.env.VITE_PUBLIC_APP_DOMAIN || window.location.origin;
+  useEffect(() => {
+    if (profile && profile.id) {
+      fetchLatePayments();
+    }
+  }, []);
+
+  const fetchLatePayments = async () => {
+    const currentUserId = profile?.id || localStorage.getItem("app_user_id");
+    if (!currentUserId || !profile) {
+      setLoadingFinances(false);
+      return;
+    }
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const mes = new Date().getMonth() + 1;
+    const ano = new Date().getFullYear();
+    setMesAtual(mes);
+    setAnoAtual(ano);
+
+    setLoadingFinances(true);
+    try {
+      const { data: cobrancasMes } = await supabase
+        .from("cobrancas")
+        .select(`*`)
+        .eq("mes", mes)
+        .eq("usuario_id", currentUserId)
+        .eq("ano", ano);
+
+      const cobrancas = cobrancasMes || ([] as Cobranca[]);
+
+      const cobrancasAtrasadasList = cobrancas.filter((c: Cobranca) => {
+        if (c.status === "pago") return false;
+        const vencimento = new Date(c.data_vencimento);
+        return vencimento < hoje;
+      });
+
+      setLatePayments(cobrancasAtrasadasList);
+    } catch (error) {
+      console.error("Erro ao buscar cobranças para Alerta:", error);
+    } finally {
+      setLoadingFinances(false);
+    }
+  };
 
   const handleCopyLink = () => {
     const linkToCopy = `${BASE_DOMAIN}/cadastro-passageiro/${profile.id}`;
@@ -142,8 +205,27 @@ const Inicio = () => {
   return (
     <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
       <div className="space-y-8">
+        {/* Quick Start */}
         <QuickStartCard />
 
+        {/* Cobranças Pendentes */}
+        {loadingFinances ? (
+          <Card className="mb-6">
+            <CardContent className="p-5">
+              <Skeleton className="h-6 w-full" />
+            </CardContent>
+          </Card>
+        ) : (
+          latePayments.length > 0 && (
+            <LatePaymentsAlert
+              latePayments={latePayments}
+              mes={mesAtual}
+              ano={anoAtual}
+            />
+          )
+        )}
+
+        {/* Link Cadastro Rapido */}
         <section>
           <Card className="p-5 bg-blue-50 border-blue-200">
             <CardContent className="p-0 flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -154,8 +236,8 @@ const Inicio = () => {
                     Link de Cadastro Rápido
                   </p>
                   <p className="text-sm text-blue-900 mt-1">
-                    Copie o link <span className="inline md:hidden">abaixo</span> e envie-o ao responsável do passageiro
-                    para que ele inicie o cadastro.
+                    Copie o link e envie ao responsável do passageiro para que
+                    ele inicie o cadastro.
                   </p>
                 </div>
               </div>
@@ -171,11 +253,12 @@ const Inicio = () => {
           </Card>
         </section>
 
+        {/* Acessos Rápidos */}
         <section>
           <h2 className="text-xl font-semibold mb-4">Acessos Rápidos</h2>
 
           <div className="overflow-x-hidden">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-1 -mx-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 -mx-4">
               {accessCardsWithSubtitles.map((card) => (
                 <div key={card.href} className="px-2 pb-4">
                   <AccessCard {...card} />

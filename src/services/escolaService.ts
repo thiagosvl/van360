@@ -1,3 +1,4 @@
+import { STORAGE_KEY_QUICKSTART_STATUS } from "@/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { Escola } from "@/types/escola";
 
@@ -39,7 +40,7 @@ export const saveEscola = async (data: any, editingEscola: Escola | null): Promi
     if (editingEscola && editingEscola.ativo && data.ativo === false) {
         const count = await fetchPassageirosAtivosCount(editingEscola.id);
         if (count > 0) {
-            throw new Error(`Não é possível desativar. Existem passageiros ativos vinculados a esta escola.`);
+            throw new Error(`Existem passageiros ativos vinculados à escola.`);
         }
     }
 
@@ -54,6 +55,9 @@ export const saveEscola = async (data: any, editingEscola: Escola | null): Promi
         if (error) throw error;
         return updatedData as Escola;
     } else {
+        const storageKey = STORAGE_KEY_QUICKSTART_STATUS;
+        const previousStatus = localStorage.getItem(storageKey);
+
         const { data: createdData, error } = await supabase.from("escolas").insert([
             {
                 ...data,
@@ -64,19 +68,17 @@ export const saveEscola = async (data: any, editingEscola: Escola | null): Promi
             .select()
             .single();
 
-        if (error) throw error;
-
-        try {
-            const storageKey = "app_quickstart_status";
-            const cached = localStorage.getItem(storageKey);
-            const status = cached ? JSON.parse(cached) : {};
-
-            status.step_escolas = true;
-
-            localStorage.setItem(storageKey, JSON.stringify(status));
-        } catch (e) {
-            console.error("Erro ao atualizar QuickStart no localStorage:", e);
+        if (error) {
+            if (previousStatus) {
+                localStorage.setItem(storageKey, previousStatus);
+                console.warn("QuickStart revertido ao estado anterior (escola).");
+            }
+            throw error;
         }
+
+        const status = previousStatus ? JSON.parse(previousStatus) : {};
+        status.step_escolas = true;
+        localStorage.setItem(storageKey, JSON.stringify(status));
 
         return createdData as Escola;
     }
@@ -111,7 +113,7 @@ export const toggleAtivo = async (escola: Escola): Promise<boolean> => {
     if (!novoStatus) {
         const count = await fetchPassageirosAtivosCount(escola.id);
         if (count > 0) {
-            throw new Error("Não é possível desativar. Há passageiros ativos vinculados.");
+            throw new Error("Existem passageiros ativos vinculados à escola.");
         }
     }
 

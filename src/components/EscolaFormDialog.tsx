@@ -137,12 +137,18 @@ export default function EscolaFormDialog({
 
       if (error.message.includes("passageiros ativos")) {
         toast({
-          title: "Não é possível desativar.",
+          title: "Não é possível desativar",
           description: error.message,
           variant: "destructive",
         });
+      } else if (error.code == "23505") {
+        toast({
+          title: "Erro ao salvar escola",
+          description: "Já existe uma escola cadastrada com esse nome.",
+          variant: "destructive",
+        });
       } else {
-        toast({ title: "Erro ao salvar escola.", variant: "destructive" });
+        toast({ title: "Erro ao salvar escola", variant: "destructive" });
       }
     } finally {
       setLoading(false);
@@ -262,7 +268,7 @@ export default function EscolaFormDialog({
                         name="cep"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>CEP *</FormLabel>
+                            <FormLabel>CEP</FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <Input

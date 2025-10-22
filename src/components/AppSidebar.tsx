@@ -1,4 +1,5 @@
 import {
+  Car,
   ChartArea,
   CreditCard,
   GraduationCap,
@@ -20,6 +21,7 @@ const motoristaItems = [
   { title: "Cobranças", href: "/cobrancas", icon: CreditCard },
   { title: "Passageiros", href: "/passageiros", icon: Users },
   { title: "Escolas", href: "/escolas", icon: GraduationCap },
+  { title: "Veículos", href: "/veiculos", icon: Car },
   { title: "Gastos", href: "/gastos", icon: Wallet },
   { title: "Relatórios", href: "/relatorios", icon: ChartArea },
   { title: "Configurações", href: "/configuracoes", icon: Settings },

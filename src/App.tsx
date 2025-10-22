@@ -30,6 +30,7 @@ import { Capacitor } from "@capacitor/core";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { Loader2 } from "lucide-react";
 import BackButtonController from "./hooks/BackButtonController";
+import Veiculos from "./pages/Veiculos";
 
 const queryClient = new QueryClient();
 
@@ -223,6 +224,7 @@ const App = () => {
                 />
                 <Route path="cobrancas" element={<Cobrancas />} />
                 <Route path="escolas" element={<Escolas />} />
+                <Route path="veiculos" element={<Veiculos />} />
                 <Route path="gastos" element={<Gastos />} />
                 <Route path="relatorios" element={<Relatorios />} />
                 <Route path="configuracoes" element={<Configuracoes />} />

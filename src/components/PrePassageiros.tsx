@@ -18,6 +18,8 @@ import { safeCloseDialog } from "@/utils/dialogCallback";
 import {
   CheckCircle,
   Copy,
+  Filter,
+  LinkIcon,
   MoreVertical,
   Search,
   Trash2,
@@ -61,6 +63,8 @@ export default function PrePassageiros({
   const [isCreatingEscola, setIsCreatingEscola] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [showMobileFilters, setShowMobileFilters] = useState(true);
   const { toast } = useToast();
 
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -134,7 +138,7 @@ export default function PrePassageiros({
       await prePassageiroService.createPreCadastroRapido(fakePayload);
 
       toast({
-        title: "Pré-Cadastro Gerado com Sucesso!",
+        title: "Pré-Cadastro Gerado com sucesso!",
         variant: "default",
       });
 
@@ -234,6 +238,15 @@ export default function PrePassageiros({
     <>
       <div className="space-y-6">
         <div className="w-full">
+          <div className="">
+            <Button
+              onClick={handleCadastrarRapidoLink}
+              variant="outline"
+              className="gap-2 text-uppercase"
+            >
+              GERAR PRÉ-CADASTRO FAKE
+            </Button>
+          </div>
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -246,37 +259,71 @@ export default function PrePassageiros({
                   )}
                 </CardTitle>
 
-                <Button title="Copiar" onClick={handleCopyLink}>
-                  <Copy className="h-4 w-4" />
-                  <span className="hidden sm:inline">
-                    Copiar Link de Cadastro
-                  </span>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setShowMobileFilters(!showMobileFilters)}
+                    className={`md:hidden`}
+                    title={
+                      showMobileFilters ? "Esconder Filtros" : "Mostrar Filtros"
+                    }
+                  >
+                    <Filter
+                      className={`h-4 w-4 ${
+                        showMobileFilters ? "text-blue-600 border-primary" : ""
+                      }`}
+                    />
+                  </Button>
+                </div>
               </div>
             </CardHeader>
 
             <CardContent>
-              <div className="mb-7">
-                <Button
-                  onClick={handleCadastrarRapidoLink}
-                  variant="outline"
-                  className="gap-2 text-uppercase"
-                >
-                  GERAR PRÉ-CADASTRO FAKE
-                </Button>
-              </div>
+              <div
+                className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                  showMobileFilters ? "max-h-[500px]" : "max-h-0"
+                } md:max-h-full`}
+              >
+                <section className="mb-6">
+                  <Card className="p-5 bg-blue-50 border-blue-200">
+                    <CardContent className="p-0 flex flex-col sm:flex-row justify-between items-center gap-4">
+                      <div className="flex items-center gap-3">
+                        <LinkIcon className="h-6 w-6 text-blue-700 shrink-0" />
+                        <div>
+                          <p className="text-lg font-bold text-blue-700 leading-snug">
+                            Link de Cadastro Rápido
+                          </p>
+                          <p className="text-sm text-blue-900 mt-1">
+                            Copie o link e envie ao responsável do passageiro
+                            para que ele inicie o cadastro.
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        title="Copiar"
+                        className="text-blue-700 border-blue-300 hover:bg-blue-100 shrink-0"
+                        onClick={handleCopyLink}
+                      >
+                        <Copy className="h-4 w-4 mr-2" /> Copiar Link
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </section>
 
-              <div className="space-y-2 mb-4">
-                <Label htmlFor="search">Buscar por Nome</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                  <Input
-                    id="search"
-                    placeholder="Nome do passageiro ou responsável..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+                <div className="space-y-2 mb-4">
+                  <Label htmlFor="search">Buscar por Nome</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input
+                      id="search"
+                      placeholder="Passageiro ou responsável..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -288,7 +335,7 @@ export default function PrePassageiros({
                   <p>Nenhum pré-cadastro pendente.</p>
                 </div>
               ) : (
-                <div className="md:divide-y divide-gray-200">
+                <div className="divide-y divide-gray-200">
                   {prePassageiros.map((prePassageiro) => (
                     <div
                       onClick={(e) => {
@@ -296,10 +343,10 @@ export default function PrePassageiros({
                         handleFinalizeClick(prePassageiro);
                       }}
                       key={prePassageiro.id}
-                      className="py-4 active:bg-muted/50 border-b md:border-b-0 cursor-pointer hover:bg-muted/50"
+                      className="py-4 active:bg-muted/50 cursor-pointer hover:bg-muted/50"
                     >
                       <div className="flex justify-between items-start">
-                        <div className="pr-2">
+                        <div className="">
                           <div className="font-semibold text-sm text-gray-800">
                             {prePassageiro.nome}
                           </div>

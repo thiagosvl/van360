@@ -13,6 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { STORAGE_KEY_QUICKSTART_STATUS } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, Menu, User } from "lucide-react";
@@ -25,9 +26,11 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
   const handleSignOut = async () => {
     localStorage.removeItem("app_role");
     localStorage.removeItem("app_user_id");
-    localStorage.removeItem("app_user_name");
-    localStorage.removeItem("app_quickstart_status");
-    await supabase.auth.signOut();
+    localStorage.removeItem(STORAGE_KEY_QUICKSTART_STATUS);
+
+    if (supabase.auth.getSession()) {
+      await supabase.auth.signOut();
+    }
   };
 
   return (

@@ -1,0 +1,1 @@
+export const STORAGE_KEY_QUICKSTART_STATUS = "app_quickstart_status";

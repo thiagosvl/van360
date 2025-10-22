@@ -29,9 +29,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { passageiroService } from "@/services/passageiroService";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
+import { Veiculo } from "@/types/veiculo";
 import { safeCloseDialog } from "@/utils/dialogCallback";
+import { formatarPlacaExibicao } from "@/utils/placaUtils";
 import {
   CreditCard,
+  Filter,
   MoreVertical,
   Pencil,
   Plus,
@@ -68,7 +71,11 @@ export default function Passageiros() {
   const [passageiros, setPassageiros] = useState<Passageiro[]>([]);
   const [countPassageirosAtivos, setcountPassageirosAtivos] =
     useState<number>(null);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [escolas, setEscolas] = useState<Escola[]>([]);
+  const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
+  const [selectedVeiculo, setSelectedVeiculo] = useState<string>("todas");
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(
     null
@@ -100,11 +107,14 @@ export default function Passageiros() {
       try {
         let query = supabase
           .from("passageiros")
-          .select(`*, escolas(nome)`)
+          .select(`*, escolas(nome), veiculos(placa)`)
           .eq("usuario_id", localStorage.getItem("app_user_id"))
           .order("nome");
         if (selectedEscola !== "todas") {
           query = query.eq("escola_id", selectedEscola);
+        }
+        if (selectedVeiculo !== "todas") {
+          query = query.eq("veiculo_id", selectedVeiculo);
         }
         if (searchTerm.length >= 2) {
           query = query.or(
@@ -129,11 +139,12 @@ export default function Passageiros() {
         else setRefreshing(false);
       }
     },
-    [searchTerm, selectedEscola, selectedStatus, toast]
+    [searchTerm, selectedEscola, selectedVeiculo, selectedStatus, toast]
   );
 
   useEffect(() => {
     fetchEscolas();
+    fetchVeiculos();
   }, []);
 
   useEffect(() => {
@@ -254,6 +265,21 @@ export default function Passageiros() {
     }
   };
 
+  const fetchVeiculos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("veiculos")
+        .select("id, placa")
+        .eq("usuario_id", localStorage.getItem("app_user_id"))
+        .eq("ativo", true)
+        .order("placa");
+      if (error) throw error;
+      setVeiculos(data || []);
+    } catch (error) {
+      console.error("Erro ao buscar veículos:", error);
+    }
+  };
+
   const fetchEscolas = async () => {
     try {
       const { data, error } = await supabase
@@ -289,7 +315,16 @@ export default function Passageiros() {
       toast({
         title: "Operação Impossível.",
         description:
-          "Cadastre pelo menos uma escola ativa antes de usar o Cadastro Rápido.",
+          "Cadastre pelo menos uma escola ativa antes de usar o Cadastro FAKE.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!veiculos || veiculos.length === 0) {
+      toast({
+        title: "Operação Impossível.",
+        description:
+          "Cadastre pelo menos um veículo ativa antes de usar o Cadastro FAKE.",
         variant: "destructive",
       });
       return;
@@ -314,6 +349,7 @@ export default function Passageiros() {
       valor_cobranca: valorInString,
       dia_vencimento: hoje.getDate(),
       escola_id: escolas[0].id,
+      veiculo_id: veiculos[0].id,
       ativo: true,
       emitir_cobranca_mes_atual: true,
       logradouro: "Rua Comendador Artur Capodaglio",
@@ -380,6 +416,15 @@ export default function Passageiros() {
               </TabsList>
 
               <TabsContent value="passageiros" className="mt-4">
+                <div className="">
+                  <Button
+                    onClick={handleCadastrarRapido}
+                    variant="outline"
+                    className="gap-2 text-uppercase"
+                  >
+                    GERAR PASSAGEIRO FAKE
+                  </Button>
+                </div>
                 <Card>
                   <CardHeader>
                     <div className="flex justify-between items-center">
@@ -392,78 +437,117 @@ export default function Passageiros() {
                         )}
                       </CardTitle>
 
-                      <Button onClick={handleOpenNewDialog}>
-                        <Plus className="h-4 w-4" />
-                        <span className="hidden sm:inline">
-                          Novo Passageiro
-                        </span>
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() =>
+                            setShowMobileFilters(!showMobileFilters)
+                          }
+                          className={`md:hidden`}
+                          title={
+                            showMobileFilters
+                              ? "Esconder Filtros"
+                              : "Mostrar Filtros"
+                          }
+                        >
+                          <Filter
+                            className={`h-4 w-4 ${
+                              showMobileFilters
+                                ? "text-blue-600 border-primary"
+                                : ""
+                            }`}
+                          />
+                        </Button>
+                        <Button onClick={handleOpenNewDialog}>
+                          <Plus className="h-4 w-4" />
+                          <span className="hidden sm:inline">
+                            Novo Passageiro
+                          </span>
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="mb-7">
-                      <Button
-                        onClick={handleCadastrarRapido}
-                        variant="outline"
-                        className="gap-2 text-uppercase"
-                      >
-                        GERAR PASSAGEIRO FAKE
-                      </Button>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="search">Buscar por Nome</Label>
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                          <Input
-                            id="search"
-                            placeholder="Nome do passageiro ou responsável..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10"
-                          />
+                    <div
+                      className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                        showMobileFilters ? "max-h-[500px]" : "max-h-0"
+                      } md:max-h-full`}
+                    >
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="search">Buscar por Nome</Label>
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                            <Input
+                              id="search"
+                              placeholder="Passageiro ou responsável..."
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                              className="pl-10"
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="status-filter">Status</Label>
-                        <Select
-                          value={selectedStatus}
-                          onValueChange={setSelectedStatus}
-                        >
-                          <SelectTrigger id="status-filter">
-                            <SelectValue placeholder="Todos" />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-60 overflow-y-auto">
-                            <SelectItem value="todos">Todos</SelectItem>
-                            <SelectItem value="ativo">Ativo</SelectItem>
-                            <SelectItem value="desativado">
-                              Desativado
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="escola-filter">Escola</Label>
-                        <Select
-                          value={selectedEscola}
-                          onValueChange={setSelectedEscola}
-                        >
-                          <SelectTrigger id="escola-filter">
-                            <SelectValue placeholder="Todas" />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-60 overflow-y-auto">
-                            <SelectItem value="todas">Todas</SelectItem>
-                            {escolas.map((escola) => (
-                              <SelectItem key={escola.id} value={escola.id}>
-                                {escola.nome}
+                        <div className="space-y-2">
+                          <Label htmlFor="status-filter">Status</Label>
+                          <Select
+                            value={selectedStatus}
+                            onValueChange={setSelectedStatus}
+                          >
+                            <SelectTrigger id="status-filter">
+                              <SelectValue placeholder="Todos" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-60 overflow-y-auto">
+                              <SelectItem value="todos">Todos</SelectItem>
+                              <SelectItem value="ativo">Ativo</SelectItem>
+                              <SelectItem value="desativado">
+                                Desativado
                               </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="escola-filter">Escola</Label>
+                          <Select
+                            value={selectedEscola}
+                            onValueChange={setSelectedEscola}
+                          >
+                            <SelectTrigger id="escola-filter">
+                              <SelectValue placeholder="Todas" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-60 overflow-y-auto">
+                              <SelectItem value="todas">Todas</SelectItem>
+                              {escolas.map((escola) => (
+                                <SelectItem key={escola.id} value={escola.id}>
+                                  {escola.nome}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="veiculo-filter">Veículo</Label>
+                          <Select
+                            value={selectedVeiculo}
+                            onValueChange={setSelectedVeiculo}
+                          >
+                            <SelectTrigger id="veiculo-filter">
+                              <SelectValue placeholder="Todos" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-60 overflow-y-auto">
+                              <SelectItem value="todas">Todos</SelectItem>
+                              {veiculos.map((v) => (
+                                <SelectItem key={v.id} value={v.id}>
+                                  {v.placa}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="mt-8">
+                    <div className="mt-4 md:mt-8">
                       {loading ? (
                         <PassengerListSkeleton />
                       ) : passageiros.length === 0 ? (
@@ -488,10 +572,13 @@ export default function Passageiros() {
                                     Status
                                   </th>
                                   <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                    Valor Cobrança
+                                    Escola
                                   </th>
                                   <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                    Escola
+                                    Veículo
+                                  </th>
+                                  <th className="p-3 text-left text-xs font-medium text-gray-600">
+                                    Valor Cobrança
                                   </th>
                                   <th className="p-3 text-center text-xs font-medium text-gray-600">
                                     Ações
@@ -528,6 +615,22 @@ export default function Passageiros() {
                                       </span>
                                     </td>
                                     <td className="p-3 align-top">
+                                      <span className="text-sm text-muted-foreground">
+                                        {passageiro.escolas?.nome ||
+                                          "Não informada"}
+                                      </span>
+                                    </td>
+                                    <td className="p-3 align-top">
+                                      <span className="text-sm text-muted-foreground">
+                                        {passageiro.veiculos?.placa
+                                          ? formatarPlacaExibicao(
+                                              passageiro.veiculos.placa
+                                            )
+                                          : "Não informado"}
+                                      </span>
+                                    </td>
+
+                                    <td className="p-3 align-top">
                                       <div className="font-semibold text-sm text-gray-800">
                                         {Number(
                                           passageiro.valor_cobranca
@@ -537,12 +640,7 @@ export default function Passageiros() {
                                         })}
                                       </div>
                                     </td>
-                                    <td className="p-3 align-top">
-                                      <span className="text-sm text-muted-foreground">
-                                        {passageiro.escolas?.nome ||
-                                          "Não informada"}
-                                      </span>
-                                    </td>
+
                                     <td className="p-3 text-center align-top">
                                       <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -709,6 +807,26 @@ export default function Passageiros() {
                                         style: "currency",
                                         currency: "BRL",
                                       })}
+                                    </span>
+                                  </div>
+
+                                  <div className="text-sm flex justify-between">
+                                    <span className="text-muted-foreground">
+                                      Escola
+                                    </span>
+                                    <span className="font-medium">
+                                      {passageiro.escolas?.nome ||
+                                        "Não informada"}
+                                    </span>
+                                  </div>
+
+                                  <div className="text-sm flex justify-between">
+                                    <span className="text-muted-foreground">
+                                      Veículo
+                                    </span>
+                                    <span className="font-medium">
+                                      {passageiro.veiculos?.placa ||
+                                        "Não informado"}
                                     </span>
                                   </div>
 

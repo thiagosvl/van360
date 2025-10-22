@@ -480,7 +480,7 @@ export default function PassageiroCobranca() {
                       <Button
                         disabled={disableVerPaginaPagamento(cobranca)}
                         variant="outline"
-                        className="flex-1"
+                        className="flex-1 hover:text-primary"
                         title="Copiar"
                         onClick={() =>
                           handleCopyLink(cobranca.asaas_invoice_url)
@@ -516,6 +516,7 @@ export default function PassageiroCobranca() {
                       e.stopPropagation();
                       handleEditCobrancaClick();
                     }}
+                    title="Editar Cobrança"
                     className="gap-2"
                   >
                     <Pencil className="w-4 h-4" />
@@ -647,7 +648,7 @@ export default function PassageiroCobranca() {
                       <Button
                         disabled={disableVerPaginaPagamento(cobranca)}
                         variant="outline"
-                        className="flex-1"
+                        className="flex-1 hover:text-primary"
                         title="Copiar"
                         onClick={() =>
                           handleCopyLink(cobranca.asaas_invoice_url)

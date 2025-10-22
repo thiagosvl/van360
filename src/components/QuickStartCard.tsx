@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { Form, FormLabel } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
+import { STORAGE_KEY_QUICKSTART_STATUS } from "@/constants";
 import { ChevronRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { NavLink } from "react-router-dom";
@@ -13,9 +14,10 @@ import { z } from "zod";
 
 const QUICK_START_STEPS = [
   { id: 1, title: "Cadastrar a primeira escola", href: "/escolas" },
-  { id: 2, title: "Cadastrar o primeiro passageiro", href: "/passageiros" },
+  { id: 2, title: "Cadastrar o primeiro veículo", href: "/veiculos" },
+  { id: 3, title: "Cadastrar o primeiro passageiro", href: "/passageiros" },
   {
-    id: 3,
+    id: 4,
     title: "Configurar o sistema (notificações e mensagens automáticas)",
     href: "/configuracoes",
   },
@@ -26,6 +28,7 @@ const quickStartSchema = z.object({
     step_1: false,
     step_2: false,
     step_3: false,
+    step_4: false,
   }),
 });
 
@@ -47,9 +50,10 @@ export const QuickStartCard = () => {
 
   const [loading, setLoading] = useState(true);
   const [stepsStatus, setStepsStatus] = useState({
-    step_escolas: false, // escolas
-    step_passageiros: false, // passageiros
-    step_configuracoes: false, // configuracoes
+    step_escolas: false,
+    step_veiculos: false,
+    step_passageiros: false,
+    step_configuracoes: false,
   });
 
   const completedSteps = Object.values(stepsStatus).filter(Boolean).length;
@@ -69,7 +73,7 @@ export const QuickStartCard = () => {
 
   const fetchData = async () => {
     try {
-      const storageKey = `app_quickstart_status`;
+      const storageKey = STORAGE_KEY_QUICKSTART_STATUS;
       const cached = localStorage.getItem(storageKey);
 
       if (cached) {
@@ -78,9 +82,13 @@ export const QuickStartCard = () => {
         return;
       }
 
-      const [escolas, passageiros, configuracoes] = await Promise.all([
+      const [escolas, veiculos, passageiros, configuracoes] = await Promise.all([
         supabase
           .from("escolas")
+          .select("*", { count: "exact", head: true })
+          .eq("usuario_id", profile.id),
+        supabase
+          .from("veiculos")
           .select("*", { count: "exact", head: true })
           .eq("usuario_id", profile.id),
         supabase
@@ -95,6 +103,7 @@ export const QuickStartCard = () => {
 
       const data = {
         step_escolas: (escolas.count ?? 0) > 0,
+        step_veiculos: (veiculos.count ?? 0) > 0,
         step_passageiros: (passageiros.count ?? 0) > 0,
         step_configuracoes: (configuracoes.count ?? 0) > 0,
       };
@@ -148,8 +157,9 @@ export const QuickStartCard = () => {
                   <Checkbox
                     checked={
                       (step.id === 1 && stepsStatus.step_escolas) ||
-                      (step.id === 2 && stepsStatus.step_passageiros) ||
-                      (step.id === 3 && stepsStatus.step_configuracoes)
+                      (step.id === 2 && stepsStatus.step_veiculos) ||
+                      (step.id === 3 && stepsStatus.step_passageiros) ||
+                      (step.id === 4 && stepsStatus.step_configuracoes)
                     }
                     disabled
                     onCheckedChange={() => {}}
@@ -159,8 +169,9 @@ export const QuickStartCard = () => {
                   <FormLabel
                     className={`text-base font-semibold transition-colors leading-snug ${
                       (step.id === 1 && stepsStatus.step_escolas) ||
-                      (step.id === 2 && stepsStatus.step_passageiros) ||
-                      (step.id === 3 && stepsStatus.step_configuracoes)
+                      (step.id === 2 && stepsStatus.step_veiculos) ||
+                      (step.id === 3 && stepsStatus.step_passageiros) ||
+                      (step.id === 4 && stepsStatus.step_configuracoes)
                         ? "text-gray-500 line-through"
                         : "text-foreground"
                     }`}

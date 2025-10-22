@@ -54,10 +54,12 @@ import {
   getStatusColor,
   getStatusText,
 } from "@/utils/formatters";
+import { formatarPlacaExibicao } from "@/utils/placaUtils";
 import {
   AlertCircle,
   AlertTriangle,
   BellOff,
+  Car,
   Contact,
   Copy,
   Info,
@@ -240,18 +242,6 @@ export default function PassageiroCarteirinha() {
     }
   };
 
-  const handleOpenCobrancaDialog = () => {
-    if (passageiro.ativo) {
-      setCobrancaDialogOpen(true);
-    } else {
-      toast({
-        title: "O cadastro do passageiro está desativado.",
-        description: "Só é possível registrar cobrança de passageiros ativos.",
-        variant: "default",
-      });
-    }
-  };
-
   const handleEditCobrancaClick = (cobranca: Cobranca) => {
     safeCloseDialog(() => {
       setCobrancaToEdit(cobranca);
@@ -314,7 +304,7 @@ export default function PassageiroCarteirinha() {
     try {
       const { data, error } = await supabase
         .from("passageiros")
-        .select("*, escolas(nome)")
+        .select("*, escolas(nome), veiculos(placa)")
         .eq("id", passageiro_id)
         .single();
       if (error) throw error;
@@ -680,7 +670,7 @@ export default function PassageiroCarteirinha() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <Button onClick={() => handleOpenCobrancaDialog()}>
+                      <Button disabled={!passageiro.ativo} onClick={() => setCobrancaDialogOpen(true)}>
                         <Plus className="w-4 h-4 md:mr-2" />
                         <span className="hidden md:block">
                           Registrar Cobrança
@@ -1056,23 +1046,24 @@ export default function PassageiroCarteirinha() {
                           </Alert>
                         </>
                       ) : (
-                        <Alert className="text-blue-900">
-                          <AlertTriangle className="h-4 w-4 !text-blue-900" />
+                        <Alert className="bg-red-50 text-red-900">
+                          <AlertTriangle className="h-4 w-4 !text-red-900" />
                           <AlertTitle className="font-bold">
-                            Pasageiro com cadastro desativado
+                            Cadastro desativado
                           </AlertTitle>
                           <AlertDescription className="space-y-3">
                             <p>
-                              Este passageiro não terá novas cobranças enquanto
-                              estiver desativado.
+                              O sistema não irá gerar novas cobranças enquanto o
+                              passageiro estiver desativado.
                             </p>
                             <p>
-                              Para voltar a gerar cobranças manuais e
-                              automáticas, reative o cadastro.
+                              Para voltar a gerar cobranças, é necessário
+                              reativar o cadastro.
                             </p>
                             <Button
                               size="sm"
-                              variant="default"
+                              variant="destructive"
+                              className="bg-green-600 hover:bg-green-700"
                               onClick={() =>
                                 handleToggleClick(passageiro.ativo)
                               }
@@ -1101,6 +1092,7 @@ export default function PassageiroCarteirinha() {
                   <div>
                     <Button
                       variant="outline"
+                      title="Editar Passageiro"
                       onClick={handleEditClick}
                       className="gap-2"
                     >
@@ -1121,6 +1113,10 @@ export default function PassageiroCarteirinha() {
                   </InfoItem>
                   <InfoItem icon={School} label="Escola">
                     {passageiro.escolas?.nome || "Não informada"}
+                  </InfoItem>
+                  <InfoItem icon={Car} label="Veículo">
+                    {formatarPlacaExibicao(passageiro.veiculos?.placa) ||
+                      "Não informado"}
                   </InfoItem>
                   <InfoItem icon={MapPin} label="Endereço">
                     <div className="flex items-center gap-2">
@@ -1226,6 +1222,7 @@ export default function PassageiroCarteirinha() {
                   <CardTitle className="text-lg">Observações</CardTitle>
                   <Button
                     variant="outline"
+                    title="Editar Observações"
                     onClick={() => setIsObservacoesEditing(true)}
                     className="gap-2"
                   >

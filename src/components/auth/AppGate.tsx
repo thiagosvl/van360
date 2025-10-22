@@ -17,8 +17,6 @@ export const AppGate = ({ children }: AppGateProps) => {
       localStorage.setItem("app_user_id", profile.id);
       localStorage.setItem("app_role", profile.role);
     } else if (!user && !session && !loading) {
-      // localStorage.removeItem("app_user_id");
-      // localStorage.removeItem("app_role");
     }
   }, [profile, user, session, loading]);
 
@@ -71,6 +69,7 @@ export const AppGate = ({ children }: AppGateProps) => {
       "/passageiros",
       "/cobrancas",
       "/escolas",
+      "/veiculos",
       "/configuracoes",
       "/gastos",
       "/relatorios"
