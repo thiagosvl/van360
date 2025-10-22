@@ -174,12 +174,12 @@ export default function VeiculoFormDialog({
             onSubmit={form.handleSubmit(handleSubmit, onFormError)}
             className="space-y-6"
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <FormField
                 name="placa"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="col-span-2 md:col-span-1">
                     <FormLabel>Placa *</FormLabel>
                     <FormControl>
                       <Input
@@ -199,7 +199,7 @@ export default function VeiculoFormDialog({
                 name="marca"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="col-span-2 md:col-span-1">
                     <FormLabel>Marca *</FormLabel>
                     <FormControl>
                       <Input placeholder="Ex: Fiat" {...field} />
@@ -212,10 +212,23 @@ export default function VeiculoFormDialog({
                 name="modelo"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="col-span-2 md:col-span-1">
                     <FormLabel>Modelo *</FormLabel>
                     <FormControl>
                       <Input placeholder="Ducato Minibus" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="capacidade"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="col-span-2 md:col-span-1">
+                    <FormLabel>Capacidade</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -229,22 +242,6 @@ export default function VeiculoFormDialog({
                     <FormLabel>Ano Modelo</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="capacidade"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Capacidade</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        {...field}
-                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
