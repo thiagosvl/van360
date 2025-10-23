@@ -1,9 +1,7 @@
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardContent,
-  CardHeader,
-  CardTitle
+  CardContent
 } from "@/components/ui/card";
 import {
   Form,
@@ -222,12 +220,7 @@ export default function Login() {
 
       {tab === "motorista" && (
         <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">
-              Login do Condutor
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="mt-6">
             <Form {...formMotorista}>
               <form
                 onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}
@@ -292,12 +285,7 @@ export default function Login() {
 
       {tab === "responsavel" && (
         <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">
-              Login do Responsável
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="mt-6">
             <Form {...formResponsavel}>
               <form
                 onSubmit={formResponsavel.handleSubmit(handleLoginResponsavel)}
