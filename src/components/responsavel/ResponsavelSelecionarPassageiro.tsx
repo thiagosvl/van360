@@ -43,7 +43,13 @@ export default function ResponsavelSelecionarPassageiro() {
                     {p.nome}
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">
-                    {p.escolas?.nome || p.escola || "Sem escola vinculada"}
+                    Responsavel: <b>{p.nome_responsavel}</b>
+                  </div>
+                  <div className="text-sm text-muted-foreground mt-1">
+                    Escola:{" "}
+                    <b>
+                      {p.escolas?.nome || p.escola || "Sem escola vinculada"}
+                    </b>
                   </div>
                 </div>
                 <ArrowRight className="w-5 h-5 text-indigo-500 shrink-0 ml-3" />
