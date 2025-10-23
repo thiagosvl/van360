@@ -199,7 +199,7 @@ export default function Login() {
       />
 
       <Tabs value={tab} onValueChange={setTab} className="w-full max-w-md mb-4">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-2 border">
           <TabsTrigger
             value="motorista"
             className="data-[state=inactive]:text-gray-600 
