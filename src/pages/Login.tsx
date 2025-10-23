@@ -155,7 +155,8 @@ export default function Login() {
       const passageiros = await responsavelService.loginPorCpfEmail(cpf, email);
       if (!passageiros || passageiros.length === 0) {
         toast({
-          title: "Nenhum passageiro encontrado",
+          title: "Erro ao fazer login",
+          description: "Nenhum passageiro foi encontrado.",
           variant: "destructive",
         });
         setLoading(false);
@@ -188,13 +189,12 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <Tabs value={tab} onValueChange={setTab} className="w-full max-w-md mb-4">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-2 bg-sky-50 border border-blue-100">
           <TabsTrigger
             value="motorista"
             className="data-[state=inactive]:text-gray-600 
             data-[state=active]:bg-primary 
-            data-[state=active]:text-white 
-            hover:bg-gray-100"
+            data-[state=active]:text-white"
           >
             Sou Condutor
           </TabsTrigger>
@@ -272,9 +272,11 @@ export default function Login() {
                   </div>
                 )}
 
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Entrando..." : "Entrar"}
-                </Button>
+                <div className="pt-6">
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Acessando..." : "Acessar"}
+                  </Button>
+                </div>
               </form>
             </Form>
           </CardContent>
@@ -336,9 +338,11 @@ export default function Login() {
                   )}
                 />
 
-                <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? "Entrar..." : "Entrar"}
-                </Button>
+                <div className="pt-6">
+                  <Button type="submit" disabled={loading} className="w-full">
+                    {loading ? "Acessando..." : "Acessar"}
+                  </Button>
+                </div>
               </form>
             </Form>
           </CardContent>

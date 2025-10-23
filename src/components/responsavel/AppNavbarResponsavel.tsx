@@ -3,13 +3,13 @@ import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface AppNavbarResponsavelProps {
-  nomePassageiro?: string;
-  anoSelecionado?: number | null;
+  title: string;
+  subTitle?: string;
 }
 
 export default function AppNavbarResponsavel({
-  nomePassageiro,
-  anoSelecionado,
+  title,
+  subTitle,
 }: AppNavbarResponsavelProps) {
   const navigate = useNavigate();
 
@@ -23,15 +23,13 @@ export default function AppNavbarResponsavel({
   };
 
   return (
-    <header className="flex h-16 items-center justify-between px-4 sm:px-6 bg-white border-b shadow-sm">
+    <header className="flex h-16 items-center justify-between px-4 sm:px-6 bg-white border-b shadow-sm sticky top-0 z-30">
       <div>
         <h1 className="text-base sm:text-lg font-semibold leading-tight">
-          {nomePassageiro || "Carteirinha Digital"}
+          {title || "Carteirinha Digital"}
         </h1>
-        {nomePassageiro === "Selecione o Passageiro" ? null : (
-          <p className="text-xs text-muted-foreground">
-            Carteirinha Digital{anoSelecionado ? ` - ${anoSelecionado}` : ""}
-          </p>
+        {subTitle != "" && (
+          <p className="text-xs text-muted-foreground">{subTitle}</p>
         )}
       </div>
 

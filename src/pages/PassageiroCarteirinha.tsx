@@ -671,7 +671,7 @@ export default function PassageiroCarteirinha() {
             {/* Cobranças */}
             <div className="order-1 lg:order-2 lg:col-span-2 lg:row-start-1 lg:h-full">
               <Card className="h-full">
-                <CardHeader>
+                <CardHeader className="px-4">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">Cobranças</CardTitle>
                     <div className="flex items-center gap-2">
@@ -890,7 +890,7 @@ export default function PassageiroCarteirinha() {
                                 `/passageiros/${passageiro.id}/cobranca/${cobranca.id}`
                               )
                             }
-                            className="py-2.5 px-3 active:bg-muted/50"
+                            className="py-2.5 px-4 active:bg-muted/50"
                           >
                             {/* O conteúdo do item da lista (cobranca) permanece o mesmo */}
                             <div className="flex justify-between items-start">
