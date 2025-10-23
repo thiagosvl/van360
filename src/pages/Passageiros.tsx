@@ -657,7 +657,9 @@ export default function Passageiros() {
                                       </div>
                                       <div className="text-xs text-gray-500">
                                         Responsável:{" "}
-                                        {passageiro.nome_responsavel || "-"}
+                                        <b>
+                                          {passageiro.nome_responsavel || "-"}
+                                        </b>
                                       </div>
                                     </td>
                                     <td className="p-3 align-top">
@@ -786,7 +788,8 @@ export default function Passageiros() {
                                       {passageiro.nome}
                                     </div>
                                     <div className="text-xs text-muted-foreground">
-                                      {passageiro.escolas?.nome || "Sem escola"}
+                                      Responsável:{" "}
+                                      <b>{passageiro.nome_responsavel}</b>
                                     </div>
                                   </div>
                                   <DropdownMenu>

@@ -205,16 +205,26 @@ export default function ResponsavelCarteirinha() {
   };
 
   const handleChangeAno = async (ano: number) => {
-    setAnoSelecionado(ano);
-    if (!selectedPassageiro) return;
-    const { data, error } = await supabase
-      .from("cobrancas")
-      .select(`*, passageiros:passageiro_id (nome, nome_responsavel)`)
-      .eq("passageiro_id", selectedPassageiro.id)
-      .eq("usuario_id", localStorage.getItem("responsavel_usuario_id"))
-      .eq("ano", ano)
-      .order("mes", { ascending: false });
-    setCobrancas(data || []);
+    setRefreshing(true);
+    try {
+      setAnoSelecionado(ano);
+      if (!selectedPassageiro) return;
+      const { data, error } = await supabase
+        .from("cobrancas")
+        .select(`*, passageiros:passageiro_id (nome, nome_responsavel)`)
+        .eq("passageiro_id", selectedPassageiro.id)
+        .eq("usuario_id", localStorage.getItem("responsavel_usuario_id"))
+        .eq("ano", ano)
+        .order("mes", { ascending: false });
+      setCobrancas(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Erro ao listar cobranças para o ano selecionado.",
+        variant: "destructive",
+      });
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   if (refreshing || !selectedPassageiro) {
@@ -234,8 +244,8 @@ export default function ResponsavelCarteirinha() {
   return (
     <>
       <AppNavbarResponsavel
-        title={selectedPassageiro?.nome}
-        subTitle={`Carteirinha Digital - ${anoSelecionado}`}
+        title={`Carteirinha Digital ${anoSelecionado}`}
+        subTitle={`${selectedPassageiro?.nome} (${selectedPassageiro?.nome_responsavel})`}
       />
       <main className="flex-1 overflow-y-auto p-4 md:p-6">
         <div className="space-y-6 max-w-5xl mx-auto w-full">
@@ -265,7 +275,7 @@ export default function ResponsavelCarteirinha() {
                   <div className="w-full md:w-1/3">
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">
-                        Selecione o Passageiro
+                        Passageiro
                       </Label>
                       <Select
                         onValueChange={(v) => handleChangePassageiro(v)}
@@ -568,7 +578,7 @@ export default function ResponsavelCarteirinha() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-4">
                     <div>
-                      <CardTitle className="text-lg">Informações</CardTitle>
+                      <CardTitle className="text-lg">Informações do Cadastro</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
