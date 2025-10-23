@@ -453,7 +453,7 @@ export default function Passageiros() {
         <div className="space-y-6">
           <div className="w-full">
             <Tabs defaultValue="passageiros" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-2 border">
                 <TabsTrigger
                   value="passageiros"
                   className="data-[state=inactive]:text-gray-600 
