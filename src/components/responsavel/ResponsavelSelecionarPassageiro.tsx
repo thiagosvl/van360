@@ -42,9 +42,12 @@ export default function ResponsavelSelecionarPassageiro() {
                   <div className="font-semibold text-lg text-gray-800">
                     {p.nome}
                   </div>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    Responsavel: <b>{p.nome_responsavel}</b>
-                  </div>
+                  {passageiros[0].nome_responsavel !=
+                    passageiros[1].nome_responsavel && (
+                    <div className="text-sm text-muted-foreground mt-1">
+                      Responsavel: <b>{p.nome_responsavel}</b>
+                    </div>
+                  )}
                   <div className="text-sm text-muted-foreground mt-1">
                     Escola:{" "}
                     <b>
