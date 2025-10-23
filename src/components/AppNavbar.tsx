@@ -13,9 +13,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { STORAGE_KEY_QUICKSTART_STATUS } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { supabase } from "@/integrations/supabase/client";
+import { clearLoginStorageMotorista } from "@/utils/motoristaUtils";
 import { LogOut, Menu, User } from "lucide-react";
 import { useState } from "react";
 
@@ -38,21 +38,7 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
     } catch (err) {
       console.error("Erro inesperado ao tentar logout:", err);
     } finally {
-      const keys = [
-        "app_role",
-        "app_user_id",
-        STORAGE_KEY_QUICKSTART_STATUS,
-        "user",
-        "authTokens",
-      ];
-
-      keys.forEach((k) => localStorage.removeItem(k));
-
-      Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith("sb-") && key.includes("-auth-token")) {
-          localStorage.removeItem(key);
-        }
-      });
+      clearLoginStorageMotorista();
 
       window.location.href = "/login";
     }

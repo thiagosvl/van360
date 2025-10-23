@@ -38,6 +38,7 @@ import {
   getStatusText,
 } from "@/utils/formatters";
 import { formatarPlacaExibicao } from "@/utils/placaUtils";
+import { clearLoginStorageResponsavel } from "@/utils/responsavelUtils";
 import {
   Car,
   Contact,
@@ -123,11 +124,8 @@ export default function ResponsavelCarteirinha() {
       setRefreshing(true);
       const lista = await responsavelService.loginPorCpfEmail(cpf!, email!);
       if (!lista || lista.length === 0) {
-        toast({
-          title: "Nenhum passageiro encontrado",
-          variant: "destructive",
-        });
-        return;
+        clearLoginStorageResponsavel();
+        navigate("/login");
       }
 
       setPassageiros(lista);
@@ -164,11 +162,6 @@ export default function ResponsavelCarteirinha() {
       setCobrancas(data || []);
     } catch (err) {
       console.error("Erro ao carregar informações:", err);
-      toast({
-        title: "Erro ao carregar informações",
-        description: "Tente novamente mais tarde.",
-        variant: "destructive",
-      });
     } finally {
       setRefreshing(false);
     }
@@ -274,9 +267,7 @@ export default function ResponsavelCarteirinha() {
                   </div>
                   <div className="w-full md:w-1/3">
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium">
-                        Passageiro
-                      </Label>
+                      <Label className="text-sm font-medium">Passageiro</Label>
                       <Select
                         onValueChange={(v) => handleChangePassageiro(v)}
                         defaultValue={selectedPassageiro.id}
@@ -578,7 +569,9 @@ export default function ResponsavelCarteirinha() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-4">
                     <div>
-                      <CardTitle className="text-lg">Informações do Cadastro</CardTitle>
+                      <CardTitle className="text-lg">
+                        Informações do Cadastro
+                      </CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">

@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { clearLoginStorageResponsavel } from "@/utils/responsavelUtils";
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -14,11 +15,8 @@ export default function AppNavbarResponsavel({
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("responsavel_id");
-    localStorage.removeItem("responsavel_cpf");
-    localStorage.removeItem("responsavel_email");
-    localStorage.removeItem("responsavel_usuario_id");
-    localStorage.removeItem("responsavel_is_logged");
+    clearLoginStorageResponsavel();
+
     navigate("/login");
   };
 

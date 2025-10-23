@@ -20,6 +20,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { responsavelService } from "@/services/responsavelService";
 import { cpfMask } from "@/utils/masks";
+import { clearLoginStorageMotorista } from "@/utils/motoristaUtils";
+import { clearLoginStorageResponsavel } from "@/utils/responsavelUtils";
 import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -129,6 +131,7 @@ export default function Login() {
       if (role) {
         localStorage.setItem("app_role", role);
       }
+      clearLoginStorageResponsavel();
       if (role === "admin") {
         navigate("/admin/dashboard", { replace: true });
       } else {
@@ -166,6 +169,8 @@ export default function Login() {
       localStorage.setItem("responsavel_cpf", cpf);
       localStorage.setItem("responsavel_email", email);
       localStorage.setItem("responsavel_is_logged", "true");
+
+      clearLoginStorageMotorista();
 
       if (passageiros.length === 1) {
         const p = passageiros[0];

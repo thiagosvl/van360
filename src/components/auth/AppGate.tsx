@@ -10,8 +10,8 @@ export const AppGate = ({ children }: AppGateProps) => {
   const { user, session, loading, profile } = useAuth();
   const location = useLocation();
 
-  const role = profile?.role; 
-  
+  const role = profile?.role;
+
   useEffect(() => {
     if (profile) {
       localStorage.setItem("app_user_id", profile.id);
@@ -19,7 +19,6 @@ export const AppGate = ({ children }: AppGateProps) => {
     } else if (!user && !session && !loading) {
     }
   }, [profile, user, session, loading]);
-
 
   if (loading) {
     return (
@@ -30,26 +29,29 @@ export const AppGate = ({ children }: AppGateProps) => {
   }
 
   if (!session || !user) {
-    const isProtected = 
-        location.pathname.startsWith("/admin") || 
-        (location.pathname !== "/" && location.pathname !== "/login");
-    
+    const isProtected =
+      location.pathname.startsWith("/admin") ||
+      (location.pathname !== "/" && location.pathname !== "/login");
+
     if (isProtected) {
       return <Navigate to="/login" replace />;
     }
-    
+
+    const isLogged = localStorage.getItem("responsavel_is_logged");
+    if (isLogged) return <Navigate to="/responsavel" replace />;
+
     return <>{children}</>;
   }
 
   if (location.pathname === "/login") {
     if (!role) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-        );
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      );
     }
-      
+
     if (role === "admin") {
       return <Navigate to="/admin/dashboard" replace />;
     }
@@ -72,9 +74,9 @@ export const AppGate = ({ children }: AppGateProps) => {
       "/veiculos",
       "/configuracoes",
       "/gastos",
-      "/relatorios"
+      "/relatorios",
     ];
-    
+
     const isAllowedRoute = allowedRoutes.some(
       (route) =>
         location.pathname === route || location.pathname.startsWith(`${route}/`)
@@ -83,11 +85,11 @@ export const AppGate = ({ children }: AppGateProps) => {
     if (location.pathname.startsWith("/admin")) {
       return <Navigate to="/inicio" replace />;
     }
-    
+
     if (!isAllowedRoute) {
       return <Navigate to="/inicio" replace />;
     }
   }
-  
+
   return <>{children}</>;
 };
