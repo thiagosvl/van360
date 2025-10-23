@@ -2,9 +2,8 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
+  CardTitle
 } from "@/components/ui/card";
 import {
   Form,
@@ -193,6 +192,12 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+      <img
+        src="/assets/logo-van360.png"
+        alt="Van360"
+        className="h-20 w-auto mb-6"
+      />
+
       <Tabs value={tab} onValueChange={setTab} className="w-full max-w-md mb-4">
         <TabsList className="grid w-full grid-cols-2 bg-sky-50 border border-blue-100">
           <TabsTrigger
@@ -221,9 +226,6 @@ export default function Login() {
             <CardTitle className="text-2xl font-bold text-center">
               Login do Condutor
             </CardTitle>
-            <CardDescription className="text-center">
-              Entre com CPF e senha
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...formMotorista}>
@@ -294,9 +296,6 @@ export default function Login() {
             <CardTitle className="text-2xl font-bold text-center">
               Login do Responsável
             </CardTitle>
-            <CardDescription className="text-center">
-              Entre com CPF e Email
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...formResponsavel}>

@@ -54,10 +54,14 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-72 sm:w-80 p-0">
+            <SheetContent side="left" className="w-72 sm:w-80 p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
               <SheetHeader className="flex flex-col items-center justify-center py-4 border-b">
                 <SheetTitle className="text-lg font-semibold">
-                  Van360
+                  <img
+                    src="/assets/logo-van360.png"
+                    alt="Van360"
+                    className="h-16"
+                  />
                 </SheetTitle>
               </SheetHeader>
               <div className="p-4">
