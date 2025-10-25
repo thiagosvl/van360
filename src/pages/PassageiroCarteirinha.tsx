@@ -61,6 +61,7 @@ import {
   AlertTriangle,
   CalendarDays,
   Car,
+  CheckCircle,
   Contact,
   Copy,
   DollarSign,
@@ -74,7 +75,7 @@ import {
   School,
   Trash2,
   TrendingDown,
-  TrendingUp
+  TrendingUp,
 } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -142,6 +143,8 @@ export default function PassageiroCarteirinha() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
+  const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
   const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
     null
   );
@@ -249,6 +252,17 @@ export default function PassageiroCarteirinha() {
   const handleCopyToClipboard = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
+      if (label === "Endereço") {
+        setIsCopiedEndereco(true);
+        setTimeout(() => {
+          setIsCopiedEndereco(false);
+        }, 1000);
+      } else {
+        setIsCopiedTelefone(true);
+        setTimeout(() => {
+          setIsCopiedTelefone(false);
+        }, 1000);
+      }
     } catch (err) {
       console.error("Erro ao copiar:", err);
       toast({
@@ -1177,7 +1191,11 @@ export default function PassageiroCarteirinha() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        title="Copiar"
+                        title={
+                          isCopiedEndereco
+                            ? "Endereço copiado!"
+                            : "Copiar Endereço"
+                        }
                         className="h-6 w-6 text-muted-foreground hover:text-primary"
                         onClick={() =>
                           handleCopyToClipboard(
@@ -1186,7 +1204,11 @@ export default function PassageiroCarteirinha() {
                           )
                         }
                       >
-                        <Copy className="h-4 w-4" />
+                        {isCopiedEndereco ? (
+                          <CheckCircle className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </InfoItem>
@@ -1198,7 +1220,11 @@ export default function PassageiroCarteirinha() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        title="Copiar"
+                        title={
+                          isCopiedEndereco
+                            ? "Telefone copiado!"
+                            : "Copiar Telefone"
+                        }
                         className="h-6 w-6 text-muted-foreground hover:text-primary"
                         onClick={() =>
                           handleCopyToClipboard(
@@ -1207,7 +1233,11 @@ export default function PassageiroCarteirinha() {
                           )
                         }
                       >
-                        <Copy className="h-4 w-4" />
+                        {isCopiedTelefone ? (
+                          <CheckCircle className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </InfoItem>

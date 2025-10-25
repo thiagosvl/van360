@@ -26,7 +26,7 @@ import {
   disableExcluirCobranca,
   disableRegistrarPagamento,
   disableVerPaginaPagamento,
-  seForPago
+  seForPago,
 } from "@/utils/disableActions";
 import {
   checkCobrancaJaVenceu,
@@ -47,6 +47,7 @@ import {
   Calendar,
   CalendarIcon,
   Car,
+  CheckCircle,
   Contact,
   Copy,
   CreditCard,
@@ -58,7 +59,7 @@ import {
   School,
   Trash2,
   User,
-  XCircle
+  XCircle,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -183,12 +184,12 @@ export default function PassageiroCobranca() {
   const [refreshing, setRefreshing] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [cobranca, setCobranca] = useState<CobrancaDetalhe | null>(null);
-  const [showFullHistory, setShowFullHistory] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
   });
   const [confirmDialogEnvioNotificacao, setConfirmDialogEnvioNotificacao] =
     useState({ open: false, cobranca: null });
+  const [isCopied, setIsCopied] = useState(false);
   const { toast } = useToast();
 
   const handleCopyLink = async (link: string) => {
@@ -479,13 +480,19 @@ export default function PassageiroCobranca() {
                         disabled={disableVerPaginaPagamento(cobranca)}
                         variant="outline"
                         className="flex-1 hover:text-primary"
-                        title="Copiar"
+                        title={
+                          isCopied ? "Copiado!" : "Copiar Link de Pagamento"
+                        }
                         onClick={() =>
                           handleCopyLink(cobranca.asaas_invoice_url)
                         }
                       >
-                        <Copy className="w-4 h-4 mr-2" /> Copiar Link de
-                        Pagamento
+                        {isCopied ? (
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                        ) : (
+                          <Copy className="h-4 w-4 mr-2" />
+                        )}
+                        {isCopied ? "Copiado!" : "Copiar Link de Pagamento"}
                       </Button>
                       <Button
                         disabled={disableBaixarBoleto(cobranca)}
@@ -650,13 +657,19 @@ export default function PassageiroCobranca() {
                         disabled={disableVerPaginaPagamento(cobranca)}
                         variant="outline"
                         className="flex-1 hover:text-primary"
-                        title="Copiar"
+                        title={
+                          isCopied ? "Copiado!" : "Copiar Link de Pagamento"
+                        }
                         onClick={() =>
                           handleCopyLink(cobranca.asaas_invoice_url)
                         }
                       >
-                        <Copy className="w-4 h-4 mr-2" /> Copiar Link de
-                        Pagamento
+                        {isCopied ? (
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                        ) : (
+                          <Copy className="h-4 w-4 mr-2" />
+                        )}
+                        {isCopied ? "Copiado!" : "Copiar Link de Pagamento"}
                       </Button>
                       <Button
                         disabled={disableBaixarBoleto(cobranca)}

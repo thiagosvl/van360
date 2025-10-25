@@ -66,6 +66,7 @@ export default function PrePassageiros({
   const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   const [showMobileFilters, setShowMobileFilters] = useState(true);
   const { toast } = useToast();
@@ -229,8 +230,14 @@ export default function PrePassageiros({
   };
 
   const handleCopyLink = () => {
+    const linkToCopy = `${BASE_DOMAIN}/cadastro-passageiro/${profile.id}`;
     try {
-      navigator.clipboard.writeText(GENERIC_CADASTRO_LINK);
+      navigator.clipboard.writeText(linkToCopy);
+
+      setIsCopied(true);
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 1000);
     } catch (error) {
       console.error("Erro ao copiar link:", error);
       toast({
@@ -322,11 +329,17 @@ export default function PrePassageiros({
                       </div>
                       <Button
                         variant="outline"
-                        title="Copiar"
-                        className="text-blue-700 border-blue-300 hover:bg-blue-100 shrink-0"
+                        title={isCopied ? "Copiado!" : "Copiar"}
+                        className="text-blue-700 border-blue-300 hover:bg-blue-100 shrink-0 transition-colors duration-200"
                         onClick={handleCopyLink}
                       >
-                        <Copy className="h-4 w-4 mr-2" /> Copiar Link
+                        {isCopied ? (
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                        ) : (
+                          <Copy className="h-4 w-4 mr-2" />
+                        )}
+
+                        {isCopied ? "Copiado!" : "Copiar Link"}
                       </Button>
                     </CardContent>
                   </Card>

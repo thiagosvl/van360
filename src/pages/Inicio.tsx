@@ -35,7 +35,9 @@ const AccessCard = ({
       className={`shadow-md h-full bg-white border border-gray-200 rounded-xl p-5 lg:p-10 xl:p-12`}
     >
       <CardContent className="p-0 flex flex-col justify-center items-center text-center h-full">
-        <Icon className={`h-8 w-8 text-primary lg:h-10 lg:w-10 xl:h-12 xl:w-12`} />{" "}
+        <Icon
+          className={`h-8 w-8 text-primary lg:h-10 lg:w-10 xl:h-12 xl:w-12`}
+        />{" "}
       </CardContent>
     </Card>
   );
@@ -50,6 +52,7 @@ const Inicio = () => {
   const [mesAtual, setMesAtual] = useState(new Date().getMonth() + 1);
   const [anoAtual, setAnoAtual] = useState(new Date().getFullYear());
   const [loadingFinances, setLoadingFinances] = useState(true);
+  const [isCopied, setIsCopied] = useState(false);
 
   const ACCESS_CARDS_DATA = [
     {
@@ -161,6 +164,11 @@ const Inicio = () => {
     const linkToCopy = `${BASE_DOMAIN}/cadastro-passageiro/${profile.id}`;
     try {
       navigator.clipboard.writeText(linkToCopy);
+
+      setIsCopied(true);
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 1000);
     } catch (error) {
       console.error("Erro ao copiar link:", error);
       toast({
@@ -236,11 +244,17 @@ const Inicio = () => {
               </div>
               <Button
                 variant="outline"
-                title="Copiar"
-                className="text-blue-700 border-blue-300 hover:bg-blue-100 shrink-0"
+                title={isCopied ? "Copiado!" : "Copiar"}
+                className="text-blue-700 border-blue-300 hover:bg-blue-100 shrink-0 transition-colors duration-200"
                 onClick={handleCopyLink}
               >
-                <Copy className="h-4 w-4 mr-2" /> Copiar Link
+                {isCopied ? (
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                ) : (
+                  <Copy className="h-4 w-4 mr-2" />
+                )}
+
+                {isCopied ? "Copiado!" : "Copiar Link"}
               </Button>
             </CardContent>
           </Card>
@@ -254,7 +268,12 @@ const Inicio = () => {
             className={`grid grid-cols-3 sm:grid-cols-5 gap-x-4 gap-y-6 lg:gap-6`}
           >
             {accessCardsWithSubtitles.map((card) => (
-              <NavLink key={card.href} to={card.href} className="col-span-1" title={card.title}>
+              <NavLink
+                key={card.href}
+                to={card.href}
+                className="col-span-1"
+                title={card.title}
+              >
                 <div
                   key={card.href}
                   className="flex flex-col items-center text-center transition-all duration-200 hover:scale-[1.05]"
