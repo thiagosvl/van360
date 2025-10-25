@@ -335,7 +335,7 @@ export default function CobrancaEditDialog({
               name="valor"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel>Valor *</FormLabel>
+                  <FormLabel>Valor <span className="text-red-600">*</span></FormLabel>
                   <FormControl>
                     <Input
                       name={field.name}
@@ -360,7 +360,7 @@ export default function CobrancaEditDialog({
               name="data_vencimento"
               render={({ field, fieldState }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Data do Vencimento *</FormLabel>
+                  <FormLabel>Data do Vencimento <span className="text-red-600">*</span></FormLabel>
                   <Popover open={openCalendar} onOpenChange={setOpenCalendar}>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -412,7 +412,7 @@ export default function CobrancaEditDialog({
                 name="tipo_pagamento"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Forma de pagamento *</FormLabel>
+                    <FormLabel>Forma de pagamento <span className="text-red-600">*</span></FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}

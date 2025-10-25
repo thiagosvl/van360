@@ -14,6 +14,8 @@ interface UpdatePayload {
 
 export const cobrancaService = {
     async desfazerPagamento(cobrancaId: string): Promise<void> {
+        const registerOnAsaas = false;
+
         const { data: cobranca, error: fetchError } = await supabase
             .from("cobrancas")
             .select("*")
@@ -40,7 +42,7 @@ export const cobrancaService = {
             throw new Error("Falha ao atualizar o status da cobrança no banco de dados.");
         }
 
-        if (cobranca.origem === "automatica" && cobranca.asaas_payment_id) {
+        if (registerOnAsaas && !cobranca.pagamento_manual && cobranca.asaas_payment_id) {
             try {
                 await asaasService.undoPaymentInCash(cobranca.asaas_payment_id);
             } catch (asaasErr) {
@@ -61,7 +63,9 @@ export const cobrancaService = {
     },
 
     async excluirCobranca(cobranca: Cobranca | CobrancaDetalhe): Promise<void> {
-        if (cobranca.asaas_payment_id) {
+        const registerOnAsaas = false;
+
+        if (registerOnAsaas && cobranca.asaas_payment_id) {
             try {
                 await asaasService.deletePayment(cobranca.asaas_payment_id);
             } catch (asaasErr) {
@@ -146,9 +150,10 @@ export const cobrancaService = {
     },
 
     async registrarPagamentoManual(cobrancaId: string, pagamentoData: any): Promise<void> {
+        const registerOnAsaas = false;
         const { data: cobranca, error: fetchError } = await supabase
             .from("cobrancas")
-            .select("id, origem, asaas_payment_id, data_vencimento, created_at")
+            .select("id, origem, asaas_payment_id, data_vencimento, created_at, pagamento_manual")
             .eq("id", cobrancaId)
             .single();
 
@@ -156,7 +161,7 @@ export const cobrancaService = {
             throw new Error("Não foi possível localizar a cobrança para registrar o pagamento.");
         }
 
-        if (cobranca.asaas_payment_id !== null && cobranca.asaas_payment_id) {
+        if (registerOnAsaas && cobranca.asaas_payment_id !== null && cobranca.asaas_payment_id) {
             try {
                 const { data: cobrancaData } = await supabase
                     .from("cobrancas")
@@ -203,7 +208,7 @@ export const cobrancaService = {
             .eq("id", cobrancaId);
 
         if (error) {
-            if (cobranca.origem === "automatica" && cobranca.asaas_payment_id) {
+            if (!cobranca.pagamento_manual && cobranca.asaas_payment_id) {
                 try {
                     await asaasService.undoPaymentInCash(cobranca.asaas_payment_id);
                 } catch (undoErr) {
@@ -220,6 +225,7 @@ export const cobrancaService = {
         cobrancaOriginal: Cobranca
     ): Promise<void> {
 
+        const registerOnAsaas = false;
         const isPaga = seForPago(cobrancaOriginal);
         const hasAsaasId = !!cobrancaOriginal.asaas_payment_id;
 
@@ -246,7 +252,7 @@ export const cobrancaService = {
             if (updateError) throw updateError;
             rollbackNeeded = true;
 
-            if (hasAsaasId && !isPaga) {
+            if (registerOnAsaas && hasAsaasId && !isPaga) {
                 const hoje = new Date();
                 hoje.setHours(0, 0, 0, 0);
 

@@ -44,14 +44,18 @@ export const passageiroService = {
     const cached = localStorage.getItem(storageKey);
     const previousStatus = cached ? JSON.parse(cached) : null;
 
+    const registerOnAsaas = false;
+
     try {
-      asaasCustomer = await asaasService.createCustomer({
-        name: data.nome_responsavel,
-        cpfCnpj: data.cpf_responsavel,
-        mobilePhone: data.telefone_responsavel,
-        notificationDisabled: true,
-      });
-      data.asaas_customer_id = asaasCustomer.id;
+      if (registerOnAsaas) {
+        asaasCustomer = await asaasService.createCustomer({
+          name: data.nome_responsavel,
+          cpfCnpj: data.cpf_responsavel,
+          mobilePhone: data.telefone_responsavel,
+          notificationDisabled: true,
+        });
+        data.asaas_customer_id = asaasCustomer.id;
+      }
 
       const { data: insertedPassageiro, error: insertPassageiroError } =
         await supabase
@@ -80,14 +84,16 @@ export const passageiroService = {
         const vencimentoAjustado = diaInformado < hoje ? hoje : diaInformado;
         const dataVencimento = new Date(ano, mes - 1, vencimentoAjustado);
 
-        payment = await asaasService.createPayment({
-          customer: newPassageiro.asaas_customer_id,
-          billingType: "UNDEFINED",
-          value: data.valor_cobranca,
-          dueDate: toLocalDateString(dataVencimento),
-          description: `Cobrança ${mes}/${ano}`,
-          externalReference: newPassageiro.id,
-        });
+        if (registerOnAsaas) {
+          payment = await asaasService.createPayment({
+            customer: newPassageiro.asaas_customer_id,
+            billingType: "UNDEFINED",
+            value: data.valor_cobranca,
+            dueDate: toLocalDateString(dataVencimento),
+            description: `Cobrança ${mes}/${ano}`,
+            externalReference: newPassageiro.id,
+          });
+        }
 
         const { error: cobrancaError } = await supabase
           .from("cobrancas")
@@ -101,9 +107,9 @@ export const passageiroService = {
               status: "pendente",
               usuario_id: data.usuario_id,
               origem: "automatica",
-              asaas_payment_id: payment.id,
-              asaas_invoice_url: payment.invoiceUrl,
-              asaas_bankslip_url: payment.bankSlipUrl,
+              asaas_payment_id: payment ? payment.id : null,
+              asaas_invoice_url: payment ? payment.invoiceUrl : null,
+              asaas_bankslip_url: payment ? payment.bankSlipUrl : null,
             },
           ]);
 
@@ -135,9 +141,8 @@ export const passageiroService = {
         console.error("Erro ao restaurar QuickStart:", storageErr);
       }
 
-
       try {
-        if (payment?.id) await asaasService.deletePayment(payment.id);
+        if (registerOnAsaas && payment?.id) await asaasService.deletePayment(payment.id);
         if (newPassageiro?.id) await supabase.from("passageiros").delete().eq("id", newPassageiro.id);
         if (asaasCustomer?.id) await asaasService.deleteCustomer(asaasCustomer.id);
 
@@ -219,6 +224,7 @@ export const passageiroService = {
     id: string,
     data: any
   ): Promise<void> {
+    const registerOnAsaas = false;
     const { emitir_cobranca_mes_atual, ...pureData } = data;
     const passageiroData = {
       ...pureData,
@@ -243,7 +249,7 @@ export const passageiroService = {
       if (fetchError) throw fetchError;
       snapshotPassageiro = { ...oldPassageiro };
 
-      if (oldPassageiro.asaas_customer_id) {
+      if (registerOnAsaas && oldPassageiro.asaas_customer_id) {
 
         const nomeMudou = oldPassageiro.nome_responsavel !== passageiroData.nome_responsavel;
         const cpfMudou = oldPassageiro.cpf_responsavel !== passageiroData.cpf_responsavel;
@@ -308,7 +314,7 @@ export const passageiroService = {
         .eq("origem", "automatica");
 
       if (updateCobrancasError) {
-        console.error("Falha ao desativar notificações em massa:", updateCobrancasError);
+        console.error("Falha ao desativar notificações de cobranças pendentes em massa:", updateCobrancasError);
       }
     }
 

@@ -967,9 +967,7 @@ export default function Passageiros() {
             }
             description={`Deseja realmente ${
               confirmToggleDialog.action
-            } o cadastro de ${
-              confirmToggleDialog.passageiro?.nome || "este passageiro"
-            }? Esta ação pode afetar a geração de cobranças.`}
+            } o cadastro deste passageiro?"`}
             onConfirm={handleToggleConfirm}
             confirmText="Confirmar"
             variant={

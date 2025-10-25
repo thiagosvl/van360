@@ -19,9 +19,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   LinkIcon,
-  Settings,
-  Users,
-  Wallet,
+  Users
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
@@ -65,15 +63,6 @@ const Inicio = () => {
 
   const ACCESS_CARDS_DATA = [
     {
-      title: "Cobranças",
-      description:
-        "Visualize e gerencie as cobranças, registre pagamentos e envie notificações.",
-      href: "/cobrancas",
-      icon: CreditCard,
-      color: "text-blue-700",
-      bg: "bg-blue-100",
-    },
-    {
       title: "Passageiros",
       description:
         "Cadastre, edite e ative/desative passageiros e responsáveis.",
@@ -83,29 +72,13 @@ const Inicio = () => {
       bg: "bg-green-100",
     },
     {
-      title: "Veículos",
-      description: "Gerencie a lista de veículos.",
-      href: "/veiculos",
-      icon: Car,
-      color: "text-orange-700",
-      bg: "bg-orange-100",
-    },
-    {
-      title: "Relatórios",
-      description: "Visualize faturamento, inadimplência e projeções mensais.",
-      href: "/relatorios",
-      icon: LayoutDashboard,
-      color: "text-yellow-700",
-      bg: "bg-yellow-100",
-    },
-    {
-      title: "Configurações",
+      title: "Cobranças",
       description:
-        "Ajuste notificações, preferências de cobrança e dados do condutor.",
-      href: "/configuracoes",
-      icon: Settings,
-      color: "text-purple-700",
-      bg: "bg-purple-100",
+        "Visualize e gerencie as cobranças, registre pagamentos e envie notificações.",
+      href: "/cobrancas",
+      icon: CreditCard,
+      color: "text-blue-700",
+      bg: "bg-blue-100",
     },
     {
       title: "Escolas",
@@ -116,14 +89,39 @@ const Inicio = () => {
       bg: "bg-stone-200",
     },
     {
-      title: "Gastos",
-      description:
-        "Registre despesas operacionais e visualize o balanço financeiro.",
-      href: "/gastos",
-      icon: Wallet,
-      color: "text-red-700",
-      bg: "bg-red-100",
+      title: "Veículos",
+      description: "Gerencie a lista de veículos.",
+      href: "/veiculos",
+      icon: Car,
+      color: "text-orange-700",
+      bg: "bg-orange-100",
     },
+    // {
+    //   title: "Gastos",
+    //   description:
+    //     "Registre despesas operacionais e visualize o balanço financeiro.",
+    //   href: "/gastos",
+    //   icon: Wallet,
+    //   color: "text-red-700",
+    //   bg: "bg-red-100",
+    // },
+    {
+      title: "Relatórios",
+      description: "Visualize faturamento, inadimplência e projeções mensais.",
+      href: "/relatorios",
+      icon: LayoutDashboard,
+      color: "text-yellow-700",
+      bg: "bg-yellow-100",
+    },
+    // {
+    //   title: "Configurações",
+    //   description:
+    //     "Ajuste notificações, preferências de cobrança e dados do condutor.",
+    //   href: "/configuracoes",
+    //   icon: Settings,
+    //   color: "text-purple-700",
+    //   bg: "bg-purple-100",
+    // },
   ];
 
   const BASE_DOMAIN =
@@ -201,7 +199,11 @@ const Inicio = () => {
     console.log("Atualizando dados da tela inicial...");
   };
 
-  const accessCardsWithSubtitles = ACCESS_CARDS_DATA.map((card) => ({
+  const paginasAOcultarNoPlanoGratis = ["/configuracoes", "/gastos"];
+
+  const accessCardsWithSubtitles = ACCESS_CARDS_DATA.filter((card) => {
+    return !paginasAOcultarNoPlanoGratis.includes(card.href);
+  }).map((card) => ({
     ...card,
     subtitle: card.description,
   }));
@@ -272,7 +274,11 @@ const Inicio = () => {
           <h2 className="text-xl font-semibold mb-4">Acessos Rápidos</h2>
 
           <div className="overflow-x-hidden">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 -mx-4">
+            <div
+              className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-${
+                accessCardsWithSubtitles.length > 5 ? 4 : 3
+              } gap-1 -mx-4`}
+            >
               {accessCardsWithSubtitles.map((card) => (
                 <div key={card.href} className="px-2 pb-4">
                   <AccessCard {...card} />

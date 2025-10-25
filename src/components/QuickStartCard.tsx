@@ -16,11 +16,11 @@ const QUICK_START_STEPS = [
   { id: 1, title: "Cadastrar a primeira escola", href: "/escolas" },
   { id: 2, title: "Cadastrar o primeiro veículo", href: "/veiculos" },
   { id: 3, title: "Cadastrar o primeiro passageiro", href: "/passageiros" },
-  {
-    id: 4,
-    title: "Configurar o sistema (notificações e mensagens automáticas)",
-    href: "/configuracoes",
-  },
+  // {
+  //   id: 4,
+  //   title: "Configurar o sistema (notificações e mensagens automáticas)",
+  //   href: "/configuracoes",
+  // },
 ];
 
 const quickStartSchema = z.object({
@@ -53,7 +53,7 @@ export const QuickStartCard = () => {
     step_escolas: false,
     step_veiculos: false,
     step_passageiros: false,
-    step_configuracoes: false,
+    // step_configuracoes: false,
   });
 
   const completedSteps = Object.values(stepsStatus).filter(Boolean).length;
@@ -82,30 +82,32 @@ export const QuickStartCard = () => {
         return;
       }
 
-      const [escolas, veiculos, passageiros, configuracoes] = await Promise.all([
-        supabase
-          .from("escolas")
-          .select("*", { count: "exact", head: true })
-          .eq("usuario_id", profile.id),
-        supabase
-          .from("veiculos")
-          .select("*", { count: "exact", head: true })
-          .eq("usuario_id", profile.id),
-        supabase
-          .from("passageiros")
-          .select("*", { count: "exact", head: true })
-          .eq("usuario_id", profile.id),
-        supabase
-          .from("configuracoes_motoristas")
-          .select("*", { count: "exact", head: true })
-          .eq("usuario_id", profile.id),
-      ]);
+      const [escolas, veiculos, passageiros, configuracoes] = await Promise.all(
+        [
+          supabase
+            .from("escolas")
+            .select("*", { count: "exact", head: true })
+            .eq("usuario_id", profile.id),
+          supabase
+            .from("veiculos")
+            .select("*", { count: "exact", head: true })
+            .eq("usuario_id", profile.id),
+          supabase
+            .from("passageiros")
+            .select("*", { count: "exact", head: true })
+            .eq("usuario_id", profile.id),
+          // supabase
+          //   .from("configuracoes_motoristas")
+          //   .select("*", { count: "exact", head: true })
+          //   .eq("usuario_id", profile.id),
+        ]
+      );
 
       const data = {
         step_escolas: (escolas.count ?? 0) > 0,
         step_veiculos: (veiculos.count ?? 0) > 0,
         step_passageiros: (passageiros.count ?? 0) > 0,
-        step_configuracoes: (configuracoes.count ?? 0) > 0,
+        // step_configuracoes: (configuracoes.count ?? 0) > 0,
       };
 
       setStepsStatus(data);
@@ -158,26 +160,27 @@ export const QuickStartCard = () => {
                     checked={
                       (step.id === 1 && stepsStatus.step_escolas) ||
                       (step.id === 2 && stepsStatus.step_veiculos) ||
-                      (step.id === 3 && stepsStatus.step_passageiros) ||
-                      (step.id === 4 && stepsStatus.step_configuracoes)
+                      (step.id === 3 && stepsStatus.step_passageiros)
+                      // (step.id === 4 && stepsStatus.step_configuracoes)
                     }
                     disabled
-                    onCheckedChange={() => {}}
                     className="h-5 w-5 rounded focus:ring-primary shrink-0 cursor-default opacity-80"
                   />
 
-                  <FormLabel
-                    className={`text-base font-semibold transition-colors leading-snug ${
-                      (step.id === 1 && stepsStatus.step_escolas) ||
-                      (step.id === 2 && stepsStatus.step_veiculos) ||
-                      (step.id === 3 && stepsStatus.step_passageiros) ||
-                      (step.id === 4 && stepsStatus.step_configuracoes)
-                        ? "text-gray-500 line-through"
-                        : "text-foreground"
-                    }`}
-                  >
-                    {step.title}
-                  </FormLabel>
+                  <NavLink to={step.href}>
+                    <FormLabel
+                      className={`text-base font-semibold transition-colors cursor-pointer leading-snug ${
+                        (step.id === 1 && stepsStatus.step_escolas) ||
+                        (step.id === 2 && stepsStatus.step_veiculos) ||
+                        (step.id === 3 && stepsStatus.step_passageiros)
+                          ? // (step.id === 4 && stepsStatus.step_configuracoes)
+                            "text-gray-500 line-through"
+                          : "text-foreground"
+                      }`}
+                    >
+                      <span title={step.title}>{step.title}</span>
+                    </FormLabel>
+                  </NavLink>
                 </div>
 
                 <NavLink to={step.href}>

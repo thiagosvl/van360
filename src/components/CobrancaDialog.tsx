@@ -114,9 +114,9 @@ export default function CobrancaDialog({
 }: CobrancaDialogProps) {
   const { toast } = useToast();
   const [openCalendar, setOpenCalendar] = useState(false);
+  const registerOnAsaas = false;
 
   const currentYear = new Date().getFullYear();
-  
 
   const form = useForm<CobrancaFormData>({
     resolver: zodResolver(cobrancaSchema),
@@ -169,6 +169,7 @@ export default function CobrancaDialog({
     let cobrancaIdSupabase: string | null = null;
     let asaasPaymentId: string | null = null;
     let rollbackNeeded = false;
+    const registerOnAsaas = false;
 
     try {
       const { data: existingCobranca, error: checkError } = await supabase
@@ -230,7 +231,8 @@ export default function CobrancaDialog({
       const isPendente = cobrancaData.status === "pendente";
       const vencimentoEValido = dataVencimento >= hoje;
 
-      const shouldGenerateAsaas = isPendente && vencimentoEValido;
+      const shouldGenerateAsaas =
+        registerOnAsaas && isPendente && vencimentoEValido;
 
       if (shouldGenerateAsaas) {
         if (!passageiroAsaasCustomerId) {
@@ -270,7 +272,7 @@ export default function CobrancaDialog({
 
       if (rollbackNeeded && cobrancaIdSupabase) {
         try {
-          if (asaasPaymentId) {
+          if (registerOnAsaas && asaasPaymentId) {
             await asaasService.deletePayment(asaasPaymentId);
           }
           await supabase
@@ -329,7 +331,7 @@ export default function CobrancaDialog({
                 name="mes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mês *</FormLabel>
+                    <FormLabel>Mês <span className="text-red-600">*</span></FormLabel>
                     <Select
                       onValueChange={(value) => {
                         field.onChange(value);
@@ -367,7 +369,7 @@ export default function CobrancaDialog({
                 name="ano"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ano *</FormLabel>
+                    <FormLabel>Ano <span className="text-red-600">*</span></FormLabel>
                     <Select
                       onValueChange={(value) => {
                         field.onChange(value);
@@ -405,11 +407,18 @@ export default function CobrancaDialog({
             {isMesFuturo && (
               <div className="flex items-start gap-2 text-xs text-yellow-900 bg-yellow-50 border border-yellow-200 p-3 rounded-md">
                 <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-yellow-600" />
-                <p className="font-medium leading-snug">
-                  <span className="font-bold">Aviso: Mês Futuro.</span> Esta
-                  cobrança será gerada automaticamente no início do mês
-                  selecionado. Registre agora apenas se for um adiantamento.
-                </p>
+                {!registerOnAsaas ? (
+                  <p className="font-medium leading-snug">
+                    <span className="font-bold">Aviso: Mês Futuro.</span>{" "}
+                    Registre agora apenas se for um adiantamento.
+                  </p>
+                ) : (
+                  <p className="font-medium leading-snug">
+                    <span className="font-bold">Aviso: Mês Futuro.</span> Esta
+                    cobrança será gerada automaticamente no início do mês
+                    selecionado. Registre agora apenas se for um adiantamento.
+                  </p>
+                )}
               </div>
             )}
 
@@ -418,7 +427,7 @@ export default function CobrancaDialog({
               name="valor"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Valor *</FormLabel>
+                  <FormLabel>Valor <span className="text-red-600">*</span></FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -462,7 +471,7 @@ export default function CobrancaDialog({
                   name="data_pagamento"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Data do pagamento *</FormLabel>
+                      <FormLabel>Data do pagamento <span className="text-red-600">*</span></FormLabel>
                       <Popover
                         open={openCalendar}
                         onOpenChange={setOpenCalendar}
@@ -512,7 +521,7 @@ export default function CobrancaDialog({
                   name="tipo_pagamento"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Forma de pagamento *</FormLabel>
+                      <FormLabel>Forma de pagamento <span className="text-red-600">*</span></FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}

@@ -1,27 +1,27 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { veiculoService } from "@/services/veiculoService";
 import { Veiculo } from "@/types/veiculo";
 import {
-  aplicarMascaraPlaca,
-  limparPlaca,
-  validarPlaca,
+    aplicarMascaraPlaca,
+    limparPlaca,
+    validarPlaca,
 } from "@/utils/placaUtils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -180,7 +180,7 @@ export default function VeiculoFormDialog({
                 control={form.control}
                 render={({ field }) => (
                   <FormItem className="col-span-2 md:col-span-1">
-                    <FormLabel>Placa *</FormLabel>
+                    <FormLabel>Placa <span className="text-red-600">*</span></FormLabel>
                     <FormControl>
                       <Input
                         {...field}
@@ -200,7 +200,7 @@ export default function VeiculoFormDialog({
                 control={form.control}
                 render={({ field }) => (
                   <FormItem className="col-span-2 md:col-span-1">
-                    <FormLabel>Marca *</FormLabel>
+                    <FormLabel>Marca <span className="text-red-600">*</span></FormLabel>
                     <FormControl>
                       <Input placeholder="Ex: Fiat" {...field} />
                     </FormControl>
@@ -213,7 +213,7 @@ export default function VeiculoFormDialog({
                 control={form.control}
                 render={({ field }) => (
                   <FormItem className="col-span-2 md:col-span-1">
-                    <FormLabel>Modelo *</FormLabel>
+                    <FormLabel>Modelo <span className="text-red-600">*</span></FormLabel>
                     <FormControl>
                       <Input placeholder="Ducato Minibus" {...field} />
                     </FormControl>

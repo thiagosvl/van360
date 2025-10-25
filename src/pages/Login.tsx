@@ -1,15 +1,15 @@
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent
+    Card,
+    CardContent
 } from "@/components/ui/card";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -231,7 +231,7 @@ export default function Login() {
                   name="cpfcnpj"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CPF *</FormLabel>
+                      <FormLabel>CPF <span className="text-red-600">*</span></FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -252,7 +252,7 @@ export default function Login() {
                   name="senha"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Senha *</FormLabel>
+                      <FormLabel>Senha <span className="text-red-600">*</span></FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -296,7 +296,7 @@ export default function Login() {
                   name="cpf_responsavel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CPF *</FormLabel>
+                      <FormLabel>CPF <span className="text-red-600">*</span></FormLabel>
                       <FormControl>
                         <Input
                           placeholder="000.000.000-00"
@@ -317,7 +317,7 @@ export default function Login() {
                   name="email_responsavel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email *</FormLabel>
+                      <FormLabel>Email <span className="text-red-600">*</span></FormLabel>
                       <FormControl>
                         <Input
                           type="email"

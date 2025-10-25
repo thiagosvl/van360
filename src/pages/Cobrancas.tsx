@@ -537,7 +537,7 @@ const Cobrancas = () => {
                                             Registrar Pagamento
                                           </DropdownMenuItem>
                                         )}
-                                        {!disableEnviarNotificacao(
+                                        {/* {!disableEnviarNotificacao(
                                           cobranca
                                         ) && (
                                           <DropdownMenuItem
@@ -552,8 +552,8 @@ const Cobrancas = () => {
                                           >
                                             Enviar Notificação
                                           </DropdownMenuItem>
-                                        )}
-                                        {!disableEnviarNotificacao(
+                                        )} */}
+                                        {/* {!disableEnviarNotificacao(
                                           cobranca
                                         ) && (
                                           <DropdownMenuItem
@@ -567,7 +567,7 @@ const Cobrancas = () => {
                                               ? "Ativar Notificações"
                                               : "Desativar Notificações"}
                                           </DropdownMenuItem>
-                                        )}
+                                        )} */}
                                       </DropdownMenuContent>
                                     </DropdownMenu>
                                   </td>
@@ -610,20 +610,29 @@ const Cobrancas = () => {
                                     <DropdownMenuItem
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        navigateToDetails(cobranca);
-                                      }}
-                                    >
-                                      Ver Cobrança
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={(e) => {
-                                        e.stopPropagation();
                                         navigate(
                                           `/passageiros/${cobranca.passageiro_id}`
                                         );
                                       }}
                                     >
                                       Ver Carteirinha
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigateToDetails(cobranca);
+                                      }}
+                                    >
+                                      Ver Cobrança
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      className="cursor-pointer"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEditCobrancaClick(cobranca);
+                                      }}
+                                    >
+                                      Editar Cobrança
                                     </DropdownMenuItem>
                                     {!disableRegistrarPagamento(cobranca) && (
                                       <DropdownMenuItem
@@ -635,7 +644,7 @@ const Cobrancas = () => {
                                         Registrar Pagamento
                                       </DropdownMenuItem>
                                     )}
-                                    {!disableEnviarNotificacao(cobranca) && (
+                                    {/* {!disableEnviarNotificacao(cobranca) && (
                                       <DropdownMenuItem
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -647,8 +656,8 @@ const Cobrancas = () => {
                                       >
                                         Enviar Notificação
                                       </DropdownMenuItem>
-                                    )}
-                                    {!disableEnviarNotificacao(cobranca) && (
+                                    )} */}
+                                    {/* {!disableEnviarNotificacao(cobranca) && (
                                       <DropdownMenuItem
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -659,7 +668,7 @@ const Cobrancas = () => {
                                           ? "Ativar Notificações"
                                           : "Desativar Notificações"}
                                       </DropdownMenuItem>
-                                    )}
+                                    )} */}
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               </div>
@@ -832,6 +841,17 @@ const Cobrancas = () => {
                                           className="cursor-pointer"
                                           onClick={(e) => {
                                             e.stopPropagation();
+                                            navigate(
+                                              `/passageiros/${cobranca.passageiro_id}`
+                                            );
+                                          }}
+                                        >
+                                          Ver Carteirinha
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                          className="cursor-pointer"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
                                             navigateToDetails(cobranca);
                                           }}
                                         >
@@ -841,12 +861,10 @@ const Cobrancas = () => {
                                           className="cursor-pointer"
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            navigate(
-                                              `/passageiros/${cobranca.passageiro_id}`
-                                            );
+                                            handleEditCobrancaClick(cobranca);
                                           }}
                                         >
-                                          Ver Carteirinha
+                                          Editar Cobrança
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                           className="cursor-pointer"
@@ -904,20 +922,29 @@ const Cobrancas = () => {
                                     <DropdownMenuItem
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        navigateToDetails(cobranca);
-                                      }}
-                                    >
-                                      Ver Cobrança
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={(e) => {
-                                        e.stopPropagation();
                                         navigate(
                                           `/passageiros/${cobranca.passageiro_id}`
                                         );
                                       }}
                                     >
                                       Ver Carteirinha
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigateToDetails(cobranca);
+                                      }}
+                                    >
+                                      Ver Cobrança
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      className="cursor-pointer"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEditCobrancaClick(cobranca);
+                                      }}
+                                    >
+                                      Editar Cobrança
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                       disabled={disableDesfazerPagamento(

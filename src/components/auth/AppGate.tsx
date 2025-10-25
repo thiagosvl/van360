@@ -72,8 +72,8 @@ export const AppGate = ({ children }: AppGateProps) => {
       "/cobrancas",
       "/escolas",
       "/veiculos",
-      "/configuracoes",
-      "/gastos",
+      // "/configuracoes",
+      // "/gastos",
       "/relatorios",
     ];
 

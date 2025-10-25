@@ -5,8 +5,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   Settings,
-  Users,
-  Wallet,
+  Users
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -18,13 +17,13 @@ const adminItems = [
 
 const motoristaItems = [
   { title: "Início", href: "/inicio", icon: LayoutDashboard },
-  { title: "Cobranças", href: "/cobrancas", icon: CreditCard },
   { title: "Passageiros", href: "/passageiros", icon: Users },
+  { title: "Cobranças", href: "/cobrancas", icon: CreditCard },
   { title: "Escolas", href: "/escolas", icon: GraduationCap },
   { title: "Veículos", href: "/veiculos", icon: Car },
-  { title: "Gastos", href: "/gastos", icon: Wallet },
+  // { title: "Gastos", href: "/gastos", icon: Wallet },
   { title: "Relatórios", href: "/relatorios", icon: ChartArea },
-  { title: "Configurações", href: "/configuracoes", icon: Settings },
+  // { title: "Configurações", href: "/configuracoes", icon: Settings },
 ];
 
 interface AppSidebarProps {

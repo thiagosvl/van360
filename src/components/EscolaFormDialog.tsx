@@ -70,7 +70,6 @@ export default function EscolaFormDialog({
   const [loadingCep, setLoadingCep] = useState(false);
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "dados-escola",
-    "endereco",
   ]);
   const { toast } = useToast();
 
@@ -223,7 +222,7 @@ export default function EscolaFormDialog({
                       name="nome"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome da Escola *</FormLabel>
+                          <FormLabel>Nome da Escola <span className="text-red-600">*</span></FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>

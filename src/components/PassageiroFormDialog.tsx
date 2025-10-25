@@ -61,16 +61,14 @@ const passageiroSchema = z.object({
   veiculo_id: z.string().min(1, "Campo obrigatório"),
   nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
 
-  genero: z.enum(["Masculino", "Feminino"], {
-    required_error: "Campo obrigatório",
-  }),
+  genero: z.enum(["Masculino", "Feminino"]).optional(),
 
-  logradouro: z.string().min(1, "Campo obrigatório"),
-  numero: z.string().min(1, "Campo obrigatório"),
-  bairro: z.string().min(1, "Campo obrigatório"),
-  cidade: z.string().min(1, "Campo obrigatório"),
-  estado: z.string().min(1, "Campo obrigatório"),
-  cep: z.string().min(1, "Campo obrigatório"),
+  logradouro: z.string().optional(),
+  numero: z.string().optional(),
+  bairro: z.string().optional(),
+  cidade: z.string().optional(),
+  estado: z.string().optional(),
+  cep: z.string().optional(),
   referencia: z.string().optional(),
 
   observacoes: z.string().optional(),
@@ -138,6 +136,7 @@ export default function PassengerFormDialog({
     "cobranca",
     "endereco",
   ]);
+  const registerOnAsaas = false;
 
   const form = useForm<PassageiroFormData>({
     resolver: zodResolver(passageiroSchema),
@@ -266,7 +265,6 @@ export default function PassengerFormDialog({
         form.trigger([
           "escola_id",
           "veiculo_id",
-          "genero",
           "valor_cobranca",
           "dia_vencimento",
           "nome",
@@ -464,7 +462,7 @@ export default function PassengerFormDialog({
               <div className="mb-6">
                 <Alert
                   variant="default"
-                  className="bg-orange-50 border-orange-200 text-orange-900 [&>svg]:text-orange-600 mb-6"
+                  className="bg-orange-50 border-orange-200 text-orange-900 [&>svg]:text-orange-600"
                 >
                   <AlertTriangle className="h-4 w-4 mt-0.5" />
                   <AlertTitle className="font-semibold text-sm">
@@ -498,7 +496,10 @@ export default function PassengerFormDialog({
                       name="nome"
                       render={({ field }) => (
                         <FormItem className="md:col-span-1">
-                          <FormLabel>Nome do Passageiro *</FormLabel>
+                          <FormLabel>
+                            Nome do Passageiro{" "}
+                            <span className="text-red-600">*</span>
+                          </FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -511,7 +512,7 @@ export default function PassengerFormDialog({
                       name="genero"
                       render={({ field }) => (
                         <FormItem className="md:col-span-1">
-                          <FormLabel>Gênero *</FormLabel>
+                          <FormLabel>Gênero</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             value={field.value || undefined}
@@ -540,7 +541,9 @@ export default function PassengerFormDialog({
                       name="veiculo_id"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Veículo *</FormLabel>
+                          <FormLabel>
+                            Veículo <span className="text-red-600">*</span>
+                          </FormLabel>
                           <Select
                             value={selectedVeiculo || field.value}
                             onValueChange={(value) => {
@@ -581,7 +584,9 @@ export default function PassengerFormDialog({
                       name="escola_id"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Escola *</FormLabel>
+                          <FormLabel>
+                            Escola <span className="text-red-600">*</span>
+                          </FormLabel>
                           <Select
                             value={selectedEscola || field.value}
                             onValueChange={(value) => {
@@ -655,7 +660,10 @@ export default function PassengerFormDialog({
                       name="nome_responsavel"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome do Responsável *</FormLabel>
+                          <FormLabel>
+                            Nome do Responsável{" "}
+                            <span className="text-red-600">*</span>
+                          </FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -668,7 +676,9 @@ export default function PassengerFormDialog({
                       name="email_responsavel"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>E-mail *</FormLabel>
+                          <FormLabel>
+                            E-mail <span className="text-red-600">*</span>
+                          </FormLabel>
                           <FormControl>
                             <Input
                               type="email"
@@ -685,7 +695,10 @@ export default function PassengerFormDialog({
                       name="telefone_responsavel"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Telefone (WhatsApp) *</FormLabel>
+                          <FormLabel>
+                            Telefone (WhatsApp){" "}
+                            <span className="text-red-600">*</span>
+                          </FormLabel>
                           <FormControl>
                             <Input
                               {...field}
@@ -705,7 +718,9 @@ export default function PassengerFormDialog({
                       name="cpf_responsavel"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>CPF *</FormLabel>
+                          <FormLabel>
+                            CPF <span className="text-red-600">*</span>
+                          </FormLabel>
                           <FormControl>
                             <Input
                               {...field}
@@ -736,7 +751,9 @@ export default function PassengerFormDialog({
                       name="valor_cobranca"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Valor *</FormLabel>
+                          <FormLabel>
+                            Valor <span className="text-red-600">*</span>
+                          </FormLabel>
                           <FormControl>
                             <Input
                               {...field}
@@ -754,7 +771,10 @@ export default function PassengerFormDialog({
                       name="dia_vencimento"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Dia do Vencimento *</FormLabel>
+                          <FormLabel>
+                            Dia do Vencimento{" "}
+                            <span className="text-red-600">*</span>
+                          </FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             value={field.value}
@@ -794,12 +814,14 @@ export default function PassengerFormDialog({
                             </FormControl>
                             <div className="space-y-1 leading-none">
                               <FormLabel>
-                                Emitir cobrança de {currentMonthInText()}?
+                                Registrar cobrança de {currentMonthInText()}?
                               </FormLabel>
-                              <FormDescription>
-                                Se desmarcado, a primeira cobrança será gerada
-                                apenas no próximo mês.
-                              </FormDescription>
+                              {registerOnAsaas && (
+                                <FormDescription>
+                                  Se desmarcado, a primeira cobrança será gerada
+                                  apenas no próximo mês.
+                                </FormDescription>
+                              )}
                             </div>
                           </FormItem>
                         )}
@@ -852,7 +874,7 @@ export default function PassengerFormDialog({
                 <AccordionTrigger>
                   <div className="flex items-center gap-2 text-lg font-semibold">
                     <MapPin className="w-5 h-5 text-primary" />
-                    Endereço
+                    Endereço (Opcional)
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
@@ -862,7 +884,7 @@ export default function PassengerFormDialog({
                       name="cep"
                       render={({ field }) => (
                         <FormItem className="md:col-span-2">
-                          <FormLabel>CEP *</FormLabel>
+                          <FormLabel>CEP</FormLabel>
                           <FormControl>
                             <div className="relative">
                               <Input
@@ -891,7 +913,7 @@ export default function PassengerFormDialog({
                       name="logradouro"
                       render={({ field }) => (
                         <FormItem className="md:col-span-4">
-                          <FormLabel>Logradouro *</FormLabel>
+                          <FormLabel>Logradouro</FormLabel>
                           <FormControl>
                             <Input
                               {...field}
@@ -909,7 +931,7 @@ export default function PassengerFormDialog({
                       name="numero"
                       render={({ field }) => (
                         <FormItem className="md:col-span-2">
-                          <FormLabel>Número *</FormLabel>
+                          <FormLabel>Número</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -922,7 +944,7 @@ export default function PassengerFormDialog({
                       name="bairro"
                       render={({ field }) => (
                         <FormItem className="md:col-span-4">
-                          <FormLabel>Bairro *</FormLabel>
+                          <FormLabel>Bairro</FormLabel>
                           <FormControl>
                             <Input disabled={loadingCep} {...field} />
                           </FormControl>
@@ -936,7 +958,7 @@ export default function PassengerFormDialog({
                       name="cidade"
                       render={({ field }) => (
                         <FormItem className="md:col-span-4">
-                          <FormLabel>Cidade *</FormLabel>
+                          <FormLabel>Cidade</FormLabel>
                           <FormControl>
                             <Input disabled={loadingCep} {...field} />
                           </FormControl>
@@ -949,7 +971,7 @@ export default function PassengerFormDialog({
                       name="estado"
                       render={({ field }) => (
                         <FormItem className="md:col-span-2">
-                          <FormLabel>Estado *</FormLabel>
+                          <FormLabel>Estado</FormLabel>
                           <Select
                             disabled={loadingCep}
                             onValueChange={field.onChange}

@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Usuario } from "@/types/usuario";
@@ -16,20 +16,20 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "../ui/select";
 
 export const usuarioSchema = z.object({
@@ -115,7 +115,7 @@ export function UsuarioForm({ usuario, onSubmit, onClose }: UsuarioFormProps) {
                   name="nome"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome *</FormLabel>
+                      <FormLabel>Nome <span className="text-red-600">*</span></FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -128,7 +128,7 @@ export function UsuarioForm({ usuario, onSubmit, onClose }: UsuarioFormProps) {
                   name="cpfcnpj"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CPF *</FormLabel>
+                      <FormLabel>CPF <span className="text-red-600">*</span></FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -149,7 +149,7 @@ export function UsuarioForm({ usuario, onSubmit, onClose }: UsuarioFormProps) {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email *</FormLabel>
+                      <FormLabel>Email <span className="text-red-600">*</span></FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -168,7 +168,7 @@ export function UsuarioForm({ usuario, onSubmit, onClose }: UsuarioFormProps) {
                   name="telefone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Telefone (WhatsApp) *</FormLabel>
+                      <FormLabel>Telefone (WhatsApp) <span className="text-red-600">*</span></FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -188,7 +188,7 @@ export function UsuarioForm({ usuario, onSubmit, onClose }: UsuarioFormProps) {
                   name="role"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Perfil *</FormLabel>
+                      <FormLabel>Perfil <span className="text-red-600">*</span></FormLabel>
                       <FormControl>
                         <Select
                           disabled={usuario && usuario.role != null}

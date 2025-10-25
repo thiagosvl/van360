@@ -46,7 +46,6 @@ import {
   disableEnviarNotificacao,
   disableExcluirCobranca,
   disableRegistrarPagamento,
-  disableToggleLembretes,
 } from "@/utils/disableActions";
 import {
   formatarEnderecoCompleto,
@@ -61,9 +60,11 @@ import {
   AlertCircle,
   AlertTriangle,
   BellOff,
+  CalendarDays,
   Car,
   Contact,
   Copy,
+  DollarSign,
   Info,
   Mail,
   MapPin,
@@ -169,6 +170,7 @@ export default function PassageiroCarteirinha() {
   const [mostrarTodasCobrancas, setMostrarTodasCobrancas] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
+  const registerOnAsaas = false;
 
   useEffect(() => {
     if (isObservacoesEditing && textareaRef.current) {
@@ -824,7 +826,7 @@ export default function PassageiroCarteirinha() {
                                           Registrar Pagamento
                                         </DropdownMenuItem>
                                       )}
-                                      {!disableEnviarNotificacao(cobranca) && (
+                                      {/* {!disableEnviarNotificacao(cobranca) && (
                                         <DropdownMenuItem
                                           className="cursor-pointer"
                                           onClick={(e) => {
@@ -836,8 +838,8 @@ export default function PassageiroCarteirinha() {
                                         >
                                           Enviar Notificação
                                         </DropdownMenuItem>
-                                      )}
-                                      {!disableToggleLembretes(cobranca) && (
+                                      )} */}
+                                      {/* {!disableToggleLembretes(cobranca) && (
                                         <DropdownMenuItem
                                           className="cursor-pointer"
                                           onClick={(e) => {
@@ -849,7 +851,7 @@ export default function PassageiroCarteirinha() {
                                             ? "Ativar Notificações"
                                             : "Desativar Notificações"}
                                         </DropdownMenuItem>
-                                      )}
+                                      )} */}
                                       {!disableDesfazerPagamento(cobranca) && (
                                         <DropdownMenuItem
                                           className="cursor-pointer"
@@ -950,7 +952,7 @@ export default function PassageiroCarteirinha() {
                                       Registrar Pagamento
                                     </DropdownMenuItem>
                                   )}
-                                  {!disableEnviarNotificacao(cobranca) && (
+                                  {/* {!disableEnviarNotificacao(cobranca) && (
                                     <DropdownMenuItem
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -961,8 +963,8 @@ export default function PassageiroCarteirinha() {
                                     >
                                       Enviar Notificação
                                     </DropdownMenuItem>
-                                  )}
-                                  {!disableToggleLembretes(cobranca) && (
+                                  )} */}
+                                  {/* {!disableToggleLembretes(cobranca) && (
                                     <DropdownMenuItem
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -973,7 +975,7 @@ export default function PassageiroCarteirinha() {
                                         ? "Ativar Notificações"
                                         : "Desativar Notificações"}
                                     </DropdownMenuItem>
-                                  )}
+                                  )} */}
                                   {!disableDesfazerPagamento(cobranca) && (
                                     <DropdownMenuItem
                                       onClick={(e) => {
@@ -1056,17 +1058,34 @@ export default function PassageiroCarteirinha() {
                     <div>
                       {passageiro.ativo ? (
                         <>
-                          <Alert className="bg-sky-50 border-sky-200 text-sky-900 p-3 md:p-4 rounded-xl gap-3 shadow-sm">
-                            <Info className="h-5 w-5 text-sky-500 mt-0.5" />
-                            <AlertTitle className="text-sky-900 text-sm font-semibold">
-                              Nenhuma cobrança... ainda!
-                            </AlertTitle>
-                            <AlertDescription className="text-sky-800 text-sm leading-relaxed">
-                              Não se preocupe! A primeira cobrança aparecerá
-                              aqui <strong>no início do próximo mês</strong>,
-                              com o vencimento para o dia programado.
-                            </AlertDescription>
-                          </Alert>
+                          {registerOnAsaas ? (
+                            <Alert className="bg-sky-50 border-sky-200 text-sky-900 p-3 md:p-4 rounded-xl gap-3 shadow-sm">
+                              <Info className="h-5 w-5 text-sky-500 mt-0.5" />
+                              <AlertTitle className="text-sky-900 text-sm font-semibold">
+                                Nenhuma cobrança... ainda!
+                              </AlertTitle>
+                              <AlertDescription className="text-sky-800 text-sm leading-relaxed">
+                                Não se preocupe! A primeira cobrança aparecerá
+                                aqui <strong>no início do próximo mês</strong>,
+                                com o vencimento para o dia programado.
+                              </AlertDescription>
+                            </Alert>
+                          ) : (
+                            <>
+                              <Alert className="bg-sky-50 border-sky-200 text-sky-900 p-3 md:p-4 rounded-xl gap-3 shadow-sm">
+                                <Info className="h-5 w-5 text-sky-500 mt-0.5" />
+                                <AlertTitle className="text-sky-900 text-sm font-semibold">
+                                  Nenhuma cobrança... ainda!
+                                </AlertTitle>
+                                <AlertDescription className="text-sky-800 text-sm leading-relaxed">
+                                  Registre a primeira cobrança a qualquer
+                                  momento.
+                                  <br /> A data de vencimento será o dia
+                                  programado no cadastro do passageiro.
+                                </AlertDescription>
+                              </Alert>
+                            </>
+                          )}
                         </>
                       ) : (
                         <Alert className="bg-red-50 text-red-900">
@@ -1140,6 +1159,16 @@ export default function PassageiroCarteirinha() {
                   <InfoItem icon={Car} label="Veículo">
                     {formatarPlacaExibicao(passageiro.veiculos?.placa) ||
                       "Não informado"}
+                  </InfoItem>
+                  <InfoItem icon={DollarSign} label="Valor Combinado">
+                    {passageiro.valor_cobranca.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
+                  </InfoItem>
+
+                  <InfoItem icon={CalendarDays} label="Data de Vencimento">
+                    Todo dia {passageiro.dia_vencimento}
                   </InfoItem>
                   <InfoItem icon={MapPin} label="Endereço">
                     <div className="flex items-center gap-2">

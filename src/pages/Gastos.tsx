@@ -693,7 +693,7 @@ export default function Gastos() {
                     name="categoria"
                     render={({ field }) => (
                       <FormItem className="md:col-span-2">
-                        <FormLabel>Categoria *</FormLabel>
+                        <FormLabel>Categoria <span className="text-red-600">*</span></FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
@@ -721,7 +721,7 @@ export default function Gastos() {
                       name="valor"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel>Valor *</FormLabel>
+                          <FormLabel>Valor <span className="text-red-600">*</span></FormLabel>
                           <FormControl>
                             <Input
                               {...field}
@@ -739,7 +739,7 @@ export default function Gastos() {
                       name="data"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel>Data *</FormLabel>
+                          <FormLabel>Data <span className="text-red-600">*</span></FormLabel>
                           <Popover
                             open={openCalendar}
                             onOpenChange={setOpenCalendar}

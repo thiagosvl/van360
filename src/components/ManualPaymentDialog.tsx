@@ -151,7 +151,7 @@ export default function ManualPaymentDialog({
               name="valor_pago"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Valor Pago *</FormLabel>
+                  <FormLabel>Valor Pago <span className="text-red-600">*</span></FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -171,7 +171,7 @@ export default function ManualPaymentDialog({
               name="data_pagamento"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Data do Pagamento *</FormLabel>
+                  <FormLabel>Data do Pagamento <span className="text-red-600">*</span></FormLabel>
                   <Popover open={openCalendar} onOpenChange={setOpenCalendar}>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -217,7 +217,7 @@ export default function ManualPaymentDialog({
               name="tipo_pagamento"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Forma de Pagamento *</FormLabel>
+                  <FormLabel>Forma de Pagamento <span className="text-red-600">*</span></FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>

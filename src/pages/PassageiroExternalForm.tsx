@@ -37,11 +37,7 @@ import { z } from "zod";
 
 const prePassageiroSchema = z.object({
   nome: z.string().min(2, "Campo obrigatório"),
-  genero: z
-    .enum(["Masculino", "Feminino"], {
-      errorMap: () => ({ message: "Campo obrigatório" }),
-    })
-    .refine((val) => val && val.length > 0, { message: "Campo obrigatório" }),
+  genero: z.enum(["Masculino", "Feminino"]).optional(),
   nome_responsavel: z.string().min(2, "Campo obrigatório"),
   email_responsavel: z
     .string()
@@ -89,7 +85,7 @@ export default function PassageiroExternalForm() {
     resolver: zodResolver(prePassageiroSchema),
     defaultValues: {
       nome: "",
-      genero: "",
+      genero: undefined,
       nome_responsavel: "",
       email_responsavel: "",
       cpf_responsavel: "",
@@ -272,7 +268,10 @@ export default function PassageiroExternalForm() {
                         name="nome"
                         render={({ field }) => (
                           <FormItem className="md:col-span-3">
-                            <FormLabel>Nome do Passageiro *</FormLabel>
+                            <FormLabel>
+                              Nome do Passageiro{" "}
+                              <span className="text-red-600">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -344,7 +343,10 @@ export default function PassageiroExternalForm() {
                         name="nome_responsavel"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Nome do Responsável *</FormLabel>
+                            <FormLabel>
+                              Nome do Responsável{" "}
+                              <span className="text-red-600">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input {...field} />
                             </FormControl>
@@ -357,7 +359,9 @@ export default function PassageiroExternalForm() {
                         name="email_responsavel"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>E-mail *</FormLabel>
+                            <FormLabel>
+                              E-mail <span className="text-red-600">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 type="email"
@@ -377,7 +381,10 @@ export default function PassageiroExternalForm() {
                         name="telefone_responsavel"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Telefone (WhatsApp) *</FormLabel>
+                            <FormLabel>
+                              Telefone (WhatsApp){" "}
+                              <span className="text-red-600">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -397,7 +404,9 @@ export default function PassageiroExternalForm() {
                         name="cpf_responsavel"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>CPF *</FormLabel>
+                            <FormLabel>
+                              CPF <span className="text-red-600">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -431,7 +440,9 @@ export default function PassageiroExternalForm() {
                         name="cep"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>CEP *</FormLabel>
+                            <FormLabel>
+                              CEP <span className="text-red-600">*</span>
+                            </FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <Input
@@ -460,7 +471,9 @@ export default function PassageiroExternalForm() {
                         name="logradouro"
                         render={({ field }) => (
                           <FormItem className="md:col-span-4">
-                            <FormLabel>Logradouro *</FormLabel>
+                            <FormLabel>
+                              Logradouro <span className="text-red-600">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
@@ -477,7 +490,9 @@ export default function PassageiroExternalForm() {
                         name="numero"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>Número *</FormLabel>
+                            <FormLabel>
+                              Número <span className="text-red-600">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input {...field} />
                             </FormControl>
@@ -490,7 +505,9 @@ export default function PassageiroExternalForm() {
                         name="bairro"
                         render={({ field }) => (
                           <FormItem className="md:col-span-4">
-                            <FormLabel>Bairro *</FormLabel>
+                            <FormLabel>
+                              Bairro <span className="text-red-600">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input disabled={loadingCep} {...field} />
                             </FormControl>
@@ -503,7 +520,9 @@ export default function PassageiroExternalForm() {
                         name="cidade"
                         render={({ field }) => (
                           <FormItem className="md:col-span-4">
-                            <FormLabel>Cidade *</FormLabel>
+                            <FormLabel>
+                              Cidade <span className="text-red-600">*</span>
+                            </FormLabel>
                             <FormControl>
                               <Input disabled={loadingCep} {...field} />
                             </FormControl>
@@ -516,7 +535,9 @@ export default function PassageiroExternalForm() {
                         name="estado"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>Estado *</FormLabel>
+                            <FormLabel>
+                              Estado <span className="text-red-600">*</span>
+                            </FormLabel>
                             <Select
                               disabled={loadingCep}
                               onValueChange={field.onChange}

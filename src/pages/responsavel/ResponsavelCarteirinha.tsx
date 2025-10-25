@@ -93,7 +93,7 @@ export default function ResponsavelCarteirinha() {
     carregar();
   }, []);
 
-  const handleRealizarPagamento = (cobranca: Cobranca) => {
+  const handleAcessarLinkDePagamento = (cobranca: Cobranca) => {
     if (!cobranca.asaas_payment_id) {
       toast({
         title: "Não é possível pagar pelo sistema.",
@@ -147,8 +147,10 @@ export default function ResponsavelCarteirinha() {
         new Set((anosBrutos || []).map((a: any) => Number(a)))
       ).sort((a, b) => b - a);
 
+      const currentYear = new Date().getFullYear();
+
       setAnos(anosAgrupados);
-      setAnoSelecionado(anosAgrupados[0] || null);
+      setAnoSelecionado(currentYear || null);
 
       const { data, error } = await supabase
         .from("cobrancas")
@@ -393,7 +395,9 @@ export default function ResponsavelCarteirinha() {
                                           <DropdownMenuItem
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              handleRealizarPagamento(cobranca);
+                                              handleAcessarLinkDePagamento(
+                                                cobranca
+                                              );
                                             }}
                                           >
                                             Realizar Pagamento

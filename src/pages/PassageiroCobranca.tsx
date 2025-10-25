@@ -26,9 +26,8 @@ import {
   disableEnviarNotificacao,
   disableExcluirCobranca,
   disableRegistrarPagamento,
-  disableToggleLembretes,
   disableVerPaginaPagamento,
-  seForPago,
+  seForPago
 } from "@/utils/disableActions";
 import {
   checkCobrancaJaVenceu,
@@ -59,10 +58,9 @@ import {
   MessageCircle,
   Pencil,
   School,
-  Send,
   Trash2,
   User,
-  XCircle,
+  XCircle
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -562,7 +560,7 @@ export default function PassageiroCobranca() {
                   >
                     <MessageCircle className="h-4 w-4 mr-2" /> Falar no WhatsApp
                   </Button>
-                  {!seForPago(cobranca) && (
+                  {/* {!seForPago(cobranca) && (
                     <Button
                       className="w-full"
                       variant="outline"
@@ -576,8 +574,8 @@ export default function PassageiroCobranca() {
                     >
                       <Send className="h-4 w-4 mr-2" /> Enviar Notificação
                     </Button>
-                  )}
-                  {!disableToggleLembretes(cobranca) && (
+                  )} */}
+                  {/* {!disableToggleLembretes(cobranca) && (
                     <Button
                       className="w-full"
                       variant="outline"
@@ -592,7 +590,7 @@ export default function PassageiroCobranca() {
                         ? "Ativar Notificações"
                         : "Desativar Notificações"}
                     </Button>
-                  )}
+                  )} */}
                 </div>
               </CardContent>
             </Card>
