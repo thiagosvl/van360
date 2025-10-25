@@ -43,13 +43,12 @@ import {
   meses,
 } from "@/utils/formatters";
 import {
-  BellOff,
   CheckCircle2,
   DollarSign,
   Inbox,
   MoreVertical,
   Search,
-  Send,
+  Send
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -457,13 +456,13 @@ const Cobrancas = () => {
                                         cobranca.data_vencimento
                                       )}
                                     </span>
-                                    {cobranca.desativar_lembretes &&
+                                    {/* {cobranca.desativar_lembretes &&
                                       cobranca.status !== "pago" && (
                                         <div className="text-xs text-yellow-800 mt-2 flex items-center gap-1">
                                           <BellOff className="w-3 h-3" />
                                           Notificações automáticas suspensas
                                         </div>
-                                      )}
+                                      )} */}
                                   </td>
                                   <td className="p-3 text-center align-top">
                                     <Button
@@ -704,14 +703,14 @@ const Cobrancas = () => {
                                 </span>
                               </div>
 
-                              {cobranca.desativar_lembretes && (
+                              {/* {cobranca.desativar_lembretes && (
                                 <div className="mt-2 flex items-center gap-2 text-xs p-1 rounded-md bg-yellow-50 text-yellow-800 border border-yellow-200">
                                   <BellOff className="h-4 w-4 shrink-0" />
                                   <span className="truncate">
                                     Notificações automáticas suspensas
                                   </span>
                                 </div>
-                              )}
+                              )} */}
                             </div>
                           ))}
                         </div>

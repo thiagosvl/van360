@@ -2,7 +2,6 @@ import CobrancaEditDialog from "@/components/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import ManualPaymentDialog from "@/components/ManualPaymentDialog";
-import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -53,7 +52,6 @@ import {
   CreditCard,
   Download,
   FileText,
-  History as HistoryIcon,
   IdCard,
   MessageCircle,
   Pencil,
@@ -524,7 +522,7 @@ export default function PassageiroCobranca() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <InfoItem icon={User} label="Nome">
+                <InfoItem icon={User} label="Passageiro">
                   {cobranca.passageiro_nome}
                 </InfoItem>
                 <InfoItem icon={Contact} label="Responsável">
@@ -620,7 +618,7 @@ export default function PassageiroCobranca() {
                   >
                     {cobranca.desativar_lembretes ? "Desativadas" : "Ativadas"}
                   </InfoItem>
-                  <InfoItem icon={ArrowRight} label="Origem Cadastro">
+                  <InfoItem icon={ArrowRight} label="Origem">
                     {formatCobrancaOrigem(cobranca.origem)}
                   </InfoItem>
                   {(() => {
@@ -673,7 +671,7 @@ export default function PassageiroCobranca() {
                     </div>
                   )}
 
-                <div className="pt-6 border-t">
+                {/* <div className="pt-6 border-t">
                   <h4 className="text-sm font-semibold mb-4 flex items-center gap-2 text-muted-foreground">
                     <HistoryIcon className="w-4 h-4" />
                     Histórico de Notificações
@@ -708,7 +706,7 @@ export default function PassageiroCobranca() {
                       </AlertTitle>
                     </Alert>
                   )}
-                </div>
+                </div> */}
               </CardContent>
               <CardFooter>
                 <Button

@@ -403,7 +403,7 @@ export default function Passageiros() {
       email_responsavel: "abiliodasvendas@gmail.com",
       telefone_responsavel: "11951186951",
       cpf_responsavel: "39542391838",
-      genero: "Masculino",
+      // genero: "Masculino",
       observacoes: `teste do ${numeroPassageiro}`,
       valor_cobranca: valorInString,
       dia_vencimento: hoje.getDate(),
@@ -597,7 +597,7 @@ export default function Passageiros() {
                               <SelectItem value="todas">Todos</SelectItem>
                               {veiculos.map((v) => (
                                 <SelectItem key={v.id} value={v.id}>
-                                  {v.placa}
+                                  {formatarPlacaExibicao(v.placa)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -887,7 +887,7 @@ export default function Passageiros() {
                                       Veículo
                                     </span>
                                     <span className="font-medium">
-                                      {passageiro.veiculos?.placa ||
+                                      {formatarPlacaExibicao(passageiro.veiculos?.placa) ||
                                         "Não informado"}
                                     </span>
                                   </div>

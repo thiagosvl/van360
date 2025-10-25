@@ -19,35 +19,25 @@ import {
   GraduationCap,
   LayoutDashboard,
   LinkIcon,
-  Users
+  Users,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 
 const AccessCard = ({
   title,
-  subtitle,
   href,
   icon: Icon,
   color,
-  bg,
 }: (typeof ACCESS_CARDS_DATA)[0] & { subtitle: string }) => {
   return (
-    <NavLink to={href} className="col-span-1">
-      <Card
-        className={`transition-all duration-300 hover:scale-[1.03] hover:shadow-md h-full ${bg} border-2 border-transparent hover:border-gray-20`}
-      >
-        <CardContent className="p-5 flex flex-col justify-center items-center text-center space-y-3 h-full">
-          <Icon className={`h-10 w-10 mb-2 ${color}`} />
-
-          <div className="text-center">
-            <p className="text-xl font-bold text-foreground leading-snug">
-              {title}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </NavLink>
+    <Card
+      className={`shadow-md h-full bg-white border border-gray-200 rounded-xl p-5 lg:p-10 xl:p-12`}
+    >
+      <CardContent className="p-0 flex flex-col justify-center items-center text-center h-full">
+        <Icon className={`h-8 w-8 text-primary lg:h-10 lg:w-10 xl:h-12 xl:w-12`} />{" "}
+      </CardContent>
+    </Card>
   );
 };
 
@@ -68,8 +58,6 @@ const Inicio = () => {
         "Cadastre, edite e ative/desative passageiros e responsáveis.",
       href: "/passageiros",
       icon: Users,
-      color: "text-green-700",
-      bg: "bg-green-100",
     },
     {
       title: "Cobranças",
@@ -77,24 +65,18 @@ const Inicio = () => {
         "Visualize e gerencie as cobranças, registre pagamentos e envie notificações.",
       href: "/cobrancas",
       icon: CreditCard,
-      color: "text-blue-700",
-      bg: "bg-blue-100",
     },
     {
       title: "Escolas",
       description: "Gerencie a lista de escolas atendidas e seus detalhes.",
       href: "/escolas",
       icon: GraduationCap,
-      color: "text-stone-700",
-      bg: "bg-stone-200",
     },
     {
       title: "Veículos",
       description: "Gerencie a lista de veículos.",
       href: "/veiculos",
       icon: Car,
-      color: "text-orange-700",
-      bg: "bg-orange-100",
     },
     // {
     //   title: "Gastos",
@@ -102,16 +84,12 @@ const Inicio = () => {
     //     "Registre despesas operacionais e visualize o balanço financeiro.",
     //   href: "/gastos",
     //   icon: Wallet,
-    //   color: "text-red-700",
-    //   bg: "bg-red-100",
     // },
     {
       title: "Relatórios",
       description: "Visualize faturamento, inadimplência e projeções mensais.",
       href: "/relatorios",
       icon: LayoutDashboard,
-      color: "text-yellow-700",
-      bg: "bg-yellow-100",
     },
     // {
     //   title: "Configurações",
@@ -119,8 +97,6 @@ const Inicio = () => {
     //     "Ajuste notificações, preferências de cobrança e dados do condutor.",
     //   href: "/configuracoes",
     //   icon: Settings,
-    //   color: "text-purple-700",
-    //   bg: "bg-purple-100",
     // },
   ];
 
@@ -269,22 +245,27 @@ const Inicio = () => {
             </CardContent>
           </Card>
         </section>
+
         {/* Acessos Rápidos */}
         <section>
           <h2 className="text-xl font-semibold mb-4">Acessos Rápidos</h2>
 
-          <div className="overflow-x-hidden">
-            <div
-              className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-${
-                accessCardsWithSubtitles.length > 5 ? 4 : 3
-              } gap-1 -mx-4`}
-            >
-              {accessCardsWithSubtitles.map((card) => (
-                <div key={card.href} className="px-2 pb-4">
+          <div
+            className={`grid grid-cols-3 sm:grid-cols-5 gap-x-4 gap-y-6 lg:gap-6`}
+          >
+            {accessCardsWithSubtitles.map((card) => (
+              <NavLink key={card.href} to={card.href} className="col-span-1" title={card.title}>
+                <div
+                  key={card.href}
+                  className="flex flex-col items-center text-center transition-all duration-200 hover:scale-[1.05]"
+                >
                   <AccessCard {...card} />
+                  <p className="text-xs font-medium text-foreground mt-1.5 leading-snug md:text-md lg:text-lg xl:text-xl">
+                    {card.title}
+                  </p>
                 </div>
-              ))}
-            </div>
+              </NavLink>
+            ))}
           </div>
         </section>
       </div>

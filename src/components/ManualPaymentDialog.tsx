@@ -30,7 +30,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { cobrancaService } from "@/services/cobrancaService";
-import { toLocalDateString } from "@/utils/formatters";
+import { parseCurrencyToNumber, toLocalDateString } from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -51,7 +51,12 @@ interface ManualPaymentDialogProps {
 }
 
 const paymentSchema = z.object({
-  valor_pago: z.string().min(1, "Campo obrigatório"),
+  valor_pago: z
+    .string()
+    .min(1, "Campo obrigatório")
+    .refine((val) => parseCurrencyToNumber(val) > 0, {
+      message: "O valor deve ser maior que 0",
+    }),
   data_pagamento: z.date({
     required_error: "A data de pagamento é obrigatória.",
   }),
@@ -123,7 +128,10 @@ export default function ManualPaymentDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-md max-h-[95vh] overflow-y-auto bg-white">
+      <DialogContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="max-w-md max-h-[95vh] overflow-y-auto bg-white"
+      >
         <DialogHeader>
           <DialogTitle>Registrar Pagamento</DialogTitle>
         </DialogHeader>
@@ -151,7 +159,9 @@ export default function ManualPaymentDialog({
               name="valor_pago"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Valor Pago <span className="text-red-600">*</span></FormLabel>
+                  <FormLabel>
+                    Valor Pago <span className="text-red-600">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -171,7 +181,9 @@ export default function ManualPaymentDialog({
               name="data_pagamento"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Data do Pagamento <span className="text-red-600">*</span></FormLabel>
+                  <FormLabel>
+                    Data do Pagamento <span className="text-red-600">*</span>
+                  </FormLabel>
                   <Popover open={openCalendar} onOpenChange={setOpenCalendar}>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -217,7 +229,9 @@ export default function ManualPaymentDialog({
               name="tipo_pagamento"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Forma de Pagamento <span className="text-red-600">*</span></FormLabel>
+                  <FormLabel>
+                    Forma de Pagamento <span className="text-red-600">*</span>
+                  </FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>

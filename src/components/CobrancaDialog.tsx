@@ -32,7 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { asaasService } from "@/services/asaasService";
-import { anos, tiposPagamento, toLocalDateString } from "@/utils/formatters";
+import { anos, parseCurrencyToNumber, tiposPagamento, toLocalDateString } from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -52,7 +52,12 @@ const cobrancaSchema = z
   .object({
     mes: z.string().min(1, "Campo obrigatório"),
     ano: z.string().min(1, "Campo obrigatório"),
-    valor: z.string().min(1, "Campo obrigatório"),
+    valor: z
+      .string()
+      .min(1, "Campo obrigatório")
+      .refine((val) => parseCurrencyToNumber(val) > 0, {
+        message: "O valor deve ser maior que 0",
+      }),
     foi_pago: z.boolean().default(false),
     data_pagamento: z.date().optional(),
     tipo_pagamento: z.string().optional(),
@@ -185,7 +190,8 @@ export default function CobrancaDialog({
       }
       if (existingCobranca) {
         toast({
-          title: "Essa cobrança já foi cadastrada no sistema anteriormente.",
+          title: "Erro ao cadastrar cobrança",
+          description: "Já existe uma cobrança para o mês e ano selecionado.",
           variant: "destructive",
         });
         return;
@@ -331,7 +337,9 @@ export default function CobrancaDialog({
                 name="mes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mês <span className="text-red-600">*</span></FormLabel>
+                    <FormLabel>
+                      Mês <span className="text-red-600">*</span>
+                    </FormLabel>
                     <Select
                       onValueChange={(value) => {
                         field.onChange(value);
@@ -369,7 +377,9 @@ export default function CobrancaDialog({
                 name="ano"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ano <span className="text-red-600">*</span></FormLabel>
+                    <FormLabel>
+                      Ano <span className="text-red-600">*</span>
+                    </FormLabel>
                     <Select
                       onValueChange={(value) => {
                         field.onChange(value);
@@ -427,7 +437,9 @@ export default function CobrancaDialog({
               name="valor"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Valor <span className="text-red-600">*</span></FormLabel>
+                  <FormLabel>
+                    Valor <span className="text-red-600">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -471,7 +483,10 @@ export default function CobrancaDialog({
                   name="data_pagamento"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Data do pagamento <span className="text-red-600">*</span></FormLabel>
+                      <FormLabel>
+                        Data do pagamento{" "}
+                        <span className="text-red-600">*</span>
+                      </FormLabel>
                       <Popover
                         open={openCalendar}
                         onOpenChange={setOpenCalendar}
@@ -521,7 +536,10 @@ export default function CobrancaDialog({
                   name="tipo_pagamento"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Forma de pagamento <span className="text-red-600">*</span></FormLabel>
+                      <FormLabel>
+                        Forma de pagamento{" "}
+                        <span className="text-red-600">*</span>
+                      </FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}

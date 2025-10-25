@@ -239,7 +239,7 @@ export default function PassengerFormDialog({
           genero: (prePassageiro.genero as any) || undefined,
           nome_responsavel: prePassageiro.nome_responsavel,
           email_responsavel: prePassageiro.email_responsavel,
-          cpf_responsavel: prePassageiro.cpf_responsavel,
+          cpf_responsavel: cpfMask(prePassageiro.cpf_responsavel),
           telefone_responsavel: phoneMask(prePassageiro.telefone_responsavel),
 
           logradouro: prePassageiro.logradouro || "",
@@ -418,7 +418,7 @@ export default function PassengerFormDialog({
           prePassageiro.usuario_id,
           emitir_cobranca_mes_atual
         );
-        toast({ title: "Passageiro finalizado e cadastrado com sucesso." });
+        toast({ title: "Passageiro cadastrado com sucesso." });
       } else if (editingPassageiro) {
         await passageiroService.updatePassageiroComTransacao(
           editingPassageiro.id,
