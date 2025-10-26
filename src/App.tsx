@@ -17,7 +17,7 @@ import Cobrancas from "./pages/Cobrancas";
 import Configuracoes from "./pages/Configuracoes";
 import Escolas from "./pages/Escolas";
 import Gastos from "./pages/Gastos";
-import Inicio from "./pages/Inicio";
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PassageiroCarteirinha from "./pages/PassageiroCarteirinha";
@@ -32,6 +32,7 @@ import { Loader2 } from "lucide-react";
 import ResponsavelGate from "./components/auth/ResponsavelGate";
 import BackButtonController from "./hooks/BackButtonController";
 import ResponsavelLayout from "./layouts/ResponsavelLayout";
+import Index from "./pages/lp/Index";
 import Veiculos from "./pages/Veiculos";
 
 const queryClient = new QueryClient();
@@ -193,9 +194,20 @@ const App = () => {
                 element={<PassageiroExternalForm />}
               />
 
-              {/* Redirecionamento padrão */}
-              <Route path="/" element={<Navigate to="/inicio" replace />} />
+              <Route
+                path="/"
+                element={
+                  Capacitor.isNativePlatform() ? (
+                    // App nativo → vai direto para login
+                    <Navigate to="/login" replace />
+                  ) : (
+                    // Web → mostra página inicial pública
+                    <Index />
+                  )
+                }
+              />
 
+              {/* Rota Visão Responsável */}
               <Route
                 path="/responsavel/*"
                 element={
@@ -223,7 +235,7 @@ const App = () => {
                 <Route path="admin/configuracoes" element={<AdminSettings />} />
 
                 {/* Motorista */}
-                <Route path="inicio" element={<Inicio />} />
+                <Route path="inicio" element={<Home />} />
                 <Route path="passageiros" element={<Passageiros />} />
                 <Route
                   path="passageiros/:passageiro_id"

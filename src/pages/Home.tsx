@@ -43,7 +43,7 @@ const AccessCard = ({
   );
 };
 
-const Inicio = () => {
+const Home = () => {
   const { setPageTitle, setPageSubtitle } = useLayout();
   const { profile } = useAuth();
   const { toast } = useToast();
@@ -292,4 +292,4 @@ const Inicio = () => {
   );
 };
 
-export default Inicio;
+export default Home;
