@@ -11,7 +11,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
-import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { Cobranca } from "@/types/cobranca";
 import { PaymentStats } from "@/types/paymentStats";
@@ -28,7 +29,7 @@ import {
   Smartphone,
   Ticket,
   TrendingUp,
-  Wallet
+  Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -162,7 +163,9 @@ const Relatorios = () => {
   const [latePayments, setLatePayments] = useState<Cobranca[]>([]);
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
-  const { loading: isAuthLoading, profile } = useAuth();
+  const { user, loading: isSessionLoading } = useSession();
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
+  const isAuthLoading = isSessionLoading || isProfileLoading;
   const systemUserId = profile?.id || null;
   const [isLoadingData, setIsLoadingData] = useState(false);
   const loading = isAuthLoading || isLoadingData;

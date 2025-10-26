@@ -1,18 +1,14 @@
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
-    Card,
-    CardContent
-} from "@/components/ui/card";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { responsavelService } from "@/services/responsavelService";
@@ -189,14 +185,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 dark:from-background dark:to-muted p-6">
       <img
         src="/assets/logo-van360.png"
         alt="Van360"
-        className="h-20 w-auto mb-6"
+        className="h-16 w-auto mb-4 select-none"
       />
 
-      <Tabs value={tab} onValueChange={setTab} className="w-full max-w-md mb-4">
+      {/* <Tabs value={tab} onValueChange={setTab} className="w-full max-w-md mb-4">
         <TabsList className="grid w-full grid-cols-2 border">
           <TabsTrigger
             value="motorista"
@@ -216,12 +212,15 @@ export default function Login() {
             Sou Responsável
           </TabsTrigger>
         </TabsList>
-      </Tabs>
+      </Tabs> */}
 
       {tab === "motorista" && (
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md shadow-lg border border-gray-200">
           <CardContent className="mt-6">
             <Form {...formMotorista}>
+              <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
+                Acesse sua conta
+              </h1>
               <form
                 onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}
                 className="space-y-4"
@@ -231,10 +230,13 @@ export default function Login() {
                   name="cpfcnpj"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CPF <span className="text-red-600">*</span></FormLabel>
+                      <FormLabel>
+                        CPF <span className="text-red-600">*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
+                          autoFocus
                           placeholder="000.000.000-00"
                           autoComplete="username"
                           onChange={(e) =>
@@ -252,7 +254,9 @@ export default function Login() {
                   name="senha"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Senha <span className="text-red-600">*</span></FormLabel>
+                      <FormLabel>
+                        Senha <span className="text-red-600">*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -277,6 +281,18 @@ export default function Login() {
                     {loading ? "Acessando..." : "Acessar"}
                   </Button>
                 </div>
+                <div className="text-center mt-4">
+                  <p className="text-sm text-gray-600">
+                    Ainda não tem conta?{" "}
+                    <button
+                      type="button"
+                      onClick={() => navigate("/cadastro")}
+                      className="text-primary font-semibold hover:underline"
+                    >
+                      Cadastre-se
+                    </button>
+                  </p>
+                </div>
               </form>
             </Form>
           </CardContent>
@@ -284,7 +300,7 @@ export default function Login() {
       )}
 
       {tab === "responsavel" && (
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md shadow-lg border border-gray-200">
           <CardContent className="mt-6">
             <Form {...formResponsavel}>
               <form
@@ -296,7 +312,9 @@ export default function Login() {
                   name="cpf_responsavel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CPF <span className="text-red-600">*</span></FormLabel>
+                      <FormLabel>
+                        CPF <span className="text-red-600">*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="000.000.000-00"
@@ -317,7 +335,9 @@ export default function Login() {
                   name="email_responsavel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email <span className="text-red-600">*</span></FormLabel>
+                      <FormLabel>
+                        Email <span className="text-red-600">*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="email"

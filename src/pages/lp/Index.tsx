@@ -16,7 +16,7 @@ import {
   Smartphone,
   Timer,
   Users,
-  Zap
+  Zap,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -245,12 +245,12 @@ const Index = () => {
               Feito para crescer
             </div>
           </div>
-          <p className="text-lg text-blue-700 font-medium mb-6">
+          <div className="text-lg text-blue-700 font-medium mb-6">
             <Badge className="bg-green-100 text-green-700 font-bold px-3 py-1 mr-2">
               GRÁTIS
             </Badge>
             Use todas as funções com até 20 passageiros cadastrados.
-          </p>
+          </div>
           <Link to={CTA_LINK}>
             <Button size="lg" className="bg-green-600 hover:bg-green-700 px-10">
               Começar grátis agora

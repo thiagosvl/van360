@@ -26,6 +26,8 @@ import VeiculoFormDialog from "@/components/VeiculoFormDialog";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
+import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { passageiroService } from "@/services/passageiroService";
 import { Escola } from "@/types/escola";
@@ -45,7 +47,7 @@ import {
   Trash2,
   Users2,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const PassengerListSkeleton = () => (
@@ -77,7 +79,7 @@ export default function Passageiros() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [escolas, setEscolas] = useState<Escola[]>([]);
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
-  const [selectedVeiculo, setSelectedVeiculo] = useState<string>("todas");
+  const [selectedVeiculo, setSelectedVeiculo] = useState<string>("todos");
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(
@@ -93,6 +95,9 @@ export default function Passageiros() {
   const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useSession();
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
+
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     passageiroId: string;
@@ -104,62 +109,10 @@ export default function Passageiros() {
   });
   const firstRender = useRef(true);
 
-  const fetchPassageiros = useCallback(
-    async (
-      isRefresh = false,
-      filtros?: {
-        search?: string;
-        escola?: string;
-        veiculo?: string;
-        status?: string;
-      }
-    ) => {
-      if (!isRefresh) setLoading(true);
-      else setRefreshing(true);
-
-      try {
-        const { search, escola, veiculo, status } = filtros || {};
-        let query = supabase
-          .from("passageiros")
-          .select(`*, escolas(nome), veiculos(placa)`)
-          .eq("usuario_id", localStorage.getItem("app_user_id"))
-          .order("nome");
-
-        if (escola && escola !== "todas") query = query.eq("escola_id", escola);
-        if (veiculo && veiculo !== "todas")
-          query = query.eq("veiculo_id", veiculo);
-        if (search && search.length > 0)
-          query = query.or(
-            `nome.ilike.%${search}%,nome_responsavel.ilike.%${search}%`
-          );
-        if (status && status !== "todos")
-          query = query.eq("ativo", status === "ativo");
-
-        const { data, error } = await query;
-        if (error) throw error;
-
-        setPassageiros(data || []);
-        setcountPassageirosAtivos(data.filter((e) => e.ativo).length);
-      } catch (error) {
-        console.error("Erro ao buscar passageiros:", error);
-        toast({
-          title: "Erro ao carregar passageiros.",
-          variant: "destructive",
-        });
-      } finally {
-        if (!isRefresh) setLoading(false);
-        else setRefreshing(false);
-      }
-    },
-    []
-  );
-
   useEffect(() => {
+    if (!profile?.id) return;
     fetchEscolas();
     fetchVeiculos();
-  }, []);
-
-  useEffect(() => {
     fetchPassageiros(false, {
       search: searchTerm,
       escola: selectedEscola,
@@ -167,10 +120,10 @@ export default function Passageiros() {
       status: selectedStatus,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [profile?.id]);
 
   useEffect(() => {
-    if (firstRender.current) return;
+    if (firstRender.current || !profile?.id) return;
     fetchPassageiros(true, {
       search: searchTerm,
       escola: selectedEscola,
@@ -178,14 +131,11 @@ export default function Passageiros() {
       status: selectedStatus,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedEscola, selectedVeiculo, selectedStatus]);
+  }, [selectedEscola, selectedVeiculo, selectedStatus, profile?.id]);
 
   // Campo de busca -> aplica debounce
   useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false;
-      return;
-    }
+    if (firstRender.current || !profile?.id) return;
     const handler = setTimeout(() => {
       fetchPassageiros(true, {
         search: searchTerm,
@@ -196,7 +146,7 @@ export default function Passageiros() {
     }, 500);
     return () => clearTimeout(handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm]);
+  }, [searchTerm, profile?.id]);
 
   useEffect(() => {
     let subTitle = "";
@@ -213,6 +163,71 @@ export default function Passageiros() {
     setPageTitle("Passageiros");
     setPageSubtitle(subTitle);
   }, [passageiros, setPageTitle, setPageSubtitle]);
+
+  async function fetchPassageiros(
+    isRefresh = false,
+    filtros?: {
+      search?: string;
+      escola?: string;
+      veiculo?: string;
+      status?: string;
+    }
+  ) {
+    if (!profile?.id) return;
+
+    try {
+      // controla tipo de carregamento
+      if (!isRefresh) setLoading(true);
+      else setRefreshing(true);
+
+      let query = supabase
+        .from("passageiros")
+        .select(
+          `
+          *,
+          escolas(nome),
+          veiculos(placa)
+        `
+        )
+        .eq("usuario_id", profile.id)
+        .order("nome");
+
+      // aplica filtros opcionais
+      if (filtros?.search) {
+        query = query.ilike("nome_responsavel", `%${filtros.search.trim()}%`);
+      }
+
+      if (filtros?.escola && filtros.escola !== "todas") {
+        query = query.eq("escola_id", filtros.escola);
+      }
+
+      if (filtros?.veiculo && filtros.veiculo !== "todos") {
+        query = query.eq("veiculo_id", filtros.veiculo);
+      }
+
+      if (filtros?.status && filtros.status !== "todos") {
+        const ativo = filtros.status === "ativos";
+        query = query.eq("ativo", ativo);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      setPassageiros(data || []);
+    } catch (err) {
+      console.error("Erro ao buscar passageiros:", err);
+      toast({
+        title: "Erro ao carregar passageiros.",
+        description: "Não foi possível obter os dados no momento.",
+        variant: "destructive",
+      });
+    } finally {
+      // encerra tipo correto de carregamento
+      if (!isRefresh) setLoading(false);
+      else setRefreshing(false);
+    }
+  }
 
   const handleSuccessCreatePassageiro = () => {
     setNovoVeiculoId(null);
@@ -325,11 +340,12 @@ export default function Passageiros() {
   };
 
   const fetchVeiculos = async () => {
+    if (!profile?.id) return;
     try {
       const { data, error } = await supabase
         .from("veiculos")
         .select("id, placa")
-        .eq("usuario_id", localStorage.getItem("app_user_id"))
+        .eq("usuario_id", profile.id)
         .eq("ativo", true)
         .order("placa");
       if (error) throw error;
@@ -340,11 +356,12 @@ export default function Passageiros() {
   };
 
   const fetchEscolas = async () => {
+    if (!profile?.id) return;
     try {
       const { data, error } = await supabase
         .from("escolas")
         .select("*")
-        .eq("usuario_id", localStorage.getItem("app_user_id"))
+        .eq("usuario_id", profile.id)
         .order("nome");
       if (error) throw error;
       setEscolas(data || []);
@@ -446,6 +463,14 @@ export default function Passageiros() {
     fetchEscolas();
     setRefreshKey((prev) => prev + 1);
   };
+
+  if (isProfileLoading || !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        <p>Carregando informações do motorista...</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -887,8 +912,9 @@ export default function Passageiros() {
                                       Veículo
                                     </span>
                                     <span className="font-medium">
-                                      {formatarPlacaExibicao(passageiro.veiculos?.placa) ||
-                                        "Não informado"}
+                                      {formatarPlacaExibicao(
+                                        passageiro.veiculos?.placa
+                                      ) || "Não informado"}
                                     </span>
                                   </div>
 
@@ -965,9 +991,7 @@ export default function Passageiros() {
                 ? "Reativar Passageiro"
                 : "Desativar Passageiro"
             }
-            description={`Deseja realmente ${
-              confirmToggleDialog.action
-            } o cadastro deste passageiro?"`}
+            description={`Deseja realmente ${confirmToggleDialog.action} o cadastro deste passageiro?"`}
             onConfirm={handleToggleConfirm}
             confirmText="Confirmar"
             variant={

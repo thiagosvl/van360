@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { useSession } from "@/hooks/useSession";
 import { prePassageiroService } from "@/services/prePassageiroService";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { safeCloseDialog } from "@/utils/dialogCallback";
@@ -59,7 +60,8 @@ export default function PrePassageiros({
 }: PrePassageirosProps) {
   const [prePassageiros, setPrePassageiros] = useState<PrePassageiro[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const { profile } = useAuth();
+  const { user } = useSession();
+  const { profile } = useProfile(user?.id);
   const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
   const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
   const [isCreatingEscola, setIsCreatingEscola] = useState(false);
@@ -81,7 +83,7 @@ export default function PrePassageiros({
     useState<PrePassageiro | null>(null);
 
   const BASE_DOMAIN = import.meta.env.VITE_PUBLIC_APP_DOMAIN;
-  const GENERIC_CADASTRO_LINK = `${BASE_DOMAIN}/cadastro-passageiro/${profile.id}`;
+  const GENERIC_CADASTRO_LINK = `${BASE_DOMAIN}/cadastro-passageiro/${profile?.id}`;
 
   useEffect(() => {
     if (refreshKey !== undefined) {
@@ -230,7 +232,7 @@ export default function PrePassageiros({
   };
 
   const handleCopyLink = () => {
-    const linkToCopy = `${BASE_DOMAIN}/cadastro-passageiro/${profile.id}`;
+    const linkToCopy = `${BASE_DOMAIN}/cadastro-passageiro/${profile?.id}`;
     try {
       navigator.clipboard.writeText(linkToCopy);
 

@@ -2,13 +2,14 @@ import { QuickStartCard } from "@/components/QuickStartCard";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
-import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 import LatePaymentsAlert from "@/components/LatePaymentsAlert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
+import { useSession } from "@/hooks/useSession";
 import { Cobranca } from "@/types/cobranca";
 import { meses } from "@/utils/formatters";
 import {
@@ -45,7 +46,9 @@ const AccessCard = ({
 
 const Home = () => {
   const { setPageTitle, setPageSubtitle } = useLayout();
-  const { profile } = useAuth();
+  const { user, loading: isSessionLoading } = useSession();
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
+  const isAuthLoading = isSessionLoading || isProfileLoading;
   const { toast } = useToast();
   const [latePayments, setLatePayments] = useState<Cobranca[]>([]);
   const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
@@ -107,17 +110,19 @@ const Home = () => {
     import.meta.env.VITE_PUBLIC_APP_DOMAIN || window.location.origin;
 
   useEffect(() => {
-    setPageTitle(
-      profile.id ? `Olá, ${profile.nome.split(" ")[0]}` : "Carregando..."
-    );
+    if (profile?.nome) {
+      setPageTitle(`Olá, ${profile.nome.split(" ")[0]}`);
+    } else {
+      setPageTitle("Carregando...");
+    }
     setPageSubtitle("");
-  }, [setPageTitle, setPageSubtitle]);
+  }, [profile, setPageTitle, setPageSubtitle]);
 
   useEffect(() => {
-    if (profile && profile.id) {
+    if (profile?.id) {
       fetchLatePayments();
     }
-  }, []);
+  }, [profile]);
 
   const fetchLatePayments = async () => {
     const currentUserId = profile?.id || localStorage.getItem("app_user_id");
@@ -161,7 +166,8 @@ const Home = () => {
   };
 
   const handleCopyLink = () => {
-    const linkToCopy = `${BASE_DOMAIN}/cadastro-passageiro/${profile.id}`;
+    const linkToCopy = `${BASE_DOMAIN}/cadastro-passageiro/${profile?.id}`;
+
     try {
       navigator.clipboard.writeText(linkToCopy);
 
@@ -191,6 +197,19 @@ const Home = () => {
     ...card,
     subtitle: card.description,
   }));
+
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    console.warn("Perfil não carregado — redirecionando para login.");
+    return null;
+  }
 
   return (
     <PullToRefreshWrapper onRefresh={pullToRefreshReload}>

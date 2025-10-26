@@ -1,12 +1,13 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 
 import { Form, FormLabel } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
 import { STORAGE_KEY_QUICKSTART_STATUS } from "@/constants";
+import { useProfile } from "@/hooks/useProfile";
+import { useSession } from "@/hooks/useSession";
 import { ChevronRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { NavLink } from "react-router-dom";
@@ -46,7 +47,8 @@ export const QuickStartCard = () => {
     defaultValues: defaultValues,
   });
 
-  const { profile } = useAuth();
+  const { user } = useSession();
+  const { profile } = useProfile(user?.id);
 
   const [loading, setLoading] = useState(true);
   const [stepsStatus, setStepsStatus] = useState({
@@ -66,9 +68,9 @@ export const QuickStartCard = () => {
   }));
 
   useEffect(() => {
-    if (!profile || !profile.id) return;
-
-    fetchData();
+    if (profile?.id) {
+      fetchData();
+    }
   }, [profile]);
 
   const fetchData = async () => {
@@ -82,26 +84,24 @@ export const QuickStartCard = () => {
         return;
       }
 
-      const [escolas, veiculos, passageiros, configuracoes] = await Promise.all(
-        [
-          supabase
-            .from("escolas")
-            .select("*", { count: "exact", head: true })
-            .eq("usuario_id", profile.id),
-          supabase
-            .from("veiculos")
-            .select("*", { count: "exact", head: true })
-            .eq("usuario_id", profile.id),
-          supabase
-            .from("passageiros")
-            .select("*", { count: "exact", head: true })
-            .eq("usuario_id", profile.id),
-          // supabase
-          //   .from("configuracoes_motoristas")
-          //   .select("*", { count: "exact", head: true })
-          //   .eq("usuario_id", profile.id),
-        ]
-      );
+      const [escolas, veiculos, passageiros] = await Promise.all([
+        supabase
+          .from("escolas")
+          .select("*", { count: "exact", head: true })
+          .eq("usuario_id", profile.id),
+        supabase
+          .from("veiculos")
+          .select("*", { count: "exact", head: true })
+          .eq("usuario_id", profile.id),
+        supabase
+          .from("passageiros")
+          .select("*", { count: "exact", head: true })
+          .eq("usuario_id", profile.id),
+        // supabase
+        //   .from("configuracoes_motoristas")
+        //   .select("*", { count: "exact", head: true })
+        //   .eq("usuario_id", profile.id),
+      ]);
 
       const data = {
         step_escolas: (escolas.count ?? 0) > 0,

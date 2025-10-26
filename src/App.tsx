@@ -3,7 +3,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { AuthProvider } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/layouts/AppLayout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -33,6 +32,7 @@ import ResponsavelGate from "./components/auth/ResponsavelGate";
 import BackButtonController from "./hooks/BackButtonController";
 import ResponsavelLayout from "./layouts/ResponsavelLayout";
 import Index from "./pages/lp/Index";
+import Register from "./pages/Register";
 import Veiculos from "./pages/Veiculos";
 
 const queryClient = new QueryClient();
@@ -174,7 +174,6 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner position="top-right" />
-        <AuthProvider>
           <BrowserRouter>
             <BackButtonController />
             <ScrollToTop />
@@ -188,6 +187,16 @@ const App = () => {
                   </AppGate>
                 }
               />
+
+              <Route
+                path="/cadastro"
+                element={
+                  <AppGate>
+                    <Register />
+                  </AppGate>
+                }
+              />
+
               {/* Rota Pública de pré-cadastro */}
               <Route
                 path="/cadastro-passageiro/:motoristaId"
@@ -256,7 +265,6 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
-        </AuthProvider>
 
         {/* 🔹 Overlay de atualização forçada */}
         {updating && (
