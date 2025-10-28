@@ -619,7 +619,7 @@ export default function Passageiros() {
                               <SelectValue placeholder="Todos" />
                             </SelectTrigger>
                             <SelectContent className="max-h-60 overflow-y-auto">
-                              <SelectItem value="todas">Todos</SelectItem>
+                              <SelectItem value="todos">Todos</SelectItem>
                               {veiculos.map((v) => (
                                 <SelectItem key={v.id} value={v.id}>
                                   {formatarPlacaExibicao(v.placa)}

@@ -22,6 +22,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
+import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { ConfiguracoesMotorista } from "@/types/configuracoesMotorista";
@@ -130,8 +132,9 @@ export default function Configuracoes() {
     title: "",
     content: "",
   });
+  const { user, loading: isSessionLoading } = useSession();
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
   const { toast } = useToast();
-  const userId = localStorage.getItem("app_user_id");
 
   const commonVariables = [
     "{{nome_responsavel}}",
@@ -150,20 +153,22 @@ export default function Configuracoes() {
   }, [setPageTitle, setPageSubtitle]);
 
   const fetchConfiguracoes = async (isRefresh = false) => {
-    if (!isRefresh) setLoading(true);
-    else setRefreshing(true);
+    if (!profile?.id) return;
 
     try {
+      if (!isRefresh) setLoading(true);
+      else setRefreshing(true);
+
       const { data, error } = await supabase
         .from("configuracoes_motoristas")
         .select("*")
-        .eq("usuario_id", userId)
+        .eq("usuario_id", profile.id)
         .single();
       if (error && error.code !== "PGRST116") throw error;
       if (!data) {
         const { data: created, error: insertError } = await supabase
           .from("configuracoes_motoristas")
-          .insert([{ usuario_id: userId }])
+          .insert([{ usuario_id: profile.id }])
           .select()
           .single();
         if (insertError) throw insertError;

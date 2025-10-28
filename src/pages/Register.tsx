@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -161,11 +161,6 @@ export default function Register() {
         title: "Cadastro realizado com sucesso!",
         description:
           "Seu cadastro foi criado e você já está logado no sistema.",
-      });
-
-      console.log("Usuário cadastrado com sucesso:", {
-        id: createdUsuario.id,
-        auth_uid: createdAuthUid,
       });
 
       // Seta role e limpa possíveis logins de responsável

@@ -22,6 +22,8 @@ import VeiculoFormDialog from "@/components/VeiculoFormDialog";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
+import { useSession } from "@/hooks/useSession";
 import { veiculoService } from "@/services/veiculoService";
 import { Veiculo } from "@/types/veiculo";
 import { safeCloseDialog } from "@/utils/dialogCallback";
@@ -72,15 +74,19 @@ export default function Veiculos() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("todos");
+  const { user, loading: isSessionLoading } = useSession();
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
   const { toast } = useToast();
 
   const fetchVeiculos = useCallback(
     async (isRefresh = false) => {
-      if (!isRefresh) setLoading(true);
-      else setRefreshing(true);
+      if (!profile?.id) return;
 
       try {
-        const data = await veiculoService.fetchVeiculosComContagemAtivos();
+        if (!isRefresh) setLoading(true);
+        else setRefreshing(true);
+
+        const data = await veiculoService.fetchVeiculosComContagemAtivos(profile.id);
         setVeiculos(data || []);
         setCountVeiculosAtivos(data.filter((e) => e.ativo).length);
       } catch (error) {
@@ -91,12 +97,13 @@ export default function Veiculos() {
         else setRefreshing(false);
       }
     },
-    [toast]
+    [toast, profile?.id]
   );
 
   useEffect(() => {
+    if (!profile?.id) return;
     fetchVeiculos();
-  }, []);
+  }, [profile?.id]);
 
   useEffect(() => {
     let subTitle = "";
@@ -168,11 +175,12 @@ export default function Veiculos() {
   };
 
   const handleDelete = async () => {
+    if (!profile?.id) return;
     if (!schoolToDelete) return;
 
     setRefreshing(true);
     try {
-      await veiculoService.deleteVeiculo(schoolToDelete.id);
+      await veiculoService.deleteVeiculo(schoolToDelete.id, profile.id);
 
       await fetchVeiculos(true);
       toast({ title: "Veiculo excluído permanentemente." });
@@ -196,9 +204,11 @@ export default function Veiculos() {
   };
 
   const handleToggleAtivo = async (veiculo: Veiculo) => {
+    if (!profile?.id) return;
+
     setRefreshing(true);
     try {
-      const novoStatus = await veiculoService.toggleAtivo(veiculo);
+      const novoStatus = await veiculoService.toggleAtivo(veiculo, profile.id);
 
       toast({
         title: `Veiculo ${novoStatus ? "ativado" : "desativado"} com sucesso.`,

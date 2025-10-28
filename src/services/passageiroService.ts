@@ -154,7 +154,8 @@ export const passageiroService = {
     }
   },
 
-  async createPassageiroComTransacao(data: any): Promise<void> {
+  async createPassageiroComTransacao(data: any, usuarioId: string): Promise<void> {
+    if (!usuarioId) return;
 
     const { emitir_cobranca_mes_atual, ...pureData } = data;
 
@@ -164,7 +165,7 @@ export const passageiroService = {
       dia_vencimento: Number(pureData.dia_vencimento),
       escola_id: pureData.escola_id || null,
       ativo: pureData.ativo ?? true,
-      usuario_id: localStorage.getItem("app_user_id"),
+      usuario_id: usuarioId,
       cpf_responsavel: pureData.cpf_responsavel.replace(/\D/g, ""),
       telefone_responsavel: pureData.telefone_responsavel.replace(/\D/g, ""),
     };

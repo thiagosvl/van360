@@ -13,9 +13,8 @@ interface QuickPreCadastroPayload {
 
 export const prePassageiroService = {
 
-    async fetchPreCadastros(searchTerm: string = ""): Promise<PrePassageiro[]> {
-        const userId = localStorage.getItem("app_user_id");
-        if (!userId) return [];
+    async fetchPreCadastros(searchTerm: string = "", usuarioId: string): Promise<PrePassageiro[]> {
+        if (!usuarioId) return;
 
         let query = supabase
             .from("pre_passageiros")

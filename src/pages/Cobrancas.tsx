@@ -25,6 +25,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
+import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { cobrancaService } from "@/services/cobrancaService";
 import { Cobranca } from "@/types/cobranca";
@@ -48,7 +50,7 @@ import {
   Inbox,
   MoreVertical,
   Search,
-  Send
+  Send,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -96,6 +98,8 @@ const Cobrancas = () => {
     open: false,
     cobrancaId: "",
   });
+  const { user, loading: isSessionLoading } = useSession();
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
 
   const [buscaAbertas, setBuscaAbertas] = useState("");
   const [buscaPagas, setBuscaPagas] = useState("");
@@ -104,16 +108,17 @@ const Cobrancas = () => {
   const { toast } = useToast();
 
   const fetchCobrancas = async (isRefresh = false) => {
-    if (!isRefresh) setLoading(true);
-    else setRefreshing(true);
+    if (!profile?.id) return;
 
     try {
+      if (!isRefresh) setLoading(true);
+      else setRefreshing(true);
       const { data } = await supabase
         .from("cobrancas")
         .select(`*, passageiros (*)`)
         .eq("mes", mesFilter)
         .eq("ano", anoFilter)
-        .eq("usuario_id", localStorage.getItem("app_user_id"))
+        .eq("usuario_id", profile?.id)
         .order("data_vencimento", { ascending: true })
         .order("passageiros(nome)", { ascending: true });
       const cobrancas = (data as Cobranca[]) || [];
@@ -228,17 +233,18 @@ const Cobrancas = () => {
   }, [mesFilter, anoFilter, setPageTitle, setPageSubtitle]);
 
   useEffect(() => {
+    if (!profile?.id) return;
+
     const params = {
       ano: anoFilter.toString(),
       mes: mesFilter.toString(),
     };
 
     setSearchParams(params, { replace: true });
-
     fetchCobrancas();
     setBuscaAbertas("");
     setBuscaPagas("");
-  }, [mesFilter, anoFilter]);
+  }, [mesFilter, anoFilter, profile?.id]);
 
   const cobrancasAbertasFiltradas = useMemo(() => {
     if (!buscaAbertas) return cobrancasAbertas;
@@ -263,6 +269,14 @@ const Cobrancas = () => {
   const pullToRefreshReload = async () => {
     fetchCobrancas();
   };
+
+  if (isSessionLoading || isProfileLoading || !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        <p>Carregando informações do motorista...</p>
+      </div>
+    );
+  }
 
   return (
     <>

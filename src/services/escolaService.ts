@@ -2,43 +2,45 @@ import { STORAGE_KEY_QUICKSTART_STATUS } from "@/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { Escola } from "@/types/escola";
 
-const fetchPassageirosAtivosCount = async (escolaId: string): Promise<number> => {
-    const userId = localStorage.getItem("app_user_id");
+const fetchPassageirosAtivosCount = async (escolaId: string, usuarioId: string): Promise<number> => {
+    if (!usuarioId) return;
 
     const { count, error } = await supabase
         .from("passageiros")
         .select("id", { count: "exact" })
         .eq("escola_id", escolaId)
         .eq("ativo", true)
-        .eq("usuario_id", userId);
+        .eq("usuario_id", usuarioId);
 
     if (error) throw error;
     return count || 0;
 };
 
-export const fetchEscolasComContagemAtivos = async () => {
-    const userId = localStorage.getItem("app_user_id");
+export const fetchEscolasComContagemAtivos = async (usuarioId: string) => {
+    if (!usuarioId) return [];
 
     const { data, error } = await supabase
         .from("escolas")
         .select(`*, passageiros(count)`)
-        .eq("usuario_id", userId)
+        .eq("usuario_id", usuarioId)
         .eq("passageiros.ativo", true)
-        .order("nome");
+        .order("nome", { ascending: true });
 
     if (error) throw error;
 
-    return data.map(escola => ({
-        ...escola,
-        passageiros_ativos_count: escola.passageiros[0]?.count || 0,
-    })) as (Escola & { passageiros_ativos_count: number })[];
+    return (
+        data?.map((escola) => ({
+            ...escola,
+            passageiros_ativos_count: escola.passageiros.filter((p) => p.ativo).length,
+        })) ?? []
+    );
 };
 
-export const saveEscola = async (data: any, editingEscola: Escola | null): Promise<Escola> => {
-    const userId = localStorage.getItem("app_user_id");
+export const saveEscola = async (data: any, editingEscola: Escola | null, usuarioId: string): Promise<Escola> => {
+    if (!usuarioId) return;
 
     if (editingEscola && editingEscola.ativo && data.ativo === false) {
-        const count = await fetchPassageirosAtivosCount(editingEscola.id);
+        const count = await fetchPassageirosAtivosCount(editingEscola.id, usuarioId);
         if (count > 0) {
             throw new Error(`Existem passageiros ativos vinculados à escola.`);
         }
@@ -62,7 +64,7 @@ export const saveEscola = async (data: any, editingEscola: Escola | null): Promi
             {
                 ...data,
                 ativo: true,
-                usuario_id: userId,
+                usuario_id: usuarioId,
             },
         ])
             .select()
@@ -84,14 +86,14 @@ export const saveEscola = async (data: any, editingEscola: Escola | null): Promi
     }
 };
 
-export const deleteEscola = async (escolaId: string): Promise<void> => {
-    const userId = localStorage.getItem("app_user_id");
+export const deleteEscola = async (escolaId: string, usuarioId: string): Promise<void> => {
+    if (!usuarioId) return;
 
     const { data: passageiros, error: checkError } = await supabase
         .from("passageiros")
         .select("id")
         .eq("escola_id", escolaId)
-        .eq("usuario_id", userId);
+        .eq("usuario_id", usuarioId);
 
     if (checkError) throw checkError;
 
@@ -107,11 +109,13 @@ export const deleteEscola = async (escolaId: string): Promise<void> => {
     if (deleteError) throw deleteError;
 };
 
-export const toggleAtivo = async (escola: Escola): Promise<boolean> => {
+export const toggleAtivo = async (escola: Escola, usuarioId): Promise<boolean> => {
+    if (!usuarioId) return;
+
     const novoStatus = !escola.ativo;
 
     if (!novoStatus) {
-        const count = await fetchPassageirosAtivosCount(escola.id);
+        const count = await fetchPassageirosAtivosCount(escola.id, usuarioId);
         if (count > 0) {
             throw new Error("Existem passageiros ativos vinculados à escola.");
         }

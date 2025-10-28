@@ -41,6 +41,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
+import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
@@ -182,9 +184,10 @@ export default function Gastos() {
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingGasto, setEditingGasto] = useState<Gasto | null>(null);
-  const { toast } = useToast();
+  const { user, loading: isSessionLoading } = useSession();
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
 
-  const currentYear = new Date().getFullYear();
+  const { toast } = useToast();
 
   const form = useForm<GastoFormData>({ resolver: zodResolver(gastoSchema) });
 
@@ -223,8 +226,9 @@ export default function Gastos() {
   }, [gastos]);
 
   useEffect(() => {
+    if (!profile?.id) return;
     fetchGastos();
-  }, [mesFilter, anoFilter]);
+  }, [mesFilter, anoFilter, profile?.id]);
 
   useEffect(() => {
     let subTitle = "";
@@ -242,10 +246,12 @@ export default function Gastos() {
   }, [mesFilter, anoFilter, setPageTitle, setPageSubtitle]);
 
   const fetchGastos = async (isRefresh = false) => {
-    if (!isRefresh) setLoading(true);
-    else setRefreshing(true);
+    if (!profile?.id) return;
 
     try {
+      if (!isRefresh) setLoading(true);
+      else setRefreshing(true);
+
       const firstDay = new Date(anoFilter, mesFilter - 1, 1).toISOString();
       const lastDay = new Date(
         anoFilter,
@@ -258,7 +264,7 @@ export default function Gastos() {
       const { data, error } = await supabase
         .from("gastos")
         .select("*")
-        .eq("usuario_id", localStorage.getItem("app_user_id"))
+        .eq("usuario_id", profile.id)
         .gte("data", firstDay)
         .lte("data", lastDay)
         .order("data", { ascending: false });
@@ -274,13 +280,15 @@ export default function Gastos() {
   };
 
   const handleSubmit = async (data: GastoFormData) => {
+    if (!profile?.id) return;
+
     try {
       const gastoData = {
         valor: moneyToNumber(data.valor),
         data: toLocalDateString(data.data),
         categoria: data.categoria,
         descricao: data.descricao,
-        usuario_id: localStorage.getItem("app_user_id"),
+        usuario_id: profile.id,
       };
       if (editingGasto) {
         const { error } = await supabase
@@ -693,7 +701,9 @@ export default function Gastos() {
                     name="categoria"
                     render={({ field }) => (
                       <FormItem className="md:col-span-2">
-                        <FormLabel>Categoria <span className="text-red-600">*</span></FormLabel>
+                        <FormLabel>
+                          Categoria <span className="text-red-600">*</span>
+                        </FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
@@ -721,7 +731,9 @@ export default function Gastos() {
                       name="valor"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel>Valor <span className="text-red-600">*</span></FormLabel>
+                          <FormLabel>
+                            Valor <span className="text-red-600">*</span>
+                          </FormLabel>
                           <FormControl>
                             <Input
                               {...field}
@@ -739,7 +751,9 @@ export default function Gastos() {
                       name="data"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel>Data <span className="text-red-600">*</span></FormLabel>
+                          <FormLabel>
+                            Data <span className="text-red-600">*</span>
+                          </FormLabel>
                           <Popover
                             open={openCalendar}
                             onOpenChange={setOpenCalendar}

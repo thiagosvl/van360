@@ -116,17 +116,16 @@ const Home = () => {
       setPageTitle("Carregando...");
     }
     setPageSubtitle("");
-  }, [profile, setPageTitle, setPageSubtitle]);
+  }, [profile?.nome, setPageTitle, setPageSubtitle]);
 
   useEffect(() => {
     if (profile?.id) {
       fetchLatePayments();
     }
-  }, [profile]);
+  }, [profile?.id]);
 
   const fetchLatePayments = async () => {
-    const currentUserId = profile?.id || localStorage.getItem("app_user_id");
-    if (!currentUserId || !profile) {
+    if (!profile?.id) {
       setLoadingFinances(false);
       return;
     }
@@ -139,13 +138,13 @@ const Home = () => {
     setMesAtual(mes);
     setAnoAtual(ano);
 
-    setLoadingFinances(true);
     try {
+      setLoadingFinances(true);
       const { data: cobrancasMes } = await supabase
         .from("cobrancas")
         .select(`*`)
         .eq("mes", mes)
-        .eq("usuario_id", currentUserId)
+        .eq("usuario_id", profile.id)
         .eq("ano", ano);
 
       const cobrancas = cobrancasMes || ([] as Cobranca[]);

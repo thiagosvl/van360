@@ -3,27 +3,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { Veiculo } from "@/types/veiculo";
 
 export const veiculoService = {
-  async fetchPassageirosAtivosCount(veiculoId: string) {
-    const userId = localStorage.getItem("app_user_id");
+  async fetchPassageirosAtivosCount(veiculoId: string, usuarioId: string) {
+    if (!usuarioId) return;
 
     const { count, error } = await supabase
       .from("passageiros")
       .select("id", { count: "exact" })
       .eq("veiculo_id", veiculoId)
       .eq("ativo", true)
-      .eq("usuario_id", userId);
+      .eq("usuario_id", usuarioId);
 
     if (error) throw error;
     return count || 0;
   },
 
-  async fetchVeiculosComContagemAtivos() {
-    const userId = localStorage.getItem("app_user_id");
+  async fetchVeiculosComContagemAtivos(usuarioId: string) {
+    if (!usuarioId) return [];
 
     const { data, error } = await supabase
       .from("veiculos")
       .select(`*, passageiros(count)`)
-      .eq("usuario_id", userId)
+      .eq("usuario_id", usuarioId)
       .eq("passageiros.ativo", true)
       .order("placa");
 
@@ -35,11 +35,11 @@ export const veiculoService = {
     })) as (Veiculo & { passageiros_ativos_count: number })[];
   },
 
-  async saveVeiculo(data: any, editingVeiculo: Veiculo | null): Promise<Veiculo> {
-    const userId = localStorage.getItem("app_user_id");
+  async saveVeiculo(data: any, editingVeiculo: Veiculo | null, usuarioId: string): Promise<Veiculo> {
+    if (!usuarioId) return;
 
     if (editingVeiculo && editingVeiculo.ativo && data.ativo === false) {
-      const count = await this.fetchPassageirosAtivosCount(editingVeiculo.id);
+      const count = await this.fetchPassageirosAtivosCount(editingVeiculo.id, usuarioId);
       if (count > 0) {
         throw new Error(`Existem passageiros ativos vinculados ao veículo.`);
       }
@@ -63,7 +63,7 @@ export const veiculoService = {
         {
           ...data,
           ativo: true,
-          usuario_id: userId,
+          usuario_id: usuarioId,
         },
       ])
         .select()
@@ -85,11 +85,11 @@ export const veiculoService = {
     }
   },
 
-  async toggleAtivo(veiculo: Veiculo) {
+  async toggleAtivo(veiculo: Veiculo, usuarioId: string) {
     const novoStatus = !veiculo.ativo;
 
     if (!novoStatus) {
-      const count = await this.fetchPassageirosAtivosCount(veiculo.id);
+      const count = await this.fetchPassageirosAtivosCount(veiculo.id, usuarioId);
       if (count > 0) {
         throw new Error("Há passageiros ativos vinculado ao veículo.");
       }
@@ -105,14 +105,14 @@ export const veiculoService = {
     return novoStatus;
   },
 
-  async deleteVeiculo(veiculoId: string) {
-    const userId = localStorage.getItem("app_user_id");
+  async deleteVeiculo(veiculoId: string, usuarioId: string) {
+    if (!usuarioId) return;
 
     const { data: passageiros, error: checkError } = await supabase
       .from("passageiros")
       .select("id")
       .eq("veiculo_id", veiculoId)
-      .eq("usuario_id", userId);
+      .eq("usuario_id", usuarioId);
 
     if (checkError) throw checkError;
 

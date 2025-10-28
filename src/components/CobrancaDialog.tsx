@@ -29,6 +29,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
+import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { asaasService } from "@/services/asaasService";
@@ -117,6 +119,8 @@ export default function CobrancaDialog({
   diaVencimento,
   onCobrancaAdded,
 }: CobrancaDialogProps) {
+  const { user, loading: isSessionLoading } = useSession();
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
   const { toast } = useToast();
   const [openCalendar, setOpenCalendar] = useState(false);
   const registerOnAsaas = false;
@@ -171,6 +175,7 @@ export default function CobrancaDialog({
   }, [isOpen, valorCobranca, form, currentYear]);
 
   const handleSubmit = async (data: CobrancaFormData) => {
+    if (!profile?.id) return;
     let cobrancaIdSupabase: string | null = null;
     let asaasPaymentId: string | null = null;
     let rollbackNeeded = false;
@@ -220,7 +225,7 @@ export default function CobrancaDialog({
             : null,
         tipo_pagamento: data.foi_pago ? data.tipo_pagamento : null,
         pagamento_manual: data.foi_pago,
-        usuario_id: localStorage.getItem("app_user_id"),
+        usuario_id: profile.id,
         origem: "manual",
       };
 

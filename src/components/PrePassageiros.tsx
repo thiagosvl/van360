@@ -60,8 +60,8 @@ export default function PrePassageiros({
 }: PrePassageirosProps) {
   const [prePassageiros, setPrePassageiros] = useState<PrePassageiro[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const { user } = useSession();
-  const { profile } = useProfile(user?.id);
+  const { user, loading: isSessionLoading } = useSession();
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
   const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
   const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
   const [isCreatingEscola, setIsCreatingEscola] = useState(false);
@@ -83,7 +83,6 @@ export default function PrePassageiros({
     useState<PrePassageiro | null>(null);
 
   const BASE_DOMAIN = import.meta.env.VITE_PUBLIC_APP_DOMAIN;
-  const GENERIC_CADASTRO_LINK = `${BASE_DOMAIN}/cadastro-passageiro/${profile?.id}`;
 
   useEffect(() => {
     if (refreshKey !== undefined) {
@@ -105,11 +104,13 @@ export default function PrePassageiros({
 
   const fetchPrePassageiros = useCallback(
     async (isRefresh = false) => {
-      if (!isRefresh) setLoading(true);
-      else setRefreshing(true);
-
       try {
-        const data = await prePassageiroService.fetchPreCadastros(searchTerm);
+        if (!isRefresh) setLoading(true);
+        else setRefreshing(true);
+        const data = await prePassageiroService.fetchPreCadastros(
+          searchTerm,
+          profile.id
+        );
         setPrePassageiros(data || []);
       } catch (error) {
         console.error("Erro ao buscar pré-cadastros:", error);
@@ -152,8 +153,7 @@ export default function PrePassageiros({
   };
 
   const handleCadastrarRapidoLink = async () => {
-    const motoristaId = localStorage.getItem("app_user_id");
-    if (!motoristaId) {
+    if (!profile?.id) {
       toast({
         title: "Erro de Autenticação.",
         description: "Faça login novamente.",
@@ -176,7 +176,7 @@ export default function PrePassageiros({
       telefone_responsavel: "11951186951",
       cpf_responsavel: "39542391838",
       // genero: Math.random() > 0.5 ? "Masculino" : "Feminino",
-      usuario_id: motoristaId,
+      usuario_id: profile.id,
       observacoes: `observacoes do ${fakeNome}`,
       logradouro: `Rua do ${fakeNome}`,
       numero: "433",

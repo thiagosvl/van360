@@ -22,6 +22,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
+import { useSession } from "@/hooks/useSession";
 import { escolaService } from "@/services/escolaService";
 import { Escola } from "@/types/escola";
 import { safeCloseDialog } from "@/utils/dialogCallback";
@@ -71,31 +73,15 @@ export default function Escolas() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("todos");
+  const { user, loading: isSessionLoading } = useSession();
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
+
   const { toast } = useToast();
 
-  const fetchEscolas = useCallback(
-    async (isRefresh = false) => {
-      if (!isRefresh) setLoading(true);
-      else setRefreshing(true);
-
-      try {
-        const data = await escolaService.fetchEscolasComContagemAtivos();
-        setEscolas(data || []);
-        setCountEscolasAtivas(data.filter((e) => e.ativo).length);
-      } catch (error) {
-        console.error("Erro ao buscar escolas:", error);
-        toast({ title: "Erro ao carregar escolas.", variant: "destructive" });
-      } finally {
-        if (!isRefresh) setLoading(false);
-        else setRefreshing(false);
-      }
-    },
-    [toast]
-  );
-
   useEffect(() => {
+    if (!profile?.id) return;
     fetchEscolas();
-  }, []);
+  }, [profile?.id]);
 
   useEffect(() => {
     let subTitle = "";
@@ -112,6 +98,35 @@ export default function Escolas() {
     setPageTitle("Escolas");
     setPageSubtitle(subTitle);
   }, [escolas, setPageTitle, setPageSubtitle]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {}, 500);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  const fetchEscolas = useCallback(
+    async (isRefresh = false) => {
+      if (!profile?.id) return;
+
+      if (!isRefresh) setLoading(true);
+      else setRefreshing(true);
+
+      try {
+        const data = await escolaService.fetchEscolasComContagemAtivos(
+          profile.id
+        );
+        setEscolas(data || []);
+        setCountEscolasAtivas(data.filter((e) => e.ativo).length);
+      } catch (error) {
+        console.error("Erro ao buscar escolas:", error);
+        toast({ title: "Erro ao carregar escolas.", variant: "destructive" });
+      } finally {
+        if (!isRefresh) setLoading(false);
+        else setRefreshing(false);
+      }
+    },
+    [toast, profile?.id]
+  );
 
   const escolasFiltradas = useMemo(() => {
     let filtered = escolas;
@@ -130,11 +145,6 @@ export default function Escolas() {
 
     return filtered;
   }, [escolas, selectedStatus, searchTerm]);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {}, 500);
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
 
   const handleSuccessSave = (escolaCriada: Escola) => {
     safeCloseDialog(() => {
@@ -165,11 +175,12 @@ export default function Escolas() {
   };
 
   const handleDelete = async () => {
+    if (!profile?.id) return;
     if (!schoolToDelete) return;
 
     setRefreshing(true);
     try {
-      await escolaService.deleteEscola(schoolToDelete.id);
+      await escolaService.deleteEscola(schoolToDelete.id, profile.id);
 
       await fetchEscolas(true);
       toast({ title: "Escola excluída permanentemente." });
@@ -193,9 +204,11 @@ export default function Escolas() {
   };
 
   const handleToggleAtivo = async (escola: Escola) => {
+    if (!profile?.id) return;
+
     setRefreshing(true);
     try {
-      const novoStatus = await escolaService.toggleAtivo(escola);
+      const novoStatus = await escolaService.toggleAtivo(escola, profile.id);
 
       toast({
         title: `Escola ${novoStatus ? "ativada" : "desativada"} com sucesso.`,
@@ -216,6 +229,14 @@ export default function Escolas() {
   const pullToRefreshReload = async () => {
     fetchEscolas();
   };
+
+  if (isSessionLoading || isProfileLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        <p>Carregando informações do motorista...</p>
+      </div>
+    );
+  }
 
   return (
     <>

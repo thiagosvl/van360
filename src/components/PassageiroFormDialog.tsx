@@ -21,6 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
+import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { cepService } from "@/services/cepService";
 import { passageiroService } from "@/services/passageiroService";
@@ -129,6 +131,8 @@ export default function PassengerFormDialog({
   const [loadingCep, setLoadingCep] = useState(false);
   const [escolasModal, setEscolasModal] = useState<Escola[]>([]);
   const [veiculosModal, setVeiculosModal] = useState<Veiculo[]>([]);
+  const { user, loading: isSessionLoading } = useSession();
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
   const { toast } = useToast();
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "passageiro",
@@ -311,12 +315,13 @@ export default function PassengerFormDialog({
   }, [isOpen, editingPassageiro, form, prePassageiro, mode]);
 
   const fetchVeiculos = async (veiculoId?: string) => {
-    const userId = localStorage.getItem("app_user_id");
+    if (!profile?.id) return;
+
     try {
       let query = supabase
         .from("veiculos")
         .select("*")
-        .eq("usuario_id", userId)
+        .eq("usuario_id", profile.id)
         .order("placa");
 
       if (veiculoId) {
@@ -336,13 +341,13 @@ export default function PassengerFormDialog({
   };
 
   const fetchEscolas = async (escolaId?: string) => {
-    const userId = localStorage.getItem("app_user_id");
+    if (!profile?.id) return;
 
     try {
       let query = supabase
         .from("escolas")
         .select("*")
-        .eq("usuario_id", userId)
+        .eq("usuario_id", profile.id)
         .order("nome");
 
       if (escolaId) {
@@ -408,8 +413,10 @@ export default function PassengerFormDialog({
   };
 
   const handleSubmit = async (data: PassageiroFormData) => {
-    const { emitir_cobranca_mes_atual, ...purePayload } = data;
+    if (!profile?.id) return;
 
+    const { emitir_cobranca_mes_atual, ...purePayload } = data;
+    
     try {
       if (mode === "finalize" && prePassageiro) {
         await passageiroService.finalizePreCadastro(
@@ -429,7 +436,7 @@ export default function PassengerFormDialog({
         await passageiroService.createPassageiroComTransacao({
           ...purePayload,
           emitir_cobranca_mes_atual,
-        });
+        }, profile.id);
         toast({ title: "Passageiro cadastrado com sucesso." });
       }
 

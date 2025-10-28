@@ -35,6 +35,8 @@ import VeiculoFormDialog from "@/components/VeiculoFormDialog";
 import { useLayout } from "@/contexts/LayoutContext";
 import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
+import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { cobrancaService } from "@/services/cobrancaService";
 import { passageiroService } from "@/services/passageiroService";
@@ -172,6 +174,8 @@ export default function PassageiroCarteirinha() {
   const [mostrarTodasCobrancas, setMostrarTodasCobrancas] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
+  const { user, loading: isSessionLoading } = useSession();
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
   const registerOnAsaas = false;
 
   useEffect(() => {
@@ -353,15 +357,17 @@ export default function PassageiroCarteirinha() {
   };
 
   const fetchCobrancas = async (year: string, isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
+    if (!profile?.id) return;
 
     try {
+      if (isRefresh) setRefreshing(true);
+
       const { data, error } = await supabase
         .from("cobrancas")
         .select(`*, passageiros:passageiro_id (nome, nome_responsavel)`)
         .eq("passageiro_id", passageiro_id)
-        .eq("usuario_id", localStorage.getItem("app_user_id"))
-        .eq("ano", year)
+        .eq("usuario_id", profile.id)
+        .eq("ano", parseInt(year))
         .order("mes", { ascending: false });
 
       if (error) throw error;

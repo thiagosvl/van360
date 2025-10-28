@@ -30,6 +30,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
+import { useSession } from "@/hooks/useSession";
 import { cepService } from "@/services/cepService";
 import { escolaService } from "@/services/escolaService";
 import { Escola } from "@/types/escola";
@@ -71,6 +73,9 @@ export default function EscolaFormDialog({
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "dados-escola",
   ]);
+  const { user } = useSession();
+  const { profile } = useProfile(user?.id);
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -119,9 +124,14 @@ export default function EscolaFormDialog({
   };
 
   const handleSubmit = async (data: EscolaFormData) => {
-    setLoading(true);
+    if (!profile?.id) return;
     try {
-      const escolaSalva = await escolaService.saveEscola(data, editingEscola);
+      setLoading(true);
+      const escolaSalva = await escolaService.saveEscola(
+        data,
+        editingEscola,
+        profile.id
+      );
 
       toast({
         title: `Escola ${
@@ -222,7 +232,10 @@ export default function EscolaFormDialog({
                       name="nome"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome da Escola <span className="text-red-600">*</span></FormLabel>
+                          <FormLabel>
+                            Nome da Escola{" "}
+                            <span className="text-red-600">*</span>
+                          </FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
