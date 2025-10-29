@@ -7,7 +7,7 @@ export interface Passageiro {
   cidade: string;
   estado: string;
   cep: string;
-  genero: string;
+  periodo: string;
   nome_responsavel: string;
   email_responsavel: string;
   telefone_responsavel: string;

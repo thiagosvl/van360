@@ -37,6 +37,14 @@ export const tiposPagamento = [
   { value: "boleto", label: "Boleto" },
 ];
 
+export const periodos = [
+  { value: "integral", label: "Integral" },
+  { value: "manha", label: "Manhã" },
+  { value: "almoco", label: "Almoço" },
+  { value: "tarde", label: "Tarde" },
+  { value: "noite", label: "Noie" },
+];
+
 export const toLocalDateString = (date: Date): string => {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -109,6 +117,16 @@ export const formatStatus = (origem: string): string => {
   if (origem === "pago") {
     return "Pago";
   }
+  return "Pendente";
+};
+
+export const formatPeriodo = (periodo: string): string => {
+  if (periodo === "integral") return "Integral";
+  if (periodo === "manha") return "Manhã";
+  if (periodo === "almoco") return "Almoço";
+  if (periodo === "tarde") return "Tarde";
+  if (periodo === "noite") return "Noite";
+
   return "Pendente";
 };
 

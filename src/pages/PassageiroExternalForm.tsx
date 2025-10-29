@@ -37,7 +37,6 @@ import { z } from "zod";
 
 const prePassageiroSchema = z.object({
   nome: z.string().min(2, "Campo obrigatório"),
-  genero: z.enum(["Masculino", "Feminino"]).optional(),
   nome_responsavel: z.string().min(2, "Campo obrigatório"),
   email_responsavel: z
     .string()
@@ -85,7 +84,6 @@ export default function PassageiroExternalForm() {
     resolver: zodResolver(prePassageiroSchema),
     defaultValues: {
       nome: "",
-      genero: undefined,
       nome_responsavel: "",
       email_responsavel: "",
       cpf_responsavel: "",
@@ -267,7 +265,7 @@ export default function PassageiroExternalForm() {
                         control={form.control}
                         name="nome"
                         render={({ field }) => (
-                          <FormItem className="md:col-span-3">
+                          <FormItem className="md:col-span-5">
                             <FormLabel>
                               Nome do Passageiro{" "}
                               <span className="text-red-600">*</span>
@@ -278,35 +276,6 @@ export default function PassageiroExternalForm() {
                                 placeholder="Ex: Maria da Silva"
                               />
                             </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="genero"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel>Gênero</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value || undefined}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione o gênero" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="Masculino">
-                                  Masculino
-                                </SelectItem>
-                                <SelectItem value="Feminino">
-                                  Feminino
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}

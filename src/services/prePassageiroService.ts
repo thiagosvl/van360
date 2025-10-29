@@ -7,7 +7,6 @@ interface QuickPreCadastroPayload {
     email_responsavel: string;
     cpf_responsavel: string;
     telefone_responsavel: string;
-    genero: string;
     usuario_id: string;
 }
 

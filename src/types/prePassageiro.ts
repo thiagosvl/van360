@@ -9,7 +9,7 @@ export interface PrePassageiro {
     email_responsavel: string;
     cpf_responsavel: string;
     telefone_responsavel: string;
-    genero: string;
+    periodo: string;
 
     logradouro: string | null;
     numero: string | null;

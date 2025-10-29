@@ -30,7 +30,7 @@ import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Veiculo } from "@/types/veiculo";
-import { currentMonthInText } from "@/utils/formatters";
+import { currentMonthInText, periodos } from "@/utils/formatters";
 import { cepMask, cpfMask, moneyMask, phoneMask } from "@/utils/masks";
 import { formatarPlacaExibicao } from "@/utils/placaUtils";
 import { isValidCPF } from "@/utils/validators";
@@ -44,8 +44,10 @@ import {
   User,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { flushSync } from "react-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { LoadingOverlay } from "./LoadingOverlay";
 import {
   Accordion,
   AccordionContent,
@@ -63,7 +65,7 @@ const passageiroSchema = z.object({
   veiculo_id: z.string().min(1, "Campo obrigatório"),
   nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
 
-  genero: z.enum(["Masculino", "Feminino"]).optional(),
+  periodo: z.string().min(1, "Campo obrigatório"),
 
   logradouro: z.string().optional(),
   numero: z.string().optional(),
@@ -133,6 +135,7 @@ export default function PassengerFormDialog({
   const [veiculosModal, setVeiculosModal] = useState<Veiculo[]>([]);
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
+  const [refreshing, setRefreshing] = useState(true);
   const { toast } = useToast();
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "passageiro",
@@ -149,7 +152,8 @@ export default function PassengerFormDialog({
       veiculo_id: "",
       nome: "",
 
-      genero: undefined,
+      periodo: "",
+
       observacoes: "",
 
       logradouro: "",
@@ -196,124 +200,153 @@ export default function PassengerFormDialog({
   }, [novoVeiculoId]);
 
   useEffect(() => {
-    if(!profile?.id) return;
+    if (!profile?.id) return;
 
-    if (isOpen) {
-      const isFinalizeMode = mode === "finalize" && prePassageiro;
+    const carregarDados = async () => {
+      try {
+        setRefreshing(true);
 
-      if (editingPassageiro && mode === "edit") {
-        fetchEscolas(editingPassageiro.escola_id || undefined);
-        fetchVeiculos(editingPassageiro.veiculo_id || undefined);
-        form.reset({
-          nome: editingPassageiro.nome,
-          genero: (editingPassageiro.genero as any) || undefined,
-          nome_responsavel: editingPassageiro.nome_responsavel,
-          email_responsavel: editingPassageiro.email_responsavel,
-          cpf_responsavel: cpfMask(editingPassageiro.cpf_responsavel),
-          telefone_responsavel: phoneMask(
-            editingPassageiro.telefone_responsavel
-          ),
-          valor_cobranca: editingPassageiro.valor_cobranca
-            ? moneyMask((editingPassageiro.valor_cobranca * 100).toString())
-            : "",
-          dia_vencimento: editingPassageiro.dia_vencimento?.toString() || "",
-          observacoes: editingPassageiro.observacoes || "",
-          logradouro: editingPassageiro.logradouro || "",
-          numero: editingPassageiro.numero || "",
-          bairro: editingPassageiro.bairro || "",
-          cidade: editingPassageiro.cidade || "",
-          estado: editingPassageiro.estado || "",
-          cep: editingPassageiro.cep ? cepMask(editingPassageiro.cep) : "",
-          referencia: editingPassageiro.referencia || "",
-          escola_id: editingPassageiro.escola_id || "",
-          veiculo_id: editingPassageiro.veiculo_id || "",
-          emitir_cobranca_mes_atual: false,
-          ativo: editingPassageiro.ativo,
-        });
-        setOpenAccordionItems([
-          "passageiro",
-          "responsavel",
-          "cobranca",
-          "endereco",
-          "observacoes",
-        ]);
-      } else if (isFinalizeMode) {
-        fetchEscolas();
-        fetchVeiculos();
-        form.reset({
-          nome: prePassageiro.nome,
-          genero: (prePassageiro.genero as any) || undefined,
-          nome_responsavel: prePassageiro.nome_responsavel,
-          email_responsavel: prePassageiro.email_responsavel,
-          cpf_responsavel: cpfMask(prePassageiro.cpf_responsavel),
-          telefone_responsavel: phoneMask(prePassageiro.telefone_responsavel),
+        if (isOpen) {
+          const isFinalizeMode = mode === "finalize" && prePassageiro;
 
-          logradouro: prePassageiro.logradouro || "",
-          numero: prePassageiro.numero || "",
-          bairro: prePassageiro.bairro || "",
-          cidade: prePassageiro.cidade || "",
-          estado: prePassageiro.estado || "",
-          cep: prePassageiro.cep || "",
-          referencia: prePassageiro.referencia || "",
-          observacoes: prePassageiro.observacoes || "",
+          if (editingPassageiro && mode === "edit") {
+            await fetchEscolas(editingPassageiro.escola_id || undefined);
+            await fetchVeiculos(editingPassageiro.veiculo_id || undefined);
 
-          veiculo_id: prePassageiro.veiculo_id || "",
-          escola_id: prePassageiro.escola_id || "",
-          valor_cobranca: prePassageiro.valor_cobranca
-            ? moneyMask((prePassageiro.valor_cobranca * 100).toString())
-            : "",
-          dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
+            // força render com novas listas antes de resetar o form
+            await new Promise((r) => requestAnimationFrame(r));
 
-          emitir_cobranca_mes_atual: false,
-          ativo: true,
-        });
+            flushSync(() => {
+              form.reset({
+                nome: editingPassageiro.nome,
+                periodo: editingPassageiro.periodo,
+                nome_responsavel: editingPassageiro.nome_responsavel,
+                email_responsavel: editingPassageiro.email_responsavel,
+                cpf_responsavel: cpfMask(editingPassageiro.cpf_responsavel),
+                telefone_responsavel: phoneMask(
+                  editingPassageiro.telefone_responsavel
+                ),
+                valor_cobranca: editingPassageiro.valor_cobranca
+                  ? moneyMask(
+                      (editingPassageiro.valor_cobranca * 100).toString()
+                    )
+                  : "",
+                dia_vencimento:
+                  editingPassageiro.dia_vencimento?.toString() || "",
+                observacoes: editingPassageiro.observacoes || "",
+                logradouro: editingPassageiro.logradouro || "",
+                numero: editingPassageiro.numero || "",
+                bairro: editingPassageiro.bairro || "",
+                cidade: editingPassageiro.cidade || "",
+                estado: editingPassageiro.estado || "",
+                cep: editingPassageiro.cep
+                  ? cepMask(editingPassageiro.cep)
+                  : "",
+                referencia: editingPassageiro.referencia || "",
+                escola_id: editingPassageiro.escola_id || "",
+                veiculo_id: editingPassageiro.veiculo_id || "",
+                emitir_cobranca_mes_atual: false,
+                ativo: editingPassageiro.ativo,
+              });
 
-        form.trigger([
-          "escola_id",
-          "veiculo_id",
-          "valor_cobranca",
-          "dia_vencimento",
-          "nome",
-          "nome_responsavel",
-          "email_responsavel",
-          "cpf_responsavel",
-          "telefone_responsavel",
-        ]);
+              setSelectedEscola(editingPassageiro.escola_id || null);
+              setSelectedVeiculo(editingPassageiro.veiculo_id || null);
+            });
 
-        setOpenAccordionItems([
-          "passageiro",
-          "responsavel",
-          "cobranca",
-          "endereco",
-          "observacoes",
-        ]);
-      } else {
-        fetchEscolas();
-        fetchVeiculos();
-        form.reset({
-          escola_id: "",
-          veiculo_id: "",
-          nome: "",
-          genero: undefined,
-          observacoes: "",
-          logradouro: "",
-          numero: "",
-          bairro: "",
-          cidade: "",
-          estado: "",
-          cep: "",
-          referencia: "",
-          nome_responsavel: "",
-          email_responsavel: "",
-          telefone_responsavel: "",
-          cpf_responsavel: "",
-          valor_cobranca: "",
-          dia_vencimento: "",
-          emitir_cobranca_mes_atual: false,
-          ativo: true,
-        });
+            setOpenAccordionItems([
+              "passageiro",
+              "responsavel",
+              "cobranca",
+              "endereco",
+              "observacoes",
+            ]);
+          } else if (isFinalizeMode) {
+            await fetchEscolas();
+            await fetchVeiculos();
+
+            form.reset({
+              nome: prePassageiro.nome,
+              nome_responsavel: prePassageiro.nome_responsavel,
+              email_responsavel: prePassageiro.email_responsavel,
+              cpf_responsavel: cpfMask(prePassageiro.cpf_responsavel),
+              telefone_responsavel: phoneMask(
+                prePassageiro.telefone_responsavel
+              ),
+              periodo: prePassageiro.periodo || "",
+              logradouro: prePassageiro.logradouro || "",
+              numero: prePassageiro.numero || "",
+              bairro: prePassageiro.bairro || "",
+              cidade: prePassageiro.cidade || "",
+              estado: prePassageiro.estado || "",
+              cep: prePassageiro.cep || "",
+              referencia: prePassageiro.referencia || "",
+              observacoes: prePassageiro.observacoes || "",
+              veiculo_id: prePassageiro.veiculo_id || "",
+              escola_id: prePassageiro.escola_id || "",
+              valor_cobranca: prePassageiro.valor_cobranca
+                ? moneyMask((prePassageiro.valor_cobranca * 100).toString())
+                : "",
+              dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
+              emitir_cobranca_mes_atual: false,
+              ativo: true,
+            });
+
+            form.trigger([
+              "escola_id",
+              "veiculo_id",
+              "periodo",
+              "valor_cobranca",
+              "dia_vencimento",
+              "nome",
+              "nome_responsavel",
+              "email_responsavel",
+              "cpf_responsavel",
+              "telefone_responsavel",
+            ]);
+
+            setOpenAccordionItems([
+              "passageiro",
+              "responsavel",
+              "cobranca",
+              "endereco",
+              "observacoes",
+            ]);
+          } else {
+            await fetchEscolas();
+            await fetchVeiculos();
+
+            form.reset({
+              escola_id: "",
+              veiculo_id: "",
+              nome: "",
+              periodo: "",
+              observacoes: "",
+              logradouro: "",
+              numero: "",
+              bairro: "",
+              cidade: "",
+              estado: "",
+              cep: "",
+              referencia: "",
+              nome_responsavel: "",
+              email_responsavel: "",
+              telefone_responsavel: "",
+              cpf_responsavel: "",
+              valor_cobranca: "",
+              dia_vencimento: "",
+              emitir_cobranca_mes_atual: false,
+              ativo: true,
+            });
+          }
+        }
+      } catch (error: any) {
+        console.log(error);
+      } finally {
+        setRefreshing(false);
       }
-    }
+    };
+
+    carregarDados();
   }, [isOpen, editingPassageiro, form, prePassageiro, mode, profile?.id]);
 
   const fetchVeiculos = async (veiculoId?: string) => {
@@ -418,7 +451,7 @@ export default function PassengerFormDialog({
     if (!profile?.id) return;
 
     const { emitir_cobranca_mes_atual, ...purePayload } = data;
-    
+
     try {
       if (mode === "finalize" && prePassageiro) {
         await passageiroService.finalizePreCadastro(
@@ -435,10 +468,13 @@ export default function PassengerFormDialog({
         );
         toast({ title: "Passageiro atualizado com sucesso." });
       } else {
-        await passageiroService.createPassageiroComTransacao({
-          ...purePayload,
-          emitir_cobranca_mes_atual,
-        }, profile.id);
+        await passageiroService.createPassageiroComTransacao(
+          {
+            ...purePayload,
+            emitir_cobranca_mes_atual,
+          },
+          profile.id
+        );
         toast({ title: "Passageiro cadastrado com sucesso." });
       }
 
@@ -448,601 +484,647 @@ export default function PassengerFormDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent
-        className="max-w-3xl max-h-[95vh] overflow-y-auto bg-white"
-        onOpenAutoFocus={(e) => e.preventDefault()}
-      >
-        <DialogHeader>
-          <DialogTitle>
-            {mode === "finalize"
-              ? "Continuar Cadastro"
-              : mode === "edit"
-              ? "Editar Passageiro"
-              : "Novo Cadastro"}
-          </DialogTitle>
-        </DialogHeader>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-            className="space-y-6"
-          >
-            {mode === "finalize" && prePassageiro && (
-              <div className="mb-6">
-                <Alert
-                  variant="default"
-                  className="bg-orange-50 border-orange-200 text-orange-900 [&>svg]:text-orange-600"
-                >
-                  <AlertTriangle className="h-4 w-4 mt-0.5" />
-                  <AlertTitle className="font-semibold text-sm">
-                    Atenção!
-                  </AlertTitle>
-                  <AlertDescription className="text-xs">
-                    Para concluir o cadastro, preencha os campos destacados em
-                    vermelho.
-                  </AlertDescription>
-                </Alert>
-              </div>
-            )}
-
-            <Accordion
-              type="multiple"
-              value={openAccordionItems}
-              onValueChange={setOpenAccordionItems}
-              className="w-full"
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent
+          className="max-w-3xl max-h-[95vh] overflow-y-auto bg-white"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle>
+              {mode === "finalize"
+                ? "Continuar Cadastro"
+                : mode === "edit"
+                ? "Editar Passageiro"
+                : "Novo Cadastro"}
+            </DialogTitle>
+          </DialogHeader>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit, onFormError)}
+              className="space-y-6"
             >
-              <AccordionItem value="passageiro">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2 text-lg font-semibold">
-                    <User className="w-5 h-5 text-primary" />
-                    Passageiro
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="nome"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-1">
-                          <FormLabel>
-                            Nome do Passageiro{" "}
-                            <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="genero"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-1">
-                          <FormLabel>Gênero</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value || undefined}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione o gênero" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Masculino">
-                                Masculino
-                              </SelectItem>
-                              <SelectItem value="Feminino">Feminino</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+              {mode === "finalize" && prePassageiro && (
+                <div className="mb-6">
+                  <Alert
+                    variant="default"
+                    className="bg-orange-50 border-orange-200 text-orange-900 [&>svg]:text-orange-600"
+                  >
+                    <AlertTriangle className="h-4 w-4 mt-0.5" />
+                    <AlertTitle className="font-semibold text-sm">
+                      Atenção!
+                    </AlertTitle>
+                    <AlertDescription className="text-xs">
+                      Para concluir o cadastro, preencha os campos destacados em
+                      vermelho.
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="veiculo_id"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Veículo <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <Select
-                            value={selectedVeiculo || field.value}
-                            onValueChange={(value) => {
-                              if (value === "add-new-vehicle") {
-                                setTimeout(() => onCreateVeiculo(), 50);
-                                return;
-                              }
-                              field.onChange(value);
-                              setSelectedVeiculo(value);
-                            }}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione o veículo" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="max-h-60 overflow-y-auto">
-                              {veiculosModal.map((veiculo) => (
-                                <SelectItem key={veiculo.id} value={veiculo.id}>
-                                  {formatarPlacaExibicao(veiculo.placa)}
-                                </SelectItem>
-                              ))}
-                              <SelectItem
-                                value="add-new-vehicle"
-                                className="font-semibold text-primary cursor-pointer"
-                              >
-                                + Cadastrar Novo Veículo
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="escola_id"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Escola <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <Select
-                            value={selectedEscola || field.value}
-                            onValueChange={(value) => {
-                              if (value === "add-new-school") {
-                                setTimeout(() => onCreateEscola(), 50);
-                                return;
-                              }
-                              field.onChange(value);
-                              setSelectedEscola(value);
-                            }}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione a escola" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="max-h-60 overflow-y-auto">
-                              {escolasModal.map((escola) => (
-                                <SelectItem key={escola.id} value={escola.id}>
-                                  {escola.nome}
-                                </SelectItem>
-                              ))}
-                              <SelectItem
-                                value="add-new-school"
-                                className="font-semibold text-primary cursor-pointer"
-                              >
-                                + Cadastrar Nova Escola
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  {editingPassageiro && (
-                    <div className="mt-2">
+              <Accordion
+                type="multiple"
+                value={openAccordionItems}
+                onValueChange={setOpenAccordionItems}
+                className="w-full"
+              >
+                <AccordionItem value="passageiro">
+                  <AccordionTrigger>
+                    <div className="flex items-center gap-2 text-lg font-semibold">
+                      <User className="w-5 h-5 text-primary" />
+                      Passageiro
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name="ativo"
+                        name="nome"
                         render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormItem className="md:col-span-1">
+                            <FormLabel>
+                              Nome do Passageiro{" "}
+                              <span className="text-red-600">*</span>
+                            </FormLabel>
                             <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
+                              <Input {...field} />
                             </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel>Ativo</FormLabel>
-                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="periodo"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-1">
+                            <FormLabel>
+                              Período <span className="text-red-600">*</span>
+                            </FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value || undefined}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione o período" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {periodos.map((tipo) => (
+                                  <SelectItem
+                                    key={tipo.value}
+                                    value={tipo.value}
+                                  >
+                                    {tipo.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
-                  )}
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="responsavel" className="mt-4">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2 text-lg font-semibold">
-                    <User className="w-5 h-5 text-primary" />
-                    Responsável
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="nome_responsavel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Nome do Responsável{" "}
-                            <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="email_responsavel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            E-mail <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="exemplo@email.com"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="telefone_responsavel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Telefone (WhatsApp){" "}
-                            <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="(00) 00000-0000"
-                              maxLength={15}
-                              onChange={(e) => {
-                                field.onChange(phoneMask(e.target.value));
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="veiculo_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Veículo <span className="text-red-600">*</span>
+                            </FormLabel>
+                            <Select
+                              value={selectedVeiculo || field.value}
+                              onValueChange={(value) => {
+                                if (value === "add-new-vehicle") {
+                                  setTimeout(() => onCreateVeiculo(), 50);
+                                  return;
+                                }
+                                field.onChange(value);
+                                setSelectedVeiculo(value);
                               }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="cpf_responsavel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            CPF <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="000.000.000-00"
-                              onChange={(e) =>
-                                field.onChange(cpfMask(e.target.value))
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="cobranca" className="mt-4">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2 text-lg font-semibold">
-                    <DollarSign className="w-5 h-5 text-primary" />
-                    Cobrança
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="valor_cobranca"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Valor <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              onChange={(e) => {
-                                field.onChange(moneyMask(e.target.value));
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione o veículo" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="max-h-60 overflow-y-auto">
+                                {veiculosModal.map((veiculo) => (
+                                  <SelectItem
+                                    key={veiculo.id}
+                                    value={veiculo.id}
+                                  >
+                                    {formatarPlacaExibicao(veiculo.placa)}
+                                  </SelectItem>
+                                ))}
+                                <SelectItem
+                                  value="add-new-vehicle"
+                                  className="font-semibold text-primary cursor-pointer"
+                                >
+                                  + Cadastrar Novo Veículo
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="escola_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Escola <span className="text-red-600">*</span>
+                            </FormLabel>
+                            <Select
+                              value={selectedEscola || field.value}
+                              onValueChange={(value) => {
+                                if (value === "add-new-school") {
+                                  setTimeout(() => onCreateEscola(), 50);
+                                  return;
+                                }
+                                field.onChange(value);
+                                setSelectedEscola(value);
                               }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="dia_vencimento"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Dia do Vencimento{" "}
-                            <span className="text-red-600">*</span>
-                          </FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione a escola" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="max-h-60 overflow-y-auto">
+                                {escolasModal.map((escola) => (
+                                  <SelectItem key={escola.id} value={escola.id}>
+                                    {escola.nome}
+                                  </SelectItem>
+                                ))}
+                                <SelectItem
+                                  value="add-new-school"
+                                  className="font-semibold text-primary cursor-pointer"
+                                >
+                                  + Cadastrar Nova Escola
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {editingPassageiro && (
+                      <div className="mt-2">
+                        <FormField
+                          control={form.control}
+                          name="ativo"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <div className="space-y-1 leading-none">
+                                <FormLabel>Ativo</FormLabel>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="responsavel" className="mt-4">
+                  <AccordionTrigger>
+                    <div className="flex items-center gap-2 text-lg font-semibold">
+                      <User className="w-5 h-5 text-primary" />
+                      Responsável
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="nome_responsavel"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Nome do Responsável{" "}
+                              <span className="text-red-600">*</span>
+                            </FormLabel>
                             <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione o dia" />
-                              </SelectTrigger>
+                              <Input {...field} />
                             </FormControl>
-                            <SelectContent className="max-h-60 overflow-y-auto">
-                              {Array.from({ length: 31 }, (_, i) => i + 1).map(
-                                (day) => (
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="email_responsavel"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              E-mail <span className="text-red-600">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="email"
+                                placeholder="exemplo@email.com"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="telefone_responsavel"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Telefone (WhatsApp){" "}
+                              <span className="text-red-600">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="(00) 00000-0000"
+                                maxLength={15}
+                                onChange={(e) => {
+                                  field.onChange(phoneMask(e.target.value));
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="cpf_responsavel"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              CPF <span className="text-red-600">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="000.000.000-00"
+                                onChange={(e) =>
+                                  field.onChange(cpfMask(e.target.value))
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="cobranca" className="mt-4">
+                  <AccordionTrigger>
+                    <div className="flex items-center gap-2 text-lg font-semibold">
+                      <DollarSign className="w-5 h-5 text-primary" />
+                      Cobrança
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="valor_cobranca"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Valor <span className="text-red-600">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                onChange={(e) => {
+                                  field.onChange(moneyMask(e.target.value));
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="dia_vencimento"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Dia do Vencimento{" "}
+                              <span className="text-red-600">*</span>
+                            </FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione o dia" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="max-h-60 overflow-y-auto">
+                                {Array.from(
+                                  { length: 31 },
+                                  (_, i) => i + 1
+                                ).map((day) => (
                                   <SelectItem key={day} value={day.toString()}>
                                     Dia {day}
                                   </SelectItem>
-                                )
-                              )}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  {!editingPassageiro && (
-                    <div className="mt-4">
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    {!editingPassageiro && (
+                      <div className="mt-4">
+                        <FormField
+                          control={form.control}
+                          name="emitir_cobranca_mes_atual"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <div className="space-y-1 leading-none">
+                                <FormLabel>
+                                  Registrar cobrança de {currentMonthInText()}?
+                                </FormLabel>
+                                {registerOnAsaas && (
+                                  <FormDescription>
+                                    Se desmarcado, a primeira cobrança será
+                                    gerada apenas no próximo mês.
+                                  </FormDescription>
+                                )}
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+
+                        {(() => {
+                          const diaInformado = Number(diaVencimento) || null;
+
+                          if (
+                            !editingPassageiro &&
+                            emitirCobranca &&
+                            diaInformado &&
+                            Number(diaInformado) < new Date().getDate()
+                          ) {
+                            return (
+                              <div className="mt-4">
+                                <Alert
+                                  variant="destructive"
+                                  className="bg-yellow-50 border-yellow-200 text-yellow-900 [&>svg]:text-yellow-900"
+                                >
+                                  <AlertTriangle className="h-4 w-4" />
+                                  <AlertTitle className="font-bold">
+                                    Ajuste na Data de Vencimento
+                                  </AlertTitle>
+                                  <AlertDescription className="text-yellow-800">
+                                    <ul className="list-disc pl-4 mt-2 space-y-1">
+                                      <li>
+                                        Como o dia{" "}
+                                        <strong>{diaInformado}</strong> já
+                                        passou, a primeira cobrança{" "}
+                                        <strong>vencerá hoje</strong>.
+                                      </li>
+                                      <li>
+                                        As próximas cobranças vencerão
+                                        normalmente no{" "}
+                                        <strong>dia {diaInformado}</strong> de
+                                        cada mês.
+                                      </li>
+                                    </ul>
+                                  </AlertDescription>
+                                </Alert>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="endereco" className="mt-4">
+                  <AccordionTrigger>
+                    <div className="flex items-center gap-2 text-lg font-semibold">
+                      <MapPin className="w-5 h-5 text-primary" />
+                      Endereço (Opcional)
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                       <FormField
                         control={form.control}
-                        name="emitir_cobranca_mes_atual"
+                        name="cep"
                         render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormItem className="md:col-span-2">
+                            <FormLabel>CEP</FormLabel>
                             <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
+                              <div className="relative">
+                                <Input
+                                  {...field}
+                                  placeholder="00000-000"
+                                  maxLength={9}
+                                  className="pr-8"
+                                  onChange={(e) => {
+                                    const masked = cepMask(e.target.value);
+                                    handleCepChange(masked);
+                                  }}
+                                />
+                                {loadingCep && (
+                                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                  </div>
+                                )}
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="logradouro"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-4">
+                            <FormLabel>Logradouro</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                disabled={loadingCep}
+                                placeholder="Ex: Rua Comendador"
                               />
                             </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel>
-                                Registrar cobrança de {currentMonthInText()}?
-                              </FormLabel>
-                              {registerOnAsaas && (
-                                <FormDescription>
-                                  Se desmarcado, a primeira cobrança será gerada
-                                  apenas no próximo mês.
-                                </FormDescription>
-                              )}
-                            </div>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />
 
-                      {(() => {
-                        const diaInformado = Number(diaVencimento) || null;
-
-                        if (
-                          !editingPassageiro &&
-                          emitirCobranca &&
-                          diaInformado &&
-                          Number(diaInformado) < new Date().getDate()
-                        ) {
-                          return (
-                            <div className="mt-4">
-                              <Alert
-                                variant="destructive"
-                                className="bg-yellow-50 border-yellow-200 text-yellow-900 [&>svg]:text-yellow-900"
-                              >
-                                <AlertTriangle className="h-4 w-4" />
-                                <AlertTitle className="font-bold">
-                                  Ajuste na Data de Vencimento
-                                </AlertTitle>
-                                <AlertDescription className="text-yellow-800">
-                                  <ul className="list-disc pl-4 mt-2 space-y-1">
-                                    <li>
-                                      Como o dia <strong>{diaInformado}</strong>{" "}
-                                      já passou, a primeira cobrança{" "}
-                                      <strong>vencerá hoje</strong>.
-                                    </li>
-                                    <li>
-                                      As próximas cobranças vencerão normalmente
-                                      no <strong>dia {diaInformado}</strong> de
-                                      cada mês.
-                                    </li>
-                                  </ul>
-                                </AlertDescription>
-                              </Alert>
-                            </div>
-                          );
-                        }
-                        return null;
-                      })()}
-                    </div>
-                  )}
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="endereco" className="mt-4">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2 text-lg font-semibold">
-                    <MapPin className="w-5 h-5 text-primary" />
-                    Endereço (Opcional)
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="cep"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>CEP</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                {...field}
-                                placeholder="00000-000"
-                                maxLength={9}
-                                className="pr-8"
-                                onChange={(e) => {
-                                  const masked = cepMask(e.target.value);
-                                  handleCepChange(masked);
-                                }}
-                              />
-                              {loadingCep && (
-                                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                                </div>
-                              )}
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="logradouro"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-4">
-                          <FormLabel>Logradouro</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              disabled={loadingCep}
-                              placeholder="Ex: Rua Comendador"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="numero"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Número</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="bairro"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-4">
-                          <FormLabel>Bairro</FormLabel>
-                          <FormControl>
-                            <Input disabled={loadingCep} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="cidade"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-4">
-                          <FormLabel>Cidade</FormLabel>
-                          <FormControl>
-                            <Input disabled={loadingCep} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="estado"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Estado</FormLabel>
-                          <Select
-                            disabled={loadingCep}
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
+                      <FormField
+                        control={form.control}
+                        name="numero"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel>Número</FormLabel>
                             <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="UF" />
-                              </SelectTrigger>
+                              <Input {...field} />
                             </FormControl>
-                            <SelectContent className="max-h-60 overflow-y-auto">
-                              <SelectItem value="AC">Acre</SelectItem>
-                              <SelectItem value="AL">Alagoas</SelectItem>
-                              <SelectItem value="AP">Amapá</SelectItem>
-                              <SelectItem value="AM">Amazonas</SelectItem>
-                              <SelectItem value="BA">Bahia</SelectItem>
-                              <SelectItem value="CE">Ceará</SelectItem>
-                              <SelectItem value="DF">
-                                Distrito Federal
-                              </SelectItem>
-                              <SelectItem value="ES">Espírito Santo</SelectItem>
-                              <SelectItem value="GO">Goiás</SelectItem>
-                              <SelectItem value="MA">Maranhão</SelectItem>
-                              <SelectItem value="MT">Mato Grosso</SelectItem>
-                              <SelectItem value="MS">
-                                Mato Grosso do Sul
-                              </SelectItem>
-                              <SelectItem value="MG">Minas Gerais</SelectItem>
-                              <SelectItem value="PA">Pará</SelectItem>
-                              <SelectItem value="PB">Paraíba</SelectItem>
-                              <SelectItem value="PR">Paraná</SelectItem>
-                              <SelectItem value="PE">Pernambuco</SelectItem>
-                              <SelectItem value="PI">Piauí</SelectItem>
-                              <SelectItem value="RJ">Rio de Janeiro</SelectItem>
-                              <SelectItem value="RN">
-                                Rio Grande do Norte
-                              </SelectItem>
-                              <SelectItem value="RS">
-                                Rio Grande do Sul
-                              </SelectItem>
-                              <SelectItem value="RO">Rondônia</SelectItem>
-                              <SelectItem value="RR">Roraima</SelectItem>
-                              <SelectItem value="SC">Santa Catarina</SelectItem>
-                              <SelectItem value="SP">São Paulo</SelectItem>
-                              <SelectItem value="SE">Sergipe</SelectItem>
-                              <SelectItem value="TO">Tocantins</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="bairro"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-4">
+                            <FormLabel>Bairro</FormLabel>
+                            <FormControl>
+                              <Input disabled={loadingCep} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
+                      <FormField
+                        control={form.control}
+                        name="cidade"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-4">
+                            <FormLabel>Cidade</FormLabel>
+                            <FormControl>
+                              <Input disabled={loadingCep} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="estado"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel>Estado</FormLabel>
+                            <Select
+                              disabled={loadingCep}
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="UF" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="max-h-60 overflow-y-auto">
+                                <SelectItem value="AC">Acre</SelectItem>
+                                <SelectItem value="AL">Alagoas</SelectItem>
+                                <SelectItem value="AP">Amapá</SelectItem>
+                                <SelectItem value="AM">Amazonas</SelectItem>
+                                <SelectItem value="BA">Bahia</SelectItem>
+                                <SelectItem value="CE">Ceará</SelectItem>
+                                <SelectItem value="DF">
+                                  Distrito Federal
+                                </SelectItem>
+                                <SelectItem value="ES">
+                                  Espírito Santo
+                                </SelectItem>
+                                <SelectItem value="GO">Goiás</SelectItem>
+                                <SelectItem value="MA">Maranhão</SelectItem>
+                                <SelectItem value="MT">Mato Grosso</SelectItem>
+                                <SelectItem value="MS">
+                                  Mato Grosso do Sul
+                                </SelectItem>
+                                <SelectItem value="MG">Minas Gerais</SelectItem>
+                                <SelectItem value="PA">Pará</SelectItem>
+                                <SelectItem value="PB">Paraíba</SelectItem>
+                                <SelectItem value="PR">Paraná</SelectItem>
+                                <SelectItem value="PE">Pernambuco</SelectItem>
+                                <SelectItem value="PI">Piauí</SelectItem>
+                                <SelectItem value="RJ">
+                                  Rio de Janeiro
+                                </SelectItem>
+                                <SelectItem value="RN">
+                                  Rio Grande do Norte
+                                </SelectItem>
+                                <SelectItem value="RS">
+                                  Rio Grande do Sul
+                                </SelectItem>
+                                <SelectItem value="RO">Rondônia</SelectItem>
+                                <SelectItem value="RR">Roraima</SelectItem>
+                                <SelectItem value="SC">
+                                  Santa Catarina
+                                </SelectItem>
+                                <SelectItem value="SP">São Paulo</SelectItem>
+                                <SelectItem value="SE">Sergipe</SelectItem>
+                                <SelectItem value="TO">Tocantins</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="referencia"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-6">
+                            <FormLabel>Referência</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Ex: próximo ao mercado"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="observacoes" className="mt-4">
+                  <AccordionTrigger>
+                    <div className="flex items-center gap-2 text-lg font-semibold">
+                      <FileText className="w-5 h-5 text-primary" />
+                      Observações (Opcional)
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
                     <FormField
                       control={form.control}
-                      name="referencia"
+                      name="observacoes"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-6">
-                          <FormLabel>Referência</FormLabel>
+                        <FormItem>
                           <FormControl>
                             <Textarea
-                              placeholder="Ex: próximo ao mercado"
+                              placeholder="Ex: Alérgico a amendoim, entra pela porta lateral da escola, etc."
                               {...field}
                             />
                           </FormControl>
@@ -1050,65 +1132,40 @@ export default function PassengerFormDialog({
                         </FormItem>
                       )}
                     />
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="observacoes" className="mt-4">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2 text-lg font-semibold">
-                    <FileText className="w-5 h-5 text-primary" />
-                    Observações (Opcional)
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="observacoes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Ex: Alérgico a amendoim, entra pela porta lateral da escola, etc."
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-            <div className="flex gap-4 mt-8 pt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onClose()}
-                className="flex-1"
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                disabled={form.formState.isSubmitting}
-                className="flex-1"
-              >
-                {form.formState.isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Salvando...
-                  </>
-                ) : editingPassageiro ? (
-                  "Atualizar"
-                ) : (
-                  "Cadastrar"
-                )}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+              <div className="flex gap-4 mt-8 pt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onClose()}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={form.formState.isSubmitting}
+                  className="flex-1"
+                >
+                  {form.formState.isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : editingPassageiro ? (
+                    "Atualizar"
+                  ) : (
+                    "Cadastrar"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+          <LoadingOverlay active={refreshing} text="Aguarde..." />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

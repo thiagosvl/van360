@@ -176,7 +176,6 @@ export default function PrePassageiros({
       email_responsavel: fakeEmail,
       telefone_responsavel: "11951186951",
       cpf_responsavel: "39542391838",
-      // genero: Math.random() > 0.5 ? "Masculino" : "Feminino",
       usuario_id: profile.id,
       observacoes: `observacoes do ${fakeNome}`,
       logradouro: `Rua do ${fakeNome}`,

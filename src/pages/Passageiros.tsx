@@ -423,7 +423,7 @@ export default function Passageiros() {
       email_responsavel: "abiliodasvendas@gmail.com",
       telefone_responsavel: "11951186951",
       cpf_responsavel: "39542391838",
-      // genero: "Masculino",
+      periodo: "manha",
       observacoes: `teste do ${numeroPassageiro}`,
       valor_cobranca: valorInString,
       dia_vencimento: hoje.getDate(),

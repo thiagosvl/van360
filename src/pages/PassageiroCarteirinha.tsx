@@ -53,6 +53,7 @@ import {
   formatarEnderecoCompleto,
   formatarTelefone,
   formatDateToBR,
+  formatPeriodo,
   getMesNome,
   getStatusColor,
   getStatusText,
@@ -64,6 +65,7 @@ import {
   CalendarDays,
   Car,
   CheckCircle,
+  Clock,
   Contact,
   Copy,
   DollarSign,
@@ -1175,6 +1177,9 @@ export default function PassageiroCarteirinha() {
                   </InfoItem>
                   <InfoItem icon={School} label="Escola">
                     {passageiro.escolas?.nome || "Não informada"}
+                  </InfoItem>
+                  <InfoItem icon={Clock} label="Período">
+                    {formatPeriodo(passageiro.periodo)}
                   </InfoItem>
                   <InfoItem icon={Car} label="Veículo">
                     {formatarPlacaExibicao(passageiro.veiculos?.placa) ||
