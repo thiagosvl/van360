@@ -55,13 +55,13 @@ export default function Register() {
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      nome: "Thiago Barros Abilio",
+      nome: "",
       apelido: "",
-      cpfcnpj: "395.423.918-38",
-      email: "thiago-svl@hotmail.com",
-      telefone: "(11) 95118-6951",
-      senha: "Ogaiht+1",
-      confirmarSenha: "Ogaiht+1",
+      cpfcnpj: "",
+      email: "",
+      telefone: "",
+      senha: "",
+      confirmarSenha: "",
     },
   });
 
