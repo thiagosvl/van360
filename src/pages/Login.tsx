@@ -51,16 +51,11 @@ export default function Login() {
       .email("E-mail inválido"),
   });
 
-  const inDevelopment = import.meta.env.MODE === "development";
-
-  const cpfMotoristaTest = !inDevelopment ? "710.438.080-94" : "909.269.840-71";
-  const senhaMotoristaTest = !inDevelopment ? "AomRRfMnJF" : "kS8qexSdS2";
-
   const formMotorista = useForm<z.infer<typeof formMotoristaSchema>>({
     resolver: zodResolver(formMotoristaSchema),
     defaultValues: {
-      cpfcnpj: cpfMotoristaTest,
-      senha: senhaMotoristaTest,
+      cpfcnpj: "",
+      senha: "",
     },
   });
 
