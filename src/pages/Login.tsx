@@ -116,9 +116,13 @@ export default function Login() {
           .join(".")}`;
       })();
 
+      const redirectUrl = `${
+        import.meta.env.VITE_PUBLIC_APP_DOMAIN
+      }/nova-senha`;
+
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
         usuario.email,
-        { redirectTo: `${appDomain}/nova-senha` }
+        { redirectTo: redirectUrl }
       );
 
       if (resetError) throw resetError;
