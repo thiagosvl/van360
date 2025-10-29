@@ -111,7 +111,7 @@ const Home = () => {
 
   useEffect(() => {
     if (profile?.nome) {
-      setPageTitle(`Olá, ${profile.nome.split(" ")[0]}`);
+      setPageTitle(`Olá, ${profile.apelido}`);
     } else {
       setPageTitle("Carregando...");
     }
