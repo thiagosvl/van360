@@ -1,7 +1,7 @@
 import { STORAGE_KEY_QUICKSTART_STATUS } from "@/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { asaasService } from "@/services/asaasService";
-import { toLocalDateString } from "@/utils/formatters";
+import { cleanString, toLocalDateString } from "@/utils/formatters";
 import { moneyToNumber } from "@/utils/masks";
 
 export const passageiroService = {
@@ -161,6 +161,14 @@ export const passageiroService = {
 
     const passageiroData = {
       ...pureData,
+      nome: cleanString(pureData.nome, true),
+      nome_responsavel: cleanString(pureData.nome_responsavel, true),
+      email_responsavel: cleanString(pureData.email_responsavel),
+      logradouro: cleanString(pureData.logradouro, true),
+      bairro: cleanString(pureData.bairro, true),
+      cidade: cleanString(pureData.cidade, true),
+      referencia: cleanString(pureData.referencia, true),
+      observacoes: cleanString(pureData.observacoes, true),
       valor_cobranca: moneyToNumber(pureData.valor_cobranca),
       dia_vencimento: Number(pureData.dia_vencimento),
       escola_id: pureData.escola_id || null,
@@ -229,6 +237,14 @@ export const passageiroService = {
     const { emitir_cobranca_mes_atual, ...pureData } = data;
     const passageiroData = {
       ...pureData,
+      nome: cleanString(pureData.nome, true),
+      nome_responsavel: cleanString(pureData.nome_responsavel, true),
+      email_responsavel: cleanString(pureData.email_responsavel),
+      logradouro: cleanString(pureData.logradouro, true),
+      bairro: cleanString(pureData.bairro, true),
+      cidade: cleanString(pureData.cidade, true),
+      referencia: cleanString(pureData.referencia, true),
+      observacoes: cleanString(pureData.observacoes, true),
       valor_cobranca: moneyToNumber(pureData.valor_cobranca),
       dia_vencimento: Number(pureData.dia_vencimento),
       escola_id: pureData.escola_id || null,

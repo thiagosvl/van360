@@ -23,7 +23,8 @@ import { z } from "zod";
 
 const registerSchema = z
   .object({
-    nome: z.string().min(3, "Nome completo é obrigatório"),
+    nome: z.string().min(3, "Campo obrigatório"),
+    apelido: z.string().min(3, "Campo obrigatório"),
     cpfcnpj: z
       .string()
       .min(1, "Campo obrigatório")
@@ -37,7 +38,7 @@ const registerSchema = z
         return cleaned.length === 11;
       }, "O formato aceito é (00) 00000-0000"),
     senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
-    confirmarSenha: z.string().min(1, "Confirmação obrigatória"),
+    confirmarSenha: z.string().min(1, "Campo obrigatório"),
   })
   .refine((data) => data.senha === data.confirmarSenha, {
     message: "As senhas não coincidem",
@@ -51,12 +52,11 @@ export default function Register() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const inDevelopment = import.meta.env.MODE === "development";
-
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       nome: "Thiago Barros Abilio",
+      apelido: "",
       cpfcnpj: "395.423.918-38",
       email: "thiago-svl@hotmail.com",
       telefone: "(11) 95118-6951",
@@ -65,20 +65,26 @@ export default function Register() {
     },
   });
 
+  const onFormError = (errors: any) => {
+    toast({
+      title: "Corrija os erros no formulário.",
+      variant: "destructive",
+    });
+  };
+
   const handleRegister = async (data: RegisterFormData) => {
     setLoading(true);
 
-    // 🔹 Limpeza e padronização
     const cpfcnpjDigits = data.cpfcnpj.replace(/\D/g, "");
     const nome = cleanString(data.nome, true);
+    const apelido = cleanString(data.apelido, true);
     const email = cleanString(data.email).toLowerCase();
-    const telefone = data.telefone.replace(/\D/g, ""); // apenas números
+    const telefone = data.telefone.replace(/\D/g, "");
 
     let createdUsuario: any = null;
     let createdAuthUid: string | null = null;
 
     try {
-      // 1️⃣ Verificar duplicidades (CPF, email, telefone)
       const { data: existingUsers, error: existingError } = await supabase
         .from("usuarios")
         .select("cpfcnpj, email, telefone")
@@ -87,35 +93,30 @@ export default function Register() {
         );
 
       if (existingError) throw existingError;
-
       if (existingUsers && existingUsers.length > 0) {
         const existing = existingUsers[0];
         let msg = "Já existe um cadastro com os mesmos dados.";
 
         if (existing.cpfcnpj === cpfcnpjDigits)
-          msg =
-            "Já existe um cadastro com o CPF informado. Entre em contato com o suporte.";
+          msg = "Já existe um cadastro com o CPF informado.";
         else if (existing.email === email)
-          msg =
-            "Já existe um cadastro com o email informado. Entre em contato com o suporte.";
+          msg = "Já existe um cadastro com o email informado.";
         else if (existing.telefone === telefone)
-          msg =
-            "Já existe um cadastro com o telefone informado. Entre em contato com o suporte.";
+          msg = "Já existe um cadastro com o telefone informado.";
 
         toast({
           title: "Erro ao cadastrar",
           description: msg,
           variant: "destructive",
         });
-        setLoading(false);
         return;
       }
 
-      // 2️⃣ Criar registro na tabela 'usuarios' (auth_uid = null)
       const { data: usuarioData, error: usuarioError } = await supabase
         .from("usuarios")
         .insert({
           nome,
+          apelido,
           cpfcnpj: cpfcnpjDigits,
           email,
           telefone,
@@ -128,7 +129,6 @@ export default function Register() {
       if (usuarioError) throw usuarioError;
       createdUsuario = usuarioData;
 
-      // 3️⃣ Criar usuário no Supabase Auth (sem confirmação de email)
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password: data.senha,
@@ -136,45 +136,47 @@ export default function Register() {
       });
 
       if (authError || !authData.user) {
-        // rollback do usuario
         await supabase.from("usuarios").delete().eq("id", createdUsuario.id);
-        throw authError || new Error("Erro ao criar usuário no Auth");
+        throw authError || new Error("Falha ao criar usuário no Auth");
       }
-
       createdAuthUid = authData.user.id;
 
-      // 4️⃣ Atualizar auth_uid no usuario
       const { error: updateError } = await supabase
         .from("usuarios")
         .update({ auth_uid: createdAuthUid })
         .eq("id", createdUsuario.id);
 
       if (updateError) {
-        // rollback total
         await supabase.from("usuarios").delete().eq("id", createdUsuario.id);
         await supabase.auth.admin.deleteUser(createdAuthUid);
         throw updateError;
       }
 
-      // ✅ Sucesso
       toast({
         title: "Cadastro realizado com sucesso!",
         description:
           "Seu cadastro foi criado e você já está logado no sistema.",
       });
 
-      // Seta role e limpa possíveis logins de responsável
       localStorage.setItem("app_role", "motorista");
       clearLoginStorageResponsavel();
-
-      // Redireciona direto para o sistema
       navigate("/inicio", { replace: true });
     } catch (error: any) {
-      console.error("Erro ao cadastrar:", error);
+      console.error("Erro no cadastro:", error);
+
+      try {
+        if (createdAuthUid)
+          await supabase.auth.admin.deleteUser(createdAuthUid);
+        if (createdUsuario?.id)
+          await supabase.from("usuarios").delete().eq("id", createdUsuario.id);
+      } catch (rollbackErr) {
+        console.error("Erro ao executar rollback:", rollbackErr);
+      }
+
       toast({
         title: "Erro no cadastro",
         description:
-          "Ocorreu um problema ao tentar criar seu cadastro. Tente novamente.",
+          "Ocorreu um problema ao criar seu cadastro. Nenhum dado foi salvo.",
         variant: "destructive",
       });
     } finally {
@@ -197,7 +199,7 @@ export default function Register() {
 
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(handleRegister)}
+              onSubmit={form.handleSubmit(handleRegister, onFormError)}
               className="space-y-4"
             >
               <FormField
@@ -213,6 +215,24 @@ export default function Register() {
                         {...field}
                         placeholder="Digite seu nome completo"
                         autoFocus
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="apelido"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Apelido <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Ex: Tio Thiago"
                       />
                     </FormControl>
                     <FormMessage />
@@ -269,7 +289,7 @@ export default function Register() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      WhatsApp <span className="text-red-600">*</span>
+                      Telefone (WhatsApp) <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input

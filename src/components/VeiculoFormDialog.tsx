@@ -20,6 +20,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSession } from "@/hooks/useSession";
 import { veiculoService } from "@/services/veiculoService";
 import { Veiculo } from "@/types/veiculo";
+import { cleanString } from "@/utils/formatters";
 import {
   aplicarMascaraPlaca,
   limparPlaca,
@@ -122,11 +123,13 @@ export default function VeiculoFormDialog({
   };
 
   const handleSubmit = async (data: VeiculoFormData) => {
-    setLoading(true);
     try {
+      setLoading(true);
       const payload = {
         ...data,
         placa: limparPlaca(data.placa),
+        marca: cleanString(data.marca, true),
+        modelo: cleanString(data.modelo, true),
         capacidade: data.capacidade ? parseInt(data.capacidade) : null,
       };
       const veiculoSalvo = await veiculoService.saveVeiculo(

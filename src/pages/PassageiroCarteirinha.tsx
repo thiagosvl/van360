@@ -50,6 +50,7 @@ import {
   disableRegistrarPagamento,
 } from "@/utils/disableActions";
 import {
+  cleanString,
   formatarEnderecoCompleto,
   formatarTelefone,
   formatDateToBR,
@@ -300,7 +301,7 @@ export default function PassageiroCarteirinha() {
     try {
       const { error } = await supabase
         .from("passageiros")
-        .update({ observacoes: obsText })
+        .update({ observacoes: cleanString(obsText, true) })
         .eq("id", passageiro_id);
 
       if (error) throw error;

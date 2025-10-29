@@ -268,13 +268,15 @@ export default function PrePassageiros({
       <div className="space-y-6">
         <div className="w-full">
           <div className="">
-            <Button
-              onClick={handleCadastrarRapidoLink}
-              variant="outline"
-              className="gap-2 text-uppercase"
-            >
-              GERAR PRÉ-CADASTRO FAKE
-            </Button>
+            {import.meta.env.MODE === "development" && (
+              <Button
+                onClick={handleCadastrarRapidoLink}
+                variant="outline"
+                className="gap-2 text-uppercase"
+              >
+                GERAR PRÉ-CADASTRO FAKE
+              </Button>
+            )}
           </div>
           <Card>
             <CardHeader>

@@ -531,13 +531,15 @@ export default function Passageiros() {
 
               <TabsContent value="passageiros" className="mt-4">
                 <div className="">
-                  <Button
-                    onClick={handleCadastrarRapido}
-                    variant="outline"
-                    className="gap-2 text-uppercase"
-                  >
-                    GERAR PASSAGEIRO FAKE
-                  </Button>
+                  {import.meta.env.MODE === "development" && (
+                    <Button
+                      onClick={handleCadastrarRapido}
+                      variant="outline"
+                      className="gap-2 text-uppercase"
+                    >
+                      GERAR PASSAGEIRO FAKE
+                    </Button>
+                  )}
                 </div>
                 <Card>
                   <CardHeader>

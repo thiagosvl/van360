@@ -35,6 +35,7 @@ import { useSession } from "@/hooks/useSession";
 import { cepService } from "@/services/cepService";
 import { escolaService } from "@/services/escolaService";
 import { Escola } from "@/types/escola";
+import { cleanString } from "@/utils/formatters";
 import { cepMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, Loader2, MapPin } from "lucide-react";
@@ -127,8 +128,18 @@ export default function EscolaFormDialog({
     if (!profile?.id) return;
     try {
       setLoading(true);
+
+      const payload = {
+        ...data,
+        nome: cleanString(data.nome, true),
+        logradouro: cleanString(data.logradouro, true),
+        bairro: cleanString(data.bairro, true),
+        cidade: cleanString(data.cidade, true),
+        referencia: cleanString(data.referencia, true),
+      };
+
       const escolaSalva = await escolaService.saveEscola(
-        data,
+        payload,
         editingEscola,
         profile.id
       );
