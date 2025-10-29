@@ -32,6 +32,8 @@ export default function Login() {
   const { toast } = useToast();
   const [refreshing, setRefreshing] = useState(false);
 
+  const appDomain = import.meta.env.VITE_PUBLIC_APP_DOMAIN;
+
   const formMotoristaSchema = z.object({
     cpfcnpj: z
       .string()
@@ -116,7 +118,7 @@ export default function Login() {
 
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
         usuario.email,
-        { redirectTo: `${window.location.origin}/nova-senha` }
+        { redirectTo: `${appDomain}/nova-senha` }
       );
 
       if (resetError) throw resetError;
