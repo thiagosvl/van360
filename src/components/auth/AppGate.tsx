@@ -14,16 +14,16 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   const isPublic =
     publicPaths.includes(location.pathname) ||
     location.pathname.startsWith("/cadastro-passageiro");
-
-  // Enquanto ainda carrega sessão, mostra spinner
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    
+    // Enquanto ainda carrega sessão, mostra spinner
+    if (loading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
-
+  
   // 🔹 Se não está logado e a rota é pública → libera
   if (!session && isPublic) {
     return <>{children}</>;
