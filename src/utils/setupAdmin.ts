@@ -19,8 +19,9 @@ export const createAdminAuthUser = async () => {
     .from('usuarios')
     .insert({
       nome: "Administrador",
+      apelido: "Admin",
       cpfcnpj: "39542391838",
-      email: 'thiago-svl@hotmail.com',
+      email: 'thiago_svl@hotmail.com',
       telefone: '(11) 99999-9999',
       role: "admin",
     })

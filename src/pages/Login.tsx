@@ -64,18 +64,11 @@ export default function Login() {
     },
   });
 
-  const cpfResponsavelTest = !inDevelopment
-    ? "395.423.918-38"
-    : "395.423.918-38";
-  const emailResponsavelTest = !inDevelopment
-    ? "abiliodasvendas@gmail.com"
-    : "abiliodasvendas@gmail.com";
-
   const formResponsavel = useForm<z.infer<typeof formResponsavelSchema>>({
     resolver: zodResolver(formResponsavelSchema),
     defaultValues: {
-      cpf_responsavel: cpfResponsavelTest,
-      email_responsavel: emailResponsavelTest,
+      cpf_responsavel: "",
+      email_responsavel: "",
     },
   });
 
