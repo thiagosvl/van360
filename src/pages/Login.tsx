@@ -99,10 +99,20 @@ export default function Login() {
       }
 
       // Gera versão mascarada do e-mail para exibir no toast
-      const maskedEmail = usuario.email.replace(
-        /^(.{3})(.*)(@.{2,5})$/,
-        (_, start, middle, end) => start + "*".repeat(middle.length) + end
-      );
+      const maskedEmail = (() => {
+        const [user, domain] = usuario.email.split("@");
+        const maskedUser =
+          user.length <= 3
+            ? user[0] + "*".repeat(user.length - 1)
+            : user.slice(0, 3) + "*".repeat(user.length - 3);
+        const domainParts = domain.split(".");
+        const maskedDomain =
+          domainParts[0].slice(0, 3) +
+          "*".repeat(Math.max(0, domainParts[0].length - 3));
+        return `${maskedUser}@${maskedDomain}.${domainParts
+          .slice(1)
+          .join(".")}`;
+      })();
 
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
         usuario.email,
