@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -19,7 +19,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanString } from "@/utils/formatters";
-import { cpfMask } from "@/utils/masks";
+import { cpfMask, phoneMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import React from "react";
@@ -73,7 +73,7 @@ export default function EditarPerfilDialog({
         nome: profile.nome || "",
         apelido: profile.apelido || "",
         cpfcnpj: cpfMask(profile.cpfcnpj) || "",
-        telefone: profile.telefone || "",
+        telefone: phoneMask(profile.telefone) || "",
         email: profile.email || "",
       });
     }
