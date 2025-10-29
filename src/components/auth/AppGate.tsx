@@ -9,6 +9,7 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
     "/",
     "/login",
     "/cadastro",
+    "/nova-senha",
   ];
 
   const isPublic =

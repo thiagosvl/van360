@@ -32,6 +32,7 @@ import ResponsavelGate from "./components/auth/ResponsavelGate";
 import BackButtonController from "./hooks/BackButtonController";
 import ResponsavelLayout from "./layouts/ResponsavelLayout";
 import Index from "./pages/lp/Index";
+import NovaSenha from "./pages/NovaSenha";
 import Register from "./pages/Register";
 import Veiculos from "./pages/Veiculos";
 
@@ -174,97 +175,106 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner position="top-right" />
-          <BrowserRouter>
-            <BackButtonController />
-            <ScrollToTop />
-            <Routes>
-              {/* Rotas Públicas */}
+        <BrowserRouter>
+          <BackButtonController />
+          <ScrollToTop />
+          <Routes>
+            {/* Rotas Públicas */}
+            <Route
+              path="/login"
+              element={
+                <AppGate>
+                  <Login />
+                </AppGate>
+              }
+            />
+
+            <Route
+              path="/cadastro"
+              element={
+                <AppGate>
+                  <Register />
+                </AppGate>
+              }
+            />
+
+            <Route
+              path="/nova-senha"
+              element={
+                <AppGate>
+                  <NovaSenha />
+                </AppGate>
+              }
+            />
+
+            {/* Rota Pública de pré-cadastro */}
+            <Route
+              path="/cadastro-passageiro/:motoristaId"
+              element={<PassageiroExternalForm />}
+            />
+
+            <Route
+              path="/"
+              element={
+                Capacitor.isNativePlatform() ? (
+                  // App nativo → vai direto para login
+                  <Navigate to="/login" replace />
+                ) : (
+                  // Web → mostra página inicial pública
+                  <Index />
+                )
+              }
+            />
+
+            {/* Rota Visão Responsável */}
+            <Route
+              path="/responsavel/*"
+              element={
+                <ResponsavelGate>
+                  <ResponsavelLayout />
+                </ResponsavelGate>
+              }
+            />
+
+            {/* Rotas Protegidas */}
+            <Route
+              element={
+                <AppGate>
+                  <AppLayout />
+                </AppGate>
+              }
+            >
+              {/* Admin */}
               <Route
-                path="/login"
-                element={
-                  <AppGate>
-                    <Login />
-                  </AppGate>
-                }
+                path="admin"
+                element={<Navigate to="/admin/dashboard" replace />}
               />
+              <Route path="admin/dashboard" element={<AdminDashboard />} />
+              <Route path="admin/usuarios" element={<UsuariosAdmin />} />
+              <Route path="admin/configuracoes" element={<AdminSettings />} />
 
+              {/* Motorista */}
+              <Route path="inicio" element={<Home />} />
+              <Route path="passageiros" element={<Passageiros />} />
               <Route
-                path="/cadastro"
-                element={
-                  <AppGate>
-                    <Register />
-                  </AppGate>
-                }
+                path="passageiros/:passageiro_id"
+                element={<PassageiroCarteirinha />}
               />
-
-              {/* Rota Pública de pré-cadastro */}
               <Route
-                path="/cadastro-passageiro/:motoristaId"
-                element={<PassageiroExternalForm />}
+                path="passageiros/:passageiro_id/cobranca/:cobranca_id"
+                element={<PassageiroCobranca />}
               />
+              <Route path="cobrancas" element={<Cobrancas />} />
+              <Route path="escolas" element={<Escolas />} />
+              <Route path="veiculos" element={<Veiculos />} />
+              <Route path="gastos" element={<Gastos />} />
+              <Route path="relatorios" element={<Relatorios />} />
+              <Route path="configuracoes" element={<Configuracoes />} />
+            </Route>
 
-              <Route
-                path="/"
-                element={
-                  Capacitor.isNativePlatform() ? (
-                    // App nativo → vai direto para login
-                    <Navigate to="/login" replace />
-                  ) : (
-                    // Web → mostra página inicial pública
-                    <Index />
-                  )
-                }
-              />
-
-              {/* Rota Visão Responsável */}
-              <Route
-                path="/responsavel/*"
-                element={
-                  <ResponsavelGate>
-                    <ResponsavelLayout />
-                  </ResponsavelGate>
-                }
-              />
-
-              {/* Rotas Protegidas */}
-              <Route
-                element={
-                  <AppGate>
-                    <AppLayout />
-                  </AppGate>
-                }
-              >
-                {/* Admin */}
-                <Route
-                  path="admin"
-                  element={<Navigate to="/admin/dashboard" replace />}
-                />
-                <Route path="admin/dashboard" element={<AdminDashboard />} />
-                <Route path="admin/usuarios" element={<UsuariosAdmin />} />
-                <Route path="admin/configuracoes" element={<AdminSettings />} />
-
-                {/* Motorista */}
-                <Route path="inicio" element={<Home />} />
-                <Route path="passageiros" element={<Passageiros />} />
-                <Route
-                  path="passageiros/:passageiro_id"
-                  element={<PassageiroCarteirinha />}
-                />
-                <Route
-                  path="passageiros/:passageiro_id/cobranca/:cobranca_id"
-                  element={<PassageiroCobranca />}
-                />
-                <Route path="cobrancas" element={<Cobrancas />} />
-                <Route path="escolas" element={<Escolas />} />
-                <Route path="veiculos" element={<Veiculos />} />
-                <Route path="gastos" element={<Gastos />} />
-                <Route path="relatorios" element={<Relatorios />} />
-                <Route path="configuracoes" element={<Configuracoes />} />
-              </Route>
-
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
 
         {/* 🔹 Overlay de atualização forçada */}
         {updating && (

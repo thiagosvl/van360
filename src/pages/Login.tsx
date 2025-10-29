@@ -1,3 +1,4 @@
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -17,7 +18,7 @@ import { clearLoginStorageMotorista } from "@/utils/motoristaUtils";
 import { clearLoginStorageResponsavel } from "@/utils/responsavelUtils";
 import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -29,6 +30,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [refreshing, setRefreshing] = useState(false);
 
   const formMotoristaSchema = z.object({
     cpfcnpj: z
@@ -76,6 +78,66 @@ export default function Login() {
       email_responsavel: emailResponsavelTest,
     },
   });
+
+  const handleForgotPassword = useCallback(async () => {
+    const cpfDigits = formMotorista.getValues("cpfcnpj")?.replace(/\D/g, "");
+    if (!cpfDigits) {
+      toast({
+        title: "Informe seu CPF",
+        description:
+          "Digite o CPF cadastrado para receber o link de redefinição em seu e-mail.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setRefreshing(true);
+
+      const { data: usuario, error } = await supabase
+        .from("usuarios")
+        .select("email")
+        .eq("cpfcnpj", cpfDigits)
+        .single();
+
+      if (error || !usuario?.email) {
+        toast({
+          title: "CPF não encontrado",
+          description:
+            "Verifique o número informado. Caso tenha dúvidas, fale com o suporte.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Gera versão mascarada do e-mail para exibir no toast
+      const maskedEmail = usuario.email.replace(
+        /^(.{3})(.*)(@.{2,5})$/,
+        (_, start, middle, end) => start + "*".repeat(middle.length) + end
+      );
+
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        usuario.email,
+        { redirectTo: `${window.location.origin}/nova-senha` }
+      );
+
+      if (resetError) throw resetError;
+
+      toast({
+        title: "Link de redefinição enviado",
+        description: `Enviamos o link para ${maskedEmail}. Verifique sua caixa de entrada e o spam. O link é válido por tempo limitado.`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Não foi possível enviar o link",
+        description:
+          "Tente novamente em alguns minutos ou entre em contato com o suporte.",
+        variant: "destructive",
+      });
+    } finally {
+      setRefreshing(false);
+    }
+  }, [formMotorista, toast]);
 
   const handleLoginMotorista = async (data: any) => {
     setLoading(true);
@@ -185,14 +247,15 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 dark:from-background dark:to-muted p-6">
-      <img
-        src="/assets/logo-van360.png"
-        alt="Van360"
-        className="h-16 w-auto mb-4 select-none"
-      />
+    <>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 dark:from-background dark:to-muted p-6">
+        <img
+          src="/assets/logo-van360.png"
+          alt="Van360"
+          className="h-16 w-auto mb-4 select-none"
+        />
 
-      {/* <Tabs value={tab} onValueChange={setTab} className="w-full max-w-md mb-4">
+        {/* <Tabs value={tab} onValueChange={setTab} className="w-full max-w-md mb-4">
         <TabsList className="grid w-full grid-cols-2 border">
           <TabsTrigger
             value="motorista"
@@ -214,152 +277,165 @@ export default function Login() {
         </TabsList>
       </Tabs> */}
 
-      {tab === "motorista" && (
-        <Card className="w-full max-w-md shadow-lg border border-gray-200">
-          <CardContent className="mt-6">
-            <Form {...formMotorista}>
-              <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
-                Acesse sua conta
-              </h1>
-              <form
-                onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}
-                className="space-y-4"
-              >
-                <FormField
-                  control={formMotorista.control}
-                  name="cpfcnpj"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        CPF <span className="text-red-600">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          autoFocus
-                          placeholder="000.000.000-00"
-                          autoComplete="username"
-                          onChange={(e) =>
-                            field.onChange(cpfMask(e.target.value))
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        {tab === "motorista" && (
+          <Card className="w-full max-w-md shadow-lg border border-gray-200">
+            <CardContent className="mt-6">
+              <Form {...formMotorista}>
+                <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
+                  Acesse sua conta
+                </h1>
+                <form
+                  onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}
+                  className="space-y-4"
+                >
+                  <FormField
+                    control={formMotorista.control}
+                    name="cpfcnpj"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          CPF <span className="text-red-600">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            autoFocus
+                            placeholder="000.000.000-00"
+                            autoComplete="username"
+                            onChange={(e) =>
+                              field.onChange(cpfMask(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={formMotorista.control}
-                  name="senha"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Senha <span className="text-red-600">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="password"
-                          placeholder="Digite sua senha"
-                          autoComplete="current-password"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={formMotorista.control}
+                    name="senha"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Senha <span className="text-red-600">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="password"
+                            placeholder="Digite sua senha"
+                            autoComplete="current-password"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                {formMotorista.formState.errors.root && (
-                  <div className="text-sm text-destructive">
-                    {formMotorista.formState.errors.root.message}
+                  {formMotorista.formState.errors.root && (
+                    <div className="text-sm text-destructive">
+                      {formMotorista.formState.errors.root.message}
+                    </div>
+                  )}
+
+                  <div className="pt-6">
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? "Acessando..." : "Acessar"}
+                    </Button>
                   </div>
-                )}
-
-                <div className="pt-6">
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Acessando..." : "Acessar"}
-                  </Button>
-                </div>
-                <div className="text-center mt-4">
-                  <p className="text-sm text-gray-600">
-                    Ainda não tem conta?{" "}
-                    <button
-                      type="button"
-                      onClick={() => navigate("/cadastro")}
-                      className="text-primary font-semibold hover:underline"
+                  <div className="text-center mt-4">
+                    <p className="text-sm text-gray-600">
+                      Ainda não tem conta?{" "}
+                      <button
+                        type="button"
+                        onClick={() => navigate("/cadastro")}
+                        className="text-primary font-semibold hover:underline"
+                      >
+                        Cadastre-se
+                      </button>
+                    </p>
+                  </div>
+                  <div className="text-center mt-4">
+                    <p
+                      className="text-sm text-primary font-semibold hover:underline cursor-pointer"
+                      onClick={handleForgotPassword}
                     >
-                      Cadastre-se
-                    </button>
-                  </p>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      )}
+                      Esqueci minha senha
+                    </p>
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        )}
 
-      {tab === "responsavel" && (
-        <Card className="w-full max-w-md shadow-lg border border-gray-200">
-          <CardContent className="mt-6">
-            <Form {...formResponsavel}>
-              <form
-                onSubmit={formResponsavel.handleSubmit(handleLoginResponsavel)}
-                className="space-y-4"
-              >
-                <FormField
-                  control={formResponsavel.control}
-                  name="cpf_responsavel"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        CPF <span className="text-red-600">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="000.000.000-00"
-                          maxLength={14}
-                          value={cpfMask(field.value || "")}
-                          onChange={(e) =>
-                            field.onChange(cpfMask(e.target.value))
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+        {tab === "responsavel" && (
+          <Card className="w-full max-w-md shadow-lg border border-gray-200">
+            <CardContent className="mt-6">
+              <Form {...formResponsavel}>
+                <form
+                  onSubmit={formResponsavel.handleSubmit(
+                    handleLoginResponsavel
                   )}
-                />
+                  className="space-y-4"
+                >
+                  <FormField
+                    control={formResponsavel.control}
+                    name="cpf_responsavel"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          CPF <span className="text-red-600">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="000.000.000-00"
+                            maxLength={14}
+                            value={cpfMask(field.value || "")}
+                            onChange={(e) =>
+                              field.onChange(cpfMask(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={formResponsavel.control}
-                  name="email_responsavel"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Email <span className="text-red-600">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="Digite o email do responsável"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={formResponsavel.control}
+                    name="email_responsavel"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Email <span className="text-red-600">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="Digite o email do responsável"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <div className="pt-6">
-                  <Button type="submit" disabled={loading} className="w-full">
-                    {loading ? "Acessando..." : "Acessar"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+                  <div className="pt-6">
+                    <Button type="submit" disabled={loading} className="w-full">
+                      {loading ? "Acessando..." : "Acessar"}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      <LoadingOverlay active={refreshing} text="Aguarde..." />
+    </>
   );
 }
