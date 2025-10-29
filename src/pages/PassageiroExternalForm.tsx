@@ -70,7 +70,7 @@ export default function PassageiroExternalForm() {
 
   const [loading, setLoading] = useState(true);
   const [loadingCep, setLoadingCep] = useState(false);
-  const [motoristaNome, setMotoristaNome] = useState<string | null>(null);
+  const [motoristaApelido, setMotoristaApelido] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [openAccordionItems, setOpenAccordionItems] = useState([
@@ -109,7 +109,7 @@ export default function PassageiroExternalForm() {
 
       const { data, error } = await supabase
         .from("usuarios")
-        .select("id, nome, role")
+        .select("id, nome, apelido, role")
         .eq("id", motoristaId)
         .single();
 
@@ -123,7 +123,7 @@ export default function PassageiroExternalForm() {
         return;
       }
 
-      setMotoristaNome(data.nome);
+      setMotoristaApelido(data.apelido);
       setLoading(false);
     };
 
@@ -237,7 +237,7 @@ export default function PassageiroExternalForm() {
             Cadastro de Passageiro
           </h1>
           <span className="text-center font-semibold text-primary block">
-            Condutor: {motoristaNome}
+            Condutor: {motoristaApelido}
           </span>
 
           <Form {...form}>
