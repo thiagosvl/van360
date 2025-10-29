@@ -19,6 +19,7 @@ import { safeCloseDialog } from "@/utils/dialogCallback";
 import { clearLoginStorageMotorista } from "@/utils/motoristaUtils";
 import { Lock, LogOut, Menu, User, UserPen } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AlterarSenhaDialog from "./AlterarSenhaDialog";
 import EditarCadastroDialog from "./EditarCadastroDialog";
 
@@ -28,24 +29,32 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
   const [openAlterarSenha, setOpenAlterarSenha] = useState(false);
   const [openEditarCadasto, setOpenEditarCadasto] = useState(false);
 
-  const handleSignOut = async () => {
-    try {
-      const { data } = await supabase.auth.getSession();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const navigate = useNavigate();
 
-      if (data?.session) {
-        const { error } = await supabase.auth.signOut();
-        if (error) console.error("Erro ao realizar logout:", error);
-      } else {
-        console.warn(
-          "Nenhuma sessão ativa encontrada, limpando localStorage..."
-        );
-      }
-    } catch (err) {
-      console.error("Erro inesperado ao tentar logout:", err);
-    } finally {
+  const handleSignOut = async () => {
+    if (isSigningOut) return;
+    setIsSigningOut(true);
+
+    try {
+      // 🔹 Faz o logout e espera o Supabase limpar a sessão
+      await supabase.auth.signOut();
+
+      // 🔹 Limpa qualquer cache local antes da troca de rota
       clearLoginStorageMotorista();
 
-      window.location.href = "/login";
+      // 🔹 Força revalidação manual do estado de sessão (evita re-render inesperado)
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) console.warn("Sessão não finalizada ainda:", session);
+
+      // 🔹 Agora redireciona com replace (evita flash)
+      navigate("/login", { replace: true });
+    } catch (err) {
+      console.error("Erro ao encerrar sessão:", err);
+    } finally {
+      setIsSigningOut(false);
     }
   };
 
