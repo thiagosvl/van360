@@ -20,13 +20,13 @@ import { clearLoginStorageMotorista } from "@/utils/motoristaUtils";
 import { Lock, LogOut, Menu, User, UserPen } from "lucide-react";
 import { useState } from "react";
 import AlterarSenhaDialog from "./AlterarSenhaDialog";
-import EditarPerfilDialog from "./EditarPerfilDialog";
+import EditarCadastroDialog from "./EditarCadastroDialog";
 
 export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { pageTitle, pageSubtitle } = useLayout();
   const [openAlterarSenha, setOpenAlterarSenha] = useState(false);
-  const [openEditarPerfil, setOpenEditarPerfil] = useState(false);
+  const [openEditarCadasto, setOpenEditarCadasto] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -99,8 +99,8 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setOpenEditarPerfil(true)}>
-              <UserPen className="mr-2 h-4 w-4" /> Editar perfil
+            <DropdownMenuItem onClick={() => setOpenEditarCadasto(true)}>
+              <UserPen className="mr-2 h-4 w-4" /> Editar cadastro
             </DropdownMenuItem>
 
             <DropdownMenuItem onClick={() => setOpenAlterarSenha(true)}>
@@ -120,10 +120,10 @@ export function AppNavbar({ role }: { role: "admin" | "motorista" }) {
           onClose={() => safeCloseDialog(() => setOpenAlterarSenha(false))}
         />
       )}
-      {openEditarPerfil && (
-        <EditarPerfilDialog
-          isOpen={openEditarPerfil}
-          onClose={() => safeCloseDialog(() => setOpenEditarPerfil(false))}
+      {openEditarCadasto && (
+        <EditarCadastroDialog
+          isOpen={openEditarCadasto}
+          onClose={() => safeCloseDialog(() => setOpenEditarCadasto(false))}
         />
       )}
     </>

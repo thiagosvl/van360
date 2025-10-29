@@ -20,37 +20,41 @@ import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanString } from "@/utils/formatters";
 import { cpfMask, phoneMask } from "@/utils/masks";
+import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-interface EditarPerfilDialogProps {
+interface EditarCadastroDialogProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
 const schema = z.object({
-  nome: z.string().min(3, "Informe seu nome completo."),
-  apelido: z.string().optional(),
-  cpfcnpj: z.string(),
+  nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+  apelido: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+  cpfcnpj: z
+    .string()
+    .min(1, "Campo obrigatório")
+    .refine((val) => isValidCPF(val), "CPF inválido"),
   telefone: z
     .string()
     .min(1, "Campo obrigatório")
-    .refine(
-      (val) => val.replace(/\D/g, "").length === 11,
-      "O formato aceito é (00) 00000-0000"
-    ),
-  email: z.string().email("E-mail inválido"),
+    .refine((val) => {
+      const cleaned = val.replace(/\D/g, "");
+      return cleaned.length === 11;
+    }, "O formato aceito é (00) 00000-0000"),
+  email: z.string().min(1, "Campo obrigatório").email("E-mail inválido"),
 });
 
 type FormData = z.infer<typeof schema>;
 
-export default function EditarPerfilDialog({
+export default function EditarCadastroDialog({
   isOpen,
   onClose,
-}: EditarPerfilDialogProps) {
+}: EditarCadastroDialogProps) {
   const { toast } = useToast();
   const { user } = useSession();
   const { profile, isLoading, refreshProfile } = useProfile(user?.id);
@@ -133,9 +137,12 @@ export default function EditarPerfilDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-white" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent
+        className="max-w-md bg-white"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader>
-          <DialogTitle>Editar Perfil</DialogTitle>
+          <DialogTitle>Editar Cadastro</DialogTitle>
         </DialogHeader>
 
         {isLoading ? (
@@ -144,7 +151,10 @@ export default function EditarPerfilDialog({
           </div>
         ) : (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-6"
+            >
               <FormField
                 control={form.control}
                 name="nome"
@@ -152,7 +162,7 @@ export default function EditarPerfilDialog({
                   <FormItem>
                     <FormLabel>Nome completo</FormLabel>
                     <FormControl>
-                      <Input placeholder="Seu nome completo" {...field} />
+                      <Input placeholder="Digite seu nome completo" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -164,9 +174,12 @@ export default function EditarPerfilDialog({
                 name="apelido"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Apelido (opcional)</FormLabel>
+                    <FormLabel>Apelido</FormLabel>
                     <FormControl>
-                      <Input placeholder="Como prefere ser chamado" {...field} />
+                      <Input
+                        placeholder="Ex: Tio Fulano"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -180,7 +193,14 @@ export default function EditarPerfilDialog({
                   <FormItem>
                     <FormLabel>Telefone (WhatsApp)</FormLabel>
                     <FormControl>
-                      <Input placeholder="(00) 00000-0000" {...field} />
+                      <Input
+                        {...field}
+                        placeholder="(00) 00000-0000"
+                        maxLength={15}
+                        onChange={(e) => {
+                          field.onChange(phoneMask(e.target.value));
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -194,7 +214,13 @@ export default function EditarPerfilDialog({
                   <FormItem>
                     <FormLabel>CPF</FormLabel>
                     <FormControl>
-                      <Input {...field} readOnly className="bg-gray-100 cursor-not-allowed" />
+                      <Input
+                        {...field}
+                        placeholder="000.000.000-00"
+                        onChange={(e) =>
+                          field.onChange(cpfMask(e.target.value))
+                        }
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -220,7 +246,12 @@ export default function EditarPerfilDialog({
               />
 
               <div className="flex gap-4 pt-4">
-                <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  className="flex-1"
+                >
                   Cancelar
                 </Button>
                 <Button type="submit" className="flex-1">

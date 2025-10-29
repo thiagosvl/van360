@@ -23,8 +23,8 @@ import { z } from "zod";
 
 const registerSchema = z
   .object({
-    nome: z.string().min(3, "Campo obrigatório"),
-    apelido: z.string().min(3, "Campo obrigatório"),
+    nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+    apelido: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
     cpfcnpj: z
       .string()
       .min(1, "Campo obrigatório")
@@ -230,10 +230,7 @@ export default function Register() {
                       Apelido <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Ex: Tio Thiago"
-                      />
+                      <Input {...field} placeholder="Ex: Tio Fulano" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -289,7 +286,8 @@ export default function Register() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Telefone (WhatsApp) <span className="text-red-600">*</span>
+                      Telefone (WhatsApp){" "}
+                      <span className="text-red-600">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
