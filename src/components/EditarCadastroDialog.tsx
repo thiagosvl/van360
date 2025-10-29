@@ -162,7 +162,10 @@ export default function EditarCadastroDialog({
                   <FormItem>
                     <FormLabel>Nome completo</FormLabel>
                     <FormControl>
-                      <Input placeholder="Digite seu nome completo" {...field} />
+                      <Input
+                        placeholder="Digite seu nome completo"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -176,10 +179,7 @@ export default function EditarCadastroDialog({
                   <FormItem>
                     <FormLabel>Apelido</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Ex: Tio Fulano"
-                        {...field}
-                      />
+                      <Input placeholder="Ex: Tio Fulano" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -216,10 +216,8 @@ export default function EditarCadastroDialog({
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="000.000.000-00"
-                        onChange={(e) =>
-                          field.onChange(cpfMask(e.target.value))
-                        }
+                        readOnly
+                        className="bg-gray-100 cursor-not-allowed"
                       />
                     </FormControl>
                     <FormMessage />
