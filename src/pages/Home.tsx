@@ -33,7 +33,7 @@ const AccessCard = ({
 }: (typeof ACCESS_CARDS_DATA)[0] & { subtitle: string }) => {
   return (
     <Card
-      className={`shadow-md h-full bg-white border border-gray-200 rounded-xl p-5 lg:p-10 xl:p-12`}
+      className={`shadow-md h-full bg-white border border-gray-200 rounded-xl p-5 md:p-7 lg:p-10 xl:p-12`}
     >
       <CardContent className="p-0 flex flex-col justify-center items-center text-center h-full">
         <Icon
@@ -297,7 +297,7 @@ const Home = () => {
                   className="flex flex-col items-center text-center transition-all duration-200 hover:scale-[1.05]"
                 >
                   <AccessCard {...card} />
-                  <p className="text-xs font-medium text-foreground mt-1.5 leading-snug md:text-md lg:text-lg xl:text-xl">
+                  <p className="text-xs md:text-sm lg:text-md xl:text-xl font-medium text-foreground mt-1.5 leading-snug">
                     {card.title}
                   </p>
                 </div>

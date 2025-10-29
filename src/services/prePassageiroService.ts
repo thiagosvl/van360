@@ -19,7 +19,7 @@ export const prePassageiroService = {
         let query = supabase
             .from("pre_passageiros")
             .select("*")
-            .eq("usuario_id", userId)
+            .eq("usuario_id", usuarioId)
             .order("nome");
 
         const term = searchTerm.trim();

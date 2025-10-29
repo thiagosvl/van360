@@ -28,12 +28,10 @@ export const fetchEscolasComContagemAtivos = async (usuarioId: string) => {
 
     if (error) throw error;
 
-    return (
-        data?.map((escola) => ({
-            ...escola,
-            passageiros_ativos_count: escola.passageiros.filter((p) => p.ativo).length,
-        })) ?? []
-    );
+    return data.map(escola => ({
+        ...escola,
+        passageiros_ativos_count: escola.passageiros[0]?.count || 0,
+    })) as (Escola & { passageiros_ativos_count: number })[];
 };
 
 export const saveEscola = async (data: any, editingEscola: Escola | null, usuarioId: string): Promise<Escola> => {

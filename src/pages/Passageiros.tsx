@@ -215,6 +215,7 @@ export default function Passageiros() {
       if (error) throw error;
 
       setPassageiros(data || []);
+      setcountPassageirosAtivos(data.filter((e) => e.ativo).length);
     } catch (err) {
       console.error("Erro ao buscar passageiros:", err);
       toast({
@@ -388,7 +389,7 @@ export default function Passageiros() {
 
   const handleCadastrarRapido = async () => {
     if (!profile?.id) return;
-    
+
     if (!escolas || escolas.length === 0) {
       toast({
         title: "Operação Impossível.",
@@ -439,7 +440,10 @@ export default function Passageiros() {
     };
 
     try {
-      await passageiroService.createPassageiroComTransacao(fakeData, profile.id);
+      await passageiroService.createPassageiroComTransacao(
+        fakeData,
+        profile.id
+      );
 
       toast({ title: "Passageiro cadastrado rapidamente com sucesso." });
 

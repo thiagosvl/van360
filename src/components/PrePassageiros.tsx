@@ -60,8 +60,8 @@ export default function PrePassageiros({
 }: PrePassageirosProps) {
   const [prePassageiros, setPrePassageiros] = useState<PrePassageiro[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const { user, loading: isSessionLoading } = useSession();
-  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
+  const { user } = useSession();
+  const { profile } = useProfile(user?.id);
   const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
   const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
   const [isCreatingEscola, setIsCreatingEscola] = useState(false);
@@ -88,12 +88,11 @@ export default function PrePassageiros({
     if (refreshKey !== undefined) {
       fetchPrePassageiros();
     }
-  }, [refreshKey]);
+  }, [refreshKey, profile?.id]);
 
   useEffect(() => {
     if (loading) return;
 
-    const term = searchTerm.trim();
     const handler = setTimeout(() => {
       fetchPrePassageiros(true);
     }, 500);
@@ -104,6 +103,8 @@ export default function PrePassageiros({
 
   const fetchPrePassageiros = useCallback(
     async (isRefresh = false) => {
+      if (!profile?.id) return;
+
       try {
         if (!isRefresh) setLoading(true);
         else setRefreshing(true);
@@ -123,7 +124,7 @@ export default function PrePassageiros({
         else setRefreshing(false);
       }
     },
-    [searchTerm, toast]
+    [searchTerm, toast, profile?.id]
   );
 
   const handleCloseEscolaFormDialog = () => {
