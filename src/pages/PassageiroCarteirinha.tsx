@@ -190,8 +190,9 @@ export default function PassageiroCarteirinha() {
   }, [isObservacoesEditing]);
 
   useEffect(() => {
+    if (!profile?.id) return;
     fetchAllData();
-  }, [passageiro_id]);
+  }, [passageiro_id, profile?.id]);
 
   useEffect(() => {
     if (passageiro && !loading) {

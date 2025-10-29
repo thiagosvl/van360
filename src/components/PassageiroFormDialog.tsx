@@ -131,8 +131,8 @@ export default function PassengerFormDialog({
   const [loadingCep, setLoadingCep] = useState(false);
   const [escolasModal, setEscolasModal] = useState<Escola[]>([]);
   const [veiculosModal, setVeiculosModal] = useState<Veiculo[]>([]);
-  const { user, loading: isSessionLoading } = useSession();
-  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
+  const { user } = useSession();
+  const { profile } = useProfile(user?.id);
   const { toast } = useToast();
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "passageiro",
@@ -196,6 +196,8 @@ export default function PassengerFormDialog({
   }, [novoVeiculoId]);
 
   useEffect(() => {
+    if(!profile?.id) return;
+
     if (isOpen) {
       const isFinalizeMode = mode === "finalize" && prePassageiro;
 
@@ -312,7 +314,7 @@ export default function PassengerFormDialog({
         });
       }
     }
-  }, [isOpen, editingPassageiro, form, prePassageiro, mode]);
+  }, [isOpen, editingPassageiro, form, prePassageiro, mode, profile?.id]);
 
   const fetchVeiculos = async (veiculoId?: string) => {
     if (!profile?.id) return;

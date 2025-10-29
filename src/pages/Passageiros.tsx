@@ -387,6 +387,8 @@ export default function Passageiros() {
   };
 
   const handleCadastrarRapido = async () => {
+    if (!profile?.id) return;
+    
     if (!escolas || escolas.length === 0) {
       toast({
         title: "Operação Impossível.",
@@ -437,7 +439,7 @@ export default function Passageiros() {
     };
 
     try {
-      await passageiroService.createPassageiroComTransacao(fakeData);
+      await passageiroService.createPassageiroComTransacao(fakeData, profile.id);
 
       toast({ title: "Passageiro cadastrado rapidamente com sucesso." });
 
