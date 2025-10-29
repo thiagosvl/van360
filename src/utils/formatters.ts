@@ -42,7 +42,7 @@ export const periodos = [
   { value: "manha", label: "Manhã" },
   { value: "almoco", label: "Almoço" },
   { value: "tarde", label: "Tarde" },
-  { value: "noite", label: "Noie" },
+  { value: "noite", label: "Noite" },
 ];
 
 export const toLocalDateString = (date: Date): string => {

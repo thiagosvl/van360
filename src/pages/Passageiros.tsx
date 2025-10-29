@@ -34,6 +34,7 @@ import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { Veiculo } from "@/types/veiculo";
 import { safeCloseDialog } from "@/utils/dialogCallback";
+import { formatPeriodo, periodos } from "@/utils/formatters";
 import { formatarPlacaExibicao } from "@/utils/placaUtils";
 import {
   CreditCard,
@@ -79,14 +80,16 @@ export default function Passageiros() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [escolas, setEscolas] = useState<Escola[]>([]);
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
-  const [selectedVeiculo, setSelectedVeiculo] = useState<string>("todos");
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(
     null
   );
+  const [selectedVeiculo, setSelectedVeiculo] = useState<string>("todos");
   const [selectedEscola, setSelectedEscola] = useState<string>("todas");
   const [selectedStatus, setSelectedStatus] = useState<string>("todos");
+  const [selectedPeriodo, setSelectedPeriodo] = useState<string>("todos");
+
   const [modePassageiroFormDialog, setModePassageiroFormDialog] =
     useState<string>("create");
   const [searchTerm, setSearchTerm] = useState("");
@@ -119,34 +122,37 @@ export default function Passageiros() {
       veiculo: selectedVeiculo,
       status: selectedStatus,
     });
+    firstRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id]);
 
   useEffect(() => {
-    if (firstRender.current || !profile?.id) return;
+    if (firstRender.current) return;
     fetchPassageiros(true, {
       search: searchTerm,
       escola: selectedEscola,
       veiculo: selectedVeiculo,
       status: selectedStatus,
+      periodo: selectedPeriodo,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedEscola, selectedVeiculo, selectedStatus, profile?.id]);
+  }, [selectedEscola, selectedVeiculo, selectedStatus, selectedPeriodo]);
 
   // Campo de busca -> aplica debounce
   useEffect(() => {
-    if (firstRender.current || !profile?.id) return;
+    if (firstRender.current) return;
     const handler = setTimeout(() => {
       fetchPassageiros(true, {
         search: searchTerm,
         escola: selectedEscola,
         veiculo: selectedVeiculo,
         status: selectedStatus,
+        periodo: selectedPeriodo,
       });
     }, 500);
     return () => clearTimeout(handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, profile?.id]);
+  }, [searchTerm]);
 
   useEffect(() => {
     let subTitle = "";
@@ -171,6 +177,7 @@ export default function Passageiros() {
       escola?: string;
       veiculo?: string;
       status?: string;
+      periodo?: string;
     }
   ) {
     if (!profile?.id) return;
@@ -192,9 +199,10 @@ export default function Passageiros() {
         .eq("usuario_id", profile.id)
         .order("nome");
 
-      // aplica filtros opcionais
       if (filtros?.search) {
-        query = query.ilike("nome_responsavel", `%${filtros.search.trim()}%`);
+        query = query.or(
+          `nome.ilike.%${filtros.search}%,nome_responsavel.ilike.%${filtros.search}%`
+        );
       }
 
       if (filtros?.escola && filtros.escola !== "todas") {
@@ -205,8 +213,12 @@ export default function Passageiros() {
         query = query.eq("veiculo_id", filtros.veiculo);
       }
 
+      if (filtros?.periodo && filtros.periodo !== "todos") {
+        query = query.eq("periodo", filtros.periodo);
+      }
+
       if (filtros?.status && filtros.status !== "todos") {
-        const ativo = filtros.status === "ativos";
+        const ativo = filtros.status === "ativo";
         query = query.eq("ativo", ativo);
       }
 
@@ -230,10 +242,16 @@ export default function Passageiros() {
     }
   }
 
-  const handleSuccessCreatePassageiro = () => {
+  const handleSuccessFormPassageiro = () => {
     setNovoVeiculoId(null);
     setNovaEscolaId(null);
-    fetchPassageiros(true);
+    fetchPassageiros(true, {
+      search: searchTerm,
+      escola: selectedEscola,
+      veiculo: selectedVeiculo,
+      status: selectedStatus,
+      periodo: selectedPeriodo,
+    });
   };
 
   const handleClosePassageiroFormDialog = () => {
@@ -326,7 +344,13 @@ export default function Passageiros() {
         title: `Passageiro ${confirmToggleDialog.action} com sucesso.`,
       });
 
-      fetchPassageiros(true);
+      fetchPassageiros(true, {
+        search: searchTerm,
+        escola: selectedEscola,
+        veiculo: selectedVeiculo,
+        status: selectedStatus,
+        periodo: selectedPeriodo,
+      });
     } catch (error: any) {
       console.error("Erro ao alternar status:", error);
       toast({
@@ -559,25 +583,25 @@ export default function Passageiros() {
                     </div>
                   </CardHeader>
                   <CardContent>
+                    <div className="space-y-2 p-1 mb-2">
+                      <Label htmlFor="search">Buscar por Nome</Label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                        <Input
+                          id="search"
+                          placeholder="Passageiro ou responsável..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
                     <div
                       className={`transition-all duration-300 ease-in-out overflow-hidden ${
                         showMobileFilters ? "max-h-[500px]" : "max-h-0"
                       } md:max-h-full`}
                     >
                       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-1">
-                        <div className="space-y-2">
-                          <Label htmlFor="search">Buscar por Nome</Label>
-                          <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                            <Input
-                              id="search"
-                              placeholder="Passageiro ou responsável..."
-                              value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
-                              className="pl-10"
-                            />
-                          </div>
-                        </div>
                         <div className="space-y-2">
                           <Label htmlFor="status-filter">Status</Label>
                           <Select
@@ -590,8 +614,8 @@ export default function Passageiros() {
                             <SelectContent className="max-h-60 overflow-y-auto">
                               <SelectItem value="todos">Todos</SelectItem>
                               <SelectItem value="ativo">Ativo</SelectItem>
-                              <SelectItem value="desativado">
-                                Desativado
+                              <SelectItem value="desativados">
+                                Desativados
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -634,6 +658,25 @@ export default function Passageiros() {
                             </SelectContent>
                           </Select>
                         </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="periodo-filter">Período</Label>
+                          <Select
+                            value={selectedPeriodo}
+                            onValueChange={setSelectedPeriodo}
+                          >
+                            <SelectTrigger id="periodo-filter">
+                              <SelectValue placeholder="Todos" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-60 overflow-y-auto">
+                              <SelectItem value="todos">Todos</SelectItem>
+                              {periodos.map((p) => (
+                                <SelectItem key={p.value} value={p.value}>
+                                  {p.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
 
@@ -646,7 +689,7 @@ export default function Passageiros() {
                           <p>
                             {searchTerm
                               ? `Nenhum passageiro ou responsável encontrado com o nome "${searchTerm}"`
-                              : "Nenhum passageiro cadastrado"}
+                              : "Nenhum passageiro encontrado"}
                           </p>
                         </div>
                       ) : (
@@ -663,6 +706,9 @@ export default function Passageiros() {
                                   </th>
                                   <th className="p-3 text-left text-xs font-medium text-gray-600">
                                     Escola
+                                  </th>
+                                  <th className="p-3 text-left text-xs font-medium text-gray-600">
+                                    Período
                                   </th>
                                   <th className="p-3 text-left text-xs font-medium text-gray-600">
                                     Veículo
@@ -710,6 +756,11 @@ export default function Passageiros() {
                                       <span className="text-sm text-muted-foreground">
                                         {passageiro.escolas?.nome ||
                                           "Não informada"}
+                                      </span>
+                                    </td>
+                                    <td className="p-3 align-top">
+                                      <span className="text-sm text-muted-foreground">
+                                        {formatPeriodo(passageiro.periodo)}
                                       </span>
                                     </td>
                                     <td className="p-3 align-top">
@@ -926,6 +977,15 @@ export default function Passageiros() {
 
                                   <div className="text-sm flex justify-between">
                                     <span className="text-muted-foreground">
+                                      Período
+                                    </span>
+                                    <span className="font-medium">
+                                      {formatPeriodo(passageiro.periodo)}
+                                    </span>
+                                  </div>
+
+                                  <div className="text-sm flex justify-between">
+                                    <span className="text-muted-foreground">
                                       Status
                                     </span>
 
@@ -965,7 +1025,7 @@ export default function Passageiros() {
             <PassageiroFormDialog
               isOpen={isDialogOpen}
               onClose={handleClosePassageiroFormDialog}
-              onSuccess={() => handleSuccessCreatePassageiro()}
+              onSuccess={() => handleSuccessFormPassageiro()}
               editingPassageiro={editingPassageiro}
               onCreateEscola={() => setIsCreatingEscola(true)}
               onCreateVeiculo={() => setIsCreatingVeiculo(true)}

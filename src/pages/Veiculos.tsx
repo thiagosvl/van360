@@ -325,7 +325,7 @@ export default function Veiculos() {
                     <p>
                       {searchTerm
                         ? `Nenhum veículo encontrado com a placa "${searchTerm}"`
-                        : "Nenhum veículo cadastrado"}
+                        : "Nenhum veículo encontrado"}
                     </p>
                   </div>
                 ) : (
