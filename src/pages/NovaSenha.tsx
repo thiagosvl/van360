@@ -38,6 +38,15 @@ export default function NovaSenha() {
       setLoading(false);
 
       if (error) {
+        if (error.code === "same_password") {
+          toast({
+            title: "Nova senha inválida",
+            description: "A nova senha deve ser diferente da senha atual.",
+            variant: "destructive",
+          });
+          return;
+        }
+
         toast({
           title: "Erro ao redefinir senha",
           description: error.message,
@@ -46,13 +55,11 @@ export default function NovaSenha() {
         return;
       }
 
-      // Já existe sessão ativa pelo token da URL, então só redireciona
       toast({
         title: "Senha redefinida com sucesso!",
         description: "Redirecionando para o sistema...",
       });
 
-      // Aguarda um pequeno delay para o toast aparecer
       setTimeout(() => navigate("/inicio", { replace: true }), 1200);
     } catch (err: any) {
       setLoading(false);
