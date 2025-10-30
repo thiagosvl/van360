@@ -267,13 +267,13 @@ export default function PassageiroExternalForm() {
                         render={({ field }) => (
                           <FormItem className="md:col-span-5">
                             <FormLabel>
-                              Nome do Passageiro{" "}
+                              Nome{" "}
                               <span className="text-red-600">*</span>
                             </FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
-                                placeholder="Ex: Maria da Silva"
+                                placeholder="Digite o nome do passageiro"
                               />
                             </FormControl>
                             <FormMessage />

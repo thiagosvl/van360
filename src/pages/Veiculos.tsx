@@ -41,6 +41,7 @@ import {
   Users2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 const SchoolListSkeleton = () => (
   <div className="space-y-3">
@@ -64,7 +65,13 @@ export default function Veiculos() {
     (Veiculo & { passageiros_ativos_count?: number })[]
   >([]);
   const [countVeiculosAtivos, setCountVeiculosAtivos] = useState<number>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [isDialogOpen, setIsDialogOpen] = useState(() => {
+    const openModal = searchParams.get("openModal");
+    return openModal && openModal === "true" ? true : false;
+  });
+
   const [editingVeiculo, setEditingVeiculo] = useState<Veiculo | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

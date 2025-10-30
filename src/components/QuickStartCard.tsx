@@ -14,9 +14,9 @@ import { NavLink } from "react-router-dom";
 import { z } from "zod";
 
 const QUICK_START_STEPS = [
-  { id: 1, title: "Cadastrar a primeira escola", href: "/escolas" },
-  { id: 2, title: "Cadastrar o primeiro veículo", href: "/veiculos" },
-  { id: 3, title: "Cadastrar o primeiro passageiro", href: "/passageiros" },
+  { id: 1, title: "Cadastrar a primeira escola", href: "/escolas?openModal=true" },
+  { id: 2, title: "Cadastrar o primeiro veículo", href: "/veiculos?openModal=true" },
+{ id: 3, title: "Cadastrar o primeiro passageiro", href: "/passageiros?openModal=true" },
   // {
   //   id: 4,
   //   title: "Configurar o sistema (notificações e mensagens automáticas)",

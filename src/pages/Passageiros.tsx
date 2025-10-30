@@ -49,7 +49,7 @@ import {
   Users2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const PassengerListSkeleton = () => (
   <div className="space-y-3 mt-8">
@@ -81,7 +81,12 @@ export default function Passageiros() {
   const [escolas, setEscolas] = useState<Escola[]>([]);
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [isDialogOpen, setIsDialogOpen] = useState(() => {
+    const openModal = searchParams.get("openModal");
+    return openModal && openModal === "true" ? true : false;
+  });
   const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(
     null
   );

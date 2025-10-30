@@ -496,7 +496,7 @@ export default function PassengerFormDialog({
                 ? "Continuar Cadastro"
                 : mode === "edit"
                 ? "Editar Passageiro"
-                : "Novo Cadastro"}
+                : "Novo Passageiro"}
             </DialogTitle>
           </DialogHeader>
           <Form {...form}>
@@ -543,11 +543,11 @@ export default function PassengerFormDialog({
                         render={({ field }) => (
                           <FormItem className="md:col-span-1">
                             <FormLabel>
-                              Nome do Passageiro{" "}
+                              Nome{" "}
                               <span className="text-red-600">*</span>
                             </FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input placeholder="Digite o nome do passageiro" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
