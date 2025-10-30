@@ -78,7 +78,6 @@ export default function Passageiros() {
   const [passageiros, setPassageiros] = useState<Passageiro[]>([]);
   const [countPassageirosAtivos, setcountPassageirosAtivos] =
     useState<number>(null);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [escolas, setEscolas] = useState<Escola[]>([]);
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
 
@@ -91,6 +90,9 @@ export default function Passageiros() {
   const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(
     null
   );
+  const [showMobileFilters, setShowMobileFilters] = useState(() => {
+    return searchParams.size > 0 ? true : false;
+  });
   const [selectedVeiculo, setSelectedVeiculo] = useState(() => {
     return searchParams.get("veiculo") ?? "todos";
   });
@@ -541,6 +543,15 @@ export default function Passageiros() {
               </TabsList>
 
               <TabsContent value="passageiros" className="mt-4">
+                {import.meta.env.MODE === "development" && (
+                  <Button
+                    onClick={handleCadastrarRapido}
+                    variant="outline"
+                    className="gap-2 text-uppercase"
+                  >
+                    GERAR PASSAGEIRO FAKE
+                  </Button>
+                )}
                 <Card>
                   <CardHeader>
                     <div className="flex justify-between items-center">
@@ -592,16 +603,6 @@ export default function Passageiros() {
                         />
                       </div>
                     </div>
-
-                    {import.meta.env.MODE === "development" && (
-                      <Button
-                        onClick={handleCadastrarRapido}
-                        variant="outline"
-                        className="gap-2 text-uppercase"
-                      >
-                        GERAR PASSAGEIRO FAKE
-                      </Button>
-                    )}
 
                     <div
                       className={`transition-all duration-300 ease-in-out overflow-hidden ${

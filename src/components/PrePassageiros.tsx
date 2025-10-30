@@ -266,6 +266,15 @@ export default function PrePassageiros({
     <>
       <div className="space-y-6">
         <div className="w-full">
+          {import.meta.env.MODE === "development" && (
+            <Button
+              onClick={handleCadastrarRapidoLink}
+              variant="outline"
+              className="gap-2 text-uppercase"
+            >
+              GERAR PRÉ-CADASTRO FAKE
+            </Button>
+          )}
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -351,16 +360,6 @@ export default function PrePassageiros({
                   </div>
                 </div>
               </div>
-
-              {import.meta.env.MODE === "development" && (
-                <Button
-                  onClick={handleCadastrarRapidoLink}
-                  variant="outline"
-                  className="gap-2 text-uppercase"
-                >
-                  GERAR PRÉ-CADASTRO FAKE
-                </Button>
-              )}
 
               {loading ? (
                 <PrePassengerListSkeleton />
