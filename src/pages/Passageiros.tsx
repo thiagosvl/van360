@@ -90,14 +90,16 @@ export default function Passageiros() {
   const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(
     null
   );
-  const [showMobileFilters, setShowMobileFilters] = useState(() => {
-    return searchParams.size > 0 ? true : false;
-  });
   const [selectedVeiculo, setSelectedVeiculo] = useState(() => {
     return searchParams.get("veiculo") ?? "todos";
   });
   const [selectedEscola, setSelectedEscola] = useState(() => {
     return searchParams.get("escola") ?? "todas";
+  });
+  const [showMobileFilters, setShowMobileFilters] = useState(() => {
+    return (
+      searchParams.get("escola") != null || searchParams.get("veiculo") != null
+    );
   });
 
   const [selectedStatus, setSelectedStatus] = useState<string>("todos");
@@ -521,13 +523,12 @@ export default function Passageiros() {
         <div className="space-y-6">
           <div className="w-full">
             <Tabs defaultValue="passageiros" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 border">
+              <TabsList className="grid w-full grid-cols-2 border border-primary/10 bg-primary/10">
                 <TabsTrigger
                   value="passageiros"
                   className="data-[state=inactive]:text-gray-600 
             data-[state=active]:bg-primary 
-            data-[state=active]:text-white 
-            hover:bg-gray-100"
+            data-[state=active]:text-white"
                 >
                   Passageiros
                 </TabsTrigger>
@@ -535,8 +536,7 @@ export default function Passageiros() {
                   value="pre-cadastros"
                   className="data-[state=inactive]:text-gray-600 
             data-[state=active]:bg-primary 
-            data-[state=active]:text-white 
-            hover:bg-gray-100"
+            data-[state=active]:text-white"
                 >
                   Pré-Cadastros
                 </TabsTrigger>

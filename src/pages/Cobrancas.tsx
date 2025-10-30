@@ -332,13 +332,12 @@ const Cobrancas = () => {
                 </div>
 
                 <Tabs defaultValue="em-aberto" className="w-full mt-6">
-                  <TabsList className="grid w-full grid-cols-2 border">
+                  <TabsList className="grid w-full grid-cols-2 border border-primary/10 bg-primary/10">
                     <TabsTrigger
                       value="em-aberto"
                       className="data-[state=inactive]:text-gray-600 
             data-[state=active]:bg-primary 
-            data-[state=active]:text-white 
-            hover:bg-gray-100"
+            data-[state=active]:text-white"
                     >
                       Em Aberto{" "}
                       <Badge
@@ -352,8 +351,7 @@ const Cobrancas = () => {
                       value="pagas"
                       className="data-[state=inactive]:text-gray-600 
             data-[state=active]:bg-primary 
-            data-[state=active]:text-white 
-            hover:bg-gray-100"
+            data-[state=active]:text-white"
                     >
                       Pagas{" "}
                       <Badge
