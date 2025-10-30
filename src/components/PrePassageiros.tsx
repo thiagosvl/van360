@@ -21,6 +21,7 @@ import {
   CheckCircle,
   Copy,
   Filter,
+  FilterX,
   LinkIcon,
   MoreVertical,
   Search,
@@ -277,11 +278,11 @@ export default function PrePassageiros({
                       showMobileFilters ? "Esconder Filtros" : "Mostrar Filtros"
                     }
                   >
-                    <Filter
-                      className={`h-4 w-4 ${
-                        showMobileFilters ? "text-blue-600 border-primary" : ""
-                      }`}
-                    />
+                    {showMobileFilters ? (
+                      <FilterX className="h-4 w-4 text-blue-600 border-primary" />
+                    ) : (
+                      <Filter className="h-4 w-4" />
+                    )}
                     <span className={showMobileFilters ? "text-primary" : ""}>
                       Filtros
                     </span>

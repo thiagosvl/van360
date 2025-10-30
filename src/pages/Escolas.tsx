@@ -29,6 +29,7 @@ import { Escola } from "@/types/escola";
 import { safeCloseDialog } from "@/utils/dialogCallback";
 import {
   Filter,
+  FilterX,
   MoreVertical,
   Pencil,
   Plus,
@@ -37,10 +38,11 @@ import {
   ToggleLeft,
   ToggleRight,
   Trash2,
+  Users,
   Users2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const SchoolListSkeleton = () => (
   <div className="space-y-3">
@@ -83,6 +85,7 @@ export default function Escolas() {
   const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
 
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!profile?.id) return;
@@ -263,13 +266,11 @@ export default function Escolas() {
                           : "Mostrar Filtros"
                       }
                     >
-                      <Filter
-                        className={`h-4 w-4 ${
-                          showMobileFilters
-                            ? "text-blue-600 border-primary"
-                            : ""
-                        }`}
-                      />
+                      {showMobileFilters ? (
+                        <FilterX className="h-4 w-4 text-blue-600 border-primary" />
+                      ) : (
+                        <Filter className="h-4 w-4" />
+                      )}
                       <span className={showMobileFilters ? "text-primary" : ""}>
                         Filtros
                       </span>
@@ -400,6 +401,20 @@ export default function Escolas() {
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent>
+                                    {escola.passageiros_ativos_count > 0 && (
+                                      <DropdownMenuItem
+                                        className="cursor-pointer"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          navigate(
+                                            `/passageiros?escola=${escola.id}`
+                                          );
+                                        }}
+                                      >
+                                        <Users className="w-4 h-4 mr-2" />
+                                        Ver Passageiros
+                                      </DropdownMenuItem>
+                                    )}
                                     <DropdownMenuItem
                                       className="cursor-pointer"
                                       onClick={(e) => {
@@ -487,6 +502,20 @@ export default function Escolas() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
+                              {escola.passageiros_ativos_count > 0 && (
+                                <DropdownMenuItem
+                                  className="cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(
+                                      `/passageiros?escola=${escola.id}`
+                                    );
+                                  }}
+                                >
+                                  <Users className="w-4 h-4 mr-2" />
+                                  Ver Passageiros
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem
                                 onClick={(e) => {
                                   e.stopPropagation();

@@ -39,6 +39,7 @@ import { formatarPlacaExibicao } from "@/utils/placaUtils";
 import {
   CreditCard,
   Filter,
+  FilterX,
   MoreVertical,
   Pencil,
   Plus,
@@ -90,8 +91,13 @@ export default function Passageiros() {
   const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(
     null
   );
-  const [selectedVeiculo, setSelectedVeiculo] = useState<string>("todos");
-  const [selectedEscola, setSelectedEscola] = useState<string>("todas");
+  const [selectedVeiculo, setSelectedVeiculo] = useState(() => {
+    return searchParams.get("veiculo") ?? "todos";
+  });
+  const [selectedEscola, setSelectedEscola] = useState(() => {
+    return searchParams.get("escola") ?? "todas";
+  });
+
   const [selectedStatus, setSelectedStatus] = useState<string>("todos");
   const [selectedPeriodo, setSelectedPeriodo] = useState<string>("todos");
 
@@ -551,13 +557,11 @@ export default function Passageiros() {
                               : "Mostrar Filtros"
                           }
                         >
-                          <Filter
-                            className={`h-4 w-4 ${
-                              showMobileFilters
-                                ? "text-blue-600 border-primary"
-                                : ""
-                            }`}
-                          />
+                          {showMobileFilters ? (
+                            <FilterX className="h-4 w-4 text-blue-600 border-primary" />
+                          ) : (
+                            <Filter className="h-4 w-4" />
+                          )}
                           <span
                             className={showMobileFilters ? "text-primary" : ""}
                           >

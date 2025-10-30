@@ -31,6 +31,7 @@ import { formatarPlacaExibicao, limparPlaca } from "@/utils/placaUtils";
 import {
   Car,
   Filter,
+  FilterX,
   MoreVertical,
   Pencil,
   Plus,
@@ -38,10 +39,11 @@ import {
   ToggleLeft,
   ToggleRight,
   Trash2,
+  Users,
   Users2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const SchoolListSkeleton = () => (
   <div className="space-y-3">
@@ -84,6 +86,7 @@ export default function Veiculos() {
   const { user, loading: isSessionLoading } = useSession();
   const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const fetchVeiculos = useCallback(
     async (isRefresh = false) => {
@@ -258,13 +261,11 @@ export default function Veiculos() {
                           : "Mostrar Filtros"
                       }
                     >
-                      <Filter
-                        className={`h-4 w-4 ${
-                          showMobileFilters
-                            ? "text-blue-600 border-primary"
-                            : ""
-                        }`}
-                      />
+                      {showMobileFilters ? (
+                        <FilterX className="h-4 w-4 text-blue-600 border-primary" />
+                      ) : (
+                        <Filter className="h-4 w-4" />
+                      )}
                       <span className={showMobileFilters ? "text-primary" : ""}>
                         Filtros
                       </span>
@@ -411,6 +412,20 @@ export default function Veiculos() {
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent>
+                                    {veiculo.passageiros_ativos_count > 0 && (
+                                      <DropdownMenuItem
+                                        className="cursor-pointer"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          navigate(
+                                            `/passageiros?veiculo=${veiculo.id}`
+                                          );
+                                        }}
+                                      >
+                                        <Users className="w-4 h-4 mr-2" />
+                                        Ver Passageiros
+                                      </DropdownMenuItem>
+                                    )}
                                     <DropdownMenuItem
                                       className="cursor-pointer"
                                       onClick={(e) => {
@@ -505,6 +520,20 @@ export default function Veiculos() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
+                              {veiculo.passageiros_ativos_count > 0 && (
+                                <DropdownMenuItem
+                                  className="cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(
+                                      `/passageiros?veiculo=${veiculo.id}`
+                                    );
+                                  }}
+                                >
+                                  <Users className="w-4 h-4 mr-2" />
+                                  Ver Passageiros
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem
                                 onClick={(e) => {
                                   e.stopPropagation();
