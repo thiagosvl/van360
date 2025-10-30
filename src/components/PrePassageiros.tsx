@@ -291,12 +291,10 @@ export default function PrePassageiros({
                 </CardTitle>
 
                 <div className="flex items-center gap-2">
-                  {prePassageiros.length > 0 && (
-                    <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
-                      {prePassageiros.length} pendente
-                      {prePassageiros.length === 1 ? "" : "s"}
-                    </span>
-                  )}
+                  <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
+                    {prePassageiros.length} pendente
+                    {prePassageiros.length === 1 ? "" : "s"}
+                  </span>
                 </div>
               </div>
             </CardHeader>
