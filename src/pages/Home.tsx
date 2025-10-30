@@ -19,9 +19,8 @@ import {
   Copy,
   CreditCard,
   GraduationCap,
-  LayoutDashboard,
   LinkIcon,
-  Users,
+  Users
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
@@ -59,12 +58,12 @@ const ACCESS_CARDS_DATA = [
   //   href: "/gastos",
   //   icon: Wallet,
   // },
-  {
-    title: "Relatórios",
-    description: "Visualize faturamento, inadimplência e projeções mensais.",
-    href: "/relatorios",
-    icon: LayoutDashboard,
-  },
+  // {
+  //   title: "Relatórios",
+  //   description: "Visualize faturamento, inadimplência e projeções mensais.",
+  //   href: "/relatorios",
+  //   icon: LayoutDashboard,
+  // },
   // {
   //   title: "Configurações",
   //   description:
@@ -79,7 +78,7 @@ const AccessCard = ({
 }: (typeof ACCESS_CARDS_DATA)[0] & { subtitle: string }) => {
   return (
     <Card
-      className={`shadow-md h-full bg-white border border-gray-200 rounded-xl p-5 md:p-7 lg:p-10 xl:p-12`}
+      className={`shadow-md h-full bg-white border border-gray-200 rounded-xl p-5 md:p-7 lg:p-10 xl:p-12 transition-all duration-200 hover:border hover:border-primary`}
     >
       <CardContent className="p-0 flex flex-col justify-center items-center text-center h-full">
         <Icon
@@ -286,7 +285,7 @@ const Home = () => {
               >
                 <div
                   key={card.href}
-                  className="flex flex-col items-center text-center transition-all duration-200 hover:scale-[1.05]"
+                  className="flex flex-col items-center text-center"
                 >
                   <AccessCard {...card} />
                   <p className="text-xs md:text-sm lg:text-md xl:text-xl font-medium text-foreground mt-1.5 leading-snug">
