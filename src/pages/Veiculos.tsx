@@ -86,7 +86,9 @@ export default function Veiculos() {
         if (!isRefresh) setLoading(true);
         else setRefreshing(true);
 
-        const data = await veiculoService.fetchVeiculosComContagemAtivos(profile.id);
+        const data = await veiculoService.fetchVeiculosComContagemAtivos(
+          profile.id
+        );
         setVeiculos(data || []);
         setCountVeiculosAtivos(data.filter((e) => e.ativo).length);
       } catch (error) {
@@ -239,18 +241,8 @@ export default function Veiculos() {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle className="flex items-center gap-2">
-                    <span>Veículos</span>
-                    {countVeiculosAtivos > 0 && (
-                      <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
-                        {countVeiculosAtivos}
-                      </span>
-                    )}
-                  </CardTitle>
-
-                  <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
-                      size="icon"
                       onClick={() => setShowMobileFilters(!showMobileFilters)}
                       className={`md:hidden`}
                       title={
@@ -266,13 +258,19 @@ export default function Veiculos() {
                             : ""
                         }`}
                       />
+                      <span className={showMobileFilters ? "text-primary" : ""}>
+                        Filtros
+                      </span>
                     </Button>
+                  </CardTitle>
+
+                  <div className="flex items-center gap-2">
                     <Button
                       onClick={() => setIsDialogOpen(true)}
                       className="gap-2"
                     >
                       <Plus className="h-4 w-4" />
-                      <span className="hidden sm:inline">Novo Veiculo</span>
+                      <span>Novo Veiculo</span>
                     </Button>
                   </div>
                 </div>

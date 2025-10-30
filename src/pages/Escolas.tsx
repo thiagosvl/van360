@@ -247,18 +247,8 @@ export default function Escolas() {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle className="flex items-center gap-2">
-                    <span>Escolas</span>
-                    {countEscolasAtivas > 0 && (
-                      <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
-                        {countEscolasAtivas}
-                      </span>
-                    )}
-                  </CardTitle>
-
-                  <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
-                      size="icon"
                       onClick={() => setShowMobileFilters(!showMobileFilters)}
                       className={`md:hidden`}
                       title={
@@ -274,13 +264,19 @@ export default function Escolas() {
                             : ""
                         }`}
                       />
+                      <span className={showMobileFilters ? "text-primary" : ""}>
+                        Filtros
+                      </span>
                     </Button>
+                  </CardTitle>
+
+                  <div className="flex items-center gap-2">
                     <Button
                       onClick={() => setIsDialogOpen(true)}
                       className="gap-2"
                     >
                       <Plus className="h-4 w-4" />
-                      <span className="hidden sm:inline">Nova Escola</span>
+                      <span>Nova Escola</span>
                     </Button>
                   </div>
                 </div>

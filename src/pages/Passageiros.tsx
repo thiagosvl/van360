@@ -530,33 +530,12 @@ export default function Passageiros() {
               </TabsList>
 
               <TabsContent value="passageiros" className="mt-4">
-                <div className="">
-                  {import.meta.env.MODE === "development" && (
-                    <Button
-                      onClick={handleCadastrarRapido}
-                      variant="outline"
-                      className="gap-2 text-uppercase"
-                    >
-                      GERAR PASSAGEIRO FAKE
-                    </Button>
-                  )}
-                </div>
                 <Card>
                   <CardHeader>
                     <div className="flex justify-between items-center">
                       <CardTitle className="flex items-center gap-2">
-                        <span>Passageiros</span>
-                        {countPassageirosAtivos > 0 && (
-                          <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
-                            {countPassageirosAtivos}
-                          </span>
-                        )}
-                      </CardTitle>
-
-                      <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
-                          size="icon"
                           onClick={() =>
                             setShowMobileFilters(!showMobileFilters)
                           }
@@ -574,12 +553,18 @@ export default function Passageiros() {
                                 : ""
                             }`}
                           />
+                          <span
+                            className={showMobileFilters ? "text-primary" : ""}
+                          >
+                            Filtros
+                          </span>
                         </Button>
+                      </CardTitle>
+
+                      <div className="flex items-center gap-2">
                         <Button onClick={handleOpenNewDialog}>
                           <Plus className="h-4 w-4" />
-                          <span className="hidden sm:inline">
-                            Novo Passageiro
-                          </span>
+                          <span>Novo Passageiro</span>
                         </Button>
                       </div>
                     </div>
@@ -598,6 +583,17 @@ export default function Passageiros() {
                         />
                       </div>
                     </div>
+
+                    {import.meta.env.MODE === "development" && (
+                      <Button
+                        onClick={handleCadastrarRapido}
+                        variant="outline"
+                        className="gap-2 text-uppercase"
+                      >
+                        GERAR PASSAGEIRO FAKE
+                      </Button>
+                    )}
+
                     <div
                       className={`transition-all duration-300 ease-in-out overflow-hidden ${
                         showMobileFilters ? "max-h-[500px]" : "max-h-0"

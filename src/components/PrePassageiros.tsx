@@ -267,33 +267,12 @@ export default function PrePassageiros({
     <>
       <div className="space-y-6">
         <div className="w-full">
-          <div className="">
-            {import.meta.env.MODE === "development" && (
-              <Button
-                onClick={handleCadastrarRapidoLink}
-                variant="outline"
-                className="gap-2 text-uppercase"
-              >
-                GERAR PRÉ-CADASTRO FAKE
-              </Button>
-            )}
-          </div>
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle className="flex items-center gap-2">
-                  <span>Pré-Cadastros</span>
-                  {prePassageiros.length > 0 && (
-                    <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
-                      {prePassageiros.length}
-                    </span>
-                  )}
-                </CardTitle>
-
-                <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
-                    size="icon"
                     onClick={() => setShowMobileFilters(!showMobileFilters)}
                     className={`md:hidden`}
                     title={
@@ -305,7 +284,19 @@ export default function PrePassageiros({
                         showMobileFilters ? "text-blue-600 border-primary" : ""
                       }`}
                     />
+                    <span className={showMobileFilters ? "text-primary" : ""}>
+                      Filtros
+                    </span>
                   </Button>
+                </CardTitle>
+
+                <div className="flex items-center gap-2">
+                  {prePassageiros.length > 0 && (
+                    <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
+                      {prePassageiros.length} pendente
+                      {prePassageiros.length === 1 ? "" : "s"}
+                    </span>
+                  )}
                 </div>
               </div>
             </CardHeader>
@@ -363,6 +354,16 @@ export default function PrePassageiros({
                   </div>
                 </div>
               </div>
+
+              {import.meta.env.MODE === "development" && (
+                <Button
+                  onClick={handleCadastrarRapidoLink}
+                  variant="outline"
+                  className="gap-2 text-uppercase"
+                >
+                  GERAR PRÉ-CADASTRO FAKE
+                </Button>
+              )}
 
               {loading ? (
                 <PrePassengerListSkeleton />
