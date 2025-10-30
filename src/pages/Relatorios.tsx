@@ -267,7 +267,7 @@ const Relatorios = () => {
     }
 
     setPageTitle("Relatórios");
-    setPageSubtitle(`Exibindo resumo de ${meses[mesFilter - 1]}/${anoFilter}`);
+    setPageSubtitle(`Referentes a ${meses[mesFilter - 1]} de ${anoFilter}`);
   }, [
     mesFilter,
     anoFilter,

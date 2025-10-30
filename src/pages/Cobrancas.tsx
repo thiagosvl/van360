@@ -343,7 +343,7 @@ const Cobrancas = () => {
                       Em Aberto{" "}
                       <Badge
                         variant="secondary"
-                        className="ml-2 bg-neutral-200"
+                        className="ml-2 bg-neutral-200 py-0"
                       >
                         {cobrancasAbertas.length}
                       </Badge>
@@ -358,7 +358,7 @@ const Cobrancas = () => {
                       Pagas{" "}
                       <Badge
                         variant="secondary"
-                        className="ml-2 bg-neutral-200"
+                        className="ml-2 bg-neutral-200 py-0"
                       >
                         {cobrancasPagas.length}
                       </Badge>

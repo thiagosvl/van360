@@ -1,4 +1,4 @@
-import { STORAGE_KEY_QUICKSTART_STATUS } from "@/constants";
+import { BASE_DOMAIN, STORAGE_KEY_QUICKSTART_STATUS } from "@/constants";
 
 export const clearLoginStorageMotorista = () => {
     const keys = [
@@ -16,4 +16,8 @@ export const clearLoginStorageMotorista = () => {
             localStorage.removeItem(key);
         }
     });
+}
+
+export const buildPrepassageiroLink = (profileId) => {
+    return `${BASE_DOMAIN}/cadastro-passageiro/${profileId}`;
 }

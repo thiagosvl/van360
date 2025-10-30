@@ -16,6 +16,7 @@ import { useSession } from "@/hooks/useSession";
 import { prePassageiroService } from "@/services/prePassageiroService";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { safeCloseDialog } from "@/utils/dialogCallback";
+import { buildPrepassageiroLink } from "@/utils/motoristaUtils";
 import {
   CheckCircle,
   Copy,
@@ -81,8 +82,6 @@ export default function PrePassageiros({
   const [isFinalizeDialogOpen, setIsFinalizeDialogOpen] = useState(false);
   const [selectedPrePassageiro, setSelectedPrePassageiro] =
     useState<PrePassageiro | null>(null);
-
-  const BASE_DOMAIN = import.meta.env.VITE_PUBLIC_APP_DOMAIN;
 
   useEffect(() => {
     if (refreshKey !== undefined) {
@@ -232,9 +231,8 @@ export default function PrePassageiros({
   };
 
   const handleCopyLink = () => {
-    const linkToCopy = `${BASE_DOMAIN}/cadastro-passageiro/${profile?.id}`;
     try {
-      navigator.clipboard.writeText(linkToCopy);
+      navigator.clipboard.writeText(buildPrepassageiroLink(profile?.id));
 
       setIsCopied(true);
       setTimeout(() => {

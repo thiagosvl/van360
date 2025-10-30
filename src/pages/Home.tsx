@@ -12,6 +12,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSession } from "@/hooks/useSession";
 import { Cobranca } from "@/types/cobranca";
 import { meses } from "@/utils/formatters";
+import { buildPrepassageiroLink } from "@/utils/motoristaUtils";
 import {
   Car,
   CheckCircle,
@@ -25,11 +26,56 @@ import {
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 
+const ACCESS_CARDS_DATA = [
+  {
+    title: "Passageiros",
+    description: "Cadastre, edite e ative/desative passageiros e responsáveis.",
+    href: "/passageiros",
+    icon: Users,
+  },
+  {
+    title: "Cobranças",
+    description:
+      "Visualize e gerencie as cobranças, registre pagamentos e envie notificações.",
+    href: "/cobrancas",
+    icon: CreditCard,
+  },
+  {
+    title: "Escolas",
+    description: "Gerencie a lista de escolas atendidas e seus detalhes.",
+    href: "/escolas",
+    icon: GraduationCap,
+  },
+  {
+    title: "Veículos",
+    description: "Gerencie a lista de veículos.",
+    href: "/veiculos",
+    icon: Car,
+  },
+  // {
+  //   title: "Gastos",
+  //   description:
+  //     "Registre despesas operacionais e visualize o balanço financeiro.",
+  //   href: "/gastos",
+  //   icon: Wallet,
+  // },
+  {
+    title: "Relatórios",
+    description: "Visualize faturamento, inadimplência e projeções mensais.",
+    href: "/relatorios",
+    icon: LayoutDashboard,
+  },
+  // {
+  //   title: "Configurações",
+  //   description:
+  //     "Ajuste notificações, preferências de cobrança e dados do condutor.",
+  //   href: "/configuracoes",
+  //   icon: Settings,
+  // },
+];
+
 const AccessCard = ({
-  title,
-  href,
   icon: Icon,
-  color,
 }: (typeof ACCESS_CARDS_DATA)[0] & { subtitle: string }) => {
   return (
     <Card
@@ -38,7 +84,7 @@ const AccessCard = ({
       <CardContent className="p-0 flex flex-col justify-center items-center text-center h-full">
         <Icon
           className={`h-8 w-8 text-primary lg:h-10 lg:w-10 xl:h-12 xl:w-12`}
-        />{" "}
+        />
       </CardContent>
     </Card>
   );
@@ -57,57 +103,14 @@ const Home = () => {
   const [loadingFinances, setLoadingFinances] = useState(true);
   const [isCopied, setIsCopied] = useState(false);
 
-  const ACCESS_CARDS_DATA = [
-    {
-      title: "Passageiros",
-      description:
-        "Cadastre, edite e ative/desative passageiros e responsáveis.",
-      href: "/passageiros",
-      icon: Users,
-    },
-    {
-      title: "Cobranças",
-      description:
-        "Visualize e gerencie as cobranças, registre pagamentos e envie notificações.",
-      href: "/cobrancas",
-      icon: CreditCard,
-    },
-    {
-      title: "Escolas",
-      description: "Gerencie a lista de escolas atendidas e seus detalhes.",
-      href: "/escolas",
-      icon: GraduationCap,
-    },
-    {
-      title: "Veículos",
-      description: "Gerencie a lista de veículos.",
-      href: "/veiculos",
-      icon: Car,
-    },
-    // {
-    //   title: "Gastos",
-    //   description:
-    //     "Registre despesas operacionais e visualize o balanço financeiro.",
-    //   href: "/gastos",
-    //   icon: Wallet,
-    // },
-    {
-      title: "Relatórios",
-      description: "Visualize faturamento, inadimplência e projeções mensais.",
-      href: "/relatorios",
-      icon: LayoutDashboard,
-    },
-    // {
-    //   title: "Configurações",
-    //   description:
-    //     "Ajuste notificações, preferências de cobrança e dados do condutor.",
-    //   href: "/configuracoes",
-    //   icon: Settings,
-    // },
-  ];
+  const paginasAOcultarNoPlanoGratis = ["/configuracoes", "/gastos"];
 
-  const BASE_DOMAIN =
-    import.meta.env.VITE_PUBLIC_APP_DOMAIN || window.location.origin;
+  const accessCardsWithSubtitles = ACCESS_CARDS_DATA.filter((card) => {
+    return !paginasAOcultarNoPlanoGratis.includes(card.href);
+  }).map((card) => ({
+    ...card,
+    subtitle: card.description,
+  }));
 
   useEffect(() => {
     if (profile?.nome) {
@@ -165,10 +168,8 @@ const Home = () => {
   };
 
   const handleCopyLink = () => {
-    const linkToCopy = `${BASE_DOMAIN}/cadastro-passageiro/${profile?.id}`;
-
     try {
-      navigator.clipboard.writeText(linkToCopy);
+      navigator.clipboard.writeText(buildPrepassageiroLink(profile?.id));
 
       setIsCopied(true);
       setTimeout(() => {
@@ -187,15 +188,6 @@ const Home = () => {
   const pullToRefreshReload = async () => {
     console.log("Atualizando dados da tela inicial...");
   };
-
-  const paginasAOcultarNoPlanoGratis = ["/configuracoes", "/gastos"];
-
-  const accessCardsWithSubtitles = ACCESS_CARDS_DATA.filter((card) => {
-    return !paginasAOcultarNoPlanoGratis.includes(card.href);
-  }).map((card) => ({
-    ...card,
-    subtitle: card.description,
-  }));
 
   if (isAuthLoading) {
     return (
