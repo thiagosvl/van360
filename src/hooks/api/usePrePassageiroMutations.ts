@@ -1,0 +1,58 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { prePassageiroApi } from "@/services/api/pre-passageiro.api";
+import { PrePassageiro } from "@/types/prePassageiro";
+import { toast } from "@/utils/notifications/toast";
+
+export function useCreatePrePassageiro() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: any) => prePassageiroApi.createPrePassageiro(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["pre-passageiros"] });
+      toast.success("prePassageiro.sucesso.linkGerado");
+    },
+    onError: (error: any) => {
+      toast.error("prePassageiro.erro.gerarLink", {
+        description: error.message || "Não foi possível criar o registro temporário.",
+      });
+    },
+  });
+}
+
+export function useDeletePrePassageiro() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => prePassageiroApi.deletePrePassageiro(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["pre-passageiros"] });
+
+      const previousPrePassageiros = queryClient.getQueriesData({ queryKey: ["pre-passageiros"] });
+
+      queryClient.setQueriesData({ queryKey: ["pre-passageiros"] }, (old: any) => {
+        if (!old) return old;
+        return old.filter((p: PrePassageiro) => p.id !== id);
+      });
+
+      return { previousPrePassageiros };
+    },
+    onError: (error: any, variables, context) => {
+      if (context?.previousPrePassageiros) {
+        context.previousPrePassageiros.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      toast.error("prePassageiro.erro.excluir", {
+        description: error.message || "Não foi possível concluir a operação.",
+      });
+    },
+    onSuccess: () => {
+      toast.success("prePassageiro.sucesso.excluido");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["pre-passageiros"] });
+    },
+  });
+}
+

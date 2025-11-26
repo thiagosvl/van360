@@ -1,4 +1,4 @@
-import { useSession } from "@/hooks/useSession";
+import { useSession } from "@/hooks/business/useSession";
 import { Navigate, useLocation } from "react-router-dom";
 
 export const AppGate = ({ children }: { children: React.ReactNode }) => {

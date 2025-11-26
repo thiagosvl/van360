@@ -1,0 +1,353 @@
+/**
+ * Mensagens padronizadas do sistema
+ * Organizadas por categoria para facilitar manutenção e consistência
+ */
+
+export const messages = {
+  // ========== ERROS GENÉRICOS ==========
+  erro: {
+    generico: "Ocorreu um erro inesperado. Tente novamente.",
+    carregar: "Erro ao carregar dados.",
+    salvar: "Erro ao salvar dados.",
+    excluir: "Erro ao excluir.",
+    atualizar: "Erro ao atualizar.",
+    operacao: "Erro ao realizar operação.",
+    conexao: "Erro de conexão. Verifique sua internet.",
+    permissao: "Você não tem permissão para realizar esta ação.",
+    validacao: "Corrija os erros no formulário.",
+  },
+
+  // ========== SUCESSO GENÉRICO ==========
+  sucesso: {
+    salvar: "Salvo com sucesso.",
+    excluir: "Excluído com sucesso.",
+    atualizar: "Atualizado com sucesso.",
+    operacao: "Operação realizada com sucesso.",
+  },
+
+  // ========== VEÍCULOS ==========
+  veiculo: {
+    erro: {
+      carregar: "Erro ao carregar veículos.",
+      criar: "Erro ao criar veículo.",
+      atualizar: "Erro ao atualizar veículo.",
+      excluir: "Erro ao excluir veículo.",
+      excluirComPassageiros: "Existem passageiros ativos vinculados a este veículo.",
+      desativar: "Não é possível desativar.",
+      desativarComPassageiros: "Existem passageiros ativos vinculados a este veículo.",
+      placaJaCadastrada: "Essa placa já foi cadastrada no sistema.",
+    },
+    sucesso: {
+      criado: "Veículo criado com sucesso.",
+      atualizado: "Veículo atualizado com sucesso.",
+      excluido: "Veículo excluído permanentemente.",
+      ativado: "Veículo ativado com sucesso.",
+      desativado: "Veículo desativado com sucesso.",
+    },
+  },
+
+  // ========== PASSAGEIROS ==========
+  passageiro: {
+    erro: {
+      carregar: "Erro ao carregar passageiros.",
+      criar: "Erro ao criar passageiro.",
+      atualizar: "Erro ao atualizar passageiro.",
+      excluir: "Erro ao excluir passageiro.",
+      naoEncontrado: "Passageiro não encontrado.",
+      excluirComCobrancas: "Este passageiro possui cobranças em seu histórico.",
+      ativar: "Erro ao ativar o passageiro.",
+      desativar: "Erro ao desativar o passageiro.",
+      alterar: "Erro ao buscar alterar passageiro.",
+    },
+    sucesso: {
+      criado: "Passageiro criado com sucesso.",
+      atualizado: "Passageiro atualizado com sucesso.",
+      excluido: "Passageiro excluído com sucesso.",
+      ativado: "Passageiro ativado com sucesso.",
+      desativado: "Passageiro desativado com sucesso.",
+      observacoesSalvas: "Observações salvas com sucesso.",
+    },
+  },
+
+  // ========== PRÉ-CADASTROS ==========
+  prePassageiro: {
+    erro: {
+      carregar: "Erro ao carregar pré-cadastros.",
+      criar: "Erro ao criar pré-cadastro.",
+      excluir: "Erro ao excluir pré-cadastro.",
+      gerarLink: "Falha na Geração do Link.",
+    },
+    sucesso: {
+      linkGerado: "Pré-Cadastro Gerado com sucesso.",
+      excluido: "Pré-cadastro excluído com sucesso.",
+    },
+  },
+
+  // ========== ESCOLAS ==========
+  escola: {
+    erro: {
+      carregar: "Erro ao carregar escolas.",
+      criar: "Erro ao criar escola.",
+      atualizar: "Erro ao atualizar escola.",
+      excluir: "Erro ao excluir escola.",
+      excluirComPassageiros: "Existem passageiros ativos vinculados a esta escola.",
+      desativar: "Não é possível desativar.",
+      desativarComPassageiros: "Existem passageiros ativos vinculados a esta escola.",
+    },
+    sucesso: {
+      criada: "Escola criada com sucesso.",
+      atualizada: "Escola atualizada com sucesso.",
+      excluida: "Escola excluída permanentemente.",
+      ativada: "Escola ativada com sucesso.",
+      desativada: "Escola desativada com sucesso.",
+    },
+  },
+
+  // ========== COBRANÇAS ==========
+  cobranca: {
+    erro: {
+      carregar: "Não foi possível carregar as cobranças.",
+      criar: "Erro ao criar cobrança.",
+      atualizar: "Erro ao atualizar cobrança.",
+      excluir: "Erro ao excluir cobrança.",
+      notificacao: "Erro ao enviar lembrete.",
+      alterarNotificacoes: "Erro ao alterar envio de lembretes.",
+      pagamento: "Erro ao registrar pagamento.",
+      registrarPagamento: "Erro ao registrar pagamento.",
+      desfazerPagamento: "Erro ao desfazer pagamento.",
+      buscarHistorico: "Erro ao buscar histórico.",
+      buscarAnos: "Erro ao buscar anos disponíveis.",
+      naoEncontrada: "Cobrança não encontrada.",
+      naoEncontradaDescricao: "Não foi possível encontrar a cobrança pendente. Por favor, recarregue a página.",
+      carregarPagamento: "Erro ao carregar pagamento.",
+      listarAno: "Erro ao listar cobranças para o ano selecionado.",
+      processarAcao: "Erro ao processar a ação.",
+      linkPagamentoIndisponivel: "Link de pagamento indisponível.",
+      jaExiste: "Já existe uma cobrança para o mês e ano selecionado.",
+    },
+    info: {
+      nenhumaAlteracao: "Nenhuma alteração detectada.",
+      linkPagamentoDescricao: "Informe o condutor sobre o problema.",
+    },
+    sucesso: {
+      criada: "Cobrança registrada com sucesso.",
+      atualizada: "Cobrança atualizada com sucesso.",
+      excluida: "Cobrança excluída com sucesso.",
+      notificacaoEnviada: "Lembrete enviado com sucesso para o responsável.",
+      notificacoesAtivadas: "Lembretes automáticos reativados com sucesso.",
+      notificacoesDesativadas: "Lembretes automáticos pausados com sucesso.",
+      pagamentoRegistrado: "Pagamento registrado com sucesso.",
+      pagamentoDesfeito: "Pagamento desfeito com sucesso.",
+    },
+  },
+
+  // ========== GASTOS ==========
+  gasto: {
+    erro: {
+      carregar: "Erro ao carregar gastos.",
+      criar: "Erro ao criar gasto.",
+      atualizar: "Erro ao atualizar gasto.",
+      excluir: "Erro ao excluir gasto.",
+      salvar: "Erro ao salvar gasto.",
+    },
+    sucesso: {
+      criado: "Gasto criado com sucesso.",
+      atualizado: "Gasto atualizado com sucesso.",
+      excluido: "Gasto excluído com sucesso.",
+    },
+  },
+
+  // ========== AUTENTICAÇÃO ==========
+  auth: {
+    erro: {
+      login: "Erro ao fazer login. Verifique suas credenciais.",
+      senhaIncorreta: "Senha incorreta.",
+      usuarioNaoEncontrado: "Usuário não encontrado.",
+      cpfNaoEncontrado: "CPF não encontrado.",
+      cpfNaoEncontradoDescricao: "Verifique o número informado. Caso tenha dúvidas, fale com o suporte.",
+      emailNaoEncontrado: "E-mail não encontrado.",
+      sessaoExpirada: "Sua sessão expirou. Faça login novamente.",
+      naoAutorizado: "Você não está autorizado a acessar esta página.",
+    },
+    sucesso: {
+      login: "Login realizado com sucesso.",
+      logout: "Logout realizado com sucesso.",
+      senhaRedefinida: "Senha redefinida com sucesso.",
+      senhaAlterada: "Senha alterada com sucesso.",
+      emailEnviado: "E-mail de redefinição enviado com sucesso.",
+    },
+    info: {
+      informeCpf: "Informe seu CPF.",
+      informeCpfDescricao: "Digite o CPF cadastrado para receber o link de redefinição em seu e-mail.",
+    },
+  },
+
+  // ========== CADASTRO ==========
+  cadastro: {
+    erro: {
+      criar: "Erro ao criar cadastro.",
+      atualizar: "Erro ao atualizar cadastro.",
+    },
+    sucesso: {
+      criado: "Cadastro realizado com sucesso.",
+      atualizado: "Cadastro atualizado com sucesso.",
+      perfilAtualizado: "Perfil atualizado com sucesso.",
+      perfilAtualizadoDescricao: "Suas informações foram salvas.",
+    },
+    info: {
+      pagamentoConfirmado: "Pagamento Confirmado.",
+      pagamentoConfirmadoDescricao: "Por favor, faça o login manual para acessar a plataforma.",
+    },
+  },
+
+  // ========== ASSINATURA ==========
+  assinatura: {
+    erro: {
+      carregar: "Erro ao carregar informações da assinatura.",
+      processar: "Erro ao processar assinatura.",
+      pagamento: "Erro ao processar pagamento.",
+      gerarPix: "Erro ao gerar PIX.",
+      copiarPix: "Erro ao copiar PIX.",
+      copiarPixDescricao: "Não foi possível copiar o código PIX.",
+    },
+    sucesso: {
+      ativada: "Assinatura ativada com sucesso.",
+      atualizada: "Assinatura atualizada com sucesso.",
+      cobrancasAtivadas: "Cobranças automáticas ativadas.",
+      cobrancasAtivadasDescricao: "X passageiros foram ativados automaticamente.",
+    },
+    info: {
+      pendente: "Você possui uma assinatura pendente.",
+      quantidadeIgual: "Você já está com este plano ativo.",
+      quantidadeIgualDescricao: "Não é necessário fazer alterações. Você já tem esta quantidade de passageiros com cobrança automática.",
+    },
+  },
+
+  // ========== PLANOS ==========
+  plano: {
+      erro: {
+        carregar: "Erro ao carregar planos.",
+        escolher: "Erro ao escolher o plano.",
+        selecionarQuantidade: "É necessário escolher a quantidade de cobranças automáticas que deseja.",
+        informarQuantidadePersonalizada: "Informe a quantidade de cobranças automáticas que deseja.",
+        quantidadeAbaixoMinimo: "A quantidade informada está abaixo do mínimo permitido.",
+        cobrancaAutomaticaApenasCompleto: "Cobranças automáticas estão disponíveis apenas no plano Completo.",
+      },
+    info: {
+      limiteAtingido: "Você atingiu o limite do seu plano.",
+      upgradeParaCobrancasAutomaticas: "Faça upgrade para o plano Completo para ativar cobranças automáticas.",
+    },
+  },
+
+  // ========== VALIDAÇÕES ==========
+  validacao: {
+    campoObrigatorio: "Campo obrigatório.",
+    senhasNaoCoincidem: "As senhas não coincidem.",
+    formularioComErros: "Corrija os erros no formulário.",
+  },
+
+  // ========== SISTEMA ==========
+  sistema: {
+    erro: {
+      copiar: "Erro ao copiar.",
+      copiarDescricao: "Não foi possível copiar o texto.",
+      falhaCopiar: "Falha ao copiar.",
+      falhaCopiarDescricao: "Tente copiar o link manualmente.",
+      validarFranquia: "Erro ao validar franquia.",
+      validarFranquiaDescricao: "Não foi possível verificar o limite de cobranças automáticas.",
+      consultarCep: "Erro ao consultar CEP.",
+      enviarDados: "Erro ao enviar dados.",
+      linkInvalido: "Link inválido.",
+      linkInvalidoDescricao: "Este link de cadastro não é válido.",
+    },
+    sucesso: {
+      cobrancasAutomaticasAtivadas: "Cobranças automáticas ativadas com sucesso.",
+      cobrancasAutomaticasDesativadas: "Cobranças automáticas desativadas com sucesso.",
+    },
+    info: {
+      cepNaoEncontrado: "CEP não encontrado na base de dados.",
+      cepNaoEncontradoDescricao: "Preencha o endereço manualmente.",
+      atualizacaoApp: "Atualização de App.",
+      atualizacaoAppDescricao: "Baixando melhorias em segundo plano...",
+      melhoriasProntas: "Melhorias Prontas.",
+      melhoriasProntasDescricao: "A nova versão será aplicada na próxima vez que você abrir o app.",
+      appAtualizado: "Pronto.",
+      appAtualizadoDescricao: "O aplicativo foi atualizado com sucesso para a versão mais recente.",
+    },
+  },
+
+  // ========== USUÁRIOS/ADMIN ==========
+  usuario: {
+    erro: {
+      carregar: "Erro ao carregar usuários.",
+      criar: "Erro ao criar usuário.",
+      atualizar: "Erro ao atualizar usuário.",
+      excluir: "Erro ao excluir usuário.",
+      cpfJaExiste: "CPF/CNPJ já existe.",
+      emailJaExiste: "Email já existe.",
+      invalido: "Usuário selecionado é inválido ou não possui um ID de autenticação.",
+      atualizacao: "Erro na Atualização.",
+    },
+    sucesso: {
+      criado: "Usuário criado com sucesso!",
+      atualizado: "Usuário atualizado com sucesso!",
+      excluido: "Usuário excluído com sucesso!",
+    },
+  },
+} as const;
+
+/**
+ * Tipo para as chaves de mensagens (para autocomplete)
+ */
+export type MessageKey = 
+  | `erro.${keyof typeof messages.erro}`
+  | `sucesso.${keyof typeof messages.sucesso}`
+  | `veiculo.erro.${keyof typeof messages.veiculo.erro}`
+  | `veiculo.sucesso.${keyof typeof messages.veiculo.sucesso}`
+  | `passageiro.erro.${keyof typeof messages.passageiro.erro}`
+  | `passageiro.sucesso.${keyof typeof messages.passageiro.sucesso}`
+  | `escola.erro.${keyof typeof messages.escola.erro}`
+  | `escola.sucesso.${keyof typeof messages.escola.sucesso}`
+  | `cobranca.erro.${keyof typeof messages.cobranca.erro}`
+  | `cobranca.sucesso.${keyof typeof messages.cobranca.sucesso}`
+  | `cobranca.info.${keyof typeof messages.cobranca.info}`
+  | `gasto.erro.${keyof typeof messages.gasto.erro}`
+  | `gasto.sucesso.${keyof typeof messages.gasto.sucesso}`
+  | `auth.erro.${keyof typeof messages.auth.erro}`
+  | `auth.sucesso.${keyof typeof messages.auth.sucesso}`
+  | `auth.info.${keyof typeof messages.auth.info}`
+  | `cadastro.erro.${keyof typeof messages.cadastro.erro}`
+  | `cadastro.sucesso.${keyof typeof messages.cadastro.sucesso}`
+  | `assinatura.erro.${keyof typeof messages.assinatura.erro}`
+  | `assinatura.sucesso.${keyof typeof messages.assinatura.sucesso}`
+  | `assinatura.info.${keyof typeof messages.assinatura.info}`
+  | `plano.erro.${keyof typeof messages.plano.erro}`
+  | `plano.info.${keyof typeof messages.plano.info}`
+  | `validacao.${keyof typeof messages.validacao}`
+  | `sistema.erro.${keyof typeof messages.sistema.erro}`
+  | `sistema.sucesso.${keyof typeof messages.sistema.sucesso}`
+  | `sistema.info.${keyof typeof messages.sistema.info}`
+  | `usuario.erro.${keyof typeof messages.usuario.erro}`
+  | `usuario.sucesso.${keyof typeof messages.usuario.sucesso}`
+  | `prePassageiro.erro.${keyof typeof messages.prePassageiro.erro}`
+  | `prePassageiro.sucesso.${keyof typeof messages.prePassageiro.sucesso}`;
+
+/**
+ * Função helper para obter mensagem por chave
+ * Exemplo: getMessage('veiculo.sucesso.criado') => "Veículo criado com sucesso."
+ */
+export function getMessage(key: MessageKey | string): string {
+  const keys = key.split('.');
+  let value: unknown = messages;
+  
+  for (const k of keys) {
+    if (value && typeof value === 'object' && k in value) {
+      value = value[k as keyof typeof value];
+    } else {
+      return key; // Retorna a chave se não encontrar
+    }
+  }
+  
+  return typeof value === 'string' ? value : key;
+}
+

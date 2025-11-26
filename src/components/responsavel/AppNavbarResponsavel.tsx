@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { clearLoginStorageResponsavel } from "@/utils/responsavelUtils";
+import { clearLoginStorageResponsavel } from "@/utils/domain/responsavel/responsavelUtils";
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 

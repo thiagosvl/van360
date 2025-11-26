@@ -1,21 +1,24 @@
-import { LoadingOverlay } from "@/components/LoadingOverlay";
+// React
+import React, { useEffect, useMemo, useState } from "react";
+
+// React Router
+import { useNavigate } from "react-router-dom";
+
+// Components - Responsavel
+import AppNavbarResponsavel from "@/components/responsavel/AppNavbarResponsavel";
+
+// Components - UI
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { seForPago } from "@/utils/disableActions";
-
-import { AlertTriangle, Info, MoreVertical } from "lucide-react";
-import React from "react";
-
-import AppNavbarResponsavel from "@/components/responsavel/AppNavbarResponsavel";
-
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -24,11 +27,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+
+// Services
 import { supabase } from "@/integrations/supabase/client";
-import { cobrancaService } from "@/services/cobrancaService";
 import { responsavelService } from "@/services/responsavelService";
-import { Cobranca } from "@/types/cobranca";
+import { useAvailableYears } from "@/hooks";
+
+// Utils
+import { toast } from "@/utils/notifications/toast";
 import {
   formatarEnderecoCompleto,
   formatarTelefone,
@@ -37,18 +43,85 @@ import {
   getStatusColor,
   getStatusText,
 } from "@/utils/formatters";
-import { formatarPlacaExibicao } from "@/utils/placaUtils";
-import { clearLoginStorageResponsavel } from "@/utils/responsavelUtils";
+import { seForPago } from "@/utils/domain/cobranca/disableActions";
+import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
+import { clearLoginStorageResponsavel } from "@/utils/domain/responsavel/responsavelUtils";
+
+// Types
+import { Cobranca } from "@/types/cobranca";
+
+// Icons
 import {
+  AlertTriangle,
   Car,
   Contact,
+  Info,
   Mail,
   MapPin,
   MessageCircle,
+  MoreVertical,
   School,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
+
+interface CobrancaResponsavelActionsDropdownProps {
+  cobranca: Cobranca;
+  onAcessarLinkDePagamento: (cobranca: Cobranca) => void;
+  triggerClassName?: string;
+  triggerSize?: "sm" | "icon";
+}
+
+function CobrancaResponsavelActionsDropdown({
+  cobranca,
+  onAcessarLinkDePagamento,
+  triggerClassName = "h-8 w-8 p-0",
+  triggerSize = "sm",
+}: CobrancaResponsavelActionsDropdownProps) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size={triggerSize}
+          className={triggerClassName}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <MoreVertical className="" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        {!seForPago(cobranca) && (
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+              onAcessarLinkDePagamento(cobranca);
+            }}
+          >
+            Realizar Pagamento
+          </DropdownMenuItem>
+        )}
+        {seForPago(cobranca) && (
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            Ver Recibo
+          </DropdownMenuItem>
+        )}
+        {seForPago(cobranca) && (
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            Baixar Recibo
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 const InfoItem = ({
   icon: Icon,
@@ -72,12 +145,24 @@ export default function ResponsavelCarteirinha() {
   const navigate = useNavigate();
   const [passageiros, setPassageiros] = useState<any[]>([]);
   const [selectedPassageiro, setSelectedPassageiro] = useState<any>(null);
-  const [anos, setAnos] = useState<number[]>([]);
   const [refreshing, setRefreshing] = useState(true);
   const [anoSelecionado, setAnoSelecionado] = useState<number | null>(null);
   const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
   const [mostrarTodasCobrancas, setMostrarTodasCobrancas] = useState(false);
-  const { toast } = useToast();
+
+  // Usar hook para buscar anos disponíveis
+  const {
+    data: anosBrutos = [],
+    refetch: refetchAnos,
+  } = useAvailableYears(selectedPassageiro?.id, {
+    enabled: !!selectedPassageiro?.id,
+  });
+
+  const anos = useMemo(() => {
+    return Array.from(
+      new Set((anosBrutos || []).map((a: any) => Number(a)))
+    ).sort((a, b) => b - a);
+  }, [anosBrutos]);
 
   const cpf = localStorage.getItem("responsavel_cpf");
   const email = localStorage.getItem("responsavel_email");
@@ -94,24 +179,9 @@ export default function ResponsavelCarteirinha() {
   }, []);
 
   const handleAcessarLinkDePagamento = (cobranca: Cobranca) => {
-    if (!cobranca.asaas_payment_id) {
-      toast({
-        title: "Não é possível pagar pelo sistema.",
-        description:
-          "O condutor informou que essa cobrança será paga diretamente para ele.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (cobranca.asaas_invoice_url) {
-      window.open(cobranca.asaas_invoice_url, "_blank");
-    } else {
-      toast({
-        title: "Link de pagamento indisponível.",
-        description: "Informe o condutor sobre o problema.",
-        variant: "destructive",
-      });
-    }
+    toast.error("cobranca.erro.linkPagamentoIndisponivel", {
+      description: "cobranca.info.linkPagamentoDescricao",
+    });
   };
 
   const carregar = async () => {
@@ -141,29 +211,26 @@ export default function ResponsavelCarteirinha() {
       setSelectedPassageiro(atual);
       localStorage.setItem("responsavel_id", atual.id);
 
-      const anosBrutos = await cobrancaService.fetchAvailableYears(atual.id);
-
-      const anosAgrupados = Array.from(
-        new Set((anosBrutos || []).map((a: any) => Number(a)))
-      ).sort((a, b) => b - a);
-
       const currentYear = new Date().getFullYear();
-
-      setAnos(anosAgrupados);
       setAnoSelecionado(currentYear || null);
 
+      const anoParaBuscar = anos.length > 0 ? anos[0] : currentYear;
       const { data, error } = await supabase
         .from("cobrancas")
         .select(`*, passageiros:passageiro_id (nome, nome_responsavel)`)
         .eq("passageiro_id", atual.id)
         .eq("usuario_id", localStorage.getItem("responsavel_usuario_id"))
-        .eq("ano", anosAgrupados?.[0])
+        .eq("ano", anoParaBuscar)
         .order("mes", { ascending: false });
 
-      if (error) console.error("Erro ao buscar cobranças:", error);
+      if (error) {
+        // Erro silencioso - dados já são carregados via hooks
+      }
       setCobrancas(data || []);
-    } catch (err) {
-      console.error("Erro ao carregar informações:", err);
+    } catch (err: any) {
+      toast.error("cobranca.erro.carregar", {
+        description: err.message || "Não foi possível carregar as informações.",
+      });
     } finally {
       setRefreshing(false);
     }
@@ -175,24 +242,27 @@ export default function ResponsavelCarteirinha() {
       const p = passageiros.find((x) => x.id === id);
       setSelectedPassageiro(p);
       localStorage.setItem("responsavel_id", p.id);
+      
+      await refetchAnos();
+      setAnoSelecionado(anos.length > 0 ? anos[0] : null);
 
-      const anosDisponiveis = await cobrancaService.fetchAvailableYears(p.id);
-      setAnos(anosDisponiveis || []);
-      setAnoSelecionado(anosDisponiveis?.[0] || null);
-
+      const anoParaBuscar = anos.length > 0 ? anos[0] : null;
+      if (!anoParaBuscar) {
+        setRefreshing(false);
+        return;
+      }
+      
       const { data, error } = await supabase
         .from("cobrancas")
         .select(`*, passageiros:passageiro_id (nome, nome_responsavel)`)
         .eq("passageiro_id", p.id)
         .eq("usuario_id", localStorage.getItem("responsavel_usuario_id"))
-        .eq("ano", anosDisponiveis?.[0])
+        .eq("ano", anoParaBuscar)
         .order("mes", { ascending: false });
       setCobrancas(data || []);
     } catch (error: any) {
-      toast({
-        title: "Erro ao buscar alterar passageiro.",
+      toast.error("passageiro.erro.alterar", {
         description: error.message || "Não foi possível concluir a operação.",
-        variant: "destructive",
       });
     } finally {
       setRefreshing(false);
@@ -213,10 +283,7 @@ export default function ResponsavelCarteirinha() {
         .order("mes", { ascending: false });
       setCobrancas(data || []);
     } catch (error: any) {
-      toast({
-        title: "Erro ao listar cobranças para o ano selecionado.",
-        variant: "destructive",
-      });
+      toast.error("cobranca.erro.listarAno");
     } finally {
       setRefreshing(false);
     }
@@ -362,7 +429,7 @@ export default function ResponsavelCarteirinha() {
                                         cobranca.status,
                                         cobranca.data_vencimento
                                       )}
-                                      {cobranca.status === "pago"
+                                      {cobranca.status === PASSAGEIRO_COBRANCA_STATUS_PAGO
                                         ? ` em ${formatDateToBR(
                                             cobranca.data_pagamento
                                           )} `
@@ -379,50 +446,10 @@ export default function ResponsavelCarteirinha() {
                                     {formatDateToBR(cobranca.data_vencimento)}
                                   </td>
                                   <td className="p-4 text-center align-top">
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-8 w-8 p-0"
-                                          onClick={(e) => e.stopPropagation()}
-                                        >
-                                          <MoreVertical className="" />
-                                        </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent>
-                                        {!seForPago(cobranca) && (
-                                          <DropdownMenuItem
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleAcessarLinkDePagamento(
-                                                cobranca
-                                              );
-                                            }}
-                                          >
-                                            Realizar Pagamento
-                                          </DropdownMenuItem>
-                                        )}
-                                        {seForPago(cobranca) && (
-                                          <DropdownMenuItem
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                            }}
-                                          >
-                                            Ver Recibo
-                                          </DropdownMenuItem>
-                                        )}
-                                        {seForPago(cobranca) && (
-                                          <DropdownMenuItem
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                            }}
-                                          >
-                                            Baixar Recibo
-                                          </DropdownMenuItem>
-                                        )}
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    <CobrancaResponsavelActionsDropdown
+                                      cobranca={cobranca}
+                                      onAcessarLinkDePagamento={handleAcessarLinkDePagamento}
+                                    />
                                   </td>
                                 </tr>
                               ))}
@@ -444,48 +471,12 @@ export default function ResponsavelCarteirinha() {
                                     </span>
                                   </div>
                                 </div>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8 shrink-0 -mr-2 -mt-1"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <MoreVertical className="" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent>
-                                    {!seForPago(cobranca) && (
-                                      <DropdownMenuItem
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleRealizarPagamento(cobranca);
-                                        }}
-                                      >
-                                        Realizar Pagamento
-                                      </DropdownMenuItem>
-                                    )}
-                                    {seForPago(cobranca) && (
-                                      <DropdownMenuItem
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                        }}
-                                      >
-                                        Ver Recibo
-                                      </DropdownMenuItem>
-                                    )}
-                                    {seForPago(cobranca) && (
-                                      <DropdownMenuItem
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                        }}
-                                      >
-                                        Baixar Recibo
-                                      </DropdownMenuItem>
-                                    )}
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                <CobrancaResponsavelActionsDropdown
+                                  cobranca={cobranca}
+                                  onAcessarLinkDePagamento={handleAcessarLinkDePagamento}
+                                  triggerClassName="h-8 w-8 shrink-0 -mr-2 -mt-1"
+                                  triggerSize="icon"
+                                />
                               </div>
                               <div className="flex justify-between items-end pt-1">
                                 <div className="font-bold text-base text-foreground">
@@ -503,7 +494,7 @@ export default function ResponsavelCarteirinha() {
                                     cobranca.data_vencimento
                                   )}`}
                                 >
-                                  {cobranca.status === "pago"
+                                  {cobranca.status === PASSAGEIRO_COBRANCA_STATUS_PAGO
                                     ? `Paga em ${formatDateToBR(
                                         cobranca.data_pagamento
                                       )}`

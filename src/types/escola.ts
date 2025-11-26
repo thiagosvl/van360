@@ -11,4 +11,5 @@ export interface Escola {
   ativo: boolean;
   created_at: string;
   updated_at: string;
+  passageiros_ativos_count?: number;
 }

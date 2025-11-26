@@ -1,45 +1,61 @@
 import { AppGate } from "@/components/auth/AppGate";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/layouts/AppLayout";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import ScrollToTop from "./hooks/ScrollToTop";
-import AdminDashboard from "./pages/admin/Dashboard";
-import AdminSettings from "./pages/admin/Settings";
-import UsuariosAdmin from "./pages/admin/Usuarios";
-import Cobrancas from "./pages/Cobrancas";
-import Configuracoes from "./pages/Configuracoes";
-import Escolas from "./pages/Escolas";
-import Gastos from "./pages/Gastos";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import NotFound from "./pages/NotFound";
-import PassageiroCarteirinha from "./pages/PassageiroCarteirinha";
-import PassageiroCobranca from "./pages/PassageiroCobranca";
-import PassageiroExternalForm from "./pages/PassageiroExternalForm";
-import Passageiros from "./pages/Passageiros";
-import Relatorios from "./pages/Relatorios";
-
+import { toast } from "@/utils/notifications/toast";
 import { Capacitor } from "@capacitor/core";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ResponsavelGate from "./components/auth/ResponsavelGate";
-import BackButtonController from "./hooks/BackButtonController";
+import BackButtonController from "./components/navigation/BackButtonController";
+import ScrollToTop from "./components/navigation/ScrollToTop";
 import ResponsavelLayout from "./layouts/ResponsavelLayout";
-import Index from "./pages/lp/Index";
-import NovaSenha from "./pages/NovaSenha";
-import Register from "./pages/Register";
-import Veiculos from "./pages/Veiculos";
 
-const queryClient = new QueryClient();
+// Lazy loading de rotas principais
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const NovaSenha = lazy(() => import("./pages/NovaSenha"));
+const Index = lazy(() => import("./pages/lp/Index"));
+const Home = lazy(() => import("./pages/Home"));
+const Planos = lazy(() => import("./pages/Planos"));
+const Assinatura = lazy(() => import("./pages/Assinatura"));
+const Passageiros = lazy(() => import("./pages/Passageiros"));
+const PassageiroCarteirinha = lazy(() => import("./pages/PassageiroCarteirinha"));
+const PassageiroCobranca = lazy(() => import("./pages/PassageiroCobranca"));
+const PassageiroExternalForm = lazy(() => import("./pages/PassageiroExternalForm"));
+const Cobrancas = lazy(() => import("./pages/Cobrancas"));
+const Escolas = lazy(() => import("./pages/Escolas"));
+const Veiculos = lazy(() => import("./pages/Veiculos"));
+const Gastos = lazy(() => import("./pages/Gastos"));
+const Relatorios = lazy(() => import("./pages/Relatorios"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+/**
+ * Configuração do React Query
+ * 
+ * staleTime: Tempo que os dados são considerados "frescos" (não refaz requisição)
+ * cacheTime: Tempo que os dados ficam no cache após componente desmontar
+ * refetchOnWindowFocus: Refaz requisição ao focar a janela (útil para dados em tempo real)
+ * refetchOnReconnect: Refaz requisição ao reconectar à internet
+ */
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutos - dados frescos por 5 min
+      gcTime: 1000 * 60 * 30, // 30 minutos - mantém no cache por 30 min (antigo cacheTime)
+      refetchOnWindowFocus: true, // Atualiza ao focar a janela
+      refetchOnReconnect: true, // Atualiza ao reconectar
+      retry: 1, // Tenta 1 vez se falhar
+      refetchOnMount: false, // Não refaz ao montar se dados estão frescos
+    },
+  },
+});
 
 const App = () => {
-  const { toast } = useToast();
   const [updating, setUpdating] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -59,7 +75,7 @@ const App = () => {
           .single();
 
         if (error || !data) {
-          console.warn("[OTA] Nenhuma atualização encontrada:", error?.message);
+          // Nenhuma atualização OTA encontrada
           return;
         }
 
@@ -68,12 +84,8 @@ const App = () => {
         const currentVersion =
           current?.bundle?.version || current?.native || "builtin";
 
-        console.log("[OTA] Versão atual:", currentVersion);
-        console.log("[OTA] Versão disponível:", latest_version);
-        console.log("[OTA] Atualização obrigatória:", force_update);
-
         if (currentVersion === latest_version) {
-          console.log("[OTA] Já está na versão mais recente:", currentVersion);
+          // Já está na versão mais recente
           return;
         }
 
@@ -103,18 +115,19 @@ const App = () => {
             await CapacitorUpdater.set(version);
             await CapacitorUpdater.reload();
           } catch (err) {
-            console.error("[OTA] Erro ao aplicar atualização forçada:", err);
             setUpdating(false);
+            toast.error("sistema.erro.atualizacao", {
+              description: "Não foi possível aplicar a atualização. Tente novamente.",
+            });
           }
 
           return;
         }
 
         try {
-          toast({
-            title: "Atualização de App",
-            description: "Baixando melhorias em segundo plano...",
-          });
+                toast.info("sistema.info.atualizacaoApp", {
+                  description: "sistema.info.atualizacaoAppDescricao",
+                });
 
           const version = await CapacitorUpdater.download({
             version: latest_version,
@@ -124,16 +137,14 @@ const App = () => {
           await CapacitorUpdater.next({ id: version.id });
           localStorage.setItem("pendingUpdate", version.id);
 
-          toast({
-            title: "Melhorias Prontas!",
-            description:
-              "A nova versão será aplicada na próxima vez que você abrir o app.",
-          });
+                  toast.success("sistema.info.melhoriasProntas", {
+                    description: "sistema.info.melhoriasProntasDescricao",
+                  });
         } catch (err) {
-          console.error("[OTA] Erro em atualização silenciosa:", err);
+          // Erro em atualização silenciosa - não crítico
         }
       } catch (err) {
-        console.error("[OTA] Erro no processo OTA:", err);
+        // Erro no processo OTA - não crítico
       }
     };
 
@@ -152,33 +163,39 @@ const App = () => {
 
         if (pending && pending === current?.bundle?.id) {
           localStorage.removeItem("pendingUpdate");
-          console.log(`[OTA] Versão ${pending} agora ativa!`);
-          toast({
-            title: "Pronto!",
-            description:
-              "O aplicativo foi atualizado com sucesso para a versão mais recente.",
+          toast.success("sistema.info.appAtualizado", {
+            description: "sistema.info.appAtualizadoDescricao",
           });
         }
 
         await CapacitorUpdater.notifyAppReady();
-        console.log("[OTA] notifyAppReady enviado com sucesso.");
       } catch (err) {
-        console.error("[OTA] Erro ao enviar notifyAppReady:", err);
+        // Erro ao enviar notifyAppReady - não crítico
       }
     };
 
     notifyReady();
   }, []);
 
+  // Componente de loading para Suspense
+  const LoadingFallback = () => (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Carregando...</p>
+      </div>
+    </div>
+  );
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
         <Sonner position="top-right" />
         <BrowserRouter>
           <BackButtonController />
           <ScrollToTop />
-          <Routes>
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
             {/* Rotas Públicas */}
             <Route
               path="/login"
@@ -244,24 +261,18 @@ const App = () => {
                 </AppGate>
               }
             >
-              {/* Admin */}
-              <Route
-                path="admin"
-                element={<Navigate to="/admin/dashboard" replace />}
-              />
-              <Route path="admin/dashboard" element={<AdminDashboard />} />
-              <Route path="admin/usuarios" element={<UsuariosAdmin />} />
-              <Route path="admin/configuracoes" element={<AdminSettings />} />
 
               {/* Motorista */}
               <Route path="inicio" element={<Home />} />
+              <Route path="planos" element={<Planos />} />
+              <Route path="assinatura" element={<Assinatura />} />
               <Route path="passageiros" element={<Passageiros />} />
               <Route
                 path="passageiros/:passageiro_id"
                 element={<PassageiroCarteirinha />}
               />
               <Route
-                path="passageiros/:passageiro_id/cobranca/:cobranca_id"
+                path="cobrancas/:cobranca_id"
                 element={<PassageiroCobranca />}
               />
               <Route path="cobrancas" element={<Cobrancas />} />
@@ -269,11 +280,11 @@ const App = () => {
               <Route path="veiculos" element={<Veiculos />} />
               <Route path="gastos" element={<Gastos />} />
               <Route path="relatorios" element={<Relatorios />} />
-              <Route path="configuracoes" element={<Configuracoes />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
         </BrowserRouter>
 
         {/* 🔹 Overlay de atualização forçada */}
@@ -287,6 +298,7 @@ const App = () => {
           </div>
         )}
       </TooltipProvider>
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
   );
 };

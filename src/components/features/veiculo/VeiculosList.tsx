@@ -1,0 +1,262 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Veiculo } from "@/types/veiculo";
+import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
+import {
+  MoreVertical,
+  Pencil,
+  ToggleLeft,
+  ToggleRight,
+  Trash2,
+  Users,
+  Users2,
+} from "lucide-react";
+import { NavigateFunction } from "react-router-dom";
+
+interface VeiculosListProps {
+  veiculos: (Veiculo & { passageiros_ativos_count?: number })[];
+  navigate: NavigateFunction;
+  onEdit: (veiculo: Veiculo) => void;
+  onToggleAtivo: (veiculo: Veiculo) => void;
+  onDelete: (veiculo: Veiculo) => void;
+}
+
+interface VeiculoActionsDropdownProps {
+  veiculo: Veiculo & { passageiros_ativos_count?: number };
+  navigate: NavigateFunction;
+  onEdit: (veiculo: Veiculo) => void;
+  onToggleAtivo: (veiculo: Veiculo) => void;
+  onDelete: (veiculo: Veiculo) => void;
+  triggerClassName?: string;
+  triggerSize?: "sm" | "icon";
+}
+
+function VeiculoActionsDropdown({
+  veiculo,
+  navigate,
+  onEdit,
+  onToggleAtivo,
+  onDelete,
+  triggerClassName = "h-8 w-8 p-0",
+  triggerSize = "sm",
+}: VeiculoActionsDropdownProps) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size={triggerSize}
+          className={triggerClassName}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <MoreVertical className="h-8 w-8 text-gray-400 hover:text-gray-600" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {veiculo.passageiros_ativos_count > 0 && (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/passageiros?veiculo=${veiculo.id}`);
+            }}
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Ver Passageiros
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(veiculo);
+          }}
+        >
+          <Pencil className="w-4 h-4 mr-2" />
+          Editar
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleAtivo(veiculo);
+          }}
+        >
+          {veiculo.ativo ? (
+            <>
+              <ToggleLeft className="w-4 h-4 mr-2" />
+              Desativar
+            </>
+          ) : (
+            <>
+              <ToggleRight className="w-4 h-4 mr-2" />
+              Reativar
+            </>
+          )}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(veiculo);
+          }}
+          className="cursor-pointer text-red-600"
+        >
+          <Trash2 className="w-4 h-4 mr-2" />
+          Excluir
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+export function VeiculosList({
+  veiculos,
+  navigate,
+  onEdit,
+  onToggleAtivo,
+  onDelete,
+}: VeiculosListProps) {
+  const getStatusBadge = (ativo: boolean) => {
+    return ativo ? (
+      <Badge
+        variant="outline"
+        className="bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100 font-medium"
+      >
+        Ativo
+      </Badge>
+    ) : (
+      <Badge
+        variant="outline"
+        className="bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 font-medium"
+      >
+        Desativado
+      </Badge>
+    );
+  };
+
+  return (
+    <>
+      {/* Desktop Table */}
+      <div className="hidden md:block rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
+        <table className="w-full">
+          <thead className="bg-gray-50/50">
+            <tr className="border-b border-gray-100">
+              <th className="w-[200px] py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider pl-6">
+                Placa
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                Veículo
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                Passageiros Ativos
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
+                Ações
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {veiculos.map((veiculo) => (
+              <tr
+                key={veiculo.id}
+                onClick={() => onEdit(veiculo)}
+                className="hover:bg-gray-50/80 border-b border-gray-50 last:border-0 transition-colors cursor-pointer"
+              >
+                <td className="py-4 pl-6 align-middle">
+                  <p className="font-bold text-gray-900 text-sm">
+                    {formatarPlacaExibicao(veiculo.placa)}
+                  </p>
+                </td>
+                <td className="px-6 py-4 align-middle">
+                  <div className="flex flex-col">
+                    <span className="font-medium text-sm text-gray-900">
+                      {veiculo.marca} {veiculo.modelo}
+                    </span>
+                    {veiculo.ano_modelo && (
+                      <span className="text-xs text-gray-500">
+                        {veiculo.ano_modelo}
+                      </span>
+                    )}
+                  </div>
+                </td>
+                <td className="px-6 py-4 align-middle">
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Users2 className="w-4 h-4" />
+                    {veiculo.passageiros_ativos_count}
+                  </div>
+                </td>
+                <td className="px-6 py-4 align-middle">
+                  {getStatusBadge(veiculo.ativo)}
+                </td>
+                <td className="px-6 py-4 text-right align-middle">
+                  <VeiculoActionsDropdown
+                    veiculo={veiculo}
+                    navigate={navigate}
+                    onEdit={onEdit}
+                    onToggleAtivo={onToggleAtivo}
+                    onDelete={onDelete}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-3">
+        {veiculos.map((veiculo) => (
+          <div
+            key={veiculo.id}
+            onClick={() => onEdit(veiculo)}
+            className="bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 active:scale-[0.99] transition-transform"
+          >
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="min-w-0">
+                <p className="font-bold text-gray-900 text-sm">
+                  {formatarPlacaExibicao(veiculo.placa)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {veiculo.marca} {veiculo.modelo}
+                  {veiculo.ano_modelo ? ` • ${veiculo.ano_modelo}` : ""}
+                </p>
+              </div>
+              <div className="-mr-2 -mt-2">
+                <VeiculoActionsDropdown
+                  veiculo={veiculo}
+                  navigate={navigate}
+                  onEdit={onEdit}
+                  onToggleAtivo={onToggleAtivo}
+                  onDelete={onDelete}
+                  triggerSize="icon"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+              <div className="shrink-0">{getStatusBadge(veiculo.ativo)}</div>
+              <div className="flex flex-col items-end gap-0.5">
+                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                  Passageiros
+                </span>
+                <p className="text-xs text-gray-600 font-medium flex gap-1">
+                  <Users className="w-4 h-4" />
+                  {veiculo.passageiros_ativos_count ?? 0} ativos
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}

@@ -24,10 +24,4 @@ export const responsavelService = {
     if (errorOutros) return [passageiro]
     return outros || [passageiro]
   },
-
-  async listarAnosPorPassageiro(passageiroId: string) {
-    const { data, error } = await supabase.rpc("listar_anos_por_passageiro", { passageiro_id_input: passageiroId })
-    if (error) throw error
-    return data || []
-  },
 }

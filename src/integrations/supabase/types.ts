@@ -16,7 +16,6 @@ export type Database = {
     Tables: {
       assinaturas_usuarios: {
         Row: {
-          asaas_subscription_id: string
           created_at: string
           id: string
           usuario_id: string | null
@@ -26,7 +25,6 @@ export type Database = {
           vencimento: string
         }
         Insert: {
-          asaas_subscription_id: string
           created_at?: string
           id?: string
           usuario_id?: string | null
@@ -36,7 +34,6 @@ export type Database = {
           vencimento: string
         }
         Update: {
-          asaas_subscription_id?: string
           created_at?: string
           id?: string
           usuario_id?: string | null
@@ -58,7 +55,6 @@ export type Database = {
       cobrancas: {
         Row: {
           ano: number
-          asaas_payment_id: string
           created_at: string
           data_pagamento: string | null
           data_vencimento: string
@@ -73,12 +69,9 @@ export type Database = {
           updated_at: string
           valor: number
           origem: string
-          asaas_invoice_url: string
-          asaas_bankslip_url: string
         }
         Insert: {
           ano: number
-          asaas_payment_id: string
           created_at?: string
           data_pagamento?: string | null
           data_vencimento: string
@@ -93,12 +86,9 @@ export type Database = {
           updated_at?: string
           valor: number
           origem: string
-          asaas_invoice_url?: string
-          asaas_bankslip_url?: string
         }
         Update: {
           ano?: number
-          asaas_payment_id?: string
           created_at?: string
           data_pagamento?: string | null
           data_vencimento?: string
@@ -113,8 +103,6 @@ export type Database = {
           updated_at?: string
           valor?: number
           origem?: string
-          asaas_invoice_url?: string
-          asaas_bankslip_url?: string
         }
         Relationships: [
           {
@@ -178,56 +166,8 @@ export type Database = {
         }
         Relationships: []
       }
-      configuracoes_motoristas: {
-        Row: {
-          id: string
-          usuario_id: string
-          horario_envio: string | null
-          mensagem_lembrete_antecipada: string | null
-          mensagem_lembrete_dia: string | null
-          mensagem_lembrete_atraso: string | null
-          dias_antes_vencimento: number | null
-          dias_apos_vencimento: number | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          usuario_id: string
-          horario_envio?: string | null
-          mensagem_lembrete_antecipada?: string | null
-          mensagem_lembrete_dia?: string | null
-          mensagem_lembrete_atraso?: string | null
-          dias_antes_vencimento?: number | null
-          dias_apos_vencimento?: number | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          usuario_id?: string
-          horario_envio?: string | null
-          mensagem_lembrete_antecipada?: string | null
-          mensagem_lembrete_dia?: string | null
-          mensagem_lembrete_atraso?: string | null
-          dias_antes_vencimento?: number | null
-          dias_apos_vencimento?: number | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "configuracoes_motoristas_usuario_id_fkey"
-            columns: ["usuario_id"]
-            isOneToOne: true
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
       passageiros: {
         Row: {
-          asaas_customer_id: string
           ativo: boolean
           bairro: string | null
           cep: string | null
@@ -252,7 +192,6 @@ export type Database = {
           valor_cobranca: number
         }
         Insert: {
-          asaas_customer_id: string
           cpf_responsavel: string
           dia_vencimento: number
           escola_id: string
@@ -277,7 +216,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          asaas_customer_id?: string
           ativo?: boolean
           bairro?: string | null
           cep?: string | null
@@ -326,9 +264,6 @@ export type Database = {
           cpfcnpj: string
           email: string
           telefone: string;
-          asaas_subaccount_id?: string;
-          asaas_subaccount_api_key?: string;
-          asaas_root_customer_id?: string;
           role: string
           created_at: string | null
           updated_at: string | null
@@ -340,9 +275,6 @@ export type Database = {
           cpfcnpj: string
           email: string
           telefone: string;
-          asaas_subaccount_id?: string;
-          asaas_subaccount_api_key?: string;
-          asaas_root_customer_id?: string;
           role: string
           created_at?: string | null
           updated_at?: string | null
@@ -354,9 +286,6 @@ export type Database = {
           cpfcnpj?: string
           email?: string
           telefone?: string;
-          asaas_subaccount_id?: string;
-          asaas_subaccount_api_key?: string;
-          asaas_root_customer_id?: string;
           role?: string
           created_at?: string | null
           updated_at?: string | null

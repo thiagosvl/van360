@@ -36,7 +36,7 @@ export default function ResponsavelSelecionarPassageiro() {
               <button
                 key={p.id}
                 onClick={() => handleSelect(p)}
-                className="w-full p-4 border rounded-xl text-left hover:bg-indigo-50 hover:border-indigo-300 transition-all shadow-sm active:shadow-md flex items-center justify-between"
+                className="w-full p-4 border rounded-xl text-left hover:bg-blue-50 hover:border-blue-300 transition-all shadow-sm active:shadow-md flex items-center justify-between"
               >
                 <div className="flex flex-col">
                   <div className="font-semibold text-lg text-gray-800">
@@ -55,7 +55,7 @@ export default function ResponsavelSelecionarPassageiro() {
                     </b>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-indigo-500 shrink-0 ml-3" />
+                <ArrowRight className="w-5 h-5 text-blue-500 shrink-0 ml-3" />
               </button>
             </Card>
           ))}

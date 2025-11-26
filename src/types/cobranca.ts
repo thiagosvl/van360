@@ -13,8 +13,5 @@ export interface Cobranca {
   passageiros?: Partial<Passageiro>;
   desativar_lembretes?: boolean;
   pagamento_manual?: boolean;
-  asaas_invoice_url?: string;
-  asaas_bankslip_url?: string;
-  asaas_payment_id?: string;
   origem: string;
 }

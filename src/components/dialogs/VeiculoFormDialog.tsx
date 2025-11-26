@@ -1,0 +1,272 @@
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
+import { toast } from "@/utils/notifications/toast";
+import { useProfile } from "@/hooks/business/useProfile";
+import { useSession } from "@/hooks/business/useSession";
+import { useCreateVeiculo, useUpdateVeiculo } from "@/hooks";
+import { Veiculo } from "@/types/veiculo";
+import { aplicarMascaraPlaca, validarPlaca } from "@/utils/domain/veiculo/placaUtils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+const veiculoSchema = z.object({
+  placa: z
+    .string({ required_error: "Campo obrigatório" })
+    .min(7, "Campo obrigatório")
+    .refine((val) => validarPlaca(val), "Placa inválida"),
+  marca: z
+    .string({ required_error: "Campo obrigatório" })
+    .min(1, "Campo obrigatório"),
+  modelo: z
+    .string({ required_error: "Campo obrigatório" })
+    .min(1, "Campo obrigatório"),
+  ativo: z.boolean().optional(),
+});
+
+type VeiculoFormData = z.infer<typeof veiculoSchema>;
+
+interface VeiculoFormDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  editingVeiculo?: Veiculo | null;
+  onSuccess: (veiculo: Veiculo) => void;
+  profile?: any; // Passar profile como prop para evitar chamadas duplicadas de useProfile
+}
+
+export default function VeiculoFormDialog({
+  isOpen,
+  onClose,
+  editingVeiculo = null,
+  onSuccess,
+  profile: profileProp,
+}: VeiculoFormDialogProps) {
+  const { user } = useSession();
+  // Só chamar useProfile se não receber profile como prop e o dialog estiver aberto
+  const { profile: profileFromHook } = useProfile(profileProp ? undefined : (isOpen ? user?.id : undefined));
+  const profile = profileProp || profileFromHook;
+
+  const createVeiculo = useCreateVeiculo();
+  const updateVeiculo = useUpdateVeiculo();
+
+  const loading = createVeiculo.isPending || updateVeiculo.isPending;
+
+  const form = useForm<VeiculoFormData>({
+    resolver: zodResolver(veiculoSchema),
+    defaultValues: {
+      placa: editingVeiculo?.placa
+        ? aplicarMascaraPlaca(editingVeiculo?.placa)
+        : "",
+      marca: editingVeiculo?.marca || "",
+      modelo: editingVeiculo?.modelo || "",
+      ativo: editingVeiculo?.ativo ?? true,
+    },
+    mode: "onBlur",
+    reValidateMode: "onChange",
+    shouldFocusError: true,
+  });
+
+  useEffect(() => {
+    if (!isOpen)
+      form.reset({
+        placa: "",
+        marca: "",
+        modelo: "",
+        ativo: true,
+      });
+  }, [isOpen]);
+
+  const onFormError = (errors: any) => {
+    toast.error("validacao.formularioComErros");
+  };
+
+  const handleSubmit = async (data: VeiculoFormData) => {
+  if (!profile?.id) return;
+
+  if (
+    editingVeiculo &&
+    editingVeiculo.ativo &&
+    data.ativo === false &&
+    editingVeiculo.passageiros_ativos_count > 0
+  ) {
+    toast.error("veiculo.erro.desativar", {
+      description: "veiculo.erro.desativarComPassageiros",
+    });
+    return;
+  }
+
+  // Preparar rollback do QuickStart apenas para criações (não para edições)
+  const shouldUpdateQuickStart = editingVeiculo == null;
+  const quickStartRollback = shouldUpdateQuickStart
+    ? updateQuickStartStepWithRollback("step_veiculos")
+    : null;
+
+  if (editingVeiculo == null) {
+    // Criação de veículo
+    createVeiculo.mutate(
+      { usuarioId: profile.id, data },
+      {
+        onSuccess: (veiculoSalvo) => {
+          onSuccess(veiculoSalvo);
+          onClose();
+        },
+        onError: (error: any) => {
+          // Reverter QuickStart em caso de erro
+          if (quickStartRollback) {
+            quickStartRollback.restore();
+          }
+
+          if (error?.response?.data?.error?.includes("duplicate key value")) {
+            toast.error("veiculo.erro.criar", {
+              description: "veiculo.erro.placaJaCadastrada",
+            });
+          }
+        },
+      }
+    );
+  } else {
+    // Atualização de veículo
+    updateVeiculo.mutate(
+      { id: editingVeiculo.id, data },
+      {
+        onSuccess: (veiculoSalvo) => {
+          onSuccess(veiculoSalvo);
+          onClose();
+        },
+      }
+    );
+  }
+};
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent
+        className="max-w-2xl max-h-[95vh] overflow-y-auto bg-white"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <DialogHeader>
+          <DialogTitle>
+            {editingVeiculo ? "Editar Veículo" : "Novo Veículo"}
+          </DialogTitle>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit, onFormError)}
+            className="space-y-6"
+          >
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <FormField
+                name="placa"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="col-span-2 md:col-span-1">
+                    <FormLabel>
+                      Placa <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        maxLength={8}
+                        onChange={(e) => {
+                          const masked = aplicarMascaraPlaca(e.target.value);
+                          field.onChange(masked);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="marca"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="col-span-2 md:col-span-1">
+                    <FormLabel>
+                      Marca <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Fiat" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="modelo"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="col-span-2 md:col-span-1">
+                    <FormLabel>
+                      Modelo <span className="text-red-600">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ducato Minibus" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {editingVeiculo && (
+                <FormField
+                  name="ativo"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-2">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <FormLabel>Ativo</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+
+            <div className="flex gap-4 pt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={loading}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={loading} className="flex-1">
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+                    Salvando...
+                  </>
+                ) : (
+                  "Salvar"
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}

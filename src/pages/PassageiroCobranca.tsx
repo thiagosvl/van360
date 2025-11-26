@@ -1,43 +1,47 @@
-import CobrancaEditDialog from "@/components/CobrancaEditDialog";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { LoadingOverlay } from "@/components/LoadingOverlay";
-import ManualPaymentDialog from "@/components/ManualPaymentDialog";
+import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
+import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
+import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/use-toast";
+import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
-import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
-import { supabase } from "@/integrations/supabase/client";
-import { cobrancaService } from "@/services/cobrancaService";
-import { Cobranca } from "@/types/cobranca";
-import { CobrancaDetalhe } from "@/types/cobrancaDetalhe";
-import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
-import { safeCloseDialog } from "@/utils/dialogCallback";
 import {
-  disableBaixarBoleto,
-  disableEnviarNotificacao,
+  useCobranca,
+  useCobrancaNotificacoes,
+  useDeleteCobranca,
+  useDesfazerPagamento,
+  useEnviarNotificacaoCobranca,
+  useToggleNotificacoesCobranca,
+} from "@/hooks";
+import { useProfile } from "@/hooks/business/useProfile";
+import { useSession } from "@/hooks/business/useSession";
+import { cn } from "@/lib/utils";
+import { Cobranca } from "@/types/cobranca";
+import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
+import { Passageiro } from "@/types/passageiro";
+import { safeCloseDialog } from "@/utils/dialogUtils";
+import {
   disableExcluirCobranca,
   disableRegistrarPagamento,
-  disableVerPaginaPagamento,
-  seForPago,
-} from "@/utils/disableActions";
+  podeEnviarNotificacao,
+} from "@/utils/domain/cobranca/disableActions";
+import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
-  checkCobrancaJaVenceu,
   formatCobrancaOrigem,
   formatDateToBR,
   formatPaymentType,
+  formatarEnderecoCompleto,
+  formatarTelefone,
   getStatusColor,
   getStatusText,
   meses,
 } from "@/utils/formatters";
-import { formatarPlacaExibicao } from "@/utils/placaUtils";
+import { toast } from "@/utils/notifications/toast";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   BadgeCheck,
@@ -45,122 +49,188 @@ import {
   BellOff,
   Bot,
   Calendar,
-  CalendarIcon,
+  CalendarDays,
   Car,
   CheckCircle,
-  Contact,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Copy,
   CreditCard,
-  Download,
-  FileText,
+  History,
   IdCard,
-  MessageCircle,
+  MapPin,
   Pencil,
+  Phone,
   School,
+  Send,
   Trash2,
   User,
+  Wallet,
   XCircle,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+// --- Components ---
+
 const InfoItem = ({
   icon: Icon,
   label,
   children,
-  className,
 }: {
   icon: React.ElementType;
   label: string;
   children: React.ReactNode;
-  className?: string;
 }) => (
-  <div className={className}>
-    <div className="text-sm text-muted-foreground flex items-center gap-1.5">
+  <div>
+    <div className="text-sm text-muted-foreground flex items-center gap-2">
       <Icon className="w-4 h-4" />
-      <span>{label}</span>
+      <span className="font-medium">{label}</span>
     </div>
-    <div className="font-semibold text-foreground mt-1">{children || "-"}</div>
+    <div className="font-semibold text-foreground mt-1 text-base">
+      {children || "-"}
+    </div>
   </div>
 );
 
-const CobrancaDetalheSkeleton = () => (
-  <div className="space-y-6 overflow-hidden w-full max-w-full">
-    <div className="flex items-center justify-between mb-6 overflow-hidden">
-      <Skeleton className="h-9 w-full max-w-[16rem]" />
-      <Skeleton className="h-10 w-full max-w-[6rem]" />
+const SidebarInfoBlock = ({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: React.ElementType;
+  label: string;
+  children: React.ReactNode;
+}) => (
+  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col gap-1">
+    <div className="flex items-center gap-2 text-gray-400">
+      <Icon className="w-3.5 h-3.5" />
+      <span className="text-[10px] font-bold uppercase tracking-widest">
+        {label}
+      </span>
     </div>
+    <div className="font-bold text-gray-900 text-sm">
+      {children || "—"}
+    </div>
+  </div>
+);
 
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start overflow-hidden">
-      <Skeleton className="lg:col-span-3 h-32 w-full max-w-full" />
-      <Skeleton className="lg:col-span-2 h-64 w-full max-w-full" />
-      <Skeleton className="lg:col-span-1 h-64 w-full max-w-full" />
+const CobrancaSkeleton = () => (
+  <div className="space-y-6 w-full ">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <Skeleton className="h-96 w-full" />
+      <div className="lg:col-span-2 space-y-6">
+        <Skeleton className="h-64 w-full" />
+        <Skeleton className="h-48 w-full" />
+      </div>
     </div>
   </div>
 );
 
 const NotificationTimeline = ({ items }: { items: CobrancaNotificacao[] }) => {
+  const [expanded, setExpanded] = useState(false);
+  const displayedItems = expanded ? items : items.slice(0, 3);
+  const hasMore = items.length > 3;
+
   const getIcon = (type: string) => {
     switch (type) {
       case "auto":
-        return <Bot className="h-5 w-5 text-muted-foreground" />;
+        return (
+          <div className="h-8 w-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 z-10">
+            <Bot className="h-4 w-4" />
+          </div>
+        );
       case "manual":
-        return <User className="h-5 w-5 text-muted-foreground" />;
+        return (
+          <div className="h-8 w-8 rounded-full bg-green-50 border border-green-100 flex items-center justify-center text-green-600 z-10">
+            <User className="h-4 w-4" />
+          </div>
+        );
       default:
-        return <Bot className="h-5 w-5 text-muted-foreground" />;
+        return (
+          <div className="h-8 w-8 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-500 z-10">
+            <Bot className="h-4 w-4" />
+          </div>
+        );
     }
   };
 
   const getEventDescription = (tipoEvento: string): string => {
     if (tipoEvento === "REENVIO_MANUAL") {
-      return "Cobrança enviada manualmente por você";
+      return "Você enviou lembrete";
     }
-
     const atrasoMatch = tipoEvento.match(/^LEMBRETE_ATRASO_(\d+)$/);
     if (atrasoMatch) {
-      const numeroLembrete = atrasoMatch[1];
-
-      return `${numeroLembrete}ª lembrete de atraso enviado`;
+      return `${atrasoMatch[1]}º lembrete de atraso`;
     }
-
     switch (tipoEvento) {
       case "AVISO_VENCIMENTO":
-        return "Cobrança enviada no vencimento";
+        return "Lembrete de vencimento";
       case "AVISO_ANTECIPADO":
-        return "Aviso de cobrança já disponível para pagamento";
+        return "Lembrete antecipado";
       default:
-        return `Ação de Notificação: ${tipoEvento} (Tipo desconhecido)`;
+        return tipoEvento;
     }
   };
 
   return (
-    <div className="space-y-6">
-      {items.map((item, index) => (
-        <div key={index} className="flex gap-4">
-          <div className="relative flex-shrink-0">
-            <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-              {getIcon(item.tipo_origem)}
-            </div>
-            {index < items.length - 1 && (
-              <div className="absolute top-11 left-1/2 -translate-x-1/2 w-px h-full bg-border" />
+    <div className="relative pl-2">
+      <div className="absolute left-[24px] top-4 bottom-4 w-px bg-gray-100" />
+      <div className="space-y-4">
+        <AnimatePresence initial={false}>
+          {displayedItems.map((item, index) => (
+            <motion.div
+              key={item.id || index}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="relative flex gap-4 items-start"
+            >
+              <div className="flex-shrink-0 mt-1">
+                {getIcon(item.tipo_origem)}
+              </div>
+              <div className="flex-1 pt-1">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <p className="font-medium text-gray-900 text-sm">
+                    {getEventDescription(item.tipo_evento)}
+                  </p>
+                  <span className="text-xs text-gray-400 font-medium whitespace-nowrap">
+                    {new Date(item.data_envio).toLocaleString("pt-BR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {hasMore && (
+        <div className="mt-4 pl-12">
+          <Button
+            variant="link"
+            size="sm"
+            onClick={() => setExpanded(!expanded)}
+            className="text-gray-500 hover:text-gray-900 p-0 h-auto font-semibold text-xs"
+          >
+            {expanded ? (
+              <>
+                <ChevronUp className="w-3 h-3 mr-1" /> Ver menos
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-3 h-3 mr-1" /> Ver histórico completo
+                ({items.length - 3})
+              </>
             )}
-          </div>
-          <div>
-            <p className="font-medium text-sm">
-              {getEventDescription(item.tipo_evento)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {new Date(item.data_envio).toLocaleString("pt-BR", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </p>
-          </div>
+          </Button>
         </div>
-      ))}
+      )}
     </div>
   );
 };
@@ -174,50 +244,49 @@ export default function PassageiroCobranca() {
   };
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
-  const { setPageTitle, setPageSubtitle } = useLayout();
-  const [notificacoes, setNotificacoes] = useState<CobrancaNotificacao[]>([]);
+  const { setPageTitle } = useLayout();
   const [confirmDialogDesfazer, setConfirmDialogDesfazer] = useState({
     open: false,
     cobrancaId: "",
   });
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [cobranca, setCobranca] = useState<CobrancaDetalhe | null>(null);
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
   });
   const [confirmDialogEnvioNotificacao, setConfirmDialogEnvioNotificacao] =
     useState({ open: false, cobranca: null });
-  const [isCopied, setIsCopied] = useState(false);
-  const { toast } = useToast();
+  const { user } = useSession();
+  const { plano } = useProfile(user?.id);
+  const deleteCobrancaMutation = useDeleteCobranca();
+  const enviarNotificacaoMutation = useEnviarNotificacaoCobranca();
+  const toggleNotificacoesMutation = useToggleNotificacoesCobranca();
+  const desfazerPagamentoMutation = useDesfazerPagamento();
+  const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
+  const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
 
-  const handleCopyLink = async (link: string) => {
-    if (!link) {
-      toast({
-        title: "Link indisponível.",
-        variant: "destructive",
-      });
-      return;
-    }
+  // Buscar cobrança usando React Query
+  const {
+    data: cobrancaData,
+    isLoading: isCobrancaLoading,
+    refetch: refetchCobranca,
+  } = useCobranca(cobranca_id, {
+    enabled: !!cobranca_id,
+    onError: () => {
+      toast.error("Cobrança não encontrada.");
+      navigate("/cobrancas");
+    },
+  });
 
-    try {
-      await navigator.clipboard.writeText(link);
-    } catch (err) {
-      console.error("Erro ao copiar link:", err);
-      toast({
-        title: "Erro ao copiar link.",
-        description:
-          "Não foi possível copiar o link para a área de transferência.",
-        variant: "destructive",
-      });
-    }
-  };
+  const { data: notificacoesData, refetch: refetchNotificacoes } =
+    useCobrancaNotificacoes(cobranca_id, {
+      enabled: !!cobranca_id,
+    });
 
-  const goToExternalURL = (url: string) => {
-    if (!url) return;
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
+  const cobranca = cobrancaData as Cobranca | null;
+  const cobrancaTyped = cobranca;
+  const notificacoes = (notificacoesData || []) as CobrancaNotificacao[];
+
+  const loading = isCobrancaLoading;
 
   const handleEditCobrancaClick = () => {
     if (cobrancaNormalizadaParaEdicao) {
@@ -230,574 +299,623 @@ export default function PassageiroCobranca() {
 
   const cobrancaNormalizadaParaEdicao = useMemo(() => {
     if (!cobranca) return null;
-
-    return {
-      ...cobranca,
-      passageiros: {
-        nome: cobranca.passageiro_nome,
-        nome_responsavel: cobranca.nome_responsavel,
-      },
-    } as Cobranca;
+    return cobranca;
   }, [cobranca]);
 
   const handleEnviarNotificacao = async () => {
-    if (disableEnviarNotificacao(cobranca)) {
-      toast({
-        title: "Não foi possível enviar a notificação.",
-        description:
-          "Só é possível enviar para cobranças geradas automaticamente.",
-        variant: "destructive",
-      });
-    } else {
-      setRefreshing(true);
-      try {
-        await cobrancaService.enviarNotificacao(cobranca);
-        toast({ title: "Notificação enviada com sucesso para o responsável" });
-        fetchNotificacoes();
-      } catch (error) {
-        console.error("Erro ao enviar notificação:", error);
-        toast({
-          title: "Erro ao enviar notificação da cobranca.",
-          variant: "destructive",
-        });
-      } finally {
-        setRefreshing(false);
-      }
-    }
+    enviarNotificacaoMutation.mutate(cobranca_id, {
+      onSuccess: async () => {
+        // Refetch explícito para garantir que a cobrança e notificações sejam atualizadas
+        // Aguarda ambas as queries serem refetchadas
+        await Promise.all([refetchCobranca(), refetchNotificacoes()]);
+      },
+    });
   };
 
   const handleToggleLembretes = async () => {
-    setRefreshing(true);
-    try {
-      const novoStatus = await cobrancaService.toggleNotificacoes(cobranca);
-
-      toast({
-        title: `Notificações automáticas ${
-          novoStatus ? "desativadas" : "ativadas"
-        } com sucesso.`,
-      });
-
-      cobranca.desativar_lembretes = !cobranca.desativar_lembretes;
-    } catch (error: any) {
-      console.error("Erro ao alterar notificações:", error);
-      toast({
-        title: "Erro ao alterar notificações.",
-        description: error.message || "Não foi possível concluir a operação.",
-        variant: "destructive",
-      });
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  const fetchNotificacoes = async () => {
-    cobrancaService
-      .getNotificacoesByCobrancaId(cobranca_id)
-      .then((data) => {
-        setNotificacoes(data);
-      })
-      .catch((error) => {
-        console.error("Erro ao buscar as notifica;'oes:", error);
-      });
-  };
-
-  const fetchCobranca = async (isRefresh = false) => {
-    if (!isRefresh) setLoading(true);
-    else setRefreshing(true);
-
-    try {
-      const { data, error } = await supabase
-        .from("vw_cobrancas_detalhes")
-        .select("*")
-        .eq("id", cobranca_id)
-        .single();
-
-      if (error || !data) {
-        toast({ title: "Cobrança não encontrada.", variant: "destructive" });
-        navigate("/cobrancas");
-        return;
+    if (!cobranca) return;
+    toggleNotificacoesMutation.mutate(
+      {
+        cobrancaId: cobranca_id,
+        desativar: !cobranca.desativar_lembretes,
+      },
+      {
+        onSuccess: () => {
+          // Refetch explícito para garantir que a cobrança seja atualizada
+          refetchCobranca();
+        },
       }
-
-      setCobranca(data as CobrancaDetalhe);
-    } catch (err) {
-      console.error("Erro ao buscar detalhes:", err);
-    } finally {
-      if (!isRefresh) setLoading(false);
-      else setRefreshing(false);
-    }
+    );
   };
 
-  const desfazerPagamento = async () => {
-    setRefreshing(true);
+  const handleDesfazerPagamento = async () => {
+    desfazerPagamentoMutation.mutate(cobranca_id, {
+      onSuccess: () => {
+        setConfirmDialogDesfazer({ open: false, cobrancaId: "" });
+        refetchCobranca();
+      },
+    });
+  };
+
+  const handleCopyEndereco = async () => {
+    if (!cobrancaTyped?.passageiros) return;
+    const enderecoCompleto = formatarEnderecoCompleto(
+      cobrancaTyped.passageiros as Passageiro
+    );
     try {
-      await cobrancaService.desfazerPagamento(cobranca_id);
-
-      toast({
-        title: "Pagamento desfeito com sucesso.",
-      });
-      fetchCobranca(true);
-    } catch (error: any) {
-      console.error("Erro ao desfazer pagamento:", error);
-      toast({
-        title: "Erro ao desfazer pagamento.",
-        description: error.message || "Não foi possível concluir a operação.",
-        variant: "destructive",
-      });
-    } finally {
-      setConfirmDialogDesfazer({ open: false, cobrancaId: "" });
-      setRefreshing(false);
+      await navigator.clipboard.writeText(enderecoCompleto);
+      setIsCopiedEndereco(true);
+      setTimeout(() => setIsCopiedEndereco(false), 1000);
+    } catch (err) {
+      toast.error("Erro ao copiar endereço.");
     }
   };
 
-  useEffect(() => {
-    fetchCobranca();
-    fetchNotificacoes();
-  }, [cobranca_id, navigate, toast]);
+  const handleCopyTelefone = async () => {
+    if (!cobrancaTyped?.passageiros?.telefone_responsavel) return;
+    try {
+      await navigator.clipboard.writeText(
+        formatarTelefone(
+          (cobrancaTyped.passageiros as Passageiro).telefone_responsavel
+        )
+      );
+      setIsCopiedTelefone(true);
+      setTimeout(() => setIsCopiedTelefone(false), 1000);
+    } catch (err) {
+      toast.error("Erro ao copiar telefone.");
+    }
+  };
 
   useEffect(() => {
     if (cobranca) {
       setPageTitle(`Cobrança de ${meses[cobranca.mes - 1]}`);
-      setPageSubtitle(
-        `${cobranca.passageiro_nome} (${cobranca.nome_responsavel})`
-      );
     }
-  }, [cobranca, setPageTitle, setPageSubtitle]);
+  }, [cobranca, setPageTitle]);
 
   if (loading) {
     return (
-      <div className="overflow-hidden w-full max-w-full h-full">
-        <CobrancaDetalheSkeleton />
+      <div className="w-full h-full">
+        <CobrancaSkeleton />
       </div>
     );
   }
 
-  if (!cobranca) return null;
+  if (!cobranca || !cobrancaTyped) return null;
+  const passageiroCompleto = cobrancaTyped.passageiros as Passageiro;
 
-  const deleteCobranca = async () => {
-    setRefreshing(true);
-    try {
-      await cobrancaService.excluirCobranca(cobranca);
-
-      toast({
-        title: "Cobrança excluída com sucesso.",
-      });
-      navigate(`/passageiros/${cobranca.passageiro_id}`);
-    } catch (error: any) {
-      console.error("Erro ao excluir cobrança:", error);
-      toast({
-        title: "Erro ao excluir cobrança.",
-        description: error.message || "Não foi possível concluir a operação.",
-        variant: "destructive",
-      });
-    } finally {
-      setDeleteDialog({ open: false });
-      setRefreshing(false);
-    }
+  const handleDeleteCobranca = async () => {
+    if (!cobranca) return;
+    deleteCobrancaMutation.mutate(cobranca.id, {
+      onSuccess: () => {
+        setDeleteDialog({ open: false });
+        navigate(`/passageiros/${cobranca.passageiro_id}`);
+      },
+    });
   };
 
   const pullToRefreshReload = async () => {
-    fetchCobranca();
-    fetchNotificacoes();
+    await refetchCobranca();
   };
+
+  // Status Logic using Utils (DRY)
+  const isPago = cobrancaTyped.status === PASSAGEIRO_COBRANCA_STATUS_PAGO;
+  const statusText = getStatusText(
+    cobrancaTyped.status,
+    cobrancaTyped.data_vencimento
+  );
+  const statusColorClass = getStatusColor(
+    cobrancaTyped.status,
+    cobrancaTyped.data_vencimento
+  );
+
+  // Header Color Logic derived from status
+  let headerBg =
+    "bg-gradient-to-r from-blue-100 via-blue-50 to-white border-b border-blue-100";
+  let StatusIcon = Wallet;
+  let paymentButtonClass =
+    "bg-blue-600 hover:bg-blue-700 text-white shadow-[0_12px_30px_-20px_rgba(37,99,235,0.7)]";
+
+  if (isPago) {
+    headerBg =
+      "bg-gradient-to-r from-green-100 via-emerald-50 to-white border-b border-green-100";
+    StatusIcon = CheckCircle2;
+    paymentButtonClass =
+      "bg-green-600 hover:bg-green-700 text-white shadow-[0_12px_30px_-20px_rgba(16,185,129,0.6)]";
+  } else if (statusText === "Venceu") {
+    headerBg =
+      "bg-gradient-to-r from-red-100 via-rose-50 to-white border-b border-red-100";
+    StatusIcon = XCircle;
+    paymentButtonClass =
+      "bg-blue-600 hover:bg-blue-600 text-white shadow-[0_12px_30px_-20px_rgba(248,113,113,0.6)]";
+  } else {
+    // Pendente / A vencer
+    headerBg =
+      "bg-gradient-to-r from-yellow-100 via-orange-50 to-white border-b border-yellow-100";
+    StatusIcon = Wallet;
+    paymentButtonClass =
+      "bg-blue-500 hover:bg-blue-600 text-white shadow-[0_12px_30px_-20px_rgba(37,99,235,0.7)]";
+  }
 
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start overflow-hidden">
-            <Card className="lg:col-span-3 order-1">
-              <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <div className="text-sm text-muted-foreground">
-                    {meses[cobranca.mes - 1]}/{cobranca.ano}
-                  </div>
-                  <div className="text-4xl font-bold tracking-tight">
-                    {cobranca.valor.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
-                  </div>
-                  <div className="text-muted-foreground mt-3">
-                    Vencimento em: {formatDateToBR(cobranca.data_vencimento)}
-                  </div>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                      cobranca.status,
-                      cobranca.data_vencimento
-                    )}`}
-                  >
-                    {cobranca.status === "pago"
-                      ? `Paga em ${formatDateToBR(cobranca.data_pagamento)}`
-                      : getStatusText(
-                          cobranca.status,
-                          cobranca.data_vencimento
-                        )}
-                  </span>
-                </div>
-                <div className="flex-shrink-0 w-full sm:w-auto">
-                  {!disableRegistrarPagamento(cobranca) ? (
-                    <Button
-                      size="lg"
-                      className="w-full hover:bg-blue-600"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPaymentDialogOpen(true);
-                      }}
+        <div className=" space-y-6 pb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            {/* --- SIDEBAR: PASSENGER CARD --- */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4 }}
+              className="lg:col-span-1 order-2 lg:order-1"
+            >
+              <Card className="bg-white border border-gray-100 shadow-lg overflow-hidden">
+                <div className="p-8 flex flex-col items-center text-center border-b border-gray-50 relative">
+                  <div className="relative mb-4">
+                    <div
+                      className={cn(
+                        "h-24 w-24 rounded-full bg-gray-50 flex items-center justify-center border-4 border-white shadow-sm",
+                        cobrancaTyped.passageiros.ativo
+                          ? "ring-2 ring-offset-2 ring-green-500"
+                          : "ring-2 ring-offset-2 ring-red-500"
+                      )}
                     >
-                      <BadgeCheck className="w-5 h-5 mr-2" /> Registrar
-                      Pagamento
-                    </Button>
-                  ) : cobranca.pagamento_manual ? (
+                      <User className="h-10 w-10 text-gray-400" />
+                    </div>
+                    <div
+                      className={cn(
+                        "absolute bottom-1 right-1 h-5 w-5 rounded-full border-2 border-white",
+                        cobrancaTyped.passageiros.ativo
+                          ? "bg-green-500"
+                          : "bg-red-500"
+                      )}
+                      title={
+                        cobrancaTyped.passageiros.ativo ? "Ativo" : "Desativado"
+                      }
+                    />
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    {cobrancaTyped.passageiros.nome}
+                  </h2>
+                  <p className="text-sm text-gray-500 font-medium mt-1">
+                    {cobrancaTyped.passageiros.nome_responsavel}
+                  </p>
+                </div>
+
+                <CardContent className="p-6 space-y-6">
+                  {/* Contato Rápido */}
+                  <div className="">
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Contato Rápido
+                    </p>
+
+                    <AnimatePresence>
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pt-4 space-y-4">
+                          <div>
+                            <div className="text-sm text-muted-foreground flex items-center gap-2">
+                              <Phone className="w-4 h-4" />
+                              Telefone (WhatsApp)
+                            </div>
+                            <div className="font-semibold text-foreground mt-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm">
+                                  {formatarTelefone(
+                                    passageiroCompleto.telefone_responsavel
+                                  )}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-50 shrink-0"
+                                  onClick={handleCopyTelefone}
+                                  title="Copiar telefone"
+                                >
+                                  {isCopiedTelefone ? (
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="text-sm text-muted-foreground flex items-center gap-2">
+                              <MapPin className="w-4 h-4" />
+                              Endereço
+                            </div>
+                            <div className="font-semibold text-foreground mt-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm">
+                                  {formatarEnderecoCompleto(
+                                    cobrancaTyped.passageiros as Passageiro
+                                  )}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-50 shrink-0"
+                                  onClick={handleCopyEndereco}
+                                  title="Copiar endereço"
+                                >
+                                  {isCopiedEndereco ? (
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Info Grid - Blocos Estilizados */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <SidebarInfoBlock icon={School} label="Escola">
+                      {cobrancaTyped.passageiros.escolas.nome}
+                    </SidebarInfoBlock>
+                    <SidebarInfoBlock icon={Car} label="Veículo">
+                      {formatarPlacaExibicao(
+                        cobrancaTyped.passageiros.veiculos.placa
+                      )}
+                    </SidebarInfoBlock>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex flex-col gap-3 pt-2 border-t border-gray-100">
                     <Button
-                      size="lg"
-                      variant="outline"
-                      className="w-full border-red-600 text-red-500 hover:text-red-600"
+                      variant="ghost"
+                      className="w-full h-10 rounded-xl text-primary hover:bg-transparent hover:text-primary font-medium"
                       onClick={() =>
-                        setConfirmDialogDesfazer({
-                          open: true,
-                          cobrancaId: cobranca_id,
-                        })
+                        navigate(`/passageiros/${cobrancaTyped.passageiro_id}`)
                       }
                     >
-                      <XCircle className="w-5 h-5 mr-2" /> Desfazer Pagamento
+                      <IdCard className="h-4 w-4 mr-2" /> Ver Carteirinha
                     </Button>
-                  ) : (
-                    <div
-                      className={`flex items-center justify-center px-4 py-2 rounded-md text-base font-medium ${getStatusColor(
-                        cobranca.status,
-                        cobranca.data_vencimento
-                      )}`}
-                    >
-                      {getStatusText(cobranca.status, cobranca.data_vencimento)}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* --- MAIN CONTENT --- */}
+            <div className="lg:col-span-2 space-y-6 order-1 lg:order-2">
+              {/* FINANCIAL SUMMARY CARD */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+              >
+                <Card className="bg-white border border-gray-100 shadow-lg overflow-hidden relative flex flex-col">
+                  {/* Header Limpo: Sem botão de edição e Data Simplificada */}
+                  <div
+                    className={cn(
+                      "px-6 py-5 flex items-start justify-between relative min-h-[84px]",
+                      headerBg
+                    )}
+                  >
+                    {/* Lado Esquerdo: Referência */}
+                    <div className="flex flex-col gap-1.5 z-10">
+                      <span className="text-[10px] uppercase tracking-widest font-bold opacity-70">
+                        Referência
+                      </span>
+                      {/* Valor em destaque */}
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="w-5 h-5 opacity-80" />
+                        <span className="text-xl font-bold tracking-tight text-gray-900">
+                          {meses[cobrancaTyped.mes - 1]}{" "}
+                          <span className="opacity-40 font-light">/</span>{" "}
+                          {cobrancaTyped.ano}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Lado Direito: Vencimento (Dia XX) ou Pagamento Completo */}
+                    <div className="flex flex-col items-end gap-1.5 text-right z-10">
+                      <span className="text-[10px] uppercase tracking-widest font-bold opacity-70">
+                        {isPago ? "Pago em" : "Vencimento"}
+                      </span>
+                      <span className="text-sm font-bold text-gray-900">
+                        {
+                          isPago
+                            ? formatDateToBR(cobrancaTyped.data_pagamento) // Data completa se pago
+                            : `Dia ${
+                                cobrancaTyped.data_vencimento.split("-")[2]
+                              }` // Apenas "Dia XX" se pendente
+                        }
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* ALERTA DE LEMBRETES DESATIVADOS (NOVO) */}
+                  {cobrancaTyped.desativar_lembretes && !isPago && (
+                    <div className="bg-orange-50 border-b border-orange-100 px-6 py-2 flex items-center justify-center gap-2 text-xs font-medium text-orange-700 animate-in fade-in slide-in-from-top-2">
+                      <BellOff className="w-3.5 h-3.5 text-orange-700" />
+                      <span>
+                        Lembretes automáticos desativados para esta cobrança.
+                      </span>
                     </div>
                   )}
-                </div>
 
-                {!disableVerPaginaPagamento(cobranca) &&
-                  !disableBaixarBoleto(cobranca) && (
-                    <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t md:hidden w-full">
-                      <Button
-                        disabled={disableVerPaginaPagamento(cobranca)}
-                        variant="outline"
-                        className="flex-1 hover:text-primary"
-                        title={
-                          isCopied ? "Copiado!" : "Copiar Link de Pagamento"
-                        }
-                        onClick={() =>
-                          handleCopyLink(cobranca.asaas_invoice_url)
-                        }
-                      >
-                        {isCopied ? (
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                        ) : (
-                          <Copy className="h-4 w-4 mr-2" />
+                  <div className="p-8 md:p-10 text-center flex-1 flex flex-col justify-center">
+                    {/* Value Section */}
+                    <div className="mb-8">
+                      <Badge
+                        className={cn(
+                          "px-4 py-1.5 mb-3 text-xs font-bold shadow-sm rounded-full border transition-all hover:scale-105 cursor-default",
+                          statusColorClass
                         )}
-                        {isCopied ? "Copiado!" : "Copiar Link de Pagamento"}
-                      </Button>
-                      <Button
-                        disabled={disableBaixarBoleto(cobranca)}
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() =>
-                          goToExternalURL(cobranca.asaas_bankslip_url)
-                        }
                       >
-                        <Download className="w-4 h-4 mr-2" /> Baixar Boleto
-                      </Button>
+                        <StatusIcon className="w-3.5 h-3.5 mr-1.5" />
+                        {statusText}
+                      </Badge>
+
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="text-2xl text-gray-400 font-medium mt-1">
+                          R$
+                        </span>
+                        <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 tracking-tighter">
+                          {cobrancaTyped.valor.toLocaleString("pt-BR", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </h1>
+                      </div>
                     </div>
-                  )}
-              </CardContent>
-            </Card>
 
-            <Card className="lg:col-span-1 order-2 lg:order-2">
-              <CardHeader className="flex flex-row items-center justify-between pb-4">
-                <div>
-                  <CardTitle className="text-lg">Cobrança</CardTitle>
-                </div>
-                <div>
-                  <Button
-                    variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditCobrancaClick();
-                    }}
-                    title="Editar Cobrança"
-                    className="gap-2"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <InfoItem icon={User} label="Passageiro">
-                  {cobranca.passageiro_nome}
-                </InfoItem>
-                <InfoItem icon={Contact} label="Responsável">
-                  {cobranca.nome_responsavel}
-                </InfoItem>
-                <InfoItem icon={School} label="Escola">
-                  {cobranca.escola_nome}
-                </InfoItem>
-                <InfoItem icon={Car} label="Veículo">
-                  {formatarPlacaExibicao(cobranca.veiculo_placa)}
-                </InfoItem>
-
-                <div className="space-y-2 pt-6 border-t">
-                  <Button
-                    className="w-full"
-                    variant="default"
-                    onClick={() =>
-                      navigate(`/passageiros/${cobranca.passageiro_id}`)
-                    }
-                  >
-                    <IdCard className="h-4 w-4 mr-2" /> Ver Carteirinha
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full bg-green-50 border-green-500 text-green-500 hover:text-green-500 hover:bg-green-100"
-                    disabled={!cobranca.telefone_responsavel}
-                    onClick={() =>
-                      window.open(
-                        `https://wa.me/${cobranca.telefone_responsavel}`,
-                        "_blank"
-                      )
-                    }
-                  >
-                    <MessageCircle className="h-4 w-4 mr-2" /> Falar no WhatsApp
-                  </Button>
-                  {/* {!seForPago(cobranca) && (
-                    <Button
-                      className="w-full"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setConfirmDialogEnvioNotificacao({
-                          open: true,
-                          cobranca,
-                        });
-                      }}
-                    >
-                      <Send className="h-4 w-4 mr-2" /> Enviar Notificação
-                    </Button>
-                  )} */}
-                  {/* {!disableToggleLembretes(cobranca) && (
-                    <Button
-                      className="w-full"
-                      variant="outline"
-                      onClick={() => handleToggleLembretes()}
-                    >
-                      {cobranca.desativar_lembretes ? (
-                        <Bell className="h-4 w-4 mr-2" />
+                    {/* Primary Actions */}
+                    <div className="flex flex-wrap items-center justify-center gap-4 max-w-2xl mx-auto mb-8 w-full">
+                      {!disableRegistrarPagamento(cobrancaTyped) ? (
+                        <Button
+                          className={cn(
+                            "h-12 px-8 rounded-xl font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto min-w-[200px]",
+                            paymentButtonClass
+                          )}
+                          onClick={() => setPaymentDialogOpen(true)}
+                        >
+                          <BadgeCheck className="w-5 h-5 mr-2" />
+                          Registrar Pagamento
+                        </Button>
+                      ) : cobrancaTyped.pagamento_manual ? (
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          className="h-12 px-8 rounded-xl border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 w-full sm:w-auto min-w-[200px]"
+                          onClick={() =>
+                            setConfirmDialogDesfazer({
+                              open: true,
+                              cobrancaId: cobranca_id,
+                            })
+                          }
+                        >
+                          <History className="w-4 h-4 mr-2" />
+                          Desfazer Pagamento
+                        </Button>
                       ) : (
-                        <BellOff className="h-4 w-4 mr-2" />
-                      )}
-                      {cobranca.desativar_lembretes
-                        ? "Ativar Notificações"
-                        : "Desativar Notificações"}
-                    </Button>
-                  )} */}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="lg:col-span-2 order-3 lg:order-3">
-              <CardHeader>
-                <CardTitle className="flex items-center text-lg gap-2">
-                  <FileText className="w-5 h-5" />
-                  Detalhes da Cobrança
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 border rounded-lg bg-muted/50">
-                  <InfoItem icon={CreditCard} label="Forma de Pagamento">
-                    {formatPaymentType(cobranca.tipo_pagamento)}
-                  </InfoItem>
-                  <InfoItem icon={Calendar} label="Data do Pagamento">
-                    {cobranca.data_pagamento
-                      ? formatDateToBR(cobranca.data_pagamento)
-                      : "-"}
-                  </InfoItem>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-                  <InfoItem
-                    icon={cobranca.desativar_lembretes ? BellOff : Bell}
-                    label="Notificações"
-                  >
-                    {cobranca.desativar_lembretes ? "Desativadas" : "Ativadas"}
-                  </InfoItem>
-                  <InfoItem icon={ArrowRight} label="Origem">
-                    {formatCobrancaOrigem(cobranca.origem)}
-                  </InfoItem>
-                  {(() => {
-                    let IconComponent = CalendarIcon;
-
-                    if (seForPago(cobranca)) {
-                      IconComponent = BadgeCheck;
-                    } else if (
-                      checkCobrancaJaVenceu(cobranca.data_vencimento)
-                    ) {
-                      IconComponent = XCircle;
-                    }
-
-                    return (
-                      <InfoItem icon={IconComponent} label="Pagamento">
-                        {cobranca.status === "pago"
-                          ? cobranca.pagamento_manual
-                            ? "Registrado por você"
-                            : "Registrado automaticamente"
-                          : "—"}
-                      </InfoItem>
-                    );
-                  })()}
-                </div>
-                {!disableVerPaginaPagamento(cobranca) &&
-                  !disableBaixarBoleto(cobranca) && (
-                    <div className="flex flex-col sm:flex-row gap-2 pt-6 border-t hidden md:flex">
-                      <Button
-                        disabled={disableVerPaginaPagamento(cobranca)}
-                        variant="outline"
-                        className="flex-1 hover:text-primary"
-                        title={
-                          isCopied ? "Copiado!" : "Copiar Link de Pagamento"
-                        }
-                        onClick={() =>
-                          handleCopyLink(cobranca.asaas_invoice_url)
-                        }
-                      >
-                        {isCopied ? (
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                        ) : (
-                          <Copy className="h-4 w-4 mr-2" />
-                        )}
-                        {isCopied ? "Copiado!" : "Copiar Link de Pagamento"}
-                      </Button>
-                      <Button
-                        disabled={disableBaixarBoleto(cobranca)}
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() =>
-                          goToExternalURL(cobranca.asaas_bankslip_url)
-                        }
-                      >
-                        <Download className="w-4 h-4 mr-2" /> Baixar Boleto
-                      </Button>
-                    </div>
-                  )}
-
-                {/* <div className="pt-6 border-t">
-                  <h4 className="text-sm font-semibold mb-4 flex items-center gap-2 text-muted-foreground">
-                    <HistoryIcon className="w-4 h-4" />
-                    Histórico de Notificações
-                  </h4>
-
-                  {notificacoes && notificacoes.length > 0 ? (
-                    <>
-                      <NotificationTimeline items={[notificacoes[0]]} />
-
-                      {showFullHistory && notificacoes.length > 1 && (
-                        <div className="mt-6">
-                          <NotificationTimeline items={notificacoes.slice(1)} />
+                        <div className="px-6 py-4 rounded-xl bg-green-50 border border-green-100 text-green-800 font-medium text-sm flex items-center justify-center gap-2 w-full">
+                          <CheckCircle2 className="w-5 h-5 text-green-600" />
+                          <span>Pago via automação (Link/Pix)</span>
                         </div>
                       )}
+                    </div>
 
-                      {notificacoes.length > 1 && (
-                        <Button
-                          variant="link"
-                          className="p-0 h-auto text-xs mt-4"
-                          onClick={() => setShowFullHistory(!showFullHistory)}
-                        >
-                          {showFullHistory
-                            ? "Ocultar histórico"
-                            : `+ Ver histórico completo`}
-                        </Button>
+                    {/* Secondary Actions Grid - Flex wrap para Mobile */}
+                    <div className="flex flex-wrap justify-center gap-3 mb-6 w-full">
+                      {/* Botão Editar (Agora aqui junto aos secundários) */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
+                        onClick={handleEditCobrancaClick}
+                      >
+                        <Pencil className="w-3.5 h-3.5 mr-2" /> Editar Cobrança
+                      </Button>
+
+                      {/* Botão de Notificação (Só se tiver plano) */}
+                      {podeEnviarNotificacao(cobrancaTyped, plano) && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
+                            onClick={() => {
+                              setConfirmDialogEnvioNotificacao({
+                                open: true,
+                                cobranca: cobrancaTyped,
+                              });
+                            }}
+                          >
+                            <Send className="w-3.5 h-3.5 mr-2" /> Enviar
+                            Lembrete
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
+                            onClick={handleToggleLembretes}
+                          >
+                            {cobrancaTyped.desativar_lembretes ? (
+                              <>
+                                <Bell className="w-3.5 h-3.5 mr-2" /> Reativar
+                                Lembretes
+                              </>
+                            ) : (
+                              <>
+                                <BellOff className="w-3.5 h-3.5 mr-2" /> Pausar
+                                Lembretes
+                              </>
+                            )}
+                          </Button>
+                        </>
                       )}
-                    </>
-                  ) : (
-                    <Alert className="py-2">
-                      <AlertTitle className="text-xs font-semibold text-muted-foreground mb-0">
-                        Nenhuma notificação foi enviada
-                      </AlertTitle>
-                    </Alert>
-                  )}
-                </div> */}
-              </CardContent>
-              <CardFooter>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
-                  disabled={disableExcluirCobranca(cobranca)}
-                  onClick={() => setDeleteDialog({ open: true })}
+                    </div>
+
+                    {/* Delete Action (Separado por borda para segurança) */}
+                    <div className="pt-6 border-t border-gray-50 mt-auto w-full flex justify-center">
+                      <Button
+                        variant="ghost"
+                        className="text-red-400 hover:text-red-600 hover:bg-red-50 font-medium text-xs h-8 px-3 rounded-md transition-colors"
+                        disabled={disableExcluirCobranca(cobrancaTyped)}
+                        onClick={() => setDeleteDialog({ open: true })}
+                      >
+                        <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir cobrança
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+
+              {/* DETAILS & TIMELINE GRID */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Details Card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
                 >
-                  <Trash2 className="w-3 h-3 mr-2" /> Excluir Cobrança
-                </Button>
-              </CardFooter>
-            </Card>
+                  <Card className="h-full bg-white border border-gray-100 shadow-lg">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="flex items-center gap-2 text-base font-bold text-gray-900">
+                        Detalhes
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 pt-4">
+                      <div className="grid grid-cols-1 gap-4">
+                        <InfoItem icon={CreditCard} label="Forma de Pagamento">
+                          {formatPaymentType(cobrancaTyped.tipo_pagamento)}
+                        </InfoItem>
+                        <InfoItem icon={Calendar} label="Data do Pagamento">
+                          {cobrancaTyped.data_pagamento
+                            ? formatDateToBR(cobrancaTyped.data_pagamento)
+                            : "—"}
+                        </InfoItem>
+                        <InfoItem icon={ArrowRight} label="Origem da Cobrança">
+                          {formatCobrancaOrigem(cobrancaTyped.origem)}
+                        </InfoItem>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                {/* Timeline Card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.3 }}
+                >
+                  <Card className="h-full bg-white border border-gray-100 shadow-lg">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="flex items-center gap-2 text-base font-bold text-gray-900">
+                        Histórico de Lembretes
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4 px-2 sm:pr-4">
+                      {notificacoes && notificacoes.length > 0 ? (
+                        <NotificationTimeline items={notificacoes} />
+                      ) : (
+                        <div className="text-center py-8">
+                          <p className="text-sm text-gray-400 font-medium">
+                            Nenhum lembrete enviado.
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </div>
+            </div>
           </div>
 
+          {/* Dialogs */}
           {paymentDialogOpen && (
             <ManualPaymentDialog
               isOpen={paymentDialogOpen}
               onClose={() => safeCloseDialog(() => setPaymentDialogOpen(false))}
-              cobrancaId={cobranca_id}
-              passageiroNome={cobranca.passageiro_nome}
-              responsavelNome={cobranca.nome_responsavel}
-              valorOriginal={Number(cobranca.valor)}
+              cobrancaId={cobrancaTyped.id}
+              passageiroNome={passageiroCompleto.nome}
+              responsavelNome={passageiroCompleto.nome_responsavel}
+              valorOriginal={Number(cobrancaTyped.valor)}
               onPaymentRecorded={() => {
                 safeCloseDialog(() => {
                   setPaymentDialogOpen(false);
-                  fetchCobranca(true);
+                  refetchCobranca();
+                });
+              }}
+            />
+          )}
+
+          {editDialogOpen && cobrancaToEdit && (
+            <CobrancaEditDialog
+              isOpen={editDialogOpen}
+              onClose={() => safeCloseDialog(() => setEditDialogOpen(false))}
+              cobranca={cobrancaToEdit}
+              onCobrancaUpdated={() => {
+                safeCloseDialog(() => {
+                  setEditDialogOpen(false);
+                  refetchCobranca();
                 });
               }}
             />
           )}
 
           <ConfirmationDialog
-            open={confirmDialogEnvioNotificacao.open}
-            onOpenChange={(open) =>
-              setConfirmDialogEnvioNotificacao({
-                open,
-                cobranca: null,
-              })
-            }
-            title="Enviar Notificação"
-            description="Deseja enviar esta notificação para o responsável?"
-            onConfirm={handleEnviarNotificacao}
-          />
-
-          <ConfirmationDialog
             open={confirmDialogDesfazer.open}
             onOpenChange={(open) =>
-              setConfirmDialogDesfazer({ open, cobrancaId: "" })
+              setConfirmDialogDesfazer((prev) => ({ ...prev, open }))
             }
             title="Desfazer Pagamento"
-            description="Deseja realmente desfazer o pagamento desta cobrança?"
-            onConfirm={desfazerPagamento}
+            description="Tem certeza que deseja desfazer o pagamento desta cobrança? Ela voltará a ficar pendente."
+            onConfirm={handleDesfazerPagamento}
+            confirmText="Sim, desfazer"
             variant="destructive"
-            confirmText="Confirmar"
           />
 
           <ConfirmationDialog
             open={deleteDialog.open}
-            onOpenChange={(open) => setDeleteDialog({ open })}
-            title="Excluir"
-            description="Deseja excluir permanentemente essa cobrança?"
-            onConfirm={deleteCobranca}
-            confirmText="Confirmar"
+            onOpenChange={(open) =>
+              setDeleteDialog((prev) => ({ ...prev, open }))
+            }
+            title="Excluir Cobrança"
+            description="Tem certeza que deseja excluir esta cobrança? Esta ação não pode ser desfeita."
+            onConfirm={handleDeleteCobranca}
+            confirmText="Sim, excluir"
             variant="destructive"
           />
 
-          {cobrancaToEdit && (
-            <CobrancaEditDialog
-              isOpen={editDialogOpen}
-              onClose={() => safeCloseDialog(() => setEditDialogOpen(false))}
-              cobranca={cobrancaToEdit}
-              onCobrancaUpdated={() => fetchCobranca(true)}
-            />
-          )}
+          <ConfirmationDialog
+            open={confirmDialogEnvioNotificacao.open}
+            onOpenChange={(open) =>
+              setConfirmDialogEnvioNotificacao((prev) => ({ ...prev, open }))
+            }
+            title="Enviar Lembrete"
+            description={`Deseja enviar um lembrete de cobrança para o responsável de ${cobrancaTyped.passageiros.nome}?`}
+            onConfirm={() => {
+              handleEnviarNotificacao();
+              setConfirmDialogEnvioNotificacao({ open: false, cobranca: null });
+            }}
+            confirmText="Enviar"
+          />
+
+          <LoadingOverlay
+            active={
+              deleteCobrancaMutation.isPending ||
+              enviarNotificacaoMutation.isPending ||
+              toggleNotificacoesMutation.isPending ||
+              desfazerPagamentoMutation.isPending
+            }
+          />
         </div>
       </PullToRefreshWrapper>
-      <LoadingOverlay active={refreshing} text="Aguarde..." />
     </>
   );
 }

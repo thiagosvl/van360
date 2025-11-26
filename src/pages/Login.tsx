@@ -1,4 +1,16 @@
-import { LoadingOverlay } from "@/components/LoadingOverlay";
+// React
+import { useCallback, useState } from "react";
+import { useForm } from "react-hook-form";
+
+// React Router
+import { useNavigate } from "react-router-dom";
+
+// Third-party
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// Components - UI
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -10,18 +22,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+
+// Services
 import { supabase } from "@/integrations/supabase/client";
 import { responsavelService } from "@/services/responsavelService";
+
+// Utils
+import { toast } from "@/utils/notifications/toast";
 import { cpfMask } from "@/utils/masks";
-import { clearLoginStorageMotorista } from "@/utils/motoristaUtils";
-import { clearLoginStorageResponsavel } from "@/utils/responsavelUtils";
+import { clearLoginStorageMotorista } from "@/utils/domain/motorista/motoristaUtils";
+import { clearLoginStorageResponsavel } from "@/utils/domain/responsavel/responsavelUtils";
 import { isValidCPF } from "@/utils/validators";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useState } from "react";
-import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { z } from "zod";
 
 export default function Login() {
   const [tab, setTab] = useState("motorista");
@@ -29,7 +40,6 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [refreshing, setRefreshing] = useState(false);
 
   const appDomain = import.meta.env.VITE_PUBLIC_APP_DOMAIN;
@@ -72,11 +82,8 @@ export default function Login() {
   const handleForgotPassword = useCallback(async () => {
     const cpfDigits = formMotorista.getValues("cpfcnpj")?.replace(/\D/g, "");
     if (!cpfDigits) {
-      toast({
-        title: "Informe seu CPF",
-        description:
-          "Digite o CPF cadastrado para receber o link de redefinição em seu e-mail.",
-        variant: "destructive",
+      toast.info("auth.info.informeCpf", {
+        description: "Digite o CPF cadastrado para receber o link de redefinição em seu e-mail.",
       });
       return;
     }
@@ -91,16 +98,12 @@ export default function Login() {
         .single();
 
       if (error || !usuario?.email) {
-        toast({
-          title: "CPF não encontrado",
-          description:
-            "Verifique o número informado. Caso tenha dúvidas, fale com o suporte.",
-          variant: "destructive",
+        toast.error("auth.erro.cpfNaoEncontrado", {
+          description: "auth.erro.cpfNaoEncontradoDescricao",
         });
         return;
       }
 
-      // Gera versão mascarada do e-mail para exibir no toast
       const maskedEmail = (() => {
         const [user, domain] = usuario.email.split("@");
         const maskedUser =
@@ -127,21 +130,17 @@ export default function Login() {
 
       if (resetError) throw resetError;
 
-      toast({
-        title: "Link de redefinição enviado",
+      toast.success("auth.sucesso.emailEnviado", {
         description: `Enviamos o link para ${maskedEmail}. Verifique sua caixa de entrada e o spam. O link é válido por tempo limitado.`,
       });
     } catch (err: any) {
-      toast({
-        title: "Não foi possível enviar o link",
-        description:
-          "Tente novamente em alguns minutos ou entre em contato com o suporte.",
-        variant: "destructive",
+      toast.error("auth.erro.emailNaoEncontrado", {
+        description: "Tente novamente em alguns minutos ou entre em contato com o suporte.",
       });
     } finally {
       setRefreshing(false);
     }
-  }, [formMotorista, toast]);
+  }, [formMotorista]);
 
   const handleLoginMotorista = async (data: any) => {
     setLoading(true);
@@ -152,6 +151,7 @@ export default function Login() {
         .from("usuarios")
         .select("email, role")
         .eq("cpfcnpj", cpfcnpjDigits)
+
         .single();
 
       if (usuarioError || !usuario) {
@@ -196,8 +196,10 @@ export default function Login() {
       } else {
         navigate("/inicio", { replace: true });
       }
-    } catch (error) {
-      console.error("Login error:", error);
+    } catch (error: any) {
+      toast.error("auth.erro.login", {
+        description: error.message || "Erro ao fazer login. Tente novamente.",
+      });
       formMotorista.setError("root", {
         type: "manual",
         message: "Erro inesperado",
@@ -216,10 +218,8 @@ export default function Login() {
     try {
       const passageiros = await responsavelService.loginPorCpfEmail(cpf, email);
       if (!passageiros || passageiros.length === 0) {
-        toast({
-          title: "Erro ao fazer login",
+        toast.error("auth.erro.login", {
           description: "Nenhum passageiro foi encontrado.",
-          variant: "destructive",
         });
         setLoading(false);
         return;
@@ -240,10 +240,8 @@ export default function Login() {
         navigate("/responsavel/selecionar", { state: { passageiros } });
       }
     } catch {
-      toast({
-        title: "Erro ao fazer login",
+      toast.error("auth.erro.login", {
         description: "Tente novamente mais tarde.",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);

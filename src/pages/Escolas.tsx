@@ -1,141 +1,112 @@
-import ConfirmationDialog from "@/components/ConfirmationDialog";
-import EscolaFormDialog from "@/components/EscolaFormDialog";
-import { LoadingOverlay } from "@/components/LoadingOverlay";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useLayout } from "@/contexts/LayoutContext";
-import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
-import { useToast } from "@/hooks/use-toast";
-import { useProfile } from "@/hooks/useProfile";
-import { useSession } from "@/hooks/useSession";
-import { escolaService } from "@/services/escolaService";
-import { Escola } from "@/types/escola";
-import { safeCloseDialog } from "@/utils/dialogCallback";
-import {
-  Filter,
-  FilterX,
-  MoreVertical,
-  Pencil,
-  Plus,
-  School,
-  Search,
-  ToggleLeft,
-  ToggleRight,
-  Trash2,
-  Users,
-  Users2,
-} from "lucide-react";
+// React
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+    useNavigate,
+    useSearchParams,
+} from "react-router-dom";
 
-const SchoolListSkeleton = () => (
-  <div className="space-y-3">
-    {[...Array(3)].map((_, i) => (
-      <div
-        key={i}
-        className="flex items-center justify-between p-4 border rounded-lg"
-      >
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-5 w-3/4" />
-        </div>
-        <Skeleton className="h-8 w-8 rounded-full" />
-      </div>
-    ))}
-  </div>
-);
+// Components - Dialogs
+import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
+import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
+
+// Components - Features
+import { EscolasList } from "@/components/features/escola/EscolasList";
+import { EscolasToolbar } from "@/components/features/escola/EscolasToolbar";
+
+// Components - Empty & Skeletons
+import { EmptyState } from "@/components/empty";
+import { ListSkeleton } from "@/components/skeletons";
+
+// Components - Navigation
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+
+// Components - UI
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+
+// Hooks
+import { useLayout } from "@/contexts/LayoutContext";
+import { useDeleteEscola, useEscolas, useFilters, useToggleAtivoEscola } from "@/hooks";
+import { useProfile } from "@/hooks/business/useProfile";
+import { useSession } from "@/hooks/business/useSession";
+
+// Utils
+import { safeCloseDialog } from "@/utils/dialogUtils";
+import { toast } from "@/utils/notifications/toast";
+
+// Types
+import { Escola } from "@/types/escola";
+
+// Icons
+import {
+    School
+} from "lucide-react";
 
 export default function Escolas() {
-  const { setPageTitle, setPageSubtitle } = useLayout();
-  const [escolas, setEscolas] = useState<
-    (Escola & { passageiros_ativos_count?: number })[]
-  >([]);
-  const [countEscolasAtivas, setCountEscolasAtivas] = useState<number>(null);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { setPageTitle } = useLayout();
+  const [searchParams] = useSearchParams();
+
+  const deleteEscola = useDeleteEscola();
+  const toggleAtivoEscola = useToggleAtivoEscola();
+
+  const isActionLoading = deleteEscola.isPending || toggleAtivoEscola.isPending;
 
   const [isDialogOpen, setIsDialogOpen] = useState(() => {
     const openModal = searchParams.get("openModal");
     return openModal && openModal === "true" ? true : false;
   });
   const [editingEscola, setEditingEscola] = useState<Escola | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [schoolToDelete, setSchoolToDelete] = useState<Escola | null>(null);
+  const [escolaToDelete, setEscolaToDelete] = useState<Escola | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [showMobileFilters, setShowMobileFilters] = useState(true);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("todos");
+  const { 
+    searchTerm, 
+    setSearchTerm, 
+    selectedStatus, 
+    setSelectedStatus,
+    clearFilters,
+    setFilters
+  } = useFilters();
+  
   const { user, loading: isSessionLoading } = useSession();
   const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
 
-  const { toast } = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!profile?.id) return;
-    fetchEscolas();
-  }, [profile?.id]);
+  const {
+    data: escolasData,
+    isLoading: isEscolasLoading,
+    refetch: refetchEscolas,
+  } = useEscolas(profile?.id, {
+    enabled: !!profile?.id,
+    onError: () => toast.error("escola.erro.carregar"),
+  });
 
-  useEffect(() => {
-    let subTitle = "";
-    if (countEscolasAtivas != null) {
-      subTitle = `${
-        countEscolasAtivas === 1
-          ? "1 escola ativa"
-          : `${countEscolasAtivas} escolas ativas`
-      }`;
-    } else {
-      subTitle = "Carregando...";
-    }
-
-    setPageTitle("Escolas");
-    setPageSubtitle(subTitle);
-  }, [escolas, setPageTitle, setPageSubtitle]);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {}, 500);
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
-
-  const fetchEscolas = useCallback(
-    async (isRefresh = false) => {
-      if (!profile?.id) return;
-
-      if (!isRefresh) setLoading(true);
-      else setRefreshing(true);
-
-      try {
-        const data = await escolaService.fetchEscolasComContagemAtivos(
-          profile.id
-        );
-        setEscolas(data || []);
-        setCountEscolasAtivas(data.filter((e) => e.ativo).length);
-      } catch (error) {
-        console.error("Erro ao buscar escolas:", error);
-        toast({ title: "Erro ao carregar escolas.", variant: "destructive" });
-      } finally {
-        if (!isRefresh) setLoading(false);
-        else setRefreshing(false);
-      }
-    },
-    [toast, profile?.id]
+  const escolas = useMemo(
+    () =>
+      (
+        escolasData as
+          | {
+              list?: (Escola & { passageiros_ativos_count?: number })[];
+              ativas?: number;
+            }
+          | undefined
+      )?.list ?? ([] as (Escola & { passageiros_ativos_count?: number })[]),
+    [escolasData]
   );
+  const countEscolasAtivas =
+    (
+      escolasData as
+        | {
+            list?: (Escola & { passageiros_ativos_count?: number })[];
+            ativas?: number;
+          }
+        | undefined
+    )?.ativas ?? null;
+
+  useEffect(() => {
+    setPageTitle("Escolas");
+  }, [countEscolasAtivas, setPageTitle]);
 
   const escolasFiltradas = useMemo(() => {
     let filtered = escolas;
@@ -155,94 +126,78 @@ export default function Escolas() {
     return filtered;
   }, [escolas, selectedStatus, searchTerm]);
 
-  const handleSuccessSave = (escolaCriada: Escola) => {
-    safeCloseDialog(() => {
-      fetchEscolas(true);
-      setEditingEscola(null);
-      setIsDialogOpen(false);
-    });
-  };
+  const handleSuccessSave = useCallback(
+    (escolaCriada: Escola) => {
+      safeCloseDialog(() => {
+        if (searchParams.get("openModal")) {
+          navigate("/inicio", { replace: true });
+        }
 
-  const handleEdit = (escola: Escola) => {
+        setEditingEscola(null);
+        setIsDialogOpen(false);
+      });
+    },
+    [searchParams, navigate]
+  );
+
+  const handleEdit = useCallback((escola: Escola) => {
     safeCloseDialog(() => {
       setEditingEscola(escola);
       setIsDialogOpen(true);
     });
-  };
+  }, []);
 
-  const handleDeleteClick = (escola: Escola) => {
+  const handleDeleteClick = useCallback((escola: Escola) => {
     if (escola.passageiros_ativos_count > 0) {
-      toast({
-        title: "Não é possível excluir.",
-        description: "A escola está vinculada a passageiros ativos.",
-        variant: "destructive",
+      toast.error("escola.erro.excluir", {
+        description: "escola.erro.excluirComPassageiros",
       });
-    } else {
-      setSchoolToDelete(escola);
-      setIsDeleteDialogOpen(true);
+      return;
     }
-  };
 
-  const handleDelete = async () => {
-    if (!profile?.id) return;
-    if (!schoolToDelete) return;
+    setEscolaToDelete(escola);
+    setIsDeleteDialogOpen(true);
+  }, []);
 
-    setRefreshing(true);
-    try {
-      await escolaService.deleteEscola(schoolToDelete.id, profile.id);
+  const handleDelete = useCallback(async () => {
+    if (!escolaToDelete) return;
 
-      await fetchEscolas(true);
-      toast({ title: "Escola excluída permanentemente." });
-    } catch (error: any) {
-      console.error("Erro ao excluir escola:", error);
+    deleteEscola.mutate(escolaToDelete.id, {
+      onSuccess: () => {
+        setIsDeleteDialogOpen(false);
+        setEscolaToDelete(null);
+      },
+    });
+  }, [escolaToDelete, deleteEscola]);
 
-      if (error.message.includes("passageiros vinculados")) {
-        toast({
-          title: "Erro ao excluir escola.",
-          description: error.message,
-          variant: "destructive",
+  const handleToggleAtivo = useCallback(
+    async (escola: Escola) => {
+      if (!profile?.id) return;
+
+      const novoStatus = !escola.ativo;
+
+      if (!novoStatus && escola.passageiros_ativos_count > 0) {
+        toast.error("escola.erro.desativar", {
+          description: "escola.erro.desativarComPassageiros",
         });
-      } else {
-        toast({ title: "Erro ao excluir escola.", variant: "destructive" });
+        return;
       }
-    } finally {
-      setIsDeleteDialogOpen(false);
-      setSchoolToDelete(null);
-      setRefreshing(false);
-    }
-  };
 
-  const handleToggleAtivo = async (escola: Escola) => {
-    if (!profile?.id) return;
+      toggleAtivoEscola.mutate({ id: escola.id, novoStatus });
+    },
+    [profile?.id, toggleAtivoEscola]
+  );
 
-    setRefreshing(true);
-    try {
-      const novoStatus = await escolaService.toggleAtivo(escola, profile.id);
+  const pullToRefreshReload = useCallback(async () => {
+    await refetchEscolas();
+  }, [refetchEscolas]);
 
-      toast({
-        title: `Escola ${novoStatus ? "ativada" : "desativada"} com sucesso.`,
-      });
-
-      fetchEscolas(true);
-    } catch (error: any) {
-      console.error("Erro ao alternar status:", error);
-      toast({
-        title: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  const pullToRefreshReload = async () => {
-    fetchEscolas();
-  };
+  const hasActiveFilters = selectedStatus !== "todos" || !!searchTerm;
 
   if (isSessionLoading || isProfileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
-        <p>Carregando informações do motorista...</p>
+        <p>Carregando informações...</p>
       </div>
     );
   }
@@ -251,318 +206,49 @@ export default function Escolas() {
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6">
-          <div className="w-full">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowMobileFilters(!showMobileFilters)}
-                      className={`md:hidden`}
-                      title={
-                        showMobileFilters
-                          ? "Esconder Filtros"
-                          : "Mostrar Filtros"
-                      }
-                    >
-                      {showMobileFilters ? (
-                        <FilterX className="h-4 w-4 text-blue-600 border-primary" />
-                      ) : (
-                        <Filter className="h-4 w-4" />
-                      )}
-                      <span className={showMobileFilters ? "text-primary" : ""}>
-                        Filtros
-                      </span>
-                    </Button>
-                  </CardTitle>
+      <div className="space-y-6">
+        <Card className="border-none shadow-none bg-transparent">
+          <CardHeader className="p-0">
+            {/* Toolbar moved inside CardContent or kept here if needed, but we want to remove the separate button */}
+          </CardHeader>
 
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={() => setIsDialogOpen(true)}
-                      className="gap-2"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span>Nova Escola</span>
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
+          <CardContent className="px-0">
+            <div className="mb-6">
+              <EscolasToolbar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                selectedStatus={selectedStatus}
+                onStatusChange={setSelectedStatus}
+                onClearFilters={clearFilters}
+                hasActiveFilters={hasActiveFilters}
+                onApplyFilters={setFilters}
+                onRegister={() => setIsDialogOpen(true)}
+              />
+            </div>
 
-              <CardContent>
-                <div
-                  className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    showMobileFilters ? "max-h-[500px]" : "max-h-0"
-                  } md:max-h-full`}
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-1 mb-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="search">Buscar por Nome</Label>
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                        <Input
-                          id="search"
-                          placeholder="Nome da escola..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="status-filter">Status</Label>
-                      <Select
-                        value={selectedStatus}
-                        onValueChange={setSelectedStatus}
-                      >
-                        <SelectTrigger id="status-filter">
-                          <SelectValue placeholder="Todos" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-60 overflow-y-auto">
-                          <SelectItem value="todos">Todos</SelectItem>
-                          <SelectItem value="ativa">Ativa</SelectItem>
-                          <SelectItem value="desativada">Desativada</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-
-                {loading ? (
-                  <SchoolListSkeleton />
-                ) : escolasFiltradas.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
-                    <School className="w-12 h-12 mb-4 text-gray-300" />
-                    <p>
-                      {searchTerm
-                        ? `Nenhuma escola encontrada para "${searchTerm}"`
-                        : "Nenhuma escola cadastrada"}
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="hidden md:block overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b">
-                            <th className="p-3 text-left text-xs font-medium text-gray-600">
-                              Nome
-                            </th>
-                            <th className="p-3 text-left text-xs font-medium text-gray-600">
-                              Passageiros Ativos
-                            </th>
-                            <th className="p-3 text-left text-xs font-medium text-gray-600">
-                              Status
-                            </th>
-                            <th className="p-3 text-center text-xs font-medium text-gray-600">
-                              Ações
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                          {escolasFiltradas.map((escola) => (
-                            <tr
-                              key={escola.id}
-                              onClick={() => handleEdit(escola)}
-                              className="hover:bg-muted/50 cursor-pointer"
-                            >
-                              <td className="p-3 align-top">
-                                <div className="font-medium text-sm text-gray-900">
-                                  {escola.nome}
-                                </div>
-                              </td>
-                              <td className="p-3 align-top">
-                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                  <Users2 className="w-4 h-4" />
-                                  {escola.passageiros_ativos_count}
-                                </div>
-                              </td>
-                              <td className="p-3 align-top">
-                                <span
-                                  className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
-                                    escola.ativo
-                                      ? "bg-green-100 text-green-800"
-                                      : "bg-red-100 text-red-800"
-                                  }`}
-                                >
-                                  {escola.ativo ? "Ativa" : "Desativada"}
-                                </span>
-                              </td>
-                              <td className="p-3 text-center align-top">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent>
-                                    {escola.passageiros_ativos_count > 0 && (
-                                      <DropdownMenuItem
-                                        className="cursor-pointer"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          navigate(
-                                            `/passageiros?escola=${escola.id}`
-                                          );
-                                        }}
-                                      >
-                                        <Users className="w-4 h-4 mr-2" />
-                                        Ver Passageiros
-                                      </DropdownMenuItem>
-                                    )}
-                                    <DropdownMenuItem
-                                      className="cursor-pointer"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleEdit(escola);
-                                      }}
-                                    >
-                                      <Pencil className="w-4 h-4 mr-2" />
-                                      Editar
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      className="cursor-pointer"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleToggleAtivo(escola);
-                                      }}
-                                    >
-                                      {escola.ativo ? (
-                                        <>
-                                          <ToggleLeft className="w-4 h-4 mr-2" />
-                                          Desativar
-                                        </>
-                                      ) : (
-                                        <>
-                                          <ToggleRight className="w-4 h-4 mr-2" />
-                                          Reativar
-                                        </>
-                                      )}
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteClick(escola);
-                                      }}
-                                      className="cursor-pointer text-red-600"
-                                    >
-                                      <Trash2 className="w-4 h-4 mr-2" />
-                                      Excluir
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    <div className="md:hidden divide-y divide-gray-100">
-                      {escolasFiltradas.map((escola) => (
-                        <div
-                          key={escola.id}
-                          onClick={() => handleEdit(escola)}
-                          className="flex items-center py-4 px-0 active:bg-muted/50"
-                        >
-                          <div className="flex-1 pr-4">
-                            <div className="font-semibold text-gray-800">
-                              {escola.nome}
-                            </div>
-                            <div className="mt-1 flex items-center gap-3">
-                              <span
-                                className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${
-                                  escola.ativo
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {escola.ativo ? "Ativa" : "Desativada"}
-                              </span>
-                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                <Users2 className="w-4 h-4" />
-                                {escola.passageiros_ativos_count} ativos
-                              </div>
-                            </div>
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="shrink-0 w-2"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              {escola.passageiros_ativos_count > 0 && (
-                                <DropdownMenuItem
-                                  className="cursor-pointer"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(
-                                      `/passageiros?escola=${escola.id}`
-                                    );
-                                  }}
-                                >
-                                  <Users className="w-4 h-4 mr-2" />
-                                  Ver Passageiros
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEdit(escola);
-                                }}
-                              >
-                                <Pencil className="w-4 h-4 mr-2" />
-                                Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleToggleAtivo(escola);
-                                }}
-                              >
-                                {escola.ativo ? (
-                                  <>
-                                    <ToggleLeft className="w-4 h-4 mr-2" />
-                                    Desativar
-                                  </>
-                                ) : (
-                                  <>
-                                    <ToggleRight className="w-4 h-4 mr-2" />
-                                    Reativar
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteClick(escola);
-                                }}
-                                className="text-red-600"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Excluir
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+            {isEscolasLoading ? (
+              <ListSkeleton />
+            ) : escolasFiltradas.length === 0 ? (
+              <EmptyState
+                icon={School}
+                description={
+                  searchTerm
+                    ? `Nenhuma escola encontrada para "${searchTerm}"`
+                    : "Nenhuma escola encontrada"
+                }
+              />
+            ) : (
+              <EscolasList
+                escolas={escolasFiltradas}
+                navigate={navigate}
+                onEdit={handleEdit}
+                onToggleAtivo={handleToggleAtivo}
+                onDelete={handleDeleteClick}
+              />
+            )}
+          </CardContent>
+        </Card>
+      </div>
           <ConfirmationDialog
             open={isDeleteDialogOpen}
             onOpenChange={setIsDeleteDialogOpen}
@@ -571,6 +257,7 @@ export default function Escolas() {
             onConfirm={handleDelete}
             confirmText="Confirmar"
             variant="destructive"
+            isLoading={deleteEscola.isPending}
           />
 
           {isDialogOpen && (
@@ -588,7 +275,7 @@ export default function Escolas() {
           )}
         </div>
       </PullToRefreshWrapper>
-      <LoadingOverlay active={refreshing} text="Aguarde..." />
+      <LoadingOverlay active={isActionLoading} text="Aguarde..." />
     </>
   );
 }

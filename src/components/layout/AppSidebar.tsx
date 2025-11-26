@@ -1,0 +1,78 @@
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { pagesItems } from "@/utils/domain/pages/pagesUtils";
+import { NavLink, useNavigate } from "react-router-dom";
+
+interface AppSidebarProps {
+  role: "motorista";
+  onLinkClick?: () => void;
+  plano?: any;
+}
+
+export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
+  const navigate = useNavigate();
+  const userItems = pagesItems.map((item) => ({
+    ...item,
+  }));
+
+  return (
+    <div className="flex h-full flex-col gap-6">
+      <nav className="flex-1 space-y-1 overflow-y-auto pr-1 md:space-y-1">
+        {userItems.map((item) => (
+          <NavLink
+            key={item.href}
+            to={item.href}
+            onClick={onLinkClick}
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 rounded-xl px-4 py-1.5 text-sm font-semibold transition-colors md:py-2.5",
+                isActive
+                  ? "bg-blue-600 text-white shadow-[0_12px_35px_-25px_rgba(59,130,246,0.7)]"
+                  : "text-slate-500 hover:bg-blue-50 hover:text-blue-600"
+              )
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <span
+                  className={cn(
+                    "flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-base",
+                    isActive
+                      ? "bg-white/20 text-white"
+                      : "hover:text-blue-600"
+                  )}
+                >
+                  <item.icon
+                    className={cn(
+                      "h-4 w-4",
+                      isActive ? "text-white" : "text-inherit"
+                    )}
+                  />
+                </span>
+                <span>{item.title}</span>
+              </>
+            )}
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="hidden sm:block rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-500 to-purple-500 p-5 text-white shadow-lg">
+        <p className="text-sm font-semibold">Plano {plano?.slug || "Atual"}</p>
+        <p className="text-xs text-white/80">
+          Acesse todos os recursos e mantenha seu painel sempre atualizado.
+        </p>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            navigate("/assinatura");
+            onLinkClick?.();
+          }}
+          className="mt-4 w-full rounded-full border-white/30 bg-white/20 text-white hover:bg-white/30"
+        >
+          Ver benefícios
+        </Button>
+      </div>
+    </div>
+  );
+}

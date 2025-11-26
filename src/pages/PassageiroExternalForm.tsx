@@ -1,3 +1,18 @@
+// React
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+
+// React Router
+import { useNavigate, useParams } from "react-router-dom";
+
+// Third-party
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// Components - Forms
+import { CepInput, PhoneInput } from "@/components/forms";
+
+// Components - UI
 import {
   Accordion,
   AccordionContent,
@@ -23,17 +38,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+
+// Services
 import { supabase } from "@/integrations/supabase/client";
-import { cepService } from "@/services/cepService";
-import { cepMask, cpfMask, phoneMask } from "@/utils/masks";
+
+// Utils
+import { toast } from "@/utils/notifications/toast";
+import { cpfMask } from "@/utils/masks";
 import { isValidCPF } from "@/utils/validators";
-import { zodResolver } from "@hookform/resolvers/zod";
+
+// Icons
 import { AlertTriangle, FileText, Loader2, MapPin, User } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { useNavigate, useParams } from "react-router-dom";
-import { z } from "zod";
 
 const prePassageiroSchema = z.object({
   nome: z.string().min(2, "Campo obrigatório"),
@@ -66,10 +81,8 @@ type PrePassageiroFormData = z.infer<typeof prePassageiroSchema>;
 export default function PassageiroExternalForm() {
   const { motoristaId } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
-  const [loadingCep, setLoadingCep] = useState(false);
   const [motoristaApelido, setMotoristaApelido] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -114,10 +127,8 @@ export default function PassageiroExternalForm() {
         .single();
 
       if (error || !data || data.role !== "motorista") {
-        toast({
-          title: "Link inválido",
-          description: "Este link de cadastro não é válido.",
-          variant: "destructive",
+        toast.error("sistema.erro.linkInvalido", {
+          description: "sistema.erro.linkInvalidoDescricao",
         });
         navigate("/");
         return;
@@ -130,43 +141,8 @@ export default function PassageiroExternalForm() {
     validateMotorista();
   }, [motoristaId, navigate, toast]);
 
-  const handleCepChange = async (value: string) => {
-    form.setValue("cep", value);
-    const cleanCep = value.replace(/\D/g, "");
-    if (cleanCep.length === 8) {
-      try {
-        setLoadingCep(true);
-        const endereco = await cepService.buscarEndereco(cleanCep);
-        if (endereco) {
-          form.setValue("logradouro", endereco.logradouro);
-          form.setValue("bairro", endereco.bairro);
-          form.setValue("cidade", endereco.cidade);
-          form.setValue("estado", endereco.estado);
-        } else {
-          toast({
-            title: "CEP não encontrado na base de dados.",
-            description: "Preencha o endereço manualmente.",
-            variant: "destructive",
-          });
-        }
-      } catch (error: any) {
-        console.error("Erro ao consultar CEP:", error);
-        toast({
-          title: "Erro ao consultar CEP.",
-          description: error.message || "Não foi possível concluir a operação.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoadingCep(false);
-      }
-    }
-  };
-
   const onFormError = (errors: any) => {
-    toast({
-      title: "Corrija os erros no formulário.",
-      variant: "destructive",
-    });
+    toast.error("validacao.formularioComErros");
     setOpenAccordionItems([
       "passageiro",
       "responsavel",
@@ -197,11 +173,8 @@ export default function PassageiroExternalForm() {
       setSuccess(true);
       form.reset();
     } catch (error: any) {
-      console.error("Erro ao enviar cadastro:", error);
-      toast({
-        title: "Erro ao enviar dados",
+      toast.error("sistema.erro.enviarDados", {
         description: error.message || "Tente novamente mais tarde.",
-        variant: "destructive",
       });
     } finally {
       setSubmitting(false);
@@ -349,23 +322,11 @@ export default function PassageiroExternalForm() {
                         control={form.control}
                         name="telefone_responsavel"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              Telefone (WhatsApp){" "}
-                              <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="(00) 00000-0000"
-                                maxLength={15}
-                                onChange={(e) => {
-                                  field.onChange(phoneMask(e.target.value));
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                          <PhoneInput
+                            field={field}
+                            label="Telefone (WhatsApp)"
+                            required
+                          />
                         )}
                       />
                       <FormField
@@ -408,31 +369,12 @@ export default function PassageiroExternalForm() {
                         control={form.control}
                         name="cep"
                         render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel>
-                              CEP <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input
-                                  {...field}
-                                  placeholder="00000-000"
-                                  maxLength={9}
-                                  className="pr-8"
-                                  onChange={(e) => {
-                                    const masked = cepMask(e.target.value);
-                                    handleCepChange(masked);
-                                  }}
-                                />
-                                {loadingCep && (
-                                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                                  </div>
-                                )}
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                          <CepInput
+                            field={field}
+                            label="CEP"
+                            required
+                            className="md:col-span-2"
+                          />
                         )}
                       />
                       <FormField
@@ -446,7 +388,6 @@ export default function PassageiroExternalForm() {
                             <FormControl>
                               <Input
                                 {...field}
-                                disabled={loadingCep}
                                 placeholder="Ex: Rua Comendador"
                               />
                             </FormControl>
@@ -478,7 +419,7 @@ export default function PassageiroExternalForm() {
                               Bairro <span className="text-red-600">*</span>
                             </FormLabel>
                             <FormControl>
-                              <Input disabled={loadingCep} {...field} />
+                              <Input {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -493,7 +434,7 @@ export default function PassageiroExternalForm() {
                               Cidade <span className="text-red-600">*</span>
                             </FormLabel>
                             <FormControl>
-                              <Input disabled={loadingCep} {...field} />
+                              <Input {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -508,7 +449,6 @@ export default function PassageiroExternalForm() {
                               Estado <span className="text-red-600">*</span>
                             </FormLabel>
                             <Select
-                              disabled={loadingCep}
                               onValueChange={field.onChange}
                               value={field.value}
                             >

@@ -1,33 +1,37 @@
+// React
+import { useState } from "react";
+
+// React Router
+import { useNavigate } from "react-router-dom";
+
+// Components - UI
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+
+// Services
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+// Utils
+import { toast } from "@/utils/notifications/toast";
 
 export default function NovaSenha() {
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const handleRedefinir = async () => {
     if (!senha || !confirmarSenha) {
-      toast({
-        title: "Preencha todos os campos",
+      toast.error("validacao.campoObrigatorio", {
         description: "Digite e confirme a nova senha.",
-        variant: "destructive",
       });
       return;
     }
 
     if (senha !== confirmarSenha) {
-      toast({
-        title: "As senhas não coincidem",
+      toast.error("validacao.senhasNaoCoincidem", {
         description: "Verifique os campos e tente novamente.",
-        variant: "destructive",
       });
       return;
     }
@@ -39,34 +43,27 @@ export default function NovaSenha() {
 
       if (error) {
         if (error.code === "same_password") {
-          toast({
-            title: "Nova senha inválida",
+          toast.error("erro.operacao", {
             description: "A nova senha deve ser diferente da senha atual.",
-            variant: "destructive",
           });
           return;
         }
 
-        toast({
-          title: "Erro ao redefinir senha",
+        toast.error("erro.operacao", {
           description: error.message,
-          variant: "destructive",
         });
         return;
       }
 
-      toast({
-        title: "Senha redefinida com sucesso!",
+      toast.success("auth.sucesso.senhaRedefinida", {
         description: "Redirecionando para o sistema...",
       });
 
       setTimeout(() => navigate("/inicio", { replace: true }), 1200);
     } catch (err: any) {
       setLoading(false);
-      toast({
-        title: "Erro inesperado",
+      toast.error("erro.generico", {
         description: err.message || "Tente novamente mais tarde.",
-        variant: "destructive",
       });
     }
   };

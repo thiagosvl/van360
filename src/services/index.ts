@@ -1,0 +1,9 @@
+export { passageiroApi } from "./api/passageiro.api";
+export { usuarioApi } from "./api/usuario.api";
+export { planoApi } from "./api/plano.api";
+export { cobrancaApi } from "./api/cobranca.api";
+export { escolaApi } from "./api/escola.api";
+export { veiculoApi } from "./api/veiculo.api";
+export { prePassageiroApi } from "./api/pre-passageiro.api";
+export { gastoApi } from "./api/gasto.api";
+export { assinaturaCobrancaApi } from "./api/assinatura-cobranca.api";

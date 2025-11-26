@@ -1,10 +1,30 @@
-import CobrancaEditDialog from "@/components/CobrancaEditDialog";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { LoadingOverlay } from "@/components/LoadingOverlay";
-import ManualPaymentDialog from "@/components/ManualPaymentDialog";
+// React
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+// React Router
+import { useNavigate, useSearchParams } from "react-router-dom";
+
+// Components - Common
+import { DateNavigation } from "@/components/common/DateNavigation";
+import { KPICard } from "@/components/common/KPICard";
+// Components - Alerts
+import { AutomaticChargesPrompt } from "@/components/alerts/AutomaticChargesPrompt";
+
+// Components - Dialogs
+import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
+import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
+import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
+
+// Components - Empty & Skeletons
+import { ListSkeleton } from "@/components/skeletons";
+
+// Components - Navigation
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+
+// Components - UI
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,72 +32,203 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Hooks
 import { useLayout } from "@/contexts/LayoutContext";
-import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
-import { useToast } from "@/hooks/use-toast";
-import { useProfile } from "@/hooks/useProfile";
-import { useSession } from "@/hooks/useSession";
-import { supabase } from "@/integrations/supabase/client";
-import { cobrancaService } from "@/services/cobrancaService";
-import { Cobranca } from "@/types/cobranca";
-import { safeCloseDialog } from "@/utils/dialogCallback";
+import {
+  useCobrancas,
+  useDesfazerPagamento,
+  useEnviarNotificacaoCobranca,
+  useToggleNotificacoesCobranca,
+} from "@/hooks";
+import { useProfile } from "@/hooks/business/useProfile";
+import { useSession } from "@/hooks/business/useSession";
+
+// Utils
+import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
   disableDesfazerPagamento,
-  disableEnviarNotificacao,
   disableRegistrarPagamento,
-} from "@/utils/disableActions";
+  podeEnviarNotificacao,
+} from "@/utils/domain/cobranca/disableActions";
 import {
-  anos,
   formatDateToBR,
   formatPaymentType,
   getStatusColor,
   getStatusText,
   meses,
 } from "@/utils/formatters";
+import { toast } from "@/utils/notifications/toast";
+
+// Types
+import { Cobranca } from "@/types/cobranca";
+
+// Constants
 import {
+  PASSAGEIRO_COBRANCA_STATUS_PAGO,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
+} from "@/constants";
+
+// Icons
+import { cn } from "@/lib/utils";
+import {
+  ArrowLeft,
+  Bell,
+  BellOff,
   CheckCircle2,
   DollarSign,
-  Inbox,
+  FilePen,
   MoreVertical,
   Search,
-  Send,
+  TrendingUp,
+  User,
+  Wallet,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { NavigateFunction } from "react-router-dom";
 
-const ListSkeleton = () => (
-  <div className="space-y-4">
-    {[1, 2, 3, 4].map((i) => (
-      <div key={i} className="border rounded-lg p-4 space-y-3">
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-5 w-32" />
-          <Skeleton className="h-8 w-8" />
-        </div>
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-3/4" />
-      </div>
-    ))}
-  </div>
-);
+// --- Internal Components ---
+
+// 3. Dropdown Actions (Refactored for cleaner look)
+interface CobrancaActionsProps {
+  cobranca: Cobranca;
+  navigate: NavigateFunction;
+  plano?: any;
+  onNavigateToDetails: (cobranca: Cobranca) => void;
+  onEditCobranca: (cobranca: Cobranca) => void;
+  onOpenPaymentDialog?: (cobranca: Cobranca) => void;
+  onSetConfirmDialogEnvioNotificacao?: (cobranca: Cobranca) => void;
+  onToggleLembretes?: (cobranca: Cobranca) => void;
+  onSetConfirmDialogDesfazer?: (cobrancaId: string) => void;
+  isPaga?: boolean;
+}
+
+const CobrancaActions = ({
+  cobranca,
+  navigate,
+  plano,
+  onNavigateToDetails,
+  onEditCobranca,
+  onOpenPaymentDialog,
+  onSetConfirmDialogEnvioNotificacao,
+  onToggleLembretes,
+  onSetConfirmDialogDesfazer,
+  isPaga = false,
+}: CobrancaActionsProps) => {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-gray-400 hover:text-gray-600"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/passageiros/${cobranca.passageiro_id}`);
+          }}
+        >
+          <User className="mr-2 h-4 w-4" /> Ver Carteirinha
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onNavigateToDetails(cobranca);
+          }}
+        >
+          <DollarSign className="mr-2 h-4 w-4" /> Ver Cobrança
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEditCobranca(cobranca);
+          }}
+        >
+          <FilePen className="mr-2 h-4 w-4" /> Editar
+        </DropdownMenuItem>
+
+        {!isPaga &&
+          !disableRegistrarPagamento(cobranca) &&
+          onOpenPaymentDialog && (
+            <DropdownMenuItem
+              className="cursor-pointer text-green-600 focus:text-green-700 focus:bg-green-50"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenPaymentDialog(cobranca);
+              }}
+            >
+              <CheckCircle2 className="mr-2 h-4 w-4" /> Registrar Pagamento
+            </DropdownMenuItem>
+          )}
+
+        {podeEnviarNotificacao(cobranca, plano) && (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSetConfirmDialogEnvioNotificacao(cobranca);
+            }}
+          >
+            <Bell className="mr-2 h-4 w-4" /> Enviar Lembrete
+          </DropdownMenuItem>
+        )}
+
+        {podeEnviarNotificacao(cobranca, plano) && (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleLembretes(cobranca);
+            }}
+          >
+            {cobranca.desativar_lembretes ? (
+              <Bell className="mr-2 h-4 w-4" />
+            ) : (
+              <BellOff className="mr-2 h-4 w-4" />
+            )}
+            {cobranca.desativar_lembretes
+              ? "Reativar Lembretes"
+              : "Pausar Lembretes"}
+          </DropdownMenuItem>
+        )}
+
+        {isPaga &&
+          !disableDesfazerPagamento(cobranca) &&
+          onSetConfirmDialogDesfazer && (
+            <DropdownMenuItem
+              className="cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSetConfirmDialogDesfazer(cobranca.id);
+              }}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" /> Desfazer Pagamento
+            </DropdownMenuItem>
+          )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+// --- Main Component ---
 
 const Cobrancas = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
-  const { setPageTitle, setPageSubtitle } = useLayout();
+  const { setPageTitle } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [todasCobrancas, setTodasCobrancas] = useState<Cobranca[]>([]);
-  const [cobrancasAbertas, setCobrancasAbertas] = useState<Cobranca[]>([]);
-  const [cobrancasPagas, setCobrancasPagas] = useState<Cobranca[]>([]);
+
+  // Date State
   const [mesFilter, setMesFilter] = useState(() => {
     const mesParam = searchParams.get("mes");
     return mesParam ? Number(mesParam) : new Date().getMonth() + 1;
@@ -86,166 +237,161 @@ const Cobrancas = () => {
     const anoParam = searchParams.get("ano");
     return anoParam ? Number(anoParam) : new Date().getFullYear();
   });
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
     null
   );
+
+  // Dialog States
   const [confirmDialogEnvioNotificacao, setConfirmDialogEnvioNotificacao] =
-    useState({ open: false, cobranca: null });
+    useState<{ open: boolean; cobranca: Cobranca | null }>({
+      open: false,
+      cobranca: null,
+    });
   const [confirmDialogDesfazer, setConfirmDialogDesfazer] = useState({
     open: false,
     cobrancaId: "",
   });
+
   const { user, loading: isSessionLoading } = useSession();
-  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
+  const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
+
+  const toggleNotificacoes = useToggleNotificacoesCobranca();
+  const enviarNotificacao = useEnviarNotificacaoCobranca();
+  const desfazerPagamento = useDesfazerPagamento();
+
+  const isActionLoading =
+    toggleNotificacoes.isPending ||
+    enviarNotificacao.isPending ||
+    desfazerPagamento.isPending;
 
   const [buscaAbertas, setBuscaAbertas] = useState("");
   const [buscaPagas, setBuscaPagas] = useState("");
 
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const fetchCobrancas = async (isRefresh = false) => {
-    if (!profile?.id) return;
-
-    try {
-      if (!isRefresh) setLoading(true);
-      else setRefreshing(true);
-      const { data } = await supabase
-        .from("cobrancas")
-        .select(`*, passageiros (*)`)
-        .eq("mes", mesFilter)
-        .eq("ano", anoFilter)
-        .eq("usuario_id", profile?.id)
-        .order("data_vencimento", { ascending: true })
-        .order("passageiros(nome)", { ascending: true });
-      const cobrancas = (data as Cobranca[]) || [];
-      const abertas = cobrancas.filter((c) => c.status !== "pago");
-      const pagas = cobrancas.filter((c) => c.status === "pago");
-      setTodasCobrancas(cobrancas);
-      setCobrancasAbertas(abertas);
-      setCobrancasPagas(pagas);
-    } catch (error) {
-      console.error("Erro ao buscar cobranças:", error);
-      toast({
-        title: "Não foi possível carregar as cobranças.",
-        variant: "destructive",
-      });
-    } finally {
-      if (!isRefresh) setLoading(false);
-      else setRefreshing(false);
+  const {
+    data: cobrancasData,
+    isLoading: isCobrancasLoading,
+    isFetching: isCobrancasFetching,
+    refetch: refetchCobrancas,
+  } = useCobrancas(
+    {
+      usuarioId: profile?.id,
+      mes: mesFilter,
+      ano: anoFilter,
+    },
+    {
+      enabled: !!profile?.id,
+      onError: (error) => {toast.error("cobranca.erro.carregar"); console.error(error);},
     }
-  };
+  );
 
-  const handleEditCobrancaClick = (cobranca: Cobranca) => {
+  const cobrancasAbertas = useMemo(
+    () => cobrancasData?.abertas ?? [],
+    [cobrancasData]
+  );
+  const cobrancasPagas = useMemo(
+    () => cobrancasData?.pagas ?? [],
+    [cobrancasData]
+  );
+  const isInitialLoading = isCobrancasLoading && !cobrancasData;
+
+  const navigate = useNavigate();
+
+  // Handlers
+  const handleEditCobrancaClick = useCallback((cobranca: Cobranca) => {
     safeCloseDialog(() => {
       setCobrancaToEdit(cobranca);
       setEditDialogOpen(true);
     });
-  };
+  }, []);
+
+  const handleNavigation = useCallback(
+    (newMes: number, newAno: number) => {
+      setMesFilter(newMes);
+      setAnoFilter(newAno);
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set("mes", newMes.toString());
+        newParams.set("ano", newAno.toString());
+        return newParams;
+      });
+    },
+    [setSearchParams]
+  );
 
   const handleCobrancaUpdated = () => {
-    fetchCobrancas(true);
+    // Auto invalidation
   };
 
-  const handleToggleLembretes = async (cobranca: Cobranca) => {
-    setRefreshing(true);
-    try {
-      const novoStatus = await cobrancaService.toggleNotificacoes(cobranca);
-
-      toast({
-        title: `Notificações automáticas ${
-          novoStatus ? "desativadas" : "ativadas"
-        } com sucesso.`,
+  const handleToggleLembretes = useCallback(
+    async (cobranca: Cobranca) => {
+      toggleNotificacoes.mutate({
+        cobrancaId: cobranca.id,
+        desativar: !cobranca.desativar_lembretes,
       });
+    },
+    [toggleNotificacoes]
+  );
 
-      fetchCobrancas(true);
-    } catch (error: any) {
-      console.error("Erro ao alterar notificações:", error);
-      toast({
-        title: "Erro ao alterar envio de notificações.",
-        description: error.message || "Não foi possível concluir a operação.",
-        variant: "destructive",
-      });
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  const enviarNotificacaoCobranca = async () => {
-    setRefreshing(true);
-    try {
-      await cobrancaService.enviarNotificacao(
-        confirmDialogEnvioNotificacao.cobranca
-      );
-      toast({ title: "Notificação enviada para o responsável com sucesso." });
-    } catch (error) {
-      console.error("Erro ao enviar notificação:", error);
-      toast({
-        title: "Erro ao enviar notificação de cobrança.",
-        variant: "destructive",
-      });
-    } finally {
-      setRefreshing(false);
-    }
-    setConfirmDialogEnvioNotificacao({
-      open: false,
-      cobranca: null,
+  const enviarNotificacaoCobranca = useCallback(async () => {
+    if (!confirmDialogEnvioNotificacao.cobranca) return;
+    enviarNotificacao.mutate(confirmDialogEnvioNotificacao.cobranca.id, {
+      onSuccess: () => {
+        setConfirmDialogEnvioNotificacao({
+          open: false,
+          cobranca: null,
+        });
+      },
     });
-  };
+  }, [confirmDialogEnvioNotificacao.cobranca, enviarNotificacao]);
 
-  const desfazerPagamento = async () => {
-    setRefreshing(true);
-    try {
-      await cobrancaService.desfazerPagamento(confirmDialogDesfazer.cobrancaId);
+  const handleDesfazerPagamento = useCallback(async () => {
+    desfazerPagamento.mutate(confirmDialogDesfazer.cobrancaId, {
+      onSuccess: async () => {
+        setConfirmDialogDesfazer({ open: false, cobrancaId: "" });
+        // Refetch explícito para garantir que os KPIs sejam atualizados
+        await refetchCobrancas();
+      },
+    });
+  }, [confirmDialogDesfazer.cobrancaId, desfazerPagamento, refetchCobrancas]);
 
-      toast({
-        title: "Registro de pagamento desfeito com sucesso.",
-      });
-      fetchCobrancas(true);
-    } catch (error: any) {
-      console.error("Erro ao desfazer pagamento:", error);
-      toast({
-        title: "Erro ao desfazer pagamento.",
-        description: error.message || "Não foi possível concluir a operação.",
-        variant: "destructive",
-      });
-    } finally {
-      setConfirmDialogDesfazer({ open: false, cobrancaId: "" });
-      setRefreshing(false);
-    }
-  };
-
-  const openPaymentDialog = (cobranca: Cobranca) => {
+  const openPaymentDialog = useCallback((cobranca: Cobranca) => {
     setSelectedCobranca(cobranca);
     setPaymentDialogOpen(true);
-  };
+  }, []);
 
-  const navigateToDetails = (cobranca: Cobranca) => {
-    navigate(`/passageiros/${cobranca.passageiros.id}/cobranca/${cobranca.id}`);
-  };
+  const navigateToDetails = useCallback(
+    (cobranca: Cobranca) => {
+      navigate(`/cobrancas/${cobranca.id}`);
+    },
+    [navigate]
+  );
 
+  // Effects
   useEffect(() => {
     setPageTitle("Cobranças");
-    setPageSubtitle(`Referentes a ${meses[mesFilter - 1]} de ${anoFilter}`);
-  }, [mesFilter, anoFilter, setPageTitle, setPageSubtitle]);
+  }, [setPageTitle]);
 
   useEffect(() => {
-    if (!profile?.id) return;
+    const mesParam = searchParams.get("mes");
+    const anoParam = searchParams.get("ano");
+    if (mesParam && Number(mesParam) !== mesFilter) {
+      setMesFilter(Number(mesParam));
+    }
+    if (anoParam && Number(anoParam) !== anoFilter) {
+      setAnoFilter(Number(anoParam));
+    }
+  }, [searchParams, mesFilter, anoFilter]);
 
-    const params = {
-      ano: anoFilter.toString(),
-      mes: mesFilter.toString(),
-    };
+  useEffect(() => {
+    if (mesFilter || anoFilter) {
+      setBuscaAbertas("");
+      setBuscaPagas("");
+    }
+  }, [mesFilter, anoFilter]);
 
-    setSearchParams(params, { replace: true });
-    fetchCobrancas();
-    setBuscaAbertas("");
-    setBuscaPagas("");
-  }, [mesFilter, anoFilter, profile?.id]);
-
+  // Filtering
   const cobrancasAbertasFiltradas = useMemo(() => {
     if (!buscaAbertas) return cobrancasAbertas;
     const searchTerm = buscaAbertas.toLowerCase();
@@ -266,14 +412,27 @@ const Cobrancas = () => {
     );
   }, [cobrancasPagas, buscaPagas]);
 
+  // KPI Calculations
+  const totalAReceber = useMemo(
+    () => cobrancasAbertas.reduce((acc, curr) => acc + Number(curr.valor), 0),
+    [cobrancasAbertas]
+  );
+
+  const totalRecebido = useMemo(
+    () => cobrancasPagas.reduce((acc, curr) => acc + Number(curr.valor), 0),
+    [cobrancasPagas]
+  );
+
+  const totalPrevisto = totalAReceber + totalRecebido;
+
   const pullToRefreshReload = async () => {
-    fetchCobrancas();
+    await refetchCobrancas();
   };
 
   if (isSessionLoading || isProfileLoading || !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
-        <p>Carregando informações do motorista...</p>
+        <p>Carregando informações...</p>
       </div>
     );
   }
@@ -281,749 +440,538 @@ const Cobrancas = () => {
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div className="space-y-6">
-          <div className="w-full">
-            <Card className="mb-6">
-              <CardContent className="mt-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">
-                      Mês
-                    </label>
-                    <Select
-                      value={mesFilter.toString()}
-                      onValueChange={(value) => setMesFilter(Number(value))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o mês" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60 overflow-y-auto">
-                        {meses.map((mes, index) => (
-                          <SelectItem
-                            key={index}
-                            value={(index + 1).toString()}
-                          >
-                            {mes}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">
-                      Ano
-                    </label>
-                    <Select
-                      value={anoFilter.toString()}
-                      onValueChange={(value) => setAnoFilter(Number(value))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o ano" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60 overflow-y-auto">
-                        {anos.map((ano) => (
-                          <SelectItem key={ano.value} value={ano.value}>
-                            {ano.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <Tabs defaultValue="em-aberto" className="w-full mt-6">
-                  <TabsList className="grid w-full grid-cols-2 border border-primary/10 bg-primary/10">
-                    <TabsTrigger
-                      value="em-aberto"
-                      className="data-[state=inactive]:text-gray-600 
-            data-[state=active]:bg-primary 
-            data-[state=active]:text-white"
-                    >
-                      Em Aberto{" "}
-                      <Badge
-                        variant="secondary"
-                        className="ml-2 bg-neutral-200 py-0"
-                      >
-                        {cobrancasAbertas.length}
-                      </Badge>
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="pagas"
-                      className="data-[state=inactive]:text-gray-600 
-            data-[state=active]:bg-primary 
-            data-[state=active]:text-white"
-                    >
-                      Pagas{" "}
-                      <Badge
-                        variant="secondary"
-                        className="ml-2 bg-neutral-200 py-0"
-                      >
-                        {cobrancasPagas.length}
-                      </Badge>
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="em-aberto" className="mt-4">
-                    {cobrancasAbertas.length > 0 && (
-                      <div className="py-4 space-y-2">
-                        <Label htmlFor="search-abertas">Buscar por Nome</Label>
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            id="search-abertas"
-                            placeholder="Passageiro ou responsável..."
-                            className="pl-10"
-                            value={buscaAbertas}
-                            onChange={(e) => setBuscaAbertas(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    )}
-                    {loading ? (
-                      <div className="py-4">
-                        <ListSkeleton />
-                      </div>
-                    ) : todasCobrancas.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center text-center px-2 py-12 text-muted-foreground">
-                        <Inbox className="w-12 h-12 mb-4 text-gray-300" />
-                        <p>
-                          Não há cobranças em aberto ou pagas no mes indicado.
-                        </p>
-                      </div>
-                    ) : cobrancasAbertas.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center text-center px-2 py-12 text-muted-foreground">
-                        <CheckCircle2 className="w-12 h-12 mb-4 text-green-600" />
-                        <p>
-                          Tudo em dia! <br /> Não há cobranças pendentes no mês
-                          indicado.
-                        </p>
-                      </div>
-                    ) : cobrancasAbertasFiltradas.length === 0 ? (
-                      <div className="text-center px-2 py-12 text-muted-foreground">
-                        Nenhum passageiro ou responsável encontrado com o nome "
-                        {buscaAbertas}".
-                      </div>
-                    ) : (
-                      <>
-                        <div className="hidden md:block overflow-x-auto">
-                          <table className="w-full">
-                            <thead>
-                              <tr className="border-b">
-                                <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                  Passageiro
-                                </th>
-                                <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                  Valor
-                                </th>
-                                <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                  Vencimento
-                                </th>
-                                <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                  Status
-                                </th>
-                                <th className="p-3 text-center text-xs font-medium text-gray-600">
-                                  Ações
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                              {cobrancasAbertasFiltradas.map((cobranca) => (
-                                <tr
-                                  key={cobranca.id}
-                                  onClick={() => navigateToDetails(cobranca)}
-                                  className="hover:bg-muted/50 cursor-pointer"
-                                >
-                                  <td className="p-3 align-top">
-                                    <div className="font-semibold text-sm text-gray-800">
-                                      {cobranca.passageiros.nome}
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                      Responsável:{" "}
-                                      {cobranca.passageiros.nome_responsavel ||
-                                        "-"}
-                                    </div>
-                                  </td>
-                                  <td className="p-3 align-top">
-                                    <div className="text-sm">
-                                      {Number(cobranca.valor).toLocaleString(
-                                        "pt-BR",
-                                        { style: "currency", currency: "BRL" }
-                                      )}
-                                    </div>
-                                  </td>
-                                  <td className="p-3 align-top">
-                                    <div className="text-sm">
-                                      {formatDateToBR(cobranca.data_vencimento)}
-                                    </div>
-                                  </td>
-                                  <td className="p-3 align-top">
-                                    <span
-                                      className={`px-2 py-1 inline-block rounded-full text-xs font-medium ${getStatusColor(
-                                        cobranca.status,
-                                        cobranca.data_vencimento
-                                      )}`}
-                                    >
-                                      {getStatusText(
-                                        cobranca.status,
-                                        cobranca.data_vencimento
-                                      )}
-                                    </span>
-                                    {/* {cobranca.desativar_lembretes &&
-                                      cobranca.status !== "pago" && (
-                                        <div className="text-xs text-yellow-800 mt-2 flex items-center gap-1">
-                                          <BellOff className="w-3 h-3" />
-                                          Notificações automáticas suspensas
-                                        </div>
-                                      )} */}
-                                  </td>
-                                  <td className="p-3 text-center align-top">
-                                    <Button
-                                      variant="ghost"
-                                      disabled={disableEnviarNotificacao(
-                                        cobranca
-                                      )}
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setConfirmDialogEnvioNotificacao({
-                                          open: true,
-                                          cobranca,
-                                        });
-                                      }}
-                                    >
-                                      <Send className="h-4 w-4" />
-                                    </Button>
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-8 w-8 p-0"
-                                          onClick={(e) => e.stopPropagation()}
-                                        >
-                                          <MoreVertical className="h-4 w-4" />
-                                        </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent>
-                                        <DropdownMenuItem
-                                          className="cursor-pointer"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate(
-                                              `/passageiros/${cobranca.passageiro_id}`
-                                            );
-                                          }}
-                                        >
-                                          Ver Carteirinha
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          className="cursor-pointer"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigateToDetails(cobranca);
-                                          }}
-                                        >
-                                          Ver Cobrança
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          className="cursor-pointer"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleEditCobrancaClick(cobranca);
-                                          }}
-                                        >
-                                          Editar Cobrança
-                                        </DropdownMenuItem>
-                                        {!disableRegistrarPagamento(
-                                          cobranca
-                                        ) && (
-                                          <DropdownMenuItem
-                                            className="cursor-pointer"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              openPaymentDialog(cobranca);
-                                            }}
-                                          >
-                                            Registrar Pagamento
-                                          </DropdownMenuItem>
-                                        )}
-                                        {/* {!disableEnviarNotificacao(
-                                          cobranca
-                                        ) && (
-                                          <DropdownMenuItem
-                                            className="cursor-pointer"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              setConfirmDialogEnvioNotificacao({
-                                                open: true,
-                                                cobranca,
-                                              });
-                                            }}
-                                          >
-                                            Enviar Notificação
-                                          </DropdownMenuItem>
-                                        )} */}
-                                        {/* {!disableEnviarNotificacao(
-                                          cobranca
-                                        ) && (
-                                          <DropdownMenuItem
-                                            className="cursor-pointer"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleToggleLembretes(cobranca);
-                                            }}
-                                          >
-                                            {cobranca.desativar_lembretes
-                                              ? "Ativar Notificações"
-                                              : "Desativar Notificações"}
-                                          </DropdownMenuItem>
-                                        )} */}
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                        <div className="md:hidden divide-y divide-gray-200">
-                          {cobrancasAbertasFiltradas.map((cobranca) => (
-                            <div
-                              key={cobranca.id}
-                              onClick={() => navigateToDetails(cobranca)}
-                              className="py-2.5 active:bg-muted/50"
-                            >
-                              <div className="flex justify-between items-start">
-                                <div className="flex flex-col pr-1 w-2/3">
-                                  <div className="font-semibold text-gray-800 text-sm overflow-hidden text-ellipsis whitespace-nowrap">
-                                    {cobranca.passageiros.nome}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
-                                    Responsável:{" "}
-                                    {cobranca.passageiros.nome_responsavel ||
-                                      "-"}
-                                  </div>
-                                </div>
-
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="shrink-0 w-2"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent>
-                                    <DropdownMenuItem
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate(
-                                          `/passageiros/${cobranca.passageiro_id}`
-                                        );
-                                      }}
-                                    >
-                                      Ver Carteirinha
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigateToDetails(cobranca);
-                                      }}
-                                    >
-                                      Ver Cobrança
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      className="cursor-pointer"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleEditCobrancaClick(cobranca);
-                                      }}
-                                    >
-                                      Editar Cobrança
-                                    </DropdownMenuItem>
-                                    {!disableRegistrarPagamento(cobranca) && (
-                                      <DropdownMenuItem
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          openPaymentDialog(cobranca);
-                                        }}
-                                      >
-                                        Registrar Pagamento
-                                      </DropdownMenuItem>
-                                    )}
-                                    {/* {!disableEnviarNotificacao(cobranca) && (
-                                      <DropdownMenuItem
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setConfirmDialogEnvioNotificacao({
-                                            open: true,
-                                            cobranca,
-                                          });
-                                        }}
-                                      >
-                                        Enviar Notificação
-                                      </DropdownMenuItem>
-                                    )} */}
-                                    {/* {!disableEnviarNotificacao(cobranca) && (
-                                      <DropdownMenuItem
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleToggleLembretes(cobranca);
-                                        }}
-                                      >
-                                        {cobranca.desativar_lembretes
-                                          ? "Ativar Notificações"
-                                          : "Desativar Notificações"}
-                                      </DropdownMenuItem>
-                                    )} */}
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-
-                              <div className="flex justify-between items-end pt-1">
-                                <div className="flex flex-col">
-                                  <div className="font-bold text-base text-foreground">
-                                    {Number(cobranca.valor).toLocaleString(
-                                      "pt-BR",
-                                      {
-                                        style: "currency",
-                                        currency: "BRL",
-                                      }
-                                    )}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground mt-0.5">
-                                    Vencimento:{" "}
-                                    {formatDateToBR(cobranca.data_vencimento)}
-                                  </div>
-                                </div>
-
-                                {/* Status (Direita) */}
-                                <span
-                                  className={`px-2 py-0.5 inline-block rounded-full text-xs font-medium ${getStatusColor(
-                                    cobranca.status,
-                                    cobranca.data_vencimento
-                                  )}`}
-                                >
-                                  {getStatusText(
-                                    cobranca.status,
-                                    cobranca.data_vencimento
-                                  )}
-                                </span>
-                              </div>
-
-                              {/* {cobranca.desativar_lembretes && (
-                                <div className="mt-2 flex items-center gap-2 text-xs p-1 rounded-md bg-yellow-50 text-yellow-800 border border-yellow-200">
-                                  <BellOff className="h-4 w-4 shrink-0" />
-                                  <span className="truncate">
-                                    Notificações automáticas suspensas
-                                  </span>
-                                </div>
-                              )} */}
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="pagas" className="mt-4">
-                    {cobrancasPagas.length > 0 && (
-                      <div className="py-4 space-y-2">
-                        <Label htmlFor="search-pagas">Buscar por Nome</Label>
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            id="search-pagas"
-                            placeholder="Passageiro ou responsável..."
-                            className="pl-10"
-                            value={buscaPagas}
-                            onChange={(e) => setBuscaPagas(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    )}
-                    {loading ? (
-                      <div className="py-4">
-                        <ListSkeleton />
-                      </div>
-                    ) : todasCobrancas.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center text-center px-2 py-12 text-muted-foreground">
-                        <Inbox className="w-12 h-12 mb-4 text-gray-300" />
-                        <p>
-                          Não há cobranças em aberto ou pagas no mes indicado.
-                        </p>
-                      </div>
-                    ) : cobrancasPagas.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground">
-                        <DollarSign className="w-12 h-12 mb-4 text-gray-300" />
-                        <p>Não há cobranças pagas no mês indicado.</p>
-                      </div>
-                    ) : cobrancasPagasFiltradas.length === 0 ? (
-                      <div className="text-center px-2 py-12 text-muted-foreground">
-                        Nenhum passageiro ou responsável encontrado com o nome "
-                        {buscaPagas}".
-                      </div>
-                    ) : (
-                      <>
-                        <div className="hidden md:block overflow-x-auto">
-                          <table className="w-full">
-                            <thead>
-                              <tr className="border-b">
-                                <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                  Passageiro
-                                </th>
-                                <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                  Pagou em
-                                </th>
-                                <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                  Valor
-                                </th>
-                                <th className="p-3 text-left text-xs font-medium text-gray-600">
-                                  Forma de Pagamento
-                                </th>
-                                <th className="p-3 text-center text-xs font-medium text-gray-600">
-                                  Ações
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                              {cobrancasPagasFiltradas.map((cobranca) => (
-                                <tr
-                                  key={cobranca.id}
-                                  onClick={() => navigateToDetails(cobranca)}
-                                  className="hover:bg-muted/50 cursor-pointer"
-                                >
-                                  <td className="p-3 align-top">
-                                    <div className="font-semibold text-sm text-gray-800">
-                                      {cobranca.passageiros.nome}
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                      {cobranca.passageiros.nome_responsavel ||
-                                        "-"}
-                                    </div>
-                                  </td>
-                                  <td className="p-3 align-top">
-                                    <div className="text-sm">
-                                      {cobranca.data_pagamento
-                                        ? formatDateToBR(
-                                            cobranca.data_pagamento
-                                          )
-                                        : "-"}
-                                    </div>
-                                  </td>
-                                  <td className="p-3 align-top">
-                                    <div className="text-sm">
-                                      {Number(cobranca.valor).toLocaleString(
-                                        "pt-BR",
-                                        { style: "currency", currency: "BRL" }
-                                      )}
-                                    </div>
-                                  </td>
-                                  <td className="p-3 align-top">
-                                    <div className="text-sm">
-                                      {formatPaymentType(
-                                        cobranca.tipo_pagamento
-                                      )}
-                                    </div>
-                                    {cobranca.pagamento_manual && (
-                                      <div className="text-xs text-muted-foreground mt-1">
-                                        Pagamento registrado manualmente
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="p-3 text-center align-top">
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-8 w-8 p-0"
-                                          onClick={(e) => e.stopPropagation()}
-                                        >
-                                          <MoreVertical className="h-4 w-4" />
-                                        </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent>
-                                        <DropdownMenuItem
-                                          className="cursor-pointer"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate(
-                                              `/passageiros/${cobranca.passageiro_id}`
-                                            );
-                                          }}
-                                        >
-                                          Ver Carteirinha
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          className="cursor-pointer"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigateToDetails(cobranca);
-                                          }}
-                                        >
-                                          Ver Cobrança
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          className="cursor-pointer"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleEditCobrancaClick(cobranca);
-                                          }}
-                                        >
-                                          Editar Cobrança
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          className="cursor-pointer"
-                                          disabled={disableDesfazerPagamento(
-                                            cobranca
-                                          )}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setConfirmDialogDesfazer({
-                                              open: true,
-                                              cobrancaId: cobranca.id,
-                                            });
-                                          }}
-                                        >
-                                          Desfazer Pagamento
-                                        </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                        <div className="md:hidden divide-y divide-gray-200">
-                          {cobrancasPagasFiltradas.map((cobranca) => (
-                            <div
-                              key={cobranca.id}
-                              onClick={() => navigateToDetails(cobranca)}
-                              className="py-2.5 active:bg-muted/50"
-                            >
-                              <div className="flex justify-between items-start mb-3">
-                                <div className="">
-                                  <div className="font-semibold text-gray-800 text-sm overflow-hidden text-ellipsis whitespace-nowrap">
-                                    {cobranca.passageiros.nome}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    Responsável:{" "}
-                                    {cobranca.passageiros.nome_responsavel ||
-                                      "-"}
-                                  </div>
-                                </div>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="shrink-0 w-2"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent>
-                                    <DropdownMenuItem
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate(
-                                          `/passageiros/${cobranca.passageiro_id}`
-                                        );
-                                      }}
-                                    >
-                                      Ver Carteirinha
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigateToDetails(cobranca);
-                                      }}
-                                    >
-                                      Ver Cobrança
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      className="cursor-pointer"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleEditCobrancaClick(cobranca);
-                                      }}
-                                    >
-                                      Editar Cobrança
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      disabled={disableDesfazerPagamento(
-                                        cobranca
-                                      )}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setConfirmDialogDesfazer({
-                                          open: true,
-                                          cobrancaId: cobranca.id,
-                                        });
-                                      }}
-                                    >
-                                      Desfazer Pagamento
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    Pagou em
-                                  </span>
-                                  <span className="font-medium">
-                                    {cobranca.data_pagamento
-                                      ? formatDateToBR(cobranca.data_pagamento)
-                                      : "-"}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    Valor
-                                  </span>
-                                  <span className="font-medium">
-                                    {Number(cobranca.valor).toLocaleString(
-                                      "pt-BR",
-                                      { style: "currency", currency: "BRL" }
-                                    )}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    Forma de Pagamento
-                                  </span>
-                                  <span className="font-medium">
-                                    {formatPaymentType(cobranca.tipo_pagamento)}
-                                  </span>
-                                </div>
-                              </div>
-                              {cobranca.pagamento_manual && (
-                                <div className="mt-2">
-                                  <span className="text-xs p-1 rounded-md text-muted-foreground inline-block bg-muted">
-                                    Pagamento registrado manualmente
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
+        <div className="space-y-6 md:space-y-8">
+          {/* 1. Header & Navigation */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <DateNavigation
+              mes={mesFilter}
+              ano={anoFilter}
+              onNavigate={handleNavigation}
+            />
           </div>
 
-          {paymentDialogOpen && (
+          {/* 2. KPIs - Grid Otimizado Mobile */}
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+            <KPICard
+              title="A Receber"
+              value={totalAReceber}
+              count={cobrancasAbertas.length}
+              icon={Wallet}
+              bgClass="bg-orange-50"
+              colorClass="text-orange-600"
+            />
+            <KPICard
+              title="Recebido"
+              value={totalRecebido}
+              count={cobrancasPagas.length}
+              icon={CheckCircle2}
+              bgClass="bg-green-50"
+              colorClass="text-green-600"
+            />
+            <KPICard
+              title="Total Previsto"
+              value={totalPrevisto}
+              count={cobrancasAbertas.length + cobrancasPagas.length}
+              icon={TrendingUp}
+              bgClass="bg-blue-50"
+              colorClass="text-blue-600"
+              className="col-span-2 md:col-span-1"
+            />
+          </div>
+
+          {/* Alerta Automático */}
+          {plano?.slug &&
+            [PLANO_GRATUITO, PLANO_ESSENCIAL].includes(plano.slug) && (
+              <div className="hidden sm:block">
+                <AutomaticChargesPrompt variant="full" />
+              </div>
+            )}
+
+          {/* 3. Main Content (Tabs & List) */}
+          <Tabs defaultValue="pendentes" className="w-full">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-6">
+              {/* Segmented Control */}
+              <TabsList className="bg-gray-100/80 p-1 rounded-xl h-10 md:h-12 w-full md:w-auto self-start">
+                <TabsTrigger
+                  value="pendentes"
+                  className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none"
+                >
+                  Pendentes
+                  <Badge
+                    variant="secondary"
+                    className="ml-2 bg-gray-200 text-gray-700 hover:bg-gray-200 text-[10px] md:text-xs"
+                  >
+                    {cobrancasAbertas.length}
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="pagas"
+                  className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none"
+                >
+                  Pagas
+                  <Badge
+                    variant="secondary"
+                    className="ml-2 bg-gray-200 text-gray-700 hover:bg-gray-200 text-[10px] md:text-xs"
+                  >
+                    {cobrancasPagas.length}
+                  </Badge>
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Search Bar */}
+              <div className="relative w-full md:w-72">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar passageiro..."
+                  className="pl-10 h-10 md:h-11 bg-white border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm sm:text-base"
+                  value={buscaAbertas}
+                  onChange={(e) => {
+                    setBuscaAbertas(e.target.value);
+                    setBuscaPagas(e.target.value);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Content: Pendentes */}
+            <TabsContent value="pendentes" className="mt-0">
+              {isInitialLoading ? (
+                <ListSkeleton />
+              ) : cobrancasAbertasFiltradas.length === 0 ? (
+                <div className="flex flex-col items-center justify-center text-center py-20 bg-white rounded-[28px] border border-dashed border-gray-200">
+                  <div className="h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                    <CheckCircle2 className="w-8 h-8 text-green-500" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">
+                    Tudo em dia!
+                  </h3>
+                  <p className="text-gray-500 max-w-xs mx-auto">
+                    Não há cobranças pendentes para {meses[mesFilter - 1]}.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="hidden md:block bg-white rounded-2xl md:rounded-[28px] border border-gray-100 shadow-sm overflow-hidden">
+                    {/* Desktop Table */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50/50 border-b border-gray-100">
+                          <tr>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                              Passageiro
+                            </th>
+                            <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
+                              Valor
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                              Vencimento
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                              Status
+                            </th>
+                            <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
+                              Ações
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {cobrancasAbertasFiltradas.map((cobranca) => (
+                            <tr
+                              key={cobranca.id}
+                              onClick={() => navigateToDetails(cobranca)}
+                              className="hover:bg-gray-50/80 transition-colors cursor-pointer group"
+                            >
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-3">
+                                  <div
+                                    className={`h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm ${getStatusColor(
+                                      cobranca.status,
+                                      cobranca.data_vencimento
+                                    )}`}
+                                  >
+                                    {cobranca.passageiros.nome.charAt(0)}
+                                  </div>
+                                  <div>
+                                    <p className="font-bold text-gray-900 text-sm">
+                                      {cobranca.passageiros.nome}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      {cobranca.passageiros.nome_responsavel ||
+                                        "Responsável não inf."}
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <span className="font-bold text-gray-900 text-sm">
+                                  {Number(cobranca.valor).toLocaleString(
+                                    "pt-BR",
+                                    { style: "currency", currency: "BRL" }
+                                  )}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="text-sm text-gray-600 font-medium">
+                                  {formatDateToBR(cobranca.data_vencimento)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-2">
+                                  <Badge
+                                    className={cn(
+                                      "shadow-none border font-semibold",
+                                      getStatusColor(
+                                        cobranca.status,
+                                        cobranca.data_vencimento
+                                      )
+                                    )}
+                                  >
+                                    {getStatusText(
+                                      cobranca.status,
+                                      cobranca.data_vencimento
+                                    )}
+                                  </Badge>
+                                  {cobranca.desativar_lembretes &&
+                                    cobranca.status !==
+                                      PASSAGEIRO_COBRANCA_STATUS_PAGO && (
+                                      <span title="Envio de notificações desativado">
+                                        <BellOff className="w-3.5 h-3.5 text-orange-700" />
+                                      </span>
+                                    )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <CobrancaActions
+                                  cobranca={cobranca}
+                                  navigate={navigate}
+                                  plano={plano}
+                                  onNavigateToDetails={navigateToDetails}
+                                  onEditCobranca={handleEditCobrancaClick}
+                                  onOpenPaymentDialog={openPaymentDialog}
+                                  onSetConfirmDialogEnvioNotificacao={(c) =>
+                                    setConfirmDialogEnvioNotificacao({
+                                      open: true,
+                                      cobranca: c,
+                                    })
+                                  }
+                                  onToggleLembretes={handleToggleLembretes}
+                                />
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  {/* Mobile List - Ultra Compact Mode (Pendentes) */}
+                  <div className="md:hidden space-y-3">
+                    {cobrancasAbertasFiltradas.map((cobranca) => (
+                      <div
+                        key={cobranca.id}
+                        onClick={() => navigateToDetails(cobranca)}
+                        className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
+                      >
+                        {/* Linha 1: Nome + Ações (Botão isolado no topo direito) */}
+                        <div className="flex justify-between items-start mb-1 relative">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm ${getStatusColor(
+                                cobranca.status,
+                                cobranca.data_vencimento
+                              )}`}
+                            >
+                              {cobranca.passageiros.nome.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="font-bold text-gray-900 text-sm">
+                                {cobranca.passageiros.nome}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {cobranca.passageiros.nome_responsavel ||
+                                  "Não inf."}{" "}
+                                •{" "}
+                                <span className="text-sm font-bold text-gray-900 tracking-tight">
+                                  {Number(cobranca.valor).toLocaleString(
+                                    "pt-BR",
+                                    {
+                                      style: "currency",
+                                      currency: "BRL",
+                                    }
+                                  )}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <CobrancaActions
+                              cobranca={cobranca}
+                              navigate={navigate}
+                              plano={plano}
+                              onNavigateToDetails={navigateToDetails}
+                              onEditCobranca={handleEditCobrancaClick}
+                              onOpenPaymentDialog={openPaymentDialog}
+                              onSetConfirmDialogEnvioNotificacao={(c) =>
+                                setConfirmDialogEnvioNotificacao({
+                                  open: true,
+                                  cobranca: c,
+                                })
+                              }
+                              onToggleLembretes={handleToggleLembretes}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Linha 3: Data + Status (Rodapé) */}
+                        <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              className={cn(
+                                "shadow-none border font-semibold h-6",
+                                getStatusColor(
+                                  cobranca.status,
+                                  cobranca.data_vencimento
+                                )
+                              )}
+                            >
+                              {getStatusText(
+                                cobranca.status,
+                                cobranca.data_vencimento
+                              )}
+                            </Badge>
+                            {cobranca.desativar_lembretes && (
+                              <BellOff className="w-3 h-3 text-orange-700" />
+                            )}
+                          </div>
+
+                          <div className="flex flex-col items-end gap-0.5">
+                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                              PAGO EM
+                            </span>
+                            <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
+                              {cobranca.data_vencimento
+                                ? formatDateToBR(cobranca.data_vencimento)
+                                : "-"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </TabsContent>
+
+            {/* Content: Pagas */}
+            <TabsContent value="pagas" className="mt-0">
+              {isInitialLoading ? (
+                <ListSkeleton />
+              ) : cobrancasPagasFiltradas.length === 0 ? (
+                <div className="flex flex-col items-center justify-center text-center py-20 bg-white rounded-[28px] border border-dashed border-gray-200">
+                  <div className="h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                    <DollarSign className="w-8 h-8 text-gray-300" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">
+                    Nenhum pagamento
+                  </h3>
+                  <p className="text-gray-500 max-w-xs mx-auto">
+                    Não há cobranças pagas registradas em {meses[mesFilter - 1]}
+                    .
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="hidden md:block bg-white rounded-2xl md:rounded-[28px] border border-gray-100 shadow-sm overflow-hidden">
+                    {/* Desktop Table */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50/50 border-b border-gray-100">
+                          <tr>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                              Passageiro
+                            </th>
+                            <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
+                              Valor
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                              Data Pagamento
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                              Forma
+                            </th>
+                            <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
+                              Ações
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {cobrancasPagasFiltradas.map((cobranca) => (
+                            <tr
+                              key={cobranca.id}
+                              onClick={() => navigateToDetails(cobranca)}
+                              className="hover:bg-gray-50/80 border-b border-gray-50 last:border-0 transition-colors cursor-pointer"
+                            >
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-3">
+                                  <div
+                                    className={`h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm ${getStatusColor(
+                                      cobranca.status,
+                                      cobranca.data_vencimento
+                                    )}`}
+                                  >
+                                    {cobranca.passageiros.nome.charAt(0)}
+                                  </div>
+                                  <div>
+                                    <p className="font-bold text-gray-900 text-sm">
+                                      {cobranca.passageiros.nome}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      {cobranca.passageiros.nome_responsavel ||
+                                        "Responsável não inf."}
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <span className="font-bold text-gray-900 text-sm">
+                                  {Number(cobranca.valor).toLocaleString(
+                                    "pt-BR",
+                                    { style: "currency", currency: "BRL" }
+                                  )}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="text-sm text-gray-600 font-medium">
+                                  {cobranca.data_pagamento
+                                    ? formatDateToBR(cobranca.data_pagamento)
+                                    : "-"}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex flex-col">
+                                  <span className="text-sm text-gray-700 font-medium">
+                                    {formatPaymentType(cobranca.tipo_pagamento)}
+                                  </span>
+                                  {cobranca.pagamento_manual && (
+                                    <span className="text-[10px] text-gray-400">
+                                      Manual
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <CobrancaActions
+                                  cobranca={cobranca}
+                                  navigate={navigate}
+                                  onNavigateToDetails={navigateToDetails}
+                                  onEditCobranca={handleEditCobrancaClick}
+                                  onSetConfirmDialogDesfazer={(id) =>
+                                    setConfirmDialogDesfazer({
+                                      open: true,
+                                      cobrancaId: id,
+                                    })
+                                  }
+                                  isPaga={true}
+                                />
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Mobile List - Ultra Compact Mode (Pagas) */}
+                  <div className="md:hidden space-y-3">
+                    {cobrancasPagasFiltradas.map((cobranca) => (
+                      <div
+                        key={cobranca.id}
+                        onClick={() => navigateToDetails(cobranca)}
+                        className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
+                      >
+                        {/* Linha 1: Avatar + Informações Principais + Ações */}
+                        <div className="flex justify-between items-start mb-1 relative">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm ${getStatusColor(
+                                cobranca.status,
+                                cobranca.data_vencimento
+                              )}`}
+                            >
+                              {cobranca.passageiros.nome.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="font-bold text-gray-900 text-sm">
+                                {cobranca.passageiros.nome}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {cobranca.passageiros.nome_responsavel ||
+                                  "Não inf."}{" "}
+                                •{" "}
+                                <span className="text-sm font-bold text-gray-900 tracking-tight">
+                                  {Number(cobranca.valor).toLocaleString(
+                                    "pt-BR",
+                                    {
+                                      style: "currency",
+                                      currency: "BRL",
+                                    }
+                                  )}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+                          {/* Botão de Ações */}
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <CobrancaActions
+                              cobranca={cobranca}
+                              navigate={navigate}
+                              onNavigateToDetails={navigateToDetails}
+                              onEditCobranca={handleEditCobrancaClick}
+                              onSetConfirmDialogDesfazer={(id) =>
+                                setConfirmDialogDesfazer({
+                                  open: true,
+                                  cobrancaId: id,
+                                })
+                              }
+                              isPaga={true}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Linha 2: Rodapé com Metadados (Separador) */}
+
+                        <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+                          <div>
+                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                              FORMA DE PAGAMENTO
+                            </span>
+                            {/* Esquerda: Forma de Pagamento (Badge Cinza Elegante) */}
+                            <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
+                              {formatPaymentType(cobranca.tipo_pagamento)}
+                            </p>
+                          </div>
+
+                          {/* Direita: Data de Pagamento (Label + Data) */}
+                          <div className="flex flex-col items-end gap-0.5">
+                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                              PAGO EM
+                            </span>
+                            <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
+                              {cobranca.data_pagamento
+                                ? formatDateToBR(cobranca.data_pagamento)
+                                : "-"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </TabsContent>
+          </Tabs>
+
+          {/* Dialogs */}
+          {paymentDialogOpen && selectedCobranca && (
             <ManualPaymentDialog
               isOpen={paymentDialogOpen}
               onClose={() => safeCloseDialog(() => setPaymentDialogOpen(false))}
@@ -1031,9 +979,10 @@ const Cobrancas = () => {
               passageiroNome={selectedCobranca.passageiros.nome}
               responsavelNome={selectedCobranca.passageiros.nome_responsavel}
               valorOriginal={Number(selectedCobranca.valor)}
-              onPaymentRecorded={() => {
+              onPaymentRecorded={async () => {
                 setPaymentDialogOpen(false);
-                fetchCobrancas(true);
+                // Refetch explícito para garantir que os KPIs sejam atualizados
+                await refetchCobrancas();
               }}
             />
           )}
@@ -1046,9 +995,10 @@ const Cobrancas = () => {
                 cobranca: null,
               })
             }
-            title="Enviar Notificação"
+            title="Enviar Lembrete"
             description="Deseja enviar esta notificação para o responsável?"
             onConfirm={enviarNotificacaoCobranca}
+            isLoading={enviarNotificacao.isPending}
           />
           <ConfirmationDialog
             open={confirmDialogDesfazer.open}
@@ -1057,9 +1007,10 @@ const Cobrancas = () => {
             }
             title="Desfazer Pagamento"
             description="Deseja realmente desfazer o pagamento desta cobrança?"
-            onConfirm={desfazerPagamento}
+            onConfirm={handleDesfazerPagamento}
             variant="destructive"
             confirmText="Confirmar"
+            isLoading={desfazerPagamento.isPending}
           />
 
           {cobrancaToEdit && (
@@ -1072,7 +1023,7 @@ const Cobrancas = () => {
           )}
         </div>
       </PullToRefreshWrapper>
-      <LoadingOverlay active={refreshing} text="Aguarde..." />
+      <LoadingOverlay active={isActionLoading} text="Aguarde..." />
     </>
   );
 };

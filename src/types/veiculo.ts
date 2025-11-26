@@ -4,10 +4,9 @@ export interface Veiculo {
     placa: string;
     marca: string;
     modelo: string;
-    ano_fabricacao?: string;
-    ano_modelo?: string;
-    capacidade?: number;
     ativo: boolean;
     created_at?: string;
     updated_at?: string;
+    passageiros_ativos_count?: number;
+    ano_modelo?: string;
 }

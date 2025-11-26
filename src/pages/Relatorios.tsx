@@ -1,528 +1,1442 @@
-import LatePaymentsAlert from "@/components/LatePaymentsAlert";
+import { DateNavigation } from "@/components/common/DateNavigation";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLayout } from "@/contexts/LayoutContext";
-import { PullToRefreshWrapper } from "@/hooks/PullToRefreshWrapper";
-import { useProfile } from "@/hooks/useProfile";
-import { useSession } from "@/hooks/useSession";
-import { supabase } from "@/integrations/supabase/client";
-import { Cobranca } from "@/types/cobranca";
-import { PaymentStats } from "@/types/paymentStats";
-import { anos, meses } from "@/utils/formatters";
 import {
-  BadgeCheck,
-  Banknote,
-  CalendarCheck2,
-  ChartPie,
+  useCobrancas,
+  useEscolas,
+  useGastos,
+  usePassageiros,
+  useVeiculos,
+} from "@/hooks";
+import { useProfile } from "@/hooks/business/useProfile";
+import { useSession } from "@/hooks/business/useSession";
+import { cn } from "@/lib/utils";
+import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
+import {
+  periodos as periodosConstants,
+  tiposPagamento,
+} from "@/utils/formatters/constants";
+import {
+  AlertTriangle,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Bot,
+  CheckCircle2,
   Clock,
-  CreditCard,
-  FileSpreadsheet,
-  Landmark,
-  Smartphone,
-  Ticket,
+  Crown,
+  Fuel,
+  Percent,
+  TrendingDown,
   TrendingUp,
+  Users,
+  UserX,
   Wallet,
+  Wrench,
+  Zap,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-interface ReportsStats {
-  totalPrevisto: number;
-  totalRecebido: number;
-  totalAReceber: number;
-  totalCobrancas: number;
-  cobrancasPagas: number;
-  cobrancasPendentes: number;
-  cobrancasAtrasadas: number;
-  percentualRecebimento: number;
-}
-
-const PaymentStatsDisplay = ({
-  stats,
-  totalRecebido,
-  loading,
-}: {
-  stats: PaymentStats;
-  totalRecebido: number;
-  loading: boolean;
-}) => {
-  const paymentMethods = [
-    { key: "pix", label: "PIX", icon: Smartphone, color: "bg-sky-500" },
-    {
-      key: "cartao",
-      label: "Cartões",
-      icon: CreditCard,
-      color: "bg-purple-500",
-    },
-    { key: "boleto", label: "Boleto", icon: Ticket, color: "bg-gray-500" },
-    {
-      key: "dinheiro",
-      label: "Dinheiro",
-      icon: Banknote,
-      color: "bg-green-500",
-    },
-    {
-      key: "transferencia",
-      label: "Transferência",
-      icon: Landmark,
-      color: "bg-blue-500",
-    },
-  ];
-
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-16 w-full" />
-        ))}
-      </div>
-    );
-  }
-
-  const activeMethods = paymentMethods.filter(
-    (method) => stats[method.key as keyof PaymentStats]?.total > 0
-  );
-
-  if (activeMethods.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Nenhuma cobrança recebida no mês indicado.
-      </p>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      {activeMethods.map((methodInfo) => {
-        const methodData = stats[methodInfo.key as keyof PaymentStats];
-        if (!methodData) return null;
-
-        const percentage =
-          totalRecebido > 0 ? (methodData.total / totalRecebido) * 100 : 0;
-
-        return (
-          <div key={methodInfo.key}>
-            <div className="flex justify-between items-center mb-2">
-              <div className="flex items-center gap-3">
-                <methodInfo.icon className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <div className="font-semibold">{methodInfo.label}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {methodData.count}{" "}
-                    {methodData.count === 1 ? "pagamento" : "pagamentos"}
-                  </div>
-                </div>
-              </div>
-              <div className="font-bold text-lg">
-                {methodData.total.toLocaleString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                })}
-              </div>
-            </div>
-            <Progress
-              value={percentage}
-              className="h-2"
-              indicatorClassName={methodInfo.color}
-            />
-          </div>
-        );
-      })}
-    </div>
-  );
+// Mapeamento de ícones e cores para categorias
+const CATEGORIA_ICONS: Record<
+  string,
+  { icon: typeof Fuel; color: string; bg: string }
+> = {
+  Combustível: { icon: Fuel, color: "text-red-500", bg: "bg-red-50" },
+  Manutenção: { icon: Wrench, color: "text-orange-500", bg: "bg-orange-50" },
+  Salário: { icon: Wallet, color: "text-blue-500", bg: "bg-blue-50" },
+  Vistorias: { icon: CheckCircle2, color: "text-green-500", bg: "bg-green-50" },
+  Documentação: {
+    icon: AlertTriangle,
+    color: "text-purple-500",
+    bg: "bg-purple-50",
+  },
+  Outros: { icon: AlertTriangle, color: "text-gray-500", bg: "bg-gray-50" },
 };
 
-const Relatorios = () => {
-  const [stats, setStats] = useState<ReportsStats>({
-    totalPrevisto: 0,
-    totalRecebido: 0,
-    totalAReceber: 0,
-    totalCobrancas: 0,
-    cobrancasPagas: 0,
-    cobrancasPendentes: 0,
-    cobrancasAtrasadas: 0,
-    percentualRecebimento: 0,
+// Mapeamento de labels para formas de pagamento
+const FORMAS_PAGAMENTO_LABELS: Record<
+  string,
+  { label: string; color: string }
+> = {
+  PIX: { label: "PIX", color: "bg-emerald-500" },
+  dinheiro: { label: "Dinheiro", color: "bg-green-500" },
+  cartao: { label: "Cartão", color: "bg-teal-500" },
+  transferencia: { label: "Transferência", color: "bg-blue-500" },
+  boleto: { label: "Boleto", color: "bg-purple-500" },
+};
+
+// Mock data para quando não tem acesso (com blur)
+const MOCK_DATA_NO_ACCESS = {
+  visaoGeral: {
+    lucroEstimado: 3250.0,
+    recebido: 8500.0,
+    gasto: 5250.0,
+    passageirosDesativados: 3,
+    atrasos: {
+      valor: 850.0,
+      passageiros: 4,
+    },
+    taxaRecebimento: 90.9,
+  },
+  entradas: {
+    previsto: 9350.0,
+    realizado: 8500.0,
+    ticketMedio: 207.31,
+    passageirosPagantes: 45,
+    passageirosPagos: 41,
+    formasPagamento: [
+      { metodo: "Pix", valor: 5000, percentual: 59, color: "bg-emerald-500" },
+      {
+        metodo: "Dinheiro",
+        valor: 2500,
+        percentual: 29,
+        color: "bg-green-500",
+      },
+      { metodo: "Cartão", valor: 1000, percentual: 12, color: "bg-teal-500" },
+    ],
+  },
+  saidas: {
+    total: 5250.0,
+    margemOperacional: 38.2,
+    mediaDiaria: 175.0,
+    diasContabilizados: 30,
+    custoPorPassageiro: 116.66,
+    topCategorias: [
+      {
+        nome: "Combustível",
+        valor: 3200.0,
+        icon: Fuel,
+        color: "text-red-500",
+        bg: "bg-red-50",
+      },
+      {
+        nome: "Manutenção",
+        valor: 1500.0,
+        icon: Wrench,
+        color: "text-orange-500",
+        bg: "bg-orange-50",
+      },
+      {
+        nome: "Outros",
+        valor: 550.0,
+        icon: AlertTriangle,
+        color: "text-gray-500",
+        bg: "bg-gray-50",
+      },
+    ],
+  },
+  operacional: {
+    passageirosAtivos: 45,
+    escolas: [
+      { nome: "Colégio Objetivo", passageiros: 20, percentual: 45 },
+      { nome: "Escola Adventista", passageiros: 15, percentual: 33 },
+      { nome: "Colégio Anglo", passageiros: 10, percentual: 22 },
+    ],
+    periodos: [
+      { nome: "Manhã", passageiros: 25, percentual: 55 },
+      { nome: "Tarde", passageiros: 20, percentual: 45 },
+    ],
+    veiculos: [
+      { placa: "ABC-1234", passageiros: 15, percentual: 33 },
+      { placa: "XYZ-5678", passageiros: 20, percentual: 45 },
+      { placa: "DEF-9012", passageiros: 10, percentual: 22 },
+    ],
+  },
+  automacao: {
+    envios: 25,
+    limite: 50,
+    tempoEconomizado: "2h",
+  },
+};
+
+export default function Relatorios() {
+  const { setPageTitle } = useLayout();
+  const { user } = useSession();
+  const { profile, plano: profilePlano } = useProfile(user?.id);
+
+  const [mes, setMes] = useState(new Date().getMonth() + 1);
+  const [ano, setAno] = useState(new Date().getFullYear());
+
+  // Access Logic - baseado no plano completo
+  const hasAccess =
+    profilePlano?.isCompletePlan ||
+    profilePlano?.isEssentialPlan ||
+    (profilePlano?.isTrial && profilePlano?.isValidTrial);
+  const passageirosLimit = profilePlano?.planoCompleto?.max_passageiros || null;
+
+  // Buscar dados reais - APENAS se tiver acesso
+  const shouldFetchData = hasAccess && !!profile?.id;
+
+  const { data: cobrancasData } = useCobrancas(
+    {
+      usuarioId: profile?.id,
+      mes,
+      ano,
+    },
+    { enabled: shouldFetchData }
+  );
+
+  const { data: gastosData = [] } = useGastos(
+    {
+      usuarioId: profile?.id,
+      mes,
+      ano,
+    },
+    { enabled: shouldFetchData }
+  );
+
+  const { data: passageirosData } = usePassageiros(
+    { usuarioId: profile?.id },
+    { enabled: shouldFetchData }
+  );
+
+  const { data: escolasData } = useEscolas(profile?.id, {
+    enabled: shouldFetchData,
   });
-  const { setPageTitle, setPageSubtitle } = useLayout();
 
-  const [paymentStats, setPaymentStats] = useState<PaymentStats>({
-    pix: { count: 0, total: 0 },
-    cartao: { count: 0, total: 0 },
-    dinheiro: { count: 0, total: 0 },
-    transferencia: { count: 0, total: 0 },
-    boleto: { count: 0, total: 0 },
+  const { data: veiculosData } = useVeiculos(profile?.id, {
+    enabled: shouldFetchData,
   });
 
-  const [latePayments, setLatePayments] = useState<Cobranca[]>([]);
-  const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
-  const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
-  const { user, loading: isSessionLoading } = useSession();
-  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
-  const isAuthLoading = isSessionLoading || isProfileLoading;
-  const systemUserId = profile?.id || null;
-  const [isLoadingData, setIsLoadingData] = useState(false);
-  const loading = isAuthLoading || isLoadingData;
-
-  const fetchStats = async () => {
-    const currentUserId = systemUserId;
-
-    setIsLoadingData(true);
-
-    if (!profile) {
-      console.warn("Usuário nulo, abortando fetchStats.");
-      setIsLoadingData(false);
-      return;
+  // Calcular dados reais
+  const dadosReais = useMemo(() => {
+    if (!hasAccess || !cobrancasData || !gastosData || !passageirosData) {
+      return null;
     }
-    try {
-      const { data: cobrancasMes } = await supabase
-        .from("cobrancas")
-        .select(
-          `*, passageiros (id, nome, nome_responsavel, valor_cobranca, dia_vencimento)`
-        )
-        .eq("mes", mesFilter)
-        .eq("usuario_id", currentUserId)
-        .eq("ano", anoFilter);
-      const totalPrevisto =
-        cobrancasMes?.reduce((sum, c) => sum + Number(c.valor), 0) || 0;
-      const cobrancas = cobrancasMes || [];
-      const totalCobrancas = cobrancas.length;
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
-      const cobrancasPagasList = cobrancas.filter((c) => c.status === "pago");
-      const cobrancasAtrasadasList = cobrancas.filter((c) => {
-        if (c.status === "pago") return false;
-        const vencimento = new Date(c.data_vencimento + "T00:00:00");
-        return vencimento < hoje;
-      });
-      const cobrancasPendentes = cobrancas.filter((c) => {
-        if (c.status === "pago") return false;
-        const vencimento = new Date(c.data_vencimento + "T00:00:00");
-        return vencimento >= hoje;
-      }).length;
-      const totalRecebido = cobrancasPagasList.reduce(
-        (sum, c) => sum + Number(c.valor),
-        0
-      );
-      const totalAReceber = totalPrevisto - totalRecebido;
-      const percentualRecebimento =
-        totalPrevisto > 0 ? (totalRecebido / totalPrevisto) * 100 : 0;
-      const paymentStatsData: PaymentStats = {
-        pix: { count: 0, total: 0 },
-        cartao: { count: 0, total: 0 },
-        dinheiro: { count: 0, total: 0 },
-        transferencia: { count: 0, total: 0 },
-        boleto: { count: 0, total: 0 },
-      };
-      cobrancasPagasList.forEach((c) => {
-        const tipo = c.tipo_pagamento?.toLowerCase() || "";
-        const valor = Number(c.valor);
-        if (tipo === "pix") {
-          paymentStatsData.pix.count++;
-          paymentStatsData.pix.total += valor;
-        } else if (tipo === "cartao-credito" || tipo === "cartao-debito") {
-          paymentStatsData.cartao.count++;
-          paymentStatsData.cartao.total += valor;
-        } else if (tipo === "dinheiro") {
-          paymentStatsData.dinheiro.count++;
-          paymentStatsData.dinheiro.total += valor;
-        } else if (tipo === "boleto") {
-          paymentStatsData.boleto.count++;
-          paymentStatsData.boleto.total += valor;
-        } else if (tipo === "transferencia") {
-          paymentStatsData.transferencia.count++;
-          paymentStatsData.transferencia.total += valor;
+
+    if (escolasData === undefined || veiculosData === undefined) {
+      return null;
+    }
+
+    const cobrancas = cobrancasData.all || [];
+    const cobrancasPagas = cobrancasData.pagas || [];
+    const cobrancasAbertas = cobrancasData.abertas || [];
+
+    // Visão Geral
+    const recebido = cobrancasPagas.reduce(
+      (acc, c) => acc + Number(c.valor || 0),
+      0
+    );
+    const gasto = gastosData.reduce((acc, g) => acc + Number(g.valor || 0), 0);
+    const lucroEstimado = recebido - gasto;
+
+    // Atrasos (cobranças vencidas não pagas)
+    const hoje = new Date();
+    const atrasos = cobrancasAbertas.filter((c) => {
+      const vencimento = new Date(c.data_vencimento);
+      return vencimento < hoje;
+    });
+    const valorAtrasos = atrasos.reduce(
+      (acc, c) => acc + Number(c.valor || 0),
+      0
+    );
+
+    // Taxa de Recebimento
+    const totalPrevisto = cobrancas.reduce(
+      (acc, c) => acc + Number(c.valor || 0),
+      0
+    );
+    const taxaRecebimento =
+      totalPrevisto > 0 ? (recebido / totalPrevisto) * 100 : 0;
+
+    // Passageiros
+    const passageirosList = passageirosData?.list || [];
+    const passageirosAtivos = passageirosList.filter((p) => p.ativo).length;
+    const passageirosDesativados = passageirosList.filter(
+      (p) => !p.ativo
+    ).length;
+
+    // Entradas
+    const passageirosPagantes = new Set(cobrancas.map((c) => c.passageiro_id))
+      .size;
+    const passageirosPagos = new Set(cobrancasPagas.map((c) => c.passageiro_id))
+      .size;
+    const ticketMedio = passageirosPagos > 0 ? recebido / passageirosPagos : 0;
+
+    // Formas de pagamento - usar apenas os tipos do constants.ts
+    const formasPagamentoMap: Record<string, { valor: number; count: number }> =
+      {};
+    cobrancasPagas.forEach((c) => {
+      const tipo = c.tipo_pagamento?.toLowerCase() || "";
+
+      // Normalizar e mapear para os valores do constants.ts
+      let key = "";
+      if (tipo === "pix") {
+        key = "PIX";
+      } else if (tipo === "dinheiro") {
+        key = "dinheiro";
+      } else if (tipo.includes("cartao") || tipo.includes("cartão")) {
+        key = "cartao";
+      } else if (tipo === "transferencia" || tipo === "transferência") {
+        key = "transferencia";
+      } else if (tipo === "boleto") {
+        key = "boleto";
+      }
+
+      // Validar se é um tipo válido do constants.ts
+      if (key) {
+        const isValidType = tiposPagamento.some((tp) => {
+          const tpValue = tp.value.toLowerCase();
+          if (key === "PIX") {
+            return tpValue === "pix";
+          } else if (key === "cartao") {
+            return tpValue.includes("cartao");
+          }
+          return tpValue === key.toLowerCase();
+        });
+
+        if (isValidType) {
+          if (!formasPagamentoMap[key]) {
+            formasPagamentoMap[key] = { valor: 0, count: 0 };
+          }
+          formasPagamentoMap[key].valor += Number(c.valor || 0);
+          formasPagamentoMap[key].count += 1;
         }
-      });
-      setStats({
-        totalPrevisto,
-        totalRecebido,
-        totalAReceber,
-        totalCobrancas,
-        cobrancasPagas: cobrancasPagasList.length,
-        cobrancasPendentes,
-        cobrancasAtrasadas: cobrancasAtrasadasList.length,
-        percentualRecebimento,
-      });
-      setPaymentStats(paymentStatsData);
-      setLatePayments(cobrancasAtrasadasList);
-    } catch (error) {
-      console.error("Erro ao buscar estatísticas:", error);
-    } finally {
-      setIsLoadingData(false);
-    }
-  };
+      }
+    });
 
-  useEffect(() => {
-    if (!isAuthLoading && systemUserId) {
-      fetchStats();
-    } else if (!isAuthLoading && !systemUserId) {
-      setIsLoadingData(false);
-    }
+    const formasPagamento = Object.entries(formasPagamentoMap)
+      .map(([tipo, dados]) => {
+        const labelData = FORMAS_PAGAMENTO_LABELS[tipo] || {
+          label: tipo,
+          color: "bg-gray-500",
+        };
+        return {
+          metodo: labelData.label,
+          valor: dados.valor,
+          percentual: recebido > 0 ? (dados.valor / recebido) * 100 : 0,
+          color: labelData.color,
+        };
+      })
+      .filter((f) => f.valor > 0)
+      .sort((a, b) => b.valor - a.valor);
 
-    setPageTitle("Relatórios");
-    setPageSubtitle(`Referentes a ${meses[mesFilter - 1]} de ${anoFilter}`);
+    // Saídas
+    const diasComGastos = new Set(
+      gastosData.map((g) => new Date(g.data).getDate())
+    ).size;
+    const mediaDiaria = diasComGastos > 0 ? gasto / diasComGastos : 0;
+    const margemOperacional =
+      recebido > 0 ? ((recebido - gasto) / recebido) * 100 : 0;
+
+    // Categorias de gastos - usar dados reais
+    const categoriasMap: Record<string, { valor: number; nome: string }> = {};
+    gastosData.forEach((g) => {
+      const cat = g.categoria || "Outros";
+      if (!categoriasMap[cat]) {
+        categoriasMap[cat] = { valor: 0, nome: cat };
+      }
+      categoriasMap[cat].valor += Number(g.valor || 0);
+    });
+
+    const topCategorias = Object.values(categoriasMap)
+      .sort((a, b) => b.valor - a.valor)
+      .map((cat) => {
+        const iconData = CATEGORIA_ICONS[cat.nome] || CATEGORIA_ICONS.Outros;
+        return {
+          nome: cat.nome,
+          valor: cat.valor,
+          icon: iconData.icon,
+          color: iconData.color,
+          bg: iconData.bg,
+        };
+      });
+
+    const custoPorPassageiro =
+      passageirosAtivos > 0 ? gasto / passageirosAtivos : 0;
+
+    // Operacional
+    const escolasList =
+      (
+        escolasData as
+          | {
+              list?: Array<{ nome: string; passageiros_ativos_count?: number }>;
+            }
+          | undefined
+      )?.list || [];
+    const totalPassageirosPorEscola = escolasList.reduce(
+      (acc, e) => acc + (e.passageiros_ativos_count || 0),
+      0
+    );
+    const escolas = escolasList
+      .filter((e) => (e.passageiros_ativos_count || 0) > 0)
+      .map((e) => ({
+        nome: e.nome,
+        passageiros: e.passageiros_ativos_count || 0,
+        percentual:
+          totalPassageirosPorEscola > 0
+            ? ((e.passageiros_ativos_count || 0) / totalPassageirosPorEscola) *
+              100
+            : 0,
+      }))
+      .sort((a, b) => b.passageiros - a.passageiros)
+      .slice(0, 5);
+
+    const veiculosList =
+      (
+        veiculosData as
+          | {
+              list?: Array<{
+                placa: string;
+                passageiros_ativos_count?: number;
+              }>;
+            }
+          | undefined
+      )?.list || [];
+    const totalPassageirosPorVeiculo = veiculosList.reduce(
+      (acc, v) => acc + (v.passageiros_ativos_count || 0),
+      0
+    );
+    const veiculos = veiculosList
+      .filter((v) => (v.passageiros_ativos_count || 0) > 0)
+      .map((v) => ({
+        placa: formatarPlacaExibicao(v.placa),
+        passageiros: v.passageiros_ativos_count || 0,
+        percentual:
+          totalPassageirosPorVeiculo > 0
+            ? ((v.passageiros_ativos_count || 0) / totalPassageirosPorVeiculo) *
+              100
+            : 0,
+      }))
+      .sort((a, b) => b.passageiros - a.passageiros)
+      .slice(0, 5);
+
+    const periodosMap: Record<string, number> = {};
+    passageirosList
+      .filter((p) => p.ativo)
+      .forEach((p) => {
+        const periodo = p.periodo || "Outros";
+        periodosMap[periodo] = (periodosMap[periodo] || 0) + 1;
+      });
+    const totalPorPeriodo = Object.values(periodosMap).reduce(
+      (acc, v) => acc + v,
+      0
+    );
+    const periodos = Object.entries(periodosMap)
+      .map(([value, count]) => {
+        const periodoData = periodosConstants.find((p) => p.value === value);
+        return {
+          nome: periodoData?.label || value,
+          passageiros: count,
+          percentual: totalPorPeriodo > 0 ? (count / totalPorPeriodo) * 100 : 0,
+        };
+      })
+      .sort((a, b) => b.passageiros - a.passageiros);
+
+    // Automação (cobranças automáticas)
+    const passageirosComAutomatica = passageirosList.filter(
+      (p) => p.enviar_cobranca_automatica && p.ativo
+    ).length;
+    const limiteAutomatica =
+      profilePlano?.planoCompleto?.franquia_contratada_cobrancas || 50;
+
+    return {
+      visaoGeral: {
+        lucroEstimado,
+        recebido,
+        gasto,
+        passageirosDesativados,
+        atrasos: {
+          valor: valorAtrasos,
+          passageiros: atrasos.length,
+        },
+        taxaRecebimento,
+      },
+      entradas: {
+        previsto: totalPrevisto,
+        realizado: recebido,
+        ticketMedio,
+        passageirosPagantes,
+        passageirosPagos,
+        formasPagamento,
+      },
+      saidas: {
+        total: gasto,
+        margemOperacional,
+        mediaDiaria,
+        diasContabilizados: diasComGastos,
+        custoPorPassageiro,
+        topCategorias,
+      },
+      operacional: {
+        passageirosAtivos,
+        escolas,
+        periodos,
+        veiculos,
+      },
+      automacao: {
+        envios: passageirosComAutomatica,
+        limite: limiteAutomatica,
+        tempoEconomizado: `${Math.round(passageirosComAutomatica * 0.08)}h`,
+      },
+    };
   }, [
-    mesFilter,
-    anoFilter,
-    systemUserId,
-    isAuthLoading,
-    setPageTitle,
-    setPageSubtitle,
+    hasAccess,
+    cobrancasData,
+    gastosData,
+    passageirosData,
+    escolasData,
+    veiculosData,
+    mes,
+    ano,
+    profilePlano,
   ]);
 
-  const pullToRefreshReload = async () => {
-    fetchStats();
+  // Usar dados reais ou mock (com blur) - mock só para quem não tem acesso
+  const dados = hasAccess && dadosReais ? dadosReais : MOCK_DATA_NO_ACCESS;
+
+  useEffect(() => {
+    setPageTitle("Relatórios");
+  }, [setPageTitle]);
+
+  const handleNavigate = (newMes: number, newAno: number) => {
+    setMes(newMes);
+    setAno(newAno);
   };
 
+  const lucroPositivo = dados.visaoGeral.lucroEstimado >= 0;
+
+  // --- Helper Components ---
+
+  const CircularProgress = ({
+    value,
+    max,
+    size = 60,
+    strokeWidth = 6,
+  }: {
+    value: number;
+    max: number;
+    size?: number;
+    strokeWidth?: number;
+  }) => {
+    const radius = (size - strokeWidth) / 2;
+    const circumference = radius * 2 * Math.PI;
+    const offset = circumference - (value / max) * circumference;
+
+    return (
+      <div className="relative flex items-center justify-center">
+        <svg width={size} height={size} className="transform -rotate-90">
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="currentColor"
+            strokeWidth={strokeWidth}
+            fill="transparent"
+            className="text-indigo-100"
+          />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="currentColor"
+            strokeWidth={strokeWidth}
+            fill="transparent"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            className="text-indigo-600 transition-all duration-1000 ease-out"
+          />
+        </svg>
+        <div className="absolute text-xs font-bold text-indigo-700">
+          {Math.round((value / max) * 100)}%
+        </div>
+      </div>
+    );
+  };
+
+  /**
+   * PrivateData Component
+   * Handles the display of sensitive data.
+   * If !hasAccess, it shows a blurred fictitious value.
+   */
+  const PrivateData = ({
+    value,
+    type = "currency",
+    className,
+    blurIntensity = "blur-sm",
+  }: {
+    value: number;
+    type?: "currency" | "number" | "percent";
+    className?: string;
+    blurIntensity?: string;
+  }) => {
+    if (hasAccess) {
+      if (type === "currency") {
+        return (
+          <span className={className}>
+            {value.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}
+          </span>
+        );
+      }
+      if (type === "percent") {
+        return <span className={className}>{value.toFixed(1)}%</span>;
+      }
+      return <span className={className}>{value}</span>;
+    }
+
+    // Generate a consistent "fake" value based on the real value
+    const fakeValue = value * 1.42;
+
+    let formattedFake;
+    if (type === "currency") {
+      formattedFake = fakeValue.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      });
+    } else if (type === "percent") {
+      formattedFake = fakeValue.toFixed(1) + "%";
+    } else {
+      formattedFake = Math.round(fakeValue).toString();
+    }
+
+    return (
+      <span
+        className={cn(
+          "select-none opacity-60 transition-all duration-300",
+          blurIntensity,
+          className
+        )}
+        title="Disponível no plano Premium"
+      >
+        {formattedFake}
+      </span>
+    );
+  };
+
+  // Helper for Progress Bars in No-Access State
+  const getProgressValue = (realValue: number) => {
+    if (hasAccess) return realValue;
+    return 50; // Fixed visual percentage for "teaser" look
+  };
+
+  if (!profilePlano) {
+    return <div>Carregando...</div>;
+  }
+
   return (
-    <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-      <div className="space-y-6">
-        <div className="w-full">
-          <Card className="mb-6">
-            <CardContent className="mt-4">
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                <label htmlFor="mes-select" className="text-sm font-medium">
-                  Mês
-                </label>
-                <label htmlFor="ano-select" className="text-sm font-medium">
-                  Ano
-                </label>
-                <Select
-                  value={mesFilter.toString()}
-                  onValueChange={(value) => setMesFilter(Number(value))}
+    <div className="relative min-h-screen pb-20 space-y-6 bg-gray-50/50">
+      {/* Premium Banner (Top of Page) */}
+      {!hasAccess && (
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-orange-100 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center gap-5">
+            <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center shrink-0 shadow-sm">
+              <Crown className="h-6 w-6 text-orange-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">
+                Visualize seus resultados completos
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Libere o acesso aos relatórios financeiros e operacionais
+                detalhados para tomar as melhores decisões.
+              </p>
+            </div>
+          </div>
+          <Button className="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white font-bold h-11 px-8 rounded-xl shadow-lg shadow-orange-200/50 transition-transform hover:scale-105">
+            Liberar Acesso Premium
+          </Button>
+        </div>
+      )}
+
+      {/* Header & Navigation */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <DateNavigation mes={mes} ano={ano} onNavigate={handleNavigate} />
+      </div>
+
+      {/* Main Content */}
+      <Tabs defaultValue="visao-geral" className="w-full space-y-6">
+        <div className="overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+          <TabsList className="bg-white p-1 rounded-xl h-12 w-full md:w-auto inline-flex min-w-max shadow-sm border border-gray-100">
+            <TabsTrigger
+              value="visao-geral"
+              className="rounded-lg h-10 px-5 text-xs md:text-sm font-medium data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 text-gray-500 transition-all"
+            >
+              Visão Geral
+            </TabsTrigger>
+            <TabsTrigger
+              value="entradas"
+              className="rounded-lg h-10 px-5 text-xs md:text-sm font-medium data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 text-gray-500 transition-all"
+            >
+              Entradas
+            </TabsTrigger>
+            <TabsTrigger
+              value="saidas"
+              className="rounded-lg h-10 px-5 text-xs md:text-sm font-medium data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 text-gray-500 transition-all"
+            >
+              Saídas
+            </TabsTrigger>
+            <TabsTrigger
+              value="operacional"
+              className="rounded-lg h-10 px-5 text-xs md:text-sm font-medium data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 text-gray-500 transition-all"
+            >
+              Operacional
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        {/* Aba 1: Visão Geral */}
+        <TabsContent value="visao-geral" className="space-y-4 mt-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Lucro Estimado */}
+            <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
+              <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Lucro Estimado
+                </CardTitle>
+                <div
+                  className={cn(
+                    "p-2 rounded-full",
+                    lucroPositivo
+                      ? "bg-emerald-50 text-emerald-600"
+                      : "bg-red-50 text-red-600"
+                  )}
                 >
-                  <SelectTrigger id="mes-select">
-                    <SelectValue placeholder="Selecione o mês" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-60 overflow-y-auto">
-                    {meses.map((mes, index) => (
-                      <SelectItem key={index} value={(index + 1).toString()}>
-                        {mes}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={anoFilter.toString()}
-                  onValueChange={(value) => setAnoFilter(Number(value))}
+                  <Wallet className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent className="px-6 pb-6">
+                <div className="flex items-baseline gap-2">
+                  <PrivateData
+                    value={dados.visaoGeral.lucroEstimado}
+                    type="currency"
+                    className={cn(
+                      "text-3xl md:text-4xl font-bold tracking-tight",
+                      lucroPositivo ? "text-emerald-600" : "text-red-600"
+                    )}
+                  />
+                </div>
+                <p
+                  className={cn(
+                    "text-xs mt-2 font-medium",
+                    !hasAccess && "blur-sm select-none"
+                  )}
                 >
-                  <SelectTrigger id="ano-select">
-                    <SelectValue placeholder="Selecione o ano" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-60 overflow-y-auto">
-                    {anos.map((ano) => (
-                      <SelectItem key={ano.value} value={ano.value}>
-                        {ano.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  Entradas - Saídas do mês
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Atrasos */}
+            <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
+              <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Em Atraso
+                </CardTitle>
+                <div className="p-2 rounded-full bg-red-50 text-red-600">
+                  <AlertTriangle className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent className="px-6 pb-6">
+                <div className="flex items-baseline gap-2">
+                  <PrivateData
+                    value={dados.visaoGeral.atrasos.valor}
+                    type="currency"
+                    className="text-3xl md:text-4xl font-bold tracking-tight text-red-600"
+                  />
+                </div>
+                <div className="mt-2 inline-flex items-center gap-1.5 bg-red-50 px-2.5 py-1 rounded-md">
+                  <span
+                    className={cn(
+                      "text-xs font-medium text-red-700",
+                      !hasAccess && "blur-sm select-none"
+                    )}
+                  >
+                    <PrivateData
+                      value={dados.visaoGeral.atrasos.passageiros}
+                      type="number"
+                    />{" "}
+                    passageiros
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* KPIs Secundários */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="border-none shadow-sm rounded-2xl bg-indigo-50/30">
+              <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
+                  Passageiros Desativados
+                </CardTitle>
+                <UserX className="h-4 w-4 text-indigo-600" />
+              </CardHeader>
+              <CardContent className="px-6 pb-6">
+                <div className="text-2xl font-bold text-indigo-900">
+                  <PrivateData
+                    value={dados.visaoGeral.passageirosDesativados}
+                    type="number"
+                  />
+                </div>
+                <p
+                  className={cn(
+                    "text-xs text-indigo-600/70 mt-1",
+                    !hasAccess && "blur-sm select-none"
+                  )}
+                >
+                  Passageiros inativos no momento
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-sm rounded-2xl bg-white">
+              <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Taxa de Recebimento
+                </CardTitle>
+                <Percent className="h-4 w-4 text-emerald-500" />
+              </CardHeader>
+              <CardContent className="px-6 pb-6 flex items-baseline gap-2">
+                <div>
+                  <span className="text-3xl font-bold text-emerald-600">
+                    <PrivateData
+                      value={dados.visaoGeral.taxaRecebimento}
+                      type="percent"
+                    />
+                  </span>
+                  <span
+                    className={cn(
+                      "text-sm text-gray-400 ml-2 font-medium",
+                      !hasAccess && "blur-sm select-none"
+                    )}
+                  >
+                    do previsto
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Comparativo Barras */}
+          <Card className="border-none shadow-sm rounded-2xl bg-white">
+            <CardHeader className="pt-6 px-6">
+              <CardTitle className="text-lg font-bold text-gray-900">
+                Fluxo do Mês
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-8 px-6 pb-8">
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500 flex items-center gap-2 font-medium">
+                    <ArrowUpCircle className="h-5 w-5 text-emerald-500" />
+                    Entradas
+                  </span>
+                  <span className="font-bold text-gray-900 text-base">
+                    <PrivateData
+                      value={dados.visaoGeral.recebido}
+                      type="currency"
+                    />
+                  </span>
+                </div>
+                <Progress
+                  value={getProgressValue(100)}
+                  className="h-3 bg-gray-100 rounded-full"
+                  indicatorClassName="bg-emerald-500 rounded-full"
+                />
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500 flex items-center gap-2 font-medium">
+                    <ArrowDownCircle className="h-5 w-5 text-red-500" />
+                    Saídas
+                  </span>
+                  <span className="font-bold text-gray-900 text-base">
+                    <PrivateData
+                      value={dados.visaoGeral.gasto}
+                      type="currency"
+                    />
+                  </span>
+                </div>
+                <Progress
+                  value={getProgressValue(
+                    dados.visaoGeral.recebido > 0
+                      ? (dados.visaoGeral.gasto / dados.visaoGeral.recebido) *
+                          100
+                      : 0
+                  )}
+                  className="h-3 bg-gray-100 rounded-full"
+                  indicatorClassName="bg-red-500 rounded-full"
+                />
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
 
-          {loading ? (
-            <Card className="mb-6">
-              <CardHeader>
-                <Skeleton className="h-6 w-48" />
-              </CardHeader>
-              <CardContent className="">
-                <Skeleton className="h-10 w-full" />
-              </CardContent>
-            </Card>
-          ) : latePayments.length > 0 ? (
-            <LatePaymentsAlert
-              mes={mesFilter}
-              ano={anoFilter}
-              latePayments={latePayments}
-            />
-          ) : stats.totalCobrancas > 0 ? (
-            <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
-              <BadgeCheck className="h-5 w-5 text-green-600" />
-              <div className="text-sm font-medium text-green-800">
-                Tudo em dia! Não há cobranças pendentes no mês indicado.
-              </div>
-            </div>
-          ) : (
-            <div className="mb-6 flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
-              <div className="text-sm font-medium text-gray-500">
-                Não há cobranças referentes ao mês indicado.
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+        {/* Aba 2: Entradas */}
+        <TabsContent value="entradas" className="space-y-4 mt-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Card className="bg-blue-50/50 border-none shadow-sm rounded-2xl">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-6 px-6">
+                <CardTitle className="text-xs font-bold text-blue-600 uppercase tracking-wider">
                   Total Previsto
                 </CardTitle>
-                <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
+                <TrendingUp className="h-5 w-5 text-blue-600" />
               </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <Skeleton className="h-8 w-32" />
-                ) : (
-                  <div className="text-xl sm:text-2xl font-bold">
-                    {stats.totalPrevisto.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
-                  </div>
-                )}
+              <CardContent className="px-6 pb-6">
+                <div className="text-2xl md:text-3xl font-bold text-blue-900">
+                  <PrivateData
+                    value={dados.entradas.previsto}
+                    type="currency"
+                  />
+                </div>
+                <p
+                  className={cn(
+                    "text-xs md:text-sm text-blue-600/80 mt-1 font-medium",
+                    !hasAccess && "blur-sm select-none"
+                  )}
+                >
+                  <PrivateData
+                    value={dados.entradas.passageirosPagantes}
+                    type="number"
+                  />{" "}
+                  Passageiros
+                </p>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Recebido
+
+            <Card className="bg-emerald-50/50 border-none shadow-sm rounded-2xl">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-6 px-6">
+                <CardTitle className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
+                  Realizado
                 </CardTitle>
-                <Wallet className="h-4 w-4 text-green-600" />
+                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
               </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <Skeleton className="h-8 w-32" />
-                ) : (
-                  <div className="text-xl sm:text-2xl font-bold text-green-600">
-                    {stats.totalRecebido.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
-                  </div>
-                )}
+              <CardContent className="px-6 pb-6">
+                <div className="text-2xl md:text-3xl font-bold text-emerald-900">
+                  <PrivateData
+                    value={dados.entradas.realizado}
+                    type="currency"
+                  />
+                </div>
+                <p
+                  className={cn(
+                    "text-xs md:text-sm text-emerald-600/80 mt-1 font-medium",
+                    !hasAccess && "blur-sm select-none"
+                  )}
+                >
+                  <PrivateData
+                    value={dados.entradas.passageirosPagos}
+                    type="number"
+                  />{" "}
+                  pagaram
+                </p>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total a Receber
+
+            {/* Ticket Médio - NOVO KPI */}
+            <Card className="border-none shadow-sm rounded-2xl bg-white h-full">
+              <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Ticket Médio
                 </CardTitle>
-                <Clock className="h-4 w-4 text-orange-600" />
+                <div className="p-2 rounded-full bg-blue-50 text-blue-600">
+                  <Users className="h-4 w-4" />
+                </div>
               </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <Skeleton className="h-8 w-32" />
-                ) : (
-                  <div className="text-xl sm:text-2xl font-bold text-orange-600">
-                    {stats.totalAReceber.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  % Recebimento
-                </CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <Skeleton className="h-8 w-20" />
-                ) : (
-                  <div className="text-xl sm:text-2xl font-bold">
-                    {stats.percentualRecebimento.toFixed(1)}%
-                  </div>
-                )}
+              <CardContent className="px-6 pb-6">
+                <div className="text-2xl font-bold text-gray-900">
+                  <PrivateData
+                    value={dados.entradas.ticketMedio}
+                    type="currency"
+                  />
+                </div>
+                <p
+                  className={cn(
+                    "text-xs text-gray-400 mt-1 font-medium",
+                    !hasAccess && "blur-sm select-none"
+                  )}
+                >
+                  por passageiro pago
+                </p>
               </CardContent>
             </Card>
           </div>
 
-          <div className="grid xl:grid-cols-2 gap-4">
-            {/* Situação do mes */}
-            <Card className="mb-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CalendarCheck2 className="w-5 h-5" />
-                  Situação do Mês
-                </CardTitle>
-              </CardHeader>
+          {/* Gráfico de Barras (Formas de Pagamento) */}
+          <Card className="border-none shadow-sm rounded-2xl bg-white">
+            <CardHeader className="pb-2 pt-5 px-6">
+              <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                Formas de Pagamento
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 pb-6 space-y-4">
+              {dados.entradas.formasPagamento.map((item, index) => (
+                <div key={index} className="space-y-1.5">
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium text-gray-700">
+                      {item.metodo}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500 text-xs font-medium">
+                        <PrivateData value={item.valor} type="currency" />
+                      </span>
+                      <span
+                        className={cn(
+                          "font-bold",
+                          !hasAccess && "blur-sm select-none"
+                        )}
+                      >
+                        <PrivateData value={item.percentual} type="percent" />
+                      </span>
+                    </div>
+                  </div>
+                  <Progress
+                    value={getProgressValue(item.percentual)}
+                    className="h-2.5 bg-gray-100"
+                    indicatorClassName={item.color}
+                  />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-sm font-medium text-muted-foreground mb-1">
-                      Cobranças
-                    </div>
-                    {loading ? (
-                      <Skeleton className="h-7 w-12" />
-                    ) : (
-                      <div className="text-2xl font-bold">
-                        {stats.totalCobrancas}
-                      </div>
+        {/* Aba 3: Saídas */}
+        <TabsContent value="saidas" className="space-y-4 mt-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Total de Gastos */}
+            <Card className="border-none shadow-sm rounded-2xl bg-white h-full">
+              <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Total de Gastos
+                </CardTitle>
+                <div className="p-2 rounded-full bg-red-50 text-red-600">
+                  <TrendingDown className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent className="px-6 pb-6">
+                <div className="text-3xl font-bold text-red-900">
+                  <PrivateData value={dados.saidas.total} type="currency" />
+                </div>
+                <p
+                  className={cn(
+                    "text-sm text-red-600 mt-1 font-medium",
+                    !hasAccess && "blur-sm select-none"
+                  )}
+                >
+                  {dados.saidas.topCategorias.length} categorias
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Margem Operacional - NOVO KPI */}
+            <Card className="border-none shadow-sm rounded-2xl bg-white h-full">
+              <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Margem Operacional
+                </CardTitle>
+                <div
+                  className={cn(
+                    "p-2 rounded-full",
+                    dados.saidas.margemOperacional > 30
+                      ? "bg-emerald-50 text-emerald-600"
+                      : dados.saidas.margemOperacional > 10
+                      ? "bg-amber-50 text-amber-600"
+                      : "bg-red-50 text-red-600"
+                  )}
+                >
+                  <Percent className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent className="px-6 pb-6">
+                <div className="flex items-center gap-2">
+                  <div
+                    className={cn(
+                      "text-3xl font-bold",
+                      dados.saidas.margemOperacional > 30
+                        ? "text-emerald-600"
+                        : dados.saidas.margemOperacional > 10
+                        ? "text-amber-600"
+                        : "text-red-600"
                     )}
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-sm font-medium text-muted-foreground mb-1">
-                      Pagas
-                    </div>
-                    {loading ? (
-                      <Skeleton className="h-7 w-12" />
-                    ) : (
-                      <div className="text-2xl font-bold text-green-600">
-                        {stats.cobrancasPagas}
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-sm font-medium text-muted-foreground mb-1">
-                      A vencer
-                    </div>
-                    {loading ? (
-                      <Skeleton className="h-7 w-12" />
-                    ) : (
-                      <div className="text-2xl font-bold text-orange-600">
-                        {stats.cobrancasPendentes}
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-sm font-medium text-muted-foreground mb-1">
-                      Em Atraso
-                    </div>
-                    {loading ? (
-                      <Skeleton className="h-7 w-12" />
-                    ) : (
-                      <div className="text-2xl font-bold text-red-600">
-                        {stats.cobrancasAtrasadas}
-                      </div>
-                    )}
+                  >
+                    <PrivateData
+                      value={dados.saidas.margemOperacional}
+                      type="percent"
+                    />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Origem dos Recebimentos */}
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ChartPie className="w-5 h-5" />
-                  Origem dos Recebimentos
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PaymentStatsDisplay
-                  stats={paymentStats}
-                  totalRecebido={stats.totalRecebido}
-                  loading={loading}
-                />
+                <p
+                  className={cn(
+                    "text-xs text-gray-400 mt-1 font-medium",
+                    !hasAccess && "blur-sm select-none"
+                  )}
+                >
+                  Sobra de cada R$ 100
+                </p>
               </CardContent>
             </Card>
           </div>
-        </div>
-      </div>
-    </PullToRefreshWrapper>
-  );
-};
 
-export default Relatorios;
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Média Diária */}
+            <Card className="border-none shadow-sm rounded-2xl bg-white h-full">
+              <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Média Diária
+                </CardTitle>
+                <div className="p-2 rounded-full bg-orange-50 text-orange-600">
+                  <Clock className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent className="px-6 pb-6">
+                <div className="text-2xl font-bold text-gray-900">
+                  <PrivateData
+                    value={dados.saidas.mediaDiaria}
+                    type="currency"
+                  />
+                </div>
+                <p
+                  className={cn(
+                    "text-sm text-gray-400 mt-1 font-medium",
+                    !hasAccess && "blur-sm select-none"
+                  )}
+                >
+                  <PrivateData
+                    value={dados.saidas.diasContabilizados}
+                    type="number"
+                  />{" "}
+                  dias com gastos
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Custo por Passageiro */}
+            <Card className="border-none shadow-sm rounded-2xl bg-white h-full">
+              <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Custo / Passageiro
+                </CardTitle>
+                <div className="p-2 rounded-full bg-gray-100 text-gray-600">
+                  <Users className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent className="px-6 pb-6">
+                <div className="text-2xl font-bold text-gray-900">
+                  <PrivateData
+                    value={dados.saidas.custoPorPassageiro}
+                    type="currency"
+                  />
+                </div>
+                <p
+                  className={cn(
+                    "text-sm text-gray-500 mt-1 font-medium",
+                    !hasAccess && "blur-sm select-none"
+                  )}
+                >
+                  <PrivateData
+                    value={dados.operacional.passageirosAtivos}
+                    type="number"
+                  />{" "}
+                  ativos
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+          <Card className="border-none shadow-sm rounded-2xl bg-white">
+            <CardHeader className="pt-6 px-6">
+              <CardTitle className="text-lg font-bold text-gray-900">
+                Onde gastei mais?
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-0 divide-y divide-gray-50 px-6 pb-8">
+              {dados.saidas.topCategorias.length > 0 ? (
+                dados.saidas.topCategorias.map((cat, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between py-5 first:pt-0 last:pb-0"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={cn(
+                          "h-12 w-12 rounded-2xl flex items-center justify-center shadow-sm",
+                          cat.bg
+                        )}
+                      >
+                        <cat.icon className={cn("h-6 w-6", cat.color)} />
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900 text-base">
+                          {cat.nome}
+                        </p>
+                        <p
+                          className={cn(
+                            "text-xs text-gray-500 font-medium",
+                            !hasAccess && "blur-sm select-none"
+                          )}
+                        >
+                          <PrivateData
+                            value={
+                              dados.saidas.total > 0
+                                ? (cat.valor / dados.saidas.total) * 100
+                                : 0
+                            }
+                            type="percent"
+                          />{" "}
+                          do total
+                        </p>
+                      </div>
+                    </div>
+                    <span className="font-bold text-gray-900 text-sm">
+                      <PrivateData value={cat.valor} type="currency" />
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  Nenhum gasto registrado neste mês
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Aba 4: Operacional */}
+        <TabsContent value="operacional" className="space-y-4 mt-0">
+          <div className="grid grid-cols-2 gap-4">
+            {/* Card Passageiros */}
+            <Card className="border-none shadow-sm rounded-2xl bg-white p-6 flex flex-col justify-between">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-1.5 bg-emerald-50 rounded-md text-emerald-600">
+                  <Users className="h-4 w-4" />
+                </div>
+                <span className="text-xs font-bold text-gray-500 uppercase">
+                  Passageiros
+                </span>
+              </div>
+              <div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-bold text-gray-900">
+                    <PrivateData
+                      value={dados.operacional.passageirosAtivos}
+                      type="number"
+                    />
+                  </span>
+                  {passageirosLimit && (
+                    <span
+                      className={cn(
+                        "text-sm text-gray-400 font-medium",
+                        !hasAccess && "blur-sm select-none"
+                      )}
+                    >
+                      /{passageirosLimit}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full"
+                    style={{
+                      width: passageirosLimit
+                        ? `${Math.min(
+                            (dados.operacional.passageirosAtivos /
+                              passageirosLimit) *
+                              100,
+                            100
+                          )}%`
+                        : "75%",
+                    }}
+                  />
+                </div>
+              </div>
+            </Card>
+
+            {/* Automação */}
+            {profilePlano.isCompletePlan ? (
+              <Card className="bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 shadow-sm rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden">
+                <div className="flex justify-between items-start z-10">
+                  <div className="flex items-center gap-2">
+                    <div className="h-10 w-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
+                      <Zap className="h-5 w-5 fill-indigo-600" />
+                    </div>
+                  </div>
+                  <CircularProgress
+                    value={dados.automacao.envios}
+                    max={dados.automacao.limite}
+                    size={48}
+                    strokeWidth={5}
+                  />
+                </div>
+                <div className="z-10 mt-4">
+                  <span className="text-2xl font-bold text-indigo-900 block leading-tight">
+                    {dados.automacao.tempoEconomizado}
+                  </span>
+                  <span
+                    className={cn(
+                      "text-xs font-medium text-indigo-600 leading-tight block mt-1",
+                      !hasAccess && "blur-sm select-none"
+                    )}
+                  >
+                    economizados
+                  </span>
+                </div>
+              </Card>
+            ) : (
+              <Card className="bg-white border border-amber-200 shadow-sm rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden group cursor-pointer hover:shadow-md transition-all">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <Bot className="h-20 w-20 text-amber-500" />
+                </div>
+                <div className="flex items-center gap-2 mb-4 z-10">
+                  <div className="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-sm">
+                    <Bot className="h-5 w-5" />
+                  </div>
+                  <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">
+                    Automação
+                  </span>
+                </div>
+                <div className="z-10">
+                  <p className="text-xs text-gray-500 leading-tight mb-4 font-medium">
+                    Cansado de cobrar manualmente?
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 text-xs border-amber-200 text-amber-700 hover:bg-amber-50 w-full rounded-lg"
+                  >
+                    Conhecer
+                  </Button>
+                </div>
+              </Card>
+            )}
+          </div>
+
+          {/* Listas de Logística */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="border-none shadow-sm rounded-2xl bg-white">
+              <CardHeader className="pt-6 px-6">
+                <CardTitle className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+                  Por Escola
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6 px-6 pb-8">
+                {dados.operacional.escolas.length > 0 ? (
+                  dados.operacional.escolas.map((escola, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-700 font-semibold">
+                          {escola.nome}
+                        </span>
+                        <span
+                          className={cn(
+                            "text-gray-500 text-xs font-medium",
+                            !hasAccess && "blur-sm select-none"
+                          )}
+                        >
+                          <PrivateData
+                            value={escola.passageiros}
+                            type="number"
+                          />{" "}
+                          passageiros
+                        </span>
+                      </div>
+                      <Progress
+                        value={getProgressValue(escola.percentual)}
+                        className="h-2 bg-gray-100 rounded-full"
+                        indicatorClassName="bg-gray-400 rounded-full"
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    Nenhuma escola cadastrada
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-sm rounded-2xl bg-white">
+              <CardHeader className="pt-6 px-6">
+                <CardTitle className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+                  Por Período
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6 px-6 pb-8">
+                {dados.operacional.periodos.length > 0 ? (
+                  dados.operacional.periodos.map((periodo, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-700 font-semibold">
+                          {periodo.nome}
+                        </span>
+                        <span
+                          className={cn(
+                            "text-gray-500 text-xs font-medium",
+                            !hasAccess && "blur-sm select-none"
+                          )}
+                        >
+                          <PrivateData
+                            value={periodo.passageiros}
+                            type="number"
+                          />{" "}
+                          passageiros
+                        </span>
+                      </div>
+                      <Progress
+                        value={getProgressValue(periodo.percentual)}
+                        className="h-2 bg-gray-100 rounded-full"
+                        indicatorClassName="bg-indigo-400 rounded-full"
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    Nenhum período cadastrado
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-sm rounded-2xl bg-white">
+              <CardHeader className="pt-6 px-6">
+                <CardTitle className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+                  Por Veículo
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6 px-6 pb-8">
+                {dados.operacional.veiculos.length > 0 ? (
+                  dados.operacional.veiculos.map((veiculo, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-700 font-semibold">
+                          {veiculo.placa}
+                        </span>
+                        <span
+                          className={cn(
+                            "text-gray-500 text-xs font-medium",
+                            !hasAccess && "blur-sm select-none"
+                          )}
+                        >
+                          <PrivateData
+                            value={veiculo.passageiros}
+                            type="number"
+                          />{" "}
+                          passageiros
+                        </span>
+                      </div>
+                      <Progress
+                        value={getProgressValue(veiculo.percentual)}
+                        className="h-2 bg-gray-100 rounded-full"
+                        indicatorClassName="bg-blue-400 rounded-full"
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    Nenhum veículo cadastrado
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}

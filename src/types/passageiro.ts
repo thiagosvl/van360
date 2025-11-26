@@ -14,7 +14,6 @@ export interface Passageiro {
   cpf_responsavel: string;
   valor_cobranca: number;
   dia_vencimento: number;
-  asaas_customer_id?: string;
   created_at?: string;
   updated_at?: string;
   escola_id?: string;
@@ -26,4 +25,5 @@ export interface Passageiro {
   escolas?: { nome: string };
   veiculos?: { placa: string };
   emitir_cobranca_mes_atual?: boolean;
+  enviar_cobranca_automatica?: boolean;
 }
