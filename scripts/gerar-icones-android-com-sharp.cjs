@@ -38,7 +38,7 @@ async function generateIcons() {
 
     // Gerar ícone foreground (logo centralizado em 108x108 para adaptive icon)
     const foregroundSize = 108; // Tamanho do viewport do adaptive icon
-    const logoSize = Math.floor(foregroundSize * 0.6); // Logo ocupa 60% do espaço (reduzido para ter margem)
+    const logoSize = Math.floor(foregroundSize * 0.45); // Logo ocupa 45% do espaço (similar ao Asaas)
     
     await sharp(logoPath)
       .resize(logoSize, logoSize, {
@@ -58,7 +58,7 @@ async function generateIcons() {
 
     // Gerar ícone completo (foreground + background)
     // Criar foreground no tamanho exato
-    const logoResized = Math.floor(size * 0.6); // Logo ocupa 60% do tamanho final (reduzido para ter margem)
+    const logoResized = Math.floor(size * 0.45); // Logo ocupa 45% do tamanho final (similar ao Asaas)
     const padding = Math.floor((size - logoResized) / 2);
     
     const foregroundBuffer = await sharp(logoPath)

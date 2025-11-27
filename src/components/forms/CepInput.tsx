@@ -1,11 +1,13 @@
-import { Input } from "@/components/ui/input";
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { cepMask } from "@/utils/masks";
+import { Input } from "@/components/ui/input";
 import { cepService } from "@/services/cepService";
+import { cepMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { ControllerRenderProps, FieldPath, FieldValues, useFormContext } from "react-hook-form";
+
+import { cn } from "@/lib/utils";
 
 interface CepInputProps<T extends FieldValues> {
   field: ControllerRenderProps<T, FieldPath<T>>;
@@ -18,6 +20,7 @@ interface CepInputProps<T extends FieldValues> {
     estado: string;
   }) => void;
   className?: string;
+  inputClassName?: string;
 }
 
 export function CepInput<T extends FieldValues>({
@@ -26,6 +29,7 @@ export function CepInput<T extends FieldValues>({
   required = false,
   onAddressFetched,
   className,
+  inputClassName,
 }: CepInputProps<T>) {
   const [loadingCep, setLoadingCep] = useState(false);
   const form = useFormContext<T>();
@@ -79,7 +83,7 @@ export function CepInput<T extends FieldValues>({
 
   return (
     <FormItem className={className}>
-      <FormLabel>
+      <FormLabel className="text-gray-700 font-medium ml-1">
         {label} {required && <span className="text-red-600">*</span>}
       </FormLabel>
       <FormControl>
@@ -88,7 +92,7 @@ export function CepInput<T extends FieldValues>({
             {...field}
             placeholder="00000-000"
             maxLength={9}
-            className="pr-8"
+            className={cn("pr-8", inputClassName)}
             onChange={(e) => handleCepChange(e.target.value)}
           />
           {loadingCep && (
