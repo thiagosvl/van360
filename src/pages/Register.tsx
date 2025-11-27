@@ -692,7 +692,6 @@ export default function Register() {
       const ok = await form.trigger(fields as any);
       if (!ok) return false;
 
-      console.log("ok1", ok);
       // Se é Completo e requer pagamento, avançar para step 3 (pagamento)
       if (selectedPlano?.slug === PLANO_COMPLETO && requiresPayment) {
         try {
@@ -725,7 +724,8 @@ export default function Register() {
         }
       }
 
-      // Se não requer pagamento, o formulário será submetido via handleFinalRegister
+      // Se não requer pagamento (Gratuito ou Essencial Trial), finalizar cadastro diretamente
+      await handleFinalRegister(form.getValues());
       return true;
     }
 
