@@ -10,7 +10,7 @@ const sizes = {
   'mipmap-xxxhdpi': 192
 };
 
-const logoPath = path.join(__dirname, '../public/assets/logo-van360.png');
+const logoPath = path.join(__dirname, '../public/assets/logo2-van360.png');
 const androidResPath = path.join(__dirname, '../android/app/src/main/res');
 
 console.log('📱 Gerador de Ícones Android para Van360\n');

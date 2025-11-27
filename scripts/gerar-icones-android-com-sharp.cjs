@@ -11,7 +11,7 @@ const sizes = {
   'mipmap-xxxhdpi': 192
 };
 
-const logoPath = path.join(__dirname, '../public/assets/logo-van360.png');
+const logoPath = path.join(__dirname, '../public/assets/logo2-van360.png');
 const androidResPath = path.join(__dirname, '../android/app/src/main/res');
 
 async function generateIcons() {
@@ -25,8 +25,8 @@ async function generateIcons() {
 
   console.log('✅ Logo encontrado:', logoPath);
 
-  // Criar background azul
-  const backgroundColor = { r: 30, g: 64, b: 175 }; // #1E40AF
+  // Criar background branco
+  const backgroundColor = { r: 255, g: 255, b: 255 }; // #FFFFFF
 
   for (const [folder, size] of Object.entries(sizes)) {
     const folderPath = path.join(androidResPath, folder);
