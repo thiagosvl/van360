@@ -46,6 +46,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/utils/notifications/toast";
 import { cpfMask } from "@/utils/masks";
 import { isValidCPF } from "@/utils/validators";
+import { useSEO } from "@/hooks/useSEO";
 
 // Icons
 import { AlertTriangle, FileText, Loader2, MapPin, User } from "lucide-react";
@@ -79,6 +80,11 @@ const prePassageiroSchema = z.object({
 type PrePassageiroFormData = z.infer<typeof prePassageiroSchema>;
 
 export default function PassageiroExternalForm() {
+  // Bloquear indexação da página de cadastro externo de passageiro
+  useSEO({
+    noindex: true,
+  });
+
   const { motoristaId } = useParams();
   const navigate = useNavigate();
 

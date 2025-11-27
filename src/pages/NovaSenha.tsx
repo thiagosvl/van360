@@ -14,8 +14,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Utils
 import { toast } from "@/utils/notifications/toast";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function NovaSenha() {
+  // Bloquear indexação da página de redefinição de senha
+  useSEO({
+    noindex: true,
+  });
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [loading, setLoading] = useState(false);

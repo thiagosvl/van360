@@ -33,8 +33,15 @@ import { cpfMask } from "@/utils/masks";
 import { clearLoginStorageMotorista } from "@/utils/domain/motorista/motoristaUtils";
 import { clearLoginStorageResponsavel } from "@/utils/domain/responsavel/responsavelUtils";
 import { isValidCPF } from "@/utils/validators";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function Login() {
+  // Permitir indexação da página de login
+  useSEO({
+    noindex: false,
+    title: "Login - Van360 | Acesse sua conta",
+    description: "Acesse sua conta Van360. Faça login para gerenciar seu transporte escolar.",
+  });
   const [tab, setTab] = useState("motorista");
   const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");

@@ -43,8 +43,15 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useSEO } from "@/hooks/useSEO";
 
 const Index = () => {
+  // Permitir indexação da landing page
+  useSEO({
+    noindex: false,
+    title: "Van360 - Gestão para Transporte Escolar | Você só dirige. O Van360 cuida da burocracia.",
+    description: "Sistema de gestão para transporte escolar. Automatize cobranças, controle passageiros e organize sua frota. Cobrança automática via WhatsApp e baixa automática de PIX.",
+  });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // ROI Calculator State

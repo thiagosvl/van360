@@ -69,6 +69,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Icons
 import { getQuantidadeMinimaPersonalizada } from "@/utils/domain/plano/planoUtils";
 import { Loader2 } from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
 
 const registerSchema = z.object({
   plano_id: z.string().min(1, "Selecione um plano para continuar"),
@@ -91,6 +92,13 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function Register() {
+  // Permitir indexação da página de cadastro
+  useSEO({
+    noindex: false,
+    title: "Cadastro - Van360 | Crie sua conta grátis",
+    description: "Cadastre-se no Van360 e comece a gerenciar seu transporte escolar. Planos gratuitos e pagos disponíveis. Sem fidelidade.",
+  });
+
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [dadosPagamento, setDadosPagamento] = useState<any>(null);

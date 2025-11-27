@@ -1,14 +1,30 @@
-User-agent: Googlebot
+# Permitir indexação apenas das páginas públicas principais
+User-agent: *
 Allow: /
+Allow: /login
+Allow: /cadastro
 
-User-agent: Bingbot
-Allow: /
+# Bloquear indexação de páginas protegidas e administrativas
+Disallow: /inicio
+Disallow: /planos
+Disallow: /assinatura
+Disallow: /passageiros
+Disallow: /cobrancas
+Disallow: /escolas
+Disallow: /veiculos
+Disallow: /gastos
+Disallow: /relatorios
+Disallow: /responsavel
+Disallow: /nova-senha
+Disallow: /cadastro-passageiro
+Disallow: /admin
 
+# Permitir bots de redes sociais para previews
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
+User-agent: LinkedInBot
 Allow: /

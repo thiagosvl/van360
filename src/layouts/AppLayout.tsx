@@ -7,12 +7,18 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function AppLayout() {
   const { user, loading: loadingSession } = useSession();
   const { profile, isLoading, plano } = useProfile(user?.id);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Bloquear indexação de todas as páginas protegidas (área logada)
+  useSEO({
+    noindex: true,
+  });
   
   // Verificar se assinatura está pendente de pagamento ou em trial
   const assinaturaPendente = useAssinaturaPendente(user?.id);
