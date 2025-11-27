@@ -416,7 +416,7 @@ const Home = () => {
             value={activePassengers}
             icon={Users}
             colorClass="text-blue-600"
-            bgClass="bg-blue-50"
+            bgClass="bg-blue-50" 
             loading={isProfileLoading}
           />
         </div>
