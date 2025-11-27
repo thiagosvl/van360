@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { PLANO_COMPLETO, PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
 import { usePlanos } from "@/hooks";
+import { useSEO } from "@/hooks/useSEO";
 import { Plano, SubPlano } from "@/types/plano";
 import { motion } from "framer-motion";
 import {
@@ -43,7 +44,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useSEO } from "@/hooks/useSEO";
 
 const Index = () => {
   // Permitir indexação da landing page
@@ -400,7 +400,7 @@ const Index = () => {
                     duration: 5,
                     ease: "easeInOut",
                   }}
-                  className="absolute top-[10%] right-[-00%] bg-white p-3 rounded-xl shadow-xl border border-slate-100 z-20 w-60"
+                  className="absolute bottom-[3%] -left-[5%] bg-white p-3 rounded-xl shadow-xl border border-slate-100 z-20 w-60"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -410,7 +410,7 @@ const Index = () => {
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
-                        Pix Recebido des
+                        Pix Recebido
                       </p>
                       <p className="font-extrabold text-slate-900 text-base">
                         R$ 350,00
@@ -428,7 +428,7 @@ const Index = () => {
                     ease: "easeInOut",
                     delay: 1,
                   }}
-                  className="absolute bottom-[3%] -left-[5%] bg-white p-4 rounded-xl shadow-xl border border-slate-100 z-20 w-64"
+                  className="absolute top-[10%] right-[-00%] bg-white p-4 rounded-xl shadow-xl border border-slate-100 z-20 w-64"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
