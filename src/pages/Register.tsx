@@ -1,5 +1,5 @@
 // React
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 // React Router
@@ -281,39 +281,81 @@ export default function Register() {
     quantidadePersonalizada
   ]);
 
-  useEffect(() => {
+  const handlePostPaymentSuccess = async (session?: any) => {
     if (realtimeChannelRef.current) {
       supabase.removeChannel(realtimeChannelRef.current).catch(() => {});
       realtimeChannelRef.current = null;
     }
 
-    // only listen during payment step when we have a cobrancaId (agora step 3, não 4)
+    const sessionToSet = session || dadosPagamento?.session;
+
+    if (!sessionToSet) {
+      const { email } = form.getValues();
+      toast.error("auth.erro.login", {
+        description: `Login automático falhou. Faça login manual com o email: ${email}`,
+      });
+      navigate("/login");
+      return;
+    }
+
+    const { error } = await supabase.auth.setSession({
+      access_token: sessionToSet.access_token,
+      refresh_token: sessionToSet.refresh_token,
+    });
+
+    if (error) {
+      toast.info("cadastro.info.pagamentoConfirmado", {
+        description: "cadastro.info.pagamentoConfirmadoDescricao",
+      });
+    } else {
+      // Mostrar toast de sucesso antes do redirect
+      const planoNome = selectedPlano?.nome || "seu plano";
+      const quantidadeInfo = selectedSubPlano
+        ? `${selectedSubPlano.franquia_cobrancas_mes} passageiros`
+        : form.getValues("quantidade_personalizada")
+        ? `${form.getValues("quantidade_personalizada")} passageiros`
+        : "";
+
+      toast.success("Pagamento confirmado!", {
+        description: `Seu plano ${planoNome} foi ativado com sucesso.${
+          quantidadeInfo ? ` ${quantidadeInfo} terão cobrança automática.` : ""
+        }`,
+      });
+
+      // Aguardar um pouco para o usuário ver o toast antes do redirect
+      setTimeout(() => {
+        navigate("/inicio");
+      }, 2000);
+    }
+  };
+
+  const checkPaymentStatus = useCallback(async () => {
+    if (!dadosPagamento?.cobrancaId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("cobrancas")
+        .select("status")
+        .eq("id", dadosPagamento.cobrancaId)
+        .maybeSingle();
+
+      if (error) {
+        return;
+      }
+
+      if (data?.status === ASSINATURA_COBRANCA_STATUS_PAGO) {
+        handlePostPaymentSuccess(dadosPagamento.session);
+      }
+    } catch (err) {
+      // Erro silencioso - polling continuará tentando
+    }
+  }, [dadosPagamento]);
+
+  useEffect(() => {
     if (currentStep !== 3 || !dadosPagamento?.cobrancaId) return;
 
     let mounted = true;
-    let poller: ReturnType<typeof setInterval> | null = null;
-
-    const checkPaymentStatus = async () => {
-      try {
-        // Usar a API ao invés de consulta direta ao Supabase
-        // A tabela pode ser uma view ou ter nome diferente
-        const { data, error } = await supabase
-          .from("cobrancas")
-          .select("status")
-          .eq("id", dadosPagamento.cobrancaId)
-          .maybeSingle();
-
-        if (error) {
-          return;
-        }
-
-        if (data?.status === ASSINATURA_COBRANCA_STATUS_PAGO) {
-          if (mounted) handlePostPaymentSuccess(dadosPagamento.session);
-        }
-      } catch (err) {
-        // Erro silencioso - polling continuará tentando
-      }
-    };
+    let poller: NodeJS.Timeout | null = null;
 
     const setupRealtime = async () => {
       if (!poller) {
@@ -385,55 +427,7 @@ export default function Register() {
         realtimeChannelRef.current = null;
       }
     };
-  }, [currentStep, dadosPagamento]);
-
-  const handlePostPaymentSuccess = async (session?: any) => {
-    if (realtimeChannelRef.current) {
-      supabase.removeChannel(realtimeChannelRef.current);
-      realtimeChannelRef.current = null;
-    }
-
-    const sessionToSet = session || dadosPagamento?.session;
-
-    if (!sessionToSet) {
-      const { email } = form.getValues();
-      toast.error("auth.erro.login", {
-        description: `Login automático falhou. Faça login manual com o email: ${email}`,
-      });
-      navigate("/login");
-      return;
-    }
-
-    const { error } = await supabase.auth.setSession({
-      access_token: sessionToSet.access_token,
-      refresh_token: sessionToSet.refresh_token,
-    });
-
-    if (error) {
-      toast.info("cadastro.info.pagamentoConfirmado", {
-        description: "cadastro.info.pagamentoConfirmadoDescricao",
-      });
-    } else {
-      // Mostrar toast de sucesso antes do redirect
-      const planoNome = selectedPlano?.nome || "seu plano";
-      const quantidadeInfo = selectedSubPlano
-        ? `${selectedSubPlano.franquia_cobrancas_mes} passageiros`
-        : form.getValues("quantidade_personalizada")
-        ? `${form.getValues("quantidade_personalizada")} passageiros`
-        : "";
-
-      toast.success("Pagamento confirmado!", {
-        description: `Seu plano ${planoNome} foi ativado com sucesso.${
-          quantidadeInfo ? ` ${quantidadeInfo} terão cobrança automática.` : ""
-        }`,
-      });
-
-      // Aguardar um pouco para o usuário ver o toast antes do redirect
-      setTimeout(() => {
-        navigate("/inicio");
-      }, 2000);
-    }
-  };
+  }, [currentStep, dadosPagamento, checkPaymentStatus]);
 
   const handleSelectSubPlano = (subPlanoId: string | undefined) => {
     if (subPlanoId) {
@@ -901,9 +895,6 @@ export default function Register() {
                         : selectedPlano?.slug === PLANO_COMPLETO  ? "Continuar para pagamento" : "Criar minha conta"
                     )}
                   </Button>
-                  <p className="text-center text-xs text-gray-400 mt-4">
-                    Ao criar sua conta, você concorda com nossos Termos de Uso e Política de Privacidade.
-                  </p>
                 </div>
               </form>
             </Form>
@@ -940,7 +931,17 @@ export default function Register() {
                <p className="text-sm text-gray-500 mb-4">
                  Assim que o pagamento for confirmado, você será redirecionado automaticamente.
                </p>
-               <Button variant="outline" onClick={() => window.location.reload()}>
+               <Button 
+                 variant="outline" 
+                 onClick={async () => {
+                   setLoading(true);
+                   await checkPaymentStatus();
+                   // Pequeno delay para dar feedback visual se não redirecionar imediatamente
+                   setTimeout(() => setLoading(false), 1000);
+                 }}
+                 disabled={loading}
+               >
+                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                  Já fiz o pagamento
                </Button>
             </div>

@@ -218,6 +218,15 @@ export const PlanoCardSelection = ({
   // Calcular preço dinâmico baseado na seleção
   const precoExibido = useMemo(() => {
     if (isCompleto) {
+      // Se não estiver selecionado, mostrar sempre o menor preço ("A partir de")
+      if (!isSelected) {
+        return Math.min(
+          ...(subPlanosCompleto.map((s) =>
+            Number(s.promocao_ativa ? s.preco_promocional : s.preco)
+          ) || [0])
+        );
+      }
+
       if (quantidadePersonalizada) {
         if (!isQuantidadeValida) return null;
         if (precoCalculadoPreview !== null) return precoCalculadoPreview;
@@ -245,6 +254,7 @@ export const PlanoCardSelection = ({
       : plano.preco;
   }, [
     isCompleto,
+    isSelected,
     selectedSubPlanoId,
     subPlanosCompleto,
     precoCalculadoPreview,
@@ -272,7 +282,7 @@ export const PlanoCardSelection = ({
   // Estilos específicos para cada plano (Dabang Style - Radio Behavior)
   const getCardStyles = () => {
     const baseStyles = "cursor-pointer transition-all duration-300 relative";
-    
+
     if (isSelected) {
       if (isCompleto) {
         return cn(baseStyles, "border-2 border-yellow-400 bg-yellow-50/30 shadow-lg ring-1 ring-yellow-400/50 z-10");
@@ -281,10 +291,10 @@ export const PlanoCardSelection = ({
     }
 
     if (isCompleto) {
-      return cn(baseStyles, "border border-yellow-200 hover:border-yellow-400 hover:shadow-md");
+      return cn(baseStyles, "border-2 border-yellow-200 hover:border-yellow-400 hover:shadow-md");
     }
     
-    return cn(baseStyles, "border border-gray-200 hover:border-blue-300 hover:shadow-md");
+    return cn(baseStyles, "border-2 border-gray-200 hover:border-blue-300 hover:shadow-md");
   };
 
   const getButtonStyles = () => {
@@ -353,7 +363,8 @@ export const PlanoCardSelection = ({
               <div className="flex items-baseline">
                 <span className="text-xs text-gray-500 mr-1">R$</span>
                 {/* Loader aparece se estiver calculando OU se for personalizado e não tiver preço ainda */}
-                {(isCompleto && quantidadePersonalizada && isQuantidadeValida && !precoCalculadoPreview) ? (
+                {isSelected && (isCalculandoPreco || 
+                (isCompleto && quantidadePersonalizada && isQuantidadeValida && !precoCalculadoPreview)) ? (
                   <Skeleton className="h-9 w-24 mx-1" />
                 ) : (
                   <span className="text-3xl font-extrabold text-gray-900">
