@@ -257,52 +257,52 @@ export default function Login() {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100 via-blue-50 to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 p-4 sm:p-8">
-        <div className="w-full max-w-md mb-8 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100 via-blue-50 to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 p-3 sm:p-8">
+        <div className="w-full max-w-md mb-4 sm:mb-8 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
           <img
             src="/assets/logo-van360.png"
             alt="Van360"
-            className="h-20 w-auto mb-4 select-none drop-shadow-sm"
+            className="h-14 sm:h-20 w-auto mb-2 sm:mb-4 select-none drop-shadow-sm"
           />
-          <p className="text-gray-500 text-center text-sm font-medium">
+          <p className="text-gray-500 text-center text-xs sm:text-sm font-medium">
             Gestão inteligente para transporte escolar
           </p>
         </div>
 
         {tab === "motorista" && (
           <Card className="w-full max-w-md shadow-2xl border-0 rounded-3xl overflow-hidden animate-in zoom-in-95 duration-500">
-            <CardContent className="p-8 sm:p-10 bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-6 sm:p-10 bg-white/80 backdrop-blur-sm">
               <Form {...formMotorista}>
-                <div className="text-center mb-8">
-                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                <div className="text-center mb-6 sm:mb-8">
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
                     Bem-vindo de volta!
                   </h1>
-                  <p className="text-gray-500 text-sm">
+                  <p className="text-gray-500 text-xs sm:text-sm">
                     Acesse sua conta para gerenciar suas rotas
                   </p>
                 </div>
 
                 <form
                   onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}
-                  className="space-y-5"
+                  className="space-y-4 sm:space-y-5"
                 >
                   <FormField
                     control={formMotorista.control}
                     name="cpfcnpj"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium ml-1">
+                        <FormLabel className="text-gray-700 font-medium ml-1 text-sm">
                           CPF
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                            <User className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
                             <Input
                               {...field}
                               autoFocus
                               placeholder="000.000.000-00"
                               autoComplete="username"
-                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                              className="pl-12 h-11 sm:h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
                               onChange={(e) =>
                                 field.onChange(cpfMask(e.target.value))
                               }
@@ -319,18 +319,18 @@ export default function Login() {
                     name="senha"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium ml-1">
+                        <FormLabel className="text-gray-700 font-medium ml-1 text-sm">
                           Senha
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                            <Lock className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
                             <Input
                               {...field}
                               type="password"
                               placeholder="••••••••"
                               autoComplete="current-password"
-                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                              className="pl-12 h-11 sm:h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
                             />
                           </div>
                         </FormControl>
@@ -349,14 +349,14 @@ export default function Login() {
                   <div className="pt-2">
                     <Button 
                       type="submit" 
-                      className="w-full h-12 rounded-xl text-base font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all" 
+                      className="w-full h-11 sm:h-12 rounded-xl text-base font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all" 
                       disabled={loading}
                     >
                       {loading ? "Acessando..." : "Entrar"}
                     </Button>
                   </div>
 
-                  <div className="flex flex-col items-center gap-4 mt-6">
+                  <div className="flex flex-col items-center gap-3 sm:gap-4 mt-4 sm:mt-6">
                     <button
                       type="button"
                       onClick={handleForgotPassword}
@@ -365,7 +365,7 @@ export default function Login() {
                       Esqueci minha senha
                     </button>
                     
-                    <div className="w-full border-t border-gray-100 my-2"></div>
+                    <div className="w-full border-t border-gray-100 my-1 sm:my-2"></div>
 
                     <p className="text-sm text-gray-600">
                       Ainda não tem conta?{" "}
@@ -386,13 +386,13 @@ export default function Login() {
 
         {tab === "responsavel" && (
           <Card className="w-full max-w-md shadow-2xl border-0 rounded-3xl overflow-hidden animate-in zoom-in-95 duration-500">
-            <CardContent className="p-8 sm:p-10 bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-6 sm:p-10 bg-white/80 backdrop-blur-sm">
               <Form {...formResponsavel}>
-                <div className="text-center mb-8">
-                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                <div className="text-center mb-6 sm:mb-8">
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
                     Área do Responsável
                   </h1>
-                  <p className="text-gray-500 text-sm">
+                  <p className="text-gray-500 text-xs sm:text-sm">
                     Acompanhe o transporte do seu filho
                   </p>
                 </div>
@@ -401,24 +401,24 @@ export default function Login() {
                   onSubmit={formResponsavel.handleSubmit(
                     handleLoginResponsavel
                   )}
-                  className="space-y-5"
+                  className="space-y-4 sm:space-y-5"
                 >
                   <FormField
                     control={formResponsavel.control}
                     name="cpf_responsavel"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium ml-1">
+                        <FormLabel className="text-gray-700 font-medium ml-1 text-sm">
                           CPF
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                            <User className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
                             <Input
                               placeholder="000.000.000-00"
                               maxLength={14}
                               value={cpfMask(field.value || "")}
-                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                              className="pl-12 h-11 sm:h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
                               onChange={(e) =>
                                 field.onChange(cpfMask(e.target.value))
                               }
@@ -435,16 +435,16 @@ export default function Login() {
                     name="email_responsavel"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium ml-1">
+                        <FormLabel className="text-gray-700 font-medium ml-1 text-sm">
                           Email
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                            <Mail className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
                             <Input
                               type="email"
                               placeholder="seu@email.com"
-                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                              className="pl-12 h-11 sm:h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
                               {...field}
                             />
                           </div>
@@ -458,7 +458,7 @@ export default function Login() {
                     <Button 
                       type="submit" 
                       disabled={loading} 
-                      className="w-full h-12 rounded-xl text-base font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all"
+                      className="w-full h-11 sm:h-12 rounded-xl text-base font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all"
                     >
                       {loading ? "Acessando..." : "Acessar Carteirinha"}
                     </Button>
