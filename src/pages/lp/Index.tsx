@@ -89,7 +89,6 @@ const Index = () => {
     switch (slug) {
       case PLANO_GRATUITO:
         return {
-          subtitle: "Recursos limitados. Ideal para testar.",
           buttonText: "Começar Grátis",
           buttonVariant: "ghost" as const,
           highlight: false,
@@ -97,7 +96,6 @@ const Index = () => {
         };
       case PLANO_ESSENCIAL:
         return {
-          subtitle: "Gestão ilimitada + 7 dias grátis",
           buttonText: "Testar 7 dias grátis",
           buttonVariant: "outline" as const,
           highlight: false,
@@ -105,7 +103,6 @@ const Index = () => {
         };
       case PLANO_COMPLETO:
         return {
-          subtitle: "Cobrança automática ativa",
           buttonText: "Quero Automatizar",
           buttonVariant: "default" as const,
           highlight: true,
@@ -113,7 +110,6 @@ const Index = () => {
         };
       default:
         return {
-          subtitle: "Plano Van360",
           buttonText: "Escolher Plano",
           buttonVariant: "outline" as const,
           highlight: false,
@@ -992,7 +988,7 @@ const Index = () => {
                           {plano.nome}
                         </CardTitle>
                         <CardDescription className="text-sm">
-                          {config.subtitle}
+                          {plano.descricao_curta}
                         </CardDescription>
                         <div className="mt-4">
                           {isGratuito ? (
