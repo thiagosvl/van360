@@ -596,7 +596,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* FEATURES ZIG-ZAG */}
       <section
         id="funcionalidades"
         className="py-12 lg:py-32 overflow-hidden bg-slate-50 scroll-mt-20"
