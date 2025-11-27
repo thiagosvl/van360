@@ -297,7 +297,7 @@ export default function Passageiros() {
 
     if (novoStatus && plano?.isCompletePlan && p.enviar_cobranca_automatica) {
       const franquiaContratada = validacaoFranquiaGeral.franquiaContratada;
-      let cobrancasEmUso = validacaoFranquiaGeral.cobrancasEmUso;
+      const cobrancasEmUso = validacaoFranquiaGeral.cobrancasEmUso;
 
       const limiteApos = cobrancasEmUso + 1;
 

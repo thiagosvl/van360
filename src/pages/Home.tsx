@@ -393,6 +393,26 @@ const Home = () => {
           </p>
         </div>
 
+        {/* Onboarding - Primeiros Passos */}
+        {showOnboarding && (
+          <section>
+            <StatusCard
+              type="onboarding"
+              title="Primeiros Passos"
+              description="Complete seu cadastro para aproveitar o máximo do sistema."
+              actionLabel="Continuar Cadastro"
+              onAction={() => {
+                const nextStep = onboardingSteps.find((s) => !s.done);
+                if (nextStep?.id === 1) navigate("/escolas?openModal=true");
+                else if (nextStep?.id === 2)
+                  navigate("/veiculos?openModal=true");
+                else navigate("/passageiros?openModal=true");
+              }}
+              progress={{ current: completedSteps, total: 3 }}
+            />
+          </section>
+        )}
+
         {/* Mini KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <MiniKPI
@@ -432,21 +452,6 @@ const Home = () => {
               )} em atraso de ${latePayments.length} passageiros.`}
               actionLabel="Ver Cobranças"
               onAction={() => navigate("/cobrancas")}
-            />
-          ) : showOnboarding ? (
-            <StatusCard
-              type="onboarding"
-              title="Primeiros Passos"
-              description="Complete seu cadastro para aproveitar o máximo do sistema."
-              actionLabel="Continuar Cadastro"
-              onAction={() => {
-                const nextStep = onboardingSteps.find((s) => !s.done);
-                if (nextStep?.id === 1) navigate("/escolas?openModal=true");
-                else if (nextStep?.id === 2)
-                  navigate("/veiculos?openModal=true");
-                else navigate("/passageiros?openModal=true");
-              }}
-              progress={{ current: completedSteps, total: 3 }}
             />
           ) : (
             <StatusCard

@@ -172,7 +172,7 @@ export default function PagamentoAssinaturaDialog({
 
       try {
         // Usar query direta do Supabase - assinaturas_cobrancas não está no tipo Database
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data, error } = await (supabase as any)
           .from("assinaturas_cobrancas")
           .select("status")
@@ -214,7 +214,7 @@ export default function PagamentoAssinaturaDialog({
       try {
         // use the same channel/topic pattern as Register.tsx to ensure
         // postgres_changes subscriptions are handled consistently
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const channel = (supabase as any)
           .channel(`pagamento-${cobrancaIdAtual}`)
           .on(

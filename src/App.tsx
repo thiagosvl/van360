@@ -1,6 +1,15 @@
 import { AppGate } from "@/components/auth/AppGate";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/layouts/AppLayout";
 import { toast } from "@/utils/notifications/toast";
@@ -58,6 +67,11 @@ const queryClient = new QueryClient({
 const App = () => {
   const [updating, setUpdating] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+  const [pendingUpdate, setPendingUpdate] = useState<{
+    latest_version: string;
+    url_zip: string;
+  } | null>(null);
 
   useEffect(() => {
     const runUpdater = async () => {
@@ -90,37 +104,9 @@ const App = () => {
         }
 
         if (force_update) {
-          alert(
-            "Nova versão disponível. O aplicativo será atualizado agora para garantir o funcionamento."
-          );
-
-          setUpdating(true);
-          setProgress(0);
-
-          const listener = await CapacitorUpdater.addListener(
-            "download",
-            (info: any) => {
-              if (info?.percent !== undefined)
-                setProgress(Math.round(info.percent));
-            }
-          );
-
-          try {
-            const version = await CapacitorUpdater.download({
-              version: latest_version,
-              url: url_zip,
-            });
-
-            await listener.remove();
-            await CapacitorUpdater.set(version);
-            await CapacitorUpdater.reload();
-          } catch (err) {
-            setUpdating(false);
-            toast.error("sistema.erro.atualizacao", {
-              description: "Não foi possível aplicar a atualização. Tente novamente.",
-            });
-          }
-
+          // Mostrar dialog de confirmação primeiro
+          setPendingUpdate({ latest_version, url_zip });
+          setShowUpdateDialog(true);
           return;
         }
 
@@ -286,6 +272,60 @@ const App = () => {
           </Routes>
           </Suspense>
         </BrowserRouter>
+
+        {/* 🔹 Dialog de confirmação de atualização */}
+        <AlertDialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
+          <AlertDialogContent className="sm:max-w-md">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-xl">
+                Nova versão disponível
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-base pt-2">
+                Uma nova versão do aplicativo está disponível. O aplicativo será
+                atualizado agora para garantir o melhor funcionamento.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="sm:justify-end">
+              <AlertDialogAction
+                onClick={async () => {
+                  setShowUpdateDialog(false);
+                  if (!pendingUpdate) return;
+
+                  setUpdating(true);
+                  setProgress(0);
+
+                  try {
+                    const listener = await CapacitorUpdater.addListener(
+                      "download",
+                      (info: any) => {
+                        if (info?.percent !== undefined)
+                          setProgress(Math.round(info.percent));
+                      }
+                    );
+
+                    const version = await CapacitorUpdater.download({
+                      version: pendingUpdate.latest_version,
+                      url: pendingUpdate.url_zip,
+                    });
+
+                    await listener.remove();
+                    await CapacitorUpdater.set(version);
+                    await CapacitorUpdater.reload();
+                  } catch (err) {
+                    setUpdating(false);
+                    setPendingUpdate(null);
+                    toast.error("sistema.erro.atualizacao", {
+                      description:
+                        "Não foi possível aplicar a atualização. Tente novamente.",
+                    });
+                  }
+                }}
+              >
+                OK
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* 🔹 Overlay de atualização forçada */}
         {updating && (

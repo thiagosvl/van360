@@ -599,7 +599,7 @@ const Index = () => {
       {/* FEATURES ZIG-ZAG */}
       <section
         id="funcionalidades"
-        className="py-12 lg:py-32 overflow-hidden bg-slate-50 scroll-mt-28"
+        className="py-12 lg:py-32 overflow-hidden bg-slate-50 scroll-mt-20"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24 lg:space-y-32">
           {/* Feature 1: Financeiro */}
@@ -743,7 +743,7 @@ const Index = () => {
       {/* SOCIAL PROOF: TESTIMONIALS (AVATARS) */}
       <section
         id="depoimentos"
-        className="py-12 lg:py-20 bg-blue-600 text-white scroll-mt-28"
+        className="py-12 lg:py-20 bg-blue-600 text-white scroll-mt-20"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 md:mb-16">
@@ -920,7 +920,7 @@ const Index = () => {
       </section>
 
       {/* PRICING SECTION */}
-      <section id="precos" className="py-12 lg:py-24 bg-slate-50 scroll-mt-28">
+      <section id="precos" className="py-12 lg:py-24 bg-slate-50 scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
@@ -1264,7 +1264,7 @@ const Index = () => {
       </section>
 
       {/* FAQ SECTION */}
-      <section id="faq" className="py-12 lg:py-20 bg-white scroll-mt-28">
+      <section id="faq" className="py-12 lg:py-20 bg-white scroll-mt-20">
         <div className="max-w-3xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-2xl font-bold text-slate-900 mb-4">

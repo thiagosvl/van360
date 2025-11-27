@@ -1,5 +1,13 @@
+// React
+import { useCallback, useState } from "react";
+import { useForm } from "react-hook-form";
+
+// React Router
+import { useNavigate } from "react-router-dom";
+
 // Third-party
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Lock, Mail, User } from "lucide-react";
 import { z } from "zod";
 
 // Components - UI
@@ -27,10 +35,6 @@ import { clearLoginStorageResponsavel } from "@/utils/domain/responsavel/respons
 import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { isValidCPF } from "@/utils/validators";
-import { Lock, Mail, User } from "lucide-react";
-import { useCallback, useState } from "react";
-import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   // Permitir indexação da página de login
