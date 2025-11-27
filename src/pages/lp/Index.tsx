@@ -1447,7 +1447,7 @@ const Index = () => {
           </div>
 
           <div className="text-sm opacity-60">
-            © {new Date().getFullYear()} Van360 Tecnologia.
+            © {new Date().getFullYear()} - Van360.
           </div>
         </div>
       </footer>
