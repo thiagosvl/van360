@@ -1,3 +1,4 @@
+import { PhoneInput } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,13 +15,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/utils/notifications/toast";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { supabase } from "@/integrations/supabase/client";
-import { cleanString } from "@/utils/string";
 import { cpfMask, phoneMask } from "@/utils/masks";
-import { PhoneInput } from "@/components/forms";
+import { toast } from "@/utils/notifications/toast";
+import { cleanString } from "@/utils/string";
 import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -185,7 +185,7 @@ export default function EditarCadastroDialog({
                 render={({ field }) => (
                   <PhoneInput
                     field={field}
-                    label="Telefone (WhatsApp)"
+                    label="WhatsApp"
                     placeholder="(00) 00000-0000"
                   />
                 )}
