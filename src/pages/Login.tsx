@@ -1,10 +1,3 @@
-// React
-import { useCallback, useState } from "react";
-import { useForm } from "react-hook-form";
-
-// React Router
-import { useNavigate } from "react-router-dom";
-
 // Third-party
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -34,6 +27,10 @@ import { clearLoginStorageResponsavel } from "@/utils/domain/responsavel/respons
 import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { isValidCPF } from "@/utils/validators";
+import { Lock, Mail, User } from "lucide-react";
+import { useCallback, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   // Permitir indexação da página de login
@@ -256,64 +253,57 @@ export default function Login() {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 dark:from-background dark:to-muted p-6">
-        <img
-          src="/assets/logo-van360.png"
-          alt="Van360"
-          className="h-16 w-auto mb-4 select-none"
-        />
-
-        {/* <Tabs value={tab} onValueChange={setTab} className="w-full max-w-md mb-4">
-        <TabsList className="grid w-full grid-cols-2 border">
-          <TabsTrigger
-            value="motorista"
-            className="data-[state=inactive]:text-gray-600 
-            data-[state=active]:bg-primary 
-            data-[state=active]:text-white"
-          >
-            Sou Condutor
-          </TabsTrigger>
-          <TabsTrigger
-            value="responsavel"
-            className="data-[state=inactive]:text-gray-600 
-            data-[state=active]:bg-primary 
-            data-[state=active]:text-white 
-            hover:bg-gray-100"
-          >
-            Sou Responsável
-          </TabsTrigger>
-        </TabsList>
-      </Tabs> */}
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100 via-blue-50 to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 p-4 sm:p-8">
+        <div className="w-full max-w-md mb-8 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <img
+            src="/assets/logo-van360.png"
+            alt="Van360"
+            className="h-20 w-auto mb-4 select-none drop-shadow-sm"
+          />
+          <p className="text-gray-500 text-center text-sm font-medium">
+            Gestão inteligente para transporte escolar
+          </p>
+        </div>
 
         {tab === "motorista" && (
-          <Card className="w-full max-w-md shadow-lg border border-gray-200">
-            <CardContent className="mt-6">
+          <Card className="w-full max-w-md shadow-2xl border-0 rounded-3xl overflow-hidden animate-in zoom-in-95 duration-500">
+            <CardContent className="p-8 sm:p-10 bg-white/80 backdrop-blur-sm">
               <Form {...formMotorista}>
-                <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
-                  Acesse sua conta
-                </h1>
+                <div className="text-center mb-8">
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                    Bem-vindo de volta!
+                  </h1>
+                  <p className="text-gray-500 text-sm">
+                    Acesse sua conta para gerenciar suas rotas
+                  </p>
+                </div>
+
                 <form
                   onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}
-                  className="space-y-4"
+                  className="space-y-5"
                 >
                   <FormField
                     control={formMotorista.control}
                     name="cpfcnpj"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
-                          CPF <span className="text-red-600">*</span>
+                        <FormLabel className="text-gray-700 font-medium ml-1">
+                          CPF
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            {...field}
-                            autoFocus
-                            placeholder="000.000.000-00"
-                            autoComplete="username"
-                            onChange={(e) =>
-                              field.onChange(cpfMask(e.target.value))
-                            }
-                          />
+                          <div className="relative">
+                            <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                            <Input
+                              {...field}
+                              autoFocus
+                              placeholder="000.000.000-00"
+                              autoComplete="username"
+                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                              onChange={(e) =>
+                                field.onChange(cpfMask(e.target.value))
+                              }
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -325,16 +315,20 @@ export default function Login() {
                     name="senha"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
-                          Senha <span className="text-red-600">*</span>
+                        <FormLabel className="text-gray-700 font-medium ml-1">
+                          Senha
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            {...field}
-                            type="password"
-                            placeholder="Digite sua senha"
-                            autoComplete="current-password"
-                          />
+                          <div className="relative">
+                            <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                            <Input
+                              {...field}
+                              type="password"
+                              placeholder="••••••••"
+                              autoComplete="current-password"
+                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -342,34 +336,42 @@ export default function Login() {
                   />
 
                   {formMotorista.formState.errors.root && (
-                    <div className="text-sm text-destructive">
+                    <div className="p-3 rounded-lg bg-red-50 border border-red-100 flex items-start gap-2 text-sm text-red-600 animate-in slide-in-from-top-2">
+                      <span className="mt-0.5">⚠️</span>
                       {formMotorista.formState.errors.root.message}
                     </div>
                   )}
 
-                  <div className="pt-6">
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "Acessando..." : "Acessar"}
+                  <div className="pt-2">
+                    <Button 
+                      type="submit" 
+                      className="w-full h-12 rounded-xl text-base font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all" 
+                      disabled={loading}
+                    >
+                      {loading ? "Acessando..." : "Entrar"}
                     </Button>
                   </div>
-                  <div className="text-center mt-4">
+
+                  <div className="flex flex-col items-center gap-4 mt-6">
+                    <button
+                      type="button"
+                      onClick={handleForgotPassword}
+                      className="text-sm text-gray-500 hover:text-blue-600 transition-colors font-medium"
+                    >
+                      Esqueci minha senha
+                    </button>
+                    
+                    <div className="w-full border-t border-gray-100 my-2"></div>
+
                     <p className="text-sm text-gray-600">
                       Ainda não tem conta?{" "}
                       <button
                         type="button"
                         onClick={() => navigate("/cadastro")}
-                        className="text-primary font-semibold hover:underline"
+                        className="text-blue-600 font-bold hover:text-blue-700 hover:underline transition-all"
                       >
-                        Cadastre-se
+                        Criar conta grátis
                       </button>
-                    </p>
-                  </div>
-                  <div className="text-center mt-4">
-                    <p
-                      className="text-sm text-primary font-semibold hover:underline cursor-pointer"
-                      onClick={handleForgotPassword}
-                    >
-                      Esqueci minha senha
                     </p>
                   </div>
                 </form>
@@ -379,32 +381,45 @@ export default function Login() {
         )}
 
         {tab === "responsavel" && (
-          <Card className="w-full max-w-md shadow-lg border border-gray-200">
-            <CardContent className="mt-6">
+          <Card className="w-full max-w-md shadow-2xl border-0 rounded-3xl overflow-hidden animate-in zoom-in-95 duration-500">
+            <CardContent className="p-8 sm:p-10 bg-white/80 backdrop-blur-sm">
               <Form {...formResponsavel}>
+                <div className="text-center mb-8">
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                    Área do Responsável
+                  </h1>
+                  <p className="text-gray-500 text-sm">
+                    Acompanhe o transporte do seu filho
+                  </p>
+                </div>
+
                 <form
                   onSubmit={formResponsavel.handleSubmit(
                     handleLoginResponsavel
                   )}
-                  className="space-y-4"
+                  className="space-y-5"
                 >
                   <FormField
                     control={formResponsavel.control}
                     name="cpf_responsavel"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
-                          CPF <span className="text-red-600">*</span>
+                        <FormLabel className="text-gray-700 font-medium ml-1">
+                          CPF
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="000.000.000-00"
-                            maxLength={14}
-                            value={cpfMask(field.value || "")}
-                            onChange={(e) =>
-                              field.onChange(cpfMask(e.target.value))
-                            }
-                          />
+                          <div className="relative">
+                            <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                            <Input
+                              placeholder="000.000.000-00"
+                              maxLength={14}
+                              value={cpfMask(field.value || "")}
+                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                              onChange={(e) =>
+                                field.onChange(cpfMask(e.target.value))
+                              }
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -416,24 +431,32 @@ export default function Login() {
                     name="email_responsavel"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
-                          Email <span className="text-red-600">*</span>
+                        <FormLabel className="text-gray-700 font-medium ml-1">
+                          Email
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="Digite o email do responsável"
-                            {...field}
-                          />
+                          <div className="relative">
+                            <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                            <Input
+                              type="email"
+                              placeholder="seu@email.com"
+                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                              {...field}
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  <div className="pt-6">
-                    <Button type="submit" disabled={loading} className="w-full">
-                      {loading ? "Acessando..." : "Acessar"}
+                  <div className="pt-2">
+                    <Button 
+                      type="submit" 
+                      disabled={loading} 
+                      className="w-full h-12 rounded-xl text-base font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all"
+                    >
+                      {loading ? "Acessando..." : "Acessar Carteirinha"}
                     </Button>
                   </div>
                 </form>
