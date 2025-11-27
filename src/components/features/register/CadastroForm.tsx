@@ -31,7 +31,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
           render={({ field }) => (
             <FormItem className="sm:col-span-2">
               <FormLabel className="text-gray-700 font-medium">
-                Nome completo
+                Nome completo <span className="text-red-600">*</span>
               </FormLabel>
               <FormControl>
                 <Input
@@ -51,7 +51,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-gray-700 font-medium">
-                Como quer ser chamado?
+                Como quer ser chamado? <span className="text-red-600">*</span>
               </FormLabel>
               <FormControl>
                 <Input
@@ -70,7 +70,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
           name="cpfcnpj"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-gray-700 font-medium">CPF</FormLabel>
+              <FormLabel className="text-gray-700 font-medium">CPF <span className="text-red-600">*</span></FormLabel>
               <FormControl>
                 <Input
                   {...field}
@@ -92,7 +92,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-gray-700 font-medium">
-                E-mail
+                E-mail <span className="text-red-600">*</span>
               </FormLabel>
               <FormControl>
                 <Input
@@ -129,7 +129,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
         render={({ field }) => (
           <FormItem>
             <FormLabel className="text-gray-700 font-medium">
-              Crie uma senha segura
+              Crie uma senha segura <span className="text-red-600">*</span>
             </FormLabel>
             <FormControl>
               <div className="relative">
