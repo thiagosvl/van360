@@ -6,8 +6,8 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 // Third-party
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 // Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
@@ -28,12 +28,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { responsavelService } from "@/services/responsavelService";
 
 // Utils
-import { toast } from "@/utils/notifications/toast";
-import { cpfMask } from "@/utils/masks";
+import { useSEO } from "@/hooks/useSEO";
 import { clearLoginStorageMotorista } from "@/utils/domain/motorista/motoristaUtils";
 import { clearLoginStorageResponsavel } from "@/utils/domain/responsavel/responsavelUtils";
+import { cpfMask } from "@/utils/masks";
+import { toast } from "@/utils/notifications/toast";
 import { isValidCPF } from "@/utils/validators";
-import { useSEO } from "@/hooks/useSEO";
 
 export default function Login() {
   // Permitir indexação da página de login
@@ -44,7 +44,6 @@ export default function Login() {
   });
   const [tab, setTab] = useState("motorista");
   const [cpf, setCpf] = useState("");
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
@@ -73,8 +72,8 @@ export default function Login() {
   const formMotorista = useForm<z.infer<typeof formMotoristaSchema>>({
     resolver: zodResolver(formMotoristaSchema),
     defaultValues: {
-      cpfcnpj: "",
-      senha: "",
+      cpfcnpj: "395.423.918-38",
+      senha: "Ogaiht+1",
     },
   });
 
