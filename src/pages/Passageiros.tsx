@@ -16,16 +16,16 @@ import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreatePassageiro,
-  useDeletePassageiro,
-  useEscolas,
-  useFilters,
-  usePassageiros,
-  usePrePassageiros,
-  useToggleAtivoPassageiro,
-  useUpdatePassageiro,
-  useValidarFranquia,
-  useVeiculos,
+    useCreatePassageiro,
+    useDeletePassageiro,
+    useEscolas,
+    useFilters,
+    usePassageiros,
+    usePrePassageiros,
+    useToggleAtivoPassageiro,
+    useUpdatePassageiro,
+    useValidarFranquia,
+    useVeiculos,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -499,16 +499,16 @@ export default function Passageiros() {
         <div className="space-y-6">
           <Tabs defaultValue="passageiros" className="w-full space-y-6">
             <div className="flex justify-start">
-              <TabsList className="bg-slate-100/80 p-1 rounded-xl h-auto inline-flex">
+              <TabsList className="bg-slate-100/80 p-1 rounded-xl h-auto w-full md:w-auto">
                 <TabsTrigger
                   value="passageiros"
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm transition-all"
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm transition-all flex-1 md:flex-none"
                 >
                   Meus Passageiros
                 </TabsTrigger>
                 <TabsTrigger
                   value="pre-cadastros"
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm transition-all flex items-center gap-2"
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm transition-all flex items-center justify-center gap-2 flex-1 md:flex-none"
                 >
                   Solicitações
                   {countPrePassageiros > 0 && (
