@@ -9,6 +9,7 @@ interface PhoneInputProps<T extends FieldValues> {
   required?: boolean;
   placeholder?: string;
   className?: string;
+  inputClassName?: string;
 }
 
 export function PhoneInput<T extends FieldValues>({
@@ -17,22 +18,25 @@ export function PhoneInput<T extends FieldValues>({
   required = false,
   placeholder = "(00) 00000-0000",
   className,
+  inputClassName,
 }: PhoneInputProps<T>) {
   return (
-    <FormItem>
-      <FormLabel>
+    <FormItem className={className}>
+      <FormLabel className="text-gray-700 font-medium ml-1">
         {label} {required && <span className="text-red-600">*</span>}
       </FormLabel>
       <FormControl>
-        <Input
-          {...field}
-          placeholder={placeholder}
-          maxLength={15}
-          onChange={(e) => {
-            field.onChange(phoneMask(e.target.value));
-          }}
-          className={className}
-        />
+        <div className="relative">
+          <Input
+            {...field}
+            placeholder={placeholder}
+            maxLength={15}
+            onChange={(e) => {
+              field.onChange(phoneMask(e.target.value));
+            }}
+            className={inputClassName}
+          />
+        </div>
       </FormControl>
       <FormMessage />
     </FormItem>

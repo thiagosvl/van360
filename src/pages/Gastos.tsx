@@ -31,30 +31,31 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
@@ -62,10 +63,10 @@ import { Textarea } from "@/components/ui/textarea";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreateGasto,
-  useDeleteGasto,
-  useGastos,
-  useUpdateGasto,
+    useCreateGasto,
+    useDeleteGasto,
+    useGastos,
+    useUpdateGasto,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -81,7 +82,7 @@ import { toast } from "@/utils/notifications/toast";
 import { Gasto } from "@/types/gasto";
 
 // Icons
-import { CalendarIcon, FileText, TrendingDown, TrendingUp } from "lucide-react";
+import { CalendarIcon, FileText, Tag, TrendingDown, TrendingUp, X } from "lucide-react";
 
 const gastoSchema = z.object({
   valor: z.string().min(1, "O valor é obrigatório."),
@@ -409,153 +410,180 @@ export default function Gastos() {
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent
               onOpenAutoFocus={(e) => e.preventDefault()}
-              className="max-w-md max-h-[95vh] overflow-y-auto bg-white"
+              className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-white rounded-3xl border-0 shadow-2xl p-0"
+              hideCloseButton
             >
-              <DialogHeader>
-                <DialogTitle>
-                  {editingGasto ? "Editar Gasto" : "Adicionar Gasto"}
+                <div className="bg-blue-600 p-6 text-center relative">
+                <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
+                  <X className="h-6 w-6" />
+                  <span className="sr-only">Close</span>
+                </DialogClose>
+                
+                <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
+                  <TrendingDown className="w-6 h-6 text-white" />
+                </div>
+                <DialogTitle className="text-2xl font-bold text-white">
+                  {editingGasto ? "Editar Gasto" : "Novo Gasto"}
                 </DialogTitle>
-              </DialogHeader>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(handleSubmit)}
-                  className="space-y-4"
-                >
-                  <FormField
-                    control={form.control}
-                    name="categoria"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>
-                          Categoria <span className="text-red-600">*</span>
-                        </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione a categoria" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="max-h-60 overflow-y-auto">
-                            {categoriasGastos.map((cat) => (
-                              <SelectItem key={cat} value={cat}>
-                                {cat}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <DialogDescription className="text-blue-100 text-sm mt-1">
+                  Preencha os dados do gasto abaixo
+                </DialogDescription>
+              </div>
+
+              <div className="p-6 pt-2">
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(handleSubmit)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={form.control}
-                      name="data"
+                      name="categoria"
                       render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>
-                            Data <span className="text-red-600">*</span>
+                        <FormItem>
+                          <FormLabel className="text-gray-700 font-medium ml-1">
+                            Categoria <span className="text-red-500">*</span>
                           </FormLabel>
-                          <Popover
-                            open={openCalendar}
-                            onOpenChange={setOpenCalendar}
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
                           >
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(field.value, "dd/MM/yyyy")
-                                  ) : (
-                                    <span className="text-black">
-                                      Selecione a data
-                                    </span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={(date) => {
-                                  if (date) {
-                                    field.onChange(date);
-                                    setOpenCalendar(false);
-                                  }
-                                }}
-                                initialFocus
-                                locale={ptBR}
-                              />
-                            </PopoverContent>
-                          </Popover>
+                            <FormControl>
+                              <div className="relative">
+                                <Tag className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                  <SelectValue placeholder="Selecione a categoria" />
+                                </SelectTrigger>
+                              </div>
+                            </FormControl>
+                            <SelectContent className="max-h-60 overflow-y-auto">
+                              {categoriasGastos.map((cat) => (
+                                <SelectItem key={cat} value={cat}>
+                                  {cat}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="data"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel className="text-gray-700 font-medium ml-1">
+                              Data <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <Popover
+                              open={openCalendar}
+                              onOpenChange={setOpenCalendar}
+                            >
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <div className="relative">
+                                    <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      className={cn(
+                                        "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left font-normal hover:bg-gray-100 justify-start",
+                                        !field.value && "text-muted-foreground"
+                                      )}
+                                    >
+                                      {field.value ? (
+                                        format(field.value, "dd/MM/yyyy")
+                                      ) : (
+                                        <span className="text-gray-500">
+                                          Selecione
+                                        </span>
+                                      )}
+                                    </Button>
+                                  </div>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={(date) => {
+                                    if (date) {
+                                      field.onChange(date);
+                                      setOpenCalendar(false);
+                                    }
+                                  }}
+                                  initialFocus
+                                  locale={ptBR}
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="valor"
+                        render={({ field }) => (
+                          <MoneyInput
+                            field={field}
+                            required
+                            label="Valor"
+                            className="flex flex-col"
+                            inputClassName="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                          />
+                        )}
+                      />
+                    </div>
                     <FormField
                       control={form.control}
-                      name="valor"
+                      name="descricao"
                       render={({ field }) => (
-                        <MoneyInput
-                          field={field}
-                          required
-                          className="flex flex-col"
-                        />
+                        <FormItem>
+                          <FormLabel className="text-gray-700 font-medium ml-1">Descrição</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              {...field} 
+                              placeholder="Detalhes do gasto (opcional)"
+                              className="min-h-[100px] rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all resize-none"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
                     />
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="descricao"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Descrição</FormLabel>
-                        <FormControl>
-                          <Textarea {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
 
-                  <div className="flex gap-4 pt-6">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() =>
-                        safeCloseDialog(() => setIsDialogOpen(false))
-                      }
-                      className="flex-1"
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      type="submit"
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                      disabled={isActionLoading}
-                    >
-                      {isActionLoading ? (
-                        <>
-                          <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                          Salvando...
-                        </>
-                      ) : (
-                        "Salvar"
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() =>
+                          safeCloseDialog(() => setIsDialogOpen(false))
+                        }
+                        className="flex-1 h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all"
+                        disabled={isActionLoading}
+                      >
+                        {isActionLoading ? (
+                          <>
+                            <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                            Salvando...
+                          </>
+                        ) : (
+                          "Salvar Gasto"
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </div>
             </DialogContent>
           </Dialog>
         </div>

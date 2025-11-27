@@ -156,6 +156,7 @@ export default function Relatorios() {
   const { setPageTitle } = useLayout();
   const { user } = useSession();
   const { profile, plano: profilePlano } = useProfile(user?.id);
+  console.log(profilePlano);
 
   const [mes, setMes] = useState(new Date().getMonth() + 1);
   const [ano, setAno] = useState(new Date().getFullYear());

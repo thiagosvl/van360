@@ -8,26 +8,26 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
 import {
-  useCreatePrePassageiro,
-  useDeletePrePassageiro,
-  usePassageiros,
-  usePrePassageiros,
+    useCreatePrePassageiro,
+    useDeletePrePassageiro,
+    usePassageiros,
+    usePrePassageiros,
 } from "@/hooks";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
@@ -35,11 +35,11 @@ import { safeCloseDialog } from "@/utils/dialogUtils";
 import { formatarTelefone } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import {
-  CheckCircle,
-  MoreVertical,
-  Search,
-  Trash2,
-  Users2,
+    CheckCircle,
+    MoreVertical,
+    Search,
+    Trash2,
+    Users2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -285,7 +285,7 @@ export default function PrePassageiros({
                         Passageiro
                       </TableHead>
                       <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Telefone (WhatsApp)
+                        WhatsApp
                       </TableHead>
                       <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                         Data

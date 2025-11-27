@@ -5,34 +5,34 @@ import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
-  formatarEnderecoCompleto,
-  formatarTelefone,
-  formatPeriodo,
+    formatarEnderecoCompleto,
+    formatarTelefone,
+    formatPeriodo,
 } from "@/utils/formatters";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  AlertCircle,
-  CalendarDays,
-  Car,
-  CheckCircle,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Copy,
-  CreditCard,
-  HeartPulse,
-  Mail,
-  MapPin,
-  MessageCircle,
-  Pencil,
-  Phone,
-  School,
-  ToggleLeft,
-  ToggleRight,
-  Trash2,
-  User,
-  Zap,
-  ZapOff,
+    AlertCircle,
+    CalendarDays,
+    Car,
+    CheckCircle,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    Copy,
+    CreditCard,
+    HeartPulse,
+    Mail,
+    MapPin,
+    MessageCircle,
+    Pencil,
+    Phone,
+    School,
+    ToggleLeft,
+    ToggleRight,
+    Trash2,
+    User,
+    Zap,
+    ZapOff,
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { InfoItem } from "./InfoItem";
@@ -81,7 +81,7 @@ export const CarteirinhaInfo = ({
   const infoAdicionais = [
     {
       icon: Phone,
-      label: "Telefone (WhatsApp)",
+      label: "WhatsApp",
       content: (
         <div className="flex items-center gap-2">
           <span className="text-sm">

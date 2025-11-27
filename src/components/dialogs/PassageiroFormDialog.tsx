@@ -1,73 +1,73 @@
-import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
+import { AvisoInlineExcessoFranquia } from "@/components/dialogs/AvisoInlineExcessoFranquia";
+import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
+import { CepInput, MoneyInput, PhoneInput } from "@/components/forms";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
-import { toast } from "@/utils/notifications/toast";
-import { Usuario } from "@/types/usuario";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  useCreatePassageiro,
-  useUpdatePassageiro,
-  useFinalizePreCadastro,
-  useEscolasWithFilters,
-  useVeiculosWithFilters,
-  useValidarFranquia,
+    useCreatePassageiro,
+    useEscolasWithFilters,
+    useFinalizePreCadastro,
+    useUpdatePassageiro,
+    useValidarFranquia,
+    useVeiculosWithFilters,
 } from "@/hooks";
 import { useSession } from "@/hooks/business/useSession";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
+import { Usuario } from "@/types/usuario";
 import { Veiculo } from "@/types/veiculo";
-import { currentMonthInText, periodos } from "@/utils/formatters";
-import { cpfMask, phoneMask, moneyMask, cepMask } from "@/utils/masks";
-import { CepInput, PhoneInput, MoneyInput } from "@/components/forms";
+import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
+import { currentMonthInText, periodos } from "@/utils/formatters";
+import { cepMask, cpfMask, moneyMask, phoneMask } from "@/utils/masks";
+import { toast } from "@/utils/notifications/toast";
 import { isValidCPF } from "@/utils/validators";
-import { AvisoInlineExcessoFranquia } from "@/components/dialogs/AvisoInlineExcessoFranquia";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  AlertTriangle,
-  DollarSign,
-  FileText,
-  Loader2,
-  MapPin,
-  User,
+    AlertTriangle,
+    DollarSign,
+    FileText,
+    Loader2,
+    MapPin,
+    User,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
-import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 
 const passageiroSchema = z.object({
   escola_id: z.string().min(1, "Campo obrigatório"),
@@ -974,7 +974,7 @@ export default function PassengerFormDialog({
                         render={({ field }) => (
                           <PhoneInput
                             field={field}
-                            label="Telefone (WhatsApp)"
+                            label="WhatsApp"
                             required
                           />
                         )}

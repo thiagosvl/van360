@@ -14,55 +14,55 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 
 // Services
+import { useAvailableYears } from "@/hooks";
 import { supabase } from "@/integrations/supabase/client";
 import { responsavelService } from "@/services/responsavelService";
-import { useAvailableYears } from "@/hooks";
 
 // Utils
-import { toast } from "@/utils/notifications/toast";
-import {
-  formatarEnderecoCompleto,
-  formatarTelefone,
-  formatDateToBR,
-  getMesNome,
-  getStatusColor,
-  getStatusText,
-} from "@/utils/formatters";
 import { seForPago } from "@/utils/domain/cobranca/disableActions";
-import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { clearLoginStorageResponsavel } from "@/utils/domain/responsavel/responsavelUtils";
+import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
+import {
+    formatarEnderecoCompleto,
+    formatarTelefone,
+    formatDateToBR,
+    getMesNome,
+    getStatusColor,
+    getStatusText,
+} from "@/utils/formatters";
+import { toast } from "@/utils/notifications/toast";
 
 // Types
 import { Cobranca } from "@/types/cobranca";
 
 // Icons
-import {
-  AlertTriangle,
-  Car,
-  Contact,
-  Info,
-  Mail,
-  MapPin,
-  MessageCircle,
-  MoreVertical,
-  School,
-} from "lucide-react";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
+import {
+    AlertTriangle,
+    Car,
+    Contact,
+    Info,
+    Mail,
+    MapPin,
+    MessageCircle,
+    MoreVertical,
+    School,
+} from "lucide-react";
 
 interface CobrancaResponsavelActionsDropdownProps {
   cobranca: Cobranca;
@@ -604,7 +604,7 @@ export default function ResponsavelCarteirinha() {
                         </span>
                       </div>
                     </InfoItem>
-                    <InfoItem icon={MessageCircle} label="Telefone (WhatsApp)">
+                    <InfoItem icon={MessageCircle} label="WhatsApp">
                       <div className="flex items-center gap-2">
                         <span className="text-sm">
                           {formatarTelefone(

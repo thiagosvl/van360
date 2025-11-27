@@ -40,7 +40,10 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
     if (!isMobile) return;
 
     const handleTouchStart = (e: TouchEvent) => {
-      if (window.scrollY > 0 || isRefreshing) return;
+      // Verifica se há algum dialog aberto (Radix UI adiciona data-scroll-locked ao body)
+      const isScrollLocked = document.body.hasAttribute("data-scroll-locked");
+      
+      if (window.scrollY > 0 || isRefreshing || isScrollLocked) return;
       
       const startY = e.touches[0].clientY;
       let isPulling = false;

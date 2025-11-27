@@ -259,6 +259,7 @@ export const messages = {
       enviarDados: "Erro ao enviar dados.",
       linkInvalido: "Link inválido.",
       linkInvalidoDescricao: "Este link de cadastro não é válido.",
+      atualizacao: "Erro ao atualizar.",
     },
     sucesso: {
       cobrancasAutomaticasAtivadas: "Cobranças automáticas ativadas com sucesso.",

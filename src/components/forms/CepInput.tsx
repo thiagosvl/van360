@@ -92,6 +92,7 @@ export function CepInput<T extends FieldValues>({
             {...field}
             placeholder="00000-000"
             maxLength={9}
+            type="number"
             className={cn("pr-8", inputClassName)}
             onChange={(e) => handleCepChange(e.target.value)}
           />

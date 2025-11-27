@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
@@ -180,9 +181,9 @@ export default function VeiculoFormDialog({
           <DialogTitle className="text-2xl font-bold text-white">
             {editingVeiculo ? "Editar Veículo" : "Novo Veículo"}
           </DialogTitle>
-          <p className="text-blue-100 text-sm mt-1">
+          <DialogDescription className="text-blue-100 text-sm mt-1">
             Preencha os dados do veículo abaixo
-          </p>
+          </DialogDescription>
         </div>
 
         <div className="p-6 pt-2">
@@ -206,7 +207,7 @@ export default function VeiculoFormDialog({
                           {...field}
                           maxLength={8}
                           placeholder="ABC-1234"
-                          className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all uppercase"
+                          className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all uppercase"
                           onChange={(e) => {
                             const masked = aplicarMascaraPlaca(e.target.value);
                             field.onChange(masked);
@@ -234,7 +235,7 @@ export default function VeiculoFormDialog({
                           <Input
                             placeholder="Ex: Fiat"
                             {...field}
-                            className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                            className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                           />
                         </div>
                       </FormControl>
@@ -256,7 +257,7 @@ export default function VeiculoFormDialog({
                           <Input
                             placeholder="Ex: Ducato"
                             {...field}
-                            className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                            className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                           />
                         </div>
                       </FormControl>

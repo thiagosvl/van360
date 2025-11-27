@@ -9,6 +9,7 @@ interface MoneyInputProps<T extends FieldValues> {
   required?: boolean;
   placeholder?: string;
   className?: string;
+  inputClassName?: string;
   disabled?: boolean;
 }
 
@@ -18,6 +19,7 @@ export function MoneyInput<T extends FieldValues>({
   required = false,
   placeholder = "R$ 0,00",
   className,
+  inputClassName,
   disabled = false,
 }: MoneyInputProps<T>) {
   return (
@@ -29,7 +31,8 @@ export function MoneyInput<T extends FieldValues>({
         <Input
           {...field}
           placeholder={placeholder}
-          type="number"
+          type="text"
+          className={inputClassName}
           disabled={disabled}
           onChange={(e) => {
             field.onChange(moneyMask(e.target.value));

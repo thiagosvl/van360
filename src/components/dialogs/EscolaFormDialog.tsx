@@ -11,6 +11,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
@@ -208,9 +209,9 @@ export default function EscolaFormDialog({
             <DialogTitle className="text-2xl font-bold text-white">
               {editingEscola ? "Editar Escola" : "Nova Escola"}
             </DialogTitle>
-            <p className="text-blue-100 text-sm mt-1">
+            <DialogDescription className="text-blue-100 text-sm mt-1">
               Preencha os dados da escola abaixo
-            </p>
+            </DialogDescription>
           </div>
 
           <div className="p-6 pt-2">
@@ -247,7 +248,7 @@ export default function EscolaFormDialog({
                                 <Building2 className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                                 <Input 
                                   {...field} 
-                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                   placeholder="Ex: Escola Municipal..."
                                 />
                               </div>
@@ -295,7 +296,7 @@ export default function EscolaFormDialog({
                             <div className="md:col-span-2">
                               <CepInput 
                                 field={field} 
-                                inputClassName="h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                                inputClassName="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                               />
                             </div>
                           )}
@@ -309,7 +310,7 @@ export default function EscolaFormDialog({
                               <FormControl>
                                 <Input 
                                   {...field} 
-                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -326,7 +327,7 @@ export default function EscolaFormDialog({
                               <FormControl>
                                 <Input 
                                   {...field} 
-                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -342,7 +343,7 @@ export default function EscolaFormDialog({
                               <FormControl>
                                 <Input 
                                   {...field} 
-                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -359,7 +360,7 @@ export default function EscolaFormDialog({
                               <FormControl>
                                 <Input 
                                   {...field} 
-                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -377,7 +378,7 @@ export default function EscolaFormDialog({
                                 value={field.value}
                               >
                                 <FormControl>
-                                  <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all">
+                                  <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
                                     <SelectValue placeholder="UF" />
                                   </SelectTrigger>
                                 </FormControl>
@@ -440,7 +441,7 @@ export default function EscolaFormDialog({
                                 <Textarea
                                   placeholder="Ex: próximo ao mercado"
                                   {...field}
-                                  className="min-h-[80px] rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                                  className="min-h-[80px] rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                 />
                               </FormControl>
                               <FormMessage />

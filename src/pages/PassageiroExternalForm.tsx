@@ -6,36 +6,36 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 
 // Third-party
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 // Components - Forms
 import { CepInput, PhoneInput } from "@/components/forms";
 
 // Components - UI
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -43,13 +43,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 
 // Utils
-import { toast } from "@/utils/notifications/toast";
-import { cpfMask } from "@/utils/masks";
-import { isValidCPF } from "@/utils/validators";
 import { useSEO } from "@/hooks/useSEO";
+import { cpfMask } from "@/utils/masks";
+import { toast } from "@/utils/notifications/toast";
+import { isValidCPF } from "@/utils/validators";
 
 // Icons
-import { AlertTriangle, FileText, Loader2, MapPin, User } from "lucide-react";
+import {
+    AlertTriangle,
+    Car,
+    CheckCircle2,
+    FileText,
+    Hash,
+    Loader2,
+    Mail,
+    MapPin,
+    User
+} from "lucide-react";
 
 const prePassageiroSchema = z.object({
   nome: z.string().min(2, "Campo obrigatório"),
@@ -145,7 +155,7 @@ export default function PassageiroExternalForm() {
     };
 
     validateMotorista();
-  }, [motoristaId, navigate, toast]);
+  }, [motoristaId, navigate]);
 
   const onFormError = (errors: any) => {
     toast.error("validacao.formularioComErros");
@@ -189,395 +199,461 @@ export default function PassageiroExternalForm() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   if (success) {
     return (
-      <div className="max-w-md mx-auto mt-16 p-8 bg-white shadow-lg rounded-xl text-center">
-        <h2 className="text-2xl font-bold text-green-600 mb-4">
-          Cadastro realizado com sucesso!
-        </h2>
-        <p className="text-gray-700">
-          O condutor será notificado que você concluiu o cadastro.
-        </p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white shadow-2xl rounded-3xl p-8 text-center border border-gray-100">
+          <div className="mx-auto bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mb-6">
+            <CheckCircle2 className="w-10 h-10 text-green-600" />
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Cadastro realizado!
+          </h2>
+          <p className="text-gray-600 mb-8 text-lg">
+            O condutor <span className="font-semibold text-gray-900">{motoristaApelido}</span> será notificado que você concluiu o cadastro.
+          </p>
+          <Button 
+            onClick={() => window.location.reload()}
+            className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20"
+          >
+            Novo Cadastro
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <>
-      <div className="min-h-screen bg-gray-50 sm:py-10">
-        <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-xl p-7 sm:p-5">
-          <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
-            Cadastro de Passageiro
-          </h1>
-          <span className="text-center font-semibold text-primary block">
-            Condutor: {motoristaApelido}
-          </span>
+    <div className="min-h-screen bg-gray-50 py-4 px-3 sm:py-8 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
+          {/* Header */}
+          <div className="bg-blue-600 p-6 sm:p-8 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full bg-[url('/assets/pattern.png')] opacity-10"></div>
+            <div className="relative z-10">
+              <div className="mx-auto bg-white/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-sm">
+                <User className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold text-white mb-2">
+                Cadastro de Passageiro
+              </h1>
+              <div className="inline-flex items-center gap-2 bg-blue-700/50 px-4 py-1.5 rounded-full text-blue-100 text-sm font-medium backdrop-blur-sm border border-blue-500/30">
+                <Car className="w-4 h-4" />
+                <span>Condutor: {motoristaApelido}</span>
+              </div>
+            </div>
+          </div>
 
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-              className="space-y-6"
-            >
-              <Accordion
-                type="multiple"
-                value={openAccordionItems}
-                onValueChange={setOpenAccordionItems}
-                className="w-full"
+          <div className="p-4 sm:p-10">
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(handleSubmit, onFormError)}
+                className="space-y-8"
               >
-                {/* DADOS DO PASSAGEIRO */}
-                <AccordionItem value="passageiro">
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-2 text-lg font-semibold">
-                      <User className="w-5 h-5 text-primary" />
-                      Passageiro
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="nome"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-5">
-                            <FormLabel>
-                              Nome{" "}
-                              <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="Digite o nome do passageiro"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-
-                {/* DADOS DO RESPONSÁVEL */}
-                <AccordionItem value="responsavel" className="mt-4">
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-2 text-lg font-semibold">
-                      <User className="w-5 h-5 text-primary" />
-                      Responsável
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                    <Alert
-                      variant="default"
-                      className="bg-blue-50 border-blue-200 text-blue-900 [&>svg]:text-blue-500"
-                    >
-                      <AlertTriangle className="h-4 w-4 mt-0.5" />
-                      <AlertTitle className="font-semibold text-sm">
-                        Atenção!
-                      </AlertTitle>
-                      <AlertDescription className="text-xs">
-                        Preencha com os dados do responsável financeiro e legal
-                        do passageiro.
-                      </AlertDescription>
-                    </Alert>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="nome_responsavel"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              Nome do Responsável{" "}
-                              <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="email_responsavel"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              E-mail <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="email"
-                                placeholder="exemplo@email.com"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="telefone_responsavel"
-                        render={({ field }) => (
-                          <PhoneInput
-                            field={field}
-                            label="Telefone (WhatsApp)"
-                            required
-                          />
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="cpf_responsavel"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              CPF <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="000.000.000-00"
-                                maxLength={14}
-                                onChange={(e) =>
-                                  field.onChange(cpfMask(e.target.value))
-                                }
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-
-                {/* ENDEREÇO */}
-                <AccordionItem value="endereco" className="mt-4">
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-2 text-lg font-semibold">
-                      <MapPin className="w-5 h-5 text-primary" />
-                      Endereço
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="cep"
-                        render={({ field }) => (
-                          <CepInput
-                            field={field}
-                            label="CEP"
-                            required
-                            className="md:col-span-2"
-                          />
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="logradouro"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-4">
-                            <FormLabel>
-                              Logradouro <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="Ex: Rua Comendador"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="numero"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel>
-                              Número <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="bairro"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-4">
-                            <FormLabel>
-                              Bairro <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="cidade"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-4">
-                            <FormLabel>
-                              Cidade <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="estado"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel>
-                              Estado <span className="text-red-600">*</span>
-                            </FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
+                <Accordion
+                  type="multiple"
+                  value={openAccordionItems}
+                  onValueChange={setOpenAccordionItems}
+                  className="w-full space-y-4"
+                >
+                  {/* DADOS DO PASSAGEIRO */}
+                  <AccordionItem value="passageiro" className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                    <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
+                      <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
+                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                          <User className="w-5 h-5" />
+                        </div>
+                        Dados do Passageiro
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pb-6 pt-2">
+                      <div className="grid grid-cols-1 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="nome"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Nome Completo <span className="text-red-500">*</span>
+                              </FormLabel>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="UF" />
-                                </SelectTrigger>
+                                <div className="relative">
+                                  <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                  <Input
+                                    {...field}
+                                    placeholder="Digite o nome do passageiro"
+                                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                  />
+                                </div>
                               </FormControl>
-                              <SelectContent className="max-h-60 overflow-y-auto">
-                                <SelectItem value="AC">Acre</SelectItem>
-                                <SelectItem value="AL">Alagoas</SelectItem>
-                                <SelectItem value="AP">Amapá</SelectItem>
-                                <SelectItem value="AM">Amazonas</SelectItem>
-                                <SelectItem value="BA">Bahia</SelectItem>
-                                <SelectItem value="CE">Ceará</SelectItem>
-                                <SelectItem value="DF">
-                                  Distrito Federal
-                                </SelectItem>
-                                <SelectItem value="ES">
-                                  Espírito Santo
-                                </SelectItem>
-                                <SelectItem value="GO">Goiás</SelectItem>
-                                <SelectItem value="MA">Maranhão</SelectItem>
-                                <SelectItem value="MT">Mato Grosso</SelectItem>
-                                <SelectItem value="MS">
-                                  Mato Grosso do Sul
-                                </SelectItem>
-                                <SelectItem value="MG">Minas Gerais</SelectItem>
-                                <SelectItem value="PA">Pará</SelectItem>
-                                <SelectItem value="PB">Paraíba</SelectItem>
-                                <SelectItem value="PR">Paraná</SelectItem>
-                                <SelectItem value="PE">Pernambuco</SelectItem>
-                                <SelectItem value="PI">Piauí</SelectItem>
-                                <SelectItem value="RJ">
-                                  Rio de Janeiro
-                                </SelectItem>
-                                <SelectItem value="RN">
-                                  Rio Grande do Norte
-                                </SelectItem>
-                                <SelectItem value="RS">
-                                  Rio Grande do Sul
-                                </SelectItem>
-                                <SelectItem value="RO">Rondônia</SelectItem>
-                                <SelectItem value="RR">Roraima</SelectItem>
-                                <SelectItem value="SC">
-                                  Santa Catarina
-                                </SelectItem>
-                                <SelectItem value="SP">São Paulo</SelectItem>
-                                <SelectItem value="SE">Sergipe</SelectItem>
-                                <SelectItem value="TO">Tocantins</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  {/* DADOS DO RESPONSÁVEL */}
+                  <AccordionItem value="responsavel" className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                    <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
+                      <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
+                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                          <User className="w-5 h-5" />
+                        </div>
+                        Dados do Responsável
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pb-6 pt-2 space-y-6">
+                      <Alert
+                        variant="default"
+                        className="bg-blue-50 border-blue-200 text-blue-900 rounded-xl"
+                      >
+                        <AlertTriangle className="h-5 w-5 text-blue-600" />
+                        <div className="ml-2">
+                          <AlertTitle className="font-bold text-blue-800">Atenção</AlertTitle>
+                          <AlertDescription className="text-blue-700">
+                            Preencha com os dados do responsável financeiro e legal do passageiro.
+                          </AlertDescription>
+                        </div>
+                      </Alert>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="nome_responsavel"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Nome do Responsável <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                  <Input 
+                                    {...field} 
+                                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="email_responsavel"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                E-mail <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                  <Input
+                                    type="email"
+                                    placeholder="exemplo@email.com"
+                                    {...field}
+                                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="telefone_responsavel"
+                          render={({ field }) => (
+                            <PhoneInput
+                              field={field}
+                              label="WhatsApp"
+                              required
+                              inputClassName="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                            />
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="cpf_responsavel"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                CPF <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Hash className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                  <Input
+                                    {...field}
+                                    placeholder="000.000.000-00"
+                                    maxLength={14}
+                                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    onChange={(e) =>
+                                      field.onChange(cpfMask(e.target.value))
+                                    }
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  {/* ENDEREÇO */}
+                  <AccordionItem value="endereco" className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                    <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
+                      <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
+                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                          <MapPin className="w-5 h-5" />
+                        </div>
+                        Endereço
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pb-6 pt-2">
+                      <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="cep"
+                          render={({ field }) => (
+                            <CepInput
+                              field={field}
+                              label="CEP"
+                              required
+                              className="md:col-span-2"
+                              inputClassName="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                            />
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="logradouro"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-4">
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Logradouro <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Ex: Rua Comendador"
+                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="numero"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Número <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  {...field} 
+                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="bairro"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-4">
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Bairro <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  {...field} 
+                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="cidade"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-4">
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Cidade <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  {...field} 
+                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="estado"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Estado <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                    <SelectValue placeholder="UF" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="max-h-60 overflow-y-auto">
+                                  <SelectItem value="AC">Acre</SelectItem>
+                                  <SelectItem value="AL">Alagoas</SelectItem>
+                                  <SelectItem value="AP">Amapá</SelectItem>
+                                  <SelectItem value="AM">Amazonas</SelectItem>
+                                  <SelectItem value="BA">Bahia</SelectItem>
+                                  <SelectItem value="CE">Ceará</SelectItem>
+                                  <SelectItem value="DF">
+                                    Distrito Federal
+                                  </SelectItem>
+                                  <SelectItem value="ES">
+                                    Espírito Santo
+                                  </SelectItem>
+                                  <SelectItem value="GO">Goiás</SelectItem>
+                                  <SelectItem value="MA">Maranhão</SelectItem>
+                                  <SelectItem value="MT">Mato Grosso</SelectItem>
+                                  <SelectItem value="MS">
+                                    Mato Grosso do Sul
+                                  </SelectItem>
+                                  <SelectItem value="MG">Minas Gerais</SelectItem>
+                                  <SelectItem value="PA">Pará</SelectItem>
+                                  <SelectItem value="PB">Paraíba</SelectItem>
+                                  <SelectItem value="PR">Paraná</SelectItem>
+                                  <SelectItem value="PE">Pernambuco</SelectItem>
+                                  <SelectItem value="PI">Piauí</SelectItem>
+                                  <SelectItem value="RJ">
+                                    Rio de Janeiro
+                                  </SelectItem>
+                                  <SelectItem value="RN">
+                                    Rio Grande do Norte
+                                  </SelectItem>
+                                  <SelectItem value="RS">
+                                    Rio Grande do Sul
+                                  </SelectItem>
+                                  <SelectItem value="RO">Rondônia</SelectItem>
+                                  <SelectItem value="RR">Roraima</SelectItem>
+                                  <SelectItem value="SC">
+                                    Santa Catarina
+                                  </SelectItem>
+                                  <SelectItem value="SP">São Paulo</SelectItem>
+                                  <SelectItem value="SE">Sergipe</SelectItem>
+                                  <SelectItem value="TO">Tocantins</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="referencia"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-6">
+                              <FormLabel className="text-gray-700 font-medium ml-1">Referência</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Ex: próximo ao mercado"
+                                  {...field}
+                                  className="min-h-[80px] rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  {/* OBSERVAÇÕES */}
+                  <AccordionItem value="observacoes" className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                    <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
+                      <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
+                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        Observações (Opcional)
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pb-6 pt-2">
                       <FormField
                         control={form.control}
-                        name="referencia"
+                        name="observacoes"
                         render={({ field }) => (
-                          <FormItem className="md:col-span-6">
-                            <FormLabel>Referência</FormLabel>
+                          <FormItem>
                             <FormControl>
                               <Textarea
-                                placeholder="Ex: próximo ao mercado"
+                                placeholder="Ex: Alérgico a amendoim, entra pela porta lateral da escola, etc."
                                 {...field}
+                                rows={4}
+                                className="min-h-[120px] rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                               />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
 
-                {/* OBSERVAÇÕES */}
-                <AccordionItem value="observacoes" className="mt-4">
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-2 text-lg font-semibold">
-                      <FileText className="w-5 h-5 text-primary" />
-                      Observações (Opcional)
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="observacoes"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Ex: Alérgico a amendoim, entra pela porta lateral da escola, etc."
-                              {...field}
-                              rows={4}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-
-              <Button
-                type="submit"
-                disabled={submitting}
-                className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Enviando...
-                  </>
-                ) : (
-                  "Enviar"
-                )}
-              </Button>
-            </form>
-          </Form>
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full h-14 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                      Enviando Cadastro...
+                    </>
+                  ) : (
+                    "Enviar Cadastro"
+                  )}
+                </Button>
+              </form>
+            </Form>
+          </div>
+        </div>
+        
+        {/* Footer */}
+        <div className="mt-8 text-center text-gray-500 text-sm">
+          <p>© {new Date().getFullYear()} Van Control. Todos os direitos reservados.</p>
         </div>
       </div>
-    </>
+    </div>
   );
 }

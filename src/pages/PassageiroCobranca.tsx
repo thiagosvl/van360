@@ -10,12 +10,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCobranca,
-  useCobrancaNotificacoes,
-  useDeleteCobranca,
-  useDesfazerPagamento,
-  useEnviarNotificacaoCobranca,
-  useToggleNotificacoesCobranca,
+    useCobranca,
+    useCobrancaNotificacoes,
+    useDeleteCobranca,
+    useDesfazerPagamento,
+    useEnviarNotificacaoCobranca,
+    useToggleNotificacoesCobranca,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -25,49 +25,49 @@ import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import { Passageiro } from "@/types/passageiro";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
-  disableExcluirCobranca,
-  disableRegistrarPagamento,
-  podeEnviarNotificacao,
+    disableExcluirCobranca,
+    disableRegistrarPagamento,
+    podeEnviarNotificacao,
 } from "@/utils/domain/cobranca/disableActions";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
-  formatCobrancaOrigem,
-  formatDateToBR,
-  formatPaymentType,
-  formatarEnderecoCompleto,
-  formatarTelefone,
-  getStatusColor,
-  getStatusText,
-  meses,
+    formatCobrancaOrigem,
+    formatDateToBR,
+    formatPaymentType,
+    formatarEnderecoCompleto,
+    formatarTelefone,
+    getStatusColor,
+    getStatusText,
+    meses,
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowRight,
-  BadgeCheck,
-  Bell,
-  BellOff,
-  Bot,
-  Calendar,
-  CalendarDays,
-  Car,
-  CheckCircle,
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
-  Copy,
-  CreditCard,
-  History,
-  IdCard,
-  MapPin,
-  Pencil,
-  Phone,
-  School,
-  Send,
-  Trash2,
-  User,
-  Wallet,
-  XCircle,
+    ArrowRight,
+    BadgeCheck,
+    Bell,
+    BellOff,
+    Bot,
+    Calendar,
+    CalendarDays,
+    Car,
+    CheckCircle,
+    CheckCircle2,
+    ChevronDown,
+    ChevronUp,
+    Copy,
+    CreditCard,
+    History,
+    IdCard,
+    MapPin,
+    Pencil,
+    Phone,
+    School,
+    Send,
+    Trash2,
+    User,
+    Wallet,
+    XCircle,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -500,7 +500,7 @@ export default function PassageiroCobranca() {
                           <div>
                             <div className="text-sm text-muted-foreground flex items-center gap-2">
                               <Phone className="w-4 h-4" />
-                              Telefone (WhatsApp)
+                              WhatsApp
                             </div>
                             <div className="font-semibold text-foreground mt-1">
                               <div className="flex items-center gap-2">
