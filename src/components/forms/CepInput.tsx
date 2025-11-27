@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { cepService } from "@/services/cepService";
 import { cepMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPin } from "lucide-react";
 import { useState } from "react";
 import { ControllerRenderProps, FieldPath, FieldValues, useFormContext } from "react-hook-form";
 
@@ -88,12 +88,13 @@ export function CepInput<T extends FieldValues>({
       </FormLabel>
       <FormControl>
         <div className="relative">
+          <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
           <Input
             {...field}
             placeholder="00000-000"
             maxLength={9}
-            type="number"
-            className={cn("pr-8", inputClassName)}
+            type="text"
+            className={cn("pl-12 pr-8", inputClassName)}
             onChange={(e) => handleCepChange(e.target.value)}
           />
           {loadingCep && (

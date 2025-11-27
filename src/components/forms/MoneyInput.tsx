@@ -1,6 +1,7 @@
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { moneyMask } from "@/utils/masks";
+import { DollarSign } from "lucide-react";
 import { ControllerRenderProps, FieldPath, FieldValues } from "react-hook-form";
 
 interface MoneyInputProps<T extends FieldValues> {
@@ -28,16 +29,19 @@ export function MoneyInput<T extends FieldValues>({
         {label} {required && <span className="text-red-600">*</span>}
       </FormLabel>
       <FormControl>
-        <Input
-          {...field}
-          placeholder={placeholder}
-          type="text"
-          className={inputClassName}
-          disabled={disabled}
-          onChange={(e) => {
-            field.onChange(moneyMask(e.target.value));
-          }}
-        />
+        <div className="relative">
+          <DollarSign className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+          <Input
+            {...field}
+            placeholder={placeholder}
+            type="text"
+            className={inputClassName}
+            disabled={disabled}
+            onChange={(e) => {
+              field.onChange(moneyMask(e.target.value));
+            }}
+          />
+        </div>
       </FormControl>
       <FormMessage />
     </FormItem>

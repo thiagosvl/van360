@@ -12,9 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
     Dialog,
+    DialogClose,
     DialogContent,
-    DialogHeader,
-    DialogTitle,
+    DialogDescription,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
     Form,
@@ -58,11 +59,18 @@ import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
     AlertTriangle,
-    DollarSign,
+    Calendar,
+    CalendarDays,
+    Car,
+    CreditCard,
     FileText,
+    Hash,
     Loader2,
+    Mail,
     MapPin,
+    School,
     User,
+    X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
@@ -708,23 +716,38 @@ export default function PassengerFormDialog({
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent
-          className="max-w-3xl max-h-[95vh] overflow-y-auto bg-white"
+          className="max-w-3xl max-h-[95vh] overflow-y-auto bg-white rounded-3xl border-0 shadow-2xl p-0"
           onOpenAutoFocus={(e) => e.preventDefault()}
+          hideCloseButton
+          aria-describedby="dialog-description"
         >
-          <DialogHeader>
-            <DialogTitle>
+          <div className="bg-blue-600 p-6 text-center relative">
+            <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
+              <X className="h-6 w-6" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+            
+            <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
+              <User className="w-6 h-6 text-white" />
+            </div>
+            <DialogTitle className="text-2xl font-bold text-white">
               {mode === "finalize"
                 ? "Continuar Cadastro"
                 : mode === "edit"
                 ? "Editar Passageiro"
                 : "Novo Passageiro"}
             </DialogTitle>
-          </DialogHeader>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-              className="space-y-6"
-            >
+            <DialogDescription id="dialog-description" className="text-blue-100 text-sm mt-1">
+              Preencha os dados do passageiro abaixo
+            </DialogDescription>
+          </div>
+
+          <div className="p-6 pt-2">
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(handleSubmit, onFormError)}
+                className="space-y-6"
+              >
               {mode === "finalize" && prePassageiro && (
                 <div className="mb-6">
                   <Alert
@@ -747,30 +770,36 @@ export default function PassengerFormDialog({
                 type="multiple"
                 value={openAccordionItems}
                 onValueChange={setOpenAccordionItems}
-                className="w-full"
+                className="w-full space-y-4"
               >
-                <AccordionItem value="passageiro">
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-2 text-lg font-semibold">
-                      <User className="w-5 h-5 text-primary" />
+                <AccordionItem value="passageiro" className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                  <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
+                    <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
+                      <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                        <User className="w-5 h-5" />
+                      </div>
                       Passageiro
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
+                  <AccordionContent className="px-6 pb-6 pt-2 space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="nome"
                         render={({ field }) => (
                           <FormItem className="md:col-span-1">
-                            <FormLabel>
+                            <FormLabel className="text-gray-700 font-medium ml-1">
                               Nome <span className="text-red-600">*</span>
                             </FormLabel>
                             <FormControl>
-                              <Input
-                                placeholder="Digite o nome do passageiro"
-                                {...field}
-                              />
+                              <div className="relative">
+                                <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <Input
+                                  placeholder="Digite o nome do passageiro"
+                                  {...field}
+                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -781,7 +810,7 @@ export default function PassengerFormDialog({
                         name="periodo"
                         render={({ field }) => (
                           <FormItem className="md:col-span-1">
-                            <FormLabel>
+                            <FormLabel className="text-gray-700 font-medium ml-1">
                               Período <span className="text-red-600">*</span>
                             </FormLabel>
                             <Select
@@ -789,9 +818,12 @@ export default function PassengerFormDialog({
                               value={field.value || undefined}
                             >
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione o período" />
-                                </SelectTrigger>
+                                <div className="relative">
+                                  <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                  <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                    <SelectValue placeholder="Selecione o período" />
+                                  </SelectTrigger>
+                                </div>
                               </FormControl>
                               <SelectContent>
                                 {periodos.map((tipo) => (
@@ -831,9 +863,12 @@ export default function PassengerFormDialog({
                               }}
                             >
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione o veículo" />
-                                </SelectTrigger>
+                                <div className="relative">
+                                  <Car className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                  <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                    <SelectValue placeholder="Selecione o veículo" />
+                                  </SelectTrigger>
+                                </div>
                               </FormControl>
                               <SelectContent className="max-h-60 overflow-y-auto">
                                 {veiculosModal.map((veiculo) => (
@@ -877,9 +912,12 @@ export default function PassengerFormDialog({
                               }}
                             >
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione a escola" />
-                                </SelectTrigger>
+                                <div className="relative">
+                                  <School className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                  <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                    <SelectValue placeholder="Selecione a escola" />
+                                  </SelectTrigger>
+                                </div>
                               </FormControl>
                               <SelectContent className="max-h-60 overflow-y-auto">
                                 {escolasModal.map((escola) => (
@@ -907,16 +945,15 @@ export default function PassengerFormDialog({
                           control={form.control}
                           name="ativo"
                           render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <div className="space-y-1 leading-none">
-                                <FormLabel>Ativo</FormLabel>
-                              </div>
+                            <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
+                              />
+                              <FormLabel className="flex-1 cursor-pointer font-medium text-gray-700 m-0 mt-0">
+                                Ativo
+                              </FormLabel>
                             </FormItem>
                           )}
                         />
@@ -924,26 +961,34 @@ export default function PassengerFormDialog({
                     )}
                   </AccordionContent>
                 </AccordionItem>
-                <AccordionItem value="responsavel" className="mt-4">
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-2 text-lg font-semibold">
-                      <User className="w-5 h-5 text-primary" />
+                <AccordionItem value="responsavel" className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm mt-4">
+                  <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
+                    <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
+                      <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                        <User className="w-5 h-5" />
+                      </div>
                       Responsável
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
+                  <AccordionContent className="px-6 pb-6 pt-2 space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="nome_responsavel"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>
+                            <FormLabel className="text-gray-700 font-medium ml-1">
                               Nome do Responsável{" "}
                               <span className="text-red-600">*</span>
                             </FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <div className="relative">
+                                <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <Input 
+                                  {...field} 
+                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -954,15 +999,19 @@ export default function PassengerFormDialog({
                         name="email_responsavel"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>
+                            <FormLabel className="text-gray-700 font-medium ml-1">
                               E-mail <span className="text-red-600">*</span>
                             </FormLabel>
                             <FormControl>
-                              <Input
-                                type="email"
-                                placeholder="exemplo@email.com"
-                                {...field}
-                              />
+                              <div className="relative">
+                                <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <Input
+                                  type="email"
+                                  placeholder="exemplo@email.com"
+                                  {...field}
+                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -976,6 +1025,7 @@ export default function PassengerFormDialog({
                             field={field}
                             label="WhatsApp"
                             required
+                            inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                           />
                         )}
                       />
@@ -984,17 +1034,21 @@ export default function PassengerFormDialog({
                         name="cpf_responsavel"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>
+                            <FormLabel className="text-gray-700 font-medium ml-1">
                               CPF <span className="text-red-600">*</span>
                             </FormLabel>
                             <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="000.000.000-00"
-                                onChange={(e) =>
-                                  field.onChange(cpfMask(e.target.value))
-                                }
-                              />
+                              <div className="relative">
+                                <Hash className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <Input
+                                  {...field}
+                                  placeholder="000.000.000-00"
+                                  onChange={(e) =>
+                                    field.onChange(cpfMask(e.target.value))
+                                  }
+                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1003,20 +1057,27 @@ export default function PassengerFormDialog({
                     </div>
                   </AccordionContent>
                 </AccordionItem>
-                <AccordionItem value="cobranca" className="mt-4">
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-2 text-lg font-semibold">
-                      <DollarSign className="w-5 h-5 text-primary" />
+                <AccordionItem value="cobranca" className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm mt-4">
+                  <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
+                    <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
+                      <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                        <CreditCard className="w-5 h-5" />
+                      </div>
                       Cobrança
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
+                  <AccordionContent className="px-6 pb-6 pt-2 space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="valor_cobranca"
                         render={({ field }) => (
-                          <MoneyInput field={field} label="Valor" required />
+                          <MoneyInput 
+                            field={field} 
+                            label="Valor" 
+                            required 
+                            inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                          />
                         )}
                       />
                       <FormField
@@ -1024,7 +1085,7 @@ export default function PassengerFormDialog({
                         name="dia_vencimento"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>
+                            <FormLabel className="text-gray-700 font-medium ml-1">
                               Dia do Vencimento{" "}
                               <span className="text-red-600">*</span>
                             </FormLabel>
@@ -1033,9 +1094,12 @@ export default function PassengerFormDialog({
                               value={field.value}
                             >
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione o dia" />
-                                </SelectTrigger>
+                                <div className="relative">
+                                  <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                  <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                    <SelectValue placeholder="Selecione o dia" />
+                                  </SelectTrigger>
+                                </div>
                               </FormControl>
                               <SelectContent className="max-h-60 overflow-y-auto">
                                 {Array.from(
@@ -1167,14 +1231,16 @@ export default function PassengerFormDialog({
                     )}
                   </AccordionContent>
                 </AccordionItem>
-                <AccordionItem value="endereco" className="mt-4">
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-2 text-lg font-semibold">
-                      <MapPin className="w-5 h-5 text-primary" />
+                <AccordionItem value="endereco" className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm mt-4">
+                  <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
+                    <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
+                      <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                        <MapPin className="w-5 h-5" />
+                      </div>
                       Endereço (Opcional)
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
+                  <AccordionContent className="px-6 pb-6 pt-2 space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                       <FormField
                         control={form.control}
@@ -1184,6 +1250,7 @@ export default function PassengerFormDialog({
                             field={field}
                             label="CEP"
                             className="md:col-span-2"
+                            inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                           />
                         )}
                       />
@@ -1192,12 +1259,16 @@ export default function PassengerFormDialog({
                         name="logradouro"
                         render={({ field }) => (
                           <FormItem className="md:col-span-4">
-                            <FormLabel>Logradouro</FormLabel>
+                            <FormLabel className="text-gray-700 font-medium ml-1">Logradouro</FormLabel>
                             <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="Ex: Rua Comendador"
-                              />
+                              <div className="relative">
+                                <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <Input
+                                  {...field}
+                                  placeholder="Ex: Rua Comendador"
+                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1209,9 +1280,15 @@ export default function PassengerFormDialog({
                         name="numero"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>Número</FormLabel>
+                            <FormLabel className="text-gray-700 font-medium ml-1">Número</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <div className="relative">
+                                <Hash className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <Input 
+                                  {...field} 
+                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1222,9 +1299,15 @@ export default function PassengerFormDialog({
                         name="bairro"
                         render={({ field }) => (
                           <FormItem className="md:col-span-4">
-                            <FormLabel>Bairro</FormLabel>
+                            <FormLabel className="text-gray-700 font-medium ml-1">Bairro</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <div className="relative">
+                                <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <Input 
+                                  {...field} 
+                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1236,9 +1319,15 @@ export default function PassengerFormDialog({
                         name="cidade"
                         render={({ field }) => (
                           <FormItem className="md:col-span-4">
-                            <FormLabel>Cidade</FormLabel>
+                            <FormLabel className="text-gray-700 font-medium ml-1">Cidade</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <div className="relative">
+                                <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <Input 
+                                  {...field} 
+                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1249,15 +1338,18 @@ export default function PassengerFormDialog({
                         name="estado"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>Estado</FormLabel>
+                            <FormLabel className="text-gray-700 font-medium ml-1">Estado</FormLabel>
                               <Select
                               onValueChange={field.onChange}
                               value={field.value}
                             >
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="UF" />
-                                </SelectTrigger>
+                                <div className="relative">
+                                  <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                  <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                    <SelectValue placeholder="UF" />
+                                  </SelectTrigger>
+                                </div>
                               </FormControl>
                               <SelectContent className="max-h-60 overflow-y-auto">
                                 <SelectItem value="AC">Acre</SelectItem>
@@ -1313,11 +1405,12 @@ export default function PassengerFormDialog({
                         name="referencia"
                         render={({ field }) => (
                           <FormItem className="md:col-span-6">
-                            <FormLabel>Referência</FormLabel>
+                            <FormLabel className="text-gray-700 font-medium ml-1">Referência</FormLabel>
                             <FormControl>
                               <Textarea
                                 placeholder="Ex: próximo ao mercado"
                                 {...field}
+                                className="min-h-[80px] rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                               />
                             </FormControl>
                             <FormMessage />
@@ -1328,14 +1421,16 @@ export default function PassengerFormDialog({
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="observacoes" className="mt-4">
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-2 text-lg font-semibold">
-                      <FileText className="w-5 h-5 text-primary" />
+                <AccordionItem value="observacoes" className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm mt-4">
+                  <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
+                    <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
+                      <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                        <FileText className="w-5 h-5" />
+                      </div>
                       Observações (Opcional)
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="px-4 pr-4 pb-4 pt-2 space-y-4">
+                  <AccordionContent className="px-6 pb-6 pt-2 space-y-4">
                     <FormField
                       control={form.control}
                       name="observacoes"
@@ -1345,6 +1440,7 @@ export default function PassengerFormDialog({
                             <Textarea
                               placeholder="Ex: Alérgico a amendoim, entra pela porta lateral da escola, etc."
                               {...field}
+                              className="min-h-[100px] rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                             />
                           </FormControl>
                           <FormMessage />
@@ -1360,14 +1456,14 @@ export default function PassengerFormDialog({
                   variant="outline"
                   onClick={() => onClose()}
                   disabled={loading}
-                  className="flex-1"
+                  className="flex-1 h-12 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={loading || form.formState.isSubmitting}
-                  className="flex-1"
+                  className="flex-1 h-12 rounded-xl shadow-lg shadow-blue-500/20 font-semibold text-base"
                 >
                   {loading || form.formState.isSubmitting ? (
                     <>
@@ -1384,6 +1480,7 @@ export default function PassengerFormDialog({
             </form>
           </Form>
           <LoadingOverlay active={refreshing || loading} text={loading ? "Salvando..." : "Aguarde..."} />
+          </div>
         </DialogContent>
       </Dialog>
       <LimiteFranquiaDialog

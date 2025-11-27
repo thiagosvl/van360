@@ -1,6 +1,7 @@
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { phoneMask } from "@/utils/masks";
+import { Phone } from "lucide-react";
 import { ControllerRenderProps, FieldPath, FieldValues } from "react-hook-form";
 
 interface PhoneInputProps<T extends FieldValues> {
@@ -27,6 +28,7 @@ export function PhoneInput<T extends FieldValues>({
       </FormLabel>
       <FormControl>
         <div className="relative">
+          <Phone className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
           <Input
             {...field}
             placeholder={placeholder}
