@@ -120,12 +120,12 @@ export default function Register() {
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      nome: "",
-      apelido: "",
-      cpfcnpj: "",
-      email: "",
-      telefone: "",
-      senha: "",
+      nome: "Thiago",
+      apelido: "Tio Thiago",
+      cpfcnpj: "395.423.918-38",
+      email: "thiago@van360.com.br",
+      telefone: "(11) 99999-9999",
+      senha: "Ogaiht+1",
       plano_id: "",
       sub_plano_id: undefined,
       quantidade_personalizada: undefined,
@@ -692,6 +692,7 @@ export default function Register() {
       const ok = await form.trigger(fields as any);
       if (!ok) return false;
 
+      console.log("ok1", ok);
       // Se é Completo e requer pagamento, avançar para step 3 (pagamento)
       if (selectedPlano?.slug === PLANO_COMPLETO && requiresPayment) {
         try {
@@ -897,7 +898,7 @@ export default function Register() {
                     ) : (
                       selectedPlano?.slug === PLANO_GRATUITO 
                         ? "Criar minha conta grátis"
-                        : "Continuar para pagamento"
+                        : selectedPlano?.slug === PLANO_COMPLETO  ? "Continuar para pagamento" : "Criar minha conta"
                     )}
                   </Button>
                   <p className="text-center text-xs text-gray-400 mt-4">
