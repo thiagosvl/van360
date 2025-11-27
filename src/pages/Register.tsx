@@ -3,12 +3,14 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 // React Router
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 // Third-party
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { z } from "zod";
+
+// Schemas
+import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 
 // Components - Features
 import { PagamentoPix } from "@/components/features/pagamento/PagamentoPix";
@@ -16,11 +18,6 @@ import { isPlanoPagoNoAto } from "@/components/features/register";
 import { TermosUsoDialog } from "@/components/features/register/TermosUsoDialog";
 
 // Components - Features - Register (Lazy Loaded)
-const StepIndicator = lazy(() =>
-  import("@/components/features/register").then((mod) => ({
-    default: mod.StepIndicator,
-  }))
-);
 const CadastroForm = lazy(() =>
   import("@/components/features/register").then((mod) => ({
     default: mod.CadastroForm,
@@ -31,15 +28,14 @@ const PlanSummary = lazy(() =>
     default: mod.PlanSummary,
   }))
 );
-const PlanoCard = lazy(() =>
+const PlanoCardSelection = lazy(() =>
   import("@/components/features/register").then((mod) => ({
-    default: mod.PlanoCard,
+    default: mod.PlanoCardSelection,
   }))
 );
 
 // Components - UI
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
@@ -49,14 +45,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { usuarioApi } from "@/services";
 
 // Utils
-import { cn } from "@/lib/utils";
 import { toast } from "@/utils/notifications/toast";
-import { isValidCPF } from "@/utils/validators";
 
 // Constants
 import {
   ASSINATURA_COBRANCA_STATUS_PAGO,
   PLANO_COMPLETO,
+  PLANO_ESSENCIAL,
   PLANO_GRATUITO,
 } from "@/constants";
 
@@ -67,29 +62,9 @@ import { Plano, SubPlano } from "@/types/plano";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Icons
-import { getQuantidadeMinimaPersonalizada } from "@/utils/domain/plano/planoUtils";
-import { Loader2 } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
-
-const registerSchema = z.object({
-  plano_id: z.string().min(1, "Selecione um plano para continuar"),
-  sub_plano_id: z.string().optional(),
-  quantidade_personalizada: z.number().optional(),
-  nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
-  apelido: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
-  cpfcnpj: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .refine((val) => isValidCPF(val), "CPF inválido"),
-  email: z.string().min(1, "Campo obrigatório").email("E-mail inválido"),
-  telefone: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .refine((val) => val.replace(/\D/g, "").length === 11, "Telefone inválido"),
-  senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
-});
-
-type RegisterFormData = z.infer<typeof registerSchema>;
+import { getQuantidadeMinimaPersonalizada } from "@/utils/domain/plano/planoUtils";
+import { CheckCircle2, FileText, Loader2 } from "lucide-react";
 
 export default function Register() {
   // Permitir indexação da página de cadastro
@@ -107,6 +82,14 @@ export default function Register() {
   // Ref para rastrear a quantidade sendo calculada (evita race condition)
   const quantidadeCalculandoRef = useRef<number | null>(null);
   const planoIdCalculandoRef = useRef<string | null>(null);
+  
+  // Ref para persistir o estado do plano Completo (sub-plano ou quantidade personalizada)
+  const lastCompletoStateRef = useRef<{
+    subPlanoId?: string;
+    quantidadePersonalizada?: string;
+    precoPreview?: { preco: number; valorPorCobranca: number } | null;
+  } | null>(null);
+
   // Usar hook do React Query para buscar planos
   const { data: planosData, isLoading: loadingPlanos } = usePlanos(
     { ativo: "true" },
@@ -132,16 +115,17 @@ export default function Register() {
   } | null>(null);
   const [isCalculandoPreco, setIsCalculandoPreco] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      nome: "Thiago Barros Abilio",
-      apelido: "Tio Grátis",
-      cpfcnpj: "395.423.918-38",
-      email: "thiago-svl@hotmail.com",
-      telefone: "(11) 95118-6951",
-      senha: "Ogaiht+1",
+      nome: "",
+      apelido: "",
+      cpfcnpj: "",
+      email: "",
+      telefone: "",
+      senha: "",
       plano_id: "",
       sub_plano_id: undefined,
       quantidade_personalizada: undefined,
@@ -191,68 +175,75 @@ export default function Register() {
     prevStepRef.current = currentStep;
   }, [currentStep]);
 
-  // Seleção automática do plano Completo ao entrar na tela (se nenhum plano estiver selecionado)
+  // Processar parâmetros da URL (Landing Page Integration)
   useEffect(() => {
+    if (!loadingPlanos && planosDataTyped.bases.length > 0 && !selectedPlanoId) {
+      const planoParam = searchParams.get("plano");
+      
+      if (planoParam) {
+        const planoEncontrado = planosDataTyped.bases.find(p => p.slug === planoParam);
+        
+        if (planoEncontrado) {
+          form.setValue("plano_id", planoEncontrado.id, { shouldValidate: true });
+          
+          // Se for Gratuito ou Essencial, ir direto para o passo 2
+          if (planoParam === PLANO_GRATUITO || planoParam === PLANO_ESSENCIAL) {
+            setCurrentStep(2);
+          }
+          // Se for Completo, manter no passo 1 (será tratado pelo useEffect de auto-seleção abaixo)
+        }
+      }
+    }
+  }, [loadingPlanos, planosDataTyped.bases, searchParams, selectedPlanoId, form]);
+
+  // Seleção automática do plano Completo e Restauração de Estado
+  useEffect(() => {
+    // Se não houver plano selecionado (e não veio da URL com outro plano), selecionar Completo
     if (
       !loadingPlanos &&
       planosDataTyped.bases.length > 0 &&
       !selectedPlanoId &&
-      currentStep === 1
+      currentStep === 1 &&
+      !searchParams.get("plano")
     ) {
       const planoCompleto = planosDataTyped.bases.find(
         (p) => p.slug === PLANO_COMPLETO
       );
-      if (planoCompleto && planosDataTyped.sub.length > 0) {
-        form.setValue("plano_id", planoCompleto.id, {
-          shouldValidate: false,
-        });
-
-        // Selecionar o menor sub-plano imediatamente
-        const subPlanosCompleto = planosDataTyped.sub.filter(
-          (s) => String(s.parent_id) === String(planoCompleto.id)
-        );
-
-        if (subPlanosCompleto.length > 0) {
-          const menorSubPlano = subPlanosCompleto.reduce((menor, atual) => {
-            return atual.franquia_cobrancas_mes < menor.franquia_cobrancas_mes
-              ? atual
-              : menor;
-          });
-
-          if (menorSubPlano) {
-            // Usar setTimeout para garantir que o plano_id foi atualizado primeiro
-            setTimeout(() => {
-              form.setValue("sub_plano_id", menorSubPlano.id, {
-                shouldValidate: false,
-              });
-            }, 0);
-          }
-        }
+      if (planoCompleto) {
+        form.setValue("plano_id", planoCompleto.id, { shouldValidate: false });
       }
     }
-  }, [
-    loadingPlanos,
-    planosDataTyped.bases,
-    planosDataTyped.sub,
-    selectedPlanoId,
-    currentStep,
-    form,
-  ]);
 
-  // Seleção automática do menor sub-plano quando o plano Completo é selecionado
-  // Mas apenas se não houver quantidade personalizada sendo digitada ou slider expandido
-  useEffect(() => {
-    // Adicionar um pequeno delay para evitar conflito quando o slider é expandido
-    const timeoutId = setTimeout(() => {
+    // Lógica específica para quando o plano Completo está selecionado
+    if (
+      selectedPlano?.slug === PLANO_COMPLETO &&
+      planosDataTyped.sub.length > 0 &&
+      currentStep === 1
+    ) {
+      // 1. Tentar restaurar estado anterior (se houver)
+      if (lastCompletoStateRef.current) {
+        const { subPlanoId, quantidadePersonalizada: qtdPers, precoPreview } = lastCompletoStateRef.current;
+        // Só restaurar se não houver nada selecionado atualmente
+        if (!selectedSubPlanoId && !form.getValues("quantidade_personalizada") && !quantidadePersonalizada) {
+          if (subPlanoId) {
+            form.setValue("sub_plano_id", subPlanoId, { shouldValidate: false });
+          } else if (qtdPers) {
+            setQuantidadePersonalizada(qtdPers);
+            form.setValue("quantidade_personalizada", parseInt(qtdPers), { shouldValidate: true });
+            if (precoPreview) {
+              setPrecoCalculadoPreview(precoPreview);
+            }
+          }
+          return; // Estado restaurado, não precisa fazer mais nada
+        }
+      }
+
+      // 2. Se não restaurou e não tem nada selecionado, selecionar o menor sub-plano (Default)
       if (
-        selectedPlano?.slug === PLANO_COMPLETO &&
-        planosDataTyped.sub.length > 0 &&
         !selectedSubPlanoId &&
         !form.getValues("quantidade_personalizada") &&
-        !quantidadePersonalizada && // Verificar também o estado local para evitar seleção quando slider está expandido
-        currentStep === 1 // Apenas no step de seleção de plano
+        !quantidadePersonalizada
       ) {
-        // Encontrar o menor sub-plano (menor franquia)
         const subPlanosCompleto = planosDataTyped.sub.filter(
           (s) => String(s.parent_id) === String(selectedPlano.id)
         );
@@ -265,23 +256,29 @@ export default function Register() {
           });
 
           if (menorSubPlano) {
-            form.setValue("sub_plano_id", menorSubPlano.id, {
-              shouldValidate: false,
-            });
+            setTimeout(() => {
+              form.setValue("sub_plano_id", menorSubPlano.id, {
+                shouldValidate: false,
+              });
+              // Salvar este estado inicial como o "último estado" também
+              lastCompletoStateRef.current = { subPlanoId: menorSubPlano.id };
+            }, 0);
           }
         }
       }
-    }, 100);
-
-    return () => clearTimeout(timeoutId);
+    }
   }, [
-    selectedPlano?.id,
-    selectedPlano?.slug,
+    loadingPlanos,
+    planosDataTyped.bases,
     planosDataTyped.sub,
-    selectedSubPlanoId,
-    quantidadePersonalizada,
+    selectedPlanoId,
+    selectedPlano?.slug,
     currentStep,
     form,
+    searchParams,
+    // Dependências adicionais para a lógica de restauração
+    selectedSubPlanoId,
+    quantidadePersonalizada
   ]);
 
   useEffect(() => {
@@ -455,6 +452,9 @@ export default function Register() {
         // Limpar refs para cancelar qualquer cálculo em andamento
         quantidadeCalculandoRef.current = null;
         planoIdCalculandoRef.current = null;
+        
+        // Persistir estado
+        lastCompletoStateRef.current = { subPlanoId };
       }
     } else {
       // Limpar seleção
@@ -493,6 +493,12 @@ export default function Register() {
     // Selecionar o plano Completo automaticamente
     if (selectedPlano?.slug === PLANO_COMPLETO) {
       form.setValue("plano_id", selectedPlano.id, { shouldValidate: true });
+      
+      // Persistir estado
+      lastCompletoStateRef.current = { 
+        quantidadePersonalizada,
+        precoPreview: precoCalculadoPreview
+      };
     }
   };
 
@@ -539,7 +545,21 @@ export default function Register() {
       return;
     }
 
+    // OTIMIZAÇÃO: Verificar se já temos esse preço calculado no ref de persistência
+    if (
+      lastCompletoStateRef.current &&
+      lastCompletoStateRef.current.quantidadePersonalizada === String(quantidade) &&
+      lastCompletoStateRef.current.precoPreview !== undefined
+    ) {
+      setPrecoCalculadoPreview(lastCompletoStateRef.current.precoPreview);
+      setIsCalculandoPreco(false);
+      quantidadeCalculandoRef.current = quantidade;
+      planoIdCalculandoRef.current = selectedPlano.id;
+      return;
+    }
+
     // Debounce: aguardar 500ms antes de buscar
+    setPrecoCalculadoPreview(null); // Limpar preço anterior para forçar loader
     setIsCalculandoPreco(true);
     const quantidadeAtual = quantidade;
     const planoIdAtual = selectedPlano.id;
@@ -559,12 +579,9 @@ export default function Register() {
       calcularPrecoPreview.mutate(quantidadeAtual, {
         onSuccess: (resultado) => {
           // Verificar se ainda estamos calculando a mesma quantidade e no mesmo plano
-          // e se não há sub-plano selecionado (ou seja, ainda estamos no modo personalizado)
           const aindaEhRelevante =
             quantidadeCalculandoRef.current === quantidadeAtual &&
             planoIdCalculandoRef.current === planoIdAtual &&
-            form.getValues("plano_id") === planoIdAtual &&
-            !form.getValues("sub_plano_id") &&
             quantidadePersonalizada === String(quantidadeAtual);
 
           if (!aindaEhRelevante) {
@@ -580,6 +597,17 @@ export default function Register() {
             });
             form.setValue("quantidade_personalizada", quantidadeAtual);
             form.setValue("sub_plano_id", undefined);
+            
+            // Atualizar persistência se estivermos no plano completo
+            if (selectedPlano?.slug === PLANO_COMPLETO) {
+              lastCompletoStateRef.current = {
+                quantidadePersonalizada: String(quantidadeAtual),
+                precoPreview: {
+                  preco: resultado.preco,
+                  valorPorCobranca: resultado.valorPorCobranca,
+                }
+              };
+            }
           } else {
             setPrecoCalculadoPreview(null);
             form.setValue("quantidade_personalizada", undefined);
@@ -757,130 +785,165 @@ export default function Register() {
       case 1:
         return (
           <section className="space-y-3 sm:space-y-4 md:space-y-5">
-            {!loadingPlanos && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {planosDataTyped.bases.map((plano) => (
-                  <Suspense
-                    key={plano.id}
-                    fallback={<Skeleton className="h-96 w-full" />}
-                  >
-                    <PlanoCard
-                      plano={plano}
-                      subPlanos={planosDataTyped.sub.filter(
-                        (s) => String(s.parent_id) === String(plano.id)
-                      )}
-                      isSelected={selectedPlanoId === plano.id}
-                      selectedSubPlanoId={selectedSubPlanoId}
-                      quantidadePersonalizada={quantidadePersonalizada}
-                      onSubPlanoSelect={handleSelectSubPlano}
-                      onQuantidadePersonalizadaChange={
-                        setQuantidadePersonalizada
-                      }
-                      precoCalculadoPreview={
-                        precoCalculadoPreview?.preco ?? null
-                      }
-                      valorPorCobranca={
-                        precoCalculadoPreview?.valorPorCobranca ?? null
-                      }
-                      isCalculandoPreco={
-                        isCalculandoPreco || calcularPrecoPreview.isPending
-                      }
-                      getQuantidadeMinima={getQuantidadeMinima}
-                      onQuantidadePersonalizadaConfirm={
-                        handleQuantidadePersonalizadaConfirm
-                      }
-                      onAvancarStep={async () => {
-                        // Avançar para o próximo step quando clicar no botão "Escolher Plano"
-                        await handleNextStep();
-                      }}
-                      autoAdvanceOnSubPlanoSelect={false}
-                      onSelect={(id) => {
-                        const planoSelecionado = planosDataTyped.bases.find(
-                          (p) => p.id === id
-                        );
-
-                        // Se trocar de plano, limpar seleções anteriores
-                        if (selectedPlanoId && selectedPlanoId !== id) {
-                          form.setValue("sub_plano_id", undefined);
-                          form.setValue("quantidade_personalizada", undefined);
-                          setQuantidadePersonalizada("");
-                          setPrecoCalculadoPreview(null);
-                          // Limpar refs para cancelar qualquer cálculo em andamento
-                          quantidadeCalculandoRef.current = null;
-                          planoIdCalculandoRef.current = null;
+            <Form {...form}>
+              {!loadingPlanos && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {planosDataTyped.bases.map((plano) => (
+                    <Suspense
+                      key={plano.id}
+                      fallback={<Skeleton className="h-96 w-full" />}
+                    >
+                      <PlanoCardSelection
+                        plano={plano}
+                        subPlanos={planosDataTyped.sub.filter(
+                          (s) => String(s.parent_id) === String(plano.id)
+                        )}
+                        isSelected={selectedPlanoId === plano.id}
+                        selectedSubPlanoId={selectedSubPlanoId}
+                        quantidadePersonalizada={quantidadePersonalizada}
+                        onSubPlanoSelect={handleSelectSubPlano}
+                        onQuantidadePersonalizadaChange={
+                          setQuantidadePersonalizada
                         }
-
-                        // Se for Completo, apenas selecionar o plano (não abre modal)
-                        // A seleção de sub-plano será feita via radios
-                        if (planoSelecionado?.slug === PLANO_COMPLETO) {
-                          form.setValue("plano_id", id);
-                        } else {
-                          // Para outros planos, selecionar normalmente
-                          form.setValue("plano_id", id);
-                          form.setValue("sub_plano_id", undefined);
-                          form.setValue("quantidade_personalizada", undefined);
-                          setQuantidadePersonalizada("");
-                          setPrecoCalculadoPreview(null);
-                          // Limpar refs para cancelar qualquer cálculo em andamento
-                          quantidadeCalculandoRef.current = null;
-                          planoIdCalculandoRef.current = null;
+                        precoCalculadoPreview={
+                          precoCalculadoPreview?.preco ?? null
                         }
-                      }}
-                    />
-                  </Suspense>
-                ))}
-              </div>
-            )}
-
-            <FormField
-              control={form.control}
-              name="plano_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input {...field} type="hidden" className="hidden" />
-                  </FormControl>
-                </FormItem>
+                        valorPorCobranca={
+                          precoCalculadoPreview?.valorPorCobranca ?? null
+                        }
+                        isCalculandoPreco={
+                          isCalculandoPreco || calcularPrecoPreview.isPending
+                        }
+                        getQuantidadeMinima={getQuantidadeMinima}
+                        onQuantidadePersonalizadaConfirm={
+                          handleQuantidadePersonalizadaConfirm
+                        }
+                        onAvancarStep={async () => {
+                          await handleNextStep();
+                        }}
+                        onSelect={(id) => {
+                          const planoSelecionado = planosDataTyped.bases.find(
+                            (p) => p.id === id
+                          );
+                          if (planoSelecionado) {
+                            form.setValue("plano_id", id, {
+                              shouldValidate: true,
+                            });
+                          }
+                        }}
+                      />
+                    </Suspense>
+                  ))}
+                </div>
               )}
-            />
+              
+              <FormField
+                control={form.control}
+                name="plano_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input {...field} type="hidden" className="hidden" />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </Form>
           </section>
         );
 
       case 2:
         return (
-          <section className="space-y-6 rounded-lg">
-            {selectedPlano && (
-              <Suspense fallback={<Skeleton className="h-24 w-full" />}>
-                <PlanSummary
-                  plano={selectedPlano}
-                  subPlano={selectedSubPlano}
-                  quantidadePersonalizada={form.watch(
-                    "quantidade_personalizada"
-                  )}
-                  precoPersonalizado={precoCalculadoPreview?.preco || undefined}
-                />
-              </Suspense>
-            )}
-            <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-              <CadastroForm form={form as any} />
-            </Suspense>
+          <section className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex items-center gap-4 w-full sm:w-auto">
+                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <FileText className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-blue-900">Você escolheu: {selectedPlano?.nome}</h4>
+                  <p className="text-sm text-blue-700">
+                    {selectedPlano?.descricao_curta}
+                  </p>
+                </div>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
+                  setCurrentStep(1);
+                  // Não resetar o formulário completo, apenas limpar erros
+                  form.clearErrors();
+                }}
+                className="ml-auto text-blue-600 hover:text-blue-700 hover:bg-blue-100 w-full sm:w-auto mt-2 sm:mt-0"
+              >
+                Alterar
+              </Button>
+            </div>
+
+            <Form {...form}>
+              <form className="space-y-8">
+                <CadastroForm form={form} />
+                
+                <div className="pt-4">
+                  <Button
+                    type="button"
+                    onClick={handleNextStep}
+                    disabled={loading}
+                    className="w-full h-14 text-lg font-bold rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all transform hover:-translate-y-0.5"
+                  >
+                    {loading ? (
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    ) : (
+                      selectedPlano?.slug === PLANO_GRATUITO 
+                        ? "Criar minha conta grátis"
+                        : "Continuar para pagamento"
+                    )}
+                  </Button>
+                  <p className="text-center text-xs text-gray-400 mt-4">
+                    Ao criar sua conta, você concorda com nossos Termos de Uso e Política de Privacidade.
+                  </p>
+                </div>
+              </form>
+            </Form>
           </section>
         );
 
       case 3:
-        // Step 3 é apenas pagamento (Completo com pagamento no ato)
         return (
-          <PagamentoPix
-            dadosPagamento={dadosPagamento}
-            titulo=""
-            planos={planosDataTyped.bases}
-            subPlanos={planosDataTyped.sub}
-            selectedPlanoId={selectedPlanoId}
-            selectedSubPlanoId={selectedSubPlanoId}
-            quantidadePersonalizada={
-              form.watch("quantidade_personalizada") || undefined
-            }
-          />
+          <section className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+             <div className="bg-green-50 border border-green-100 rounded-2xl p-6 text-center space-y-2">
+                <div className="mx-auto h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mb-2">
+                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+                </div>
+                <h3 className="text-xl font-bold text-green-900">Conta criada com sucesso!</h3>
+                <p className="text-green-700">
+                  Para ativar seu plano <strong>{selectedPlano?.nome}</strong>, realize o pagamento abaixo.
+                </p>
+             </div>
+
+            {dadosPagamento && (
+              <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-sm">
+                <PagamentoPix
+                  dadosPagamento={dadosPagamento}
+                  planos={planosDataTyped.bases}
+                  subPlanos={planosDataTyped.sub}
+                  selectedPlanoId={selectedPlanoId}
+                  selectedSubPlanoId={selectedSubPlanoId}
+                  quantidadePersonalizada={form.getValues("quantidade_personalizada")}
+                />
+              </div>
+            )}
+            
+            <div className="text-center">
+               <p className="text-sm text-gray-500 mb-4">
+                 Assim que o pagamento for confirmado, você será redirecionado automaticamente.
+               </p>
+               <Button variant="outline" onClick={() => window.location.reload()}>
+                 Já fiz o pagamento
+               </Button>
+            </div>
+          </section>
         );
 
       default:
@@ -888,211 +951,67 @@ export default function Register() {
     }
   };
 
-  const getButtonText = () => {
-    if (currentStep === 1) return "Avançar";
-    if (currentStep === 2) {
-      // Se é Completo e requer pagamento, avançar para pagamento
-      if (selectedPlano?.slug === PLANO_COMPLETO && requiresPayment) {
-        return "Avançar";
-      }
-      // Caso contrário, confirmar cadastro
-      return "Confirmar";
-    }
-    // Step 3 é pagamento (não tem botão, mostra loader)
-    return "Avançar";
-  };
-
-  const handleStepAction = async () => {
-    if (loading) return;
-    form.clearErrors();
-    setLoading(true);
-
-    const isLastStepCadastro =
-      currentStep === finalStep && selectedPlano?.slug !== PLANO_COMPLETO;
-
-    if (isLastStepCadastro) {
-      await form.handleSubmit(handleFinalRegister, onFormError)();
-    } else {
-      const success = await handleNextStep();
-
-      if (success === false) {
-        setLoading(false);
-        return;
-      }
-    }
-
-    setLoading(false);
-  };
-
-  if (loadingPlanos) {
-    return null;
-  }
-
   return (
-    <div
-      className={cn(
-        "min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-blue-100",
-        // REDUZIDO: padding vertical geral (era py-6 sm:py-10)
-        "items-center justify-start py-4 sm:py-8 pb-20"
-      )}
-    >
-      {/* Wrapper principal - Aumentado max-width para dar mais ar */}
-      <div className="w-full max-w-5xl mx-auto flex flex-col px-3 sm:px-6">
-        {/* HEADER UNIFICADO - Reduzido margens verticais */}
-        <div className="w-full flex flex-col items-center mb-4 sm:mb-6">
-          <img
-            src="/assets/logo-van360.png"
-            alt="Van360"
-            // REDUZIDO: tamanho do logo e margem inferior
-            className="h-8 sm:h-10 w-auto mb-3"
-          />
-
-          <h1 className="text-xl sm:text-3xl font-bold text-center text-gray-900 mb-2">
-            {currentStep === 1 && "Escolha Seu Plano"}
-            {currentStep === 2 && "Dados do Cadastro"}
-            {currentStep === 3 && "Pagamento e Confirmação"}
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+      <div className="max-w-5xl w-full mx-auto space-y-8">
+        
+        {/* Header Simples e Elegante */}
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">
+            {currentStep === 1 && "Escolha o plano ideal"}
+            {currentStep === 2 && "Crie sua conta"}
+            {currentStep === 3 && "Finalize sua assinatura"}
           </h1>
-
-          <div className="w-full max-w-md mt-1">
-            <Suspense fallback={<Skeleton className="h-10 w-full" />}>
-              <StepIndicator
-                currentStep={currentStep}
-                steps={steps}
-                requiresPayment={showPaymentStep}
-              />
-            </Suspense>
-          </div>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            {currentStep === 1 && "Comece grátis ou potencialize sua gestão com automação."}
+            {currentStep === 2 && "Preencha seus dados para acessar o sistema."}
+            {currentStep === 3 && "Ambiente seguro. Seus dados estão protegidos."}
+          </p>
         </div>
 
-        {/* CONTAINER DE CONTEÚDO */}
-        <Card
-          className={cn(
-            "w-full mx-auto",
-            currentStep === 1
-              ? "bg-transparent border-none shadow-none"
-              : "bg-white shadow-xl rounded-xl border-gray-200 overflow-hidden"
-          )}
-        >
-          <CardContent
-            className={cn(
-              "p-0",
-              // REDUZIDO: padding interno no mobile para ganhar espaço lateral
-              currentStep === 1 ? "" : "p-4 sm:p-8"
-            )}
-          >
-            <div data-plano-slug={selectedPlano?.slug || ""}>
-              <Form {...form}>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleStepAction();
-                  }}
-                  className="space-y-6"
-                >
-                  {/* Renderiza o step atual */}
-                  {renderStep()}
+        {/* Card Principal */}
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+          
+          {/* Barra de Progresso */}
+          <div className="relative h-1.5 bg-gray-100 w-full">
+            <div 
+              className="absolute top-0 left-0 h-full bg-blue-600 transition-all duration-500 ease-out rounded-r-full"
+              style={{ width: `${(currentStep / finalStep) * 100}%` }}
+            />
+          </div>
 
-                  {/* Termos de Uso (apenas no step 2) */}
-                  {currentStep === 2 && <TermosUsoDialog />}
-
-                  {/* Botões de Avançar e Voltar */}
-                  <div className="flex justify-between gap-3 px-3 pt-4 pb-2">
-                    {currentStep !== 1 && (
-                      <Button
-                        type="button"
-                        variant={currentStep === 3 ? "ghost" : "outline"}
-                        onClick={() => {
-                          // Antes de voltar, resetar seleções e selecionar o Completo
-                          form.setValue("sub_plano_id", undefined);
-                          form.setValue("quantidade_personalizada", undefined);
-                          setQuantidadePersonalizada("");
-                          setPrecoCalculadoPreview(null);
-                          quantidadeCalculandoRef.current = null;
-                          planoIdCalculandoRef.current = null;
-
-                          // Selecionar o plano Completo e o menor sub-plano
-                          const planoCompleto = planosDataTyped.bases.find(
-                            (p) => p.slug === PLANO_COMPLETO
-                          );
-                          if (planoCompleto && planosDataTyped.sub.length > 0) {
-                            form.setValue("plano_id", planoCompleto.id, {
-                              shouldValidate: false,
-                            });
-
-                            // Selecionar o menor sub-plano imediatamente
-                            const subPlanosCompleto =
-                              planosDataTyped.sub.filter(
-                                (s) =>
-                                  String(s.parent_id) ===
-                                  String(planoCompleto.id)
-                              );
-
-                            if (subPlanosCompleto.length > 0) {
-                              const menorSubPlano = subPlanosCompleto.reduce(
-                                (menor, atual) => {
-                                  return atual.franquia_cobrancas_mes <
-                                    menor.franquia_cobrancas_mes
-                                    ? atual
-                                    : menor;
-                                }
-                              );
-
-                              if (menorSubPlano) {
-                                form.setValue(
-                                  "sub_plano_id",
-                                  menorSubPlano.id,
-                                  {
-                                    shouldValidate: false,
-                                  }
-                                );
-                              }
-                            }
-                          }
-
-                          // Agora sim, mudar o step
-                          const newStep = Math.max(1, currentStep - 1);
-                          setCurrentStep(newStep);
-                        }}
-                        disabled={
-                          loadingPlanos ||
-                          loading ||
-                          calcularPrecoPreview.isPending
-                        }
-                      >
-                        Voltar
-                      </Button>
-                    )}
-                    {currentStep !== 3 && currentStep !== 1 ? (
-                      <Button
-                        type="submit"
-                        className="bg-primary font-semibold text-base shadow-md hover:shadow-lg transition-all"
-                        disabled={
-                          loadingPlanos ||
-                          (currentStep === 1 && !selectedPlano) ||
-                          (currentStep === 1 &&
-                            selectedPlano?.slug === PLANO_COMPLETO &&
-                            !selectedSubPlanoId &&
-                            (!form.getValues("quantidade_personalizada") ||
-                              precoCalculadoPreview === null))
-                        }
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Aguarde...
-                          </>
-                        ) : (
-                          <>{getButtonText()}</>
-                        )}
-                      </Button>
-                    ) : null}
-                  </div>
-                </form>
-              </Form>
+          <div className="p-6 sm:p-10 lg:p-12">
+            {/* Indicador Textual */}
+            <div className="flex items-center justify-between mb-8 text-sm font-medium text-gray-500 uppercase tracking-wider">
+              <span>Passo {currentStep} de {finalStep}</span>
+              <span>
+                {currentStep === 1 && "Plano"}
+                {currentStep === 2 && "Cadastro"}
+                {currentStep === 3 && "Pagamento"}
+              </span>
             </div>
-          </CardContent>
-        </Card>
+
+            {loadingPlanos ? (
+              <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+                <p className="text-gray-500">Carregando planos...</p>
+              </div>
+            ) : (
+              renderStep()
+            )}
+          </div>
+        </div>
+        
+        {/* Footer / Depoimento (Opcional) */}
+        <div className="text-center pt-4">
+          <p className="text-sm text-gray-400">
+            &copy; {new Date().getFullYear()} Van360. Todos os direitos reservados.
+          </p>
       </div>
+      
+      {/* Dialogs */}
+      <TermosUsoDialog />
+    </div>
     </div>
   );
 }

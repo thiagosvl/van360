@@ -20,9 +20,11 @@ import { Slider } from "@/components/ui/slider";
 import { PLANO_COMPLETO, PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
 import { usePlanos } from "@/hooks";
 import { useSEO } from "@/hooks/useSEO";
+import { cn } from "@/lib/utils";
 import { Plano, SubPlano } from "@/types/plano";
 import { motion } from "framer-motion";
 import {
+  ArrowRight,
   CheckCircle2,
   Headset,
   Lightbulb,
@@ -1051,17 +1053,17 @@ const Index = () => {
                       </CardContent>
 
                       <CardFooter className="pt-2 pb-6">
-                        <Link to={CTA_LINK} className="w-full">
-                          <Button
-                            variant={config.buttonVariant}
-                            className={`w-full h-12 text-base font-bold rounded-xl ${
-                              config.highlight
-                                ? "bg-yellow-400 hover:bg-yellow-500 text-slate-900 shadow-md"
-                                : ""
-                            }`}
-                          >
-                            {config.buttonText}
-                          </Button>
+                        <Link
+                          to={`/cadastro?plano=${plano.slug}`}
+                          className={cn(
+                            "w-full inline-flex items-center justify-center px-6 py-3 border text-base font-medium rounded-xl transition-all duration-200",
+                            config.highlight
+                              ? "border-transparent text-white bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-blue-500/30"
+                              : "border-gray-200 text-blue-600 bg-white hover:bg-blue-50 hover:border-blue-200"
+                          )}
+                        >
+                          {config.buttonText}
+                          <ArrowRight className="ml-2 h-5 w-5" />
                         </Link>
                       </CardFooter>
                     </Card>

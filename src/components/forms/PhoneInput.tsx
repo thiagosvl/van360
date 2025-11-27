@@ -1,5 +1,5 @@
-import { Input } from "@/components/ui/input";
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { phoneMask } from "@/utils/masks";
 import { ControllerRenderProps, FieldPath, FieldValues } from "react-hook-form";
 
@@ -19,7 +19,7 @@ export function PhoneInput<T extends FieldValues>({
   className,
 }: PhoneInputProps<T>) {
   return (
-    <FormItem className={className}>
+    <FormItem>
       <FormLabel>
         {label} {required && <span className="text-red-600">*</span>}
       </FormLabel>
@@ -31,6 +31,7 @@ export function PhoneInput<T extends FieldValues>({
           onChange={(e) => {
             field.onChange(phoneMask(e.target.value));
           }}
+          className={className}
         />
       </FormControl>
       <FormMessage />
