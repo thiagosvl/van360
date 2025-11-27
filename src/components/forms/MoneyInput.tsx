@@ -1,5 +1,5 @@
-import { Input } from "@/components/ui/input";
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { moneyMask } from "@/utils/masks";
 import { ControllerRenderProps, FieldPath, FieldValues } from "react-hook-form";
 
@@ -29,6 +29,7 @@ export function MoneyInput<T extends FieldValues>({
         <Input
           {...field}
           placeholder={placeholder}
+          type="number"
           disabled={disabled}
           onChange={(e) => {
             field.onChange(moneyMask(e.target.value));
