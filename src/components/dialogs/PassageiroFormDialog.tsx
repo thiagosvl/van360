@@ -1413,10 +1413,9 @@ export default function PassengerFormDialog({
                               </FormLabel>
                               <FormControl>
                                 <div className="relative">
-                                  <Hash className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                                   <Input
                                     {...field}
-                                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                     aria-invalid={!!fieldState.error}
                                   />
                                 </div>
