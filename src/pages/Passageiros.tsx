@@ -10,6 +10,7 @@ import { PassageirosToolbar } from "@/components/features/passageiro/Passageiros
 import PrePassageiros from "@/components/features/passageiro/PrePassageiros";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
@@ -498,23 +499,34 @@ export default function Passageiros() {
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6">
           <Tabs defaultValue="passageiros" className="w-full space-y-6">
-            <div className="flex justify-start">
-              <TabsList className="bg-slate-100/80 p-1 rounded-xl h-auto w-full md:w-auto">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <TabsList className="bg-slate-100/80 p-1 rounded-xl h-10 md:h-12 w-full md:w-auto self-start">
                 <TabsTrigger
                   value="passageiros"
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm transition-all flex-1 md:flex-none"
+                  className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none"
                 >
-                  Meus Passageiros
+                  Passageiros
+                  {countPassageiros != null && countPassageiros > 0 && (
+                    <Badge
+                      variant="secondary"
+                      className="ml-2 bg-gray-200 text-gray-700 hover:bg-gray-200 text-[10px] md:text-xs"
+                    >
+                      {countPassageiros}
+                    </Badge>
+                  )}
                 </TabsTrigger>
                 <TabsTrigger
                   value="pre-cadastros"
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm transition-all flex items-center justify-center gap-2 flex-1 md:flex-none"
+                  className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none"
                 >
                   Solicitações
                   {countPrePassageiros > 0 && (
-                    <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                    <Badge
+                      variant="secondary"
+                      className="ml-2 bg-gray-200 text-gray-700 hover:bg-gray-200 text-[10px] md:text-xs"
+                    >
                       {countPrePassageiros}
-                    </span>
+                    </Badge>
                   )}
                 </TabsTrigger>
               </TabsList>
