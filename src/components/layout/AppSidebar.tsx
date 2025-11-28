@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { PLANO_COMPLETO, PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
 import { cn } from "@/lib/utils";
 import { pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -14,6 +15,66 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
   const userItems = pagesItems.map((item) => ({
     ...item,
   }));
+
+  // Obter slug principal do plano (usa parent se existir)
+  const getMainPlanSlug = () => {
+    if (!plano?.planoCompleto) return null;
+    return plano.planoCompleto.parent?.slug ?? plano.planoCompleto.slug ?? plano?.slug ?? null;
+  };
+
+  const getPlanTitle = (planSlug?: string) => {
+    const slug = planSlug?.toLowerCase() || "";
+    
+    if (slug === PLANO_GRATUITO) {
+      return "Cresça sem limites 🚀";
+    }
+    
+    if (slug === PLANO_ESSENCIAL) {
+      return "Automatize tudo ⚡";
+    }
+    
+    if (slug === PLANO_COMPLETO) {
+      return "Automatize ainda mais 🎯";
+    }
+    
+    return "Eleve seu negócio 🚀";
+  };
+
+  const getPlanMessage = (planSlug?: string) => {
+    const slug = planSlug?.toLowerCase() || "";
+    
+    if (slug === PLANO_GRATUITO) {
+      return "Cadastre quantos passageiros quiser, cobre automaticamente e veja seus gastos e lucros em tempo real.";
+    }
+    
+    if (slug === PLANO_ESSENCIAL) {
+      return "Foque só em dirigir! Nós cobramos, recebemos, damos baixa e enviamos os recibos automaticamente.";
+    }
+    
+    if (slug === PLANO_COMPLETO) {
+      return "Adicione mais passageiros com cobrança automática e ganhe tempo para focar no que realmente importa.";
+    }
+    
+    return "Acesse todos os recursos e mantenha seu painel sempre atualizado.";
+  };
+
+  const getPlanCTA = (planSlug?: string) => {
+    const slug = planSlug?.toLowerCase() || "";
+    
+    if (slug === PLANO_GRATUITO) {
+      return "Quero mais recursos →";
+    }
+    
+    if (slug === PLANO_ESSENCIAL) {
+      return "Quero automação total →";
+    }
+    
+    if (slug === PLANO_COMPLETO) {
+      return "Quero automatizar mais →";
+    }
+    
+    return "Ver benefícios";
+  };
 
   return (
     <div className="flex h-full flex-col gap-6">
@@ -57,20 +118,24 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
       </nav>
 
       <div className="hidden sm:block rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-500 to-purple-500 p-5 text-white shadow-lg">
-        <p className="text-sm font-semibold">Plano {plano?.slug || "Atual"}</p>
+        <p className="text-sm font-semibold">
+          {getPlanTitle(plano?.slug)}
+        </p>
         <p className="text-xs text-white/80">
-          Acesse todos os recursos e mantenha seu painel sempre atualizado.
+          {getPlanMessage(plano?.slug)}
         </p>
         <Button
           variant="secondary"
           size="sm"
           onClick={() => {
-            navigate("/assinatura");
+            const mainSlug = getMainPlanSlug();
+            const url = mainSlug ? `/planos?plano=${mainSlug}` : "/planos";
+            navigate(url);
             onLinkClick?.();
           }}
-          className="mt-4 w-full rounded-full border-white/30 bg-white/20 text-white hover:bg-white/30"
+          className="mt-4 w-full rounded-full border-white/30 bg-white/20 text-white hover:bg-white/30 font-semibold"
         >
-          Ver benefícios
+          {getPlanCTA(plano?.slug)}
         </Button>
       </div>
     </div>

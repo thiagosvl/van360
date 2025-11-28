@@ -165,11 +165,11 @@ export default function VeiculoFormDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="sm:max-w-md bg-blue-600 rounded-3xl border-0 shadow-2xl overflow-hidden p-0"
+        className="sm:max-w-md flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
         hideCloseButton
       >
-        <div className="bg-blue-600 p-6 text-center relative">
+        <div className="bg-blue-600 p-6 text-center relative shrink-0">
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
             <X className="h-6 w-6" />
             <span className="sr-only">Close</span>
@@ -186,7 +186,7 @@ export default function VeiculoFormDialog({
           </DialogDescription>
         </div>
 
-        <div className="p-6 pt-2 bg-white rounded-b-3xl">
+        <div className="p-6 pt-2 bg-white flex-1 overflow-y-auto">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit, onFormError)}
@@ -195,7 +195,7 @@ export default function VeiculoFormDialog({
               <FormField
                 name="placa"
                 control={form.control}
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 font-medium ml-1">
                       Placa <span className="text-red-500">*</span>
@@ -212,6 +212,7 @@ export default function VeiculoFormDialog({
                             const masked = aplicarMascaraPlaca(e.target.value);
                             field.onChange(masked);
                           }}
+                          aria-invalid={!!fieldState.error}
                         />
                       </div>
                     </FormControl>
@@ -224,7 +225,7 @@ export default function VeiculoFormDialog({
                 <FormField
                   name="marca"
                   control={form.control}
-                  render={({ field }) => (
+                  render={({ field, fieldState }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 font-medium ml-1">
                         Marca <span className="text-red-500">*</span>
@@ -236,6 +237,7 @@ export default function VeiculoFormDialog({
                             placeholder="Ex: Fiat"
                             {...field}
                             className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                            aria-invalid={!!fieldState.error}
                           />
                         </div>
                       </FormControl>
@@ -246,7 +248,7 @@ export default function VeiculoFormDialog({
                 <FormField
                   name="modelo"
                   control={form.control}
-                  render={({ field }) => (
+                  render={({ field, fieldState }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 font-medium ml-1">
                         Modelo <span className="text-red-500">*</span>
@@ -258,6 +260,7 @@ export default function VeiculoFormDialog({
                             placeholder="Ex: Ducato"
                             {...field}
                             className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                            aria-invalid={!!fieldState.error}
                           />
                         </div>
                       </FormControl>
@@ -274,11 +277,15 @@ export default function VeiculoFormDialog({
                   render={({ field }) => (
                     <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
                       <Checkbox
+                        id="ativo"
                         checked={field.value}
                         onCheckedChange={field.onChange}
                         className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <FormLabel className="flex-1 cursor-pointer font-medium text-gray-700 m-0 mt-0">
+                      <FormLabel 
+                        htmlFor="ativo"
+                        className="flex-1 cursor-pointer font-medium text-gray-700 m-0 mt-0"
+                      >
                         Veículo Ativo
                       </FormLabel>
                     </FormItem>

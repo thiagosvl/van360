@@ -1,4 +1,4 @@
-import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { FormControl, FormItem, FormLabel, FormMessage, useFormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cepService } from "@/services/cepService";
 import { cepMask } from "@/utils/masks";
@@ -33,6 +33,7 @@ export function CepInput<T extends FieldValues>({
 }: CepInputProps<T>) {
   const [loadingCep, setLoadingCep] = useState(false);
   const form = useFormContext<T>();
+  const { error } = useFormField();
 
   const handleCepChange = async (value: string) => {
     const masked = cepMask(value);
@@ -96,6 +97,7 @@ export function CepInput<T extends FieldValues>({
             type="text"
             className={cn("pl-12 pr-8", inputClassName)}
             onChange={(e) => handleCepChange(e.target.value)}
+            aria-invalid={!!error}
           />
           {loadingCep && (
             <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">

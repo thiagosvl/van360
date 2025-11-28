@@ -430,7 +430,7 @@ export default function Gastos() {
                 </DialogDescription>
               </div>
 
-              <div className="p-6 pt-2 bg-white rounded-b-3xl">
+              <div className="p-6 pt-2 bg-white flex-1 overflow-y-auto">
                 <Form {...form}>
                   <form
                     onSubmit={form.handleSubmit(handleSubmit)}
@@ -439,7 +439,7 @@ export default function Gastos() {
                     <FormField
                       control={form.control}
                       name="categoria"
-                      render={({ field }) => (
+                      render={({ field, fieldState }) => (
                         <FormItem>
                           <FormLabel className="text-gray-700 font-medium ml-1">
                             Categoria <span className="text-red-500">*</span>
@@ -451,7 +451,10 @@ export default function Gastos() {
                             <FormControl>
                               <div className="relative">
                                 <Tag className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                <SelectTrigger 
+                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                  aria-invalid={!!fieldState.error}
+                                >
                                   <SelectValue placeholder="Selecione a categoria" />
                                 </SelectTrigger>
                               </div>
@@ -472,7 +475,7 @@ export default function Gastos() {
                       <FormField
                         control={form.control}
                         name="data"
-                        render={({ field }) => (
+                        render={({ field, fieldState }) => (
                           <FormItem className="flex flex-col">
                             <FormLabel className="text-gray-700 font-medium ml-1">
                               Data <span className="text-red-500">*</span>
@@ -490,8 +493,10 @@ export default function Gastos() {
                                       variant="outline"
                                       className={cn(
                                         "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left font-normal hover:bg-gray-100 justify-start",
-                                        !field.value && "text-muted-foreground"
+                                        !field.value && "text-muted-foreground",
+                                        fieldState.error && "border-red-500 ring-red-500"
                                       )}
+                                      aria-invalid={!!fieldState.error}
                                     >
                                       {field.value ? (
                                         format(field.value, "dd/MM/yyyy")
@@ -540,7 +545,7 @@ export default function Gastos() {
                     <FormField
                       control={form.control}
                       name="descricao"
-                      render={({ field }) => (
+                      render={({ field, fieldState }) => (
                         <FormItem>
                           <FormLabel className="text-gray-700 font-medium ml-1">Descrição</FormLabel>
                           <FormControl>
@@ -548,6 +553,7 @@ export default function Gastos() {
                               {...field} 
                               placeholder="Detalhes do gasto (opcional)"
                               className="min-h-[100px] rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all resize-none"
+                              aria-invalid={!!fieldState.error}
                             />
                           </FormControl>
                           <FormMessage />

@@ -247,7 +247,7 @@ export default function CobrancaDialog({
           </DialogDescription>
         </div>
 
-        <div className="p-6 pt-2 bg-white rounded-b-3xl">
+        <div className="p-6 pt-2 bg-white flex-1 overflow-y-auto">
           <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-6 flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
               <User className="w-5 h-5" />
@@ -267,7 +267,7 @@ export default function CobrancaDialog({
                 <FormField
                   control={form.control}
                   name="mes"
-                  render={({ field }) => (
+                  render={({ field, fieldState }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 font-medium ml-1">
                         Mês <span className="text-red-600">*</span>
@@ -288,7 +288,10 @@ export default function CobrancaDialog({
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                          <SelectTrigger 
+                            className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                            aria-invalid={!!fieldState.error}
+                          >
                             <SelectValue placeholder="Selecione..." />
                           </SelectTrigger>
                         </FormControl>
@@ -307,7 +310,7 @@ export default function CobrancaDialog({
                 <FormField
                   control={form.control}
                   name="ano"
-                  render={({ field }) => (
+                  render={({ field, fieldState }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 font-medium ml-1">
                         Ano <span className="text-red-600">*</span>
@@ -328,7 +331,10 @@ export default function CobrancaDialog({
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                          <SelectTrigger 
+                            className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                            aria-invalid={!!fieldState.error}
+                          >
                             <SelectValue placeholder="Selecione..." />
                           </SelectTrigger>
                         </FormControl>
@@ -392,6 +398,7 @@ export default function CobrancaDialog({
                       <FormLabel className="flex-1 cursor-pointer font-medium text-gray-700 m-0 mt-0">
                         Esta cobrança já foi paga?
                       </FormLabel>
+                      <FormMessage />
                     </div>
                   </FormItem>
                 )}
@@ -401,7 +408,7 @@ export default function CobrancaDialog({
                   <FormField
                     control={form.control}
                     name="data_pagamento"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem className="flex flex-col">
                         <FormLabel className="text-gray-700 font-medium ml-1">
                           Data do pagamento{" "}
@@ -423,6 +430,7 @@ export default function CobrancaDialog({
                                     form.formState.errors.data_pagamento &&
                                       "border-red-500 ring-red-500"
                                   )}
+                                  aria-invalid={!!fieldState.error}
                                 >
                                   {field.value ? (
                                     format(field.value, "dd/MM/yyyy")
@@ -456,7 +464,7 @@ export default function CobrancaDialog({
                   <FormField
                     control={form.control}
                     name="tipo_pagamento"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem>
                         <FormLabel className="text-gray-700 font-medium ml-1">
                           Forma de pagamento{" "}
@@ -469,7 +477,10 @@ export default function CobrancaDialog({
                           <FormControl>
                             <div className="relative">
                               <CreditCard className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                              <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                              <SelectTrigger 
+                                className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                aria-invalid={!!fieldState.error}
+                              >
                                 <SelectValue placeholder="Selecione a forma" />
                               </SelectTrigger>
                             </div>

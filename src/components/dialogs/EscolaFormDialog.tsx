@@ -193,11 +193,11 @@ export default function EscolaFormDialog({
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent
-          className="sm:max-w-2xl max-h-[95vh] overflow-y-auto bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
+          className="sm:max-w-2xl max-h-[95vh] flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
           onOpenAutoFocus={(e) => e.preventDefault()}
           hideCloseButton
         >
-          <div className="bg-blue-600 p-6 text-center relative">
+          <div className="bg-blue-600 p-6 text-center relative shrink-0">
             <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
               <X className="h-6 w-6" />
               <span className="sr-only">Close</span>
@@ -214,7 +214,7 @@ export default function EscolaFormDialog({
             </DialogDescription>
           </div>
 
-          <div className="p-6 pt-2 bg-white rounded-b-3xl">
+          <div className="p-6 pt-2 bg-white flex-1 overflow-y-auto">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleSubmit, onFormError)}
@@ -237,7 +237,7 @@ export default function EscolaFormDialog({
                       <FormField
                         control={form.control}
                         name="nome"
-                        render={({ field }) => (
+                        render={({ field, fieldState }) => (
                           <FormItem>
                             <FormLabel className="text-gray-700 font-medium ml-1">
                               Nome da Escola{" "}
@@ -250,6 +250,7 @@ export default function EscolaFormDialog({
                                   {...field} 
                                   className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                   placeholder="Ex: Escola Municipal..."
+                                  aria-invalid={!!fieldState.error}
                                 />
                               </div>
                             </FormControl>
@@ -265,11 +266,15 @@ export default function EscolaFormDialog({
                             render={({ field }) => (
                               <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
                                 <Checkbox
+                                  id="ativo"
                                   checked={field.value}
                                   onCheckedChange={field.onChange}
                                   className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
                                 />
-                                <FormLabel className="flex-1 cursor-pointer font-medium text-gray-700 m-0 mt-0">
+                                <FormLabel 
+                                  htmlFor="ativo"
+                                  className="flex-1 cursor-pointer font-medium text-gray-700 m-0 mt-0"
+                                >
                                   Escola Ativa
                                 </FormLabel>
                               </FormItem>
@@ -304,13 +309,14 @@ export default function EscolaFormDialog({
                         <FormField
                           control={form.control}
                           name="logradouro"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-4">
                               <FormLabel className="text-gray-700 font-medium ml-1">Logradouro</FormLabel>
                               <FormControl>
                                 <Input 
                                   {...field} 
                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                  aria-invalid={!!fieldState.error}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -321,13 +327,14 @@ export default function EscolaFormDialog({
                         <FormField
                           control={form.control}
                           name="numero"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-2">
                               <FormLabel className="text-gray-700 font-medium ml-1">Número</FormLabel>
                               <FormControl>
                                 <Input 
                                   {...field} 
                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                  aria-invalid={!!fieldState.error}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -337,13 +344,14 @@ export default function EscolaFormDialog({
                         <FormField
                           control={form.control}
                           name="bairro"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-4">
                               <FormLabel className="text-gray-700 font-medium ml-1">Bairro</FormLabel>
                               <FormControl>
                                 <Input 
                                   {...field} 
                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                  aria-invalid={!!fieldState.error}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -354,13 +362,14 @@ export default function EscolaFormDialog({
                         <FormField
                           control={form.control}
                           name="cidade"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-4">
                               <FormLabel className="text-gray-700 font-medium ml-1">Cidade</FormLabel>
                               <FormControl>
                                 <Input 
                                   {...field} 
                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                  aria-invalid={!!fieldState.error}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -370,7 +379,7 @@ export default function EscolaFormDialog({
                         <FormField
                           control={form.control}
                           name="estado"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-2">
                               <FormLabel className="text-gray-700 font-medium ml-1">Estado</FormLabel>
                               <Select
@@ -378,7 +387,10 @@ export default function EscolaFormDialog({
                                 value={field.value}
                               >
                                 <FormControl>
-                                  <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                  <SelectTrigger 
+                                    className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    aria-invalid={!!fieldState.error}
+                                  >
                                     <SelectValue placeholder="UF" />
                                   </SelectTrigger>
                                 </FormControl>
@@ -434,7 +446,7 @@ export default function EscolaFormDialog({
                         <FormField
                           control={form.control}
                           name="referencia"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="col-span-1 md:col-span-6">
                               <FormLabel className="text-gray-700 font-medium ml-1">Referência</FormLabel>
                               <FormControl>
@@ -442,6 +454,7 @@ export default function EscolaFormDialog({
                                   placeholder="Ex: próximo ao mercado"
                                   {...field}
                                   className="min-h-[80px] rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                  aria-invalid={!!fieldState.error}
                                 />
                               </FormControl>
                               <FormMessage />

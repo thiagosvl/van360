@@ -1,4 +1,4 @@
-import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { FormControl, FormItem, FormLabel, FormMessage, useFormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { moneyMask } from "@/utils/masks";
 import { DollarSign } from "lucide-react";
@@ -23,6 +23,8 @@ export function MoneyInput<T extends FieldValues>({
   inputClassName,
   disabled = false,
 }: MoneyInputProps<T>) {
+  const { error } = useFormField();
+
   return (
     <FormItem className={className}>
       <FormLabel>
@@ -40,6 +42,7 @@ export function MoneyInput<T extends FieldValues>({
             onChange={(e) => {
               field.onChange(moneyMask(e.target.value));
             }}
+            aria-invalid={!!error}
           />
         </div>
       </FormControl>

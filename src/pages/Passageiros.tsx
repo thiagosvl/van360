@@ -16,16 +16,16 @@ import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreatePassageiro,
-    useDeletePassageiro,
-    useEscolas,
-    useFilters,
-    usePassageiros,
-    usePrePassageiros,
-    useToggleAtivoPassageiro,
-    useUpdatePassageiro,
-    useValidarFranquia,
-    useVeiculos,
+  useCreatePassageiro,
+  useDeletePassageiro,
+  useEscolas,
+  useFilters,
+  usePassageiros,
+  usePrePassageiros,
+  useToggleAtivoPassageiro,
+  useUpdatePassageiro,
+  useValidarFranquia,
+  useVeiculos,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -713,7 +713,7 @@ export default function Passageiros() {
             }
             description={
               confirmToggleDialog.action === "ativar"
-                ? "Deseja reativar este passageiro? Ele voltará a aparecer nas listas e cobranças."
+                ? "Deseja reativar este passageiro? Ele voltará a aparecer nas listas de cobranças."
                 : "Deseja desativar este passageiro? Ele não aparecerá mais nas listas de cobrança."
             }
             onConfirm={handleToggleConfirm}

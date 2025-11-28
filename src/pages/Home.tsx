@@ -8,7 +8,7 @@ import {
   TrendingUp,
   Users,
   Wallet,
-  Zap
+  Zap,
 } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -27,7 +27,12 @@ import { useVeiculos } from "@/hooks/api/useVeiculos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
-import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
+import {
+  PASSAGEIRO_COBRANCA_STATUS_PAGO,
+  PLANO_COMPLETO,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
+} from "@/constants";
 import { cn } from "@/lib/utils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { toast } from "@/utils/notifications/toast";
@@ -357,14 +362,85 @@ const Home = () => {
 
   const handleCopyLink = () => {
     if (!profile?.id) return;
-    try {
-      navigator.clipboard.writeText(buildPrepassageiroLink(profile?.id));
-      toast.success("Link copiado!", {
-        description: "Envie para os responsáveis.",
-      });
-    } catch (error) {
-      toast.error("Erro ao copiar link");
+
+    if (plano?.slug === PLANO_GRATUITO) {
+      toast.error("Você não tem permissão para acessar este recurso.");
+      return;
+    } else {
+      try {
+        navigator.clipboard.writeText(buildPrepassageiroLink(profile?.id));
+        toast.success("Link copiado!", {
+          description: "Envie para os responsáveis.",
+        });
+      } catch (error) {
+        toast.error("Erro ao copiar link");
+      }
     }
+  };
+
+  // Obter slug principal do plano (usa parent se existir)
+  const getMainPlanSlug = () => {
+    if (!plano?.planoCompleto) return null;
+    return (
+      plano.planoCompleto.parent?.slug ??
+      plano.planoCompleto.slug ??
+      plano?.slug ??
+      null
+    );
+  };
+
+  const getPlanMessage = (planSlug?: string) => {
+    const slug = planSlug?.toLowerCase() || "";
+
+    if (slug === PLANO_GRATUITO) {
+      return "Cadastre quantos passageiros quiser, cobre automaticamente e veja seus gastos e lucros em tempo real.";
+    }
+
+    if (slug === PLANO_ESSENCIAL) {
+      return "Foque só em dirigir! Nós cobramos, recebemos, damos baixa e enviamos os recibos automaticamente.";
+    }
+
+    if (slug === PLANO_COMPLETO) {
+      return "Adicione mais passageiros com cobrança automática e ganhe tempo para focar no que realmente importa.";
+    }
+
+    return "Desbloqueie recursos avançados e automação completa para seu negócio.";
+  };
+
+  const getPlanCTA = (planSlug?: string) => {
+    const slug = planSlug?.toLowerCase() || "";
+
+    if (slug === PLANO_GRATUITO) {
+      return "Quero mais recursos →";
+    }
+
+    if (slug === PLANO_ESSENCIAL) {
+      return "Quero automação total →";
+    }
+
+    if (slug === PLANO_COMPLETO) {
+      return "Quero automatizar mais →";
+    }
+
+    return "Ver Planos →";
+  };
+
+  const getPlanTitle = (planSlug?: string) => {
+    const slug = planSlug?.toLowerCase() || "";
+
+    if (slug === PLANO_GRATUITO) {
+      return "Potencialize seu negócio 🚀";
+    }
+
+    if (slug === PLANO_ESSENCIAL) {
+      return "Automatize tudo 🚀";
+    }
+
+    if (slug === PLANO_COMPLETO) {
+      return "Automatize ainda mais 🎯";
+    }
+
+    return "Seja Premium 🚀";
   };
 
   if (isSessionLoading || isProfileLoading) {
@@ -435,7 +511,7 @@ const Home = () => {
             value={activePassengers}
             icon={Users}
             colorClass="text-blue-600"
-            bgClass="bg-blue-50" 
+            bgClass="bg-blue-50"
             loading={isProfileLoading}
           />
         </div>
@@ -484,7 +560,7 @@ const Home = () => {
                 <Zap className="h-5 w-5" />
               </div>
               <span className="text-xs font-semibold text-gray-700 text-center leading-tight group-hover:text-blue-700">
-                Copiar Link
+                Link de Cadastro
               </span>
             </div>
             <ShortcutCard
@@ -519,31 +595,36 @@ const Home = () => {
         </section>
 
         {/* Marketing / Upsell (Discreto) */}
-        {!plano?.isCompletePlan && (
-          <section className="pt-2">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10">
-                <Zap className="h-24 w-24" />
-              </div>
-              <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="font-bold text-lg">Seja Premium 🚀</h3>
-                  <p className="text-indigo-100 text-sm mt-1 max-w-md">
-                    Desbloqueie relatórios avançados, passageiros ilimitados e
-                    automação de cobranças.
-                  </p>
-                </div>
-                <Button
-                  variant="secondary"
-                  className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold border-none shadow-sm shrink-0"
-                  onClick={() => navigate("/planos")}
-                >
-                  Ver Planos
-                </Button>
-              </div>
+        <section className="pt-2">
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <Zap className="h-24 w-24" />
             </div>
-          </section>
-        )}
+            <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-lg">
+                  {getPlanTitle(plano?.slug)}
+                </h3>
+                <p className="text-indigo-100 text-sm mt-1 max-w-md">
+                  {getPlanMessage(plano?.slug)}
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold border-none shadow-sm shrink-0"
+                onClick={() => {
+                  const mainSlug = getMainPlanSlug();
+                  const url = mainSlug
+                    ? `/planos?plano=${mainSlug}`
+                    : "/planos";
+                  navigate(url);
+                }}
+              >
+                {getPlanCTA(plano?.slug)}
+              </Button>
+            </div>
+          </div>
+        </section>
       </div>
     </PullToRefreshWrapper>
   );

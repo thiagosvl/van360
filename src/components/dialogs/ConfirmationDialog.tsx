@@ -35,12 +35,12 @@ export default function ConfirmationDialog({
 }: ConfirmationDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className={`max-w-md rounded-3xl border-0 shadow-2xl p-0 overflow-hidden ${
-        variant === "destructive" ? "bg-red-600" : "bg-blue-600"
-      }`}>
-        <div className={`${
-          variant === "destructive" ? "bg-red-600" : "bg-blue-600"
-        } p-6 text-center`}>
+      <AlertDialogContent className="max-w-md rounded-3xl border-0 shadow-2xl p-0 overflow-hidden bg-white">
+        <div
+          className={`${
+            variant === "destructive" ? "bg-red-600" : "bg-blue-600"
+          } p-6 text-center`}
+        >
           <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
             {variant === "destructive" ? (
               <AlertTriangle className="w-6 h-6 text-white" />
@@ -52,13 +52,16 @@ export default function ConfirmationDialog({
             <AlertDialogTitle className="text-2xl font-bold text-white text-center">
               {title}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-blue-100 text-sm text-center">
-              {description}
-            </AlertDialogDescription>
           </AlertDialogHeader>
         </div>
 
-        <AlertDialogFooter className="p-6 bg-white rounded-b-3xl flex-row gap-3 sm:gap-3 space-x-0">
+        <div className="px-6 py-4 text-center">
+          <AlertDialogDescription className="text-gray-600 text-base">
+            {description}
+          </AlertDialogDescription>
+        </div>
+
+        <AlertDialogFooter className="p-6 pt-2 bg-white flex-row gap-3 sm:gap-3 space-x-0">
           <AlertDialogCancel
             disabled={isLoading}
             className="flex-1 h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium border-gray-200 mt-0"

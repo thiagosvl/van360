@@ -1,4 +1,4 @@
-import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { FormControl, FormItem, FormLabel, FormMessage, useFormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { phoneMask } from "@/utils/masks";
 import { Phone } from "lucide-react";
@@ -21,6 +21,8 @@ export function PhoneInput<T extends FieldValues>({
   className,
   inputClassName,
 }: PhoneInputProps<T>) {
+  const { error } = useFormField();
+
   return (
     <FormItem className={className}>
       <FormLabel className="text-gray-700 font-medium ml-1">
@@ -37,6 +39,7 @@ export function PhoneInput<T extends FieldValues>({
               field.onChange(phoneMask(e.target.value));
             }}
             className={inputClassName}
+            aria-invalid={!!error}
           />
         </div>
       </FormControl>

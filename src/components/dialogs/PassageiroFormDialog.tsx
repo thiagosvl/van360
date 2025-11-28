@@ -782,12 +782,12 @@ export default function PassengerFormDialog({
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent
-          className="max-w-3xl max-h-[95vh] overflow-y-auto bg-white rounded-3xl border-0 shadow-2xl p-0"
+          className="max-w-3xl max-h-[95vh] flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
           onOpenAutoFocus={(e) => e.preventDefault()}
           hideCloseButton
           aria-describedby="dialog-description"
         >
-          <div className="bg-blue-600 p-6 text-center relative">
+          <div className="bg-blue-600 p-6 text-center relative shrink-0">
             <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
               <X className="h-6 w-6" />
               <span className="sr-only">Close</span>
@@ -803,12 +803,15 @@ export default function PassengerFormDialog({
                 ? "Editar Passageiro"
                 : "Novo Passageiro"}
             </DialogTitle>
-            <DialogDescription className="text-blue-100 text-sm mt-1" id="dialog-description">
+            <DialogDescription
+              className="text-blue-100 text-sm mt-1"
+              id="dialog-description"
+            >
               Preencha os dados do passageiro abaixo
             </DialogDescription>
           </div>
 
-          <div className="p-6 pt-2">
+          <div className="p-6 pt-2 bg-white flex-1 overflow-y-auto">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleSubmit, onFormError)}
@@ -855,7 +858,7 @@ export default function PassengerFormDialog({
                         <FormField
                           control={form.control}
                           name="nome"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-1">
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Nome <span className="text-red-600">*</span>
@@ -867,6 +870,7 @@ export default function PassengerFormDialog({
                                     placeholder="Digite o nome do passageiro"
                                     {...field}
                                     className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    aria-invalid={!!fieldState.error}
                                   />
                                 </div>
                               </FormControl>
@@ -877,7 +881,7 @@ export default function PassengerFormDialog({
                         <FormField
                           control={form.control}
                           name="periodo"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-1">
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Período <span className="text-red-600">*</span>
@@ -889,7 +893,10 @@ export default function PassengerFormDialog({
                                 <FormControl>
                                   <div className="relative">
                                     <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                    <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                    <SelectTrigger 
+                                      className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                      aria-invalid={!!fieldState.error}
+                                    >
                                       <SelectValue placeholder="Selecione o período" />
                                     </SelectTrigger>
                                   </div>
@@ -915,7 +922,7 @@ export default function PassengerFormDialog({
                         <FormField
                           control={form.control}
                           name="veiculo_id"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem>
                               <FormLabel>
                                 Veículo <span className="text-red-600">*</span>
@@ -934,7 +941,10 @@ export default function PassengerFormDialog({
                                 <FormControl>
                                   <div className="relative">
                                     <Car className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                    <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                    <SelectTrigger 
+                                      className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                      aria-invalid={!!fieldState.error}
+                                    >
                                       <SelectValue placeholder="Selecione o veículo" />
                                     </SelectTrigger>
                                   </div>
@@ -964,7 +974,7 @@ export default function PassengerFormDialog({
                         <FormField
                           control={form.control}
                           name="escola_id"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem>
                               <FormLabel>
                                 Escola <span className="text-red-600">*</span>
@@ -983,7 +993,10 @@ export default function PassengerFormDialog({
                                 <FormControl>
                                   <div className="relative">
                                     <School className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                    <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                    <SelectTrigger 
+                                      className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                      aria-invalid={!!fieldState.error}
+                                    >
                                       <SelectValue placeholder="Selecione a escola" />
                                     </SelectTrigger>
                                   </div>
@@ -1019,11 +1032,15 @@ export default function PassengerFormDialog({
                             render={({ field }) => (
                               <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
                                 <Checkbox
+                                  id="ativo"
                                   checked={field.value}
                                   onCheckedChange={field.onChange}
                                   className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
                                 />
-                                <FormLabel className="flex-1 cursor-pointer font-medium text-gray-700 m-0 mt-0">
+                                <FormLabel
+                                  htmlFor="ativo"
+                                  className="flex-1 cursor-pointer font-medium text-gray-700 m-0 mt-0"
+                                >
                                   Ativo
                                 </FormLabel>
                               </FormItem>
@@ -1050,7 +1067,7 @@ export default function PassengerFormDialog({
                         <FormField
                           control={form.control}
                           name="nome_responsavel"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem>
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Nome do Responsável{" "}
@@ -1062,6 +1079,7 @@ export default function PassengerFormDialog({
                                   <Input
                                     {...field}
                                     className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    aria-invalid={!!fieldState.error}
                                   />
                                 </div>
                               </FormControl>
@@ -1072,7 +1090,7 @@ export default function PassengerFormDialog({
                         <FormField
                           control={form.control}
                           name="email_responsavel"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem>
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 E-mail <span className="text-red-600">*</span>
@@ -1085,6 +1103,7 @@ export default function PassengerFormDialog({
                                     placeholder="exemplo@email.com"
                                     {...field}
                                     className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    aria-invalid={!!fieldState.error}
                                   />
                                 </div>
                               </FormControl>
@@ -1107,7 +1126,7 @@ export default function PassengerFormDialog({
                         <FormField
                           control={form.control}
                           name="cpf_responsavel"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem>
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 CPF <span className="text-red-600">*</span>
@@ -1122,6 +1141,7 @@ export default function PassengerFormDialog({
                                       field.onChange(cpfMask(e.target.value))
                                     }
                                     className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    aria-invalid={!!fieldState.error}
                                   />
                                 </div>
                               </FormControl>
@@ -1161,7 +1181,7 @@ export default function PassengerFormDialog({
                         <FormField
                           control={form.control}
                           name="dia_vencimento"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem>
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Dia do Vencimento{" "}
@@ -1174,7 +1194,10 @@ export default function PassengerFormDialog({
                                 <FormControl>
                                   <div className="relative">
                                     <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                    <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                    <SelectTrigger 
+                                      className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                      aria-invalid={!!fieldState.error}
+                                    >
                                       <SelectValue placeholder="Selecione o dia" />
                                     </SelectTrigger>
                                   </div>
@@ -1211,6 +1234,7 @@ export default function PassengerFormDialog({
                                 <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
                                   <FormControl>
                                     <Checkbox
+                                      id="enviar_cobranca_automatica"
                                       checked={field.value}
                                       onCheckedChange={(checked) => {
                                         if (
@@ -1226,7 +1250,10 @@ export default function PassengerFormDialog({
                                     />
                                   </FormControl>
                                   <div className="space-y-1 leading-none flex-1">
-                                    <FormLabel className="text-base font-medium text-gray-700 cursor-pointer">
+                                    <FormLabel
+                                      htmlFor="enviar_cobranca_automatica"
+                                      className="text-base font-medium text-gray-700 cursor-pointer"
+                                    >
                                       Enviar cobranças automáticas
                                     </FormLabel>
                                     <FormDescription className="text-sm text-gray-500">
@@ -1257,13 +1284,17 @@ export default function PassengerFormDialog({
                               <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
                                 <FormControl>
                                   <Checkbox
+                                    id="emitir_cobranca_mes_atual"
                                     checked={field.value}
                                     onCheckedChange={field.onChange}
                                     className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 mt-0"
                                   />
                                 </FormControl>
                                 <div className="space-y-1 leading-none flex-1">
-                                  <FormLabel className="text-base font-medium text-gray-700 cursor-pointer">
+                                  <FormLabel
+                                    htmlFor="emitir_cobranca_mes_atual"
+                                    className="text-base font-medium text-gray-700 cursor-pointer"
+                                  >
                                     Registrar cobrança de {currentMonthInText()}
                                     ?
                                   </FormLabel>
@@ -1352,18 +1383,18 @@ export default function PassengerFormDialog({
                         <FormField
                           control={form.control}
                           name="logradouro"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-4">
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Logradouro
                               </FormLabel>
                               <FormControl>
                                 <div className="relative">
-                                  <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                                   <Input
                                     {...field}
                                     placeholder="Ex: Rua Comendador"
-                                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    aria-invalid={!!fieldState.error}
                                   />
                                 </div>
                               </FormControl>
@@ -1375,7 +1406,7 @@ export default function PassengerFormDialog({
                         <FormField
                           control={form.control}
                           name="numero"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-2">
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Número
@@ -1386,6 +1417,7 @@ export default function PassengerFormDialog({
                                   <Input
                                     {...field}
                                     className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    aria-invalid={!!fieldState.error}
                                   />
                                 </div>
                               </FormControl>
@@ -1396,17 +1428,17 @@ export default function PassengerFormDialog({
                         <FormField
                           control={form.control}
                           name="bairro"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-4">
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Bairro
                               </FormLabel>
                               <FormControl>
                                 <div className="relative">
-                                  <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                                   <Input
                                     {...field}
-                                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    aria-invalid={!!fieldState.error}
                                   />
                                 </div>
                               </FormControl>
@@ -1418,17 +1450,17 @@ export default function PassengerFormDialog({
                         <FormField
                           control={form.control}
                           name="cidade"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-4">
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Cidade
                               </FormLabel>
                               <FormControl>
                                 <div className="relative">
-                                  <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                                   <Input
                                     {...field}
-                                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    aria-invalid={!!fieldState.error}
                                   />
                                 </div>
                               </FormControl>
@@ -1439,7 +1471,7 @@ export default function PassengerFormDialog({
                         <FormField
                           control={form.control}
                           name="estado"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-2">
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Estado
@@ -1450,8 +1482,10 @@ export default function PassengerFormDialog({
                               >
                                 <FormControl>
                                   <div className="relative">
-                                    <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                    <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                    <SelectTrigger 
+                                      className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                      aria-invalid={!!fieldState.error}
+                                    >
                                       <SelectValue placeholder="UF" />
                                     </SelectTrigger>
                                   </div>
@@ -1512,7 +1546,7 @@ export default function PassengerFormDialog({
                         <FormField
                           control={form.control}
                           name="referencia"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-6">
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Referência
@@ -1522,6 +1556,7 @@ export default function PassengerFormDialog({
                                   placeholder="Ex: próximo ao mercado"
                                   {...field}
                                   className="min-h-[80px] rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                  aria-invalid={!!fieldState.error}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -1548,13 +1583,14 @@ export default function PassengerFormDialog({
                       <FormField
                         control={form.control}
                         name="observacoes"
-                        render={({ field }) => (
+                        render={({ field, fieldState }) => (
                           <FormItem>
                             <FormControl>
                               <Textarea
                                 placeholder="Ex: Alérgico a amendoim, entra pela porta lateral da escola, etc."
                                 {...field}
                                 className="min-h-[100px] rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                aria-invalid={!!fieldState.error}
                               />
                             </FormControl>
                             <FormMessage />
@@ -1586,6 +1622,8 @@ export default function PassengerFormDialog({
                       </>
                     ) : editingPassageiro ? (
                       "Atualizar"
+                    ) : mode === "finalize" ? (
+                      "Concluir"
                     ) : (
                       "Cadastrar"
                     )}

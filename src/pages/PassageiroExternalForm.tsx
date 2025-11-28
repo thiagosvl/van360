@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 // Components - Forms
-import { CepInput, PhoneInput } from "@/components/forms";
+import { CepInput, MoneyInput, PhoneInput } from "@/components/forms";
 
 // Components - UI
 import {
@@ -44,16 +44,18 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Utils
 import { useSEO } from "@/hooks/useSEO";
-import { cpfMask } from "@/utils/masks";
+import { cpfMask, moneyToNumber } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { isValidCPF } from "@/utils/validators";
 
 // Icons
 import {
   AlertTriangle,
+  CalendarDays,
   Car,
   CheckCircle2,
   Contact,
+  CreditCard,
   FileText,
   Hash,
   Loader2,
@@ -86,6 +88,9 @@ const prePassageiroSchema = z.object({
   cep: z.string().min(1, "Campo obrigatório"),
   referencia: z.string().optional(),
   observacoes: z.string().optional(),
+
+  valor_cobranca: z.string().min(1, "Campo obrigatório"),
+  dia_vencimento: z.string().min(1, "Campo obrigatório"),
 });
 
 type PrePassageiroFormData = z.infer<typeof prePassageiroSchema>;
@@ -106,6 +111,7 @@ export default function PassageiroExternalForm() {
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "passageiro",
     "responsavel",
+    "cobranca",
     "endereco",
     "observacoes",
   ]);
@@ -126,6 +132,8 @@ export default function PassageiroExternalForm() {
       cep: "",
       referencia: "",
       observacoes: "",
+      valor_cobranca: "",
+      dia_vencimento: "",
     },
     mode: "onBlur",
   });
@@ -163,6 +171,7 @@ export default function PassageiroExternalForm() {
     setOpenAccordionItems([
       "passageiro",
       "responsavel",
+      "cobranca",
       "endereco",
       "observacoes",
     ]);
@@ -176,9 +185,11 @@ export default function PassageiroExternalForm() {
         ...data,
         telefone_responsavel: data.telefone_responsavel.replace(/\D/g, ""),
         cpf_responsavel: data.cpf_responsavel.replace(/\D/g, ""),
+        valor_cobranca: moneyToNumber(data.valor_cobranca),
+        dia_vencimento: parseInt(data.dia_vencimento),
       };
 
-      const { error } = await supabase.from("pre_passageiros").insert([
+      const { error } = await supabase.from("pre_passageiros" as any).insert([
         {
           ...payload,
           usuario_id: motoristaId,
@@ -278,7 +289,7 @@ export default function PassageiroExternalForm() {
                         <FormField
                           control={form.control}
                           name="nome"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem>
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Nome Completo <span className="text-red-500">*</span>
@@ -290,6 +301,7 @@ export default function PassageiroExternalForm() {
                                     {...field}
                                     placeholder="Digite o nome do passageiro"
                                     className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    aria-invalid={!!fieldState.error}
                                   />
                                 </div>
                               </FormControl>
@@ -329,7 +341,7 @@ export default function PassageiroExternalForm() {
                         <FormField
                           control={form.control}
                           name="nome_responsavel"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem>
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Nome do Responsável <span className="text-red-500">*</span>
@@ -340,6 +352,7 @@ export default function PassageiroExternalForm() {
                                   <Input 
                                     {...field} 
                                     className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    aria-invalid={!!fieldState.error}
                                   />
                                 </div>
                               </FormControl>
@@ -350,7 +363,7 @@ export default function PassageiroExternalForm() {
                         <FormField
                           control={form.control}
                           name="email_responsavel"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem>
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 E-mail <span className="text-red-500">*</span>
@@ -363,6 +376,7 @@ export default function PassageiroExternalForm() {
                                     placeholder="exemplo@email.com"
                                     {...field}
                                     className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    aria-invalid={!!fieldState.error}
                                   />
                                 </div>
                               </FormControl>
@@ -388,7 +402,7 @@ export default function PassageiroExternalForm() {
                         <FormField
                           control={form.control}
                           name="cpf_responsavel"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem>
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 CPF <span className="text-red-500">*</span>
@@ -404,9 +418,75 @@ export default function PassageiroExternalForm() {
                                     onChange={(e) =>
                                       field.onChange(cpfMask(e.target.value))
                                     }
+                                    aria-invalid={!!fieldState.error}
                                   />
                                 </div>
                               </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  {/* COBRANÇA */}
+                  <AccordionItem value="cobranca" className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                    <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
+                      <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
+                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                          <CreditCard className="w-5 h-5" />
+                        </div>
+                        Cobrança
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pb-6 pt-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="valor_cobranca"
+                          render={({ field }) => (
+                            <MoneyInput
+                              field={field}
+                              label="Valor da Mensalidade"
+                              required
+                              inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                            />
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="dia_vencimento"
+                          render={({ field, fieldState }) => (
+                            <FormItem>
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Dia do Vencimento <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <div className="relative">
+                                    <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                    <SelectTrigger 
+                                      className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                      aria-invalid={!!fieldState.error}
+                                    >
+                                      <SelectValue placeholder="Selecione o dia" />
+                                    </SelectTrigger>
+                                  </div>
+                                </FormControl>
+                                <SelectContent className="max-h-60 overflow-y-auto">
+                                  {Array.from({ length: 31 }, (_, i) => i + 1).map(
+                                    (dia) => (
+                                      <SelectItem key={dia} value={String(dia)}>
+                                        Dia {dia}
+                                      </SelectItem>
+                                    )
+                                  )}
+                                </SelectContent>
+                              </Select>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -443,7 +523,7 @@ export default function PassageiroExternalForm() {
                         <FormField
                           control={form.control}
                           name="logradouro"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-4">
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Logradouro <span className="text-red-500">*</span>
@@ -453,6 +533,7 @@ export default function PassageiroExternalForm() {
                                   {...field}
                                   placeholder="Ex: Rua Comendador"
                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                  aria-invalid={!!fieldState.error}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -462,7 +543,7 @@ export default function PassageiroExternalForm() {
                         <FormField
                           control={form.control}
                           name="numero"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-2">
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Número <span className="text-red-500">*</span>
@@ -471,6 +552,7 @@ export default function PassageiroExternalForm() {
                                 <Input 
                                   {...field} 
                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                  aria-invalid={!!fieldState.error}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -480,7 +562,7 @@ export default function PassageiroExternalForm() {
                         <FormField
                           control={form.control}
                           name="bairro"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-4">
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Bairro <span className="text-red-500">*</span>
@@ -489,6 +571,7 @@ export default function PassageiroExternalForm() {
                                 <Input 
                                   {...field} 
                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                  aria-invalid={!!fieldState.error}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -498,7 +581,7 @@ export default function PassageiroExternalForm() {
                         <FormField
                           control={form.control}
                           name="cidade"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-4">
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Cidade <span className="text-red-500">*</span>
@@ -507,6 +590,7 @@ export default function PassageiroExternalForm() {
                                 <Input 
                                   {...field} 
                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                  aria-invalid={!!fieldState.error}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -516,7 +600,7 @@ export default function PassageiroExternalForm() {
                         <FormField
                           control={form.control}
                           name="estado"
-                          render={({ field }) => (
+                          render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-2">
                               <FormLabel className="text-gray-700 font-medium ml-1">
                                 Estado <span className="text-red-500">*</span>
@@ -526,7 +610,10 @@ export default function PassageiroExternalForm() {
                                 value={field.value}
                               >
                                 <FormControl>
-                                  <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                  <SelectTrigger 
+                                    className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    aria-invalid={!!fieldState.error}
+                                  >
                                     <SelectValue placeholder="UF" />
                                   </SelectTrigger>
                                 </FormControl>
@@ -578,11 +665,12 @@ export default function PassageiroExternalForm() {
                             </FormItem>
                           )}
                         />
+
                         <FormField
                           control={form.control}
                           name="referencia"
                           render={({ field }) => (
-                            <FormItem className="md:col-span-6">
+                            <FormItem className="col-span-1 md:col-span-6">
                               <FormLabel className="text-gray-700 font-medium ml-1">Referência</FormLabel>
                               <FormControl>
                                 <Textarea

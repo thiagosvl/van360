@@ -178,15 +178,7 @@ export function EscolasList({
                   </div>
                 </td>
                 <td className="px-6 py-4 align-middle">
-                  <span
-                    className={`px-2 py-1 inline-block rounded-full text-xs font-bold ${
-                      escola.ativo
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-gray-100 text-slate-600"
-                    }`}
-                  >
-                    {escola.ativo ? "Ativa" : "Desativada"}
-                  </span>
+                  {getStatusBadge(escola.ativo)}
                 </td>
                 <td className="px-6 py-4 text-right align-middle">
                   <EscolaActionsDropdown

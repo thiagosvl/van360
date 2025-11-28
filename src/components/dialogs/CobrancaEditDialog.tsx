@@ -244,10 +244,10 @@ export default function CobrancaEditDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className="max-w-md max-h-[95vh] overflow-y-auto bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
+        className="max-w-md max-h-[95vh] flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
         hideCloseButton
       >
-        <div className="bg-blue-600 p-6 text-center relative">
+        <div className="bg-blue-600 p-6 text-center relative shrink-0">
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
             <X className="h-6 w-6" />
             <span className="sr-only">Close</span>
@@ -264,7 +264,7 @@ export default function CobrancaEditDialog({
           </DialogDescription>
         </div>
 
-        <div className="p-6 pt-2 bg-white rounded-b-3xl">
+        <div className="p-6 pt-2 bg-white flex-1 overflow-y-auto">
           <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-6 flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
               <User className="w-5 h-5" />
@@ -330,13 +330,18 @@ export default function CobrancaEditDialog({
                     </FormLabel>
                     <Popover
                       open={openCalendarDataVencimento}
-                      onOpenChange={setOpenCalendarDataVencimento}
+                      onOpenChange={(open) => {
+                        if (!shouldDisableDueDateField) {
+                          setOpenCalendarDataVencimento(open);
+                        }
+                      }}
                     >
                       <PopoverTrigger asChild>
                         <FormControl>
                           <div className="relative">
                             <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                             <Button
+                              type="button"
                               variant="outline"
                               className={cn(
                                 "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left font-normal hover:bg-gray-100 justify-start",
@@ -344,6 +349,7 @@ export default function CobrancaEditDialog({
                                 fieldState.error && "border-red-500 ring-red-500"
                               )}
                               disabled={shouldDisableDueDateField}
+                              aria-invalid={!!fieldState.error}
                             >
                               {field.value ? (
                                 format(field.value, "dd/MM/yyyy")
@@ -382,7 +388,7 @@ export default function CobrancaEditDialog({
                 <FormField
                   control={form.control}
                   name="tipo_pagamento"
-                  render={({ field }) => (
+                  render={({ field, fieldState }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 font-medium ml-1">
                         Forma de pagamento <span className="text-red-600">*</span>
@@ -394,7 +400,10 @@ export default function CobrancaEditDialog({
                         <FormControl>
                           <div className="relative">
                             <CreditCard className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                            <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                            <SelectTrigger 
+                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                              aria-invalid={!!fieldState.error}
+                            >
                               <SelectValue placeholder="Selecione a forma" />
                             </SelectTrigger>
                           </div>
@@ -417,7 +426,7 @@ export default function CobrancaEditDialog({
                 <FormField
                   control={form.control}
                   name="data_pagamento"
-                  render={({ field }) => (
+                  render={({ field, fieldState }) => (
                     <FormItem className="flex flex-col">
                       <FormLabel className="text-gray-700 font-medium ml-1">Data do Pagamento</FormLabel>
                       <Popover
@@ -429,11 +438,13 @@ export default function CobrancaEditDialog({
                             <div className="relative">
                               <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                               <Button
+                                type="button"
                                 variant="outline"
                                 className={cn(
                                   "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left font-normal hover:bg-gray-100 justify-start",
                                   !field.value && "text-muted-foreground"
                                 )}
+                                aria-invalid={!!fieldState.error}
                               >
                                 {field.value ? (
                                   format(field.value, "dd/MM/yyyy")

@@ -996,7 +996,7 @@ const Cobrancas = () => {
               })
             }
             title="Enviar Lembrete"
-            description="Deseja enviar esta notificação para o responsável?"
+            description="Deseja enviar este lembrete para o responsável?"
             onConfirm={enviarNotificacaoCobranca}
             isLoading={enviarNotificacao.isPending}
           />
