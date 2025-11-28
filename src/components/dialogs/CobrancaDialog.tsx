@@ -4,9 +4,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
+  DialogDescription,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -46,9 +47,11 @@ import { ptBR } from "date-fns/locale";
 import {
   AlertTriangle,
   CalendarIcon,
-  Contact,
+  CreditCard,
   Loader2,
+  PlusCircle,
   User,
+  X
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -224,236 +227,115 @@ export default function CobrancaDialog({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className="max-w-md max-h-[95vh] overflow-y-auto bg-white"
+        className="max-w-md max-h-[95vh] overflow-y-auto bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
+        hideCloseButton
       >
-        <DialogHeader>
-          <DialogTitle>Registrar Cobrança</DialogTitle>
-        </DialogHeader>
-        <div className="p-3 bg-muted/50 rounded-lg border space-y-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <User className="w-4 h-4" />
-            <span>Passageiro</span>
+        <div className="bg-blue-600 p-6 text-center relative">
+          <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
+            <X className="h-6 w-6" />
+            <span className="sr-only">Close</span>
+          </DialogClose>
+
+          <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
+            <PlusCircle className="w-6 h-6 text-white" />
           </div>
-          <p className="font-semibold">{passageiroNome}</p>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Contact className="w-4 h-4" />
-            <span>Responsável</span>
-          </div>
-          <p className="font-semibold">{passageiroResponsavelNome}</p>
+          <DialogTitle className="text-2xl font-bold text-white">
+            Registrar Cobrança
+          </DialogTitle>
+          <DialogDescription className="text-blue-100 text-sm mt-1">
+            Preencha os dados da nova cobrança
+          </DialogDescription>
         </div>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="mes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Mês <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        const isFuture = isFutureMonth(value, anoSelecionado);
 
-                        form.setValue("is_future", isFuture, {
-                          shouldValidate: true,
-                        });
-
-                        if (!isFuture) {
-                          form.clearErrors("foi_pago");
-                        }
-                      }}
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione..." />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="max-h-60 overflow-y-auto">
-                        {meses.map((mes) => (
-                          <SelectItem key={mes.value} value={mes.value}>
-                            {mes.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="ano"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Ano <span className="text-red-600">*</span>
-                    </FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        const isFuture = isFutureMonth(mesSelecionado, value);
-
-                        form.setValue("is_future", isFuture, {
-                          shouldValidate: true,
-                        });
-
-                        if (!isFuture) {
-                          form.clearErrors("foi_pago");
-                        }
-                      }}
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione..." />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="max-h-60 overflow-y-auto">
-                        {anos.map((ano) => (
-                          <SelectItem key={ano.value} value={ano.value}>
-                            {ano.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        <div className="p-6 pt-2 bg-white rounded-b-3xl">
+          <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-6 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+              <User className="w-5 h-5" />
             </div>
+            <div>
+              <p className="text-sm font-bold text-gray-900">{passageiroNome}</p>
+              <p className="text-xs text-gray-500">{passageiroResponsavelNome}</p>
+            </div>
+          </div>
 
-            {isMesFuturo && (
-              <div className="flex items-start gap-2 text-xs text-yellow-900 bg-yellow-50 border border-yellow-200 p-3 rounded-md">
-                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-yellow-600" />
-                {!registerOnAsaas ? (
-                  <p className="font-medium leading-snug">
-                    <span className="font-bold">Aviso: Mês Futuro.</span>{" "}
-                    Registre agora apenas se for um adiantamento.
-                  </p>
-                ) : (
-                  <p className="font-medium leading-snug">
-                    <span className="font-bold">Aviso: Mês Futuro.</span> Esta
-                    cobrança será gerada automaticamente no início do mês
-                    selecionado. Registre agora apenas se for um adiantamento.
-                  </p>
-                )}
-              </div>
-            )}
-
-            <FormField
-              control={form.control}
-              name="valor"
-              render={({ field }) => (
-                <MoneyInput field={field} required />
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="foi_pago"
-              render={({ field }) => (
-                <FormItem className="flex flex-col space-y-2 pt-2">
-                  <div className="flex items-center space-x-3">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="font-normal">
-                        Já foi pago?
-                      </FormLabel>
-                    </div>
-                  </div>
-
-                  <FormMessage className="mt-1 ml-6 text-xs" />
-                </FormItem>
-              )}
-            />
-            {foiPago && (
-              <div className="grid grid-cols-1 gap-4">
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="data_pagamento"
+                  name="mes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Data do pagamento{" "}
-                        <span className="text-red-600">*</span>
+                      <FormLabel className="text-gray-700 font-medium ml-1">
+                        Mês <span className="text-red-600">*</span>
                       </FormLabel>
-                      <Popover
-                        open={openCalendar}
-                        onOpenChange={setOpenCalendar}
+                      <Select
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          const isFuture = isFutureMonth(value, anoSelecionado);
+
+                          form.setValue("is_future", isFuture, {
+                            shouldValidate: true,
+                          });
+
+                          if (!isFuture) {
+                            form.clearErrors("foi_pago");
+                          }
+                        }}
+                        value={field.value}
                       >
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground",
-                                form.formState.errors.data_pagamento &&
-                                  "border-red-500 ring-red-500"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "dd/MM/yyyy")
-                              ) : (
-                                <span className="text-black">
-                                  Selecione a data
-                                </span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={(date) => {
-                              field.onChange(date);
-                              setOpenCalendar(false);
-                            }}
-                            disabled={(date) => date > new Date()}
-                            initialFocus
-                            locale={ptBR}
-                          />
-                        </PopoverContent>
-                      </Popover>
+                        <FormControl>
+                          <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                            <SelectValue placeholder="Selecione..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="max-h-60 overflow-y-auto">
+                          {meses.map((mes) => (
+                            <SelectItem key={mes.value} value={mes.value}>
+                              {mes.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <FormField
                   control={form.control}
-                  name="tipo_pagamento"
+                  name="ano"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Forma de pagamento{" "}
-                        <span className="text-red-600">*</span>
+                      <FormLabel className="text-gray-700 font-medium ml-1">
+                        Ano <span className="text-red-600">*</span>
                       </FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          const isFuture = isFutureMonth(mesSelecionado, value);
+
+                          form.setValue("is_future", isFuture, {
+                            shouldValidate: true,
+                          });
+
+                          if (!isFuture) {
+                            form.clearErrors("foi_pago");
+                          }
+                        }}
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione a forma" />
+                          <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                            <SelectValue placeholder="Selecione..." />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="max-h-60 overflow-y-auto">
-                          {tiposPagamento.map((tipo) => (
-                            <SelectItem key={tipo.value} value={tipo.value}>
-                              {tipo.label}
+                          {anos.map((ano) => (
+                            <SelectItem key={ano.value} value={ano.value}>
+                              {ano.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -463,34 +345,177 @@ export default function CobrancaDialog({
                   )}
                 />
               </div>
-            )}
-            <div className="flex gap-4 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                disabled={loading}
-                className="flex-1"
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading || form.formState.isSubmitting}
-                className="flex-1"
-              >
-                {loading || form.formState.isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
-                    Salvando...
-                  </>
-                ) : (
-                  "Salvar"
+
+              {isMesFuturo && (
+                <div className="flex items-start gap-2 text-xs text-yellow-900 bg-yellow-50 border border-yellow-200 p-3 rounded-xl">
+                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-yellow-600" />
+                  {!registerOnAsaas ? (
+                    <p className="font-medium leading-snug">
+                      <span className="font-bold">Aviso: Mês Futuro.</span>{" "}
+                      Registre agora apenas se for um adiantamento.
+                    </p>
+                  ) : (
+                    <p className="font-medium leading-snug">
+                      <span className="font-bold">Aviso: Mês Futuro.</span> Esta
+                      cobrança será gerada automaticamente no início do mês
+                      selecionado. Registre agora apenas se for um adiantamento.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <FormField
+                control={form.control}
+                name="valor"
+                render={({ field }) => (
+                  <MoneyInput
+                    field={field}
+                    required
+                    inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                    label="Valor da Cobrança"
+                  />
                 )}
-              </Button>
-            </div>
-          </form>
-        </Form>
+              />
+              <FormField
+                control={form.control}
+                name="foi_pago"
+                render={({ field }) => (
+                  <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="flex-1 cursor-pointer font-medium text-gray-700 m-0 mt-0">
+                        Esta cobrança já foi paga?
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              {foiPago && (
+                <div className="grid grid-cols-1 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <FormField
+                    control={form.control}
+                    name="data_pagamento"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="text-gray-700 font-medium ml-1">
+                          Data do pagamento{" "}
+                          <span className="text-red-600">*</span>
+                        </FormLabel>
+                        <Popover
+                          open={openCalendar}
+                          onOpenChange={setOpenCalendar}
+                        >
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <div className="relative">
+                                <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left font-normal hover:bg-gray-100 justify-start",
+                                    !field.value && "text-muted-foreground",
+                                    form.formState.errors.data_pagamento &&
+                                      "border-red-500 ring-red-500"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "dd/MM/yyyy")
+                                  ) : (
+                                    <span className="text-gray-500">
+                                      Selecione a data
+                                    </span>
+                                  )}
+                                </Button>
+                              </div>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={(date) => {
+                                field.onChange(date);
+                                setOpenCalendar(false);
+                              }}
+                              disabled={(date) => date > new Date()}
+                              initialFocus
+                              locale={ptBR}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="tipo_pagamento"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium ml-1">
+                          Forma de pagamento{" "}
+                          <span className="text-red-600">*</span>
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <div className="relative">
+                              <CreditCard className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                              <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                                <SelectValue placeholder="Selecione a forma" />
+                              </SelectTrigger>
+                            </div>
+                          </FormControl>
+                          <SelectContent className="max-h-60 overflow-y-auto">
+                            {tiposPagamento.map((tipo) => (
+                              <SelectItem key={tipo.value} value={tipo.value}>
+                                {tipo.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+              <div className="flex gap-4 pt-4">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleClose}
+                  disabled={loading}
+                  className="flex-1 h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading || form.formState.isSubmitting}
+                  className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all"
+                >
+                  {loading || form.formState.isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+                      Salvando...
+                    </>
+                  ) : (
+                    "Salvar"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
       </DialogContent>
     </Dialog>
   );

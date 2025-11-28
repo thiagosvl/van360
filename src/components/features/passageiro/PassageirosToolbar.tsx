@@ -2,24 +2,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
 } from "@/components/ui/sheet";
 import { Escola } from "@/types/escola";
 import { Veiculo } from "@/types/veiculo";
@@ -168,7 +168,7 @@ export function PassageirosToolbar({
                   Status
                 </Label>
                 <Select value={selectedStatus} onValueChange={onStatusChange}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full h-11 rounded-xl bg-gray-50 border-gray-200">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent className="z-[9999]">
@@ -184,7 +184,7 @@ export function PassageirosToolbar({
                   Escola
                 </Label>
                 <Select value={selectedEscola} onValueChange={onEscolaChange}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full h-11 rounded-xl bg-gray-50 border-gray-200">
                     <SelectValue placeholder="Escola" />
                   </SelectTrigger>
                   <SelectContent className="z-[9999]">
@@ -203,7 +203,7 @@ export function PassageirosToolbar({
                   Veículo
                 </Label>
                 <Select value={selectedVeiculo} onValueChange={onVeiculoChange}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full h-11 rounded-xl bg-gray-50 border-gray-200">
                     <SelectValue placeholder="Veículo" />
                   </SelectTrigger>
                   <SelectContent className="z-[9999]">
@@ -222,7 +222,7 @@ export function PassageirosToolbar({
                   Período
                 </Label>
                 <Select value={selectedPeriodo} onValueChange={onPeriodoChange}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full h-11 rounded-xl bg-gray-50 border-gray-200">
                     <SelectValue placeholder="Período" />
                   </SelectTrigger>
                   <SelectContent className="z-[9999]">
@@ -268,7 +268,7 @@ export function PassageirosToolbar({
           </SheetTrigger>
           <SheetContent
             side="bottom"
-            className="h-auto max-h-[90vh] rounded-t-[20px] flex flex-col px-0"
+            className="h-auto max-h-[90vh] rounded-t-[20px] flex flex-col px-0 bg-gray-50"
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <SheetHeader className="text-left mb-4 px-6">
@@ -288,7 +288,7 @@ export function PassageirosToolbar({
                       setTempFilters((prev) => ({ ...prev, status: val }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 rounded-xl bg-white border-gray-200">
                       <SelectValue placeholder="Selecione o status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -307,7 +307,7 @@ export function PassageirosToolbar({
                       setTempFilters((prev) => ({ ...prev, escola: val }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 rounded-xl bg-white border-gray-200">
                       <SelectValue placeholder="Selecione a escola" />
                     </SelectTrigger>
                     <SelectContent>
@@ -329,7 +329,7 @@ export function PassageirosToolbar({
                       setTempFilters((prev) => ({ ...prev, veiculo: val }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 rounded-xl bg-white border-gray-200">
                       <SelectValue placeholder="Veículo" />
                     </SelectTrigger>
                     <SelectContent>
@@ -351,7 +351,7 @@ export function PassageirosToolbar({
                       setTempFilters((prev) => ({ ...prev, periodo: val }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 rounded-xl bg-white border-gray-200">
                       <SelectValue placeholder="Período" />
                     </SelectTrigger>
                     <SelectContent>

@@ -2,9 +2,10 @@ import { PhoneInput } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
+  DialogDescription,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -23,7 +24,7 @@ import { toast } from "@/utils/notifications/toast";
 import { cleanString } from "@/utils/string";
 import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, User, X } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -131,12 +132,26 @@ export default function EditarCadastroDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-white"
+        className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-white rounded-3xl border-0 shadow-2xl p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
+        hideCloseButton
       >
-        <DialogHeader>
-          <DialogTitle>Editar Cadastro</DialogTitle>
-        </DialogHeader>
+        <div className="bg-blue-600 p-6 text-center relative">
+          <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
+            <X className="h-6 w-6" />
+            <span className="sr-only">Close</span>
+          </DialogClose>
+          
+          <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
+            <User className="w-6 h-6 text-white" />
+          </div>
+          <DialogTitle className="text-2xl font-bold text-white">
+            Editar Perfil
+          </DialogTitle>
+          <DialogDescription className="text-blue-100 text-sm mt-1">
+            Atualize suas informações pessoais
+          </DialogDescription>
+        </div>
 
         {isLoading ? (
           <div className="flex items-center justify-center py-6">
@@ -146,19 +161,23 @@ export default function EditarCadastroDialog({
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-6"
+              className="space-y-6 p-6 pt-2"
             >
               <FormField
                 control={form.control}
                 name="nome"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nome completo</FormLabel>
+                    <FormLabel className="text-gray-700 font-medium ml-1">Nome completo</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Digite seu nome completo"
-                        {...field}
-                      />
+                      <div className="relative">
+                        <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                        <Input
+                          placeholder="Digite seu nome completo"
+                          {...field}
+                          className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -170,9 +189,16 @@ export default function EditarCadastroDialog({
                 name="apelido"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Apelido</FormLabel>
+                    <FormLabel className="text-gray-700 font-medium ml-1">Apelido</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: Tio Fulano" {...field} />
+                      <div className="relative">
+                        <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                        <Input 
+                          placeholder="Ex: Tio Fulano" 
+                          {...field} 
+                          className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -187,6 +213,7 @@ export default function EditarCadastroDialog({
                     field={field}
                     label="WhatsApp"
                     placeholder="(00) 00000-0000"
+                    inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                   />
                 )}
               />
@@ -196,12 +223,12 @@ export default function EditarCadastroDialog({
                 name="cpfcnpj"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>CPF</FormLabel>
+                    <FormLabel className="text-gray-700 font-medium ml-1">CPF</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         readOnly
-                        className="bg-gray-100 cursor-not-allowed"
+                        className="h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
                       />
                     </FormControl>
                     <FormMessage />
@@ -214,33 +241,36 @@ export default function EditarCadastroDialog({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>E-mail</FormLabel>
+                    <FormLabel className="text-gray-700 font-medium ml-1">E-mail</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        readOnly
-                        className="bg-gray-100 cursor-not-allowed"
-                      />
+                      <div className="relative">
+                        <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                        <Input
+                          {...field}
+                          readOnly
+                          className="pl-12 h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <div className="flex gap-4 pt-4">
+              <div className="flex gap-3 pt-2">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="ghost"
                   onClick={onClose}
                   disabled={form.formState.isSubmitting}
-                  className="flex-1"
+                  className="flex-1 h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
                 >
                   Cancelar
                 </Button>
                 <Button 
                   type="submit" 
                   disabled={form.formState.isSubmitting}
-                  className="flex-1"
+                  className="flex-1 h-12 rounded-xl shadow-lg shadow-blue-500/20 font-semibold text-base"
                 >
                   {form.formState.isSubmitting ? (
                     <>
@@ -248,7 +278,7 @@ export default function EditarCadastroDialog({
                       Salvando...
                     </>
                   ) : (
-                    "Salvar"
+                    "Salvar Alterações"
                   )}
                 </Button>
               </div>

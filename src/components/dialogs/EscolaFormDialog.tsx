@@ -193,7 +193,7 @@ export default function EscolaFormDialog({
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent
-          className="sm:max-w-2xl max-h-[95vh] overflow-y-auto bg-white rounded-3xl border-0 shadow-2xl p-0"
+          className="sm:max-w-2xl max-h-[95vh] overflow-y-auto bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
           onOpenAutoFocus={(e) => e.preventDefault()}
           hideCloseButton
         >
@@ -214,7 +214,7 @@ export default function EscolaFormDialog({
             </DialogDescription>
           </div>
 
-          <div className="p-6 pt-2">
+          <div className="p-6 pt-2 bg-white rounded-b-3xl">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleSubmit, onFormError)}
@@ -284,7 +284,7 @@ export default function EscolaFormDialog({
                     <AccordionTrigger className="hover:no-underline py-2">
                       <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
                         <MapPin className="w-5 h-5 text-blue-600" />
-                        Endereço (Opcional)
+                        Endereço
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-1 pt-2 pb-4 space-y-4">

@@ -3,25 +3,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
 } from "@/components/ui/sheet";
 import { Filter, ListFilter, Plus, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -82,7 +82,7 @@ export function GastosToolbar({
       <div className="space-y-2">
         <Label>Categoria</Label>
         <Select value={tempCategoria} onValueChange={setTempCategoria}>
-          <SelectTrigger className="h-11 rounded-xl">
+          <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200">
             <SelectValue placeholder="Todas" />
           </SelectTrigger>
           <SelectContent>
@@ -135,7 +135,7 @@ export function GastosToolbar({
             </SheetTrigger>
             <SheetContent 
               side="bottom" 
-              className="rounded-t-[28px] px-6 pb-8"
+              className="rounded-t-[28px] px-6 pb-8 bg-gray-50"
               onOpenAutoFocus={(e) => e.preventDefault()}
             >
               <SheetHeader className="mb-6 text-left">
@@ -248,7 +248,7 @@ export function GastosToolbar({
                     onCategoriaChange(val);
                   }}
                 >
-                  <SelectTrigger className="h-9">
+                  <SelectTrigger className="h-9 bg-gray-50 border-gray-200">
                     <SelectValue placeholder="Todas" />
                   </SelectTrigger>
                   <SelectContent className="z-[9999]">

@@ -165,7 +165,7 @@ export default function VeiculoFormDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="sm:max-w-md bg-white rounded-3xl border-0 shadow-2xl overflow-hidden p-0"
+        className="sm:max-w-md bg-blue-600 rounded-3xl border-0 shadow-2xl overflow-hidden p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
         hideCloseButton
       >
@@ -186,7 +186,7 @@ export default function VeiculoFormDialog({
           </DialogDescription>
         </div>
 
-        <div className="p-6 pt-2">
+        <div className="p-6 pt-2 bg-white rounded-b-3xl">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit, onFormError)}

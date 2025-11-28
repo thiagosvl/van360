@@ -1,14 +1,14 @@
 import { PhoneInput } from "@/components/forms";
 import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cpfMask } from "@/utils/masks";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Lock } from "lucide-react";
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 
@@ -115,9 +115,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
               label="WhatsApp"
               required
               placeholder="(11) 99999-9999"
-              // Removendo bg-gray-50 daqui se o componente já tiver, ou forçando se não tiver.
-              // O usuário reclamou de "fundo" diferente. Vamos garantir que seja igual aos outros.
-              className="h-12 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 transition-all"
+              inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 transition-all"
             />
           )}
         />
@@ -158,12 +156,9 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
         )}
       />
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 text-xs text-gray-500 bg-blue-50 p-4 rounded-xl border border-blue-100">
-        <div className="flex items-center gap-2">
-           <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse flex-shrink-0" />
-           <span className="font-semibold text-blue-700">Segurança Garantida:</span>
-        </div>
-        <span className="leading-relaxed">
+      <div className="flex items-center justify-center gap-2 text-xs text-emerald-700 bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+        <Lock className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
+        <span className="font-medium">
           Seus dados estão protegidos com criptografia de ponta a ponta.
         </span>
       </div>

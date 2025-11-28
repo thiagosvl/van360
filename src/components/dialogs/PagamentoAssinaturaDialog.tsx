@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ASSINATURA_COBRANCA_STATUS_PAGO } from "@/constants";
-import { toast } from "@/utils/notifications/toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useGerarPixParaCobranca } from "@/hooks";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/utils/notifications/toast";
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { Copy, Loader2 } from "lucide-react";
+import { Copy, CreditCard, Loader2, QrCode, X } from "lucide-react";
 import QRCode from "qrcode";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -336,32 +336,43 @@ export default function PagamentoAssinaturaDialog({
       }}
     >
       <DialogContent
-        className="sm:max-w-md max-h-[95vh] overflow-y-auto"
+        className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-white rounded-3xl border-0 shadow-2xl p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
+        hideCloseButton
       >
-        <DialogHeader>
-          <DialogTitle>Pagamento via PIX</DialogTitle>
-          <DialogDescription>
-            Escaneie o QR Code ou copie o código PIX para realizar o pagamento.
+        <div className="bg-blue-600 p-6 text-center relative">
+          <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
+            <X className="h-6 w-6" />
+            <span className="sr-only">Close</span>
+          </DialogClose>
+          
+          <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
+            <CreditCard className="w-6 h-6 text-white" />
+          </div>
+          <DialogTitle className="text-2xl font-bold text-white">
+            Pagamento via PIX
+          </DialogTitle>
+          <DialogDescription className="text-blue-100 text-sm mt-1">
+            Escaneie o QR Code ou copie o código PIX
           </DialogDescription>
-        </DialogHeader>
+        </div>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 p-6 pt-2">
           {gerarPix.isPending ? (
             <div className="flex flex-col items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-              <p className="text-sm text-muted-foreground">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
+              <p className="text-sm text-gray-500 font-medium">
                 Gerando código PIX...
               </p>
             </div>
           ) : dadosPagamento ? (
             <>
               {/* Valor */}
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-1">
+              <div className="text-center bg-blue-50 py-4 rounded-xl border border-blue-100">
+                <p className="text-sm text-blue-600 font-medium mb-1">
                   Valor a pagar
                 </p>
-                <p className="text-3xl font-bold text-primary">
+                <p className="text-3xl font-bold text-blue-900">
                   {valor.toLocaleString("pt-BR", {
                     style: "currency",
                     currency: "BRL",
@@ -370,64 +381,68 @@ export default function PagamentoAssinaturaDialog({
               </div>
 
               {/* QR Code */}
-              <div className="bg-white p-4 rounded-lg border-2 border-gray-200 flex flex-col items-center">
+              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col items-center">
                 {qrCodeImage ? (
-                  <img
-                    src={qrCodeImage}
-                    alt="QR Code PIX"
-                    className="h-48 w-48 border rounded"
-                  />
+                  <div className="relative group">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-200"></div>
+                    <img
+                      src={qrCodeImage}
+                      alt="QR Code PIX"
+                      className="relative h-48 w-48 rounded-lg bg-white p-2"
+                    />
+                  </div>
                 ) : (
-                  <div className="h-48 w-48 flex items-center justify-center bg-gray-100 border rounded text-sm text-gray-500">
-                    Gerando QR Code...
+                  <div className="h-48 w-48 flex flex-col gap-2 items-center justify-center bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-500">
+                    <QrCode className="w-8 h-8 text-gray-300" />
+                    <span>Gerando QR Code...</span>
                   </div>
                 )}
 
-                <p className="text-sm font-medium mt-4 mb-2 text-gray-700">
+                <p className="text-sm font-medium mt-6 mb-3 text-gray-700">
                   Copie o código PIX:
                 </p>
 
                 <div className="w-full flex items-center gap-2">
-                  <div className="flex-1 bg-gray-50 p-3 rounded-md border border-gray-200">
-                    <p className="text-xs break-all text-gray-700 select-all">
-                      {dadosPagamento.qrCodePayload}
-                    </p>
+                  <div className="flex-1 bg-gray-50 p-3 rounded-xl border border-gray-200 font-mono text-xs text-gray-600 break-all select-all">
+                    {dadosPagamento.qrCodePayload}
                   </div>
                   <Button
-                    size="sm"
+                    size="icon"
                     variant="outline"
                     onClick={handleCopyPix}
-                    className="shrink-0"
+                    className="shrink-0 h-10 w-10 rounded-xl border-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all"
+                    title="Copiar código"
                   >
                     {isCopied ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Copiado!
-                      </>
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <>
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copiar
-                      </>
+                      <Copy className="h-4 w-4" />
                     )}
                   </Button>
                 </div>
               </div>
 
               {/* Mensagem de aguardando */}
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center justify-center gap-2 text-sm text-blue-600 bg-blue-50/50 p-3 rounded-xl">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Aguardando confirmação do pagamento...</span>
+                <span className="font-medium">Aguardando confirmação do pagamento...</span>
               </div>
 
-              <p className="text-xs text-center text-muted-foreground">
+              <p className="text-xs text-center text-gray-400 px-4">
                 Após o pagamento ser confirmado, sua assinatura será ativada
-                automaticamente.
+                automaticamente em alguns instantes.
               </p>
             </>
           ) : (
-            <div className="text-center text-gray-600 py-8">
+            <div className="text-center text-gray-600 py-8 bg-gray-50 rounded-xl border border-gray-200 border-dashed">
               <p>Erro ao carregar dados do pagamento.</p>
+              <Button 
+                variant="link" 
+                onClick={() => onClose()} 
+                className="mt-2 text-blue-600"
+              >
+                Tentar novamente
+              </Button>
             </div>
           )}
         </div>

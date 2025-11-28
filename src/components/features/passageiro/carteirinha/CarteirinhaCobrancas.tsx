@@ -3,34 +3,34 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
 import {
-  formatDateToBR,
-  getMesNome,
-  getStatusColor,
-  getStatusText,
+    formatDateToBR,
+    getMesNome,
+    getStatusColor,
+    getStatusText,
 } from "@/utils/formatters";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  AlertTriangle,
-  BellOff,
-  Calendar,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  DollarSign,
-  Plus,
-  RotateCcw,
+    AlertTriangle,
+    BellOff,
+    Calendar,
+    Check,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    DollarSign,
+    Plus,
+    RotateCcw,
 } from "lucide-react";
 
 interface CarteirinhaCobrancasProps {
@@ -112,7 +112,7 @@ export const CarteirinhaCobrancas = ({
                 }`}
               >
                 <Select value={yearFilter} onValueChange={onYearChange}>
-                  <SelectTrigger className="w-[90px] h-9 text-sm bg-gray-50 border-gray-200">
+                  <SelectTrigger className="w-[90px] h-9 text-sm bg-gray-50 border-gray-200 rounded-lg">
                     <SelectValue placeholder="Ano" />
                   </SelectTrigger>
                   <SelectContent>

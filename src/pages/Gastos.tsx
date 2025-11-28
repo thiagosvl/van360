@@ -410,7 +410,7 @@ export default function Gastos() {
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent
               onOpenAutoFocus={(e) => e.preventDefault()}
-              className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-white rounded-3xl border-0 shadow-2xl p-0"
+              className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
               hideCloseButton
             >
                 <div className="bg-blue-600 p-6 text-center relative">
@@ -430,7 +430,7 @@ export default function Gastos() {
                 </DialogDescription>
               </div>
 
-              <div className="p-6 pt-2">
+              <div className="p-6 pt-2 bg-white rounded-b-3xl">
                 <Form {...form}>
                   <form
                     onSubmit={form.handleSubmit(handleSubmit)}
@@ -532,7 +532,7 @@ export default function Gastos() {
                             required
                             label="Valor"
                             className="flex flex-col"
-                            inputClassName="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                            inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                           />
                         )}
                       />

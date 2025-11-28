@@ -5,7 +5,6 @@ import {
   DollarSign,
   FileText,
   Plus,
-  School,
   TrendingUp,
   Users,
   Wallet,
@@ -510,11 +509,11 @@ const Home = () => {
               bgClass="bg-purple-50"
             />
             <ShortcutCard
-              to="/escolas"
-              icon={School}
-              label="Escolas"
-              colorClass="text-yellow-600"
-              bgClass="bg-yellow-50"
+              to="/passageiros"
+              icon={Users}
+              label="Passageiros"
+              colorClass="text-blue-600"
+              bgClass="bg-blue-50"
             />
           </div>
         </section>

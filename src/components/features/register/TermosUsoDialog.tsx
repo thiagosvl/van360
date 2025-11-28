@@ -35,13 +35,13 @@ export function TermosUsoDialog() {
   );
 
   return (
-    <div className="px-3 pt-2 pb-0 flex justify-center gap-1 text-xs sm:text-sm text-gray-500">
-      <span>Ao criar sua conta, você concorda com nossos</span>
+    <div className="px-4 pt-2 pb-0 text-center text-xs sm:text-sm text-gray-500 leading-relaxed">
+      <span>Ao criar sua conta, você concorda com nossos </span>
       
       {/* --- DIALOG TERMOS DE USO --- */}
       <Dialog open={openTermos} onOpenChange={setOpenTermos}>
         <DialogTrigger asChild>
-          <button className="font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 rounded-sm px-1">
+          <button className="font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 rounded-sm px-0.5 inline-flex items-center">
             Termos de Uso
           </button>
         </DialogTrigger>
@@ -110,12 +110,12 @@ export function TermosUsoDialog() {
         </DialogContent>
       </Dialog>
 
-      <span>e</span>
+      <span> e </span>
 
       {/* --- DIALOG POLÍTICA DE PRIVACIDADE --- */}
       <Dialog open={openPolitica} onOpenChange={setOpenPolitica}>
         <DialogTrigger asChild>
-          <button className="font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 rounded-sm px-1">
+          <button className="font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 rounded-sm px-0.5 inline-flex items-center">
             Política de Privacidade
           </button>
         </DialogTrigger>

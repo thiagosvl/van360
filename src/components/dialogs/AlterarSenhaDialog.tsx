@@ -1,25 +1,27 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/utils/notifications/toast";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, KeyRound, Loader2, Lock, X } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -28,20 +30,10 @@ interface AlterarSenhaDialogProps {
   onClose: () => void;
 }
 
-const schema = z
-  .object({
-    senhaAtual: z
-      .string()
-      .min(6, "A senha atual deve ter pelo menos 6 caracteres"),
-    novaSenha: z
-      .string()
-      .min(6, "A nova senha deve ter pelo menos 6 caracteres"),
-    confirmarSenha: z.string().min(6, "Confirme a nova senha"),
-  })
-  .refine((data) => data.novaSenha === data.confirmarSenha, {
-    path: ["confirmarSenha"],
-    message: "As senhas não coincidem",
-  });
+const schema = z.object({
+  senhaAtual: z.string().min(6, "A senha atual deve ter pelo menos 6 caracteres"),
+  novaSenha: z.string().min(6, "A nova senha deve ter pelo menos 6 caracteres"),
+});
 
 type FormData = z.infer<typeof schema>;
 
@@ -51,13 +43,14 @@ export default function AlterarSenhaDialog({
 }: AlterarSenhaDialogProps) {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       senhaAtual: "",
       novaSenha: "",
-      confirmarSenha: "",
     },
   });
 
@@ -125,30 +118,59 @@ export default function AlterarSenhaDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-white"
+        className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-white rounded-3xl border-0 shadow-2xl p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
+        hideCloseButton
       >
-        <DialogHeader>
-          <DialogTitle>Alterar Senha</DialogTitle>
-        </DialogHeader>
+        <div className="bg-blue-600 p-6 text-center relative">
+          <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
+            <X className="h-6 w-6" />
+            <span className="sr-only">Close</span>
+          </DialogClose>
+          
+          <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
+            <KeyRound className="w-6 h-6 text-white" />
+          </div>
+          <DialogTitle className="text-2xl font-bold text-white">
+            Alterar Senha
+          </DialogTitle>
+          <DialogDescription className="text-blue-100 text-sm mt-1">
+            Defina uma nova senha segura para sua conta
+          </DialogDescription>
+        </div>
 
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6"
+            className="space-y-6 p-6 pt-2"
           >
             <FormField
               control={form.control}
               name="senhaAtual"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Senha atual</FormLabel>
+                  <FormLabel className="text-gray-700 font-medium ml-1">Senha atual</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Digite sua senha atual"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                      <Input
+                        type={showCurrentPassword ? "text" : "password"}
+                        placeholder="Digite sua senha atual"
+                        {...field}
+                        className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 focus:outline-none"
+                      >
+                        {showCurrentPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
+                      </button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -160,51 +182,48 @@ export default function AlterarSenhaDialog({
               name="novaSenha"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nova senha</FormLabel>
+                  <FormLabel className="text-gray-700 font-medium ml-1">Nova senha</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Digite a nova senha"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <KeyRound className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                      <Input
+                        type={showNewPassword ? "text" : "password"}
+                        placeholder="Digite a nova senha"
+                        {...field}
+                        className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 focus:outline-none"
+                      >
+                        {showNewPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
+                      </button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="confirmarSenha"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirmar nova senha</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Repita a nova senha"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex gap-4 pt-4">
+            <div className="flex gap-3 pt-2">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={onClose}
                 disabled={form.formState.isSubmitting}
-                className="flex-1"
+                className="flex-1 h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
               >
                 Cancelar
               </Button>
               <Button 
                 type="submit" 
                 disabled={form.formState.isSubmitting}
-                className="flex-1"
+                className="flex-1 h-12 rounded-xl shadow-lg shadow-blue-500/20 font-semibold text-base"
               >
                 {form.formState.isSubmitting ? (
                   <>
@@ -212,7 +231,7 @@ export default function AlterarSenhaDialog({
                     Salvando...
                   </>
                 ) : (
-                  "Salvar"
+                  "Salvar Nova Senha"
                 )}
               </Button>
             </div>

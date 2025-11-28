@@ -158,10 +158,10 @@ export default function ResponsavelCarteirinha() {
     enabled: !!selectedPassageiro?.id,
   });
 
-  const anos = useMemo(() => {
+  const anos: number[] = useMemo(() => {
     return Array.from(
-      new Set((anosBrutos || []).map((a: any) => Number(a)))
-    ).sort((a, b) => b - a);
+      new Set((anosBrutos as unknown as any[] || []).map((a: any) => Number(a)))
+    ).sort((a: number, b: number) => b - a);
   }, [anosBrutos]);
 
   const cpf = localStorage.getItem("responsavel_cpf");
@@ -341,7 +341,7 @@ export default function ResponsavelCarteirinha() {
                         onValueChange={(v) => handleChangePassageiro(v)}
                         defaultValue={selectedPassageiro.id}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200">
                           <SelectValue placeholder="Trocar Passageiro" />
                         </SelectTrigger>
                         <SelectContent>
@@ -374,7 +374,7 @@ export default function ResponsavelCarteirinha() {
                           value={String(anoSelecionado)}
                           onValueChange={(v) => handleChangeAno(Number(v))}
                         >
-                          <SelectTrigger className="w-[100px] text-sm">
+                          <SelectTrigger className="w-[100px] text-sm h-9 rounded-lg bg-white border-gray-200">
                             <SelectValue placeholder="Ano" />
                           </SelectTrigger>
                           <SelectContent>

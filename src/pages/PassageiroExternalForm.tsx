@@ -14,28 +14,28 @@ import { CepInput, PhoneInput } from "@/components/forms";
 
 // Components - UI
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -50,15 +50,16 @@ import { isValidCPF } from "@/utils/validators";
 
 // Icons
 import {
-    AlertTriangle,
-    Car,
-    CheckCircle2,
-    FileText,
-    Hash,
-    Loader2,
-    Mail,
-    MapPin,
-    User
+  AlertTriangle,
+  Car,
+  CheckCircle2,
+  Contact,
+  FileText,
+  Hash,
+  Loader2,
+  Mail,
+  MapPin,
+  User
 } from "lucide-react";
 
 const prePassageiroSchema = z.object({
@@ -269,7 +270,7 @@ export default function PassageiroExternalForm() {
                         <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
                           <User className="w-5 h-5" />
                         </div>
-                        Dados do Passageiro
+                        Passageiro
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-6 pb-6 pt-2">
@@ -305,9 +306,9 @@ export default function PassageiroExternalForm() {
                     <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
                       <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
                         <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                          <User className="w-5 h-5" />
+                          <Contact className="w-5 h-5" />
                         </div>
-                        Dados do Responsável
+                        Responsável
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-6 pb-6 pt-2 space-y-6">
@@ -380,7 +381,7 @@ export default function PassageiroExternalForm() {
                               field={field}
                               label="WhatsApp"
                               required
-                              inputClassName="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                              inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                             />
                           )}
                         />
@@ -605,7 +606,7 @@ export default function PassageiroExternalForm() {
                         <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
                           <FileText className="w-5 h-5" />
                         </div>
-                        Observações (Opcional)
+                        Observações
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-6 pb-6 pt-2">

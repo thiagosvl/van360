@@ -135,7 +135,7 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
                   <Receipt className="mr-2 h-4 w-4" /> Minha Assinatura
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setOpenEditarCadasto(true)}>
-                  <UserPen className="mr-2 h-4 w-4" /> Editar cadastro
+                  <UserPen className="mr-2 h-4 w-4" /> Editar Perfil
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setOpenAlterarSenha(true)}>
                   <Lock className="mr-2 h-4 w-4" /> Alterar senha

@@ -1,10 +1,10 @@
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 
 interface StatusFilterProps {
@@ -37,7 +37,7 @@ export function StatusFilter({
       <div className="space-y-2">
         <Label htmlFor={id}>{label}</Label>
         <Select value={value} onValueChange={onValueChange}>
-          <SelectTrigger id={id}>
+          <SelectTrigger id={id} className="h-11 rounded-xl bg-white border-gray-200">
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent className="max-h-60 overflow-y-auto">
