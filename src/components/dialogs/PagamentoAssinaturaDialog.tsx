@@ -1,19 +1,11 @@
-import { Button } from "@/components/ui/button";
+import PagamentoPixContent from "@/components/features/pagamento/PagamentoPixContent";
 import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
+  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ASSINATURA_COBRANCA_STATUS_PAGO } from "@/constants";
-import { useGerarPixParaCobranca } from "@/hooks";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/utils/notifications/toast";
-import type { RealtimeChannel } from "@supabase/supabase-js";
-import { Copy, CreditCard, Loader2, QrCode, X } from "lucide-react";
-import QRCode from "qrcode";
-import { useCallback, useEffect, useRef, useState } from "react";
 
 interface PagamentoAssinaturaDialogProps {
   isOpen: boolean;
@@ -27,6 +19,11 @@ interface PagamentoAssinaturaDialogProps {
     franquia: number;
     cobrancaId: string;
   }) => void;
+  nomePlano?: string;
+  quantidadeAlunos?: number;
+  onIrParaInicio?: () => void;
+  onIrParaAssinatura?: () => void;
+  context?: "register" | "upgrade";
 }
 
 export default function PagamentoAssinaturaDialog({
@@ -37,414 +34,47 @@ export default function PagamentoAssinaturaDialog({
   onPaymentSuccess,
   usuarioId,
   onPrecisaSelecaoManual,
+  nomePlano,
+  quantidadeAlunos,
+  onIrParaInicio,
+  onIrParaAssinatura,
+  context,
 }: PagamentoAssinaturaDialogProps) {
-  const gerarPix = useGerarPixParaCobranca();
-  const [dadosPagamento, setDadosPagamento] = useState<{
-    qrCodePayload: string;
-    location: string;
-    inter_txid: string;
-    cobrancaId: string;
-  } | null>(null);
-  const [qrCodeImage, setQrCodeImage] = useState<string | null>(null);
-  const [isCopied, setIsCopied] = useState(false);
-  const realtimeChannelRef = useRef<RealtimeChannel | null>(null);
-  const pixGeradoRef = useRef<string | null>(null); // Controla se já gerou PIX para esta cobrança
-  const pollerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const mountedRef = useRef(true);
-  const monitorandoRef = useRef(false); // Controla se já está monitorando pagamento
-  const handlePaymentSuccessRef = useRef<(() => void) | null>(null);
-
-  // Gerar PIX ao abrir o modal - apenas uma vez por cobrança
-  useEffect(() => {
-    if (!isOpen || !cobrancaId) {
-      // Reset quando modal fecha
-      if (!isOpen) {
-        pixGeradoRef.current = null;
-      }
-      return;
-    }
-
-    // Se já gerou PIX para esta cobrança, não gerar novamente
-    if (pixGeradoRef.current === cobrancaId) {
-      return;
-    }
-
-    const gerarPixAction = () => {
-      setDadosPagamento(null);
-      setQrCodeImage(null);
-
-      gerarPix.mutate(cobrancaId, {
-        onSuccess: (result: any) => {
-          // Verificar se precisa seleção manual ANTES de gerar PIX
-          if (result.precisaSelecaoManual && onPrecisaSelecaoManual && usuarioId) {
-            // Fechar dialog de pagamento e abrir dialog de seleção
-            onClose();
-            onPrecisaSelecaoManual({
-              tipo: result.tipo || "upgrade",
-              franquia: result.franquia || 0,
-              cobrancaId: cobrancaId,
-            });
-            return;
-          }
-
-          // Se não precisa seleção manual, continuar com o fluxo normal
-          setDadosPagamento(result);
-          pixGeradoRef.current = cobrancaId; // Marca que já gerou para esta cobrança
-
-          // Gerar QR Code image
-          if (result.qrCodePayload) {
-            QRCode.toDataURL(result.qrCodePayload)
-              .then(setQrCodeImage)
-              .catch(() => {
-                setQrCodeImage(null);
-              });
-          }
-        },
-        onError: () => {
-          onClose();
-        },
-      });
-    };
-
-    gerarPixAction();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, cobrancaId]); // Removido toast e onClose das dependências
-
-  // handlePaymentSuccess usando useCallback e ref para evitar re-criações
-  const handlePaymentSuccess = useCallback(() => {
-    if (realtimeChannelRef.current) {
-      supabase.removeChannel(realtimeChannelRef.current).catch(() => {});
-      realtimeChannelRef.current = null;
-    }
-
-    if (pollerRef.current) {
-      clearInterval(pollerRef.current);
-      pollerRef.current = null;
-    }
-
-    monitorandoRef.current = false;
-
-    onClose();
-    if (onPaymentSuccess) {
-      onPaymentSuccess();
-    }
-  }, [toast, onClose, onPaymentSuccess]);
-
-  useEffect(() => {
-    handlePaymentSuccessRef.current = handlePaymentSuccess;
-  }, [handlePaymentSuccess]);
-
-  useEffect(() => {
-    if (!isOpen || !dadosPagamento?.cobrancaId) {
-      if (pollerRef.current) {
-        clearInterval(pollerRef.current);
-        pollerRef.current = null;
-      }
-      if (realtimeChannelRef.current) {
-        supabase.removeChannel(realtimeChannelRef.current).catch(() => {});
-        realtimeChannelRef.current = null;
-      }
-      monitorandoRef.current = false;
-      return;
-    }
-
-    // Se já está monitorando esta cobrança, não iniciar novamente
-    if (monitorandoRef.current) {
-      return;
-    }
-
-    mountedRef.current = true;
-    monitorandoRef.current = true;
-    const cobrancaIdAtual = dadosPagamento.cobrancaId;
-
-    if (realtimeChannelRef.current) {
-      supabase.removeChannel(realtimeChannelRef.current).catch(() => {});
-      realtimeChannelRef.current = null;
-    }
-
-    if (pollerRef.current) {
-      clearInterval(pollerRef.current);
-      pollerRef.current = null;
-    }
-
-    const checkPaymentStatus = async () => {
-      if (!mountedRef.current || !monitorandoRef.current) return;
-
-      try {
-        // Usar query direta do Supabase - assinaturas_cobrancas não está no tipo Database
-         
-        const { data, error } = await (supabase as any)
-          .from("assinaturas_cobrancas")
-          .select("status")
-          .eq("id", cobrancaIdAtual)
-          .maybeSingle();
-
-        if (error) {
-          return;
-        }
-
-        if (data?.status === ASSINATURA_COBRANCA_STATUS_PAGO) {
-          if (
-            mountedRef.current &&
-            monitorandoRef.current &&
-            handlePaymentSuccessRef.current
-          ) {
-            handlePaymentSuccessRef.current();
-          }
-        }
-      } catch (err) {
-        // Erro silencioso - polling continuará tentando
-      }
-    };
-
-    const setupRealtime = async () => {
-      if (!pollerRef.current && monitorandoRef.current) {
-        pollerRef.current = setInterval(() => {
-          if (!mountedRef.current || !monitorandoRef.current) {
-            if (pollerRef.current) {
-              clearInterval(pollerRef.current);
-              pollerRef.current = null;
-            }
-            return;
-          }
-          checkPaymentStatus();
-        }, 5000); // 5 segundos - intervalo principal quando realtime não funciona
-      }
-
-      try {
-        // use the same channel/topic pattern as Register.tsx to ensure
-        // postgres_changes subscriptions are handled consistently
-         
-        const channel = (supabase as any)
-          .channel(`pagamento-${cobrancaIdAtual}`)
-          .on(
-            "postgres_changes",
-            {
-              event: "UPDATE",
-              schema: "public",
-              table: "assinaturas_cobrancas",
-              filter: `id=eq.${cobrancaIdAtual}`,
-            },
-            (payload) => {
-              try {
-                if (payload?.new?.status === ASSINATURA_COBRANCA_STATUS_PAGO) {
-                  if (
-                    mountedRef.current &&
-                    monitorandoRef.current &&
-                    handlePaymentSuccessRef.current
-                  ) {
-                    handlePaymentSuccessRef.current();
-                  }
-                }
-              } catch (cbErr) {
-                // Erro silencioso no callback realtime
-              }
-            }
-          );
-
-        const subscribeResult = await channel.subscribe();
-
-        const status = (subscribeResult as { status?: string })?.status;
-        const isSubscribed =
-          status === "SUBSCRIBED" || status === "ok" || status === "OK";
-
-        if (isSubscribed) {
-          realtimeChannelRef.current = channel;
-          if (pollerRef.current) {
-            clearInterval(pollerRef.current);
-            pollerRef.current = null;
-          }
-          if (monitorandoRef.current) {
-            pollerRef.current = setInterval(() => {
-              if (!mountedRef.current || !monitorandoRef.current) {
-                if (pollerRef.current) {
-                  clearInterval(pollerRef.current);
-                  pollerRef.current = null;
-                }
-                return;
-              }
-              checkPaymentStatus();
-            }, 30000);
-          }
-        } else {
-          throw new Error(
-            `Subscribe não confirmou inscrição. result=${JSON.stringify(
-              subscribeResult
-            )}`
-          );
-        }
-      } catch (err) {
-        // Falha ao inscrever realtime - polling já está ativo como fallback
-      }
-    };
-
-    // Quick initial check in case the payment already completed
-    checkPaymentStatus();
-    setupRealtime();
-
-    return () => {
-      mountedRef.current = false;
-      monitorandoRef.current = false;
-      if (pollerRef.current) {
-        clearInterval(pollerRef.current);
-        pollerRef.current = null;
-      }
-      if (realtimeChannelRef.current) {
-        supabase.removeChannel(realtimeChannelRef.current).catch(() => {});
-        realtimeChannelRef.current = null;
-      }
-    };
-  }, [isOpen, dadosPagamento?.cobrancaId]); // handlePaymentSuccess removido das dependências (usamos ref)
-
-  const handleCopyPix = useCallback(async () => {
-    if (!dadosPagamento?.qrCodePayload) return;
-
-    try {
-      await navigator.clipboard.writeText(dadosPagamento.qrCodePayload);
-      setIsCopied(true);
-
-      setTimeout(() => {
-        setIsCopied(false);
-      }, 1000);
-    } catch (err: any) {
-      toast.error("assinatura.erro.copiarPix", {
-        description: err.message || "Não foi possível copiar o código PIX.",
-      });
-    }
-  }, [dadosPagamento?.qrCodePayload]);
-
-  const handleClose = useCallback(() => {
-    // Ao fechar, limpar recursos do realtime
-    if (realtimeChannelRef.current) {
-      supabase.removeChannel(realtimeChannelRef.current).catch(() => {});
-      realtimeChannelRef.current = null;
-    }
-    if (pollerRef.current) {
-      clearInterval(pollerRef.current);
-      pollerRef.current = null;
-    }
-    mountedRef.current = false;
-    monitorandoRef.current = false;
-    onClose();
-  }, [onClose]);
-
+  // We need to handle close logic here to ensure cleanup if needed, 
+  // but PagamentoPixContent handles its own cleanup on unmount/prop change.
+  // However, the Dialog's onOpenChange triggers onClose, which should be sufficient.
+  
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        if (!open) handleClose();
-      }}
-    >
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-white rounded-3xl border-0 shadow-2xl p-0"
+        className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-white p-0 gap-0 rounded-3xl"
         onOpenAutoFocus={(e) => e.preventDefault()}
         hideCloseButton
       >
-        <div className="bg-blue-600 p-6 text-center relative">
-          <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
-            <X className="h-6 w-6" />
-            <span className="sr-only">Close</span>
-          </DialogClose>
-          
-          <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
-            <CreditCard className="w-6 h-6 text-white" />
-          </div>
-          <DialogTitle className="text-2xl font-bold text-white">
-            Pagamento via PIX
+        {/* Header Minimalista */}
+        <DialogHeader className="p-4 flex flex-row items-center justify-between border-b border-gray-100 sticky top-0 bg-white z-10">
+          <div className="w-8" /> {/* Spacer */}
+          <DialogTitle className="text-base font-semibold text-gray-900 uppercase tracking-wide">
+            Pagamento
           </DialogTitle>
-          <DialogDescription className="text-blue-100 text-sm mt-1">
-            Escaneie o QR Code ou copie o código PIX
-          </DialogDescription>
-        </div>
+          <DialogClose className="text-gray-500 font-medium text-sm hover:text-gray-700 transition-colors">
+            Fechar
+          </DialogClose>
+        </DialogHeader>
 
-        <div className="space-y-6 p-6 pt-2">
-          {gerarPix.isPending ? (
-            <div className="flex flex-col items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
-              <p className="text-sm text-gray-500 font-medium">
-                Gerando código PIX...
-              </p>
-            </div>
-          ) : dadosPagamento ? (
-            <>
-              {/* Valor */}
-              <div className="text-center bg-blue-50 py-4 rounded-xl border border-blue-100">
-                <p className="text-sm text-blue-600 font-medium mb-1">
-                  Valor a pagar
-                </p>
-                <p className="text-3xl font-bold text-blue-900">
-                  {valor.toLocaleString("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                  })}
-                </p>
-              </div>
-
-              {/* QR Code */}
-              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col items-center">
-                {qrCodeImage ? (
-                  <div className="relative group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-200"></div>
-                    <img
-                      src={qrCodeImage}
-                      alt="QR Code PIX"
-                      className="relative h-48 w-48 rounded-lg bg-white p-2"
-                    />
-                  </div>
-                ) : (
-                  <div className="h-48 w-48 flex flex-col gap-2 items-center justify-center bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-500">
-                    <QrCode className="w-8 h-8 text-gray-300" />
-                    <span>Gerando QR Code...</span>
-                  </div>
-                )}
-
-                <p className="text-sm font-medium mt-6 mb-3 text-gray-700">
-                  Copie o código PIX:
-                </p>
-
-                <div className="w-full flex items-center gap-2">
-                  <div className="flex-1 bg-gray-50 p-3 rounded-xl border border-gray-200 font-mono text-xs text-gray-600 break-all select-all">
-                    {dadosPagamento.qrCodePayload}
-                  </div>
-                  <Button
-                    size="icon"
-                    variant="outline"
-                    onClick={handleCopyPix}
-                    className="shrink-0 h-10 w-10 rounded-xl border-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all"
-                    title="Copiar código"
-                  >
-                    {isCopied ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Mensagem de aguardando */}
-              <div className="flex items-center justify-center gap-2 text-sm text-blue-600 bg-blue-50/50 p-3 rounded-xl">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="font-medium">Aguardando confirmação do pagamento...</span>
-              </div>
-
-              <p className="text-xs text-center text-gray-400 px-4">
-                Após o pagamento ser confirmado, sua assinatura será ativada
-                automaticamente em alguns instantes.
-              </p>
-            </>
-          ) : (
-            <div className="text-center text-gray-600 py-8 bg-gray-50 rounded-xl border border-gray-200 border-dashed">
-              <p>Erro ao carregar dados do pagamento.</p>
-              <Button 
-                variant="link" 
-                onClick={() => onClose()} 
-                className="mt-2 text-blue-600"
-              >
-                Tentar novamente
-              </Button>
-            </div>
-          )}
+        <div className="p-6">
+          <PagamentoPixContent
+            cobrancaId={cobrancaId}
+            onPaymentSuccess={onPaymentSuccess}
+            usuarioId={usuarioId}
+            onPrecisaSelecaoManual={onPrecisaSelecaoManual}
+            onClose={onClose}
+            nomePlano={nomePlano}
+            quantidadeAlunos={quantidadeAlunos}
+            onIrParaInicio={onIrParaInicio}
+            onIrParaAssinatura={onIrParaAssinatura}
+            context={context}
+          />
         </div>
       </DialogContent>
     </Dialog>

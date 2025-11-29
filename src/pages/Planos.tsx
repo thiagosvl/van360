@@ -10,7 +10,7 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 // Components - Features
 import { PagamentoSucessoDialog } from "@/components/dialogs/PagamentoSucessoDialog";
 import { SelecaoPassageirosDialog } from "@/components/dialogs/SelecaoPassageirosDialog";
-import { PagamentoPix } from "@/components/features/pagamento/PagamentoPix";
+import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaDialog";
 import { PlanoCard } from "@/components/features/register/PlanoCard";
 
 // Components - Navigation
@@ -30,12 +30,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
@@ -124,7 +118,11 @@ export default function Planos() {
     valorPorCobranca: number;
   } | null>(null);
   const [isCalculandoPreco, setIsCalculandoPreco] = useState(false);
-  const [dadosPagamento, setDadosPagamento] = useState<any>(null);
+  const [pagamentoDialog, setPagamentoDialog] = useState<{
+    isOpen: boolean;
+    cobrancaId: string;
+    valor: number;
+  } | null>(null);
   const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
   const [downgradeInfo, setDowngradeInfo] = useState<{
     planoId: string;
@@ -260,7 +258,7 @@ export default function Planos() {
 
     // Buscar plano base pelo slug - apenas fazer scroll para o plano, sem selecionar
     const planoEncontrado = planos.find((p) => p.slug === slugParam);
-    if (planoEncontrado && !dadosPagamento) {
+    if (planoEncontrado && !pagamentoDialog) {
       // Verificar se o plano está disponível para seleção (não está desabilitado)
       const isAtivo =
         isPlanoAtivo(planoEncontrado.id) &&
@@ -297,7 +295,7 @@ export default function Planos() {
 
     setSelectedPlanoId(planoId);
     setSelectedSubPlanoId(null);
-    setDadosPagamento(null);
+    setPagamentoDialog(null);
     setQuantidadePersonalizada("");
     setPrecoCalculadoPreview(null);
 
@@ -436,12 +434,21 @@ export default function Planos() {
           precoOrigem: (result as any).precoOrigem,
           cobrancaId: (result as any).cobrancaId,
         });
-      } else if (result.qrCodePayload) {
-        setDadosPagamento(result);
+      } else if (result.qrCodePayload && (result as any).cobrancaId) {
+        // Abrir dialog de pagamento com o novo componente
+        setPagamentoDialog({
+          isOpen: true,
+          cobrancaId: String((result as any).cobrancaId),
+          valor: Number((result as any).preco_aplicado || (result as any).valor || 0),
+        });
         setSelectedPlanoId(planoId);
       } else {
-        setDadosPagamento(result);
-        setSelectedPlanoId(planoId);
+        // Atualização imediata (sem pagamento)
+        await refreshProfile();
+        toast.success("assinatura.sucesso.atualizada");
+        setTimeout(() => {
+          navigate("/assinatura");
+        }, 1000);
       }
     } catch (error: any) {
       toast.error("assinatura.erro.processar", {
@@ -509,8 +516,12 @@ export default function Planos() {
               precoOrigem: (result as any).precoOrigem,
               cobrancaId: (result as any).cobrancaId,
             });
-          } else if (result.qrCodePayload) {
-            setDadosPagamento(result);
+          } else if (result.qrCodePayload && (result as any).cobrancaId) {
+            setPagamentoDialog({
+              isOpen: true,
+              cobrancaId: String((result as any).cobrancaId),
+              valor: Number((result as any).preco_aplicado || (result as any).valor || 0),
+            });
           } else {
             // Atualização imediata (downgrade) - aguardar e atualizar profile antes de redirecionar
             await refreshProfile();
@@ -541,8 +552,12 @@ export default function Planos() {
             precoOrigem: (result as any).precoOrigem,
             cobrancaId: (result as any).cobrancaId,
           });
-        } else if (result.qrCodePayload) {
-          setDadosPagamento(result);
+        } else if (result.qrCodePayload && (result as any).cobrancaId) {
+          setPagamentoDialog({
+            isOpen: true,
+            cobrancaId: String((result as any).cobrancaId),
+            valor: Number((result as any).preco_aplicado || (result as any).valor || 0),
+          });
           setSelectedPlanoId(
             planos.find((p) => p.slug === PLANO_COMPLETO)?.id || null
           );
@@ -603,8 +618,12 @@ export default function Planos() {
           precoOrigem: (result as any).precoOrigem,
           cobrancaId: (result as any).cobrancaId,
         });
-      } else if (result.qrCodePayload) {
-        setDadosPagamento(result);
+      } else if (result.qrCodePayload && (result as any).cobrancaId) {
+        setPagamentoDialog({
+          isOpen: true,
+          cobrancaId: String((result as any).cobrancaId),
+          valor: Number((result as any).preco_aplicado || (result as any).valor || 0),
+        });
       } else {
         // Downgrade de subplano - sucesso imediato
         await refreshProfile();
@@ -768,8 +787,12 @@ export default function Planos() {
           precoOrigem: (result as any).precoOrigem,
           cobrancaId: (result as any).cobrancaId,
         });
-      } else if (result.qrCodePayload) {
-          setDadosPagamento(result);
+      } else if (result.qrCodePayload && (result as any).cobrancaId) {
+          setPagamentoDialog({
+            isOpen: true,
+            cobrancaId: String((result as any).cobrancaId),
+            valor: Number((result as any).preco_aplicado || (result as any).valor || 0),
+          });
           setSelectedPlanoId(
             planos.find((p) => p.slug === PLANO_COMPLETO)?.id || null
           );
@@ -799,171 +822,33 @@ export default function Planos() {
   };
 
 
-  // Polling de pagamento
-  useEffect(() => {
-    if (!dadosPagamento?.cobrancaId) return;
+  // Handler para quando o pagamento for confirmado
+  const handlePaymentSuccess = async () => {
+    // Aguardar um pouco para o backend processar a atualização da assinatura
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    
+    // Forçar refresh do profile para garantir que os dados estão atualizados
+    await refreshProfile();
+    
+    // O PagamentoPixContent agora exibe a tela de sucesso internamente
+    // Não precisamos mais abrir um dialog separado
+  };
 
-    let mounted = true;
-    let poller: ReturnType<typeof setInterval> | null = null;
-
-    const checkPaymentStatus = async () => {
-      try {
-        // @ts-ignore - assinaturas_cobrancas pode não estar nos tipos gerados
-        const { data, error } = await (supabase as any)
-          .from("assinaturas_cobrancas")
-          .select("status")
-          .eq("id", dadosPagamento.cobrancaId)
-          .maybeSingle();
-
-        if (error) {
-          return;
-        }
-
-        if (data && (data as any).status === ASSINATURA_COBRANCA_STATUS_PAGO) {
-          if (mounted) {
-            // Aguardar um pouco para o backend processar a atualização da assinatura
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-            
-            // Forçar refresh do profile para garantir que os dados estão atualizados
-            await refreshProfile();
-            
-            // Buscar informações do plano para exibir no dialog
-            const planoSelecionado = selectedPlanoId
-              ? planos.find((p) => p.id === selectedPlanoId)
-              : null;
-            const nomePlano = planoSelecionado?.nome;
-            
-            // Buscar quantidade de passageiros ativados (se disponível)
-            let quantidadeAlunos: number | undefined;
-            try {
-              const assinaturaAtualizada = profile?.assinaturas_usuarios?.find(
-                (a: any) => a.ativo === true
-              );
-              if (assinaturaAtualizada) {
-                // Tentar buscar contagem de passageiros com cobrança automática
-                // Por enquanto, deixar undefined se não conseguir
-              }
-            } catch (error) {
-              // Ignorar erro
-            }
-            
-            if (mounted) {
-              setPagamentoSucessoDialog({
-                isOpen: true,
-                nomePlano,
-                quantidadeAlunos,
-              });
-            }
-          }
-        }
-      } catch (err) {
-        // Erro silencioso - polling continuará tentando
-      }
-    };
-
-    const setupRealtime = async () => {
-      if (!poller) {
-        poller = setInterval(() => {
-          if (!mounted) return;
-          checkPaymentStatus();
-        }, 5000);
-      }
-
-      try {
-        const channel = supabase.channel("public:assinaturas_cobrancas").on(
-          "postgres_changes",
-          {
-            event: "UPDATE",
-            schema: "public",
-            table: "assinaturas_cobrancas" as any,
-            filter: `id=eq.${dadosPagamento.cobrancaId}`,
-          },
-          async (payload) => {
-            try {
-              if (
-                payload?.new &&
-                (payload.new as any).status === ASSINATURA_COBRANCA_STATUS_PAGO
-              ) {
-                if (mounted) {
-                  // Aguardar um pouco para o backend processar a atualização da assinatura
-                  await new Promise((resolve) => setTimeout(resolve, 1500));
-                  
-                  // Forçar refresh do profile para garantir que os dados estão atualizados
-                  await refreshProfile();
-                  
-                  // Buscar informações do plano para exibir no dialog
-                  const planoSelecionado = selectedPlanoId
-                    ? planos.find((p) => p.id === selectedPlanoId)
-                    : null;
-                  const nomePlano = planoSelecionado?.nome;
-                  
-                  // Buscar quantidade de passageiros ativados (se disponível)
-                  let quantidadeAlunos: number | undefined;
-                  try {
-                    const assinaturaAtualizada = profile?.assinaturas_usuarios?.find(
-                      (a: any) => a.ativo === true
-                    );
-                    if (assinaturaAtualizada) {
-                      // Tentar buscar contagem de passageiros com cobrança automática
-                      // Por enquanto, deixar undefined se não conseguir
-                    }
-                  } catch (error) {
-                    // Ignorar erro
-                  }
-                  
-                  if (mounted) {
-                    setPagamentoSucessoDialog({
-                      isOpen: true,
-                      nomePlano,
-                      quantidadeAlunos,
-                    });
-                  }
-                }
-              }
-            } catch (cbErr) {
-              // Erro silencioso no callback realtime
-            }
-          }
-        );
-
-        const subscribeResult = await channel.subscribe();
-        const isSubscribed =
-          (subscribeResult &&
-            (subscribeResult as any).status === "SUBSCRIBED") ||
-          (subscribeResult && (subscribeResult as any).status === "ok") ||
-          (subscribeResult && (subscribeResult as any).status === "OK");
-
-        if (isSubscribed) {
-          realtimeChannelRef.current = channel;
-          if (poller) {
-            clearInterval(poller);
-            poller = null;
-          }
-          poller = setInterval(() => {
-            if (!mounted) return;
-            checkPaymentStatus();
-          }, 30000);
-        }
-      } catch (err) {
-        // Falha ao inscrever realtime - polling já está ativo como fallback
-      }
-    };
-
-    checkPaymentStatus();
-    setupRealtime();
-
-    return () => {
-      mounted = false;
-      if (poller) {
-        clearInterval(poller);
-        poller = null;
-      }
-      if (realtimeChannelRef.current) {
-        supabase.removeChannel(realtimeChannelRef.current).catch(() => {});
-        realtimeChannelRef.current = null;
-      }
-    };
-  }, [dadosPagamento, navigate, refreshProfile]);
+  // Handler para quando precisar de seleção manual de passageiros
+  const handlePrecisaSelecaoManual = (data: {
+    tipo: "upgrade" | "downgrade";
+    franquia: number;
+    cobrancaId: string;
+  }) => {
+    setPagamentoDialog(null);
+    setSelecaoPassageirosDialog({
+      isOpen: true,
+      tipo: data.tipo,
+      franquia: data.franquia,
+      cobrancaId: data.cobrancaId,
+      planoId: selectedPlanoId || undefined,
+    });
+  };
 
   const pullToRefreshReload = async () => {
     setRefreshing(true);
@@ -1206,7 +1091,11 @@ export default function Planos() {
               
               if (tipo === "upgrade" && temPagamento) {
                 // Abrir dialog de pagamento com PIX gerado
-                setDadosPagamento(resultado);
+                setPagamentoDialog({
+                  isOpen: true,
+                  cobrancaId: String((resultado as any).cobrancaId),
+                  valor: Number((resultado as any).preco_aplicado || (resultado as any).valor || 0),
+                });
               } else {
                 await refreshProfile();
                 setTimeout(() => {
@@ -1228,66 +1117,37 @@ export default function Planos() {
       )}
 
       {/* Dialog de Pagamento PIX */}
-      <Dialog
-        open={!!dadosPagamento}
-        onOpenChange={(open) => {
-          if (!open) {
-            // Limpar todas as seleções ao fechar o dialog (apenas pelo X)
-            setDadosPagamento(null);
-            setSelectedPlanoId(null);
-            setSelectedSubPlanoId(null);
-            setQuantidadePersonalizada("");
-            setPrecoCalculadoPreview(null);
-          }
-        }}
-      >
-        <DialogContent
-          className="max-w-2xl max-h-[95vh] overflow-y-auto"
-          onInteractOutside={(e) => {
-            // Impedir fechar ao clicar fora
-            e.preventDefault();
+      {pagamentoDialog && pagamentoDialog.cobrancaId && (
+        <PagamentoAssinaturaDialog
+          isOpen={pagamentoDialog.isOpen}
+          onClose={() => {
+            // Apenas fechar o dialog de pagamento, mantendo seleção atual
+            setPagamentoDialog(null);
           }}
-          onEscapeKeyDown={(e) => {
-            // Impedir fechar com ESC
-            e.preventDefault();
+          cobrancaId={String(pagamentoDialog.cobrancaId)}
+          valor={Number(pagamentoDialog.valor || 0)}
+          onPaymentSuccess={handlePaymentSuccess}
+          usuarioId={profile?.id}
+          onPrecisaSelecaoManual={handlePrecisaSelecaoManual}
+          nomePlano={selectedPlanoId ? planos.find((p) => p.id === selectedPlanoId)?.nome : undefined}
+          quantidadeAlunos={undefined}
+          context="upgrade"
+          onIrParaInicio={() => {
+            setPagamentoDialog(null);
+            navigate("/inicio");
           }}
-          onPointerDownOutside={(e) => {
-            // Impedir fechar ao clicar fora
-            e.preventDefault();
+          onIrParaAssinatura={() => {
+            setPagamentoDialog(null);
+            navigate("/assinatura");
           }}
-        >
-          <DialogHeader>
-            <DialogTitle className="sr-only">
-              Conclua o pagamento para ativar sua assinatura
-            </DialogTitle>
-          </DialogHeader>
-          <PagamentoPix
-            dadosPagamento={dadosPagamento}
-            titulo="Conclua o pagamento para ativar sua assinatura"
-            planos={planos}
-            subPlanos={subPlanos}
-            selectedPlanoId={selectedPlanoId}
-            selectedSubPlanoId={selectedSubPlanoId}
-            quantidadePersonalizada={
-              quantidadePersonalizada &&
-              !isNaN(parseInt(quantidadePersonalizada))
-                ? parseInt(quantidadePersonalizada)
-                : undefined
-            }
-          />
-        </DialogContent>
-      </Dialog>
+        />
+      )}
 
       {/* Dialog de Sucesso após Pagamento */}
       <PagamentoSucessoDialog
         isOpen={pagamentoSucessoDialog.isOpen}
         onClose={() => {
           setPagamentoSucessoDialog({ isOpen: false });
-          setDadosPagamento(null);
-          setSelectedPlanoId(null);
-          setSelectedSubPlanoId(null);
-          setQuantidadePersonalizada("");
-          setPrecoCalculadoPreview(null);
         }}
         nomePlano={pagamentoSucessoDialog.nomePlano}
         quantidadeAlunos={pagamentoSucessoDialog.quantidadeAlunos}

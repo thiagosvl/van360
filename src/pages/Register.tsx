@@ -1,5 +1,5 @@
 // React
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 // React Router
@@ -7,13 +7,12 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 // Third-party
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { RealtimeChannel } from "@supabase/supabase-js";
 
 // Schemas
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 
 // Components - Features
-import { PagamentoPix } from "@/components/features/pagamento/PagamentoPix";
+import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaDialog";
 import { isPlanoPagoNoAto } from "@/components/features/register";
 import { TermosUsoDialog } from "@/components/features/register/TermosUsoDialog";
 
@@ -49,10 +48,9 @@ import { toast } from "@/utils/notifications/toast";
 
 // Constants
 import {
-  ASSINATURA_COBRANCA_STATUS_PAGO,
   PLANO_COMPLETO,
   PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
+  PLANO_GRATUITO
 } from "@/constants";
 
 // Types
@@ -64,7 +62,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Icons
 import { useSEO } from "@/hooks/useSEO";
 import { getQuantidadeMinimaPersonalizada } from "@/utils/domain/plano/planoStructureUtils";
-import { CheckCircle2, FileText, Loader2 } from "lucide-react";
+import { FileText, Loader2 } from "lucide-react";
 
 export default function Register() {
   // Permitir indexação da página de cadastro
@@ -76,8 +74,16 @@ export default function Register() {
 
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const [dadosPagamento, setDadosPagamento] = useState<any>(null);
-  const realtimeChannelRef = useRef<RealtimeChannel | null>(null);
+  const [pagamentoDialog, setPagamentoDialog] = useState<{
+    isOpen: boolean;
+    cobrancaId: string;
+    valor: number;
+  } | null>(null);
+  const [pagamentoSucessoDialog, setPagamentoSucessoDialog] = useState<{
+    isOpen: boolean;
+    nomePlano?: string;
+    quantidadeAlunos?: number;
+  }>({ isOpen: false });
   const prevStepRef = useRef<number>(currentStep);
   // Ref para rastrear a quantidade sendo calculada (evita race condition)
   const quantidadeCalculandoRef = useRef<number | null>(null);
@@ -152,17 +158,13 @@ export default function Register() {
       : isPlanoPagoNoAto(selectedPlano)
     : false;
 
-  // Sempre exibir 3 steps, mas riscar o pagamento se não for necessário
-  const steps = ["Plano", "Cadastro", "Pagamento"];
-  const showPaymentStep =
-    selectedPlano?.slug === PLANO_COMPLETO && requiresPayment;
-
-  // finalStep: Completo com pagamento = 3, Completo sem pagamento ou outros = 2
-  const finalStep = showPaymentStep ? 3 : 2;
+  // Sempre exibir 2 steps
+  const steps = ["Plano", "Cadastro"];
+  const finalStep = 2;
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [currentStep, dadosPagamento, form]);
+  }, [currentStep, form]);
 
   useEffect(() => {
     if (currentStep < prevStepRef.current) {
@@ -281,13 +283,9 @@ export default function Register() {
     quantidadePersonalizada
   ]);
 
-  const handlePostPaymentSuccess = async (session?: any) => {
-    if (realtimeChannelRef.current) {
-      supabase.removeChannel(realtimeChannelRef.current).catch(() => {});
-      realtimeChannelRef.current = null;
-    }
-
-    const sessionToSet = session || dadosPagamento?.session;
+  // Handler para quando o pagamento for confirmado
+  const handlePaymentSuccess = async () => {
+    const sessionToSet = (window as any).__registerSession;
 
     if (!sessionToSet) {
       const { email } = form.getValues();
@@ -308,126 +306,24 @@ export default function Register() {
         description: "cadastro.info.pagamentoConfirmadoDescricao",
       });
     } else {
-      // Mostrar toast de sucesso antes do redirect
+      // Mostrar dialog de sucesso
       const planoNome = selectedPlano?.nome || "seu plano";
       const quantidadeInfo = selectedSubPlano
-        ? `${selectedSubPlano.franquia_cobrancas_mes} passageiros`
+        ? selectedSubPlano.franquia_cobrancas_mes
         : form.getValues("quantidade_personalizada")
-        ? `${form.getValues("quantidade_personalizada")} passageiros`
-        : "";
+        ? form.getValues("quantidade_personalizada")
+        : undefined;
 
-      toast.success("Pagamento confirmado!", {
-        description: `Seu plano ${planoNome} foi ativado com sucesso.${
-          quantidadeInfo ? ` ${quantidadeInfo} terão cobrança automática.` : ""
-        }`,
+      setPagamentoSucessoDialog({
+        isOpen: true,
+        nomePlano: planoNome,
+        quantidadeAlunos: quantidadeInfo,
       });
 
-      // Aguardar um pouco para o usuário ver o toast antes do redirect
-      setTimeout(() => {
-        navigate("/inicio");
-      }, 2000);
+      // Limpar session temporária
+      delete (window as any).__registerSession;
     }
   };
-
-  const checkPaymentStatus = useCallback(async () => {
-    if (!dadosPagamento?.cobrancaId) return;
-
-    try {
-      const { data, error } = await supabase
-        .from("cobrancas")
-        .select("status")
-        .eq("id", dadosPagamento.cobrancaId)
-        .maybeSingle();
-
-      if (error) {
-        return;
-      }
-
-      if (data?.status === ASSINATURA_COBRANCA_STATUS_PAGO) {
-        handlePostPaymentSuccess(dadosPagamento.session);
-      }
-    } catch (err) {
-      // Erro silencioso - polling continuará tentando
-    }
-  }, [dadosPagamento]);
-
-  useEffect(() => {
-    if (currentStep !== 3 || !dadosPagamento?.cobrancaId) return;
-
-    let mounted = true;
-    let poller: NodeJS.Timeout | null = null;
-
-    const setupRealtime = async () => {
-      if (!poller) {
-        poller = setInterval(() => {
-          if (!mounted) return;
-          checkPaymentStatus();
-        }, 5000);
-      }
-
-      try {
-        const channel = supabase.channel("public:assinaturas_cobrancas").on(
-          "postgres_changes",
-          {
-            event: "UPDATE",
-            schema: "public",
-            table: "assinaturas_cobrancas",
-            filter: `id=eq.${dadosPagamento.cobrancaId}`,
-          },
-          (payload) => {
-            try {
-              if (payload?.new?.status === ASSINATURA_COBRANCA_STATUS_PAGO) {
-                if (mounted) handlePostPaymentSuccess(dadosPagamento.session);
-              }
-            } catch (cbErr) {
-              // Erro silencioso no callback realtime
-            }
-          }
-        );
-
-        const subscribeResult = await channel.subscribe();
-
-        const isSubscribed =
-          (subscribeResult &&
-            (subscribeResult as any).status === "SUBSCRIBED") ||
-          (subscribeResult && (subscribeResult as any).status === "ok") ||
-          (subscribeResult && (subscribeResult as any).status === "OK");
-
-        if (isSubscribed) {
-          realtimeChannelRef.current = channel;
-          if (poller) {
-            clearInterval(poller);
-            poller = null;
-          }
-          poller = setInterval(() => {
-            if (!mounted) return;
-            checkPaymentStatus();
-          }, 30000);
-        } else {
-          throw new Error("Subscribe não retornou confirmação de inscrição.");
-        }
-      } catch (err) {
-        // Se realtime falhar, o polling já está ativo com intervalo de 5s (definido acima)
-        // Não precisamos fazer nada aqui, o polling já está rodando
-      }
-    };
-
-    // quick initial check in case the payment already completed
-    checkPaymentStatus();
-    setupRealtime();
-
-    return () => {
-      mounted = false;
-      if (poller) {
-        clearInterval(poller);
-        poller = null;
-      }
-      if (realtimeChannelRef.current) {
-        supabase.removeChannel(realtimeChannelRef.current).catch(() => {});
-        realtimeChannelRef.current = null;
-      }
-    };
-  }, [currentStep, dadosPagamento, checkPaymentStatus]);
 
   const handleSelectSubPlano = (subPlanoId: string | undefined) => {
     if (subPlanoId) {
@@ -686,7 +582,7 @@ export default function Register() {
       const ok = await form.trigger(fields as any);
       if (!ok) return false;
 
-      // Se é Completo e requer pagamento, avançar para step 3 (pagamento)
+      // Se é Completo e requer pagamento, criar conta e abrir dialog de pagamento
       if (selectedPlano?.slug === PLANO_COMPLETO && requiresPayment) {
         try {
           setLoading(true);
@@ -703,8 +599,22 @@ export default function Register() {
 
           if (result?.error) throw new Error(result.error);
 
-          setDadosPagamento(result);
-          setCurrentStep(3); // Avançar para step 3 (pagamento), não 4
+          // Se tem cobrança, abrir dialog de pagamento
+          if (result.qrCodePayload && (result as any).cobrancaId) {
+            setPagamentoDialog({
+              isOpen: true,
+              cobrancaId: String((result as any).cobrancaId),
+              valor: Number((result as any).preco_aplicado || (result as any).valor || 0),
+            });
+            // Salvar session para usar após pagamento
+            if ((result as any).session) {
+              // Armazenar temporariamente para usar após pagamento
+              (window as any).__registerSession = (result as any).session;
+            }
+          } else {
+            // Sem pagamento necessário, finalizar diretamente
+            await handleFinalRegister(formValues);
+          }
           return true;
         } catch (err: any) {
           toast.error("cadastro.erro.criar", {
@@ -723,7 +633,6 @@ export default function Register() {
       return true;
     }
 
-    // Step 3 é apenas para pagamento (não deve chegar aqui via handleNextStep)
     return true;
   };
 
@@ -901,53 +810,6 @@ export default function Register() {
           </section>
         );
 
-      case 3:
-        return (
-          <section className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-             <div className="bg-green-50 border border-green-100 rounded-2xl p-6 text-center space-y-2">
-                <div className="mx-auto h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mb-2">
-                  <CheckCircle2 className="h-6 w-6 text-green-600" />
-                </div>
-                <h3 className="text-xl font-bold text-green-900">Conta criada com sucesso!</h3>
-                <p className="text-green-700">
-                  Para ativar seu plano <strong>{selectedPlano?.nome}</strong>, realize o pagamento abaixo.
-                </p>
-             </div>
-
-            {dadosPagamento && (
-              <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-sm">
-                <PagamentoPix
-                  dadosPagamento={dadosPagamento}
-                  planos={planosDataTyped.bases}
-                  subPlanos={planosDataTyped.sub}
-                  selectedPlanoId={selectedPlanoId}
-                  selectedSubPlanoId={selectedSubPlanoId}
-                  quantidadePersonalizada={form.getValues("quantidade_personalizada")}
-                />
-              </div>
-            )}
-            
-            <div className="text-center">
-               <p className="text-sm text-gray-500 mb-4">
-                 Assim que o pagamento for confirmado, você será redirecionado automaticamente.
-               </p>
-               <Button 
-                 variant="outline" 
-                 onClick={async () => {
-                   setLoading(true);
-                   await checkPaymentStatus();
-                   // Pequeno delay para dar feedback visual se não redirecionar imediatamente
-                   setTimeout(() => setLoading(false), 1000);
-                 }}
-                 disabled={loading}
-               >
-                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                 Já fiz o pagamento
-               </Button>
-            </div>
-          </section>
-        );
-
       default:
         return null;
     }
@@ -962,12 +824,10 @@ export default function Register() {
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">
             {currentStep === 1 && "Escolha o plano ideal"}
             {currentStep === 2 && "Crie sua conta"}
-            {currentStep === 3 && "Finalize sua assinatura"}
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             {currentStep === 1 && "Comece grátis ou potencialize sua gestão com automação."}
             {currentStep === 2 && "Preencha seus dados para acessar o sistema."}
-            {currentStep === 3 && "Ambiente seguro. Seus dados estão protegidos."}
           </p>
         </div>
 
@@ -989,7 +849,6 @@ export default function Register() {
               <span>
                 {currentStep === 1 && "Plano"}
                 {currentStep === 2 && "Cadastro"}
-                {currentStep === 3 && "Pagamento"}
               </span>
             </div>
 
@@ -1013,6 +872,37 @@ export default function Register() {
       
       {/* Dialogs */}
       <TermosUsoDialog />
+      
+      {/* Dialog de Pagamento PIX */}
+      {pagamentoDialog && pagamentoDialog.cobrancaId && (
+        <PagamentoAssinaturaDialog
+          isOpen={pagamentoDialog.isOpen}
+          onClose={() => {
+            setPagamentoDialog(null);
+          }}
+          cobrancaId={String(pagamentoDialog.cobrancaId)}
+          valor={Number(pagamentoDialog.valor || 0)}
+          onPaymentSuccess={handlePaymentSuccess}
+          usuarioId={undefined}
+          nomePlano={selectedPlano?.nome}
+          quantidadeAlunos={
+            selectedSubPlano
+              ? selectedSubPlano.franquia_cobrancas_mes
+              : form.getValues("quantidade_personalizada")
+              ? form.getValues("quantidade_personalizada")
+              : undefined
+          }
+          context="register"
+          onIrParaInicio={() => {
+            setPagamentoDialog(null);
+            navigate("/inicio");
+          }}
+          onIrParaAssinatura={() => {
+            setPagamentoDialog(null);
+            navigate("/assinatura");
+          }}
+        />
+      )}
     </div>
     </div>
   );
