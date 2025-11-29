@@ -59,18 +59,6 @@ function VeiculoActionsDropdown({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {veiculo.passageiros_ativos_count > 0 && (
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/passageiros?veiculo=${veiculo.id}`);
-            }}
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Ver Passageiros
-          </DropdownMenuItem>
-        )}
         <DropdownMenuItem
           className="cursor-pointer"
           onClick={(e) => {
@@ -99,6 +87,17 @@ function VeiculoActionsDropdown({
               Reativar
             </>
           )}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          disabled={veiculo.passageiros_ativos_count === 0}
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/passageiros?veiculo=${veiculo.id}`);
+          }}
+        >
+          <Users className="w-4 h-4 mr-2" />
+          Ver Passageiros
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={(e) => {

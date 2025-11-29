@@ -28,9 +28,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useRegistrarPagamentoManual } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { parseCurrencyToNumber, toLocalDateString } from "@/utils/formatters";
+import {
+  getStatusColor,
+  getStatusText,
+  parseCurrencyToNumber,
+  toLocalDateString
+} from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -47,6 +53,8 @@ interface ManualPaymentDialogProps {
   passageiroNome: string;
   responsavelNome: string;
   valorOriginal: number;
+  status: string;
+  dataVencimento: string;
   onPaymentRecorded: () => void;
 }
 
@@ -72,6 +80,8 @@ export default function ManualPaymentDialog({
   passageiroNome,
   responsavelNome,
   valorOriginal,
+  status,
+  dataVencimento,
   onPaymentRecorded,
 }: ManualPaymentDialogProps) {
   const registrarPagamento = useRegistrarPagamentoManual();
@@ -140,14 +150,26 @@ export default function ManualPaymentDialog({
         </div>
 
         <div className="p-6 pt-2">
-          <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-6 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-              <User className="w-5 h-5" />
+          <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-6 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                <User className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-gray-900">{passageiroNome}</p>
+                <p className="text-xs text-gray-500">{responsavelNome}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-bold text-gray-900">{passageiroNome}</p>
-              <p className="text-xs text-gray-500">{responsavelNome}</p>
-            </div>
+            <span
+              className={`px-2 py-0.5 inline-block rounded-full text-xs font-medium whitespace-nowrap ${getStatusColor(
+                status,
+                dataVencimento
+              )}`}
+            >
+              {status === PASSAGEIRO_COBRANCA_STATUS_PAGO
+                ? "Pago"
+                : getStatusText(status, dataVencimento)}
+            </span>
           </div>
 
           <Form {...form}>
@@ -230,7 +252,14 @@ export default function ManualPaymentDialog({
                       <FormControl>
                         <div className="relative">
                           <CreditCard className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                          <SelectTrigger className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left">
+                          <SelectTrigger
+                            className={cn(
+                              "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left",
+                              form.formState.errors.tipo_pagamento &&
+                                "border-red-500"
+                            )}
+                            aria-invalid={!!form.formState.errors.tipo_pagamento}
+                          >
                             <SelectValue placeholder="Selecione a forma de pagamento" />
                           </SelectTrigger>
                         </div>

@@ -2,49 +2,51 @@ import { AvisoInlineExcessoFranquia } from "@/components/dialogs/AvisoInlineExce
 import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import { CepInput, MoneyInput, PhoneInput } from "@/components/forms";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  useCreatePassageiro,
-  useEscolasWithFilters,
-  useFinalizePreCadastro,
-  useUpdatePassageiro,
-  useValidarFranquia,
-  useVeiculosWithFilters,
+    useCreatePassageiro,
+    useEscolasWithFilters,
+    useFinalizePreCadastro,
+    useUpdatePassageiro,
+    useValidarFranquia,
+    useVeiculosWithFilters,
 } from "@/hooks";
 import { useSession } from "@/hooks/business/useSession";
+import { cn } from "@/lib/utils";
+import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
@@ -58,20 +60,20 @@ import { toast } from "@/utils/notifications/toast";
 import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  AlertTriangle,
-  Calendar,
-  CalendarDays,
-  Car,
-  Contact,
-  CreditCard,
-  FileText,
-  Hash,
-  Loader2,
-  Mail,
-  MapPin,
-  School,
-  User,
-  X,
+    AlertTriangle,
+    Calendar,
+    CalendarDays,
+    Car,
+    Contact,
+    CreditCard,
+    FileText,
+    Hash,
+    Loader2,
+    Mail,
+    MapPin,
+    School,
+    User,
+    X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
@@ -609,8 +611,7 @@ export default function PassengerFormDialog({
             dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
             emitir_cobranca_mes_atual: false,
             ativo: true,
-            enviar_cobranca_automatica:
-              plano?.isCompletePlan && plano?.isActive ? true : false,
+            enviar_cobranca_automatica: canUseCobrancaAutomatica(plano),
           });
 
           form.trigger([
@@ -659,8 +660,7 @@ export default function PassengerFormDialog({
             dia_vencimento: "",
             emitir_cobranca_mes_atual: false,
             ativo: true,
-            enviar_cobranca_automatica:
-              plano?.isCompletePlan && plano?.isActive ? true : false,
+            enviar_cobranca_automatica: canUseCobrancaAutomatica(plano),
           });
         }
       } catch (error: any) {
@@ -695,7 +695,7 @@ export default function PassengerFormDialog({
     if (
       novoValorEnviarCobranca &&
       !valorAtualEnviarCobranca &&
-      plano?.isCompletePlan
+      canUseCobrancaAutomatica(plano)
     ) {
       // Usar validação já calculada via hook
       if (!validacaoFranquia.podeAtivar) {
@@ -798,7 +798,7 @@ export default function PassengerFormDialog({
             </div>
             <DialogTitle className="text-2xl font-bold text-white">
               {mode === "finalize"
-                ? "Finalizar Cadastro"
+                ? "Novo Passageiro"
                 : editingPassageiro
                 ? "Editar Passageiro"
                 : "Novo Passageiro"}
@@ -894,7 +894,10 @@ export default function PassengerFormDialog({
                                   <div className="relative">
                                     <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                                     <SelectTrigger 
-                                      className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                      className={cn(
+                                        "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                        fieldState.error && "border-red-500"
+                                      )}
                                       aria-invalid={!!fieldState.error}
                                     >
                                       <SelectValue placeholder="Selecione o período" />
@@ -942,7 +945,10 @@ export default function PassengerFormDialog({
                                   <div className="relative">
                                     <Car className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                                     <SelectTrigger 
-                                      className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                      className={cn(
+                                        "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                        fieldState.error && "border-red-500"
+                                      )}
                                       aria-invalid={!!fieldState.error}
                                     >
                                       <SelectValue placeholder="Selecione o veículo" />
@@ -994,7 +1000,10 @@ export default function PassengerFormDialog({
                                   <div className="relative">
                                     <School className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                                     <SelectTrigger 
-                                      className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                      className={cn(
+                                        "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                        fieldState.error && "border-red-500"
+                                      )}
                                       aria-invalid={!!fieldState.error}
                                     >
                                       <SelectValue placeholder="Selecione a escola" />
@@ -1195,7 +1204,10 @@ export default function PassengerFormDialog({
                                   <div className="relative">
                                     <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                                     <SelectTrigger 
-                                      className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                      className={cn(
+                                        "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                        fieldState.error && "border-red-500"
+                                      )}
                                       aria-invalid={!!fieldState.error}
                                     >
                                       <SelectValue placeholder="Selecione o dia" />
@@ -1221,7 +1233,7 @@ export default function PassengerFormDialog({
                           )}
                         />
                       </div>
-                      {plano?.isCompletePlan && (
+                      {canUseCobrancaAutomatica(plano) && (
                         <div className="mt-4">
                           <FormField
                             control={form.control}
@@ -1482,7 +1494,10 @@ export default function PassengerFormDialog({
                                 <FormControl>
                                   <div className="relative">
                                     <SelectTrigger 
-                                      className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                      className={cn(
+                                        "h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                        fieldState.error && "border-red-500"
+                                      )}
                                       aria-invalid={!!fieldState.error}
                                     >
                                       <SelectValue placeholder="UF" />
@@ -1622,7 +1637,7 @@ export default function PassengerFormDialog({
                     ) : editingPassageiro ? (
                       "Atualizar"
                     ) : mode === "finalize" ? (
-                      "Concluir"
+                      "Cadastrar"
                     ) : (
                       "Cadastrar"
                     )}

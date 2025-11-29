@@ -63,7 +63,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 // Icons
 import { useSEO } from "@/hooks/useSEO";
-import { getQuantidadeMinimaPersonalizada } from "@/utils/domain/plano/planoUtils";
+import { getQuantidadeMinimaPersonalizada } from "@/utils/domain/plano/planoStructureUtils";
 import { CheckCircle2, FileText, Loader2 } from "lucide-react";
 
 export default function Register() {
@@ -850,14 +850,14 @@ export default function Register() {
       case 2:
         return (
           <section className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-0">
               <div className="flex items-center gap-4 w-full sm:w-auto">
-                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <div className="h-9.5 w-9.5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                   <FileText className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-blue-900">Você escolheu: {selectedPlano?.nome}</h4>
-                  <p className="text-sm text-blue-700">
+                  <h4 className="text-[0.92rem] font-semibold text-blue-900">Você escolheu: {selectedPlano?.nome}</h4>
+                  <p className="text-sm mt-1 sm:mt-0 text-blue-700">
                     {selectedPlano?.descricao_curta}
                   </p>
                 </div>

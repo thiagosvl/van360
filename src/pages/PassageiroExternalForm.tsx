@@ -44,6 +44,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Utils
 import { useSEO } from "@/hooks/useSEO";
+import { cn } from "@/lib/utils";
+import { validatePrePassageiroAccess } from "@/utils/domain/motorista/accessValidation";
 import { cpfMask, moneyToNumber } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { isValidCPF } from "@/utils/validators";
@@ -108,6 +110,8 @@ export default function PassageiroExternalForm() {
   const [motoristaApelido, setMotoristaApelido] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [hasAccess, setHasAccess] = useState(false);
+  const [accessReason, setAccessReason] = useState<string | null>(null);
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "passageiro",
     "responsavel",
@@ -145,9 +149,21 @@ export default function PassageiroExternalForm() {
         return;
       }
 
+      // Buscar dados completos do motorista incluindo assinatura e plano
       const { data, error } = await supabase
         .from("usuarios")
-        .select("id, nome, apelido, role")
+        .select(
+          `
+          id, 
+          nome, 
+          apelido, 
+          role,
+          assinaturas_usuarios (
+            *,
+            planos (*, parent:parent_id (*))
+          )
+        `
+        )
         .eq("id", motoristaId)
         .single();
 
@@ -160,6 +176,12 @@ export default function PassageiroExternalForm() {
       }
 
       setMotoristaApelido(data.apelido);
+
+      // Validar acesso à funcionalidade
+      const accessValidation = validatePrePassageiroAccess(data);
+      setHasAccess(accessValidation.hasAccess);
+      setAccessReason(accessValidation.reason || null);
+
       setLoading(false);
     };
 
@@ -236,6 +258,33 @@ export default function PassageiroExternalForm() {
           >
             Novo Cadastro
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Exibir aviso se não tiver acesso
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white shadow-2xl rounded-3xl p-8 text-center border border-gray-100">
+          <div className="mx-auto bg-orange-100 w-20 h-20 rounded-full flex items-center justify-center mb-6">
+            <AlertTriangle className="w-10 h-10 text-orange-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Funcionalidade Indisponível
+          </h2>
+          <p className="text-gray-600 mb-6 text-base leading-relaxed">
+            {accessReason || "O motorista não possui acesso a esta funcionalidade."}
+          </p>
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6 text-left">
+            <p className="text-sm text-orange-800 font-medium">
+              <strong>O que fazer?</strong>
+            </p>
+            <p className="text-sm text-orange-700 mt-2">
+              Entre em contato com o condutor <span className="font-semibold">{motoristaApelido}</span> e informe que ele precisa contratar ou regularizar a assinatura para disponibilizar esta funcionalidade.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -470,7 +519,10 @@ export default function PassageiroExternalForm() {
                                   <div className="relative">
                                     <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                                     <SelectTrigger 
-                                      className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                      className={cn(
+                                        "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                        fieldState.error && "border-red-500"
+                                      )}
                                       aria-invalid={!!fieldState.error}
                                     >
                                       <SelectValue placeholder="Selecione o dia" />
@@ -611,7 +663,10 @@ export default function PassageiroExternalForm() {
                               >
                                 <FormControl>
                                   <SelectTrigger 
-                                    className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    className={cn(
+                                      "h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                      fieldState.error && "border-red-500"
+                                    )}
                                     aria-invalid={!!fieldState.error}
                                   >
                                     <SelectValue placeholder="UF" />

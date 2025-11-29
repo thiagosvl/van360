@@ -124,7 +124,7 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 rounded-full border border-transparent px-2 py-1 text-left hover:bg-slate-100">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/10 text-primary/70 flex items-center justify-center font-semibold uppercase">
+                  <div className="h-10 w-10 rounded-full bg-primary/5 border border-primary/10 text-primary/60 flex items-center justify-center font-semibold uppercase">
                     <span>{userInitial}</span>
                   </div>
                   <ChevronDown className="h-4 w-4 hidden sm:inline text-slate-400" />

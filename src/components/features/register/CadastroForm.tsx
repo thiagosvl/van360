@@ -37,7 +37,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
                 <Input
                   placeholder="Digite seu nome completo"
                   {...field}
-                  className="h-12 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 transition-all"
+                  className="h-12 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all"
                 />
               </FormControl>
               <FormMessage />
@@ -57,7 +57,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
                 <Input
                   placeholder="Ex: Tio João"
                   {...field}
-                  className="h-12 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 transition-all"
+                  className="h-12 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all"
                 />
               </FormControl>
               <FormMessage />
@@ -76,7 +76,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
                   {...field}
                   onChange={(e) => field.onChange(cpfMask(e.target.value))}
                   placeholder="000.000.000-00"
-                  className="h-12 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 transition-all"
+                  className="h-12 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all"
                 />
               </FormControl>
               <FormMessage />
@@ -98,7 +98,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
                 <Input
                   placeholder="seu@email.com"
                   {...field}
-                  className="h-12 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 transition-all"
+                  className="h-12 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all"
                 />
               </FormControl>
               <FormMessage />
@@ -115,7 +115,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
               label="WhatsApp"
               required
               placeholder="(11) 99999-9999"
-              inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 transition-all"
+              inputClassName="pl-12 h-12 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all"
             />
           )}
         />
@@ -124,7 +124,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
       <FormField
         control={form.control}
         name="senha"
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <FormItem>
             <FormLabel className="text-gray-700 font-medium">
               Crie uma senha segura <span className="text-red-600">*</span>
@@ -135,7 +135,8 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
                   type={showPassword ? "text" : "password"}
                   placeholder="Mínimo 6 caracteres"
                   {...field}
-                  className="h-12 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 transition-all pr-10"
+                  aria-invalid={!!fieldState.error}
+                  className="h-12 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all pr-10"
                 />
                 <button
                   type="button"

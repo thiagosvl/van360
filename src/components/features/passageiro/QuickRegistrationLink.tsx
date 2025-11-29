@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
+import { hasPassageirosLimit } from "@/utils/domain/plano/accessRules";
 import { toast } from "@/utils/notifications/toast";
-import { ArrowRight, CheckCircle, Copy, LinkIcon } from "lucide-react";
+import { ArrowRight, CheckCircle, Copy, LinkIcon, Lock } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -34,7 +35,7 @@ export function QuickRegistrationLink({
 
   // Aplicar limite apenas para plano Gratuito
   // Plano Essencial (trial) não tem limite para maximizar lock-in
-  const shouldApplyLimit = plano?.isFreePlan;
+  const shouldApplyLimit = hasPassageirosLimit(plano);
 
   const isLimitReached = shouldApplyLimit && limitePassageiros > 0 && ativos >= limitePassageiros;
 
@@ -59,77 +60,102 @@ export function QuickRegistrationLink({
 
   return (
     <Card
-      className={`py-4 rounded-xl shadow-sm ${
-        blueTheme
+      className={`rounded-2xl shadow-sm transition-all duration-300 ${
+        allowAccess && !isLimitReached
           ? "bg-white border-blue-100 shadow-blue-50/50"
-          : "bg-white border-gray-200"
+          : "bg-gradient-to-br from-indigo-600 via-blue-600 to-purple-600 border-none text-white shadow-lg relative overflow-hidden"
       }`}
     >
-      <CardContent className="py-3 px-3 md:px-6 flex flex-col sm:flex-row justify-between items-center sm:items-center gap-3">
-        <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3">
-          <LinkIcon className="h-6 w-6 text-blue-600 shrink-0" />
-          <div className="text-center sm:text-left">
-            <p className="text-lg font-bold text-blue-600 leading-snug">
-              Link de Cadastro Rápido
-            </p>
-            <p className="text-sm text-blue-900 mt-1">
-              Copie o link e envie ao responsável do passageiro para que ele
-              inicie o cadastro.
-            </p>
+      <CardContent className="p-5 relative z-10">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4 text-center sm:text-left">
+            <div
+              className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${
+                allowAccess && !isLimitReached
+                  ? "bg-blue-50 text-blue-600"
+                  : "bg-white/20 text-white backdrop-blur-sm"
+              }`}
+            >
+              {allowAccess && !isLimitReached ? (
+                <LinkIcon className="h-6 w-6" />
+              ) : (
+                <Lock className="h-6 w-6" />
+              )}
+            </div>
+            <div>
+              <h3
+                className={`text-lg font-bold leading-tight ${
+                  allowAccess && !isLimitReached ? "text-blue-700" : "text-white"
+                }`}
+              >
+                {allowAccess && !isLimitReached
+                  ? "Link de Cadastro Rápido"
+                  : "Desbloqueie o Cadastro Rápido"}
+              </h3>
+              <p
+                className={`text-sm mt-1 max-w-md ${
+                  allowAccess && !isLimitReached
+                    ? "text-blue-600/80"
+                    : "text-indigo-100"
+                }`}
+              >
+                {allowAccess && !isLimitReached
+                  ? "Copie o link e envie ao responsável. O cadastro cai direto aqui na sua lista."
+                  : "Permita que os pais se cadastrem sozinhos. Ganhe tempo e profissionalize seu negócio."}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center sm:items-end gap-2 shrink-0">
+            {allowAccess && !isLimitReached ? (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleCopyLink}
+                className={`font-semibold border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800 transition-all ${
+                  isCopied ? "bg-green-50 text-green-700 border-green-200" : ""
+                }`}
+              >
+                {isCopied ? (
+                  <>
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Copiado!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copiar Link
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={() => navigate("/planos")}
+                className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold border-none shadow-sm"
+              >
+                Quero essa facilidade
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            )}
+            
+            {allowAccess && isLimitReached && (
+               <p className="text-xs text-red-100 font-medium bg-red-500/20 px-2 py-1 rounded-lg">
+                  Limite de {limitePassageiros} passageiros atingido
+               </p>
+            )}
           </div>
         </div>
-
-        {allowAccess && !isLimitReached ? (
-          <Button
-            variant="outline"
-            title={isCopied ? "Copiado!" : "Copiar"}
-            className="text-blue-700 border-gray-200 hover:bg-blue-100 hover:text-blue shrink-0 transition-colors duration-200"
-            onClick={handleCopyLink}
-          >
-            {isCopied ? (
-              <CheckCircle className="h-4 w-4 mr-2" />
-            ) : (
-              <Copy className="h-4 w-4 mr-2" />
-            )}
-            {isCopied ? "Copiado!" : "Copiar Link"}
-          </Button>
-        ) : (
-          <div className="flex flex-col items-center sm:items-end gap-1">
-            {allowAccess && isLimitReached ? (
-              <>
-                <span className="text-xs text-red-700 font-semibold mb-1 mt-2 text-center sm:text-right max-w-[220px]">
-                  Você atingiu o limite de {limitePassageiros} passageiros
-                </span>
-                <Button
-                  variant="default"
-                  className="shrink-0 opacity-95 px-3 py-1"
-                  onClick={() => navigate("/planos")}
-                  title="Assine um plano para adicionar mais passageiros"
-                >
-                  Quero Passageiros Ilimitados
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </>
-            ) : (
-              <>
-                <span className="text-xs text-red-700 font-semibold mb-1 mt-2 text-center sm:text-right max-w-[220px]">
-                  Indisponível no plano atual
-                </span>
-                <Button
-                  variant="default"
-                  className="shrink-0 opacity-95 px-3 py-1"
-                  onClick={() => navigate("/planos")}
-                  aria-disabled
-                  title="Disponível em outros planos"
-                >
-                  Conhecer Planos
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </>
-            )}
-          </div>
-        )}
       </CardContent>
+      
+      {/* Decorative background elements for locked state */}
+      {(!allowAccess || isLimitReached) && (
+        <>
+            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
+            <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-20 h-20 bg-purple-500/20 rounded-full blur-xl"></div>
+        </>
+      )}
     </Card>
   );
 }

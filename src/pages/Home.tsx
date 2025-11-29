@@ -34,6 +34,7 @@ import {
   PLANO_GRATUITO,
 } from "@/constants";
 import { cn } from "@/lib/utils";
+import { canUsePrePassageiro } from "@/utils/domain/plano/accessRules";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { toast } from "@/utils/notifications/toast";
 
@@ -47,6 +48,7 @@ const MiniKPI = ({
   colorClass = "text-gray-600",
   bgClass = "bg-gray-50",
   loading = false,
+  className = "",
 }: {
   label: string;
   value: string | number;
@@ -55,8 +57,14 @@ const MiniKPI = ({
   colorClass?: string;
   bgClass?: string;
   loading?: boolean;
+  className?: string;
 }) => (
-  <Card className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative">
+  <Card
+    className={cn(
+      "border-none shadow-sm bg-white rounded-2xl overflow-hidden relative",
+      className
+    )}
+  >
     <CardContent className="p-4 flex items-center justify-between">
       <div>
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
@@ -363,13 +371,16 @@ const Home = () => {
   const handleCopyLink = () => {
     if (!profile?.id) return;
 
-    if (plano?.slug === PLANO_GRATUITO) {
-      toast.error("Você não tem permissão para acessar este recurso.");
+    if (!canUsePrePassageiro(plano)) {
+      toast.info("Funcionalidade exclusiva", {
+        description: "Atualize seu plano para usar o Cadastro Rápido.",
+      });
+      navigate("/planos");
       return;
     } else {
       try {
         navigator.clipboard.writeText(buildPrepassageiroLink(profile?.id));
-        toast.success("Link copiado!", {
+        toast.success("Link de cadastro copiado!", {
           description: "Envie para os responsáveis.",
         });
       } catch (error) {
@@ -393,18 +404,18 @@ const Home = () => {
     const slug = planSlug?.toLowerCase() || "";
 
     if (slug === PLANO_GRATUITO) {
-      return "Cadastre quantos passageiros quiser, cobre automaticamente e veja seus gastos e lucros em tempo real.";
+      return "Cadastre quantos passageiros quiser e tenha controle total das suas finanças.";
     }
 
     if (slug === PLANO_ESSENCIAL) {
-      return "Foque só em dirigir! Nós cobramos, recebemos, damos baixa e enviamos os recibos automaticamente.";
+      return "Deixe a cobrança com a gente! Recebimento automático e baixa instantânea.";
     }
 
     if (slug === PLANO_COMPLETO) {
-      return "Adicione mais passageiros com cobrança automática e ganhe tempo para focar no que realmente importa.";
+      return "Automação total: cobranças, notificações e muito mais tempo livre para você.";
     }
 
-    return "Desbloqueie recursos avançados e automação completa para seu negócio.";
+    return "Acesse recursos exclusivos e profissionalize sua gestão escolar.";
   };
 
   const getPlanCTA = (planSlug?: string) => {
@@ -419,28 +430,28 @@ const Home = () => {
     }
 
     if (slug === PLANO_COMPLETO) {
-      return "Quero automatizar mais →";
+      return "Ver todos benefícios";
     }
 
-    return "Ver Planos →";
+    return "Conhecer planos";
   };
 
   const getPlanTitle = (planSlug?: string) => {
     const slug = planSlug?.toLowerCase() || "";
 
     if (slug === PLANO_GRATUITO) {
-      return "Potencialize seu negócio 🚀";
+      return "Cresça sem limites 🚀";
     }
 
     if (slug === PLANO_ESSENCIAL) {
-      return "Automatize tudo 🚀";
+      return "Automatize sua rotina ⚡";
     }
 
     if (slug === PLANO_COMPLETO) {
-      return "Automatize ainda mais 🎯";
+      return "Máxima eficiência 🎯";
     }
 
-    return "Seja Premium 🚀";
+    return "Eleve seu negócio 🚀";
   };
 
   if (isSessionLoading || isProfileLoading) {
@@ -507,6 +518,7 @@ const Home = () => {
             loading={isProfileLoading}
           />
           <MiniKPI
+            className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative"
             label="Passageiros Ativos"
             value={activePassengers}
             icon={Users}
@@ -524,7 +536,9 @@ const Home = () => {
               title="Atenção às Cobranças"
               description={`Você tem ${formatCurrency(
                 totalEmAtraso
-              )} em atraso de ${latePayments.length} passageiros.`}
+              )} em atraso de ${latePayments.length} passageiro${
+                latePayments.length != 1 ? "s" : ""
+              }.`}
               actionLabel="Ver Cobranças"
               onAction={() => navigate("/cobrancas")}
             />

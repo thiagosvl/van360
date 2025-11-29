@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
+import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { formatarEnderecoCompleto } from "@/utils/formatters/address";
 import { formatPeriodo } from "@/utils/formatters/periodo";
@@ -326,7 +327,7 @@ export const CarteirinhaInfo = ({
 
           {/* Botões de Ação Sempre Visíveis */}
           <div className="space-y-2 mb-6">
-            {plano?.isCompletePlan &&
+            {canUseCobrancaAutomatica(plano) &&
               (passageiro.enviar_cobranca_automatica ? (
                 <Button
                   variant="ghost"

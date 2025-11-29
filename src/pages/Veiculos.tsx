@@ -24,10 +24,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useDeleteVeiculo,
-    useFilters,
-    useToggleAtivoVeiculo,
-    useVeiculos,
+  useDeleteVeiculo,
+  useFilters,
+  useToggleAtivoVeiculo,
+  useVeiculos,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -196,7 +196,7 @@ export default function Veiculos() {
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6">
-          <Card className="border-none shadow-none bg-transparent">
+          <Card className="border-none shadow-none bg-transparent mt-3">
             <CardHeader className="p-0">
               {/* Toolbar moved inside CardContent or kept here if needed, but we want to remove the separate button */}
             </CardHeader>

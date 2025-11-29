@@ -4,13 +4,14 @@ import React from "react";
 
 interface KPICardProps {
   title: string;
-  value: number;
+  value: any;
   count: number;
   icon: React.ElementType;
   colorClass: string;
   bgClass: string;
   className?: string;
   countLabel?: string;
+  countVisible?: boolean;
 }
 
 export function KPICard({
@@ -22,9 +23,39 @@ export function KPICard({
   bgClass,
   className,
   countLabel = "Passageiro",
+  countVisible = true,
 }: KPICardProps) {
-  const animatedValue = useAnimatedNumber(value, 1000);
+  // Verificar se value é um ReactNode (elemento React)
+  const isReactNode = React.isValidElement(value);
+  
+  // Se for ReactNode, usar diretamente; caso contrário, tentar animar como número
+  const animatedValue = !isReactNode && typeof value === "number" 
+    ? useAnimatedNumber(value, 1000) 
+    : null;
   const animatedCount = useAnimatedNumber(count, 1000);
+
+  // Função para formatar o valor
+  const renderValue = () => {
+    if (isReactNode) {
+      return value;
+    }
+    if (animatedValue !== null && typeof animatedValue === "number") {
+      const numValue = isNaN(animatedValue) || !isFinite(animatedValue) ? 0 : animatedValue;
+      return numValue.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      });
+    }
+    // Fallback para outros tipos
+    if (typeof value === "number") {
+      const numValue = isNaN(value) || !isFinite(value) ? 0 : value;
+      return numValue.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      });
+    }
+    return String(value ?? "R$ 0,00");
+  };
 
   return (
     <div
@@ -46,12 +77,12 @@ export function KPICard({
           {title}
         </p>
         <p className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
-          {animatedValue.toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          })}
+          {renderValue()}
         </p>
-        <p className="text-[10px] text-gray-400 font-medium mt-0.5">
+        <p className={cn(
+          "text-[10px] font-medium mt-0.5",
+          countVisible ? "text-gray-400" : "text-gray-400 blur-sm select-none opacity-60"
+        )}>
           {Math.round(animatedCount)}{" "}
           {Math.round(animatedCount) === 1 ? countLabel : `${countLabel}s`}
         </p>

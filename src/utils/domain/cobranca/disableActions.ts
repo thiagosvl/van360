@@ -1,4 +1,5 @@
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
+import { canUseNotificacoes } from "@/utils/domain/plano/accessRules";
 import { Cobranca } from "@/types/cobranca";
 
 export const seForPago = (cobranca: Cobranca): boolean => {
@@ -17,15 +18,39 @@ export const disableRegistrarPagamento = (cobranca: Cobranca): boolean => {
   return seForPago(cobranca);
 };
 
-export const podeEnviarNotificacao = (
-  cobranca: Cobranca,
-  plano?: { isCompletePlan?: boolean; isValidPlan?: boolean } | null
+/**
+ * Valida se o plano do usuário permite enviar notificações
+ * @param plano - Objeto com informações do plano do usuário (retornado por useProfile)
+ * @returns true se o plano permite enviar notificações
+ */
+export const planoPermiteEnviarNotificacao = (
+  plano?: { isCompletePlan?: boolean; isValidPlan?: boolean; isActive?: boolean; isEssentialPlan?: boolean; isValidTrial?: boolean; isTrial?: boolean } | null
 ): boolean => {
-  const isPendente = cobranca.status !== 'PAGO'; // ou !seForPago(cobranca)
+  return canUseNotificacoes(plano as any);
+};
 
-  const isPlanoValido = !!(plano?.isCompletePlan && plano?.isValidPlan);
+/**
+ * Valida se a cobrança pode receber notificação
+ * Uma cobrança pode receber notificação se:
+ * - Não estiver paga
+ * - Estiver vencida (data_vencimento < hoje)
+ * @param cobranca - Objeto da cobrança
+ * @returns true se a cobrança pode receber notificação
+ */
+export const cobrancaPodeReceberNotificacao = (cobranca: Cobranca): boolean => {
+  // Não pode receber notificação se já estiver paga
+  if (seForPago(cobranca)) {
+    return false;
+  }
 
-  return isPendente && isPlanoValido;
+  // Verifica se a data de vencimento já passou (está vencida)
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  
+  const dataVencimento = new Date(cobranca.data_vencimento);
+  dataVencimento.setHours(0, 0, 0, 0);
+
+  return dataVencimento < hoje;
 };
 
 export const disableDesfazerPagamento = (cobranca: Cobranca): boolean => {
@@ -34,4 +59,12 @@ export const disableDesfazerPagamento = (cobranca: Cobranca): boolean => {
 
 export const disableExcluirCobranca = (cobranca: Cobranca): boolean => {
   return false;
+};
+
+export const disableEditarCobranca = (cobranca: Cobranca): boolean => {
+  return seForPago(cobranca) && !sePagamentoManual(cobranca);
+};
+
+export const sePagamentoManual = (cobranca: Cobranca): boolean => {
+  return cobranca.pagamento_manual;
 };

@@ -107,9 +107,9 @@ export const CarteirinhaResumoFinanceiro = ({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.4 }}
-              className="bg-blue-50 rounded-xl p-4 border border-blue-100"
+              className="bg-orange-50 rounded-xl p-4 border border-orange-100"
             >
-              <div className="flex items-center gap-2 text-blue-700 mb-1">
+              <div className="flex items-center gap-2 text-orange-800 mb-1">
                 <DollarSign className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase tracking-wider">
                   Pendente
@@ -121,7 +121,7 @@ export const CarteirinhaResumoFinanceiro = ({
                   currency: "BRL",
                 })}
               </div>
-              <div className="text-xs text-blue-600 mt-1 font-medium">
+              <div className="text-xs text-orange-800 mt-1 font-medium">
                 {`${
                   yearlySummary.qtdPendente === 1
                     ? "1 cobrança"

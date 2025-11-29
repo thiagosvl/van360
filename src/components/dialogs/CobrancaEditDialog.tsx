@@ -32,23 +32,22 @@ import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useUpdateCobranca } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
-import { seForPago } from "@/utils/domain/cobranca/disableActions";
+import { seForPago, seOrigemAutomatica } from "@/utils/domain/cobranca/disableActions";
 import {
-  checkCobrancaJaVenceu,
   formatDate,
   formatDateToBR,
   getStatusColor,
   getStatusText,
   parseCurrencyToNumber,
   tiposPagamento,
-  toLocalDateString,
+  toLocalDateString
 } from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { endOfMonth, format, isSameMonth, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { BadgeCheck, CalendarIcon, CreditCard, Loader2, Pencil, User, X, XCircle } from "lucide-react";
+import { CalendarIcon, CreditCard, Loader2, Pencil, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -124,9 +123,9 @@ export default function CobrancaEditDialog({
   const isPaga = seForPago(cobranca);
   const isPagamentoManual = cobranca.pagamento_manual;
 
-  const cobrancaMesAnoDate = new Date(cobranca.data_vencimento + "T00:00:00");
+  const cobrancaMesAnoDate = new Date(cobranca.data_vencimento);
 
-  const shouldDisableValueDate = isPaga && !isPagamentoManual;
+  const shouldDisableValueDate = (isPaga && !isPagamentoManual) || seOrigemAutomatica(cobranca);
 
   const shouldDisableDueDateField = isPaga;
 
@@ -265,40 +264,26 @@ export default function CobrancaEditDialog({
         </div>
 
         <div className="p-6 pt-2 bg-white flex-1 overflow-y-auto">
-          <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-6 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-              <User className="w-5 h-5" />
+          <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-6 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                <User className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-gray-900">{cobranca.passageiros.nome}</p>
+                <p className="text-xs text-gray-500">{cobranca.passageiros.nome_responsavel}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-bold text-gray-900">{cobranca.passageiros.nome}</p>
-              <p className="text-xs text-gray-500">{cobranca.passageiros.nome_responsavel}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 mb-6 px-4">
-            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-              {(() => {
-                if (seForPago(cobranca)) {
-                  return <BadgeCheck className="w-5 h-5" />;
-                } else if (checkCobrancaJaVenceu(cobranca.data_vencimento)) {
-                  return <XCircle className="w-5 h-5" />;
-                } else {
-                  return <CalendarIcon className="w-5 h-5" />;
-                }
-              })()}
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 font-medium uppercase mb-0.5">Status</p>
-              <span
-                className={`px-2 py-0.5 inline-block rounded-full text-xs font-medium ${getStatusColor(
-                  cobranca.status,
-                  cobranca.data_vencimento
-                )}`}
-              >
-                {cobranca.status === PASSAGEIRO_COBRANCA_STATUS_PAGO
-                  ? `Paga em ${formatDateToBR(cobranca.data_pagamento)}`
-                  : getStatusText(cobranca.status, cobranca.data_vencimento)}
-              </span>
-            </div>
+            <span
+              className={`px-2 py-0.5 inline-block rounded-full text-xs font-medium whitespace-nowrap ${getStatusColor(
+                cobranca.status,
+                cobranca.data_vencimento
+              )}`}
+            >
+              {cobranca.status === PASSAGEIRO_COBRANCA_STATUS_PAGO
+                ? `Paga em ${formatDateToBR(cobranca.data_pagamento)}`
+                : getStatusText(cobranca.status, cobranca.data_vencimento)}
+            </span>
           </div>
 
           <Form {...form}>
@@ -401,7 +386,10 @@ export default function CobrancaEditDialog({
                           <div className="relative">
                             <CreditCard className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                             <SelectTrigger 
-                              className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                              className={cn(
+                                "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                fieldState.error && "border-red-500"
+                              )}
                               aria-invalid={!!fieldState.error}
                             >
                               <SelectValue placeholder="Selecione a forma" />
@@ -428,7 +416,7 @@ export default function CobrancaEditDialog({
                   name="data_pagamento"
                   render={({ field, fieldState }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel className="text-gray-700 font-medium ml-1">Data do Pagamento</FormLabel>
+                      <FormLabel className="text-gray-700 font-medium ml-1">Data do Pagamento <span className="text-red-600">*</span></FormLabel>
                       <Popover
                         open={openCalendarDataPagamento}
                         onOpenChange={setOpenCalendarDataPagamento}

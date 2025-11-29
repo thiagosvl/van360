@@ -36,6 +36,7 @@ import { useAssinaturaCobrancas, usePassageiroContagem } from "@/hooks";
 import { usuarioApi } from "@/services";
 
 // Utils
+import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { toast } from "@/utils/notifications/toast";
 
 // Constants
@@ -102,7 +103,7 @@ export default function Assinatura() {
   const { data: countPassageirosEnviarCobrancaAutomatica = { count: 0 }, refetch: refetchCobrancasAutomaticas } = usePassageiroContagem(
     profile?.id,
     { enviar_cobranca_automatica: "true" },
-    { enabled: !!profile?.id && !!plano?.isCompletePlan }
+    { enabled: !!profile?.id && canUseCobrancaAutomatica(plano) }
   );
 
   // Atualizar dados com as contagens
@@ -124,7 +125,7 @@ export default function Assinatura() {
     await Promise.all([
       refetchCobrancas(),
       refetchPassageirosContagem(),
-      ...(plano?.isCompletePlan ? [refetchCobrancasAutomaticas()] : []),
+      ...(canUseCobrancaAutomatica(plano) ? [refetchCobrancasAutomaticas()] : []),
     ]);
   };
 

@@ -1,3 +1,5 @@
+import { PremiumBanner } from "@/components/alerts/PremiumBanner";
+import { BlurredValue } from "@/components/common/BlurredValue";
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +16,7 @@ import {
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { cn } from "@/lib/utils";
+import { canViewRelatorios } from "@/utils/domain/plano/accessRules";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
   periodos as periodosConstants,
@@ -26,7 +29,6 @@ import {
   Bot,
   CheckCircle2,
   Clock,
-  Crown,
   Fuel,
   Percent,
   TrendingDown,
@@ -35,7 +37,7 @@ import {
   UserX,
   Wallet,
   Wrench,
-  Zap,
+  Zap
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -156,16 +158,12 @@ export default function Relatorios() {
   const { setPageTitle } = useLayout();
   const { user } = useSession();
   const { profile, plano: profilePlano } = useProfile(user?.id);
-  console.log(profilePlano);
 
   const [mes, setMes] = useState(new Date().getMonth() + 1);
   const [ano, setAno] = useState(new Date().getFullYear());
 
   // Access Logic - baseado no plano completo
-  const hasAccess =
-    profilePlano?.isCompletePlan ||
-    profilePlano?.isEssentialPlan ||
-    (profilePlano?.isTrial && profilePlano?.isValidTrial);
+  const hasAccess = canViewRelatorios(profilePlano);
   const passageirosLimit = profilePlano?.planoCompleto?.max_passageiros || null;
 
   // Buscar dados reais - APENAS se tiver acesso
@@ -549,67 +547,8 @@ export default function Relatorios() {
     );
   };
 
-  /**
-   * PrivateData Component
-   * Handles the display of sensitive data.
-   * If !hasAccess, it shows a blurred fictitious value.
-   */
-  const PrivateData = ({
-    value,
-    type = "currency",
-    className,
-    blurIntensity = "blur-sm",
-  }: {
-    value: number;
-    type?: "currency" | "number" | "percent";
-    className?: string;
-    blurIntensity?: string;
-  }) => {
-    if (hasAccess) {
-      if (type === "currency") {
-        return (
-          <span className={className}>
-            {value.toLocaleString("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            })}
-          </span>
-        );
-      }
-      if (type === "percent") {
-        return <span className={className}>{value.toFixed(1)}%</span>;
-      }
-      return <span className={className}>{value}</span>;
-    }
 
-    // Generate a consistent "fake" value based on the real value
-    const fakeValue = value * 1.42;
 
-    let formattedFake;
-    if (type === "currency") {
-      formattedFake = fakeValue.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      });
-    } else if (type === "percent") {
-      formattedFake = fakeValue.toFixed(1) + "%";
-    } else {
-      formattedFake = Math.round(fakeValue).toString();
-    }
-
-    return (
-      <span
-        className={cn(
-          "select-none opacity-60 transition-all duration-300",
-          blurIntensity,
-          className
-        )}
-        title="Disponível no plano Premium"
-      >
-        {formattedFake}
-      </span>
-    );
-  };
 
   // Helper for Progress Bars in No-Access State
   const getProgressValue = (realValue: number) => {
@@ -625,61 +564,50 @@ export default function Relatorios() {
     <div className="relative min-h-screen pb-20 space-y-6 bg-gray-50/50">
       {/* Premium Banner (Top of Page) */}
       {!hasAccess && (
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-orange-100 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
-          <div className="flex items-center gap-5">
-            <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center shrink-0 shadow-sm">
-              <Crown className="h-6 w-6 text-orange-600" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-900">
-                Visualize seus resultados completos
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Libere o acesso aos relatórios financeiros e operacionais
-                detalhados para tomar as melhores decisões.
-              </p>
-            </div>
-          </div>
-          <Button className="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white font-bold h-11 px-8 rounded-xl shadow-lg shadow-orange-200/50 transition-transform hover:scale-105">
-            Liberar Acesso Premium
-          </Button>
-        </div>
+        <PremiumBanner
+          title="Visualize seus resultados completos"
+          description="Libere o acesso aos relatórios financeiros e operacionais detalhados para tomar as melhores decisões."
+          ctaText="Liberar Acesso Premium"
+          variant="orange"
+        />
       )}
 
       {/* Header & Navigation */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <DateNavigation mes={mes} ano={ano} onNavigate={handleNavigate} />
+        <DateNavigation mes={mes} ano={ano} onNavigate={handleNavigate} disabled={!hasAccess} />
       </div>
 
       {/* Main Content */}
       <Tabs defaultValue="visao-geral" className="w-full space-y-6">
-        <div className="overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-          <TabsList className="bg-white p-1 rounded-xl h-12 w-full md:w-auto inline-flex min-w-max shadow-sm border border-gray-100">
-            <TabsTrigger
-              value="visao-geral"
-              className="rounded-lg h-10 px-5 text-xs md:text-sm font-medium data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 text-gray-500 transition-all"
-            >
-              Visão Geral
-            </TabsTrigger>
-            <TabsTrigger
-              value="entradas"
-              className="rounded-lg h-10 px-5 text-xs md:text-sm font-medium data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 text-gray-500 transition-all"
-            >
-              Entradas
-            </TabsTrigger>
-            <TabsTrigger
-              value="saidas"
-              className="rounded-lg h-10 px-5 text-xs md:text-sm font-medium data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 text-gray-500 transition-all"
-            >
-              Saídas
-            </TabsTrigger>
-            <TabsTrigger
-              value="operacional"
-              className="rounded-lg h-10 px-5 text-xs md:text-sm font-medium data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 text-gray-500 transition-all"
-            >
-              Operacional
-            </TabsTrigger>
-          </TabsList>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="w-full overflow-x-auto pb-2 -mb-2 scrollbar-hide">
+            <TabsList className="bg-slate-100/80 p-1 rounded-xl h-10 md:h-12 inline-flex w-auto min-w-full md:min-w-0">
+              <TabsTrigger
+                value="visao-geral"
+                className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none whitespace-nowrap"
+              >
+                Visão Geral
+              </TabsTrigger>
+              <TabsTrigger
+                value="entradas"
+                className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none whitespace-nowrap"
+              >
+                Entradas
+              </TabsTrigger>
+              <TabsTrigger
+                value="saidas"
+                className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none whitespace-nowrap"
+              >
+                Saídas
+              </TabsTrigger>
+              <TabsTrigger
+                value="operacional"
+                className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none whitespace-nowrap"
+              >
+                Operacional
+              </TabsTrigger>
+            </TabsList>
+          </div>
         </div>
 
         {/* Aba 1: Visão Geral */}
@@ -704,8 +632,9 @@ export default function Relatorios() {
               </CardHeader>
               <CardContent className="px-6 pb-6">
                 <div className="flex items-baseline gap-2">
-                  <PrivateData
+                  <BlurredValue
                     value={dados.visaoGeral.lucroEstimado}
+                    visible={hasAccess}
                     type="currency"
                     className={cn(
                       "text-3xl md:text-4xl font-bold tracking-tight",
@@ -736,8 +665,9 @@ export default function Relatorios() {
               </CardHeader>
               <CardContent className="px-6 pb-6">
                 <div className="flex items-baseline gap-2">
-                  <PrivateData
+                  <BlurredValue
                     value={dados.visaoGeral.atrasos.valor}
+                    visible={hasAccess}
                     type="currency"
                     className="text-3xl md:text-4xl font-bold tracking-tight text-red-600"
                   />
@@ -749,8 +679,9 @@ export default function Relatorios() {
                       !hasAccess && "blur-sm select-none"
                     )}
                   >
-                    <PrivateData
+                    <BlurredValue
                       value={dados.visaoGeral.atrasos.passageiros}
+                      visible={hasAccess}
                       type="number"
                     />{" "}
                     passageiros
@@ -771,8 +702,9 @@ export default function Relatorios() {
               </CardHeader>
               <CardContent className="px-6 pb-6">
                 <div className="text-2xl font-bold text-indigo-900">
-                  <PrivateData
+                  <BlurredValue
                     value={dados.visaoGeral.passageirosDesativados}
+                    visible={hasAccess}
                     type="number"
                   />
                 </div>
@@ -797,8 +729,9 @@ export default function Relatorios() {
               <CardContent className="px-6 pb-6 flex items-baseline gap-2">
                 <div>
                   <span className="text-3xl font-bold text-emerald-600">
-                    <PrivateData
+                    <BlurredValue
                       value={dados.visaoGeral.taxaRecebimento}
+                      visible={hasAccess}
                       type="percent"
                     />
                   </span>
@@ -823,49 +756,66 @@ export default function Relatorios() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-8 px-6 pb-8">
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500 flex items-center gap-2 font-medium">
-                    <ArrowUpCircle className="h-5 w-5 text-emerald-500" />
-                    Entradas
-                  </span>
-                  <span className="font-bold text-gray-900 text-base">
-                    <PrivateData
-                      value={dados.visaoGeral.recebido}
-                      type="currency"
-                    />
-                  </span>
-                </div>
-                <Progress
-                  value={getProgressValue(100)}
-                  className="h-3 bg-gray-100 rounded-full"
-                  indicatorClassName="bg-emerald-500 rounded-full"
-                />
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500 flex items-center gap-2 font-medium">
-                    <ArrowDownCircle className="h-5 w-5 text-red-500" />
-                    Saídas
-                  </span>
-                  <span className="font-bold text-gray-900 text-base">
-                    <PrivateData
-                      value={dados.visaoGeral.gasto}
-                      type="currency"
-                    />
-                  </span>
-                </div>
-                <Progress
-                  value={getProgressValue(
-                    dados.visaoGeral.recebido > 0
-                      ? (dados.visaoGeral.gasto / dados.visaoGeral.recebido) *
-                          100
-                      : 0
-                  )}
-                  className="h-3 bg-gray-100 rounded-full"
-                  indicatorClassName="bg-red-500 rounded-full"
-                />
-              </div>
+              {(() => {
+                // Calcular o valor máximo entre recebido e gasto para usar como base (100%)
+                const maxValor = Math.max(
+                  dados.visaoGeral.recebido,
+                  dados.visaoGeral.gasto
+                );
+                const percentualEntradas =
+                  maxValor > 0
+                    ? (dados.visaoGeral.recebido / maxValor) * 100
+                    : 0;
+                const percentualSaidas =
+                  maxValor > 0
+                    ? (dados.visaoGeral.gasto / maxValor) * 100
+                    : 0;
+
+                return (
+                  <>
+                    <div className="space-y-3">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500 flex items-center gap-2 font-medium">
+                          <ArrowUpCircle className="h-5 w-5 text-emerald-500" />
+                          Entradas
+                        </span>
+                        <span className="font-bold text-gray-900 text-base">
+                          <BlurredValue
+                            value={dados.visaoGeral.recebido}
+                            visible={hasAccess}
+                            type="currency"
+                          />
+                        </span>
+                      </div>
+                      <Progress
+                        value={getProgressValue(percentualEntradas)}
+                        className="h-3 bg-gray-100 rounded-full"
+                        indicatorClassName="bg-emerald-500 rounded-full"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500 flex items-center gap-2 font-medium">
+                          <ArrowDownCircle className="h-5 w-5 text-red-500" />
+                          Saídas
+                        </span>
+                        <span className="font-bold text-gray-900 text-base">
+                          <BlurredValue
+                            value={dados.visaoGeral.gasto}
+                            visible={hasAccess}
+                            type="currency"
+                          />
+                        </span>
+                      </div>
+                      <Progress
+                        value={getProgressValue(percentualSaidas)}
+                        className="h-3 bg-gray-100 rounded-full"
+                        indicatorClassName="bg-red-500 rounded-full"
+                      />
+                    </div>
+                  </>
+                );
+              })()}
             </CardContent>
           </Card>
         </TabsContent>
@@ -882,8 +832,9 @@ export default function Relatorios() {
               </CardHeader>
               <CardContent className="px-6 pb-6">
                 <div className="text-2xl md:text-3xl font-bold text-blue-900">
-                  <PrivateData
+                  <BlurredValue
                     value={dados.entradas.previsto}
+                    visible={hasAccess}
                     type="currency"
                   />
                 </div>
@@ -893,8 +844,9 @@ export default function Relatorios() {
                     !hasAccess && "blur-sm select-none"
                   )}
                 >
-                  <PrivateData
+                  <BlurredValue
                     value={dados.entradas.passageirosPagantes}
+                    visible={hasAccess}
                     type="number"
                   />{" "}
                   Passageiros
@@ -911,8 +863,9 @@ export default function Relatorios() {
               </CardHeader>
               <CardContent className="px-6 pb-6">
                 <div className="text-2xl md:text-3xl font-bold text-emerald-900">
-                  <PrivateData
+                  <BlurredValue
                     value={dados.entradas.realizado}
+                    visible={hasAccess}
                     type="currency"
                   />
                 </div>
@@ -922,8 +875,9 @@ export default function Relatorios() {
                     !hasAccess && "blur-sm select-none"
                   )}
                 >
-                  <PrivateData
+                  <BlurredValue
                     value={dados.entradas.passageirosPagos}
+                    visible={hasAccess}
                     type="number"
                   />{" "}
                   pagaram
@@ -943,8 +897,9 @@ export default function Relatorios() {
               </CardHeader>
               <CardContent className="px-6 pb-6">
                 <div className="text-2xl font-bold text-gray-900">
-                  <PrivateData
+                  <BlurredValue
                     value={dados.entradas.ticketMedio}
+                    visible={hasAccess}
                     type="currency"
                   />
                 </div>
@@ -976,7 +931,11 @@ export default function Relatorios() {
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="text-gray-500 text-xs font-medium">
-                        <PrivateData value={item.valor} type="currency" />
+                        <BlurredValue
+                          value={item.valor}
+                          visible={hasAccess}
+                          type="currency"
+                        />
                       </span>
                       <span
                         className={cn(
@@ -984,7 +943,11 @@ export default function Relatorios() {
                           !hasAccess && "blur-sm select-none"
                         )}
                       >
-                        <PrivateData value={item.percentual} type="percent" />
+                        <BlurredValue
+                          value={item.percentual}
+                          visible={hasAccess}
+                          type="percent"
+                        />
                       </span>
                     </div>
                   </div>
@@ -1014,7 +977,11 @@ export default function Relatorios() {
               </CardHeader>
               <CardContent className="px-6 pb-6">
                 <div className="text-3xl font-bold text-red-900">
-                  <PrivateData value={dados.saidas.total} type="currency" />
+                  <BlurredValue
+                    value={dados.saidas.total}
+                    visible={hasAccess}
+                    type="currency"
+                  />
                 </div>
                 <p
                   className={cn(
@@ -1058,8 +1025,9 @@ export default function Relatorios() {
                         : "text-red-600"
                     )}
                   >
-                    <PrivateData
+                    <BlurredValue
                       value={dados.saidas.margemOperacional}
+                      visible={hasAccess}
                       type="percent"
                     />
                   </div>
@@ -1089,8 +1057,9 @@ export default function Relatorios() {
               </CardHeader>
               <CardContent className="px-6 pb-6">
                 <div className="text-2xl font-bold text-gray-900">
-                  <PrivateData
+                  <BlurredValue
                     value={dados.saidas.mediaDiaria}
+                    visible={hasAccess}
                     type="currency"
                   />
                 </div>
@@ -1100,8 +1069,9 @@ export default function Relatorios() {
                     !hasAccess && "blur-sm select-none"
                   )}
                 >
-                  <PrivateData
+                  <BlurredValue
                     value={dados.saidas.diasContabilizados}
+                    visible={hasAccess}
                     type="number"
                   />{" "}
                   dias com gastos
@@ -1121,8 +1091,9 @@ export default function Relatorios() {
               </CardHeader>
               <CardContent className="px-6 pb-6">
                 <div className="text-2xl font-bold text-gray-900">
-                  <PrivateData
+                  <BlurredValue
                     value={dados.saidas.custoPorPassageiro}
+                    visible={hasAccess}
                     type="currency"
                   />
                 </div>
@@ -1132,8 +1103,9 @@ export default function Relatorios() {
                     !hasAccess && "blur-sm select-none"
                   )}
                 >
-                  <PrivateData
+                  <BlurredValue
                     value={dados.operacional.passageirosAtivos}
+                    visible={hasAccess}
                     type="number"
                   />{" "}
                   ativos
@@ -1173,12 +1145,13 @@ export default function Relatorios() {
                             !hasAccess && "blur-sm select-none"
                           )}
                         >
-                          <PrivateData
+                          <BlurredValue
                             value={
                               dados.saidas.total > 0
                                 ? (cat.valor / dados.saidas.total) * 100
                                 : 0
                             }
+                            visible={hasAccess}
                             type="percent"
                           />{" "}
                           do total
@@ -1186,7 +1159,11 @@ export default function Relatorios() {
                       </div>
                     </div>
                     <span className="font-bold text-gray-900 text-sm">
-                      <PrivateData value={cat.valor} type="currency" />
+                      <BlurredValue
+                        value={cat.valor}
+                        visible={hasAccess}
+                        type="currency"
+                      />
                     </span>
                   </div>
                 ))
@@ -1215,8 +1192,9 @@ export default function Relatorios() {
               <div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-bold text-gray-900">
-                    <PrivateData
+                    <BlurredValue
                       value={dados.operacional.passageirosAtivos}
+                      visible={hasAccess}
                       type="number"
                     />
                   </span>
@@ -1330,8 +1308,9 @@ export default function Relatorios() {
                             !hasAccess && "blur-sm select-none"
                           )}
                         >
-                          <PrivateData
+                          <BlurredValue
                             value={escola.passageiros}
+                            visible={hasAccess}
                             type="number"
                           />{" "}
                           passageiros
@@ -1372,8 +1351,9 @@ export default function Relatorios() {
                             !hasAccess && "blur-sm select-none"
                           )}
                         >
-                          <PrivateData
+                          <BlurredValue
                             value={periodo.passageiros}
+                            visible={hasAccess}
                             type="number"
                           />{" "}
                           passageiros
@@ -1414,8 +1394,9 @@ export default function Relatorios() {
                             !hasAccess && "blur-sm select-none"
                           )}
                         >
-                          <PrivateData
+                          <BlurredValue
                             value={veiculo.passageiros}
+                            visible={hasAccess}
                             type="number"
                           />{" "}
                           passageiros

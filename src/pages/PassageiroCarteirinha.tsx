@@ -74,6 +74,7 @@ import { useSession } from "@/hooks/business/useSession";
 
 // Utils
 import { useValidarFranquia } from "@/hooks";
+import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { toast } from "@/utils/notifications/toast";
 
@@ -154,7 +155,7 @@ export default function PassageiroCarteirinha() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { user, loading: isSessionLoading } = useSession();
   const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
-  const planoCompletoAtivo = plano?.isCompletePlan && plano?.isValidPlan;
+  const planoCompletoAtivo = canUseCobrancaAutomatica(plano);
 
   const {
     data: passageiroData,
@@ -293,13 +294,6 @@ export default function PassageiroCarteirinha() {
     }
   };
 
-  const handleEditCobrancaClick = useCallback((cobranca: Cobranca) => {
-    safeCloseDialog(() => {
-      setCobrancaToEdit(cobranca);
-      setEditDialogOpen(true);
-    });
-  }, []);
-
   const handleCobrancaUpdated = () => {
     // Invalidação feita automaticamente pelos hooks de mutation
   };
@@ -380,7 +374,7 @@ export default function PassageiroCarteirinha() {
 
     const novoValor = !passageiro.enviar_cobranca_automatica;
 
-    if (novoValor && plano?.isCompletePlan) {
+    if (novoValor && canUseCobrancaAutomatica(plano)) {
       // Usar validação já calculada via hook
       if (!validacaoFranquiaGeral.podeAtivar) {
         setLimiteFranquiaDialog({
@@ -449,12 +443,16 @@ export default function PassageiroCarteirinha() {
           acc.valorPago += Number(c.valor);
           acc.qtdPago++;
         } else {
-          acc.qtdPendente++;
-          acc.valorPendente += Number(c.valor);
+          // Cobrança não paga - verificar se está vencida
           const vencimento = new Date(c.data_vencimento + "T00:00:00");
+          vencimento.setHours(0, 0, 0, 0);
+          
           if (vencimento < hoje) {
             acc.qtdEmAtraso += 1;
             acc.valorEmAtraso += Number(c.valor);
+          } else {
+            acc.qtdPendente++;
+            acc.valorPendente += Number(c.valor);
           }
         }
         return acc;
@@ -477,7 +475,7 @@ export default function PassageiroCarteirinha() {
     return cobrancas.some(
       (c) =>
         c.status !== PASSAGEIRO_COBRANCA_STATUS_PAGO &&
-        new Date(c.data_vencimento + "T00:00:00") < hoje
+        new Date(c.data_vencimento) < hoje
     );
   }, [cobrancas]);
 
@@ -626,6 +624,8 @@ export default function PassageiroCarteirinha() {
               passageiroNome={passageiro.nome}
               responsavelNome={passageiro.nome_responsavel}
               valorOriginal={Number(selectedCobranca.valor)}
+              status={selectedCobranca.status}
+              dataVencimento={selectedCobranca.data_vencimento}
               onPaymentRecorded={() =>
                 safeCloseDialog(() => handlePaymentRecorded())
               }
@@ -651,7 +651,7 @@ export default function PassageiroCarteirinha() {
                 ? "Reativar Passageiro"
                 : "Desativar Passageiro"
             }
-            description={`Deseja realmente ${confirmToggleDialog.action} o cadastro de ${passageiro.nome}? Esta ação pode afetar a geração de cobranças.`}
+            description={`Deseja realmente ${confirmToggleDialog.action} este passageiro? Esta ação pode afetar a geração de cobranças.`}
             onConfirm={handleToggleConfirm}
             confirmText="Confirmar"
             variant={

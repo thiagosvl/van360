@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { meses } from "@/utils/formatters";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -6,9 +7,10 @@ interface DateNavigationProps {
   mes: number;
   ano: number;
   onNavigate: (mes: number, ano: number) => void;
+  disabled?: boolean;
 }
 
-export function DateNavigation({ mes, ano, onNavigate }: DateNavigationProps) {
+export function DateNavigation({ mes, ano, onNavigate, disabled }: DateNavigationProps) {
   const handlePrevious = () => {
     if (mes === 1) {
       onNavigate(12, ano - 1);
@@ -28,6 +30,7 @@ export function DateNavigation({ mes, ano, onNavigate }: DateNavigationProps) {
   return (
     <div className="flex items-center justify-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 max-w-md mx-auto w-full md:w-auto">
       <Button
+        disabled={disabled}
         variant="ghost"
         size="icon"
         onClick={handlePrevious}
@@ -37,11 +40,12 @@ export function DateNavigation({ mes, ano, onNavigate }: DateNavigationProps) {
       </Button>
       <div className="flex items-center gap-2 min-w-[140px] justify-center">
         <CalendarDays className="h-4 w-4 text-gray-400" />
-        <span className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+        <span className={cn("text-sm font-bold text-gray-900 uppercase tracking-wide", disabled ? "text-gray-400 opacity-50" : "")}>
           {meses[mes - 1]} {ano}
         </span>
       </div>
       <Button
+        disabled={disabled}
         variant="ghost"
         size="icon"
         onClick={handleNext}

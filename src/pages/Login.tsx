@@ -262,7 +262,7 @@ export default function Login() {
           <img
             src="/assets/logo-van360.png"
             alt="Van360"
-            className="h-14 sm:h-20 w-auto mb-2 sm:mb-4 select-none drop-shadow-sm"
+            className="h-16 sm:h-20 w-auto mb-2 sm:mb-4 select-none drop-shadow-sm"
           />
           <p className="text-gray-500 text-center text-xs sm:text-sm font-medium">
             Gestão inteligente para transporte escolar
@@ -367,7 +367,7 @@ export default function Login() {
                     
                     <div className="w-full border-t border-gray-100 my-1 sm:my-2"></div>
 
-                    <p className="text-sm text-gray-600">
+                    <p className="text-[0.85rem] text-gray-600">
                       Ainda não tem conta?{" "}
                       <button
                         type="button"

@@ -49,10 +49,8 @@ import { usuarioApi } from "@/services";
 
 // Utils
 import { cn } from "@/lib/utils";
-import {
-  getAssinaturaAtiva,
-  getQuantidadeMinimaPersonalizada,
-} from "@/utils/domain/plano/planoUtils";
+import { getAssinaturaAtiva } from "@/utils/domain/plano/planoUtils";
+import { getQuantidadeMinimaPersonalizada } from "@/utils/domain/plano/planoStructureUtils";
 import { toast } from "@/utils/notifications/toast";
 
 // Constants

@@ -9,20 +9,8 @@ import { ptBR } from "date-fns/locale";
 import { z } from "zod";
 
 // Components - Alerts
-import { FeatureRestrictedBanner } from "@/components/alerts/FeatureRestrictedBanner";
 
-// Components - Common
-import { DateNavigation } from "@/components/common/DateNavigation";
-import { KPICard } from "@/components/common/KPICard";
-
-// Components - Features
-import { GastosList } from "@/components/features/financeiro/GastosList";
-import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
-
-// Components - Forms
 import { MoneyInput } from "@/components/forms";
-
-// Components - Navigation
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
 // Components - UI
@@ -31,31 +19,31 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
@@ -63,10 +51,10 @@ import { Textarea } from "@/components/ui/textarea";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreateGasto,
-    useDeleteGasto,
-    useGastos,
-    useUpdateGasto,
+  useCreateGasto,
+  useDeleteGasto,
+  useGastos,
+  useUpdateGasto,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -82,7 +70,21 @@ import { toast } from "@/utils/notifications/toast";
 import { Gasto } from "@/types/gasto";
 
 // Icons
-import { CalendarIcon, FileText, Tag, TrendingDown, TrendingUp, X } from "lucide-react";
+import { PremiumBanner } from "@/components/alerts/PremiumBanner";
+import { BlurredValue } from "@/components/common/BlurredValue";
+import { DateNavigation } from "@/components/common/DateNavigation";
+import { KPICard } from "@/components/common/KPICard";
+import { GastosList } from "@/components/features/financeiro/GastosList";
+import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
+import {
+  CalendarIcon,
+  FileText,
+  Lock,
+  Tag,
+  TrendingDown,
+  TrendingUp,
+  X,
+} from "lucide-react";
 
 const gastoSchema = z.object({
   valor: z.string().min(1, "O valor é obrigatório."),
@@ -101,6 +103,45 @@ const categoriasGastos = [
   "Documentação",
   "Outros",
 ];
+
+const MOCK_DATA_NO_ACCESS = {
+  totalGasto: 0,
+  principalCategoriaData: {
+    name: "Combustível",
+    value: 0,
+    percentage: 45,
+  },
+  mediaDiaria: 0,
+  gastos: [
+    {
+      id: "mock-1",
+      valor: 0,
+      data: new Date().toISOString(),
+      categoria: "Combustível",
+      descricao: "Abastecimento Semanal",
+      created_at: new Date().toISOString(),
+      usuario_id: "mock",
+    },
+    {
+      id: "mock-2",
+      valor: 0,
+      data: new Date().toISOString(),
+      categoria: "Manutenção",
+      descricao: "Troca de Óleo",
+      created_at: new Date().toISOString(),
+      usuario_id: "mock",
+    },
+    {
+      id: "mock-3",
+      valor: 0,
+      data: new Date().toISOString(),
+      categoria: "Salário",
+      descricao: "Pagamento Monitora",
+      created_at: new Date().toISOString(),
+      usuario_id: "mock",
+    },
+  ] as Gasto[],
+};
 
 export default function Gastos() {
   const { setPageTitle } = useLayout();
@@ -121,6 +162,12 @@ export default function Gastos() {
   const { profile, plano } = useProfile(user?.id);
   const [enabledPageActions, setEnabledPageActions] = useState(true);
 
+  // Verificar permissão antes de fazer requisição
+  useEffect(() => {
+    if (!profile?.id) return;
+    setEnabledPageActions(enablePageActions("/gastos", plano));
+  }, [profile?.id, plano]);
+  
   const {
     data: gastos = [],
     isLoading: isGastosLoading,
@@ -134,7 +181,7 @@ export default function Gastos() {
       categoria: categoriaFilter !== "todas" ? categoriaFilter : undefined,
     },
     {
-      enabled: !!profile?.id,
+      enabled: !!profile?.id && enabledPageActions,
       onError: () => toast.error("gasto.erro.carregar"),
     }
   );
@@ -152,19 +199,27 @@ export default function Gastos() {
   }, [gastos, searchTerm]);
 
   const { totalGasto, principalCategoriaData, mediaDiaria } = useMemo(() => {
-    const total = gastos.reduce((sum, g) => sum + Number(g.valor), 0);
+    // Garantir que gastos seja um array válido
+    const gastosArray = Array.isArray(gastos) ? gastos : [];
+    
+    const total = gastosArray.reduce((sum, g) => {
+      const valor = Number(g?.valor) || 0;
+      return sum + (isNaN(valor) ? 0 : valor);
+    }, 0);
 
-    const gastosPorCategoria = gastos.reduce((acc, gasto) => {
+    const gastosPorCategoria = gastosArray.reduce((acc, gasto) => {
+      if (!gasto?.categoria) return acc;
       if (!acc[gasto.categoria]) {
         acc[gasto.categoria] = { total: 0, count: 0 };
       }
-      acc[gasto.categoria].total += Number(gasto.valor);
+      const valor = Number(gasto.valor) || 0;
+      acc[gasto.categoria].total += isNaN(valor) ? 0 : valor;
       acc[gasto.categoria].count += 1;
       return acc;
     }, {} as Record<string, { total: number; count: number }>);
 
     const principal =
-      gastos.length > 0
+      gastosArray.length > 0 && Object.keys(gastosPorCategoria).length > 0
         ? Object.entries(gastosPorCategoria).reduce((a, b) =>
             a[1].total > b[1].total ? a : b
           )
@@ -191,29 +246,41 @@ export default function Gastos() {
       daysPassed = 1;
     }
 
-    const media = total / Math.max(1, daysPassed);
-    const topCatPercentage = principal ? (principal[1].total / total) * 100 : 0;
+    const media = total > 0 && daysPassed > 0 ? total / daysPassed : 0;
+    const topCatPercentage = principal && total > 0 
+      ? (principal[1].total / total) * 100 
+      : 0;
 
     return {
-      totalGasto: total,
+      totalGasto: isNaN(total) ? 0 : total,
       principalCategoriaData: principal
         ? {
-            name: principal[0],
-            value: principal[1].total,
-            percentage: topCatPercentage,
+            name: principal[0] || "-",
+            value: isNaN(principal[1].total) ? 0 : principal[1].total,
+            percentage: isNaN(topCatPercentage) ? 0 : topCatPercentage,
           }
         : null,
-      mediaDiaria: media,
+      mediaDiaria: isNaN(media) ? 0 : media,
     };
   }, [gastos, mesFilter, anoFilter]);
 
-  useEffect(() => {
-    if (!profile?.id) return;
-    setEnabledPageActions(enablePageActions("/gastos", plano));
-  }, [profile?.id, plano]);
+  // Use mock data if access is restricted
+  const displayData = enabledPageActions
+    ? {
+        totalGasto,
+        principalCategoriaData,
+        mediaDiaria,
+        gastosFiltrados,
+      }
+    : {
+        totalGasto: MOCK_DATA_NO_ACCESS.totalGasto,
+        principalCategoriaData: MOCK_DATA_NO_ACCESS.principalCategoriaData,
+        mediaDiaria: MOCK_DATA_NO_ACCESS.mediaDiaria,
+        gastosFiltrados: MOCK_DATA_NO_ACCESS.gastos,
+      };
 
   useEffect(() => {
-    setPageTitle("Gastos");
+    setPageTitle("Controle de Gastos");
   }, [setPageTitle]);
 
   const handleNavigation = useCallback((newMes: number, newAno: number) => {
@@ -289,21 +356,24 @@ export default function Gastos() {
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div>
-          {!enabledPageActions && <FeatureRestrictedBanner />}
+          {!enabledPageActions && (
+            <PremiumBanner
+              title="Controle seus gastos"
+              description="Tenha visibilidade total das despesas do seu negócio e saiba exatamente para onde está indo seu dinheiro."
+              ctaText="Liberar Controle de Gastos"
+              variant="orange"
+              className="mb-6"
+            />
+          )}
 
-          <div
-            className={`space-y-6 md:space-y-8 ${
-              !enabledPageActions
-                ? "blur-sm opacity-75 pointer-events-none"
-                : ""
-            }`}
-          >
+          <div className="space-y-6 md:space-y-8">
             {/* 1. Header & Navigation */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <DateNavigation
                 mes={mesFilter}
                 ano={anoFilter}
                 onNavigate={handleNavigation}
+                disabled={!enabledPageActions}
               />
             </div>
 
@@ -311,13 +381,20 @@ export default function Gastos() {
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               <KPICard
                 title="Gasto Total"
-                value={totalGasto}
-                count={gastos.length}
+                value={
+                  <BlurredValue
+                    value={displayData.totalGasto}
+                    visible={enabledPageActions}
+                    type="currency"
+                  />
+                }
+                count={displayData.gastosFiltrados.length}
                 icon={TrendingDown}
                 bgClass="bg-red-50"
                 colorClass="text-red-600"
                 countLabel="Lançamento"
                 className="col-span-2 md:col-span-1"
+                countVisible={enabledPageActions}
               />
 
               <div className="bg-white p-2 sm:p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3 sm:gap-4 flex-1 min-w-[140px]">
@@ -328,22 +405,31 @@ export default function Gastos() {
                   <p className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Top Categoria
                   </p>
-                  <p
-                    className={cn(
-                      "font-bold text-gray-900 leading-tight max-w-[120px]",
-                      principalCategoriaData?.name?.length >= 12
-                        ? "text-xs sm:text-lg"
-                        : "text-base sm:text-lg"
-                    )}
-                  >
-                    {principalCategoriaData?.name || "-"}
+                  <p className="font-bold text-gray-900 leading-tight max-w-[140px]">
+                    <BlurredValue
+                      value={displayData.principalCategoriaData?.name}
+                      visible={enabledPageActions}
+                      type="text"
+                      className={cn(
+                        enabledPageActions
+                          ? displayData.principalCategoriaData?.name?.length >=
+                            12
+                            ? "text-xs sm:text-lg"
+                            : "text-base sm:text-lg"
+                          : "text-sm"
+                      )}
+                    />
                   </p>
                   <p className="text-[10px] text-gray-400 font-medium mt-0.5">
-                    {principalCategoriaData
-                      ? `${Math.round(
-                          principalCategoriaData.percentage
-                        )}% do total`
-                      : "0% do total"}
+                    {displayData.principalCategoriaData ? (
+                      <BlurredValue
+                        value={displayData.principalCategoriaData.percentage}
+                        visible={enabledPageActions}
+                        type="percent"
+                      />
+                    ) : (
+                      "0% do total"
+                    )}
                   </p>
                 </div>
               </div>
@@ -357,13 +443,18 @@ export default function Gastos() {
                     Média Diária
                   </p>
                   <p className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
-                    {mediaDiaria.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
+                    <BlurredValue
+                      value={displayData.mediaDiaria}
+                      visible={enabledPageActions}
+                      type="currency"
+                    />
                   </p>
                   <p className="text-[10px] text-gray-400 font-medium mt-0.5">
-                    por dia
+                    <BlurredValue
+                      value="por dia"
+                      visible={enabledPageActions}
+                      type="text"
+                    />
                   </p>
                 </div>
               </div>
@@ -385,7 +476,25 @@ export default function Gastos() {
                   onSearchChange={setSearchTerm}
                 />
 
-                {loading ? (
+                {!enabledPageActions ? (
+                  <div className="flex flex-col items-center justify-center text-center py-12 bg-white rounded-2xl border border-gray-200">
+                    <div className="bg-orange-100 rounded-full p-4 mb-4">
+                      <Lock className="w-8 h-8 text-orange-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Acesso Restrito
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4 max-w-md">
+                      Esta funcionalidade está disponível apenas nos planos Essencial ou Completo. Troque de plano para visualizar e gerenciar seus gastos.
+                    </p>
+                    <Button
+                      onClick={() => window.location.href = "/planos?plano=essencial"}
+                      className="bg-orange-600 hover:bg-orange-700 text-white"
+                    >
+                      Ver Planos
+                    </Button>
+                  </div>
+                ) : loading ? (
                   <Skeleton className="h-40 w-full" />
                 ) : gastosFiltrados.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground bg-white rounded-2xl border border-dashed border-gray-200">
@@ -413,12 +522,12 @@ export default function Gastos() {
               className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
               hideCloseButton
             >
-                <div className="bg-blue-600 p-6 text-center relative">
+              <div className="bg-blue-600 p-6 text-center relative">
                 <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
                   <X className="h-6 w-6" />
                   <span className="sr-only">Close</span>
                 </DialogClose>
-                
+
                 <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
                   <TrendingDown className="w-6 h-6 text-white" />
                 </div>
@@ -451,8 +560,12 @@ export default function Gastos() {
                             <FormControl>
                               <div className="relative">
                                 <Tag className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                <SelectTrigger 
-                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                <SelectTrigger
+                                  className={cn(
+                                    "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                    fieldState.error &&
+                                      "border-red-500"
+                                  )}
                                   aria-invalid={!!fieldState.error}
                                 >
                                   <SelectValue placeholder="Selecione a categoria" />
@@ -494,7 +607,8 @@ export default function Gastos() {
                                       className={cn(
                                         "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left font-normal hover:bg-gray-100 justify-start",
                                         !field.value && "text-muted-foreground",
-                                        fieldState.error && "border-red-500 ring-red-500"
+                                        fieldState.error &&
+                                          "border-red-500 ring-red-500"
                                       )}
                                       aria-invalid={!!fieldState.error}
                                     >
@@ -547,10 +661,12 @@ export default function Gastos() {
                       name="descricao"
                       render={({ field, fieldState }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 font-medium ml-1">Descrição</FormLabel>
+                          <FormLabel className="text-gray-700 font-medium ml-1">
+                            Descrição
+                          </FormLabel>
                           <FormControl>
-                            <Textarea 
-                              {...field} 
+                            <Textarea
+                              {...field}
                               placeholder="Detalhes do gasto (opcional)"
                               className="min-h-[100px] rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all resize-none"
                               aria-invalid={!!fieldState.error}

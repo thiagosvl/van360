@@ -1,9 +1,6 @@
 // React
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-    useNavigate,
-    useSearchParams,
-} from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 // Components - Dialogs
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
@@ -26,7 +23,12 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
-import { useDeleteEscola, useEscolas, useFilters, useToggleAtivoEscola } from "@/hooks";
+import {
+  useDeleteEscola,
+  useEscolas,
+  useFilters,
+  useToggleAtivoEscola,
+} from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
@@ -38,9 +40,7 @@ import { toast } from "@/utils/notifications/toast";
 import { Escola } from "@/types/escola";
 
 // Icons
-import {
-    School
-} from "lucide-react";
+import { School } from "lucide-react";
 
 export default function Escolas() {
   const { setPageTitle } = useLayout();
@@ -59,15 +59,15 @@ export default function Escolas() {
   const [escolaToDelete, setEscolaToDelete] = useState<Escola | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const { 
-    searchTerm, 
-    setSearchTerm, 
-    selectedStatus, 
+  const {
+    searchTerm,
+    setSearchTerm,
+    selectedStatus,
     setSelectedStatus,
     clearFilters,
-    setFilters
+    setFilters,
   } = useFilters();
-  
+
   const { user, loading: isSessionLoading } = useSession();
   const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
 
@@ -206,49 +206,47 @@ export default function Escolas() {
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6">
-      <div className="space-y-6">
-        <Card className="border-none shadow-none bg-transparent">
-          <CardHeader className="p-0">
-            {/* Toolbar moved inside CardContent or kept here if needed, but we want to remove the separate button */}
-          </CardHeader>
+          <Card className="border-none shadow-none bg-transparent mt-3">
+            <CardHeader className="p-0">
+              {/* Toolbar moved inside CardContent or kept here if needed, but we want to remove the separate button */}
+            </CardHeader>
 
-          <CardContent className="px-0">
-            <div className="mb-6">
-              <EscolasToolbar
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                selectedStatus={selectedStatus}
-                onStatusChange={setSelectedStatus}
-                onClearFilters={clearFilters}
-                hasActiveFilters={hasActiveFilters}
-                onApplyFilters={setFilters}
-                onRegister={() => setIsDialogOpen(true)}
-              />
-            </div>
+            <CardContent className="px-0">
+              <div className="mb-6">
+                <EscolasToolbar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  selectedStatus={selectedStatus}
+                  onStatusChange={setSelectedStatus}
+                  onClearFilters={clearFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  onApplyFilters={setFilters}
+                  onRegister={() => setIsDialogOpen(true)}
+                />
+              </div>
 
-            {isEscolasLoading ? (
-              <ListSkeleton />
-            ) : escolasFiltradas.length === 0 ? (
-              <EmptyState
-                icon={School}
-                description={
-                  searchTerm
-                    ? `Nenhuma escola encontrada para "${searchTerm}"`
-                    : "Nenhuma escola encontrada"
-                }
-              />
-            ) : (
-              <EscolasList
-                escolas={escolasFiltradas}
-                navigate={navigate}
-                onEdit={handleEdit}
-                onToggleAtivo={handleToggleAtivo}
-                onDelete={handleDeleteClick}
-              />
-            )}
-          </CardContent>
-        </Card>
-      </div>
+              {isEscolasLoading ? (
+                <ListSkeleton />
+              ) : escolasFiltradas.length === 0 ? (
+                <EmptyState
+                  icon={School}
+                  description={
+                    searchTerm
+                      ? `Nenhuma escola encontrada para "${searchTerm}"`
+                      : "Nenhuma escola encontrada"
+                  }
+                />
+              ) : (
+                <EscolasList
+                  escolas={escolasFiltradas}
+                  navigate={navigate}
+                  onEdit={handleEdit}
+                  onToggleAtivo={handleToggleAtivo}
+                  onDelete={handleDeleteClick}
+                />
+              )}
+            </CardContent>
+          </Card>
           <ConfirmationDialog
             open={isDeleteDialogOpen}
             onOpenChange={setIsDeleteDialogOpen}

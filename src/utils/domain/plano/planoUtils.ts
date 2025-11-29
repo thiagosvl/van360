@@ -1,52 +1,171 @@
-import { PLANO_COMPLETO } from "@/constants";
-import { Plano, SubPlano } from "@/types/plano";
+import {
+  ASSINATURA_COBRANCA_STATUS_CANCELADA,
+  ASSINATURA_USUARIO_STATUS_ATIVA,
+  ASSINATURA_USUARIO_STATUS_TRIAL,
+  PLANO_COMPLETO,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
+} from "@/constants";
 
 /**
- * Obtém o maior sub-plano do plano Completo
- * @param planos - Array de planos base
- * @param subPlanos - Array de sub-planos
- * @returns O maior sub-plano ou null se não encontrado
+ * Extrai e normaliza os dados do plano a partir de uma assinatura
  */
-export function getMaiorSubplanoCompleto(
-  planos: Plano[],
-  subPlanos: SubPlano[]
-): SubPlano | null {
-  const planoCompletoBase = planos.find((p) => p.slug === PLANO_COMPLETO);
-  if (!planoCompletoBase) return null;
+export function extractPlanoData(assinatura: any) {
+  if (!assinatura?.planos) return null;
 
-  const subplanosCompleto = subPlanos.filter(
-    (s) => s.parent_id === planoCompletoBase.id
-  );
-  if (subplanosCompleto.length === 0) return null;
+  const plano = assinatura.planos;
+  const slugBase = plano.parent?.slug ?? plano.slug;
 
-  return subplanosCompleto.sort(
-    (a, b) => b.franquia_cobrancas_mes - a.franquia_cobrancas_mes
-  )[0];
+  const agora = new Date();
+
+  const isFreePlan = slugBase === PLANO_GRATUITO;
+  const isCompletePlan = slugBase === PLANO_COMPLETO;
+  const isEssentialPlan = slugBase === PLANO_ESSENCIAL;
+
+  const isTrial = assinatura.status === ASSINATURA_USUARIO_STATUS_TRIAL;
+
+  const isValidTrial =
+    isTrial &&
+    assinatura.trial_end_at &&
+    new Date(assinatura.trial_end_at) >= agora;
+
+  const isActive =
+    assinatura.status === ASSINATURA_USUARIO_STATUS_ATIVA && assinatura.ativo;
+
+  const isCanceled = assinatura.status === ASSINATURA_COBRANCA_STATUS_CANCELADA;
+
+  const isValidCanceled =
+    isCanceled &&
+    assinatura.vigencia_fim &&
+    new Date(assinatura.vigencia_fim) >= agora;
+
+  const isValidPlan = isActive || isValidTrial || isValidCanceled;
+
+  return {
+    slug: slugBase,
+    status: assinatura.status,
+    trial_end_at: assinatura.trial_end_at,
+    ativo: assinatura.ativo,
+    planoCompleto: plano,
+    isTrial,
+    isValidTrial,
+    isActive,
+    isValidPlan,
+    isFreePlan,
+    isCompletePlan,
+    isEssentialPlan,
+  };
 }
 
 /**
- * Obtém a quantidade mínima para plano personalizado
- * Mínimo = maior sub-plano + 1
- * @param planos - Array de planos base
- * @param subPlanos - Array de sub-planos
- * @returns Quantidade mínima ou null se não encontrado
+ * Obtém a assinatura mais recente de um usuário
  */
-export function getQuantidadeMinimaPersonalizada(
-  planos: Plano[],
-  subPlanos: SubPlano[]
-): number | null {
-  const maiorSubplano = getMaiorSubplanoCompleto(planos, subPlanos);
-  if (!maiorSubplano) return null;
-  return maiorSubplano.franquia_cobrancas_mes + 1;
+export function getLatestAssinatura(usuario: any) {
+  if (!usuario?.assinaturas_usuarios?.length) return null;
+
+  return [...usuario.assinaturas_usuarios].sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )[0];
 }
 
 /**
  * Obtém a assinatura ativa do perfil do usuário
  * @param profile - Perfil do usuário com assinaturas
- * @returns Assinatura ativa ou null se não encontrada
+ * @returns A assinatura ativa (onde ativo === true) ou null
  */
 export function getAssinaturaAtiva(profile: any) {
   if (!profile?.assinaturas_usuarios) return null;
   return profile.assinaturas_usuarios.find((a: any) => a.ativo === true) || null;
 }
 
+/**
+ * Calcula os dados do plano a partir de um usuário
+ */
+export function getPlanoUsuario(usuario: any) {
+  const assinatura = getLatestAssinatura(usuario);
+  if (!assinatura) return null;
+
+  return extractPlanoData(assinatura);
+}
+
+/**
+ * Valida se o usuário tem acesso à funcionalidade de solicitação de passageiros (pre-passageiro)
+ * 
+ * Regras:
+ * - Pode usar: Plano Essencial (ativo ou trial válido) OU Plano Completo (ativo)
+ * - Não pode usar: Plano Gratuito, Completo não ativo, Essencial não ativo e não trial válido
+ */
+export function hasPrePassageiroAccess(planoData: ReturnType<typeof extractPlanoData>): {
+  hasAccess: boolean;
+  reason?: string;
+} {
+  if (!planoData) {
+    return {
+      hasAccess: false,
+      reason: "O motorista não possui uma assinatura ativa no momento.",
+    };
+  }
+
+  // Verificar se é Plano Gratuito
+  if (planoData.isFreePlan) {
+    return {
+      hasAccess: false,
+      reason: "O plano atual do motorista (Gratuito) não permite o uso desta funcionalidade.",
+    };
+  }
+
+  // Verificar se é Plano Completo
+  if (planoData.isCompletePlan) {
+    if (!planoData.isActive) {
+      return {
+        hasAccess: false,
+        reason: "A assinatura do motorista está suspensa ou cancelada. É necessário regularizar para reativar o acesso.",
+      };
+    }
+    return { hasAccess: true };
+  }
+
+  // Verificar se é Plano Essencial
+  if (planoData.isEssentialPlan) {
+    if (planoData.isActive || planoData.isValidTrial) {
+      return { hasAccess: true };
+    }
+
+    if (planoData.isTrial && !planoData.isValidTrial) {
+        return {
+            hasAccess: false,
+            reason: "O período de testes do motorista expirou.",
+        };
+    }
+
+    return {
+      hasAccess: false,
+      reason: "A assinatura do motorista está suspensa ou cancelada. É necessário regularizar para reativar o acesso.",
+    };
+  }
+
+  // Plano desconhecido
+  return {
+    hasAccess: false,
+    reason: "O motorista não possui um plano válido para esta funcionalidade.",
+  };
+}
+
+/**
+ * Valida se o usuário tem acesso aos relatórios
+ * 
+ * Regras:
+ * - Plano Completo (qualquer status válido) OU
+ * - Plano Essencial ativo OU
+ * - Trial válido
+ */
+export function hasRelatoriosAccess(planoData: ReturnType<typeof extractPlanoData>): boolean {
+  if (!planoData) return false;
+
+  return (
+    planoData.isCompletePlan ||
+    (planoData.isEssentialPlan && planoData.isActive) ||
+    (planoData.isTrial && planoData.isValidTrial)
+  );
+}

@@ -1,3 +1,4 @@
+import { BlurredValue } from "@/components/common/BlurredValue";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -5,6 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { formatDateToBR } from "@/utils/formatters";
@@ -25,6 +27,7 @@ interface GastosListProps {
   gastos: Gasto[];
   onEdit: (gasto: Gasto) => void;
   onDelete: (id: string) => void;
+  isRestricted?: boolean;
 }
 
 interface GastoActionsDropdownProps {
@@ -33,6 +36,7 @@ interface GastoActionsDropdownProps {
   onDelete: (id: string) => void;
   triggerClassName?: string;
   triggerSize?: "sm" | "icon";
+  disabled?: boolean;
 }
 
 function GastoActionsDropdown({
@@ -41,7 +45,21 @@ function GastoActionsDropdown({
   onDelete,
   triggerClassName = "h-8 w-8 p-0",
   triggerSize = "sm",
+  disabled = false,
 }: GastoActionsDropdownProps) {
+  if (disabled) {
+    return (
+      <Button
+        variant="ghost"
+        size={triggerSize}
+        className={triggerClassName}
+        disabled
+      >
+        <MoreVertical className="h-8 w-8 text-gray-300" />
+      </Button>
+    );
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -105,7 +123,12 @@ const getCategoryConfig = (categoria: string) => {
   }
 };
 
-export function GastosList({ gastos, onEdit, onDelete }: GastosListProps) {
+export function GastosList({
+  gastos,
+  onEdit,
+  onDelete,
+  isRestricted = false,
+}: GastosListProps) {
   return (
     <>
       {/* Desktop Table */}
@@ -140,8 +163,13 @@ export function GastosList({ gastos, onEdit, onDelete }: GastosListProps) {
               return (
                 <tr
                   key={gasto.id}
-                  onClick={() => onEdit(gasto)}
-                  className="hover:bg-gray-50/80 border-b border-gray-50 last:border-0 transition-colors cursor-pointer"
+                  onClick={() => !isRestricted && onEdit(gasto)}
+                  className={cn(
+                    "border-b border-gray-50 last:border-0 transition-colors",
+                    isRestricted
+                      ? "cursor-default"
+                      : "hover:bg-gray-50/80 cursor-pointer"
+                  )}
                 >
                   <td className="py-4 pl-6 align-middle">
                     <div className="flex items-center gap-3">
@@ -167,10 +195,11 @@ export function GastosList({ gastos, onEdit, onDelete }: GastosListProps) {
                   </td>
                   <td className="px-6 py-4 text-right align-middle">
                     <span className="font-bold text-gray-900 text-sm">
-                      {Number(gasto.valor).toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      })}
+                      <BlurredValue
+                        value={gasto.valor}
+                        visible={!isRestricted}
+                        type="currency"
+                      />
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right align-middle">
@@ -178,6 +207,7 @@ export function GastosList({ gastos, onEdit, onDelete }: GastosListProps) {
                       gasto={gasto}
                       onEdit={onEdit}
                       onDelete={onDelete}
+                      disabled={isRestricted}
                     />
                   </td>
                 </tr>
@@ -194,8 +224,11 @@ export function GastosList({ gastos, onEdit, onDelete }: GastosListProps) {
           return (
             <div
               key={gasto.id}
-              onClick={() => onEdit(gasto)}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 active:scale-[0.99] transition-transform"
+              onClick={() => !isRestricted && onEdit(gasto)}
+              className={cn(
+                "bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 transition-transform",
+                isRestricted ? "" : "active:scale-[0.99]"
+              )}
             >
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="flex items-center gap-3">
@@ -214,6 +247,7 @@ export function GastosList({ gastos, onEdit, onDelete }: GastosListProps) {
                     onEdit={onEdit}
                     onDelete={onDelete}
                     triggerSize="icon"
+                    disabled={isRestricted}
                   />
                 </div>
               </div>
@@ -223,10 +257,11 @@ export function GastosList({ gastos, onEdit, onDelete }: GastosListProps) {
                   {gasto.descricao || "Sem descrição"}
                 </p>
                 <p className="font-bold text-gray-900 text-base">
-                  {Number(gasto.valor).toLocaleString("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                  })}
+                  <BlurredValue
+                    value={gasto.valor}
+                    visible={!isRestricted}
+                    type="currency"
+                  />
                 </p>
               </div>
 

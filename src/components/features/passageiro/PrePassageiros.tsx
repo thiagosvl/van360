@@ -8,38 +8,39 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-    useCreatePrePassageiro,
-    useDeletePrePassageiro,
-    usePassageiros,
-    usePrePassageiros,
+  useCreatePrePassageiro,
+  useDeletePrePassageiro,
+  usePassageiros,
+  usePrePassageiros,
 } from "@/hooks";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { formatarTelefone } from "@/utils/formatters";
+import { mockGenerator } from "@/utils/mockDataGenerator";
 import { toast } from "@/utils/notifications/toast";
 import {
-    CheckCircle,
-    MoreVertical,
-    Search,
-    Trash2,
-    Users2,
+  CheckCircle,
+  MoreVertical,
+  Search,
+  Trash2,
+  Users2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -161,26 +162,34 @@ export default function PrePassageiros({
       return;
     }
 
-    const numeroAleatorio = Math.floor(Math.random() * 1000);
-    const fakeNome = `Passag. Rápido ${numeroAleatorio}`;
-    const fakeResponsavel = `Resp. Rápido ${numeroAleatorio}`;
-    const fakeEmail = `resp_rapido_${numeroAleatorio}@teste.com`;
+    const hoje = new Date();
+    const valor = Math.floor(Math.random() * (200 - 100 + 1)) + 100;
+    const valorInString = `R$ ${valor},00`;
+
+    const nomePassageiro = mockGenerator.name();
+    const nomeResponsavel = mockGenerator.name();
+    const emailResponsavel = mockGenerator.email(nomeResponsavel);
+    const telefoneResponsavel = mockGenerator.phone();
+    const cpfResponsavel = mockGenerator.cpf();
+    const endereco = mockGenerator.address();
 
     const fakePayload: any = {
-      nome: fakeNome,
-      nome_responsavel: fakeResponsavel,
-      email_responsavel: fakeEmail,
-      telefone_responsavel: "11951186951",
-      cpf_responsavel: "39542391838",
+      nome: nomePassageiro,
+      nome_responsavel: nomeResponsavel,
+      email_responsavel: emailResponsavel,
+      telefone_responsavel: telefoneResponsavel,
+      cpf_responsavel: cpfResponsavel,
       usuario_id: profile.id,
-      observacoes: `observacoes do ${fakeNome}`,
-      logradouro: `Rua do ${fakeNome}`,
-      numero: "433",
-      bairro: `Bairro do ${fakeNome}`,
-      cidade: `Cidade do ${fakeNome}`,
-      estado: "SP",
-      cep: "04410-080",
-      referencia: `Referencia do ${fakeNome}`,
+      observacoes: `Solicitação rápida gerada automaticamente`,
+      logradouro: endereco.logradouro,
+      numero: endereco.numero,
+      bairro: endereco.bairro,
+      cidade: endereco.cidade,
+      estado: endereco.estado,
+      cep: endereco.cep,
+      referencia: `Perto do ${endereco.bairro}`,
+      valor_cobranca: valorInString,
+      dia_vencimento: hoje.getDate(),
     };
 
     createPrePassageiro.mutate(fakePayload);
@@ -269,8 +278,7 @@ export default function PrePassageiros({
                   Nenhuma solicitação pendente
                 </h3>
                 <p className="text-sm text-gray-500 mt-1 max-w-xs">
-                  Compartilhe seu link de cadastro para receber novas
-                  solicitações de pais e responsáveis.
+                  {searchTerm.length > 0 ? "Nenhuma solicitação pendente encontrada." : "Compartilhe seu link de cadastro para receber novas solicitações de pais e responsáveis."}
                 </p>
               </CardContent>
             </Card>

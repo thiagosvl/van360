@@ -10,6 +10,9 @@ import { KPICard } from "@/components/common/KPICard";
 // Components - Alerts
 import { AutomaticChargesPrompt } from "@/components/alerts/AutomaticChargesPrompt";
 
+// Components - Features
+import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActionsMenu";
+
 // Components - Dialogs
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
@@ -24,13 +27,6 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 // Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -47,11 +43,6 @@ import { useSession } from "@/hooks/business/useSession";
 
 // Utils
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import {
-  disableDesfazerPagamento,
-  disableRegistrarPagamento,
-  podeEnviarNotificacao,
-} from "@/utils/domain/cobranca/disableActions";
 import {
   formatDateToBR,
   formatPaymentType,
@@ -74,151 +65,17 @@ import {
 // Icons
 import { cn } from "@/lib/utils";
 import {
-  ArrowLeft,
-  Bell,
   BellOff,
   CheckCircle2,
   DollarSign,
-  FilePen,
-  MoreVertical,
   Search,
   TrendingUp,
-  User,
-  Wallet,
+  Wallet
 } from "lucide-react";
-import { NavigateFunction } from "react-router-dom";
 
 // --- Internal Components ---
 
-// 3. Dropdown Actions (Refactored for cleaner look)
-interface CobrancaActionsProps {
-  cobranca: Cobranca;
-  navigate: NavigateFunction;
-  plano?: any;
-  onNavigateToDetails: (cobranca: Cobranca) => void;
-  onEditCobranca: (cobranca: Cobranca) => void;
-  onOpenPaymentDialog?: (cobranca: Cobranca) => void;
-  onSetConfirmDialogEnvioNotificacao?: (cobranca: Cobranca) => void;
-  onToggleLembretes?: (cobranca: Cobranca) => void;
-  onSetConfirmDialogDesfazer?: (cobrancaId: string) => void;
-  isPaga?: boolean;
-}
 
-const CobrancaActions = ({
-  cobranca,
-  navigate,
-  plano,
-  onNavigateToDetails,
-  onEditCobranca,
-  onOpenPaymentDialog,
-  onSetConfirmDialogEnvioNotificacao,
-  onToggleLembretes,
-  onSetConfirmDialogDesfazer,
-  isPaga = false,
-}: CobrancaActionsProps) => {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-gray-400 hover:text-gray-600"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MoreVertical className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/passageiros/${cobranca.passageiro_id}`);
-          }}
-        >
-          <User className="mr-2 h-4 w-4" /> Ver Carteirinha
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            onNavigateToDetails(cobranca);
-          }}
-        >
-          <DollarSign className="mr-2 h-4 w-4" /> Ver Cobrança
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEditCobranca(cobranca);
-          }}
-        >
-          <FilePen className="mr-2 h-4 w-4" /> Editar
-        </DropdownMenuItem>
-
-        {!isPaga &&
-          !disableRegistrarPagamento(cobranca) &&
-          onOpenPaymentDialog && (
-            <DropdownMenuItem
-              className="cursor-pointer text-green-600 focus:text-green-700 focus:bg-green-50"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenPaymentDialog(cobranca);
-              }}
-            >
-              <CheckCircle2 className="mr-2 h-4 w-4" /> Registrar Pagamento
-            </DropdownMenuItem>
-          )}
-
-        {podeEnviarNotificacao(cobranca, plano) && (
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              onSetConfirmDialogEnvioNotificacao(cobranca);
-            }}
-          >
-            <Bell className="mr-2 h-4 w-4" /> Enviar Lembrete
-          </DropdownMenuItem>
-        )}
-
-        {podeEnviarNotificacao(cobranca, plano) && (
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleLembretes(cobranca);
-            }}
-          >
-            {cobranca.desativar_lembretes ? (
-              <Bell className="mr-2 h-4 w-4" />
-            ) : (
-              <BellOff className="mr-2 h-4 w-4" />
-            )}
-            {cobranca.desativar_lembretes
-              ? "Reativar Lembretes"
-              : "Pausar Lembretes"}
-          </DropdownMenuItem>
-        )}
-
-        {isPaga &&
-          !disableDesfazerPagamento(cobranca) &&
-          onSetConfirmDialogDesfazer && (
-            <DropdownMenuItem
-              className="cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSetConfirmDialogDesfazer(cobranca.id);
-              }}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Desfazer Pagamento
-            </DropdownMenuItem>
-          )}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
 
 // --- Main Component ---
 
@@ -227,6 +84,35 @@ const Cobrancas = () => {
   const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
   const { setPageTitle } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Tab state from URL
+  const activeTab = useMemo(() => {
+    const tabParam = searchParams.get("tab");
+    const validTabs = ["pendentes", "pagas"];
+    if (tabParam && validTabs.includes(tabParam)) {
+      return tabParam;
+    }
+    return "pendentes"; // Default
+  }, [searchParams]);
+
+  // Sync tab to URL on mount if not present
+  useEffect(() => {
+    const currentTab = searchParams.get("tab");
+    if (!currentTab || !["pendentes", "pagas"].includes(currentTab)) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("tab", "pendentes");
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  const handleTabChange = useCallback(
+    (value: string) => {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("tab", value);
+      setSearchParams(newParams);
+    },
+    [searchParams, setSearchParams]
+  );
 
   // Date State
   const [mesFilter, setMesFilter] = useState(() => {
@@ -488,7 +374,7 @@ const Cobrancas = () => {
             )}
 
           {/* 3. Main Content (Tabs & List) */}
-          <Tabs defaultValue="pendentes" className="w-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-6">
               {/* Segmented Control */}
               <TabsList className="bg-gray-100/80 p-1 rounded-xl h-10 md:h-12 w-full md:w-auto self-start">
@@ -641,20 +527,28 @@ const Cobrancas = () => {
                                 </div>
                               </td>
                               <td className="px-6 py-4 text-right">
-                                <CobrancaActions
+                                <CobrancaActionsMenu
                                   cobranca={cobranca}
-                                  navigate={navigate}
                                   plano={plano}
-                                  onNavigateToDetails={navigateToDetails}
-                                  onEditCobranca={handleEditCobrancaClick}
-                                  onOpenPaymentDialog={openPaymentDialog}
-                                  onSetConfirmDialogEnvioNotificacao={(c) =>
+                                  onVerCarteirinha={() =>
+                                    navigate(`/passageiros/${cobranca.passageiro_id}`)
+                                  }
+                                  onVerCobranca={() => navigateToDetails(cobranca)}
+                                  onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
+                                  onRegistrarPagamento={() => openPaymentDialog(cobranca)}
+                                  onEnviarNotificacao={() =>
                                     setConfirmDialogEnvioNotificacao({
                                       open: true,
-                                      cobranca: c,
+                                      cobranca: cobranca,
                                     })
                                   }
-                                  onToggleLembretes={handleToggleLembretes}
+                                  onToggleLembretes={() => handleToggleLembretes(cobranca)}
+                                  onDesfazerPagamento={() =>
+                                    setConfirmDialogDesfazer({
+                                      open: true,
+                                      cobrancaId: cobranca.id,
+                                    })
+                                  }
                                 />
                               </td>
                             </tr>
@@ -703,20 +597,29 @@ const Cobrancas = () => {
                             </div>
                           </div>
                           <div onClick={(e) => e.stopPropagation()}>
-                            <CobrancaActions
+                            <CobrancaActionsMenu
                               cobranca={cobranca}
-                              navigate={navigate}
+                              variant="mobile"
                               plano={plano}
-                              onNavigateToDetails={navigateToDetails}
-                              onEditCobranca={handleEditCobrancaClick}
-                              onOpenPaymentDialog={openPaymentDialog}
-                              onSetConfirmDialogEnvioNotificacao={(c) =>
+                              onVerCarteirinha={() =>
+                                navigate(`/passageiros/${cobranca.passageiro_id}`)
+                              }
+                              onVerCobranca={() => navigateToDetails(cobranca)}
+                              onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
+                              onRegistrarPagamento={() => openPaymentDialog(cobranca)}
+                              onEnviarNotificacao={() =>
                                 setConfirmDialogEnvioNotificacao({
                                   open: true,
-                                  cobranca: c,
+                                  cobranca: cobranca,
                                 })
                               }
-                              onToggleLembretes={handleToggleLembretes}
+                              onToggleLembretes={() => handleToggleLembretes(cobranca)}
+                              onDesfazerPagamento={() =>
+                                setConfirmDialogDesfazer({
+                                  open: true,
+                                  cobrancaId: cobranca.id,
+                                })
+                              }
                             />
                           </div>
                         </div>
@@ -745,7 +648,7 @@ const Cobrancas = () => {
 
                           <div className="flex flex-col items-end gap-0.5">
                             <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-                              PAGO EM
+                              VENCIMENTO
                             </span>
                             <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
                               {cobranca.data_vencimento
@@ -853,24 +756,34 @@ const Cobrancas = () => {
                                   </span>
                                   {cobranca.pagamento_manual && (
                                     <span className="text-[10px] text-gray-400">
-                                      Manual
+                                      Pagamento Registrado Manualmente
                                     </span>
                                   )}
                                 </div>
                               </td>
                               <td className="px-6 py-4 text-right">
-                                <CobrancaActions
+                                <CobrancaActionsMenu
                                   cobranca={cobranca}
-                                  navigate={navigate}
-                                  onNavigateToDetails={navigateToDetails}
-                                  onEditCobranca={handleEditCobrancaClick}
-                                  onSetConfirmDialogDesfazer={(id) =>
-                                    setConfirmDialogDesfazer({
+                                  plano={plano}
+                                  onVerCarteirinha={() =>
+                                    navigate(`/passageiros/${cobranca.passageiro_id}`)
+                                  }
+                                  onVerCobranca={() => navigateToDetails(cobranca)}
+                                  onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
+                                  onRegistrarPagamento={() => openPaymentDialog(cobranca)}
+                                  onEnviarNotificacao={() =>
+                                    setConfirmDialogEnvioNotificacao({
                                       open: true,
-                                      cobrancaId: id,
+                                      cobranca: cobranca,
                                     })
                                   }
-                                  isPaga={true}
+                                  onToggleLembretes={() => handleToggleLembretes(cobranca)}
+                                  onDesfazerPagamento={() =>
+                                    setConfirmDialogDesfazer({
+                                      open: true,
+                                      cobrancaId: cobranca.id,
+                                    })
+                                  }
                                 />
                               </td>
                             </tr>
@@ -921,18 +834,29 @@ const Cobrancas = () => {
                           </div>
                           {/* Botão de Ações */}
                           <div onClick={(e) => e.stopPropagation()}>
-                            <CobrancaActions
+                            <CobrancaActionsMenu
                               cobranca={cobranca}
-                              navigate={navigate}
-                              onNavigateToDetails={navigateToDetails}
-                              onEditCobranca={handleEditCobrancaClick}
-                              onSetConfirmDialogDesfazer={(id) =>
-                                setConfirmDialogDesfazer({
+                              variant="mobile"
+                              plano={plano}
+                              onVerCarteirinha={() =>
+                                navigate(`/passageiros/${cobranca.passageiro_id}`)
+                              }
+                              onVerCobranca={() => navigateToDetails(cobranca)}
+                              onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
+                              onRegistrarPagamento={() => openPaymentDialog(cobranca)}
+                              onEnviarNotificacao={() =>
+                                setConfirmDialogEnvioNotificacao({
                                   open: true,
-                                  cobrancaId: id,
+                                  cobranca: cobranca,
                                 })
                               }
-                              isPaga={true}
+                              onToggleLembretes={() => handleToggleLembretes(cobranca)}
+                              onDesfazerPagamento={() =>
+                                setConfirmDialogDesfazer({
+                                  open: true,
+                                  cobrancaId: cobranca.id,
+                                })
+                              }
                             />
                           </div>
                         </div>
@@ -979,6 +903,8 @@ const Cobrancas = () => {
               passageiroNome={selectedCobranca.passageiros.nome}
               responsavelNome={selectedCobranca.passageiros.nome_responsavel}
               valorOriginal={Number(selectedCobranca.valor)}
+              status={selectedCobranca.status}
+              dataVencimento={selectedCobranca.data_vencimento}
               onPaymentRecorded={async () => {
                 setPaymentDialogOpen(false);
                 // Refetch explícito para garantir que os KPIs sejam atualizados

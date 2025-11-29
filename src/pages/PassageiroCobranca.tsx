@@ -1,6 +1,7 @@
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
+import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,12 +11,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCobranca,
-    useCobrancaNotificacoes,
-    useDeleteCobranca,
-    useDesfazerPagamento,
-    useEnviarNotificacaoCobranca,
-    useToggleNotificacoesCobranca,
+  useCobranca,
+  useCobrancaNotificacoes,
+  useDeleteCobranca,
+  useDesfazerPagamento,
+  useEnviarNotificacaoCobranca,
+  useToggleNotificacoesCobranca,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -25,49 +26,51 @@ import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import { Passageiro } from "@/types/passageiro";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
-    disableExcluirCobranca,
-    disableRegistrarPagamento,
-    podeEnviarNotificacao,
+  cobrancaPodeReceberNotificacao,
+  disableEditarCobranca,
+  disableExcluirCobranca,
+  disableRegistrarPagamento,
+  planoPermiteEnviarNotificacao,
 } from "@/utils/domain/cobranca/disableActions";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
-    formatCobrancaOrigem,
-    formatDateToBR,
-    formatPaymentType,
-    formatarEnderecoCompleto,
-    formatarTelefone,
-    getStatusColor,
-    getStatusText,
-    meses,
+  formatCobrancaOrigem,
+  formatDateToBR,
+  formatPaymentType,
+  formatarEnderecoCompleto,
+  formatarTelefone,
+  getStatusColor,
+  getStatusText,
+  meses,
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-    ArrowRight,
-    BadgeCheck,
-    Bell,
-    BellOff,
-    Bot,
-    Calendar,
-    CalendarDays,
-    Car,
-    CheckCircle,
-    CheckCircle2,
-    ChevronDown,
-    ChevronUp,
-    Copy,
-    CreditCard,
-    History,
-    IdCard,
-    MapPin,
-    Pencil,
-    Phone,
-    School,
-    Send,
-    Trash2,
-    User,
-    Wallet,
-    XCircle,
+  ArrowRight,
+  BadgeCheck,
+  Bell,
+  BellOff,
+  Bot,
+  Calendar,
+  CalendarDays,
+  Car,
+  CheckCircle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  CreditCard,
+  History,
+  IdCard,
+  MapPin,
+  Pencil,
+  Phone,
+  School,
+  Send,
+  Trash2,
+  User,
+  Wallet,
+  XCircle,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -110,9 +113,7 @@ const SidebarInfoBlock = ({
         {label}
       </span>
     </div>
-    <div className="font-bold text-gray-900 text-sm">
-      {children || "—"}
-    </div>
+    <div className="font-bold text-gray-900 text-sm">{children || "—"}</div>
   </div>
 );
 
@@ -191,7 +192,7 @@ const NotificationTimeline = ({ items }: { items: CobrancaNotificacao[] }) => {
                 {getIcon(item.tipo_origem)}
               </div>
               <div className="flex-1 pt-1">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <div className="flex flex-col gap-1">
                   <p className="font-medium text-gray-900 text-sm">
                     {getEventDescription(item.tipo_evento)}
                   </p>
@@ -263,6 +264,7 @@ export default function PassageiroCobranca() {
   const desfazerPagamentoMutation = useDesfazerPagamento();
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
+  const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
 
   // Buscar cobrança usando React Query
   const {
@@ -339,10 +341,15 @@ export default function PassageiroCobranca() {
 
   const handleCopyEndereco = async () => {
     if (!cobrancaTyped?.passageiros) return;
+    const passageiroSemReferencia = {
+      ...cobrancaTyped.passageiros,
+      referencia: "",
+    };
     const enderecoCompleto = formatarEnderecoCompleto(
-      cobrancaTyped.passageiros as Passageiro
+      passageiroSemReferencia as Passageiro
     );
     try {
+      console.log(enderecoCompleto);
       await navigator.clipboard.writeText(enderecoCompleto);
       setIsCopiedEndereco(true);
       setTimeout(() => setIsCopiedEndereco(false), 1000);
@@ -368,7 +375,7 @@ export default function PassageiroCobranca() {
 
   useEffect(() => {
     if (cobranca) {
-      setPageTitle(`Cobrança de ${meses[cobranca.mes - 1]}`);
+      setPageTitle(`Cobrança de ${cobranca.passageiros.nome.split(" ")[0]}`);
     }
   }, [cobranca, setPageTitle]);
 
@@ -416,24 +423,32 @@ export default function PassageiroCobranca() {
     "bg-blue-600 hover:bg-blue-700 text-white shadow-[0_12px_30px_-20px_rgba(37,99,235,0.7)]";
 
   if (isPago) {
+    // Pago: verde
     headerBg =
       "bg-gradient-to-r from-green-100 via-emerald-50 to-white border-b border-green-100";
     StatusIcon = CheckCircle2;
     paymentButtonClass =
       "bg-green-600 hover:bg-green-700 text-white shadow-[0_12px_30px_-20px_rgba(16,185,129,0.6)]";
-  } else if (statusText === "Venceu") {
+  } else if (statusText === "Em atraso") {
     headerBg =
       "bg-gradient-to-r from-red-100 via-rose-50 to-white border-b border-red-100";
     StatusIcon = XCircle;
     paymentButtonClass =
-      "bg-blue-600 hover:bg-blue-600 text-white shadow-[0_12px_30px_-20px_rgba(248,113,113,0.6)]";
-  } else {
-    // Pendente / A vencer
+      "bg-red-600 hover:bg-red-700 text-white shadow-[0_12px_30px_-20px_rgba(248,113,113,0.6)]";
+  } else if (statusText === "Vence hoje") {
+    // Vence hoje: gradiente laranja para vermelho
     headerBg =
-      "bg-gradient-to-r from-yellow-100 via-orange-50 to-white border-b border-yellow-100";
+      "bg-gradient-to-r from-white to-red-200 hover:bg-inherit border-b border-red-200";
     StatusIcon = Wallet;
     paymentButtonClass =
-      "bg-blue-500 hover:bg-blue-600 text-white shadow-[0_12px_30px_-20px_rgba(37,99,235,0.7)]";
+      "bg-gradient-to-r from-orange-500 via-red-600 to-red-600 hover:bg-orange-700 text-white shadow-[0_12px_30px_-20px_rgba(251,146,60,0.7)]";
+  } else {
+    // A vencer: laranja
+    headerBg =
+      "bg-gradient-to-r from-orange-100 via-orange-50 to-white border-b border-orange-100";
+    StatusIcon = Wallet;
+    paymentButtonClass =
+      "bg-yellow-500 hover:bg-yellow-600 text-white shadow-[0_12px_30px_-20px_rgba(37,99,235,0.7)]";
   }
 
   return (
@@ -502,7 +517,7 @@ export default function PassageiroCobranca() {
                               <Phone className="w-4 h-4" />
                               WhatsApp
                             </div>
-                            <div className="font-semibold text-foreground mt-1">
+                            <div className="font-semibold text-foreground">
                               <div className="flex items-center gap-2">
                                 <span className="text-sm">
                                   {formatarTelefone(
@@ -575,7 +590,7 @@ export default function PassageiroCobranca() {
                   <div className="flex flex-col gap-3 pt-2 border-t border-gray-100">
                     <Button
                       variant="ghost"
-                      className="w-full h-10 rounded-xl text-primary hover:bg-transparent hover:text-primary font-medium"
+                      className="w-full h-10 rounded-xl text-gray-500 hover:bg-transparent hover:text-primary font-medium"
                       onClick={() =>
                         navigate(`/passageiros/${cobrancaTyped.passageiro_id}`)
                       }
@@ -611,7 +626,7 @@ export default function PassageiroCobranca() {
                       {/* Valor em destaque */}
                       <div className="flex items-center gap-2">
                         <CalendarDays className="w-5 h-5 opacity-80" />
-                        <span className="text-xl font-bold tracking-tight text-gray-900">
+                        <span className="text-base sm:text-xl font-bold tracking-tight text-gray-900">
                           {meses[cobrancaTyped.mes - 1]}{" "}
                           <span className="opacity-40 font-light">/</span>{" "}
                           {cobrancaTyped.ano}
@@ -624,14 +639,18 @@ export default function PassageiroCobranca() {
                       <span className="text-[10px] uppercase tracking-widest font-bold opacity-70">
                         {isPago ? "Pago em" : "Vencimento"}
                       </span>
-                      <span className="text-sm font-bold text-gray-900">
-                        {
-                          isPago
-                            ? formatDateToBR(cobrancaTyped.data_pagamento) // Data completa se pago
-                            : `Dia ${
-                                cobrancaTyped.data_vencimento.split("-")[2]
-                              }` // Apenas "Dia XX" se pendente
-                        }
+                      <span className="text-sm sm:text-base font-bold text-gray-900">
+                        {isPago
+                          ? formatDateToBR(cobrancaTyped.data_pagamento).split(
+                              "/"
+                            )[0] +
+                            "/" +
+                            formatDateToBR(cobrancaTyped.data_pagamento).split(
+                              "/"
+                            )[1]
+                          : `Dia ${
+                              cobrancaTyped.data_vencimento.split("-")[2]
+                            }`}
                       </span>
                     </div>
                   </div>
@@ -701,64 +720,88 @@ export default function PassageiroCobranca() {
                           Desfazer Pagamento
                         </Button>
                       ) : (
-                        <div className="px-6 py-4 rounded-xl bg-green-50 border border-green-100 text-green-800 font-medium text-sm flex items-center justify-center gap-2 w-full">
-                          <CheckCircle2 className="w-5 h-5 text-green-600" />
-                          <span>Pago via automação (Link/Pix)</span>
-                        </div>
+                        <>
+                          <div className="px-6 py-4 rounded-xl bg-green-50 border border-green-100 text-green-800 font-medium text-sm flex items-center justify-center gap-2 w-full">
+                            <CheckCircle2 className="w-5 h-5 text-green-600" />
+                            <span>Pago via cobrança automática</span>
+                          </div>
+                          <p className="text-muted-foreground text-xs">
+                            Não é possível desfazer um pagamento feito via
+                            cobrança automática.
+                          </p>
+                        </>
                       )}
                     </div>
 
-                    {/* Secondary Actions Grid - Flex wrap para Mobile */}
-                    <div className="flex flex-wrap justify-center gap-3 mb-6 w-full">
-                      {/* Botão Editar (Agora aqui junto aos secundários) */}
+                    {/* Secondary Actions - Vertical Stack */}
+                    <div className="flex flex-col gap-3 w-full max-w-xs mx-auto mb-6">
+                      {/* Botão Editar */}
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
+                        className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
                         onClick={handleEditCobrancaClick}
+                        disabled={disableEditarCobranca(cobrancaTyped)}
                       >
                         <Pencil className="w-3.5 h-3.5 mr-2" /> Editar Cobrança
                       </Button>
 
-                      {/* Botão de Notificação (Só se tiver plano) */}
-                      {podeEnviarNotificacao(cobrancaTyped, plano) && (
+                      {/* Botão de Notificação ou Aviso de Bloqueio */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
+                        disabled={
+                          !cobrancaPodeReceberNotificacao(cobrancaTyped)
+                        }
+                        onClick={() => {
+                          if (!planoPermiteEnviarNotificacao(plano)) {
+                            setUpgradeDialogOpen(true);
+                            return;
+                          }
+                          setConfirmDialogEnvioNotificacao({
+                            open: true,
+                            cobranca: cobrancaTyped,
+                          });
+                        }}
+                      >
+                        <Send className="w-3.5 h-3.5 mr-2" /> Enviar Lembrete
+                      </Button>
+                      {planoPermiteEnviarNotificacao(plano) && (
                         <>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
+                            className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
+                            disabled={
+                              !cobrancaPodeReceberNotificacao(cobrancaTyped)
+                            }
                             onClick={() => {
-                              setConfirmDialogEnvioNotificacao({
-                                open: true,
-                                cobranca: cobrancaTyped,
-                              });
+                              handleToggleLembretes();
                             }}
-                          >
-                            <Send className="w-3.5 h-3.5 mr-2" /> Enviar
-                            Lembrete
-                          </Button>
-
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
-                            onClick={handleToggleLembretes}
                           >
                             {cobrancaTyped.desativar_lembretes ? (
                               <>
                                 <Bell className="w-3.5 h-3.5 mr-2" /> Reativar
-                                Lembretes
+                                Lembretes Automáticos
                               </>
                             ) : (
                               <>
                                 <BellOff className="w-3.5 h-3.5 mr-2" /> Pausar
-                                Lembretes
+                                Lembretes Automáticos
                               </>
                             )}
                           </Button>
                         </>
                       )}
                     </div>
+
+                    <UpgradePlanDialog
+                      open={upgradeDialogOpen}
+                      onOpenChange={setUpgradeDialogOpen}
+                      featureName="Lembretes Automáticos"
+                      description="Envie lembretes de cobrança automáticos para seus passageiros via WhatsApp."
+                    />
 
                     {/* Delete Action (Separado por borda para segurança) */}
                     <div className="pt-6 border-t border-gray-50 mt-auto w-full flex justify-center">
@@ -833,40 +876,40 @@ export default function PassageiroCobranca() {
                   </Card>
                 </motion.div>
               </div>
+
+              {cobrancaTyped && (
+                <ManualPaymentDialog
+                  isOpen={paymentDialogOpen}
+                  onClose={() => setPaymentDialogOpen(false)}
+                  cobrancaId={cobranca_id}
+                  passageiroNome={cobrancaTyped.passageiros.nome}
+                  responsavelNome={cobrancaTyped.passageiros.nome_responsavel}
+                  valorOriginal={Number(cobrancaTyped.valor)}
+                  status={cobrancaTyped.status}
+                  dataVencimento={cobrancaTyped.data_vencimento}
+                  onPaymentRecorded={() => {
+                    refetchCobranca();
+                  }}
+                />
+              )}
+
+              {editDialogOpen && cobrancaToEdit && (
+                <CobrancaEditDialog
+                  isOpen={editDialogOpen}
+                  onClose={() =>
+                    safeCloseDialog(() => setEditDialogOpen(false))
+                  }
+                  cobranca={cobrancaToEdit}
+                  onCobrancaUpdated={() => {
+                    safeCloseDialog(() => {
+                      setEditDialogOpen(false);
+                      refetchCobranca();
+                    });
+                  }}
+                />
+              )}
             </div>
           </div>
-
-          {/* Dialogs */}
-          {paymentDialogOpen && (
-            <ManualPaymentDialog
-              isOpen={paymentDialogOpen}
-              onClose={() => safeCloseDialog(() => setPaymentDialogOpen(false))}
-              cobrancaId={cobrancaTyped.id}
-              passageiroNome={passageiroCompleto.nome}
-              responsavelNome={passageiroCompleto.nome_responsavel}
-              valorOriginal={Number(cobrancaTyped.valor)}
-              onPaymentRecorded={() => {
-                safeCloseDialog(() => {
-                  setPaymentDialogOpen(false);
-                  refetchCobranca();
-                });
-              }}
-            />
-          )}
-
-          {editDialogOpen && cobrancaToEdit && (
-            <CobrancaEditDialog
-              isOpen={editDialogOpen}
-              onClose={() => safeCloseDialog(() => setEditDialogOpen(false))}
-              cobranca={cobrancaToEdit}
-              onCobrancaUpdated={() => {
-                safeCloseDialog(() => {
-                  setEditDialogOpen(false);
-                  refetchCobranca();
-                });
-              }}
-            />
-          )}
 
           <ConfirmationDialog
             open={confirmDialogDesfazer.open}

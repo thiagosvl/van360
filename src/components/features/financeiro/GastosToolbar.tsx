@@ -1,27 +1,25 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { Filter, ListFilter, Plus, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -69,10 +67,12 @@ export function GastosToolbar({
     setOpen(false);
   };
 
-  const handleClearFilters = () => {
+  const handleClearMobileFilters = () => {
     setTempCategoria("todas");
+  };
+
+  const handleClearDesktopFilters = () => {
     onCategoriaChange("todas");
-    setOpen(false);
   };
 
   const activeFiltersCount = categoriaFilter !== "todas" ? 1 : 0;
@@ -124,12 +124,7 @@ export function GastosToolbar({
                 <Filter className="h-4 w-4 mr-2" />
                 Filtros
                 {activeFiltersCount > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="ml-2 bg-blue-100 text-blue-700 hover:bg-blue-100 h-5 px-1.5 min-w-[20px] justify-center"
-                  >
-                    {activeFiltersCount}
-                  </Badge>
+                  <span className="ml-1.5 flex h-2 w-2 rounded-full bg-primary" />
                 )}
               </Button>
             </SheetTrigger>
@@ -151,7 +146,7 @@ export function GastosToolbar({
                 <Button
                   variant="outline"
                   className="flex-1 h-12 rounded-xl"
-                  onClick={handleClearFilters}
+                  onClick={handleClearMobileFilters}
                 >
                   Limpar
                 </Button>
@@ -194,6 +189,18 @@ export function GastosToolbar({
 
       {/* Actions (Right) */}
       <div className="flex items-center gap-3">
+        {activeFiltersCount > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearDesktopFilters}
+            className="text-gray-500 hover:text-gray-900"
+          >
+            <X className="h-4 w-4 mr-1" />
+            Limpar
+          </Button>
+        )}
+
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -204,15 +211,7 @@ export function GastosToolbar({
               <ListFilter className="h-4 w-4" />
               Filtros
               {activeFiltersCount > 0 && (
-                <>
-                  <Separator orientation="vertical" className="h-4" />
-                  <Badge
-                    variant="secondary"
-                    className="bg-blue-50 text-blue-700 hover:bg-blue-50 h-5 px-1.5 min-w-[20px] justify-center"
-                  >
-                    {activeFiltersCount}
-                  </Badge>
-                </>
+                <span className="flex h-2 w-2 rounded-full bg-primary" />
               )}
             </Button>
           </PopoverTrigger>
@@ -222,33 +221,17 @@ export function GastosToolbar({
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium leading-none">Filtros</h4>
-                {activeFiltersCount > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
-                    onClick={() => {
-                      setTempCategoria("todas");
-                      onCategoriaChange("todas");
-                    }}
-                  >
-                    Limpar
-                    <X className="ml-1 h-3 w-3" />
-                  </Button>
-                )}
-              </div>
               <div className="space-y-2">
-                <Label>Categoria</Label>
+                <Label className="text-xs font-semibold text-gray-500 uppercase">
+                  Categoria
+                </Label>
                 <Select
                   value={categoriaFilter}
                   onValueChange={(val) => {
-                    setTempCategoria(val);
                     onCategoriaChange(val);
                   }}
                 >
-                  <SelectTrigger className="h-9 bg-gray-50 border-gray-200">
+                  <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200">
                     <SelectValue placeholder="Todas" />
                   </SelectTrigger>
                   <SelectContent className="z-[9999]">
@@ -264,19 +247,6 @@ export function GastosToolbar({
             </div>
           </PopoverContent>
         </Popover>
-
-        {categoriaFilter !== "todas" && (
-          <div className="flex gap-2">
-            <Badge
-              variant="secondary"
-              className="h-8 px-3 bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-100 gap-1 cursor-pointer"
-              onClick={() => onCategoriaChange("todas")}
-            >
-              {categoriaFilter}
-              <X className="h-3 w-3" />
-            </Badge>
-          </div>
-        )}
 
         <Button
           onClick={onRegistrarGasto}

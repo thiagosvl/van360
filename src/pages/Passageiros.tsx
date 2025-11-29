@@ -1,3 +1,4 @@
+import { PremiumBanner } from "@/components/alerts/PremiumBanner";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import { DialogExcessoFranquia } from "@/components/dialogs/DialogExcessoFranquia";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
@@ -34,7 +35,9 @@ import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { Veiculo } from "@/types/veiculo";
 import { safeCloseDialog } from "@/utils/dialogUtils";
+import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
+import { mockGenerator } from "@/utils/mockDataGenerator";
 import { toast } from "@/utils/notifications/toast";
 import { Users2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -47,7 +50,36 @@ export default function Passageiros() {
   const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
   const { setPageTitle } = useLayout();
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Tab state from URL
+  const activeTab = useMemo(() => {
+    const tabParam = searchParams.get("tab");
+    const validTabs = ["passageiros", "solicitacoes"];
+    if (tabParam && validTabs.includes(tabParam)) {
+      return tabParam;
+    }
+    return "passageiros"; // Default
+  }, [searchParams]);
+
+  // Sync tab to URL on mount if not present
+  useEffect(() => {
+    const currentTab = searchParams.get("tab");
+    if (!currentTab || !["passageiros", "solicitacoes"].includes(currentTab)) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("tab", "passageiros");
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  const handleTabChange = useCallback(
+    (value: string) => {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("tab", value);
+      setSearchParams(newParams);
+    },
+    [searchParams, setSearchParams]
+  );
 
   const [isDialogOpen, setIsDialogOpen] = useState(() => {
     const openModal = searchParams.get("openModal");
@@ -296,7 +328,7 @@ export default function Passageiros() {
 
     const novoStatus = !p.ativo;
 
-    if (novoStatus && plano?.isCompletePlan && p.enviar_cobranca_automatica) {
+    if (novoStatus && canUseCobrancaAutomatica(plano) && p.enviar_cobranca_automatica) {
       const franquiaContratada = validacaoFranquiaGeral.franquiaContratada;
       const cobrancasEmUso = validacaoFranquiaGeral.cobrancasEmUso;
 
@@ -325,7 +357,7 @@ export default function Passageiros() {
   }, [
     confirmToggleDialog.passageiro,
     toggleAtivoPassageiro,
-    plano?.isCompletePlan,
+    plano,
     validacaoFranquiaGeral,
   ]);
 
@@ -335,7 +367,7 @@ export default function Passageiros() {
 
       const novoValor = !passageiro.enviar_cobranca_automatica;
 
-      if (novoValor && plano?.isCompletePlan) {
+      if (novoValor && canUseCobrancaAutomatica(plano)) {
         const franquiaContratada = validacaoFranquiaGeral.franquiaContratada;
         let cobrancasEmUso = validacaoFranquiaGeral.cobrancasEmUso;
 
@@ -363,7 +395,7 @@ export default function Passageiros() {
     },
     [
       profile?.id,
-      plano?.isCompletePlan,
+      plano,
       updatePassageiro,
       validacaoFranquiaGeral,
     ]
@@ -407,27 +439,32 @@ export default function Passageiros() {
     const valor = Math.floor(Math.random() * (200 - 100 + 1)) + 100;
     const valorInString = `R$ ${valor},00`;
 
-    const numeroPassageiro = Math.floor(Math.random() * 1000);
+    const nomePassageiro = mockGenerator.name();
+    const nomeResponsavel = mockGenerator.name();
+    const emailResponsavel = mockGenerator.email(nomeResponsavel);
+    const telefoneResponsavel = mockGenerator.phone();
+    const cpfResponsavel = mockGenerator.cpf();
+    const endereco = mockGenerator.address();
 
     const fakeData = {
-      nome: "Thiago " + numeroPassageiro,
-      nome_responsavel: `Monica ${numeroPassageiro}`,
-      email_responsavel: "abiliodasvendas@gmail.com",
-      telefone_responsavel: "11951186951",
-      cpf_responsavel: "39542391838",
-      periodo: "manha",
-      observacoes: `teste do ${numeroPassageiro}`,
+      nome: nomePassageiro,
+      nome_responsavel: nomeResponsavel,
+      email_responsavel: emailResponsavel,
+      telefone_responsavel: telefoneResponsavel,
+      cpf_responsavel: cpfResponsavel,
+      periodo: Math.random() > 0.5 ? "manha" : "tarde",
+      observacoes: `Cadastro rápido gerado automaticamente`,
       valor_cobranca: valorInString,
       dia_vencimento: hoje.getDate(),
       escola_id: escolas[0].id,
       veiculo_id: veiculos[0].id,
       ativo: true,
-      logradouro: "Rua Comendador Artur Capodaglio",
-      numero: "433",
-      bairro: "Americanopolis",
-      cidade: "São Paulo",
-      estado: "SP",
-      cep: "04410080",
+      logradouro: endereco.logradouro,
+      numero: endereco.numero,
+      bairro: endereco.bairro,
+      cidade: endereco.cidade,
+      estado: endereco.estado,
+      cep: endereco.cep,
     };
 
     const { restore } = updateQuickStartStepWithRollback("step_passageiros");
@@ -498,7 +535,7 @@ export default function Passageiros() {
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6">
-          <Tabs defaultValue="passageiros" className="w-full space-y-6">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <TabsList className="bg-slate-100/80 p-1 rounded-xl h-10 md:h-12 w-full md:w-auto self-start">
                 <TabsTrigger
@@ -516,7 +553,7 @@ export default function Passageiros() {
                   )}
                 </TabsTrigger>
                 <TabsTrigger
-                  value="pre-cadastros"
+                  value="solicitacoes"
                   className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none"
                 >
                   Solicitações
@@ -534,59 +571,24 @@ export default function Passageiros() {
 
             <TabsContent value="passageiros" className="space-y-6 mt-0">
               {isLimitedUser && limitePassageiros != null && (
-                <div className="mb-4">
-                  <Card
-                    className={isLimitReached ? "border-red-200 bg-red-50" : ""}
-                  >
-                    <CardContent
-                      className={`py-3 px-3 md:px-6 flex flex-col sm:flex-row justify-between items-center sm:items-center gap-3 ${
-                        isLimitReached ? "ring-1 ring-red-50" : ""
-                      }`}
-                    >
-                      <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3">
-                        <Users2
-                          className={`h-6 w-6 shrink-0 ${
-                            isLimitReached ? "text-red-600" : "text-gray-600"
-                          }`}
-                        />
-                        <div className="text-center sm:text-left">
-                          <p
-                            className={`text-lg font-bold leading-snug ${
-                              isLimitReached ? "text-red-700" : "text-gray-600"
-                            }`}
-                          >
-                            Limite de {limitePassageiros} Passageiros
-                          </p>
-                          {!isLimitReached ? (
-                            <p className="text-sm text-gray-900 mt-1">
-                              Você ainda pode cadastrar{" "}
-                              <b>{restantePassageiros}</b> passageiro
-                              {restantePassageiros === 1 ? "" : "s"}.
-                            </p>
-                          ) : (
-                            <p className="text-sm text-red-900 mt-1">
-                              Você atingiu o limite. Para cadastrar quantos
-                              quiser, assine um de nossos planos.
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-center sm:items-end gap-1">
-                        <Button
-                          variant="outline"
-                          className={`${
-                            isLimitReached
-                              ? "bg-red-600 text-white hover:text-white hover:bg-red-700"
-                              : "text-blue-600 hover:opacity-100 hover:bg-blue-100 hover:text-blue border-blue-200"
-                          } shrink-0 opacity-95 px-3 py-1 mt-2 sm:mt-0`}
-                          onClick={() => navigate("/planos")}
-                        >
-                          Quero Passageiros Ilimitados
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                <PremiumBanner
+                  title={
+                    isLimitReached
+                      ? `Limite de ${limitePassageiros} Passageiros Atingido`
+                      : `Limite de ${limitePassageiros} Passageiros`
+                  }
+                  description={
+                    isLimitReached
+                      ? "Você atingiu o limite. Para cadastrar quantos quiser, assine um de nossos planos."
+                      : `Você ainda pode cadastrar ${restantePassageiros} passageiro${
+                          restantePassageiros === 1 ? "" : "s"
+                        }.`
+                  }
+                  ctaText="Quero Passageiros Ilimitados"
+                  variant={isLimitReached ? "red" : "orange"}
+                  icon={Users2}
+                  className="mb-4"
+                />
               )}
 
               <Card className="border-none shadow-none bg-transparent">
@@ -660,7 +662,7 @@ export default function Passageiros() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="pre-cadastros">
+            <TabsContent value="solicitacoes">
               <PrePassageiros
                 onFinalizeNewPrePassageiro={handleFinalizeNewPrePassageiro}
                 refreshKey={refreshKey}
@@ -725,8 +727,9 @@ export default function Passageiros() {
             }
             description={
               confirmToggleDialog.action === "ativar"
-                ? "Deseja reativar este passageiro? Ele voltará a aparecer nas listas de cobranças."
-                : "Deseja desativar este passageiro? Ele não aparecerá mais nas listas de cobrança."
+                ? "Deseja realmente reativar este passageiro? Esta ação pode afetar a geração de cobranças."
+                : "Deseja realmente desativar este passageiro? Esta ação pode afetar a geração de cobranças."
+
             }
             onConfirm={handleToggleConfirm}
             confirmText="Confirmar"

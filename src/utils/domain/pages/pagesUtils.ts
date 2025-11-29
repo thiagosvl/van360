@@ -1,6 +1,11 @@
 import { PLANO_COMPLETO, PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
+import { hasPageAccess } from "@/utils/domain/plano/accessRules";
 import { Car, ChartArea, CreditCard, GraduationCap, LayoutDashboard, Receipt, Users, Wallet } from "lucide-react";
 
+/**
+ * @deprecated Use hasPageAccess from accessRules instead
+ * Mantido para compatibilidade com código existente
+ */
 const checkPagesAvailability = (availablePlans: string[] | undefined, plano: any) => {
     if (!availablePlans) return false;
     if (!plano) return false;
@@ -8,16 +13,18 @@ const checkPagesAvailability = (availablePlans: string[] | undefined, plano: any
     return availablePlans.includes(plano.slug);
 };
 
-const enablePageActions = (href, plano) => {
-    const pageItem = pagesItems.filter((item) => item.href == href);
-
-    if (!pageItem.length) {
-        return false;
-    }
-
-    const available = checkPagesAvailability(pageItem[0].availablePlans, plano) && plano.isValidPlan;
-
-    return available;
+/**
+ * Valida se o usuário tem acesso a ações de uma página específica
+ * 
+ * @param href - Caminho da página (ex: "/gastos")
+ * @param plano - Dados do plano do usuário (retornado por useProfile)
+ * @returns true se tem acesso, false caso contrário
+ */
+const enablePageActions = (href: string, plano: any): boolean => {
+    if (!plano) return false;
+    
+    // Usar a função centralizada de validação
+    return hasPageAccess(href, plano);
 }
 
 const pagesItems = [

@@ -16,12 +16,7 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
     ...item,
   }));
 
-  // Obter slug principal do plano (usa parent se existir)
-  const getMainPlanSlug = () => {
-    if (!plano?.planoCompleto) return null;
-    return plano.planoCompleto.parent?.slug ?? plano.planoCompleto.slug ?? plano?.slug ?? null;
-  };
-
+  // Helper functions for plan display
   const getPlanTitle = (planSlug?: string) => {
     const slug = planSlug?.toLowerCase() || "";
     
@@ -30,11 +25,11 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
     }
     
     if (slug === PLANO_ESSENCIAL) {
-      return "Automatize tudo ⚡";
+      return "Automatize sua rotina ⚡";
     }
     
     if (slug === PLANO_COMPLETO) {
-      return "Automatize ainda mais 🎯";
+      return "Máxima eficiência 🎯";
     }
     
     return "Eleve seu negócio 🚀";
@@ -44,18 +39,18 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
     const slug = planSlug?.toLowerCase() || "";
     
     if (slug === PLANO_GRATUITO) {
-      return "Cadastre quantos passageiros quiser, cobre automaticamente e veja seus gastos e lucros em tempo real.";
+      return "Cadastre quantos passageiros quiser e tenha controle total das suas finanças.";
     }
     
     if (slug === PLANO_ESSENCIAL) {
-      return "Foque só em dirigir! Nós cobramos, recebemos, damos baixa e enviamos os recibos automaticamente.";
+      return "Deixe a cobrança com a gente! Recebimento automático e baixa instantânea.";
     }
     
     if (slug === PLANO_COMPLETO) {
-      return "Adicione mais passageiros com cobrança automática e ganhe tempo para focar no que realmente importa.";
+      return "Automação total: cobranças, notificações e muito mais tempo livre para você.";
     }
     
-    return "Acesse todos os recursos e mantenha seu painel sempre atualizado.";
+    return "Acesse recursos exclusivos e profissionalize sua gestão escolar.";
   };
 
   const getPlanCTA = (planSlug?: string) => {
@@ -70,10 +65,10 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
     }
     
     if (slug === PLANO_COMPLETO) {
-      return "Quero automatizar mais →";
+      return "Ver todos benefícios";
     }
     
-    return "Ver benefícios";
+    return "Conhecer planos";
   };
 
   return (
@@ -128,7 +123,7 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
           variant="secondary"
           size="sm"
           onClick={() => {
-            const mainSlug = getMainPlanSlug();
+            const mainSlug = plano?.slug;
             const url = mainSlug ? `/planos?plano=${mainSlug}` : "/planos";
             navigate(url);
             onLinkClick?.();

@@ -3,31 +3,31 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useCreateCobranca } from "@/hooks";
@@ -35,23 +35,23 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { cn } from "@/lib/utils";
 import {
-  anos,
-  parseCurrencyToNumber,
-  tiposPagamento,
-  toLocalDateString,
+    anos,
+    parseCurrencyToNumber,
+    tiposPagamento,
+    toLocalDateString,
 } from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  AlertTriangle,
-  CalendarIcon,
-  CreditCard,
-  Loader2,
-  PlusCircle,
-  User,
-  X
+    AlertTriangle,
+    CalendarIcon,
+    CreditCard,
+    Loader2,
+    PlusCircle,
+    User,
+    X
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -289,7 +289,10 @@ export default function CobrancaDialog({
                       >
                         <FormControl>
                           <SelectTrigger 
-                            className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                            className={cn(
+                              "h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                              fieldState.error && "border-red-500"
+                            )}
                             aria-invalid={!!fieldState.error}
                           >
                             <SelectValue placeholder="Selecione..." />
@@ -332,7 +335,10 @@ export default function CobrancaDialog({
                       >
                         <FormControl>
                           <SelectTrigger 
-                            className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                            className={cn(
+                              "h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                              fieldState.error && "border-red-500"
+                            )}
                             aria-invalid={!!fieldState.error}
                           >
                             <SelectValue placeholder="Selecione..." />
@@ -478,7 +484,10 @@ export default function CobrancaDialog({
                             <div className="relative">
                               <CreditCard className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                               <SelectTrigger 
-                                className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                className={cn(
+                                  "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                  fieldState.error && "border-red-500"
+                                )}
                                 aria-invalid={!!fieldState.error}
                               >
                                 <SelectValue placeholder="Selecione a forma" />

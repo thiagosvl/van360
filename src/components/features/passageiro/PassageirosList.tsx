@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Passageiro } from "@/types/passageiro";
+import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { formatPeriodo } from "@/utils/formatters";
 import {
@@ -104,7 +105,7 @@ export function PassageirosList({
           <Pencil className="w-4 h-4 mr-2" />
           Editar
         </DropdownMenuItem>
-        {plano?.isCompletePlan && (
+        {canUseCobrancaAutomatica(plano) && (
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
@@ -114,12 +115,12 @@ export function PassageirosList({
             {passageiro.enviar_cobranca_automatica ? (
               <>
                 <BellOff className="w-4 h-4 mr-2" />
-                Pausar Lembretes
+                Pausar Lembretes Automáticos
               </>
             ) : (
               <>
                 <Bell className="w-4 h-4 mr-2" />
-                Ativar Lembretes
+                Ativar Lembretes Automáticos
               </>
             )}
           </DropdownMenuItem>

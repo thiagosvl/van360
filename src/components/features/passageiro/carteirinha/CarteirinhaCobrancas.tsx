@@ -3,34 +3,35 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { cn } from "@/lib/utils";
+import { canUsePremiumFeatures } from "@/utils/domain/plano/accessRules";
 import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
 import {
-    formatDateToBR,
-    getMesNome,
-    getStatusColor,
-    getStatusText,
+  formatDateToBR,
+  getMesNome,
+  getStatusColor,
+  getStatusText,
 } from "@/utils/formatters";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-    AlertTriangle,
-    BellOff,
-    Calendar,
-    Check,
-    ChevronDown,
-    ChevronUp,
-    Clock,
-    DollarSign,
-    Plus,
-    RotateCcw,
+  AlertTriangle,
+  BellOff,
+  Calendar,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  DollarSign,
+  Plus,
+  RotateCcw,
 } from "lucide-react";
 
 interface CarteirinhaCobrancasProps {
@@ -87,8 +88,7 @@ export const CarteirinhaCobrancas = ({
     : cobrancas.slice(0, limiteCobrancasMobile);
 
   // Verificar se o plano gera cobranças automaticamente (ESSENCIAL ou COMPLETO)
-  const geraCobrancasAutomaticas =
-    plano?.isEssentialPlan || plano?.isCompletePlan;
+  const geraCobrancasAutomaticas = canUsePremiumFeatures(plano);
 
   return (
     <motion.div
@@ -237,7 +237,7 @@ export const CarteirinhaCobrancas = ({
                         circleIcon = (
                           <Check className="w-3.5 h-3.5 text-green-600" />
                         );
-                      } else if (statusText === "Venceu") {
+                      } else if (statusText === "Em atraso") {
                         circleBgColor = "bg-red-100";
                         circleBorderColor = "border-red-400";
                         circleIcon = (
@@ -276,7 +276,7 @@ export const CarteirinhaCobrancas = ({
                                 </h4>
                                 <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                                   <Calendar className="w-3 h-3" />
-                                  {formatDateToBR(cobranca.data_vencimento)}
+                                  Vence em {formatDateToBR(cobranca.data_vencimento)}
                                 </p>
                               </div>
 
@@ -416,7 +416,7 @@ export const CarteirinhaCobrancas = ({
                               </span>
                               <span className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                                 <Calendar className="w-3 h-3" />
-                                {formatDateToBR(cobranca.data_vencimento)}
+                                Vence em {formatDateToBR(cobranca.data_vencimento)}
                               </span>
                             </div>
                           </td>

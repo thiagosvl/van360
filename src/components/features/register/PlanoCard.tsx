@@ -17,7 +17,7 @@ import {
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Plano, SubPlano } from "@/types/plano";
-import { getMaiorSubplanoCompleto } from "@/utils/domain/plano/planoUtils";
+import { getMaiorSubplanoCompleto } from "@/utils/domain/plano/planoStructureUtils";
 import { toast } from "@/utils/notifications/toast";
 import { Check, Loader2 } from "lucide-react";
 import type { MouseEvent } from "react";

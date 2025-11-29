@@ -22,7 +22,7 @@ export const formatPaymentType = (tipo: string | undefined) => {
   return typeMap[tipo] || tipo;
 };
 
-export const checkCobrancaJaVenceu = (dataVencimento: string) => {
+export const checkCobrancaEmAtraso = (dataVencimento: string) => {
   const vencimento = formatDate(dataVencimento);
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);

@@ -58,18 +58,6 @@ function EscolaActionsDropdown({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {escola.passageiros_ativos_count > 0 && (
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/passageiros?escola=${escola.id}`);
-            }}
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Ver Passageiros
-          </DropdownMenuItem>
-        )}
         <DropdownMenuItem
           className="cursor-pointer"
           onClick={(e) => {
@@ -98,6 +86,17 @@ function EscolaActionsDropdown({
               Reativar
             </>
           )}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          disabled={escola.passageiros_ativos_count === 0}
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/passageiros?escola=${escola.id}`);
+          }}
+        >
+          <Users className="w-4 h-4 mr-2" />
+          Ver Passageiros
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={(e) => {
