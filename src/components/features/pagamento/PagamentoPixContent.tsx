@@ -107,10 +107,15 @@ export default function PagamentoPixContent({
 
   // Quando o tempo expira e o pagamento ainda não foi confirmado, fechar o diálogo
   useEffect(() => {
-    if (timeLeft === 0 && !paymentConfirmed && onClose) {
+    if (!onClose) return;
+
+    // Só consideramos timeout depois que o PIX foi efetivamente gerado
+    if (!dadosPagamento?.qrCodePayload) return;
+
+    if (timeLeft <= 0 && !paymentConfirmed) {
       onClose();
     }
-  }, [timeLeft, paymentConfirmed, onClose]);
+  }, [timeLeft, paymentConfirmed, onClose, dadosPagamento]);
 
   // Gerar PIX ao montar ou mudar cobrança
   useEffect(() => {
@@ -179,7 +184,7 @@ export default function PagamentoPixContent({
 
     // Iniciar contagem regressiva antes de disparar o callback (login/redirect)
     if (!redirectSeconds) {
-      setRedirectSeconds(15);
+      setRedirectSeconds(5);
       const interval = setInterval(() => {
         setRedirectSeconds((prev) => {
           if (prev === null) return prev;
