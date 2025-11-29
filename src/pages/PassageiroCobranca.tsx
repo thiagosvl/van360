@@ -18,7 +18,6 @@ import {
   useEnviarNotificacaoCobranca,
   useToggleNotificacoesCobranca,
 } from "@/hooks";
-import { useQueryClient } from "@tanstack/react-query";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { cn } from "@/lib/utils";
@@ -45,6 +44,7 @@ import {
   meses,
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
+import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
@@ -295,31 +295,44 @@ export default function PassageiroCobranca() {
   // Isso previne acesso a rotas de recursos excluídos via navegação do browser
   useEffect(() => {
     if (!cobranca_id) return;
-    
+
     // Verificar se terminou de carregar
     if (isCobrancaLoading) return;
 
     // Verificar se há erro (404 ou outro erro)
-    const isNotFoundError = isCobrancaError && (
-      (cobrancaError as any)?.response?.status === 404 ||
-      (cobrancaError as any)?.status === 404
-    );
+    const isNotFoundError =
+      isCobrancaError &&
+      ((cobrancaError as any)?.response?.status === 404 ||
+        (cobrancaError as any)?.status === 404);
 
     // Se há erro 404 ou dados null/undefined, o recurso não existe
     if (isNotFoundError || (!isCobrancaError && !cobranca)) {
       // Limpar cache da cobrança para evitar acesso futuro
       queryClient.removeQueries({ queryKey: ["cobranca", cobranca_id] });
-      queryClient.removeQueries({ queryKey: ["cobranca-notificacoes", cobranca_id] });
-      
+      queryClient.removeQueries({
+        queryKey: ["cobranca-notificacoes", cobranca_id],
+      });
+
       // Redirecionar para a carteirinha do passageiro se temos o ID
       if (passageiro_id) {
-        navigate(`/passageiros/${passageiro_id}/carteirinha`, { replace: true });
+        navigate(`/passageiros/${passageiro_id}/carteirinha`, {
+          replace: true,
+        });
       } else {
         // Fallback: redirecionar para lista de cobranças
         navigate("/cobrancas", { replace: true });
       }
     }
-  }, [isCobrancaLoading, isCobrancaError, cobrancaError, cobranca, cobranca_id, passageiro_id, navigate, queryClient]);
+  }, [
+    isCobrancaLoading,
+    isCobrancaError,
+    cobrancaError,
+    cobranca,
+    cobranca_id,
+    passageiro_id,
+    navigate,
+    queryClient,
+  ]);
 
   const handleEditCobrancaClick = () => {
     if (cobrancaNormalizadaParaEdicao) {
@@ -411,12 +424,15 @@ export default function PassageiroCobranca() {
   }, [cobranca, setPageTitle]);
 
   // Verificar se o recurso não existe e redirecionar antes de renderizar
-  const isNotFoundError = isCobrancaError && (
-    (cobrancaError as any)?.response?.status === 404 ||
-    (cobrancaError as any)?.status === 404
-  );
-  
-  if (!loading && (isNotFoundError || (!isCobrancaError && !cobranca && cobranca_id))) {
+  const isNotFoundError =
+    isCobrancaError &&
+    ((cobrancaError as any)?.response?.status === 404 ||
+      (cobrancaError as any)?.status === 404);
+
+  if (
+    !loading &&
+    (isNotFoundError || (!isCobrancaError && !cobranca && cobranca_id))
+  ) {
     // Não renderizar nada enquanto redireciona
     return null;
   }
@@ -734,7 +750,7 @@ export default function PassageiroCobranca() {
                     </div>
 
                     {/* Primary Actions */}
-                    <div className="flex flex-wrap items-center justify-center gap-4 max-w-2xl mx-auto mb-8 w-full">
+                    <div className="flex flex-wrap flex-col items-center justify-center gap-4 max-w-2xl mx-auto mb-8 w-full">
                       {!disableRegistrarPagamento(cobrancaTyped) ? (
                         <Button
                           className={cn(
@@ -747,20 +763,25 @@ export default function PassageiroCobranca() {
                           Registrar Pagamento
                         </Button>
                       ) : cobrancaTyped.pagamento_manual ? (
-                        <Button
-                          size="lg"
-                          variant="outline"
-                          className="h-12 px-8 rounded-xl border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 w-full sm:w-auto min-w-[200px]"
-                          onClick={() =>
-                            setConfirmDialogDesfazer({
-                              open: true,
-                              cobrancaId: cobranca_id,
-                            })
-                          }
-                        >
-                          <History className="w-4 h-4 mr-2" />
-                          Desfazer Pagamento
-                        </Button>
+                        <>
+                          <Button
+                            size="lg"
+                            variant="outline"
+                            className="h-12 px-8 rounded-xl border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 w-full sm:w-auto min-w-[200px]"
+                            onClick={() =>
+                              setConfirmDialogDesfazer({
+                                open: true,
+                                cobrancaId: cobranca_id,
+                              })
+                            }
+                          >
+                            <History className="w-4 h-4 mr-2" />
+                            Desfazer Pagamento
+                          </Button>
+                          <p className="text-muted-foreground text-xs">
+                            Pagamento registrado manualmente.
+                          </p>
+                        </>
                       ) : (
                         <>
                           <div className="px-6 py-4 rounded-xl bg-green-50 border border-green-100 text-green-800 font-medium text-sm flex items-center justify-center gap-2 w-full">

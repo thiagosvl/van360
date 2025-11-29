@@ -1,4 +1,3 @@
-import { PremiumBanner } from "@/components/alerts/PremiumBanner";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import { DialogExcessoFranquia } from "@/components/dialogs/DialogExcessoFranquia";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
@@ -8,6 +7,7 @@ import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { EmptyState } from "@/components/empty";
 import { PassageirosList } from "@/components/features/passageiro/PassageirosList";
 import { PassageirosToolbar } from "@/components/features/passageiro/PassageirosToolbar";
+import { PassengerLimitHealthBar } from "@/components/features/passageiro/PassengerLimitHealthBar";
 import PrePassageiros from "@/components/features/passageiro/PrePassageiros";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
@@ -473,7 +473,7 @@ export default function Passageiros() {
       {
         ...fakeData,
         usuario_id: profile.id,
-        emitir_cobranca_mes_atual: true,
+        emitir_cobranca_mes_atual: false,
       },
       {
         onError: () => {
@@ -571,23 +571,9 @@ export default function Passageiros() {
 
             <TabsContent value="passageiros" className="space-y-6 mt-0">
               {isLimitedUser && limitePassageiros != null && (
-                <PremiumBanner
-                  title={
-                    isLimitReached
-                      ? `Limite de ${limitePassageiros} Passageiros Atingido`
-                      : `Limite de ${limitePassageiros} Passageiros`
-                  }
-                  description={
-                    isLimitReached
-                      ? "Você atingiu o limite. Para cadastrar quantos quiser, assine um de nossos planos."
-                      : `Você ainda pode cadastrar ${restantePassageiros} passageiro${
-                          restantePassageiros === 1 ? "" : "s"
-                        }.`
-                  }
-                  ctaText="Quero Passageiros Ilimitados"
-                  variant={isLimitReached ? "red" : "orange"}
-                  icon={Users2}
-                  className="mb-4"
+                <PassengerLimitHealthBar
+                  current={countPassageiros || 0}
+                  max={limitePassageiros}
                 />
               )}
 

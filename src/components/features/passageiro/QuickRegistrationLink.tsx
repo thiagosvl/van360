@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { hasPassageirosLimit } from "@/utils/domain/plano/accessRules";
 import { toast } from "@/utils/notifications/toast";
-import { ArrowRight, CheckCircle, Copy, LinkIcon, Lock } from "lucide-react";
+import { ArrowRight, CheckCircle, Copy, LinkIcon, Lock, MessageCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -26,7 +26,7 @@ export function QuickRegistrationLink({
 
   const allowAccess = useMemo(() => {
     if (!plano) return false;
-    if (plano.isFreePlan) return false;
+    // Liberado para todos os planos ativos (incluindo Gratuito)
     return plano.isValidPlan;
   }, [plano]);
 
@@ -56,6 +56,14 @@ export function QuickRegistrationLink({
         description: error.message || "Não foi possível copiar o link.",
       });
     }
+  };
+
+  const handleShareWhatsApp = () => {
+    if (!profile?.id) return;
+    const link = buildPrepassageiroLink(profile.id);
+    const message = `Olá! Clique no link abaixo para cadastrar seu filho(a) no transporte escolar: ${link}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
   };
 
   return (
@@ -106,34 +114,45 @@ export function QuickRegistrationLink({
             </div>
           </div>
 
-          <div className="flex flex-col items-center sm:items-end gap-2 shrink-0">
+          <div className="flex flex-col sm:flex-row items-center gap-2 shrink-0 w-full sm:w-auto">
             {allowAccess && !isLimitReached ? (
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={handleCopyLink}
-                className={`font-semibold border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800 transition-all ${
-                  isCopied ? "bg-green-50 text-green-700 border-green-200" : ""
-                }`}
-              >
-                {isCopied ? (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Copiado!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copiar Link
-                  </>
-                )}
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleShareWhatsApp}
+                  className="font-semibold border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 transition-all w-full sm:w-auto"
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  WhatsApp
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleCopyLink}
+                  className={`font-semibold border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800 transition-all w-full sm:w-auto ${
+                    isCopied ? "bg-green-50 text-green-700 border-green-200" : ""
+                  }`}
+                >
+                  {isCopied ? (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Copiado!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copiar Link
+                    </>
+                  )}
+                </Button>
+              </>
             ) : (
               <Button
                 variant="secondary"
                 size="lg"
                 onClick={() => navigate("/planos")}
-                className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold border-none shadow-sm"
+                className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold border-none shadow-sm w-full sm:w-auto"
               >
                 Quero essa facilidade
                 <ArrowRight className="w-4 h-4 ml-2" />

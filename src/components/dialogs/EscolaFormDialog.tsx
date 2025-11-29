@@ -1,34 +1,34 @@
 import { CepInput } from "@/components/forms";
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateEscola, useUpdateEscola } from "@/hooks";
@@ -208,7 +208,7 @@ export default function EscolaFormDialog({
               <Building2 className="w-6 h-6 text-white" />
             </div>
             <DialogTitle className="text-2xl font-bold text-white">
-              {editingEscola ? "Editar Escola" : "Nova Escola"}
+              {editingEscola ? "Editar Escola" : "Cadastrar Escola"}
             </DialogTitle>
             <DialogDescription className="text-blue-100 text-sm mt-1">
               Preencha os dados da escola abaixo

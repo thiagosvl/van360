@@ -48,9 +48,9 @@ import { toast } from "@/utils/notifications/toast";
 
 // Constants
 import {
-  PLANO_COMPLETO,
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO
+    PLANO_COMPLETO,
+    PLANO_ESSENCIAL,
+    PLANO_GRATUITO
 } from "@/constants";
 
 // Types
@@ -893,11 +893,13 @@ export default function Register() {
               : undefined
           }
           context="register"
-          onIrParaInicio={() => {
+          onIrParaInicio={async () => {
+            await handlePaymentSuccess();
             setPagamentoDialog(null);
             navigate("/inicio");
           }}
-          onIrParaAssinatura={() => {
+          onIrParaAssinatura={async () => {
+            await handlePaymentSuccess();
             setPagamentoDialog(null);
             navigate("/assinatura");
           }}

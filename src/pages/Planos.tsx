@@ -8,9 +8,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 // Components - Features
+import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaDialog";
 import { PagamentoSucessoDialog } from "@/components/dialogs/PagamentoSucessoDialog";
 import { SelecaoPassageirosDialog } from "@/components/dialogs/SelecaoPassageirosDialog";
-import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaDialog";
 import { PlanoCard } from "@/components/features/register/PlanoCard";
 
 // Components - Navigation
@@ -38,21 +38,19 @@ import { useSession } from "@/hooks/business/useSession";
 
 // Services
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks";
-import { supabase } from "@/integrations/supabase/client";
 import { usuarioApi } from "@/services";
 
 // Utils
 import { cn } from "@/lib/utils";
-import { getAssinaturaAtiva } from "@/utils/domain/plano/planoUtils";
 import { getQuantidadeMinimaPersonalizada } from "@/utils/domain/plano/planoStructureUtils";
+import { getAssinaturaAtiva } from "@/utils/domain/plano/planoUtils";
 import { toast } from "@/utils/notifications/toast";
 
 // Constants
 import {
-  ASSINATURA_COBRANCA_STATUS_PAGO,
   PLANO_COMPLETO,
   PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
+  PLANO_GRATUITO
 } from "@/constants";
 
 // Types
@@ -830,8 +828,9 @@ export default function Planos() {
     // Forçar refresh do profile para garantir que os dados estão atualizados
     await refreshProfile();
     
-    // O PagamentoPixContent agora exibe a tela de sucesso internamente
-    // Não precisamos mais abrir um dialog separado
+    // Fechar o dialog após o sucesso e redirecionar
+    setPagamentoDialog(null);
+    navigate("/assinatura");
   };
 
   // Handler para quando precisar de seleção manual de passageiros

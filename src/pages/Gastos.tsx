@@ -532,7 +532,7 @@ export default function Gastos() {
                   <TrendingDown className="w-6 h-6 text-white" />
                 </div>
                 <DialogTitle className="text-2xl font-bold text-white">
-                  {editingGasto ? "Editar Gasto" : "Novo Gasto"}
+                  {editingGasto ? "Editar Gasto" : "Registrar Gasto"}
                 </DialogTitle>
                 <DialogDescription className="text-blue-100 text-sm mt-1">
                   Preencha os dados do gasto abaixo

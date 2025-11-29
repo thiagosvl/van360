@@ -269,7 +269,7 @@ export default function PrePassageiros({
           {loading ? (
             <PrePassengerListSkeleton />
           ) : prePassageiros.length === 0 ? (
-            <Card className="border-dashed border-gray-200 bg-gray-50/50">
+            <Card className="border-dashed border-gray-200">
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                   <Users2 className="h-6 w-6 text-gray-400" />

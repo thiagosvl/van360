@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { X } from "lucide-react";
 
 interface PagamentoAssinaturaDialogProps {
   isOpen: boolean;
@@ -40,29 +41,31 @@ export default function PagamentoAssinaturaDialog({
   onIrParaAssinatura,
   context,
 }: PagamentoAssinaturaDialogProps) {
-  // We need to handle close logic here to ensure cleanup if needed, 
+  // We need to handle close logic here to ensure cleanup if needed,
   // but PagamentoPixContent handles its own cleanup on unmount/prop change.
   // However, the Dialog's onOpenChange triggers onClose, which should be sufficient.
-  
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-white p-0 gap-0 rounded-3xl"
         onOpenAutoFocus={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
         hideCloseButton
       >
         {/* Header Minimalista */}
-        <DialogHeader className="p-4 flex flex-row items-center justify-between border-b border-gray-100 sticky top-0 bg-white z-10">
+        <DialogHeader className="p-3 flex flex-row items-center justify-between border-b border-gray-100 sticky top-0 bg-white z-10">
           <div className="w-8" /> {/* Spacer */}
           <DialogTitle className="text-base font-semibold text-gray-900 uppercase tracking-wide">
-            Pagamento
+            ASSINATURA
           </DialogTitle>
           <DialogClose className="text-gray-500 font-medium text-sm hover:text-gray-700 transition-colors">
-            Fechar
+            <X className="h-5 w-5" />
+            <span className="sr-only">Close</span>
           </DialogClose>
         </DialogHeader>
 
-        <div className="p-6">
+        <div className="p-4 pt-3">
           <PagamentoPixContent
             cobrancaId={cobrancaId}
             onPaymentSuccess={onPaymentSuccess}

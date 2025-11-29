@@ -6,6 +6,7 @@ import {
   FileText,
   Plus,
   TrendingUp,
+  Trophy,
   Users,
   Wallet,
   Zap,
@@ -34,8 +35,8 @@ import {
   PLANO_GRATUITO,
 } from "@/constants";
 import { cn } from "@/lib/utils";
-import { canUsePrePassageiro } from "@/utils/domain/plano/accessRules";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
+import { canUsePrePassageiro } from "@/utils/domain/plano/accessRules";
 import { toast } from "@/utils/notifications/toast";
 
 // --- Internal Components ---
@@ -215,11 +216,28 @@ const StatusCard = ({
                     {Math.round((progress.current / progress.total) * 100)}%
                   </span>
                 </div>
-                <Progress
-                  value={(progress.current / progress.total) * 100}
-                  className="h-2 bg-gray-100"
-                  indicatorClassName="bg-indigo-600"
-                />
+                <div className="flex items-center gap-3">
+                  <Progress
+                    value={(progress.current / progress.total) * 100}
+                    className="h-2 bg-gray-100 flex-1"
+                    indicatorClassName="bg-indigo-600"
+                  />
+                  <div
+                    className={cn(
+                      "h-8 w-8 rounded-full flex items-center justify-center transition-all duration-500",
+                      progress.current === progress.total
+                        ? "bg-yellow-100 text-yellow-600 scale-110 shadow-sm"
+                        : "bg-gray-100 text-gray-400"
+                    )}
+                  >
+                    <Trophy className={cn("h-4 w-4", progress.current === progress.total && "animate-pulse")} />
+                  </div>
+                </div>
+                {progress.current === progress.total && (
+                  <p className="text-xs text-yellow-600 font-medium mt-1 text-right">
+                    Sua Van está Verificada! 🎁
+                  </p>
+                )}
               </div>
             )}
 
@@ -562,7 +580,7 @@ const Home = () => {
             <ShortcutCard
               to="/passageiros?openModal=true"
               icon={Plus}
-              label="Novo Passageiro"
+              label="Cadastrar Passageiro"
               colorClass="text-indigo-600"
               bgClass="bg-indigo-50"
             />

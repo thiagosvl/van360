@@ -179,7 +179,7 @@ export default function VeiculoFormDialog({
             <Car className="w-6 h-6 text-white" />
           </div>
           <DialogTitle className="text-2xl font-bold text-white">
-            {editingVeiculo ? "Editar Veículo" : "Novo Veículo"}
+            {editingVeiculo ? "Editar Veículo" : "Cadastrar Veículo"}
           </DialogTitle>
           <DialogDescription className="text-blue-100 text-sm mt-1">
             Preencha os dados do veículo abaixo

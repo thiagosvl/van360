@@ -17,6 +17,7 @@ import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActi
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
+import { UpsellDialog } from "@/components/dialogs/UpsellDialog";
 
 // Components - Empty & Skeletons
 import { ListSkeleton } from "@/components/skeletons";
@@ -27,6 +28,7 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 // Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -34,6 +36,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   useCobrancas,
+  useDeleteCobranca,
   useDesfazerPagamento,
   useEnviarNotificacaoCobranca,
   useToggleNotificacoesCobranca,
@@ -43,6 +46,7 @@ import { useSession } from "@/hooks/business/useSession";
 
 // Utils
 import { safeCloseDialog } from "@/utils/dialogUtils";
+import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import {
   formatDateToBR,
   formatPaymentType,
@@ -70,7 +74,8 @@ import {
   DollarSign,
   Search,
   TrendingUp,
-  Wallet
+  Wallet,
+  Zap
 } from "lucide-react";
 
 // --- Internal Components ---
@@ -139,6 +144,10 @@ const Cobrancas = () => {
     open: false,
     cobrancaId: "",
   });
+  const [deleteCobrancaDialog, setDeleteCobrancaDialog] = useState({
+    open: false,
+    cobranca: null as Cobranca | null,
+  });
 
   const { user, loading: isSessionLoading } = useSession();
   const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
@@ -146,14 +155,28 @@ const Cobrancas = () => {
   const toggleNotificacoes = useToggleNotificacoesCobranca();
   const enviarNotificacao = useEnviarNotificacaoCobranca();
   const desfazerPagamento = useDesfazerPagamento();
+  const deleteCobranca = useDeleteCobranca();
 
   const isActionLoading =
     toggleNotificacoes.isPending ||
     enviarNotificacao.isPending ||
-    desfazerPagamento.isPending;
+    desfazerPagamento.isPending ||
+    deleteCobranca.isPending;
 
   const [buscaAbertas, setBuscaAbertas] = useState("");
   const [buscaPagas, setBuscaPagas] = useState("");
+
+  const [upsellDialogOpen, setUpsellDialogOpen] = useState(false);
+
+  const handleGerarCobrancaAutomatica = () => {
+    if (canUseCobrancaAutomatica(plano)) {
+      toast.success("Cobrança Automática Ativa", {
+        description: "O sistema enviará as cobranças automaticamente nos vencimentos."
+      });
+    } else {
+      setUpsellDialogOpen(true);
+    }
+  };
 
   const {
     data: cobrancasData,
@@ -232,15 +255,25 @@ const Cobrancas = () => {
     });
   }, [confirmDialogEnvioNotificacao.cobranca, enviarNotificacao]);
 
-  const handleDesfazerPagamento = useCallback(async () => {
+  const handleDesfazerPagamento = useCallback(() => {
     desfazerPagamento.mutate(confirmDialogDesfazer.cobrancaId, {
-      onSuccess: async () => {
+      onSuccess: () => {
         setConfirmDialogDesfazer({ open: false, cobrancaId: "" });
-        // Refetch explícito para garantir que os KPIs sejam atualizados
-        await refetchCobrancas();
+        // React Query já faz refetch automático via invalidateQueries na mutation
       },
     });
-  }, [confirmDialogDesfazer.cobrancaId, desfazerPagamento, refetchCobrancas]);
+  }, [confirmDialogDesfazer.cobrancaId, desfazerPagamento]);
+
+  const handleDeleteCobranca = useCallback(() => {
+    if (!deleteCobrancaDialog.cobranca) return;
+
+    deleteCobranca.mutate(deleteCobrancaDialog.cobranca.id, {
+      onSuccess: () => {
+        setDeleteCobrancaDialog({ open: false, cobranca: null });
+        // React Query já faz refetch automático via invalidateQueries na mutation
+      },
+    });
+  }, [deleteCobrancaDialog.cobranca, deleteCobranca]);
 
   const openPaymentDialog = useCallback((cobranca: Cobranca) => {
     setSelectedCobranca(cobranca);
@@ -327,6 +360,7 @@ const Cobrancas = () => {
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6 md:space-y-8">
+
           {/* 1. Header & Navigation */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <DateNavigation
@@ -334,6 +368,13 @@ const Cobrancas = () => {
               ano={anoFilter}
               onNavigate={handleNavigation}
             />
+            <Button 
+              className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-indigo-200/50 shadow-lg w-full md:w-auto"
+              onClick={handleGerarCobrancaAutomatica}
+            >
+              <Zap className="w-4 h-4" />
+              Gerar Cobrança Automática
+            </Button>
           </div>
 
           {/* 2. KPIs - Grid Otimizado Mobile */}
@@ -549,6 +590,9 @@ const Cobrancas = () => {
                                       cobrancaId: cobranca.id,
                                     })
                                   }
+                                  onExcluirCobranca={() =>
+                                    setDeleteCobrancaDialog({ open: true, cobranca })
+                                  }
                                 />
                               </td>
                             </tr>
@@ -619,6 +663,9 @@ const Cobrancas = () => {
                                   open: true,
                                   cobrancaId: cobranca.id,
                                 })
+                              }
+                              onExcluirCobranca={() =>
+                                setDeleteCobrancaDialog({ open: true, cobranca })
                               }
                             />
                           </div>
@@ -784,6 +831,9 @@ const Cobrancas = () => {
                                       cobrancaId: cobranca.id,
                                     })
                                   }
+                                  onExcluirCobranca={() =>
+                                    setDeleteCobrancaDialog({ open: true, cobranca })
+                                  }
                                 />
                               </td>
                             </tr>
@@ -857,6 +907,9 @@ const Cobrancas = () => {
                                   cobrancaId: cobranca.id,
                                 })
                               }
+                              onExcluirCobranca={() =>
+                                setDeleteCobrancaDialog({ open: true, cobranca })
+                              }
                             />
                           </div>
                         </div>
@@ -905,10 +958,9 @@ const Cobrancas = () => {
               valorOriginal={Number(selectedCobranca.valor)}
               status={selectedCobranca.status}
               dataVencimento={selectedCobranca.data_vencimento}
-              onPaymentRecorded={async () => {
+              onPaymentRecorded={() => {
                 setPaymentDialogOpen(false);
-                // Refetch explícito para garantir que os KPIs sejam atualizados
-                await refetchCobrancas();
+                // React Query já faz refetch automático via invalidateQueries na mutation (useRegistrarPagamentoManual)
               }}
             />
           )}
@@ -937,6 +989,27 @@ const Cobrancas = () => {
             variant="destructive"
             confirmText="Confirmar"
             isLoading={desfazerPagamento.isPending}
+          />
+          <ConfirmationDialog
+            open={deleteCobrancaDialog.open}
+            onOpenChange={(open) =>
+              setDeleteCobrancaDialog({ ...deleteCobrancaDialog, open })
+            }
+            title="Excluir"
+            description="Deseja excluir permanentemente essa cobrança?"
+            onConfirm={handleDeleteCobranca}
+            confirmText="Confirmar"
+            variant="destructive"
+            isLoading={deleteCobranca.isPending}
+          />
+
+          <UpsellDialog
+            open={upsellDialogOpen}
+            onOpenChange={setUpsellDialogOpen}
+            onManualAction={() => {
+              setUpsellDialogOpen(false);
+              // Logic to open manual payment dialog or just close
+            }}
           />
 
           {cobrancaToEdit && (

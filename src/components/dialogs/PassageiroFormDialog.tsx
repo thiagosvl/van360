@@ -2,56 +2,57 @@ import { AvisoInlineExcessoFranquia } from "@/components/dialogs/AvisoInlineExce
 import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import { CepInput, MoneyInput, PhoneInput } from "@/components/forms";
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-    useCreatePassageiro,
-    useEscolasWithFilters,
-    useFinalizePreCadastro,
-    useUpdatePassageiro,
-    useValidarFranquia,
-    useVeiculosWithFilters,
+  useBuscarResponsavel,
+  useCreatePassageiro,
+  useEscolasWithFilters,
+  useFinalizePreCadastro,
+  useUpdatePassageiro,
+  useValidarFranquia,
+  useVeiculosWithFilters,
 } from "@/hooks";
 import { useSession } from "@/hooks/business/useSession";
 import { cn } from "@/lib/utils";
-import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
 import { Veiculo } from "@/types/veiculo";
+import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { currentMonthInText, periodos } from "@/utils/formatters";
@@ -60,20 +61,20 @@ import { toast } from "@/utils/notifications/toast";
 import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-    AlertTriangle,
-    Calendar,
-    CalendarDays,
-    Car,
-    Contact,
-    CreditCard,
-    FileText,
-    Hash,
-    Loader2,
-    Mail,
-    MapPin,
-    School,
-    User,
-    X,
+  AlertTriangle,
+  Calendar,
+  CalendarDays,
+  Car,
+  Contact,
+  CreditCard,
+  FileText,
+  Hash,
+  Loader2,
+  Mail,
+  MapPin,
+  School,
+  User,
+  X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
@@ -685,6 +686,29 @@ export default function PassengerFormDialog({
     ]);
   };
 
+  const buscarResponsavel = useBuscarResponsavel();
+
+  const handleCpfBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+    const cpf = e.target.value.replace(/\D/g, "");
+    if (cpf.length !== 11 || !profile?.id) return;
+
+    try {
+      const responsavel = await buscarResponsavel.mutateAsync({
+        cpf,
+        usuarioId: profile.id,
+      });
+
+      if (responsavel) {
+        form.setValue("nome_responsavel", responsavel.nome_responsavel || "");
+        form.setValue("email_responsavel", responsavel.email_responsavel || "");
+        form.setValue("telefone_responsavel", responsavel.telefone_responsavel || "");
+        toast.success("Dados do responsável carregados!");
+      }
+    } catch (error) {
+      // Silencioso se não encontrar ou erro
+    }
+  };
+
   const handleSubmit = async (data: PassageiroFormData) => {
     if (!profile?.id) return;
 
@@ -798,10 +822,10 @@ export default function PassengerFormDialog({
             </div>
             <DialogTitle className="text-2xl font-bold text-white">
               {mode === "finalize"
-                ? "Novo Passageiro"
+                ? "Cadastrar Passageiro"
                 : editingPassageiro
                 ? "Editar Passageiro"
-                : "Novo Passageiro"}
+                : "Cadastrar Passageiro"}
             </DialogTitle>
             <DialogDescription
               className="text-blue-100 text-sm mt-1"
@@ -968,7 +992,7 @@ export default function PassengerFormDialog({
                                     value="add-new-vehicle"
                                     className="font-semibold text-primary cursor-pointer"
                                   >
-                                    + Cadastrar Novo Veículo
+                                    + Cadastrar Veículo
                                   </SelectItem>
                                 </SelectContent>
                               </Select>
@@ -1023,7 +1047,7 @@ export default function PassengerFormDialog({
                                     value="add-new-school"
                                     className="font-semibold text-primary cursor-pointer"
                                   >
-                                    + Cadastrar Nova Escola
+                                    + Cadastrar Escola
                                   </SelectItem>
                                 </SelectContent>
                               </Select>
@@ -1073,6 +1097,36 @@ export default function PassengerFormDialog({
                     </AccordionTrigger>
                     <AccordionContent className="px-6 pb-6 pt-2 space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="cpf_responsavel"
+                          render={({ field, fieldState }) => (
+                            <FormItem>
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                CPF <span className="text-red-600">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Hash className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                  <Input
+                                    {...field}
+                                    placeholder="000.000.000-00"
+                                    onChange={(e) =>
+                                      field.onChange(cpfMask(e.target.value))
+                                    }
+                                    onBlur={(e) => {
+                                      field.onBlur();
+                                      handleCpfBlur(e);
+                                    }}
+                                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                    aria-invalid={!!fieldState.error}
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                         <FormField
                           control={form.control}
                           name="nome_responsavel"
@@ -1130,32 +1184,6 @@ export default function PassengerFormDialog({
                               required
                               inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                             />
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="cpf_responsavel"
-                          render={({ field, fieldState }) => (
-                            <FormItem>
-                              <FormLabel className="text-gray-700 font-medium ml-1">
-                                CPF <span className="text-red-600">*</span>
-                              </FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <Hash className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                                  <Input
-                                    {...field}
-                                    placeholder="000.000.000-00"
-                                    onChange={(e) =>
-                                      field.onChange(cpfMask(e.target.value))
-                                    }
-                                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
-                                    aria-invalid={!!fieldState.error}
-                                  />
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
                           )}
                         />
                       </div>

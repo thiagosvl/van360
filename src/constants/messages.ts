@@ -29,7 +29,7 @@ export const messages = {
   veiculo: {
     erro: {
       carregar: "Erro ao carregar veículos.",
-      criar: "Erro ao criar veículo.",
+      criar: "Erro ao cadastrar veículo.",
       atualizar: "Erro ao atualizar veículo.",
       excluir: "Erro ao excluir veículo.",
       excluirComPassageiros: "Existem passageiros ativos vinculados a este veículo.",
@@ -38,7 +38,7 @@ export const messages = {
       placaJaCadastrada: "Essa placa já foi cadastrada no sistema.",
     },
     sucesso: {
-      criado: "Veículo criado com sucesso.",
+      criado: "Veículo cadastrado com sucesso.",
       atualizado: "Veículo atualizado com sucesso.",
       excluido: "Veículo excluído permanentemente.",
       ativado: "Veículo ativado com sucesso.",
@@ -50,7 +50,7 @@ export const messages = {
   passageiro: {
     erro: {
       carregar: "Erro ao carregar passageiros.",
-      criar: "Erro ao criar passageiro.",
+      criar: "Erro ao cadastrar passageiro.",
       atualizar: "Erro ao atualizar passageiro.",
       excluir: "Erro ao excluir passageiro.",
       naoEncontrado: "Passageiro não encontrado.",
@@ -60,7 +60,7 @@ export const messages = {
       alterar: "Erro ao buscar alterar passageiro.",
     },
     sucesso: {
-      criado: "Passageiro criado com sucesso.",
+      criado: "Passageiro cadastrado com sucesso.",
       atualizado: "Passageiro atualizado com sucesso.",
       excluido: "Passageiro excluído com sucesso.",
       ativado: "Passageiro ativado com sucesso.",
@@ -73,12 +73,12 @@ export const messages = {
   prePassageiro: {
     erro: {
       carregar: "Erro ao carregar pré-cadastros.",
-      criar: "Erro ao criar pré-cadastro.",
-      excluir: "Erro ao excluir pré-cadastro.",
+      criar: "Erro ao salvar solicitação.",
+      excluir: "Erro ao excluir solicitação.",
       gerarLink: "Falha na Geração do Link.",
     },
     sucesso: {
-      linkGerado: "Pré-Cadastro Gerado com sucesso.",
+      linkGerado: "Solicitação salva com sucesso.",
       excluido: "Pré-cadastro excluído com sucesso.",
     },
   },
@@ -87,7 +87,7 @@ export const messages = {
   escola: {
     erro: {
       carregar: "Erro ao carregar escolas.",
-      criar: "Erro ao criar escola.",
+      criar: "Erro ao cadastrar escola.",
       atualizar: "Erro ao atualizar escola.",
       excluir: "Erro ao excluir escola.",
       excluirComPassageiros: "Existem passageiros ativos vinculados a esta escola.",
@@ -95,7 +95,7 @@ export const messages = {
       desativarComPassageiros: "Existem passageiros ativos vinculados a esta escola.",
     },
     sucesso: {
-      criada: "Escola criada com sucesso.",
+      criada: "Escola cadastrada com sucesso.",
       atualizada: "Escola atualizada com sucesso.",
       excluida: "Escola excluída permanentemente.",
       ativada: "Escola ativada com sucesso.",
@@ -107,7 +107,7 @@ export const messages = {
   cobranca: {
     erro: {
       carregar: "Não foi possível carregar as cobranças.",
-      criar: "Erro ao criar cobrança.",
+      criar: "Erro ao registrar cobrança.",
       atualizar: "Erro ao atualizar cobrança.",
       excluir: "Erro ao excluir cobrança.",
       notificacao: "Erro ao enviar lembrete.",
@@ -145,13 +145,12 @@ export const messages = {
   gasto: {
     erro: {
       carregar: "Erro ao carregar gastos.",
-      criar: "Erro ao criar gasto.",
+      criar: "Erro ao registrar gasto.",
       atualizar: "Erro ao atualizar gasto.",
       excluir: "Erro ao excluir gasto.",
-      salvar: "Erro ao salvar gasto.",
     },
     sucesso: {
-      criado: "Gasto criado com sucesso.",
+      criado: "Gasto registrado com sucesso.",
       atualizado: "Gasto atualizado com sucesso.",
       excluido: "Gasto excluído com sucesso.",
     },
@@ -185,14 +184,11 @@ export const messages = {
   // ========== CADASTRO ==========
   cadastro: {
     erro: {
-      criar: "Erro ao criar cadastro.",
-      atualizar: "Erro ao atualizar cadastro.",
+      criar: "Erro ao cadastrar usuário.",
+      atualizar: "Erro ao atualizar usuário.",
     },
     sucesso: {
-      criado: "Cadastro realizado com sucesso.",
-      atualizado: "Cadastro atualizado com sucesso.",
       perfilAtualizado: "Perfil atualizado com sucesso.",
-      perfilAtualizadoDescricao: "Suas informações foram salvas.",
     },
     info: {
       pagamentoConfirmado: "Pagamento Confirmado.",
@@ -281,7 +277,7 @@ export const messages = {
   usuario: {
     erro: {
       carregar: "Erro ao carregar usuários.",
-      criar: "Erro ao criar usuário.",
+      criar: "Erro ao cadastrar usuário.",
       atualizar: "Erro ao atualizar usuário.",
       excluir: "Erro ao excluir usuário.",
       cpfJaExiste: "CPF/CNPJ já existe.",
@@ -290,7 +286,6 @@ export const messages = {
       atualizacao: "Erro na Atualização.",
     },
     sucesso: {
-      criado: "Usuário criado com sucesso!",
       atualizado: "Usuário atualizado com sucesso!",
       excluido: "Usuário excluído com sucesso!",
     },
