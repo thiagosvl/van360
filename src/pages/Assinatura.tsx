@@ -6,9 +6,10 @@ import { useNavigate } from "react-router-dom";
 
 // Components - Features
 import { SelecaoPassageirosDialog } from "@/components/dialogs/SelecaoPassageirosDialog";
-import PlanoCompleto from "@/components/features/plano/PlanoCompleto";
-import PlanoEssencial from "@/components/features/plano/PlanoEssencial";
-import PlanoGratuito from "@/components/features/plano/PlanoGratuito";
+import { AssinaturaSideColumn } from "@/components/features/assinatura/AssinaturaSideColumn";
+import { AssinaturaStatusCard } from "@/components/features/assinatura/AssinaturaStatusCard";
+import DetalhesPlanoCard from "@/components/features/plano/DetalhesPlanoCard";
+import FaturamentoCard from "@/components/features/plano/FaturamentoCard";
 
 // Components - Navigation
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
@@ -16,14 +17,14 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 // Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
 // Hooks
@@ -32,14 +33,13 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 // Services
-import { useAssinaturaCobrancas, usePassageiroContagem } from "@/hooks";
+import { useAssinaturaCobrancas, useGerarPixParaCobranca, usePassageiroContagem } from "@/hooks";
 import { usuarioApi } from "@/services";
 
 // Utils
+import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaDialog";
 import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { toast } from "@/utils/notifications/toast";
-
-// Constants
 
 export default function Assinatura() {
   const { setPageTitle } = useLayout();
@@ -47,13 +47,20 @@ export default function Assinatura() {
   const { profile, plano, isLoading: isProfileLoading, refreshProfile } = useProfile(user?.id);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedCobranca, setSelectedCobranca] = useState<{
+    id: string;
+    valor: string | number;
+  } | null>(null);
   const [selecaoPassageirosDialog, setSelecaoPassageirosDialog] = useState<{
     isOpen: boolean;
     tipo: "upgrade" | "downgrade";
     franquia: number;
+    cobrancaId?: string;
   } | null>(null);
 
   const navigate = useNavigate();
+  const gerarPix = useGerarPixParaCobranca();
 
   // Usar hooks do React Query
   const { data: cobrancasData = [], refetch: refetchCobrancas } = useAssinaturaCobrancas(
@@ -185,6 +192,9 @@ export default function Assinatura() {
   };
 
   const handlePaymentSuccess = async () => {
+    setPaymentModalOpen(false);
+    setSelectedCobranca(null);
+    
     // Aguardar um pouco para o backend processar a atualização
     await new Promise((resolve) => setTimeout(resolve, 1500));
     
@@ -192,35 +202,27 @@ export default function Assinatura() {
     window.location.href = "/assinatura";
   };
 
-  const renderPlanoComponent = () => {
-    const planoAtual = dataWithCounts?.plano;
-    if (!planoAtual || !dataWithCounts || !plano) return null;
-
-    // Usar o slug do plano base do hook useProfile (já calculado corretamente)
-    const slugBase = plano.slug;
-
-    const propsComuns = {
-      data: dataWithCounts,
-      navigate,
-      handleCancelSubscriptionClick,
-      handleAbandonCancelSubscriptionClick,
-      onPaymentSuccess: handlePaymentSuccess,
-      usuarioId: profile?.id,
-    };
-
-    // Usar as propriedades do hook useProfile para determinar qual componente renderizar
-    if (plano.isFreePlan) {
-      return <PlanoGratuito {...propsComuns} />;
-    } else if (plano.isEssentialPlan) {
-      return <PlanoEssencial {...propsComuns} />;
-    } else if (plano.isCompletePlan) {
-      return <PlanoCompleto {...propsComuns} />;
-    }
-    
-    return null;
+  const handlePagarClick = (cobranca: any) => {
+      if (cobranca) {
+          setSelectedCobranca(cobranca);
+          setPaymentModalOpen(true);
+      }
   };
 
-  if (isSessionLoading || isProfileLoading) {
+  const handlePrecisaSelecaoManual = (data: {
+    tipo: "upgrade" | "downgrade";
+    franquia: number;
+    cobrancaId: string;
+  }) => {
+    setSelecaoPassageirosDialog({
+      isOpen: true,
+      tipo: data.tipo,
+      franquia: data.franquia,
+      cobrancaId: data.cobrancaId,
+    });
+  };
+
+  if (isSessionLoading || isProfileLoading || !dataWithCounts || !plano) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
         <p>Carregando informações...</p>
@@ -232,7 +234,38 @@ export default function Assinatura() {
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6 md:p-6 ">
-          {renderPlanoComponent()}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Coluna Principal */}
+                <div className="lg:col-span-2 space-y-6">
+                    <AssinaturaStatusCard
+                        plano={plano}
+                        assinatura={dataWithCounts.assinatura}
+                        cobrancas={dataWithCounts.cobrancas}
+                        navigate={navigate}
+                        handleAbandonCancelSubscriptionClick={handleAbandonCancelSubscriptionClick}
+                        onPagarClick={handlePagarClick}
+                    />
+                    <FaturamentoCard
+                        plano={dataWithCounts.plano}
+                        cobrancas={dataWithCounts.cobrancas}
+                        navigate={navigate}
+                        onPaymentSuccess={handlePaymentSuccess}
+                        usuarioId={profile?.id}
+                        onPrecisaSelecaoManual={handlePrecisaSelecaoManual}
+                    />
+                    <DetalhesPlanoCard plano={dataWithCounts.plano} assinatura={dataWithCounts.assinatura} />
+                </div>
+
+                {/* Coluna Lateral */}
+                <AssinaturaSideColumn
+                    plano={plano}
+                    assinatura={dataWithCounts.assinatura}
+                    data={dataWithCounts}
+                    navigate={navigate}
+                    handleAbandonCancelSubscriptionClick={handleAbandonCancelSubscriptionClick}
+                    handleCancelSubscriptionClick={handleCancelSubscriptionClick}
+                />
+            </div>
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={refreshing} text="Carregando..." />
@@ -258,6 +291,21 @@ export default function Assinatura() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {selectedCobranca && (
+        <PagamentoAssinaturaDialog
+          isOpen={paymentModalOpen}
+          onClose={() => {
+            setPaymentModalOpen(false);
+            setSelectedCobranca(null);
+          }}
+          cobrancaId={selectedCobranca.id}
+          valor={Number(selectedCobranca.valor)}
+          onPaymentSuccess={handlePaymentSuccess}
+          usuarioId={profile?.id}
+          onPrecisaSelecaoManual={handlePrecisaSelecaoManual}
+        />
+      )}
+
       {selecaoPassageirosDialog && profile?.id && (
         <SelecaoPassageirosDialog
           isOpen={selecaoPassageirosDialog.isOpen}
@@ -282,9 +330,38 @@ export default function Assinatura() {
               toast.success("assinatura.sucesso.atualizada", {
                 description: `${resultado.ativados} passageiros ativados, ${resultado.desativados} desativados.`,
               });
-              
-              await refreshProfile();
-              window.location.reload();
+
+              // Após seleção, gerar PIX para a cobrança se houver ID
+              if (selecaoPassageirosDialog.cobrancaId) {
+                const cobrancaEncontrada = dataWithCounts.cobrancas.find(
+                  (c: any) => c.id === selecaoPassageirosDialog.cobrancaId
+                );
+                
+                gerarPix.mutate(selecaoPassageirosDialog.cobrancaId, {
+                  onSuccess: (pixResult: any) => {
+                    if (pixResult.precisaSelecaoManual) {
+                      toast.error("assinatura.erro.processar", {
+                        description: "Ainda é necessário selecionar passageiros. Tente novamente.",
+                      });
+                      return;
+                    }
+                    
+                    setSelectedCobranca({
+                      id: selecaoPassageirosDialog.cobrancaId!,
+                      valor: cobrancaEncontrada?.valor || 0,
+                    });
+                    setPaymentModalOpen(true);
+                  },
+                  onError: (error: any) => {
+                    toast.error("assinatura.erro.gerarPix", {
+                      description: error.response?.data?.error || "Erro ao gerar PIX após seleção.",
+                    });
+                  },
+                });
+              } else {
+                 await refreshProfile();
+                 window.location.reload();
+              }
             } catch (error: any) {
               toast.error("assinatura.erro.processar", {
                 description: error.response?.data?.error || "Erro ao confirmar seleção.",

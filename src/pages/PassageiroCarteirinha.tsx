@@ -69,6 +69,7 @@ import {
   useUpdateCobranca,
   useUpdatePassageiro,
 } from "@/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
@@ -87,6 +88,8 @@ const currentYear = new Date().getFullYear().toString();
 const COBRANCAS_LIMIT = 3;
 
 export default function PassageiroCarteirinha() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
   const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
   const [isCreatingEscola, setIsCreatingEscola] = useState(false);
@@ -96,7 +99,6 @@ export default function PassageiroCarteirinha() {
   const { setPageTitle } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const navigate = useNavigate();
 
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
@@ -160,13 +162,11 @@ export default function PassageiroCarteirinha() {
   const {
     data: passageiroData,
     isLoading: isPassageiroLoading,
+    isError: isPassageiroError,
+    error: passageiroError,
     refetch: refetchPassageiro,
   } = usePassageiro(passageiro_id, {
     enabled: !!passageiro_id,
-    onError: () => {
-      toast.error("passageiro.erro.naoEncontrado");
-      navigate("/passageiros");
-    },
   });
 
   const passageiro = passageiroData as Passageiro;
@@ -210,6 +210,33 @@ export default function PassageiroCarteirinha() {
     isProfileLoading ||
     isPassageiroLoading ||
     isCobrancasLoading;
+
+  // Validar se o passageiro existe após o carregamento
+  // Se não existir (erro 404 ou dados null), redirecionar para a lista de passageiros
+  // Isso previne acesso a rotas de recursos excluídos via navegação do browser
+  useEffect(() => {
+    if (!passageiro_id) return;
+    
+    // Verificar se terminou de carregar
+    if (isPassageiroLoading) return;
+
+    // Verificar se há erro (404 ou outro erro)
+    const isNotFoundError = isPassageiroError && (
+      (passageiroError as any)?.response?.status === 404 ||
+      (passageiroError as any)?.status === 404
+    );
+
+    // Se há erro 404 ou dados null/undefined, o recurso não existe
+    if (isNotFoundError || (!isPassageiroError && !passageiro)) {
+      // Limpar cache do passageiro e queries relacionadas para evitar acesso futuro
+      queryClient.removeQueries({ queryKey: ["passageiro", passageiro_id] });
+      queryClient.removeQueries({ queryKey: ["cobrancas-by-passageiro", passageiro_id] });
+      queryClient.removeQueries({ queryKey: ["available-years", passageiro_id] });
+      
+      // Redirecionar para lista de passageiros
+      navigate("/passageiros", { replace: true });
+    }
+  }, [isPassageiroLoading, isPassageiroError, passageiroError, passageiro, passageiro_id, navigate, queryClient]);
 
   useEffect(() => {
     if (isObservacoesEditing && textareaRef.current) {
@@ -478,6 +505,17 @@ export default function PassageiroCarteirinha() {
         new Date(c.data_vencimento) < hoje
     );
   }, [cobrancas]);
+
+  // Verificar se o recurso não existe e redirecionar antes de renderizar
+  const isNotFoundError = isPassageiroError && (
+    (passageiroError as any)?.response?.status === 404 ||
+    (passageiroError as any)?.status === 404
+  );
+  
+  if (!loading && (isNotFoundError || (!isPassageiroError && !passageiro && passageiro_id))) {
+    // Não renderizar nada enquanto redireciona
+    return null;
+  }
 
   if (loading || !passageiro) {
     return (

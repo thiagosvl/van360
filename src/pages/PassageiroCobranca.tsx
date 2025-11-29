@@ -18,6 +18,7 @@ import {
   useEnviarNotificacaoCobranca,
   useToggleNotificacoesCobranca,
 } from "@/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { cn } from "@/lib/utils";
@@ -238,6 +239,7 @@ const NotificationTimeline = ({ items }: { items: CobrancaNotificacao[] }) => {
 
 export default function PassageiroCobranca() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const params = useParams();
   const { passageiro_id, cobranca_id } = params as {
     passageiro_id: string;
@@ -270,13 +272,11 @@ export default function PassageiroCobranca() {
   const {
     data: cobrancaData,
     isLoading: isCobrancaLoading,
+    isError: isCobrancaError,
+    error: cobrancaError,
     refetch: refetchCobranca,
   } = useCobranca(cobranca_id, {
     enabled: !!cobranca_id,
-    onError: () => {
-      toast.error("Cobrança não encontrada.");
-      navigate("/cobrancas");
-    },
   });
 
   const { data: notificacoesData, refetch: refetchNotificacoes } =
@@ -289,6 +289,37 @@ export default function PassageiroCobranca() {
   const notificacoes = (notificacoesData || []) as CobrancaNotificacao[];
 
   const loading = isCobrancaLoading;
+
+  // Validar se a cobrança existe após o carregamento
+  // Se não existir (erro 404 ou dados null), redirecionar para a carteirinha do passageiro
+  // Isso previne acesso a rotas de recursos excluídos via navegação do browser
+  useEffect(() => {
+    if (!cobranca_id) return;
+    
+    // Verificar se terminou de carregar
+    if (isCobrancaLoading) return;
+
+    // Verificar se há erro (404 ou outro erro)
+    const isNotFoundError = isCobrancaError && (
+      (cobrancaError as any)?.response?.status === 404 ||
+      (cobrancaError as any)?.status === 404
+    );
+
+    // Se há erro 404 ou dados null/undefined, o recurso não existe
+    if (isNotFoundError || (!isCobrancaError && !cobranca)) {
+      // Limpar cache da cobrança para evitar acesso futuro
+      queryClient.removeQueries({ queryKey: ["cobranca", cobranca_id] });
+      queryClient.removeQueries({ queryKey: ["cobranca-notificacoes", cobranca_id] });
+      
+      // Redirecionar para a carteirinha do passageiro se temos o ID
+      if (passageiro_id) {
+        navigate(`/passageiros/${passageiro_id}/carteirinha`, { replace: true });
+      } else {
+        // Fallback: redirecionar para lista de cobranças
+        navigate("/cobrancas", { replace: true });
+      }
+    }
+  }, [isCobrancaLoading, isCobrancaError, cobrancaError, cobranca, cobranca_id, passageiro_id, navigate, queryClient]);
 
   const handleEditCobrancaClick = () => {
     if (cobrancaNormalizadaParaEdicao) {
@@ -378,6 +409,17 @@ export default function PassageiroCobranca() {
       setPageTitle(`Cobrança de ${cobranca.passageiros.nome.split(" ")[0]}`);
     }
   }, [cobranca, setPageTitle]);
+
+  // Verificar se o recurso não existe e redirecionar antes de renderizar
+  const isNotFoundError = isCobrancaError && (
+    (cobrancaError as any)?.response?.status === 404 ||
+    (cobrancaError as any)?.status === 404
+  );
+  
+  if (!loading && (isNotFoundError || (!isCobrancaError && !cobranca && cobranca_id))) {
+    // Não renderizar nada enquanto redireciona
+    return null;
+  }
 
   if (loading) {
     return (

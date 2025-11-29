@@ -158,9 +158,15 @@ export function useDeleteCobranca() {
     onSuccess: () => {
       toast.success("cobranca.sucesso.excluida");
     },
-    onSettled: () => {
+    onSettled: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      // Invalida a query específica da cobrança excluída para garantir que não seja mais acessível
+      if (id) {
+        queryClient.invalidateQueries({ queryKey: ["cobranca", id] });
+        // Remove do cache para evitar acesso após exclusão
+        queryClient.removeQueries({ queryKey: ["cobranca", id] });
+      }
       // Invalida anos disponíveis (pode ter mudado após excluir cobrança)
       queryClient.invalidateQueries({ queryKey: ["available-years"] });
     },

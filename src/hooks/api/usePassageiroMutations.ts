@@ -177,9 +177,18 @@ export function useDeletePassageiro() {
     onSuccess: () => {
       toast.success("passageiro.sucesso.excluido");
     },
-    onSettled: () => {
+    onSettled: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
       queryClient.invalidateQueries({ queryKey: ["passageiros-contagem"] });
+      // Invalida a query específica do passageiro excluído para garantir que não seja mais acessível
+      if (id) {
+        queryClient.invalidateQueries({ queryKey: ["passageiro", id] });
+        // Remove do cache para evitar acesso após exclusão
+        queryClient.removeQueries({ queryKey: ["passageiro", id] });
+        // Remove também queries relacionadas (cobranças do passageiro, anos disponíveis)
+        queryClient.removeQueries({ queryKey: ["cobrancas-by-passageiro", id] });
+        queryClient.removeQueries({ queryKey: ["available-years", id] });
+      }
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });

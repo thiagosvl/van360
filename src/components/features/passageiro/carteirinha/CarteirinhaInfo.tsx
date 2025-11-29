@@ -372,11 +372,11 @@ export const CarteirinhaInfo = ({
 
             <Button
               variant="ghost"
-              className="w-full pl-0 text-red-500 hover:bg-transparent hover:text-red-700 justify-start"
+              className="w-full pl-0 text-red-400 hover:text-red-600 hover:bg-transparent justify-start"
               onClick={onDeleteClick}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Excluir Cadastro
+              Excluir Passageiro
             </Button>
           </div>
 

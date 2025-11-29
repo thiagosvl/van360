@@ -160,7 +160,7 @@ export default function Gastos() {
   const [editingGasto, setEditingGasto] = useState<Gasto | null>(null);
   const { user } = useSession();
   const { profile, plano } = useProfile(user?.id);
-  const [enabledPageActions, setEnabledPageActions] = useState(true);
+  const [enabledPageActions, setEnabledPageActions] = useState(false);
 
   // Verificar permissão antes de fazer requisição
   useEffect(() => {

@@ -41,8 +41,11 @@ export function extractPlanoData(assinatura: any) {
 
   const isValidPlan = isActive || isValidTrial || isValidCanceled;
 
+  const nome = plano.parent?.nome ?? plano.nome;
+
   return {
     slug: slugBase,
+    nome,
     status: assinatura.status,
     trial_end_at: assinatura.trial_end_at,
     ativo: assinatura.ativo,
