@@ -228,6 +228,7 @@ export default function CobrancaDialog({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
+        aria-describedby="dialog-description"
         className="w-[90vw] sm:w-full max-w-md max-h-[95vh] gap-0 flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
         hideCloseButton
       >
