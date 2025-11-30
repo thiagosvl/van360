@@ -19,14 +19,14 @@ import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { formatPeriodo } from "@/utils/formatters";
 import {
-  Bell,
-  BellOff,
+  Bot,
   CreditCard,
   MoreVertical,
   Pencil,
   ToggleLeft,
   ToggleRight,
   Trash2,
+  Zap,
 } from "lucide-react";
 
 interface PassageirosListProps {
@@ -37,6 +37,7 @@ interface PassageirosListProps {
   onToggleCobrancaAutomatica: (passageiro: Passageiro) => void;
   onToggleClick: (passageiro: Passageiro) => void;
   onSetDeleteDialog: (passageiroId: string) => void;
+  onOpenUpgradeDialog?: () => void;
 }
 
 export function PassageirosList({
@@ -47,7 +48,19 @@ export function PassageirosList({
   onToggleCobrancaAutomatica,
   onToggleClick,
   onSetDeleteDialog,
+  onOpenUpgradeDialog,
 }: PassageirosListProps) {
+  const hasCobrancaAutomaticaAccess = canUseCobrancaAutomatica(plano as any);
+
+  const handleCobrancaAutomaticaClick = (passageiro: Passageiro) => {
+    if (hasCobrancaAutomaticaAccess) {
+      // Usuário tem permissão: executa a ação normal
+      onToggleCobrancaAutomatica(passageiro);
+    } else {
+      // Usuário não tem permissão: abre dialog de upgrade
+      onOpenUpgradeDialog?.();
+    }
+  };
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -105,26 +118,25 @@ export function PassageirosList({
           <Pencil className="w-4 h-4 mr-2" />
           Editar
         </DropdownMenuItem>
-        {canUseCobrancaAutomatica(plano) && (
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleCobrancaAutomatica(passageiro);
-            }}
-          >
-            {passageiro.enviar_cobranca_automatica ? (
-              <>
-                <BellOff className="w-4 h-4 mr-2" />
-                Pausar Lembretes Automáticos
-              </>
-            ) : (
-              <>
-                <Bell className="w-4 h-4 mr-2" />
-                Ativar Lembretes Automáticos
-              </>
-            )}
-          </DropdownMenuItem>
-        )}
+        {/* Botão de Cobrança Automática - Sempre visível */}
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            handleCobrancaAutomaticaClick(passageiro);
+          }}
+        >
+          {passageiro.enviar_cobranca_automatica ? (
+            <>
+              <Bot className="w-4 h-4 mr-2" />
+              Pausar Cobrança Automática
+            </>
+          ) : (
+            <>
+              <Zap className="w-4 h-4 mr-2" />
+              Ativar Cobrança Automática
+            </>
+          )}
+        </DropdownMenuItem>
         <DropdownMenuItem
           onClick={(e) => {
             e.stopPropagation();
@@ -171,13 +183,13 @@ export function PassageirosList({
                 Escola / Período
               </TableHead>
               <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                Status
+              </TableHead>
+              <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Veículo
               </TableHead>
               <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Valor
-              </TableHead>
-              <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Status
               </TableHead>
               <TableHead className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Ações
@@ -224,6 +236,9 @@ export function PassageirosList({
                   </div>
                 </TableCell>
                 <TableCell className="py-4">
+                  {getStatusBadge(passageiro.ativo)}
+                </TableCell>
+                <TableCell className="py-4">
                   <Badge
                     variant="secondary"
                     className="font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-200"
@@ -233,14 +248,11 @@ export function PassageirosList({
                       : "-"}
                   </Badge>
                 </TableCell>
-                <TableCell className="py-4 font-semibold text-gray-700">
+                <TableCell className="py-4 text-gray-700">
                   {Number(passageiro.valor_cobranca).toLocaleString("pt-BR", {
                     style: "currency",
                     currency: "BRL",
                   })}
-                </TableCell>
-                <TableCell className="py-4">
-                  {getStatusBadge(passageiro.ativo)}
                 </TableCell>
                 <TableCell className="text-right py-4 pr-6">
                   <ActionsDropdown passageiro={passageiro} />

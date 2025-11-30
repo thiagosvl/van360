@@ -11,8 +11,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -38,28 +37,55 @@ import { cn } from "@/lib/utils";
 import { Escola } from "@/types/escola";
 import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
 import { toast } from "@/utils/notifications/toast";
+import { cepSchema, validateEnderecoFields } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, Loader2, MapPin, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const escolaSchema = z.object({
-  nome: z.string().min(1, "Campo obrigatório"),
-  logradouro: z.string().optional(),
-  numero: z.string().optional(),
-  bairro: z.string().optional(),
-  cidade: z.string().optional(),
-  estado: z.string().optional(),
-  cep: z
-    .string()
-    .optional()
-    .refine((val) => !val || /^\d{5}-\d{3}$/.test(val), {
-      message: "Formato inválido (00000-000)",
-    }),
-  referencia: z.string().optional(),
-  ativo: z.boolean().optional(),
-});
+const escolaSchema = z
+  .object({
+    nome: z.string().min(1, "Campo obrigatório"),
+    logradouro: z.string().optional(),
+    numero: z.string().optional(),
+    bairro: z.string().optional(),
+    cidade: z.string().optional(),
+    estado: z.string().optional(),
+  cep: cepSchema(false),
+    referencia: z.string().optional(),
+    ativo: z.boolean().optional(),
+  })
+  .superRefine((data, ctx) => {
+    const validation = validateEnderecoFields(
+      data.cep,
+      data.logradouro,
+      data.numero
+    );
+
+    // Adiciona erros para cada campo que falhou na validação
+    if (validation.errors.cep) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: validation.errors.cep,
+        path: ["cep"],
+      });
+    }
+    if (validation.errors.logradouro) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: validation.errors.logradouro,
+        path: ["logradouro"],
+      });
+    }
+    if (validation.errors.numero) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: validation.errors.numero,
+        path: ["numero"],
+      });
+    }
+  });
 type EscolaFormData = z.infer<typeof escolaSchema>;
 
 interface EscolaFormDialogProps {
@@ -90,6 +116,32 @@ export default function EscolaFormDialog({
 
   const loading = createEscola.isPending || updateEscola.isPending;
 
+  const form = useForm<EscolaFormData>({
+    resolver: zodResolver(escolaSchema),
+    defaultValues: {
+      nome: editingEscola?.nome || "",
+      logradouro: editingEscola?.logradouro || "",
+      numero: editingEscola?.numero || "",
+      bairro: editingEscola?.bairro || "",
+      cidade: editingEscola?.cidade || "",
+      estado: editingEscola?.estado || "",
+      cep: editingEscola?.cep || "",
+      referencia: editingEscola?.referencia || "",
+      ativo: editingEscola?.ativo ?? true,
+    },
+  });
+
+  const cep = form.watch("cep");
+  const logradouro = form.watch("logradouro");
+  const numero = form.watch("numero");
+
+  // Revalidar campos de endereço quando qualquer um deles mudar
+  useEffect(() => {
+    if (isOpen) {
+      // Trigger em todos os campos para garantir validação completa
+      form.trigger(["cep", "logradouro", "numero"]);
+    }
+  }, [cep, logradouro, numero, isOpen, form]);
 
   useEffect(() => {
     if (editingEscola) {
@@ -111,22 +163,7 @@ export default function EscolaFormDialog({
         ativo: true,
       });
     }
-  }, [isOpen]);
-
-  const form = useForm<EscolaFormData>({
-    resolver: zodResolver(escolaSchema),
-    defaultValues: {
-      nome: editingEscola?.nome || "",
-      logradouro: editingEscola?.logradouro || "",
-      numero: editingEscola?.numero || "",
-      bairro: editingEscola?.bairro || "",
-      cidade: editingEscola?.cidade || "",
-      estado: editingEscola?.estado || "",
-      cep: editingEscola?.cep || "",
-      referencia: editingEscola?.referencia || "",
-      ativo: editingEscola?.ativo ?? true,
-    },
-  });
+  }, [isOpen, form]);
 
   const onFormError = (errors: any) => {
     toast.error("validacao.formularioComErros");
@@ -194,32 +231,29 @@ export default function EscolaFormDialog({
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent
-          className="sm:max-w-2xl max-h-[95vh] flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
+          className="w-[90vw] sm:w-full sm:max-w-2xl max-h-[95vh] flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
           onOpenAutoFocus={(e) => e.preventDefault()}
           hideCloseButton
         >
-          <div className="bg-blue-600 p-6 text-center relative shrink-0">
+          <div className="bg-blue-600 p-4 text-center relative shrink-0">
             <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
               <X className="h-6 w-6" />
               <span className="sr-only">Close</span>
             </DialogClose>
             
-            <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
-              <Building2 className="w-6 h-6 text-white" />
+            <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
+              <Building2 className="w-5 h-5 text-white" />
             </div>
-            <DialogTitle className="text-2xl font-bold text-white">
+            <DialogTitle className="text-xl font-bold text-white">
               {editingEscola ? "Editar Escola" : "Cadastrar Escola"}
             </DialogTitle>
-            <DialogDescription className="text-blue-100 text-sm mt-1">
-              Preencha os dados da escola abaixo
-            </DialogDescription>
           </div>
 
-          <div className="p-6 pt-2 bg-white flex-1 overflow-y-auto">
+          <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-                className="space-y-6"
+                className="space-y-4"
               >
                 <Accordion
                   type="multiple"

@@ -1,12 +1,12 @@
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { PLANO_COMPLETO } from "@/constants";
 import { AlertTriangle } from "lucide-react";
@@ -38,16 +38,16 @@ export default function LimiteFranquiaDialog({
         <AlertDialogHeader>
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 text-orange-600" />
-            <AlertDialogTitle>Limite de Cobranças Automáticas Atingido</AlertDialogTitle>
+            <AlertDialogTitle>Sua van digital está cheia!</AlertDialogTitle>
           </div>
           <AlertDialogDescription className="pt-2">
             <p className="mb-3">
-              Você atingiu o limite de <strong>{franquiaContratada}</strong> cobranças automáticas.
-              Atualmente você está utilizando <strong>{cobrancasEmUso}</strong> de{" "}
-              <strong>{franquiaContratada}</strong> disponíveis.
+              Seu plano permite automatizar <strong>{franquiaContratada}</strong> passageiros.
+              Você usou <strong>{cobrancasEmUso}</strong> de{" "}
+              <strong>{franquiaContratada}</strong> vagas no automático.
             </p>
             <p>
-              Para ativar cobranças automáticas para mais passageiros, você precisa contratar um plano que permita cobrar automaticamente mais passageiros.
+              Para colocar mais gente no automático, faça um upgrade.
             </p>
           </AlertDialogDescription>
         </AlertDialogHeader>

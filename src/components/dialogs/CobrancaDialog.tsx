@@ -3,31 +3,30 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useCreateCobranca } from "@/hooks";
@@ -35,23 +34,23 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { cn } from "@/lib/utils";
 import {
-    anos,
-    parseCurrencyToNumber,
-    tiposPagamento,
-    toLocalDateString,
+  anos,
+  parseCurrencyToNumber,
+  tiposPagamento,
+  toLocalDateString,
 } from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-    AlertTriangle,
-    CalendarIcon,
-    CreditCard,
-    Loader2,
-    PlusCircle,
-    User,
-    X
+  AlertTriangle,
+  CalendarIcon,
+  CreditCard,
+  Loader2,
+  PlusCircle,
+  User,
+  X
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -133,11 +132,12 @@ export default function CobrancaDialog({
   const loading = createCobranca.isPending;
 
   const currentYear = new Date().getFullYear();
+  const currentMonth = (new Date().getMonth() + 1).toString();
 
   const form = useForm<CobrancaFormData>({
     resolver: zodResolver(cobrancaSchema),
     defaultValues: {
-      mes: "",
+      mes: currentMonth,
       ano: currentYear.toString(),
       valor: "",
       foi_pago: false,
@@ -169,8 +169,9 @@ export default function CobrancaDialog({
   useEffect(() => {
     if (isOpen) {
       const valorEmCentavos = valorCobranca > 0 ? Math.round(Number(valorCobranca) * 100) : 0;
+      const mesAtual = (new Date().getMonth() + 1).toString();
       form.reset({
-        mes: "",
+        mes: mesAtual,
         ano: currentYear.toString(),
         valor: valorEmCentavos > 0 ? moneyMask(String(valorEmCentavos)) : "",
         foi_pago: false,
@@ -227,27 +228,24 @@ export default function CobrancaDialog({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className="max-w-md max-h-[95vh] overflow-y-auto bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
+        className="w-[90vw] sm:w-full max-w-md max-h-[95vh] gap-0 flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
         hideCloseButton
       >
-        <div className="bg-blue-600 p-6 text-center relative">
+        <div className="bg-blue-600 p-4 text-center relative shrink-0">
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
             <X className="h-6 w-6" />
             <span className="sr-only">Close</span>
           </DialogClose>
 
-          <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
-            <PlusCircle className="w-6 h-6 text-white" />
+          <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
+            <PlusCircle className="w-5 h-5 text-white" />
           </div>
-          <DialogTitle className="text-2xl font-bold text-white">
+          <DialogTitle className="text-xl font-bold text-white">
             Registrar Cobrança
           </DialogTitle>
-          <DialogDescription className="text-blue-100 text-sm mt-1">
-            Preencha os dados da nova cobrança
-          </DialogDescription>
         </div>
 
-        <div className="p-6 pt-2 bg-white flex-1 overflow-y-auto">
+        <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
           <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-6 flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
               <User className="w-5 h-5" />
@@ -429,6 +427,7 @@ export default function CobrancaDialog({
                               <div className="relative">
                                 <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                                 <Button
+                                  type="button"
                                   variant="outline"
                                   className={cn(
                                     "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left font-normal hover:bg-gray-100 justify-start",

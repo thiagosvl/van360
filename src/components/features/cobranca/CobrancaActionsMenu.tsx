@@ -13,9 +13,9 @@ import {
   disableDesfazerPagamento,
   disableEditarCobranca,
   disableExcluirCobranca,
-  disableRegistrarPagamento,
-  planoPermiteEnviarNotificacao,
+  disableRegistrarPagamento
 } from "@/utils/domain/cobranca/disableActions";
+import { canUseNotificacoes } from "@/utils/domain/plano/accessRules";
 import {
   ArrowLeft,
   Bell,
@@ -24,8 +24,9 @@ import {
   DollarSign,
   FilePen,
   MoreVertical,
+  Send,
   Trash2,
-  User,
+  User
 } from "lucide-react";
 import { useState } from "react";
 
@@ -62,6 +63,28 @@ export function CobrancaActionsMenu({
     variant === "mobile" ? "h-8 w-8 shrink-0 -mr-2 -mt-1" : "h-8 w-8 p-0";
 
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
+  const [upgradeDialogEnviarLembrete, setUpgradeDialogEnviarLembrete] = useState(false);
+  const hasNotificacoesAccess = canUseNotificacoes(plano as any);
+
+  const handleToggleNotificacoes = () => {
+    if (hasNotificacoesAccess) {
+      // Usuário tem permissão: executa a ação normal
+      onToggleLembretes();
+    } else {
+      // Usuário não tem permissão: abre dialog de upgrade
+      setUpgradeDialogOpen(true);
+    }
+  };
+
+  const handleEnviarNotificacao = () => {
+    if (hasNotificacoesAccess) {
+      // Usuário tem permissão: executa a ação normal
+      onEnviarNotificacao();
+    } else {
+      // Usuário não tem permissão: abre dialog de upgrade
+      setUpgradeDialogEnviarLembrete(true);
+    }
+  };
 
   return (
     <>
@@ -123,42 +146,36 @@ export function CobrancaActionsMenu({
               Registrar Pagamento
             </DropdownMenuItem>
           )}
+          {/* Botão Enviar Cobrança - Sempre visível */}
           <DropdownMenuItem
             className="cursor-pointer"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              if (!planoPermiteEnviarNotificacao(plano)) {
-                setTimeout(() => setUpgradeDialogOpen(true), 0);
-                return;
-              }
-              onEnviarNotificacao();
+              handleEnviarNotificacao();
             }}
           >
-            <Bell className="mr-2 h-4 w-4" />
-            Enviar Lembrete
+            <Send className="mr-2 h-4 w-4" />
+            Enviar Cobrança
           </DropdownMenuItem>
-          {planoPermiteEnviarNotificacao(plano) && (
-            <>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleLembretes();
-                }}
-                disabled={!cobrancaPodeReceberNotificacao(cobranca)}
-              >
-                {cobranca.desativar_lembretes ? (
-                  <Bell className="mr-2 h-4 w-4" />
-                ) : (
-                  <BellOff className="mr-2 h-4 w-4" />
-                )}
-                {cobranca.desativar_lembretes
-                  ? "Reativar Lembretes Automáticos"
-                  : "Pausar Lembretes Automáticos"}
-              </DropdownMenuItem>
-            </>
-          )}
+          {/* Botão de Notificações - Sempre visível */}
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleToggleNotificacoes();
+            }}
+            disabled={!cobrancaPodeReceberNotificacao(cobranca) && hasNotificacoesAccess}
+          >
+            {cobranca.desativar_lembretes ? (
+              <Bell className="mr-2 h-4 w-4" />
+            ) : (
+              <BellOff className="mr-2 h-4 w-4" />
+            )}
+            {cobranca.desativar_lembretes
+              ? "Ativar Notificações"
+              : "Pausar Notificações"}
+          </DropdownMenuItem>
           {!disableDesfazerPagamento(cobranca) && (
             <DropdownMenuItem
               className="cursor-pointer"
@@ -191,6 +208,7 @@ export function CobrancaActionsMenu({
         </DropdownMenuContent>
       </DropdownMenu>
 
+      {/* Dialog de Upgrade para Notificações Automáticas */}
       <UpgradePlanDialog
         open={upgradeDialogOpen}
         onOpenChange={(open) => {
@@ -200,8 +218,24 @@ export function CobrancaActionsMenu({
             setUpgradeDialogOpen(true);
           }
         }}
-        featureName="Lembretes Automáticos"
-        description="Envie lembretes de cobrança automáticos para seus passageiros via WhatsApp."
+        featureName="Notificações Automáticas"
+        description="Automatize o envio de lembretes e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
+        redirectTo="/planos?slug=completo"
+      />
+      
+      {/* Dialog de Upgrade para Enviar Cobrança */}
+      <UpgradePlanDialog
+        open={upgradeDialogEnviarLembrete}
+        onOpenChange={(open) => {
+          if (!open) {
+            safeCloseDialog(() => setUpgradeDialogEnviarLembrete(false));
+          } else {
+            setUpgradeDialogEnviarLembrete(true);
+          }
+        }}
+        featureName="Envio de Cobranças"
+        description="Automatize o envio de cobranças e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
+        redirectTo="/planos?slug=completo"
       />
     </>
   );

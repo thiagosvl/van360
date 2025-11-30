@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 // Components - Common
-import { DateNavigation } from "@/components/common/DateNavigation";
 import { KPICard } from "@/components/common/KPICard";
 // Components - Alerts
 import { AutomaticChargesPrompt } from "@/components/alerts/AutomaticChargesPrompt";
@@ -17,7 +16,6 @@ import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActi
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
-import { UpsellDialog } from "@/components/dialogs/UpsellDialog";
 
 // Components - Empty & Skeletons
 import { ListSkeleton } from "@/components/skeletons";
@@ -28,7 +26,6 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 // Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -46,7 +43,6 @@ import { useSession } from "@/hooks/business/useSession";
 
 // Utils
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import {
   formatDateToBR,
   formatPaymentType,
@@ -74,8 +70,7 @@ import {
   DollarSign,
   Search,
   TrendingUp,
-  Wallet,
-  Zap
+  Wallet
 } from "lucide-react";
 
 // --- Internal Components ---
@@ -165,18 +160,6 @@ const Cobrancas = () => {
 
   const [buscaAbertas, setBuscaAbertas] = useState("");
   const [buscaPagas, setBuscaPagas] = useState("");
-
-  const [upsellDialogOpen, setUpsellDialogOpen] = useState(false);
-
-  const handleGerarCobrancaAutomatica = () => {
-    if (canUseCobrancaAutomatica(plano)) {
-      toast.success("Cobrança Automática Ativa", {
-        description: "O sistema enviará as cobranças automaticamente nos vencimentos."
-      });
-    } else {
-      setUpsellDialogOpen(true);
-    }
-  };
 
   const {
     data: cobrancasData,
@@ -361,22 +344,6 @@ const Cobrancas = () => {
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6 md:space-y-8">
 
-          {/* 1. Header & Navigation */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <DateNavigation
-              mes={mesFilter}
-              ano={anoFilter}
-              onNavigate={handleNavigation}
-            />
-            <Button 
-              className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-indigo-200/50 shadow-lg w-full md:w-auto"
-              onClick={handleGerarCobrancaAutomatica}
-            >
-              <Zap className="w-4 h-4" />
-              Gerar Cobrança Automática
-            </Button>
-          </div>
-
           {/* 2. KPIs - Grid Otimizado Mobile */}
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             <KPICard
@@ -409,7 +376,7 @@ const Cobrancas = () => {
           {/* Alerta Automático */}
           {plano?.slug &&
             [PLANO_GRATUITO, PLANO_ESSENCIAL].includes(plano.slug) && (
-              <div className="hidden sm:block">
+              <div>
                 <AutomaticChargesPrompt variant="full" />
               </div>
             )}
@@ -973,8 +940,8 @@ const Cobrancas = () => {
                 cobranca: null,
               })
             }
-            title="Enviar Lembrete"
-            description="Deseja enviar este lembrete para o responsável?"
+            title="Enviar Cobrança"
+            description="Deseja enviar esta cobrança para o responsável?"
             onConfirm={enviarNotificacaoCobranca}
             isLoading={enviarNotificacao.isPending}
           />
@@ -1001,15 +968,6 @@ const Cobrancas = () => {
             confirmText="Confirmar"
             variant="destructive"
             isLoading={deleteCobranca.isPending}
-          />
-
-          <UpsellDialog
-            open={upsellDialogOpen}
-            onOpenChange={setUpsellDialogOpen}
-            onManualAction={() => {
-              setUpsellDialogOpen(false);
-              // Logic to open manual payment dialog or just close
-            }}
           />
 
           {cobrancaToEdit && (

@@ -1,3 +1,4 @@
+import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,8 +12,7 @@ import { formatarTelefone } from "@/utils/formatters/phone";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
-  Bell,
-  BellOff,
+  Bot,
   CalendarDays,
   Car,
   CheckCircle,
@@ -24,7 +24,6 @@ import {
   HeartPulse,
   Mail,
   MapPin,
-  MessageCircle,
   Pencil,
   Phone,
   School,
@@ -62,7 +61,20 @@ export const CarteirinhaInfo = ({
   onDeleteClick,
 }: CarteirinhaInfoProps) => {
   const [mostrarMaisInfo, setMostrarMaisInfo] = useState(false);
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  const hasCobrancaAutomaticaAccess = canUseCobrancaAutomatica(plano as any);
+
+  const handleCobrancaAutomaticaClick = () => {
+    if (hasCobrancaAutomaticaAccess) {
+      // Usuário tem permissão: executa a ação normal
+      onToggleCobrancaAutomatica();
+    } else {
+      // Usuário não tem permissão: abre dialog de upgrade
+      setIsUpgradeDialogOpen(true);
+    }
+  };
 
   const handleToggleDetails = () => {
     setMostrarMaisInfo(!mostrarMaisInfo);
@@ -171,7 +183,14 @@ export const CarteirinhaInfo = ({
     >
       <Card className="overflow-hidden border-0 shadow-lg ring-1 ring-black/5 bg-white">
         {/* Header com Gradiente e Avatar */}
-        <div className="relative h-20 sm:26 lg:h-32 bg-gradient-to-r from-blue-600 to-indigo-600">
+        <div
+          className={cn(
+            "relative h-20 sm:26 lg:h-32",
+            passageiro.ativo
+              ? "bg-gradient-to-r from-green-600 via-blue-600 to-blue-600"
+              : "bg-gradient-to-r from-red-600 via-blue-600 to-blue-600"
+          )}
+        >
           <div className="absolute -bottom-12 left-6">
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
@@ -211,7 +230,7 @@ export const CarteirinhaInfo = ({
           </div>
         </div>
 
-        <CardContent className="pt-14 pb-6 px-6">
+        <CardContent className="pt-14 pb-6 px-6 relative">
           {/* Identidade Principal */}
           <div className="mb-6">
             <div className="flex items-start justify-between gap-3">
@@ -229,11 +248,13 @@ export const CarteirinhaInfo = ({
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3, duration: 0.3 }}
-                  className="shrink-0"
+                  className="shrink-0 absolute top-5 lg:-top-3.5 right-2"
                 >
                   <div className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-700 px-2.5 py-1 rounded-lg shadow-sm">
                     <AlertCircle className="h-3.5 w-3.5" />
-                    <span className="text-xs font-semibold whitespace-nowrap">Em atraso</span>
+                    <span className="text-xs font-semibold whitespace-nowrap">
+                      Em atraso
+                    </span>
                   </div>
                 </motion.div>
               )}
@@ -242,6 +263,27 @@ export const CarteirinhaInfo = ({
 
           {/* Grid de Informações Chave */}
           <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col justify-center">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <HeartPulse className="h-4 w-4" />
+                <span className="text-xs font-medium uppercase tracking-wider">
+                  Status
+                </span>
+              </div>
+              <div>
+                <Badge
+                  variant={passageiro.ativo ? "default" : "destructive"}
+                  className={cn(
+                    "px-2 py-0.5 text-xs font-semibold shadow-none",
+                    passageiro.ativo
+                      ? "bg-green-100 text-green-700 hover:bg-green-200"
+                      : "bg-red-100 text-red-700 hover:bg-red-200"
+                  )}
+                >
+                  {passageiro.ativo ? "ATIVO" : "DESATIVADO"}
+                </Badge>
+              </div>
+            </div>
             <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <School className="h-4 w-4" />
@@ -283,72 +325,32 @@ export const CarteirinhaInfo = ({
                 })}
               </p>
             </div>
-
-            <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col justify-center">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <HeartPulse className="h-4 w-4" />
-                <span className="text-xs font-medium uppercase tracking-wider">
-                  Status
-                </span>
-              </div>
-              <div>
-                <Badge
-                  variant={passageiro.ativo ? "default" : "destructive"}
-                  className={cn(
-                    "px-2 py-0.5 text-xs font-semibold shadow-none",
-                    passageiro.ativo
-                      ? "bg-green-100 text-green-700 hover:bg-green-200"
-                      : "bg-red-100 text-red-700 hover:bg-red-200"
-                  )}
-                >
-                  {passageiro.ativo ? "ATIVO" : "DESATIVADO"}
-                </Badge>
-              </div>
-            </div>
-          </div>
-
-          {/* Barra de Contato Rápido */}
-          <div className="flex flex-wrap gap-3 mb-6">
-            <Button
-              variant="ghost"
-              className="flex-1 min-w-[140px] border text-green-500 border-green-500 hover:bg-green-100 hover:text-green-700 shadow-sm"
-              disabled={!passageiro.telefone_responsavel}
-              onClick={() =>
-                window.open(
-                  `https://wa.me/${passageiro.telefone_responsavel}`,
-                  "_blank"
-                )
-              }
-            >
-              <MessageCircle className="h-4 w-4 mr-2" />
-              WhatsApp
-            </Button>
           </div>
 
           {/* Botões de Ação Sempre Visíveis */}
           <div className="space-y-2 mb-6">
-            {canUseCobrancaAutomatica(plano) &&
-              (passageiro.enviar_cobranca_automatica ? (
-                <Button
-                  variant="ghost"
-                  disabled={!passageiro.ativo}
-                  className="w-full pl-0 text-muted-foreground hover:bg-transparent hover:text-primary justify-start"
-                  onClick={onToggleCobrancaAutomatica}
-                >
-                  <BellOff className="h-4 w-4 mr-2" />
-                  Pausar Lembretes Automáticos
-                </Button>
-              ) : (
-                <Button
-                  variant="ghost"
-                  disabled={!passageiro.ativo}
-                  className="w-full pl-0 text-muted-foreground hover:bg-transparent hover:text-primary justify-start"
-                  onClick={onToggleCobrancaAutomatica}
-                >
-                  <Bell className="h-4 w-4 mr-2" />
-                  Reativar Lembretes Automáticos
-                </Button>
-              ))}
+            {/* Botão de Cobrança Automática - Sempre visível */}
+            {passageiro.enviar_cobranca_automatica ? (
+              <Button
+                variant="ghost"
+                disabled={!passageiro.ativo && hasCobrancaAutomaticaAccess}
+                className="w-full pl-0 text-muted-foreground hover:bg-transparent hover:text-primary justify-start"
+                onClick={handleCobrancaAutomaticaClick}
+              >
+                <Bot className="h-4 w-4 mr-2" />
+                Pausar Cobrança Automática
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                disabled={!passageiro.ativo && hasCobrancaAutomaticaAccess}
+                className="w-full pl-0 text-muted-foreground hover:bg-transparent hover:text-primary justify-start"
+                onClick={handleCobrancaAutomaticaClick}
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                Ativar Cobrança Automática
+              </Button>
+            )}
 
             {passageiro.ativo ? (
               <Button
@@ -419,6 +421,15 @@ export const CarteirinhaInfo = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Dialog de Upgrade para Cobrança Automática */}
+      <UpgradePlanDialog
+        open={isUpgradeDialogOpen}
+        onOpenChange={setIsUpgradeDialogOpen}
+        featureName="Cobrança Automática"
+        description="A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Completo."
+        redirectTo="/planos?slug=completo"
+      />
     </motion.div>
   );
 };

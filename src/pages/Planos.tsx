@@ -62,22 +62,22 @@ const MENSAGENS_DOWNGRADE = {
   [`${PLANO_COMPLETO}-${PLANO_ESSENCIAL}`]: {
     titulo: "Confirmar mudança de plano?",
     mensagem:
-      "Ao mudar para o Plano Essencial, você poderá cobrar automaticamente até um número ilimitado de passageiros. Atualmente você tem X passageiros com cobrança automática. A mudança será feita agora e não há cobrança adicional.",
+      "Ao mudar para o Plano Essencial, você poderá ter Cobrança Automática para até um número ilimitado de passageiros. Atualmente você tem X Passageiros com Cobrança Automática. A mudança será feita agora e não há cobrança adicional.",
   },
   "subplano-menor": {
     titulo: "Confirmar mudança de plano?",
     mensagem:
-      "Ao mudar para este plano, você poderá cobrar automaticamente até X passageiros. Atualmente você tem Y passageiros com cobrança automática. Você precisará escolher quais continuarão com cobrança automática.",
+      "Ao mudar para este plano, você poderá ter Cobrança Automática para até X passageiros. Atualmente você tem Y Passageiros com Cobrança Automática. Você precisará escolher quais continuarão com Cobrança Automática.",
   },
   "personalizado-para-predefinido": {
     titulo: "Confirmar mudança de plano?",
     mensagem:
-      "Ao mudar para este plano, você poderá cobrar automaticamente até X passageiros. Atualmente você tem Y passageiros com cobrança automática. Você precisará escolher quais continuarão com cobrança automática.",
+      "Ao mudar para este plano, você poderá ter Cobrança Automática para até X passageiros. Atualmente você tem Y Passageiros com Cobrança Automática. Você precisará escolher quais continuarão com Cobrança Automática.",
   },
   "personalizado-reducao": {
     titulo: "Confirmar mudança de plano?",
     mensagem:
-      "Ao mudar para este plano, você poderá cobrar automaticamente até X passageiros. Atualmente você tem Y passageiros com cobrança automática. Você precisará escolher quais continuarão com cobrança automática.",
+      "Ao mudar para este plano, você poderá ter Cobrança Automática para até X passageiros. Atualmente você tem Y Passageiros com Cobrança Automática. Você precisará escolher quais continuarão com Cobrança Automática.",
   },
 };
 
@@ -1075,7 +1075,7 @@ export default function Planos() {
                   precoAplicado: selecaoPassageirosDialog.precoAplicado,
                   precoOrigem: selecaoPassageirosDialog.precoOrigem,
                   cobrancaId,
-                }
+                } as any
               );
               
               const temPagamento = resultado.qrCodePayload;

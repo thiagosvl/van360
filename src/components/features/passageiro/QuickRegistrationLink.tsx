@@ -69,7 +69,7 @@ export function QuickRegistrationLink({
   return (
     <Card
       className={`rounded-2xl shadow-sm transition-all duration-300 ${
-        allowAccess && !isLimitReached
+        allowAccess
           ? "bg-white border-blue-100 shadow-blue-50/50"
           : "bg-gradient-to-br from-indigo-600 via-blue-600 to-purple-600 border-none text-white shadow-lg relative overflow-hidden"
       }`}
@@ -79,12 +79,12 @@ export function QuickRegistrationLink({
           <div className="flex items-center gap-4 text-center sm:text-left">
             <div
               className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${
-                allowAccess && !isLimitReached
+                allowAccess
                   ? "bg-blue-50 text-blue-600"
                   : "bg-white/20 text-white backdrop-blur-sm"
               }`}
             >
-              {allowAccess && !isLimitReached ? (
+              {allowAccess ? (
                 <LinkIcon className="h-6 w-6" />
               ) : (
                 <Lock className="h-6 w-6" />
@@ -93,21 +93,21 @@ export function QuickRegistrationLink({
             <div>
               <h3
                 className={`text-lg font-bold leading-tight ${
-                  allowAccess && !isLimitReached ? "text-blue-700" : "text-white"
+                  allowAccess ? "text-blue-700" : "text-white"
                 }`}
               >
-                {allowAccess && !isLimitReached
+                {allowAccess
                   ? "Link de Cadastro Rápido"
                   : "Desbloqueie o Cadastro Rápido"}
               </h3>
               <p
                 className={`text-sm mt-1 max-w-md ${
-                  allowAccess && !isLimitReached
+                  allowAccess
                     ? "text-blue-600/80"
                     : "text-indigo-100"
                 }`}
               >
-                {allowAccess && !isLimitReached
+                {allowAccess
                   ? "Copie o link e envie ao responsável. O cadastro cai direto aqui na sua lista."
                   : "Permita que os pais se cadastrem sozinhos. Ganhe tempo e profissionalize seu negócio."}
               </p>
@@ -115,7 +115,7 @@ export function QuickRegistrationLink({
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-2 shrink-0 w-full sm:w-auto">
-            {allowAccess && !isLimitReached ? (
+            {allowAccess ? (
               <>
                 <Button
                   variant="outline"
@@ -146,6 +146,11 @@ export function QuickRegistrationLink({
                     </>
                   )}
                 </Button>
+                {isLimitReached && (
+                  <p className="text-xs text-orange-600 font-medium bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-lg">
+                    Limite de {limitePassageiros} passageiros atingido
+                  </p>
+                )}
               </>
             ) : (
               <Button
@@ -158,18 +163,12 @@ export function QuickRegistrationLink({
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             )}
-            
-            {allowAccess && isLimitReached && (
-               <p className="text-xs text-red-100 font-medium bg-red-500/20 px-2 py-1 rounded-lg">
-                  Limite de {limitePassageiros} passageiros atingido
-               </p>
-            )}
           </div>
         </div>
       </CardContent>
       
       {/* Decorative background elements for locked state */}
-      {(!allowAccess || isLimitReached) && (
+      {!allowAccess && (
         <>
             <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
             <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-20 h-20 bg-purple-500/20 rounded-full blur-xl"></div>

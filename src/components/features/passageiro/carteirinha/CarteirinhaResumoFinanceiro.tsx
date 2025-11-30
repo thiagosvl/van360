@@ -88,7 +88,7 @@ export const CarteirinhaResumoFinanceiro = ({
                   Pago
                 </span>
               </div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-semibold text-gray-900">
                 {animatedValorPago.toLocaleString("pt-BR", {
                   style: "currency",
                   currency: "BRL",
@@ -115,7 +115,7 @@ export const CarteirinhaResumoFinanceiro = ({
                   Pendente
                 </span>
               </div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-semibold text-gray-900">
                 {animatedValorPendente.toLocaleString("pt-BR", {
                   style: "currency",
                   currency: "BRL",
@@ -142,7 +142,7 @@ export const CarteirinhaResumoFinanceiro = ({
                   Em Atraso
                 </span>
               </div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-semibold text-gray-900">
                 {animatedValorEmAtraso.toLocaleString("pt-BR", {
                   style: "currency",
                   currency: "BRL",

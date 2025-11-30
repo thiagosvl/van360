@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -124,7 +124,7 @@ export function SelecaoPassageirosDialog({
         <DialogHeader>
           <DialogTitle>Escolha os passageiros</DialogTitle>
           <DialogDescription>
-            Você pode escolher até {franquia} passageiros. Selecione quais terão cobrança automática.
+            Você pode escolher até {franquia} passageiros. Selecione quais terão Cobrança Automática.
           </DialogDescription>
         </DialogHeader>
 

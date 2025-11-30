@@ -96,8 +96,11 @@ export function getPlanoUsuario(usuario: any) {
  * Valida se o usuário tem acesso à funcionalidade de solicitação de passageiros (pre-passageiro)
  * 
  * Regras:
- * - Pode usar: Plano Essencial (ativo ou trial válido) OU Plano Completo (ativo)
- * - Não pode usar: Plano Gratuito, Completo não ativo, Essencial não ativo e não trial válido
+ * - Pode usar: Qualquer plano ativo (Gratuito, Essencial trial/ativo, Completo ativo)
+ * - Não pode usar: Apenas se a assinatura não estiver ativa (suspensa ou cancelada)
+ * 
+ * Nota: A funcionalidade está disponível para todos os planos ativos para maximizar o uso
+ * e aumentar as chances de conversão de usuários do plano gratuito.
  */
 export function hasPrePassageiroAccess(planoData: ReturnType<typeof extractPlanoData>): {
   hasAccess: boolean;
@@ -110,48 +113,23 @@ export function hasPrePassageiroAccess(planoData: ReturnType<typeof extractPlano
     };
   }
 
-  // Verificar se é Plano Gratuito
-  if (planoData.isFreePlan) {
-    return {
-      hasAccess: false,
-      reason: "O plano atual do motorista (Gratuito) não permite o uso desta funcionalidade.",
-    };
-  }
-
-  // Verificar se é Plano Completo
-  if (planoData.isCompletePlan) {
-    if (!planoData.isActive) {
-      return {
-        hasAccess: false,
-        reason: "A assinatura do motorista está suspensa ou cancelada. É necessário regularizar para reativar o acesso.",
-      };
-    }
+  // Verificar se o plano está ativo (isValidPlan considera ativo, trial válido ou cancelado válido)
+  if (planoData.isValidPlan) {
     return { hasAccess: true };
   }
 
-  // Verificar se é Plano Essencial
-  if (planoData.isEssentialPlan) {
-    if (planoData.isActive || planoData.isValidTrial) {
-      return { hasAccess: true };
-    }
-
-    if (planoData.isTrial && !planoData.isValidTrial) {
-        return {
-            hasAccess: false,
-            reason: "O período de testes do motorista expirou.",
-        };
-    }
-
+  // Se não está ativo, verificar o motivo específico
+  if (planoData.isTrial && !planoData.isValidTrial) {
     return {
       hasAccess: false,
-      reason: "A assinatura do motorista está suspensa ou cancelada. É necessário regularizar para reativar o acesso.",
+      reason: "O período de testes do motorista expirou.",
     };
   }
 
-  // Plano desconhecido
+  // Assinatura suspensa ou cancelada
   return {
     hasAccess: false,
-    reason: "O motorista não possui um plano válido para esta funcionalidade.",
+    reason: "A assinatura do motorista está suspensa ou cancelada. É necessário regularizar para reativar o acesso.",
   };
 }
 

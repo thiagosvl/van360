@@ -389,9 +389,9 @@ export default function PagamentoPixContent({
               <p className="text-sm font-medium text-emerald-900">
                 {quantidadeAlunos}{" "}
                 {quantidadeAlunos === 1
-                  ? "passageiro agora tem"
-                  : "passageiros agora têm"}{" "}
-                cobrança automática.
+                  ? "Passageiro agora tem"
+                  : "Passageiros agora têm"}{" "}
+                Cobrança Automática.
               </p>
             </div>
           )}

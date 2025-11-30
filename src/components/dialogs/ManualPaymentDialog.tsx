@@ -5,8 +5,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -129,47 +128,61 @@ export default function ManualPaymentDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className="max-w-md max-h-[95vh] overflow-y-auto bg-white rounded-3xl border-0 shadow-2xl p-0"
+        className="w-[90vw] sm:w-full max-w-md max-h-[95vh] gap-0 flex flex-col overflow-hidden bg-white rounded-3xl border-0 shadow-2xl p-0"
         hideCloseButton
       >
-        <div className="bg-blue-600 p-6 text-center relative">
+        <div className="bg-blue-600 p-4 text-center relative shrink-0">
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
             <X className="h-6 w-6" />
             <span className="sr-only">Close</span>
           </DialogClose>
 
-          <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
-            <Wallet className="w-6 h-6 text-white" />
+          <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
+            <Wallet className="w-5 h-5 text-white" />
           </div>
-          <DialogTitle className="text-2xl font-bold text-white">
+          <DialogTitle className="text-xl font-bold text-white">
             Registrar Pagamento
           </DialogTitle>
-          <DialogDescription className="text-blue-100 text-sm mt-1">
-            Preencha os dados do pagamento abaixo
-          </DialogDescription>
         </div>
 
-        <div className="p-6 pt-2">
-          <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-6 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-                <User className="w-5 h-5" />
-              </div>
+        <div className="p-4 sm:p-6 pt-2 flex-1 overflow-y-auto">
+          <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-6">
+            <div className="flex items-start justify-between mb-4">
               <div>
-                <p className="text-sm font-bold text-gray-900">{passageiroNome}</p>
-                <p className="text-xs text-gray-500">{responsavelNome}</p>
+                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-0.5">
+                  Referência
+                </p>
+                <p className="text-lg font-bold text-gray-900 capitalize leading-tight">
+                  {format(new Date(dataVencimento), "MMMM", {
+                    locale: ptBR,
+                  })}
+                </p>
+              </div>
+              <span
+                className={cn(
+                  "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide shadow-sm",
+                  getStatusColor(status, dataVencimento)
+                )}
+              >
+                {status === PASSAGEIRO_COBRANCA_STATUS_PAGO
+                  ? "PAGO"
+                  : getStatusText(status, dataVencimento)}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-200/50 shadow-sm">
+              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                <User className="w-5 h-5 text-blue-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-gray-900 leading-tight">
+                  {passageiroNome}
+                </p>
+                <p className="text-xs text-gray-500 leading-tight mt-0.5">
+                  {responsavelNome}
+                </p>
               </div>
             </div>
-            <span
-              className={`px-2 py-0.5 inline-block rounded-full text-xs font-medium whitespace-nowrap ${getStatusColor(
-                status,
-                dataVencimento
-              )}`}
-            >
-              {status === PASSAGEIRO_COBRANCA_STATUS_PAGO
-                ? "Pago"
-                : getStatusText(status, dataVencimento)}
-            </span>
           </div>
 
           <Form {...form}>
@@ -204,6 +217,7 @@ export default function ManualPaymentDialog({
                           <div className="relative">
                             <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                             <Button
+                              type="button"
                               variant="outline"
                               className={cn(
                                 "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left font-normal hover:bg-gray-100 justify-start",

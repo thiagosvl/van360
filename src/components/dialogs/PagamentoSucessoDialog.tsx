@@ -50,7 +50,7 @@ export function PagamentoSucessoDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className="max-w-md max-h-[95vh] overflow-y-auto bg-emerald-600 rounded-3xl border-0 shadow-2xl p-0"
+        className="max-w-md max-h-[95vh] overflow-y-auto gap-0 bg-emerald-600 rounded-3xl border-0 shadow-2xl p-0"
         hideCloseButton
       >
         <div className="bg-emerald-600 p-6 text-center relative">

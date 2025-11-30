@@ -77,8 +77,7 @@ export function canUseCobrancaAutomatica(planoData: PlanoData | null): boolean {
 export function canUseNotificacoes(planoData: PlanoData | null): boolean {
   if (!planoData) return false;
   return (
-    (planoData.isCompletePlan && planoData.isActive) ||
-    (planoData.isEssentialPlan && (planoData.isActive || planoData.isValidTrial))
+    (planoData.isCompletePlan && planoData.isActive)
   );
 }
 

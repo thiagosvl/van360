@@ -1,8 +1,8 @@
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,10 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import {
-  PLANO_COMPLETO,
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
-  QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO,
+    PLANO_COMPLETO,
+    PLANO_ESSENCIAL,
+    PLANO_GRATUITO,
+    QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO,
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Plano, SubPlano } from "@/types/plano";
@@ -543,7 +543,7 @@ export const PlanoCard = ({
 
             {/* Texto abaixo dos pills */}
             <div className="text-xs text-gray-600 text-center">
-              Passageiros com cobrança automática/mês
+              Passageiros com Cobrança Automática
             </div>
 
             {/* Link para expandir slider personalizado */}

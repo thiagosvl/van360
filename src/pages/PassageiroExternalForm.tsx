@@ -14,28 +14,28 @@ import { CepInput, MoneyInput, PhoneInput } from "@/components/forms";
 
 // Components - UI
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -48,22 +48,22 @@ import { cn } from "@/lib/utils";
 import { validatePrePassageiroAccess } from "@/utils/domain/motorista/accessValidation";
 import { cpfMask, moneyToNumber } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
-import { isValidCPF } from "@/utils/validators";
+import { cepSchema, cpfSchema, phoneSchema } from "@/utils/validators";
 
 // Icons
 import {
-  AlertTriangle,
-  CalendarDays,
-  Car,
-  CheckCircle2,
-  Contact,
-  CreditCard,
-  FileText,
-  Hash,
-  Loader2,
-  Mail,
-  MapPin,
-  User
+    AlertTriangle,
+    CalendarDays,
+    Car,
+    CheckCircle2,
+    Contact,
+    CreditCard,
+    FileText,
+    Hash,
+    Loader2,
+    Mail,
+    MapPin,
+    User
 } from "lucide-react";
 
 const prePassageiroSchema = z.object({
@@ -73,21 +73,15 @@ const prePassageiroSchema = z.object({
     .string()
     .min(1, "Campo obrigatório")
     .email("E-mail inválido"),
-  cpf_responsavel: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .refine((val) => isValidCPF(val), "CPF inválido"),
-  telefone_responsavel: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .refine((val) => val.replace(/\D/g, "").length === 11, "Telefone inválido"),
+  cpf_responsavel: cpfSchema(true),
+  telefone_responsavel: phoneSchema(true),
 
   logradouro: z.string().min(1, "Campo obrigatório"),
   numero: z.string().min(1, "Campo obrigatório"),
   bairro: z.string().min(1, "Campo obrigatório"),
   cidade: z.string().min(1, "Campo obrigatório"),
   estado: z.string().min(1, "Campo obrigatório"),
-  cep: z.string().min(1, "Campo obrigatório"),
+  cep: cepSchema(true),
   referencia: z.string().optional(),
   observacoes: z.string().optional(),
 
@@ -167,7 +161,7 @@ export default function PassageiroExternalForm() {
         .eq("id", motoristaId)
         .single();
 
-      if (error || !data || data.role !== "motorista") {
+      if (error || !data || (data as any).role !== "motorista") {
         toast.error("sistema.erro.linkInvalido", {
           description: "sistema.erro.linkInvalidoDescricao",
         });
@@ -175,7 +169,7 @@ export default function PassageiroExternalForm() {
         return;
       }
 
-      setMotoristaApelido(data.apelido);
+      setMotoristaApelido((data as any).apelido);
 
       // Validar acesso à funcionalidade
       const accessValidation = validatePrePassageiroAccess(data);
@@ -205,10 +199,10 @@ export default function PassageiroExternalForm() {
 
       const payload = {
         ...data,
-        telefone_responsavel: data.telefone_responsavel.replace(/\D/g, ""),
-        cpf_responsavel: data.cpf_responsavel.replace(/\D/g, ""),
-        valor_cobranca: moneyToNumber(data.valor_cobranca),
-        dia_vencimento: parseInt(data.dia_vencimento),
+        telefone_responsavel: String(data.telefone_responsavel || "").replace(/\D/g, ""),
+        cpf_responsavel: String(data.cpf_responsavel || "").replace(/\D/g, ""),
+        valor_cobranca: moneyToNumber(String(data.valor_cobranca || "")),
+        dia_vencimento: parseInt(String(data.dia_vencimento || "")),
       };
 
       const { error } = await supabase.from("pre_passageiros" as any).insert([

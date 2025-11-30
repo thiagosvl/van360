@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { CheckCircle2, Crown, Rocket, X } from "lucide-react";
@@ -16,6 +16,7 @@ interface UpgradePlanDialogProps {
   onOpenChange: (open: boolean) => void;
   featureName?: string;
   description?: string;
+  redirectTo?: string; // URL customizada para redirecionamento (ex: "/planos?slug=completo")
 }
 
 export default function UpgradePlanDialog({
@@ -23,17 +24,39 @@ export default function UpgradePlanDialog({
   onOpenChange,
   featureName = "Recurso Premium",
   description = "Este recurso é exclusivo dos planos Essencial e Completo.",
+  redirectTo,
 }: UpgradePlanDialogProps) {
   const navigate = useNavigate();
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      // Quando fechando, usar safeCloseDialog para evitar propagação
+      safeCloseDialog(() => {
+        onOpenChange(false);
+      });
+    } else {
+      onOpenChange(true);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent 
-        className="sm:max-w-[425px] max-h-[90vh] p-0 gap-0 flex flex-col overflow-hidden border-0 shadow-2xl bg-indigo-600 rounded-3xl"
+        className="w-[90vw] sm:w-full sm:max-w-[425px] max-h-[90vh] p-0 gap-0 flex flex-col overflow-hidden border-0 shadow-2xl bg-indigo-600 rounded-3xl"
         hideCloseButton
         onClick={(e) => e.stopPropagation()}
+        onPointerDownOutside={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          // Fechar o dialog sem propagar o evento
+          handleOpenChange(false);
+        }}
+        onInteractOutside={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
       >
-        <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 text-white text-center relative overflow-hidden">
+        <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-4 text-white text-center relative overflow-hidden shrink-0">
           <DialogClose className="absolute right-4 top-4 p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors z-[60] cursor-pointer focus:outline-none focus:ring-0">
             <X className="h-6 w-6" />
             <span className="sr-only">Close</span>
@@ -44,19 +67,19 @@ export default function UpgradePlanDialog({
           <div className="absolute bottom-0 right-0 w-24 h-24 bg-white/10 rounded-full translate-x-1/3 translate-y-1/3 blur-xl" />
 
           <div className="relative z-10 flex flex-col items-center">
-            <div className="h-10 w-10 sm:h-16 sm:w-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 shadow-inner ring-1 ring-white/30">
-              <Rocket className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+            <div className="h-10 w-10 sm:h-14 sm:w-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-2 shadow-inner ring-1 ring-white/30">
+              <Rocket className="h-5 w-5 sm:h-7 sm:w-7 text-white" />
             </div>
-            <DialogTitle className="text-lg sm:text-2xl font-bold mb-2">
+            <DialogTitle className="text-lg sm:text-xl font-bold mb-1">
               Desbloqueie o Potencial
             </DialogTitle>
-            <DialogDescription className="text-indigo-100 text-center max-w-[280px]">
+            <DialogDescription className="text-indigo-100 text-center max-w-[280px] text-xs sm:text-sm">
               {featureName}
             </DialogDescription>
           </div>
         </div>
 
-        <div className="p-6 space-y-6 bg-white overflow-y-auto">
+        <div className="p-4 sm:p-6 space-y-6 bg-white overflow-y-auto flex-1">
           <div className="space-y-4">
             <p className="text-gray-600 text-center text-sm leading-relaxed">
               {description}
@@ -81,7 +104,7 @@ export default function UpgradePlanDialog({
           <DialogFooter className="flex-col sm:flex-col gap-3">
             <Button
               className="w-full h-12 text-base font-bold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-200"
-              onClick={() => safeCloseDialog(() => navigate("/planos?plano=essencial"))}
+              onClick={() => safeCloseDialog(() => navigate(redirectTo || "/planos?plano=essencial"))}
             >
               <Crown className="w-4 h-4 mr-2" />
               Ver Planos Disponíveis

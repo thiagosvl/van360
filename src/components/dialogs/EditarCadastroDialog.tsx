@@ -1,19 +1,18 @@
 import { PhoneInput } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -132,25 +131,22 @@ export default function EditarCadastroDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-white rounded-3xl border-0 shadow-2xl p-0"
+        className="w-[90vw] sm:w-full sm:max-w-md max-h-[95vh] flex flex-col overflow-hidden bg-white rounded-3xl border-0 shadow-2xl p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
         hideCloseButton
       >
-        <div className="bg-blue-600 p-6 text-center relative">
+        <div className="bg-blue-600 p-4 text-center relative shrink-0">
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
             <X className="h-6 w-6" />
             <span className="sr-only">Close</span>
           </DialogClose>
           
-          <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
-            <User className="w-6 h-6 text-white" />
+          <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
+            <User className="w-5 h-5 text-white" />
           </div>
-          <DialogTitle className="text-2xl font-bold text-white">
+          <DialogTitle className="text-xl font-bold text-white">
             Editar Perfil
           </DialogTitle>
-          <DialogDescription className="text-blue-100 text-sm mt-1">
-            Atualize suas informações pessoais
-          </DialogDescription>
         </div>
 
         {isLoading ? (

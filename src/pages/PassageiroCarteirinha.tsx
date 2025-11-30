@@ -706,12 +706,12 @@ export default function PassageiroCarteirinha() {
             }
             title={
               confirmDialog.action === "enviar"
-                ? "Enviar Lembrete"
+                ? "Enviar Cobrança"
                 : "Desfazer Pagamento"
             }
             description={
               confirmDialog.action === "enviar"
-                ? "Deseja enviar este lembrete para o responsável?"
+                ? "Deseja enviar esta cobrança para o responsável?"
                 : "Deseja realmente desfazer o pagamento desta cobrança?"
             }
             onConfirm={handleConfirmAction}

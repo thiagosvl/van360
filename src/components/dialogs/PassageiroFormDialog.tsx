@@ -14,8 +14,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -58,7 +57,12 @@ import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { currentMonthInText, periodos } from "@/utils/formatters";
 import { cepMask, cpfMask, moneyMask, phoneMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
-import { isValidCPF } from "@/utils/validators";
+import {
+  cepSchema,
+  cpfSchema,
+  phoneSchema,
+  validateEnderecoFields,
+} from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertTriangle,
@@ -81,47 +85,69 @@ import { flushSync } from "react-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const passageiroSchema = z.object({
-  escola_id: z.string().min(1, "Campo obrigatório"),
-  veiculo_id: z.string().min(1, "Campo obrigatório"),
-  nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+const passageiroSchema = z
+  .object({
+    escola_id: z.string().min(1, "Campo obrigatório"),
+    veiculo_id: z.string().min(1, "Campo obrigatório"),
+    nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
 
-  periodo: z.string().min(1, "Campo obrigatório"),
+    periodo: z.string().min(1, "Campo obrigatório"),
 
-  logradouro: z.string().optional(),
-  numero: z.string().optional(),
-  bairro: z.string().optional(),
-  cidade: z.string().optional(),
-  estado: z.string().optional(),
-  cep: z.string().optional(),
-  referencia: z.string().optional(),
+    logradouro: z.string().optional(),
+    numero: z.string().optional(),
+    bairro: z.string().optional(),
+    cidade: z.string().optional(),
+    estado: z.string().optional(),
+    cep: cepSchema(false),
+    referencia: z.string().optional(),
 
-  observacoes: z.string().optional(),
+    observacoes: z.string().optional(),
 
-  nome_responsavel: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
-  email_responsavel: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .email("E-mail inválido"),
-  cpf_responsavel: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .refine((val) => isValidCPF(val), "CPF inválido"),
-  telefone_responsavel: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .refine((val) => {
-      const cleaned = val.replace(/\D/g, "");
-      return cleaned.length === 11;
-    }, "O formato aceito é (00) 00000-0000"),
+    nome_responsavel: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+    email_responsavel: z
+      .string()
+      .min(1, "Campo obrigatório")
+      .email("E-mail inválido"),
+  cpf_responsavel: cpfSchema(true),
+  telefone_responsavel: phoneSchema(true),
 
-  valor_cobranca: z.string().min(1, "Campo obrigatório"),
-  dia_vencimento: z.string().min(1, "Campo obrigatório"),
-  emitir_cobranca_mes_atual: z.boolean().optional(),
-  ativo: z.boolean().optional(),
-  usuario_id: z.string().optional(),
-  enviar_cobranca_automatica: z.boolean().optional(),
-});
+    valor_cobranca: z.string().min(1, "Campo obrigatório"),
+    dia_vencimento: z.string().min(1, "Campo obrigatório"),
+    emitir_cobranca_mes_atual: z.boolean().optional(),
+    ativo: z.boolean().optional(),
+    usuario_id: z.string().optional(),
+    enviar_cobranca_automatica: z.boolean().optional(),
+  })
+  .superRefine((data, ctx) => {
+    const validation = validateEnderecoFields(
+      data.cep,
+      data.logradouro,
+      data.numero
+    );
+
+    // Adiciona erros para cada campo que falhou na validação
+    if (validation.errors.cep) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: validation.errors.cep,
+        path: ["cep"],
+      });
+    }
+    if (validation.errors.logradouro) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: validation.errors.logradouro,
+        path: ["logradouro"],
+      });
+    }
+    if (validation.errors.numero) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: validation.errors.numero,
+        path: ["numero"],
+      });
+    }
+  });
 type PassageiroFormData = z.infer<typeof passageiroSchema>;
 
 type PlanoUsuario = {
@@ -422,6 +448,17 @@ export default function PassengerFormDialog({
 
   const emitirCobranca = form.watch("emitir_cobranca_mes_atual");
   const diaVencimento = form.watch("dia_vencimento");
+  const cep = form.watch("cep");
+  const logradouro = form.watch("logradouro");
+  const numero = form.watch("numero");
+
+  // Revalidar campos de endereço quando qualquer um deles mudar
+  useEffect(() => {
+    if (isOpen) {
+      // Trigger em todos os campos para garantir validação completa
+      form.trigger(["cep", "logradouro", "numero"]);
+    }
+  }, [cep, logradouro, numero, isOpen, form]);
   const [limiteFranquiaDialog, setLimiteFranquiaDialog] = useState<{
     open: boolean;
     franquiaContratada: number;
@@ -688,8 +725,8 @@ export default function PassengerFormDialog({
 
   const buscarResponsavel = useBuscarResponsavel();
 
-  const handleCpfBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
-    const cpf = e.target.value.replace(/\D/g, "");
+  const handleSearchResponsavel = async (cpf: string) => {
+    if (mode === "edit" || mode === "finalize") return;
     if (cpf.length !== 11 || !profile?.id) return;
 
     try {
@@ -701,13 +738,32 @@ export default function PassengerFormDialog({
       if (responsavel) {
         form.setValue("nome_responsavel", responsavel.nome_responsavel || "");
         form.setValue("email_responsavel", responsavel.email_responsavel || "");
-        form.setValue("telefone_responsavel", responsavel.telefone_responsavel || "");
-        toast.success("Dados do responsável carregados!");
+        form.setValue(
+          "telefone_responsavel",
+          responsavel.telefone_responsavel || ""
+        );
       }
     } catch (error) {
       // Silencioso se não encontrar ou erro
     }
   };
+
+  const handleCpfBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+    const cpf = e.target.value.replace(/\D/g, "");
+    handleSearchResponsavel(cpf);
+  };
+
+  // Monitorar mudanças no CPF para busca automática
+  const cpfResponsavelValue = form.watch("cpf_responsavel");
+  useEffect(() => {
+    if (!cpfResponsavelValue) return;
+    
+    const unmasked = cpfResponsavelValue.replace(/\D/g, "");
+    if (unmasked.length === 11) {
+      handleSearchResponsavel(unmasked);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cpfResponsavelValue]);
 
   const handleSubmit = async (data: PassageiroFormData) => {
     if (!profile?.id) return;
@@ -806,36 +862,30 @@ export default function PassengerFormDialog({
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent
-          className="max-w-3xl max-h-[95vh] flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
+          className="w-[90vw] sm:w-full sm:max-w-2xl max-h-[95vh] flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
           onOpenAutoFocus={(e) => e.preventDefault()}
           hideCloseButton
           aria-describedby="dialog-description"
         >
-          <div className="bg-blue-600 p-6 text-center relative shrink-0">
+          <div className="bg-blue-600 p-4 text-center relative shrink-0">
             <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
               <X className="h-6 w-6" />
               <span className="sr-only">Close</span>
             </DialogClose>
 
-            <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
-              <User className="w-6 h-6 text-white" />
+            <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
+              <User className="w-5 h-5 text-white" />
             </div>
-            <DialogTitle className="text-2xl font-bold text-white">
+            <DialogTitle className="text-xl font-bold text-white">
               {mode === "finalize"
                 ? "Cadastrar Passageiro"
                 : editingPassageiro
                 ? "Editar Passageiro"
                 : "Cadastrar Passageiro"}
             </DialogTitle>
-            <DialogDescription
-              className="text-blue-100 text-sm mt-1"
-              id="dialog-description"
-            >
-              Preencha os dados do passageiro abaixo
-            </DialogDescription>
           </div>
 
-          <div className="p-6 pt-2 bg-white flex-1 overflow-y-auto">
+          <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleSubmit, onFormError)}
@@ -975,7 +1025,7 @@ export default function PassengerFormDialog({
                                       )}
                                       aria-invalid={!!fieldState.error}
                                     >
-                                      <SelectValue placeholder="Selecione o veículo" />
+                                      <SelectValue className="text-gray-300" placeholder="Selecione o veículo" />
                                     </SelectTrigger>
                                   </div>
                                 </FormControl>
@@ -1111,9 +1161,9 @@ export default function PassengerFormDialog({
                                   <Input
                                     {...field}
                                     placeholder="000.000.000-00"
-                                    onChange={(e) =>
-                                      field.onChange(cpfMask(e.target.value))
-                                    }
+                                    onChange={(e) => {
+                                      field.onChange(cpfMask(e.target.value));
+                                    }}
                                     onBlur={(e) => {
                                       field.onBlur();
                                       handleCpfBlur(e);

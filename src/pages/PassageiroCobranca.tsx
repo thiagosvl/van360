@@ -29,9 +29,9 @@ import {
   cobrancaPodeReceberNotificacao,
   disableEditarCobranca,
   disableExcluirCobranca,
-  disableRegistrarPagamento,
-  planoPermiteEnviarNotificacao,
+  disableRegistrarPagamento
 } from "@/utils/domain/cobranca/disableActions";
+import { canUseNotificacoes } from "@/utils/domain/plano/accessRules";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
   formatCobrancaOrigem,
@@ -267,6 +267,7 @@ export default function PassageiroCobranca() {
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
+  const [upgradeDialogEnviarLembrete, setUpgradeDialogEnviarLembrete] = useState(false);
 
   // Buscar cobrança usando React Query
   const {
@@ -358,6 +359,8 @@ export default function PassageiroCobranca() {
     });
   };
 
+  const hasNotificacoesAccess = canUseNotificacoes(plano as any);
+
   const handleToggleLembretes = async () => {
     if (!cobranca) return;
     toggleNotificacoesMutation.mutate(
@@ -372,6 +375,31 @@ export default function PassageiroCobranca() {
         },
       }
     );
+  };
+
+  const handleToggleNotificacoesClick = () => {
+    if (hasNotificacoesAccess) {
+      // Usuário tem permissão: executa a ação normal
+      handleToggleLembretes();
+    } else {
+      // Usuário não tem permissão: abre dialog de upgrade
+      setUpgradeDialogOpen(true);
+    }
+  };
+
+  const handleEnviarLembreteClick = () => {
+    if (!cobranca) return;
+    
+    if (hasNotificacoesAccess) {
+      // Usuário tem permissão: abre dialog de confirmação
+      setConfirmDialogEnvioNotificacao({
+        open: true,
+        cobranca: cobranca,
+      });
+    } else {
+      // Usuário não tem permissão: abre dialog de upgrade
+      setUpgradeDialogEnviarLembrete(true);
+    }
   };
 
   const handleDesfazerPagamento = async () => {
@@ -496,7 +524,7 @@ export default function PassageiroCobranca() {
   } else if (statusText === "Vence hoje") {
     // Vence hoje: gradiente laranja para vermelho
     headerBg =
-      "bg-gradient-to-r from-white to-red-200 hover:bg-inherit border-b border-red-200";
+      "bg-gradient-to-r from-white to-red-200 hover:bg-inherit border-b border-red-100";
     StatusIcon = Wallet;
     paymentButtonClass =
       "bg-gradient-to-r from-orange-500 via-red-600 to-red-600 hover:bg-orange-700 text-white shadow-[0_12px_30px_-20px_rgba(251,146,60,0.7)]";
@@ -685,9 +713,7 @@ export default function PassageiroCobranca() {
                       <div className="flex items-center gap-2">
                         <CalendarDays className="w-5 h-5 opacity-80" />
                         <span className="text-base sm:text-xl font-bold tracking-tight text-gray-900">
-                          {meses[cobrancaTyped.mes - 1]}{" "}
-                          <span className="opacity-40 font-light">/</span>{" "}
-                          {cobrancaTyped.ano}
+                          {meses[cobrancaTyped.mes - 1]}
                         </span>
                       </div>
                     </div>
@@ -718,7 +744,7 @@ export default function PassageiroCobranca() {
                     <div className="bg-orange-50 border-b border-orange-100 px-6 py-2 flex items-center justify-center gap-2 text-xs font-medium text-orange-700 animate-in fade-in slide-in-from-top-2">
                       <BellOff className="w-3.5 h-3.5 text-orange-700" />
                       <span>
-                        Lembretes automáticos desativados para esta cobrança.
+                        Notificações desativadas para esta cobrança.
                       </span>
                     </div>
                   )}
@@ -809,61 +835,60 @@ export default function PassageiroCobranca() {
                         <Pencil className="w-3.5 h-3.5 mr-2" /> Editar Cobrança
                       </Button>
 
-                      {/* Botão de Notificação ou Aviso de Bloqueio */}
+                      {/* Botão Enviar Cobrança - Sempre visível */}
                       <Button
                         variant="ghost"
                         size="sm"
                         className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
                         disabled={
-                          !cobrancaPodeReceberNotificacao(cobrancaTyped)
+                          !cobrancaPodeReceberNotificacao(cobrancaTyped) &&
+                          hasNotificacoesAccess
                         }
-                        onClick={() => {
-                          if (!planoPermiteEnviarNotificacao(plano)) {
-                            setUpgradeDialogOpen(true);
-                            return;
-                          }
-                          setConfirmDialogEnvioNotificacao({
-                            open: true,
-                            cobranca: cobrancaTyped,
-                          });
-                        }}
+                        onClick={handleEnviarLembreteClick}
                       >
-                        <Send className="w-3.5 h-3.5 mr-2" /> Enviar Lembrete
+                        <Send className="w-3.5 h-3.5 mr-2" /> Enviar Cobrança
                       </Button>
-                      {planoPermiteEnviarNotificacao(plano) && (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
-                            disabled={
-                              !cobrancaPodeReceberNotificacao(cobrancaTyped)
-                            }
-                            onClick={() => {
-                              handleToggleLembretes();
-                            }}
-                          >
-                            {cobrancaTyped.desativar_lembretes ? (
-                              <>
-                                <Bell className="w-3.5 h-3.5 mr-2" /> Reativar
-                                Lembretes Automáticos
-                              </>
-                            ) : (
-                              <>
-                                <BellOff className="w-3.5 h-3.5 mr-2" /> Pausar
-                                Lembretes Automáticos
-                              </>
-                            )}
-                          </Button>
-                        </>
-                      )}
+                      {/* Botão de Notificações - Sempre visível */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
+                        disabled={
+                          !cobrancaPodeReceberNotificacao(cobrancaTyped) &&
+                          hasNotificacoesAccess
+                        }
+                        onClick={handleToggleNotificacoesClick}
+                      >
+                        {cobrancaTyped.desativar_lembretes ? (
+                          <>
+                            <Bell className="w-3.5 h-3.5 mr-2" /> Ativar
+                            Notificações
+                          </>
+                        ) : (
+                          <>
+                            <BellOff className="w-3.5 h-3.5 mr-2" /> Pausar
+                            Notificações
+                          </>
+                        )}
+                      </Button>
                     </div>
 
+                    {/* Dialog de Upgrade para Notificações Automáticas */}
                     <UpgradePlanDialog
                       open={upgradeDialogOpen}
                       onOpenChange={setUpgradeDialogOpen}
-                      featureName="Lembretes Automáticos"
-                      description="Envie lembretes de cobrança automáticos para seus passageiros via WhatsApp."
+                      featureName="Notificações Automáticas"
+                      description="Automatize o envio de lembretes e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
+                      redirectTo="/planos?slug=completo"
+                    />
+                    
+                    {/* Dialog de Upgrade para Enviar Cobrança */}
+                    <UpgradePlanDialog
+                      open={upgradeDialogEnviarLembrete}
+                      onOpenChange={setUpgradeDialogEnviarLembrete}
+                      featureName="Envio de Cobranças"
+                      description="Automatize o envio de cobranças e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
+                      redirectTo="/planos?slug=completo"
                     />
 
                     {/* Delete Action (Separado por borda para segurança) */}
@@ -1003,8 +1028,8 @@ export default function PassageiroCobranca() {
             onOpenChange={(open) =>
               setConfirmDialogEnvioNotificacao((prev) => ({ ...prev, open }))
             }
-            title="Enviar Lembrete"
-            description={`Deseja enviar um lembrete de cobrança para o responsável de ${cobrancaTyped.passageiros.nome}?`}
+            title="Enviar Cobrança"
+            description={`Deseja enviar a cobrança para o responsável de ${cobrancaTyped.passageiros.nome}?`}
             onConfirm={() => {
               handleEnviarNotificacao();
               setConfirmDialogEnvioNotificacao({ open: false, cobranca: null });

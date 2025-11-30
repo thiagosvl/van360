@@ -1,12 +1,11 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle
+} from "@/components/ui/dialog";
 import { AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -42,7 +41,7 @@ export function DialogExcessoFranquia({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-500" />
-            Limite Atingido
+            Sua van digital está cheia!
           </DialogTitle>
         </DialogHeader>
 
@@ -50,24 +49,23 @@ export function DialogExcessoFranquia({
           <p className="text-sm text-gray-600">
             {contexto === "reativacao" ? (
               <>
-                Reativar este passageiro com cobranças automáticas excederá seu
-                limite atual.
+                Reativar este passageiro com Cobrança Automática excederá suas vagas no automático.
               </>
             ) : (
               <>
-                Você já atingiu o limite de cobranças automáticas do seu plano.
+                Seu plano permite automatizar {limiteAtual} passageiros.
               </>
             )}
           </p>
 
           <div className="bg-gray-50 p-3 rounded-lg space-y-1">
             <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Limite atual:</span>
+              <span className="text-sm text-gray-600">Vagas totais:</span>
               <span className="text-sm font-medium">{limiteAtual}/{limiteAtual}</span>
             </div>
             {contexto === "reativacao" && (
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Limite após ação:</span>
+                <span className="text-sm text-gray-600">Vagas necessárias:</span>
                 <span className="text-sm font-medium text-red-600">
                   {limiteApos}/{limiteAtual}
                 </span>
@@ -76,7 +74,7 @@ export function DialogExcessoFranquia({
           </div>
 
           <p className="text-sm text-gray-600">
-            Para manter todas as cobranças automáticas ativas, contrate um plano que permita cobrar automaticamente mais passageiros.
+            Para colocar mais gente no automático, faça um upgrade.
           </p>
         </div>
 

@@ -11,9 +11,13 @@ import {
   Wallet,
   Zap,
 } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
+import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
+import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
+import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
+import { PassengerLimitHealthBar } from "@/components/features/passageiro/PassengerLimitHealthBar";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,8 +39,9 @@ import {
   PLANO_GRATUITO,
 } from "@/constants";
 import { cn } from "@/lib/utils";
+import { Passageiro } from "@/types/passageiro";
+import { safeCloseDialog } from "@/utils/dialogUtils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
-import { canUsePrePassageiro } from "@/utils/domain/plano/accessRules";
 import { toast } from "@/utils/notifications/toast";
 
 // --- Internal Components ---
@@ -95,19 +100,21 @@ const MiniKPI = ({
 
 const ShortcutCard = ({
   to,
+  onClick,
   icon: Icon,
   label,
   colorClass = "text-blue-600",
   bgClass = "bg-blue-50",
 }: {
-  to: string;
+  to?: string;
+  onClick?: () => void;
   icon: any;
   label: string;
   colorClass?: string;
   bgClass?: string;
-}) => (
-  <NavLink to={to} className="group">
-    <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all duration-200 hover:border-blue-200 hover:shadow-md h-24 w-full">
+}) => {
+  const content = (
+    <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all duration-200 hover:border-blue-200 hover:shadow-md h-24 w-full cursor-pointer">
       <div
         className={cn(
           "h-10 w-10 rounded-xl flex items-center justify-center mb-2 transition-transform group-hover:scale-110",
@@ -121,8 +128,22 @@ const ShortcutCard = ({
         {label}
       </span>
     </div>
+  );
+
+  if (onClick) {
+    return (
+      <div onClick={onClick} className="group">
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <NavLink to={to!} className="group">
+      {content}
   </NavLink>
 );
+};
 
 const StatusCard = ({
   type,
@@ -217,11 +238,11 @@ const StatusCard = ({
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Progress
-                    value={(progress.current / progress.total) * 100}
+                <Progress
+                  value={(progress.current / progress.total) * 100}
                     className="h-2 bg-gray-100 flex-1"
-                    indicatorClassName="bg-indigo-600"
-                  />
+                  indicatorClassName="bg-indigo-600"
+                />
                   <div
                     className={cn(
                       "h-8 w-8 rounded-full flex items-center justify-center transition-all duration-500",
@@ -270,33 +291,75 @@ const Home = () => {
   const { profile, isLoading: isProfileLoading, plano } = useProfile(user?.id);
   const navigate = useNavigate();
 
+  // Dialog states
+  const [isPassageiroDialogOpen, setIsPassageiroDialogOpen] = useState(false);
+  const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(null);
+  const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
+  const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
+  const [isCreatingEscola, setIsCreatingEscola] = useState(false);
+  const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
+
   const mesAtual = new Date().getMonth() + 1;
   const anoAtual = new Date().getFullYear();
 
   // Queries
-  const { data: cobrancasData, refetch: refetchCobrancas } = useCobrancas(
+  const {
+    data: cobrancasData,
+    refetch: refetchCobrancas,
+    isLoading: isLoadingCobrancas,
+    isFetching: isFetchingCobrancas,
+  } = useCobrancas(
     { usuarioId: profile?.id, mes: mesAtual, ano: anoAtual },
     { enabled: !!profile?.id }
   );
 
-  const { data: passageirosData, refetch: refetchPassageiros } = usePassageiros(
+  const {
+    data: passageirosData,
+    refetch: refetchPassageiros,
+    isLoading: isLoadingPassageiros,
+    isFetching: isFetchingPassageiros,
+  } = usePassageiros(
     { usuarioId: profile?.id },
     { enabled: !!profile?.id }
   );
 
-  const { data: escolasData, refetch: refetchEscolas } = useEscolas(
-    profile?.id,
-    {
+  const {
+    data: escolasData,
+    refetch: refetchEscolas,
+    isLoading: isLoadingEscolas,
+    isFetching: isFetchingEscolas,
+  } = useEscolas(profile?.id, {
       enabled: !!profile?.id,
-    }
-  );
+  });
 
-  const { data: veiculosData, refetch: refetchVeiculos } = useVeiculos(
-    profile?.id,
-    {
+  const {
+    data: veiculosData,
+    refetch: refetchVeiculos,
+    isLoading: isLoadingVeiculos,
+    isFetching: isFetchingVeiculos,
+  } = useVeiculos(profile?.id, {
       enabled: !!profile?.id,
-    }
-  );
+  });
+
+  // Estado de loading unificado - só renderiza conteúdo quando todas as queries terminarem
+  const isInitialLoading = useMemo(() => {
+    // Se não tem profile ainda, está carregando
+    if (!profile?.id) return true;
+
+    // Verifica se alguma query ainda está carregando pela primeira vez
+    return (
+      isLoadingCobrancas ||
+      isLoadingPassageiros ||
+      isLoadingEscolas ||
+      isLoadingVeiculos
+    );
+  }, [
+    profile?.id,
+    isLoadingCobrancas,
+    isLoadingPassageiros,
+    isLoadingEscolas,
+    isLoadingVeiculos,
+  ]);
 
   // Derived Data
   const cobrancas = cobrancasData?.all || [];
@@ -308,6 +371,12 @@ const Home = () => {
   const veiculosCount =
     (veiculosData as { total?: number } | undefined)?.total ?? 0;
   const passageirosCount = passageirosList.length;
+
+  // Passenger Limit Logic
+  const limitePassageiros =
+    profile?.assinaturas_usuarios?.[0]?.planos?.limite_passageiros ?? null;
+  const isLimitedUser = !!plano && plano.isFreePlan;
+  const hasPassengerLimit = isLimitedUser && limitePassageiros != null;
 
   // Financial KPIs
   const receitaPrevista = cobrancas.reduce(
@@ -387,25 +456,68 @@ const Home = () => {
   };
 
   const handleCopyLink = () => {
-    if (!profile?.id) return;
-
-    if (!canUsePrePassageiro(plano)) {
-      toast.info("Funcionalidade exclusiva", {
-        description: "Atualize seu plano para usar o Cadastro Rápido.",
+    if (!profile?.id) {
+      toast.error("Erro ao copiar link", {
+        description: "ID do usuário não encontrado.",
       });
-      navigate("/planos");
       return;
-    } else {
-      try {
-        navigator.clipboard.writeText(buildPrepassageiroLink(profile?.id));
-        toast.success("Link de cadastro copiado!", {
-          description: "Envie para os responsáveis.",
-        });
-      } catch (error) {
-        toast.error("Erro ao copiar link");
-      }
+    }
+
+    try {
+      navigator.clipboard.writeText(buildPrepassageiroLink(profile?.id));
+      toast.success("Link de cadastro copiado!", {
+        description: "Envie para os responsáveis.",
+      });
+    } catch (error) {
+      toast.error("Erro ao copiar link");
     }
   };
+
+  // Passageiro Dialog Handlers
+  const handleOpenPassageiroDialog = useCallback(() => {
+    setEditingPassageiro(null);
+    setIsPassageiroDialogOpen(true);
+  }, []);
+
+  const handleClosePassageiroDialog = useCallback(() => {
+    safeCloseDialog(() => {
+      setNovoVeiculoId(null);
+      setNovaEscolaId(null);
+      setIsPassageiroDialogOpen(false);
+    });
+  }, []);
+
+  const handleSuccessFormPassageiro = useCallback(() => {
+    setNovoVeiculoId(null);
+    setNovaEscolaId(null);
+    // Invalidação feita automaticamente pelos hooks de mutation
+  }, []);
+
+  const handleCloseEscolaFormDialog = useCallback(() => {
+    safeCloseDialog(() => {
+      setIsCreatingEscola(false);
+    });
+  }, []);
+
+  const handleCloseVeiculoFormDialog = useCallback(() => {
+    safeCloseDialog(() => {
+      setIsCreatingVeiculo(false);
+    });
+  }, []);
+
+  const handleEscolaCreated = useCallback((novaEscola: any) => {
+    safeCloseDialog(() => {
+      setIsCreatingEscola(false);
+      setNovaEscolaId(novaEscola.id);
+    });
+  }, []);
+
+  const handleVeiculoCreated = useCallback((novoVeiculo: any) => {
+    safeCloseDialog(() => {
+      setIsCreatingVeiculo(false);
+      setNovoVeiculoId(novoVeiculo.id);
+    });
+  }, []);
 
   // Obter slug principal do plano (usa parent se existir)
   const getMainPlanSlug = () => {
@@ -472,7 +584,7 @@ const Home = () => {
     return "Eleve seu negócio 🚀";
   };
 
-  if (isSessionLoading || isProfileLoading) {
+  if (isSessionLoading || isProfileLoading || isInitialLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -481,6 +593,7 @@ const Home = () => {
   }
 
   return (
+    <>
     <PullToRefreshWrapper onRefresh={handlePullToRefresh}>
       <div className="space-y-6 pb-20">
         {/* Header Contextual */}
@@ -518,7 +631,14 @@ const Home = () => {
         )}
 
         {/* Mini KPIs */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className={cn(
+          "grid gap-4",
+          showOnboarding 
+            ? "grid-cols-1 sm:grid-cols-1" 
+            : "grid-cols-1 sm:grid-cols-3"
+        )}>
+          {!showOnboarding && (
+            <>
           <MiniKPI
             label="Receita Prevista"
             value={formatCurrency(receitaPrevista)}
@@ -535,18 +655,33 @@ const Home = () => {
             bgClass={aReceber > 0 ? "bg-orange-50" : "bg-gray-50"}
             loading={isProfileLoading}
           />
+            </>
+          )}
+          {hasPassengerLimit ? (
+            <div className="sm:col-span-1">
+              <PassengerLimitHealthBar
+                current={activePassengers}
+                max={Number(limitePassageiros)}
+                label="Passageiros Ativos"
+                description="Cadastre mais passageiros para crescer seu negócio."
+                className="mb-0"
+              />
+            </div>
+          ) : (
           <MiniKPI
-            className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative"
+              className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative"
             label="Passageiros Ativos"
             value={activePassengers}
             icon={Users}
             colorClass="text-blue-600"
-            bgClass="bg-blue-50"
+            bgClass="bg-blue-50" 
             loading={isProfileLoading}
           />
+          )}
         </div>
 
         {/* Status Operacional */}
+        {!showOnboarding && cobrancas.length > 0 && (
         <section>
           {latePayments.length > 0 ? (
             <StatusCard
@@ -554,9 +689,9 @@ const Home = () => {
               title="Atenção às Cobranças"
               description={`Você tem ${formatCurrency(
                 totalEmAtraso
-              )} em atraso de ${latePayments.length} passageiro${
-                latePayments.length != 1 ? "s" : ""
-              }.`}
+                )} em atraso de ${latePayments.length} passageiro${
+                  latePayments.length != 1 ? "s" : ""
+                }.`}
               actionLabel="Ver Cobranças"
               onAction={() => navigate("/cobrancas")}
             />
@@ -570,6 +705,7 @@ const Home = () => {
             />
           )}
         </section>
+        )}
 
         {/* Acessos Rápidos */}
         <section>
@@ -578,7 +714,7 @@ const Home = () => {
           </h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 md:gap-4">
             <ShortcutCard
-              to="/passageiros?openModal=true"
+              onClick={handleOpenPassageiroDialog}
               icon={Plus}
               label="Cadastrar Passageiro"
               colorClass="text-indigo-600"
@@ -627,23 +763,23 @@ const Home = () => {
         </section>
 
         {/* Marketing / Upsell (Discreto) */}
-        <section className="pt-2">
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <Zap className="h-24 w-24" />
-            </div>
-            <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
+          <section className="pt-2">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <Zap className="h-24 w-24" />
+              </div>
+              <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
                 <h3 className="font-bold text-lg">
                   {getPlanTitle(plano?.slug)}
                 </h3>
-                <p className="text-indigo-100 text-sm mt-1 max-w-md">
+                  <p className="text-indigo-100 text-sm mt-1 max-w-md">
                   {getPlanMessage(plano?.slug)}
-                </p>
-              </div>
-              <Button
-                variant="secondary"
-                className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold border-none shadow-sm shrink-0"
+                  </p>
+                </div>
+                <Button
+                  variant="secondary"
+                  className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold border-none shadow-sm shrink-0"
                 onClick={() => {
                   const mainSlug = getMainPlanSlug();
                   const url = mainSlug
@@ -651,14 +787,44 @@ const Home = () => {
                     : "/planos";
                   navigate(url);
                 }}
-              >
+                >
                 {getPlanCTA(plano?.slug)}
-              </Button>
+                </Button>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
       </div>
     </PullToRefreshWrapper>
+
+    {/* Dialogs */}
+    <PassageiroFormDialog
+      isOpen={isPassageiroDialogOpen}
+      onClose={handleClosePassageiroDialog}
+      onSuccess={handleSuccessFormPassageiro}
+      editingPassageiro={editingPassageiro}
+      onCreateEscola={() => setIsCreatingEscola(true)}
+      onCreateVeiculo={() => setIsCreatingVeiculo(true)}
+      mode="create"
+      novaEscolaId={novaEscolaId}
+      novoVeiculoId={novoVeiculoId}
+      profile={profile}
+      plano={plano}
+    />
+
+    <EscolaFormDialog
+      isOpen={isCreatingEscola}
+      onClose={handleCloseEscolaFormDialog}
+      onSuccess={handleEscolaCreated}
+      profile={profile}
+    />
+
+    <VeiculoFormDialog
+      isOpen={isCreatingVeiculo}
+      onClose={handleCloseVeiculoFormDialog}
+      onSuccess={handleVeiculoCreated}
+      profile={profile}
+    />
+  </>
   );
 };
 

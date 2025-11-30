@@ -3,6 +3,7 @@ import { DialogExcessoFranquia } from "@/components/dialogs/DialogExcessoFranqui
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
+import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { EmptyState } from "@/components/empty";
 import { PassageirosList } from "@/components/features/passageiro/PassageirosList";
@@ -145,6 +146,7 @@ export default function Passageiros() {
     franquiaContratada: 0,
     cobrancasEmUso: 0,
   });
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
   const [dialogExcessoFranquia, setDialogExcessoFranquia] = useState<{
     open: boolean;
     limiteAtual: number;
@@ -642,6 +644,7 @@ export default function Passageiros() {
                       onSetDeleteDialog={(id) =>
                         setDeleteDialog({ open: true, passageiroId: id })
                       }
+                      onOpenUpgradeDialog={() => setIsUpgradeDialogOpen(true)}
                     />
                   )}
                 </CardContent>
@@ -761,6 +764,15 @@ export default function Passageiros() {
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Processando..." />
+      
+      {/* Dialog de Upgrade para Cobrança Automática */}
+      <UpgradePlanDialog
+        open={isUpgradeDialogOpen}
+        onOpenChange={setIsUpgradeDialogOpen}
+        featureName="Cobrança Automática"
+        description="A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Completo."
+        redirectTo="/planos?slug=completo"
+      />
     </>
   );
 }

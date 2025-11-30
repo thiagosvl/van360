@@ -19,31 +19,30 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,10 +50,10 @@ import { Textarea } from "@/components/ui/textarea";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreateGasto,
-  useDeleteGasto,
-  useGastos,
-  useUpdateGasto,
+    useCreateGasto,
+    useDeleteGasto,
+    useGastos,
+    useUpdateGasto,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -77,13 +76,13 @@ import { KPICard } from "@/components/common/KPICard";
 import { GastosList } from "@/components/features/financeiro/GastosList";
 import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
 import {
-  CalendarIcon,
-  FileText,
-  Lock,
-  Tag,
-  TrendingDown,
-  TrendingUp,
-  X,
+    CalendarIcon,
+    FileText,
+    Lock,
+    Tag,
+    TrendingDown,
+    TrendingUp,
+    X,
 } from "lucide-react";
 
 const gastoSchema = z.object({
@@ -519,27 +518,24 @@ export default function Gastos() {
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent
               onOpenAutoFocus={(e) => e.preventDefault()}
-              className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
+              className="w-[90vw] sm:w-full sm:max-w-md max-h-[95vh] flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
               hideCloseButton
             >
-              <div className="bg-blue-600 p-6 text-center relative">
+              <div className="bg-blue-600 p-4 text-center relative shrink-0">
                 <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
                   <X className="h-6 w-6" />
                   <span className="sr-only">Close</span>
                 </DialogClose>
 
-                <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
-                  <TrendingDown className="w-6 h-6 text-white" />
+                <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
+                  <TrendingDown className="w-5 h-5 text-white" />
                 </div>
-                <DialogTitle className="text-2xl font-bold text-white">
+                <DialogTitle className="text-xl font-bold text-white">
                   {editingGasto ? "Editar Gasto" : "Registrar Gasto"}
                 </DialogTitle>
-                <DialogDescription className="text-blue-100 text-sm mt-1">
-                  Preencha os dados do gasto abaixo
-                </DialogDescription>
               </div>
 
-              <div className="p-6 pt-2 bg-white flex-1 overflow-y-auto">
+              <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
                 <Form {...form}>
                   <form
                     onSubmit={form.handleSubmit(handleSubmit)}
