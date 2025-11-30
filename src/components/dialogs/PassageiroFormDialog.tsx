@@ -624,6 +624,9 @@ export default function PassengerFormDialog({
           setVeiculoIdFilter(undefined);
           // Os hooks já fazem o fetch automaticamente, não precisamos refetch manual
 
+          setSelectedEscola(null);
+          setSelectedVeiculo(null);
+
           form.reset({
             nome: prePassageiro.nome,
             nome_responsavel: prePassageiro.nome_responsavel,
@@ -676,6 +679,9 @@ export default function PassengerFormDialog({
           setEscolaIdFilter(undefined);
           setVeiculoIdFilter(undefined);
           // Os hooks já fazem o fetch automaticamente, não precisamos refetch manual
+
+          setSelectedEscola(null);
+          setSelectedVeiculo(null);
 
           form.reset({
             escola_id: "",
@@ -1025,7 +1031,7 @@ export default function PassengerFormDialog({
                                       )}
                                       aria-invalid={!!fieldState.error}
                                     >
-                                      <SelectValue className="text-gray-300" placeholder="Selecione o veículo" />
+                                      <SelectValue placeholder="Selecione o veículo" />
                                     </SelectTrigger>
                                   </div>
                                 </FormControl>
