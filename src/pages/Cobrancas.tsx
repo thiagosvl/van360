@@ -15,7 +15,9 @@ import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActi
 // Components - Dialogs
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
+
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
+import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 
 // Components - Empty & Skeletons
 import { ListSkeleton } from "@/components/skeletons";
@@ -143,6 +145,22 @@ const Cobrancas = () => {
     open: false,
     cobranca: null as Cobranca | null,
   });
+
+  const [upgradeDialog, setUpgradeDialog] = useState({
+    open: false,
+    featureName: "",
+    description: "",
+  });
+
+  const handleUpgrade = useCallback((featureName: string, description: string) => {
+    safeCloseDialog(() => {
+      setUpgradeDialog({
+        open: true,
+        featureName,
+        description,
+      });
+    });
+  }, []);
 
   const { user, loading: isSessionLoading } = useSession();
   const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
@@ -560,6 +578,7 @@ const Cobrancas = () => {
                                   onExcluirCobranca={() =>
                                     setDeleteCobrancaDialog({ open: true, cobranca })
                                   }
+                                  onUpgrade={handleUpgrade}
                                 />
                               </td>
                             </tr>
@@ -634,6 +653,7 @@ const Cobrancas = () => {
                               onExcluirCobranca={() =>
                                 setDeleteCobrancaDialog({ open: true, cobranca })
                               }
+                              onUpgrade={handleUpgrade}
                             />
                           </div>
                         </div>
@@ -801,6 +821,7 @@ const Cobrancas = () => {
                                   onExcluirCobranca={() =>
                                     setDeleteCobrancaDialog({ open: true, cobranca })
                                   }
+                                  onUpgrade={handleUpgrade}
                                 />
                               </td>
                             </tr>
@@ -877,6 +898,7 @@ const Cobrancas = () => {
                               onExcluirCobranca={() =>
                                 setDeleteCobrancaDialog({ open: true, cobranca })
                               }
+                              onUpgrade={handleUpgrade}
                             />
                           </div>
                         </div>
@@ -978,6 +1000,15 @@ const Cobrancas = () => {
               onCobrancaUpdated={handleCobrancaUpdated}
             />
           )}
+
+          {/* Dialog de Upgrade */}
+          <UpgradePlanDialog
+            open={upgradeDialog.open}
+            onOpenChange={(open) => setUpgradeDialog((prev) => ({ ...prev, open }))}
+            featureName={upgradeDialog.featureName}
+            description={upgradeDialog.description}
+            redirectTo="/planos?slug=completo"
+          />
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Aguarde..." />

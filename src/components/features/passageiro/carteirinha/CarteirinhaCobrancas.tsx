@@ -3,35 +3,35 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { cn } from "@/lib/utils";
-import { canUsePremiumFeatures } from "@/utils/domain/plano/accessRules";
 import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
+import { canUsePremiumFeatures } from "@/utils/domain/plano/accessRules";
 import {
-  formatDateToBR,
-  getMesNome,
-  getStatusColor,
-  getStatusText,
+    formatDateToBR,
+    getMesNome,
+    getStatusColor,
+    getStatusText,
 } from "@/utils/formatters";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  AlertTriangle,
-  BellOff,
-  Calendar,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  DollarSign,
-  Plus,
-  RotateCcw,
+    AlertTriangle,
+    BellOff,
+    Calendar,
+    Check,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    DollarSign,
+    Plus,
+    RotateCcw,
 } from "lucide-react";
 
 interface CarteirinhaCobrancasProps {
@@ -58,6 +58,7 @@ interface CarteirinhaCobrancasProps {
   onToggleMostrarTodas: () => void;
   onToggleClick: (statusAtual: boolean) => void;
   limiteCobrancasMobile?: number;
+  onUpgrade: (featureName: string, description: string) => void;
 }
 
 const COBRANCAS_LIMIT_DEFAULT = 3;
@@ -82,6 +83,7 @@ export const CarteirinhaCobrancas = ({
   onToggleMostrarTodas,
   onToggleClick,
   limiteCobrancasMobile = COBRANCAS_LIMIT_DEFAULT,
+  onUpgrade,
 }: CarteirinhaCobrancasProps) => {
   const cobrancasMobile = mostrarTodasCobrancas
     ? cobrancas
@@ -307,6 +309,7 @@ export const CarteirinhaCobrancas = ({
                                   onExcluirCobranca={() =>
                                     onExcluirCobranca(cobranca)
                                   }
+                                  onUpgrade={onUpgrade}
                                 />
                               </div>
                             </div>
@@ -471,6 +474,7 @@ export const CarteirinhaCobrancas = ({
                               onExcluirCobranca={() =>
                                 onExcluirCobranca(cobranca)
                               }
+                              onUpgrade={onUpgrade}
                             />
                           </td>
                         </motion.tr>

@@ -1,4 +1,3 @@
-import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,7 +6,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Cobranca } from "@/types/cobranca";
-import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
   cobrancaPodeReceberNotificacao,
   disableDesfazerPagamento,
@@ -28,7 +26,6 @@ import {
   Trash2,
   User
 } from "lucide-react";
-import { useState } from "react";
 
 interface CobrancaActionsMenuProps {
   cobranca: Cobranca;
@@ -43,6 +40,7 @@ interface CobrancaActionsMenuProps {
   onDesfazerPagamento: () => void;
   onExcluirCobranca?: () => void;
   onVerCarteirinha?: () => void;
+  onUpgrade: (featureName: string, description: string) => void;
 }
 
 export function CobrancaActionsMenu({
@@ -58,12 +56,11 @@ export function CobrancaActionsMenu({
   onDesfazerPagamento,
   onExcluirCobranca,
   onVerCarteirinha,
+  onUpgrade,
 }: CobrancaActionsMenuProps) {
   const triggerClassName =
     variant === "mobile" ? "h-8 w-8 shrink-0 -mr-2 -mt-1" : "h-8 w-8 p-0";
 
-  const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
-  const [upgradeDialogEnviarLembrete, setUpgradeDialogEnviarLembrete] = useState(false);
   const hasNotificacoesAccess = canUseNotificacoes(plano as any);
 
   const handleToggleNotificacoes = () => {
@@ -71,8 +68,11 @@ export function CobrancaActionsMenu({
       // Usuário tem permissão: executa a ação normal
       onToggleLembretes();
     } else {
-      // Usuário não tem permissão: abre dialog de upgrade
-      setUpgradeDialogOpen(true);
+      // Usuário não tem permissão: chama callback de upgrade
+      onUpgrade(
+        "Notificações Automáticas",
+        "Automatize o envio de lembretes e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
+      );
     }
   };
 
@@ -81,8 +81,11 @@ export function CobrancaActionsMenu({
       // Usuário tem permissão: executa a ação normal
       onEnviarNotificacao();
     } else {
-      // Usuário não tem permissão: abre dialog de upgrade
-      setUpgradeDialogEnviarLembrete(true);
+      // Usuário não tem permissão: chama callback de upgrade
+      onUpgrade(
+        "Envio de Cobranças",
+        "Automatize o envio de cobranças e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
+      );
     }
   };
 
@@ -150,7 +153,6 @@ export function CobrancaActionsMenu({
           <DropdownMenuItem
             className="cursor-pointer"
             onClick={(e) => {
-              e.preventDefault();
               e.stopPropagation();
               handleEnviarNotificacao();
             }}
@@ -207,36 +209,6 @@ export function CobrancaActionsMenu({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-
-      {/* Dialog de Upgrade para Notificações Automáticas */}
-      <UpgradePlanDialog
-        open={upgradeDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            safeCloseDialog(() => setUpgradeDialogOpen(false));
-          } else {
-            setUpgradeDialogOpen(true);
-          }
-        }}
-        featureName="Notificações Automáticas"
-        description="Automatize o envio de lembretes e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
-        redirectTo="/planos?slug=completo"
-      />
-      
-      {/* Dialog de Upgrade para Enviar Cobrança */}
-      <UpgradePlanDialog
-        open={upgradeDialogEnviarLembrete}
-        onOpenChange={(open) => {
-          if (!open) {
-            safeCloseDialog(() => setUpgradeDialogEnviarLembrete(false));
-          } else {
-            setUpgradeDialogEnviarLembrete(true);
-          }
-        }}
-        featureName="Envio de Cobranças"
-        description="Automatize o envio de cobranças e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
-        redirectTo="/planos?slug=completo"
-      />
     </>
   );
 }

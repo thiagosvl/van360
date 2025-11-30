@@ -20,6 +20,7 @@ import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
+import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 
 // Components - Empty & Skeletons
@@ -69,14 +70,14 @@ import {
   useUpdateCobranca,
   useUpdatePassageiro,
 } from "@/hooks";
-import { useQueryClient } from "@tanstack/react-query";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Utils
 import { useValidarFranquia } from "@/hooks";
-import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { safeCloseDialog } from "@/utils/dialogUtils";
+import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { toast } from "@/utils/notifications/toast";
 
 // Types
@@ -150,6 +151,21 @@ export default function PassageiroCarteirinha() {
     franquiaContratada: 0,
     cobrancasEmUso: 0,
   });
+  const [upgradeDialog, setUpgradeDialog] = useState({
+    open: false,
+    featureName: "",
+    description: "",
+  });
+
+  const handleUpgrade = useCallback((featureName: string, description: string) => {
+    safeCloseDialog(() => {
+      setUpgradeDialog({
+        open: true,
+        featureName,
+        description,
+      });
+    });
+  }, []);
   const [yearFilter, setYearFilter] = useState(currentYear);
   const [isObservacoesEditing, setIsObservacoesEditing] = useState(false);
   const [obsText, setObsText] = useState("");
@@ -647,6 +663,7 @@ export default function PassageiroCarteirinha() {
                         setMostrarTodasCobrancas(!mostrarTodasCobrancas)
                       }
                       onToggleClick={handleToggleClick}
+                      onUpgrade={handleUpgrade}
                     />
                   </Suspense>
                 </div>
@@ -797,6 +814,13 @@ export default function PassageiroCarteirinha() {
         }
         franquiaContratada={limiteFranquiaDialog.franquiaContratada}
         cobrancasEmUso={limiteFranquiaDialog.cobrancasEmUso}
+      />
+      <UpgradePlanDialog
+        open={upgradeDialog.open}
+        onOpenChange={(open) => setUpgradeDialog((prev) => ({ ...prev, open }))}
+        featureName={upgradeDialog.featureName}
+        description={upgradeDialog.description}
+        redirectTo="/planos?slug=completo"
       />
     </>
   );
