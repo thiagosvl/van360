@@ -55,7 +55,7 @@ export const getStatusColor = (status: string, dataVencimento: string) => {
 
   if (diffDays === 0) {
     // Vence hoje: gradiente de laranja para vermelho (mais perceptível)
-    return "bg-gradient-to-r from-white to-red-200 text-orange-900 hover:from-white hover:to-red-300";
+    return "bg-gradient-to-r from-white via-orange-100 to-red-200 text-orange-900 hover:from-white hover:via-orange-200 hover:to-red-300";
   }
 
   // A vencer: laranja

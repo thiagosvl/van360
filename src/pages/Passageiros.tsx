@@ -475,7 +475,7 @@ export default function Passageiros() {
       {
         ...fakeData,
         usuario_id: profile.id,
-        emitir_cobranca_mes_atual: false,
+        emitir_cobranca_mes_atual: true,
       },
       {
         onError: () => {

@@ -10,6 +10,7 @@ interface PremiumBannerProps {
   variant?: "orange" | "indigo" | "red";
   className?: string;
   icon?: React.ElementType;
+  onClick?: () => void;
 }
 
 export function PremiumBanner({
@@ -19,6 +20,7 @@ export function PremiumBanner({
   variant = "orange",
   className,
   icon: Icon = Crown,
+  onClick,
 }: PremiumBannerProps) {
   const navigate = useNavigate();
 
@@ -68,7 +70,13 @@ export function PremiumBanner({
         </div>
       </div>
       <Button
-        onClick={() => navigate("/planos")}
+        onClick={() => {
+          if (onClick) {
+            onClick();
+          } else {
+            navigate("/planos");
+          }
+        }}
         className={cn(
           "w-full md:w-auto text-white font-bold h-11 px-8 rounded-xl shadow-lg transition-transform hover:scale-105",
           currentStyle.button

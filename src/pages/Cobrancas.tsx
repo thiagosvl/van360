@@ -1,5 +1,5 @@
 // React
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 
 // React Router
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -21,18 +21,6 @@ import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 
 // Components - Empty & Skeletons
 import { ListSkeleton } from "@/components/skeletons";
-
-// Components - Navigation
-import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-
-// Components - UI
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-// Hooks
-import { useLayout } from "@/contexts/LayoutContext";
 import {
   useCobrancas,
   useDeleteCobranca,
@@ -58,22 +46,20 @@ import { toast } from "@/utils/notifications/toast";
 import { Cobranca } from "@/types/cobranca";
 
 // Constants
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   PASSAGEIRO_COBRANCA_STATUS_PAGO,
   PLANO_ESSENCIAL,
   PLANO_GRATUITO,
 } from "@/constants";
-
-// Icons
+import { useLayout } from "@/contexts/LayoutContext";
 import { cn } from "@/lib/utils";
-import {
-  BellOff,
-  CheckCircle2,
-  DollarSign,
-  Search,
-  TrendingUp,
-  Wallet
-} from "lucide-react";
+import { BellOff, CheckCircle2, DollarSign, Search, TrendingUp, Wallet, Zap } from "lucide-react";
 
 // --- Internal Components ---
 
@@ -252,9 +238,12 @@ const Cobrancas = () => {
           open: false,
           cobranca: null,
         });
+        if (plano?.slug && [PLANO_GRATUITO, PLANO_ESSENCIAL].includes(plano.slug)) {
+          handleUpgrade("Cobranças Automáticas", "Cobrança enviada! Automatize esse envio e ganhe tempo.");
+        }
       },
     });
-  }, [confirmDialogEnvioNotificacao.cobranca, enviarNotificacao]);
+  }, [confirmDialogEnvioNotificacao.cobranca, enviarNotificacao, plano, handleUpgrade]);
 
   const handleDesfazerPagamento = useCallback(() => {
     desfazerPagamento.mutate(confirmDialogDesfazer.cobrancaId, {
@@ -391,11 +380,17 @@ const Cobrancas = () => {
             />
           </div>
 
-          {/* Alerta Automático */}
+          {/* Alerta Automático (Desktop Slim) */}
           {plano?.slug &&
             [PLANO_GRATUITO, PLANO_ESSENCIAL].includes(plano.slug) && (
               <div>
-                <AutomaticChargesPrompt variant="full" />
+                <AutomaticChargesPrompt 
+                  variant="slim-desktop" 
+                  onUpgrade={() => handleUpgrade(
+                    "Cobranças Automáticas",
+                    "Automatize o envio de cobranças e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
+                  )}
+                />
               </div>
             )}
 
@@ -429,6 +424,22 @@ const Cobrancas = () => {
                   </Badge>
                 </TabsTrigger>
               </TabsList>
+
+              {/* Botão Automatizar (Desktop) */}
+              {plano?.slug && [PLANO_GRATUITO, PLANO_ESSENCIAL].includes(plano.slug) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden md:flex h-10 md:h-12 border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800 gap-2"
+                  onClick={() => handleUpgrade(
+                    "Cobranças Automáticas", 
+                    "Automatize o envio de cobranças e reduza a inadimplência."
+                  )}
+                >
+                  <Zap className="w-4 h-4" />
+                  Automatizar
+                </Button>
+              )}
 
               {/* Search Bar */}
               <div className="relative w-full md:w-72">
@@ -589,7 +600,8 @@ const Cobrancas = () => {
                   </div>
                   {/* Mobile List - Ultra Compact Mode (Pendentes) */}
                   <div className="md:hidden space-y-3">
-                    {cobrancasAbertasFiltradas.map((cobranca) => (
+                    {cobrancasAbertasFiltradas.map((cobranca, index) => (
+                      <Fragment key={cobranca.id}>
                       <div
                         key={cobranca.id}
                         onClick={() => navigateToDetails(cobranca)}
@@ -692,6 +704,18 @@ const Cobrancas = () => {
                           </div>
                         </div>
                       </div>
+
+                      {/* Inline Prompt Mobile (Após o 3º item) */}
+                      {index === 2 && plano?.slug && [PLANO_GRATUITO, PLANO_ESSENCIAL].includes(plano.slug) && (
+                        <AutomaticChargesPrompt 
+                          variant="inline-mobile"
+                          onUpgrade={() => handleUpgrade(
+                            "Cobranças Automáticas",
+                            "Automatize o envio de cobranças e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
+                          )}
+                        />
+                      )}
+                      </Fragment>
                     ))}
                   </div>
                 </>
@@ -949,7 +973,9 @@ const Cobrancas = () => {
               dataVencimento={selectedCobranca.data_vencimento}
               onPaymentRecorded={() => {
                 setPaymentDialogOpen(false);
-                // React Query já faz refetch automático via invalidateQueries na mutation (useRegistrarPagamentoManual)
+                if (plano?.slug && [PLANO_GRATUITO, PLANO_ESSENCIAL].includes(plano.slug)) {
+                  handleUpgrade("Cobranças Automáticas", "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?");
+                }
               }}
             />
           )}
