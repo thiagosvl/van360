@@ -5,6 +5,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 // Components - Common
+import { DateNavigation } from "@/components/common/DateNavigation";
 import { KPICard } from "@/components/common/KPICard";
 // Components - Alerts
 import { AutomaticChargesPrompt } from "@/components/alerts/AutomaticChargesPrompt";
@@ -103,14 +104,8 @@ const Cobrancas = () => {
   );
 
   // Date State
-  const [mesFilter, setMesFilter] = useState(() => {
-    const mesParam = searchParams.get("mes");
-    return mesParam ? Number(mesParam) : new Date().getMonth() + 1;
-  });
-  const [anoFilter, setAnoFilter] = useState(() => {
-    const anoParam = searchParams.get("ano");
-    return anoParam ? Number(anoParam) : new Date().getFullYear();
-  });
+  const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
+  const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
 
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
@@ -202,19 +197,10 @@ const Cobrancas = () => {
     });
   }, []);
 
-  const handleNavigation = useCallback(
-    (newMes: number, newAno: number) => {
-      setMesFilter(newMes);
-      setAnoFilter(newAno);
-      setSearchParams((prev) => {
-        const newParams = new URLSearchParams(prev);
-        newParams.set("mes", newMes.toString());
-        newParams.set("ano", newAno.toString());
-        return newParams;
-      });
-    },
-    [setSearchParams]
-  );
+  const handleNavigation = useCallback((newMes: number, newAno: number) => {
+    setMesFilter(newMes);
+    setAnoFilter(newAno);
+  }, []);
 
   const handleCobrancaUpdated = () => {
     // Auto invalidation
@@ -282,16 +268,7 @@ const Cobrancas = () => {
     setPageTitle("Cobranças");
   }, [setPageTitle]);
 
-  useEffect(() => {
-    const mesParam = searchParams.get("mes");
-    const anoParam = searchParams.get("ano");
-    if (mesParam && Number(mesParam) !== mesFilter) {
-      setMesFilter(Number(mesParam));
-    }
-    if (anoParam && Number(anoParam) !== anoFilter) {
-      setAnoFilter(Number(anoParam));
-    }
-  }, [searchParams, mesFilter, anoFilter]);
+
 
   useEffect(() => {
     if (mesFilter || anoFilter) {
@@ -350,6 +327,14 @@ const Cobrancas = () => {
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6 md:space-y-8">
+          {/* 1. Header & Navigation */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <DateNavigation
+              mes={mesFilter}
+              ano={anoFilter}
+              onNavigate={handleNavigation}
+            />
+          </div>
 
           {/* 2. KPIs - Grid Otimizado Mobile */}
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
