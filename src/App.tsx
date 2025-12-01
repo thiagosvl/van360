@@ -1,15 +1,15 @@
 import { AppGate } from "@/components/auth/AppGate";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/layouts/AppLayout";
 import { toast } from "@/utils/notifications/toast";
@@ -17,31 +17,33 @@ import { Capacitor } from "@capacitor/core";
 import { CapacitorUpdater } from "@capgo/capacitor-updater";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ResponsavelGate from "./components/auth/ResponsavelGate";
 import BackButtonController from "./components/navigation/BackButtonController";
 import ScrollToTop from "./components/navigation/ScrollToTop";
 import ResponsavelLayout from "./layouts/ResponsavelLayout";
 
+import { lazyLoad } from "@/utils/lazyLoad";
+
 // Lazy loading de rotas principais
-const Login = lazy(() => import("./pages/Login"));
-const Register = lazy(() => import("./pages/Register"));
-const NovaSenha = lazy(() => import("./pages/NovaSenha"));
-const Index = lazy(() => import("./pages/lp/Index"));
-const Home = lazy(() => import("./pages/Home"));
-const Planos = lazy(() => import("./pages/Planos"));
-const Assinatura = lazy(() => import("./pages/Assinatura"));
-const Passageiros = lazy(() => import("./pages/Passageiros"));
-const PassageiroCarteirinha = lazy(() => import("./pages/PassageiroCarteirinha"));
-const PassageiroCobranca = lazy(() => import("./pages/PassageiroCobranca"));
-const PassageiroExternalForm = lazy(() => import("./pages/PassageiroExternalForm"));
-const Cobrancas = lazy(() => import("./pages/Cobrancas"));
-const Escolas = lazy(() => import("./pages/Escolas"));
-const Veiculos = lazy(() => import("./pages/Veiculos"));
-const Gastos = lazy(() => import("./pages/Gastos"));
-const Relatorios = lazy(() => import("./pages/Relatorios"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+const Login = lazyLoad(() => import("./pages/Login"));
+const Register = lazyLoad(() => import("./pages/Register"));
+const NovaSenha = lazyLoad(() => import("./pages/NovaSenha"));
+const Index = lazyLoad(() => import("./pages/lp/Index"));
+const Home = lazyLoad(() => import("./pages/Home"));
+const Planos = lazyLoad(() => import("./pages/Planos"));
+const Assinatura = lazyLoad(() => import("./pages/Assinatura"));
+const Passageiros = lazyLoad(() => import("./pages/Passageiros"));
+const PassageiroCarteirinha = lazyLoad(() => import("./pages/PassageiroCarteirinha"));
+const PassageiroCobranca = lazyLoad(() => import("./pages/PassageiroCobranca"));
+const PassageiroExternalForm = lazyLoad(() => import("./pages/PassageiroExternalForm"));
+const Cobrancas = lazyLoad(() => import("./pages/Cobrancas"));
+const Escolas = lazyLoad(() => import("./pages/Escolas"));
+const Veiculos = lazyLoad(() => import("./pages/Veiculos"));
+const Gastos = lazyLoad(() => import("./pages/Gastos"));
+const Relatorios = lazyLoad(() => import("./pages/Relatorios"));
+const NotFound = lazyLoad(() => import("./pages/NotFound"));
 
 /**
  * Configuração do React Query

@@ -1,6 +1,4 @@
-// React
 import {
-  lazy,
   Suspense,
   useCallback,
   useEffect,
@@ -26,23 +24,25 @@ import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 // Components - Empty & Skeletons
 import { CarteirinhaSkeleton } from "@/components/skeletons";
 
+import { lazyLoad } from "@/utils/lazyLoad";
+
 // Components - Features - Carteirinha (Lazy Loaded)
-const CarteirinhaInfo = lazy(() =>
+const CarteirinhaInfo = lazyLoad(() =>
   import("@/components/features/passageiro/carteirinha").then((mod) => ({
     default: mod.CarteirinhaInfo,
   }))
 );
-const CarteirinhaCobrancas = lazy(() =>
+const CarteirinhaCobrancas = lazyLoad(() =>
   import("@/components/features/passageiro/carteirinha").then((mod) => ({
     default: mod.CarteirinhaCobrancas,
   }))
 );
-const CarteirinhaObservacoes = lazy(() =>
+const CarteirinhaObservacoes = lazyLoad(() =>
   import("@/components/features/passageiro/carteirinha").then((mod) => ({
     default: mod.CarteirinhaObservacoes,
   }))
 );
-const CarteirinhaResumoFinanceiro = lazy(() =>
+const CarteirinhaResumoFinanceiro = lazyLoad(() =>
   import("@/components/features/passageiro/carteirinha").then((mod) => ({
     default: mod.CarteirinhaResumoFinanceiro,
   }))

@@ -1,5 +1,5 @@
 // React
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 // React Router
@@ -16,18 +16,20 @@ import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaD
 import { isPlanoPagoNoAto } from "@/components/features/register";
 import { TermosUsoDialog } from "@/components/features/register/TermosUsoDialog";
 
+import { lazyLoad } from "@/utils/lazyLoad";
+
 // Components - Features - Register (Lazy Loaded)
-const CadastroForm = lazy(() =>
+const CadastroForm = lazyLoad(() =>
   import("@/components/features/register").then((mod) => ({
     default: mod.CadastroForm,
   }))
 );
-const PlanSummary = lazy(() =>
+const PlanSummary = lazyLoad(() =>
   import("@/components/features/register").then((mod) => ({
     default: mod.PlanSummary,
   }))
 );
-const PlanoCardSelection = lazy(() =>
+const PlanoCardSelection = lazyLoad(() =>
   import("@/components/features/register").then((mod) => ({
     default: mod.PlanoCardSelection,
   }))
