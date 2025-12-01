@@ -44,7 +44,6 @@ import {
   MoreVertical,
   Search,
   Trash2,
-  User,
   Users2
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -429,35 +428,52 @@ export default function PrePassageiros({
                 {prePassageiros.map((prePassageiro) => (
                   <div
                     key={prePassageiro.id}
-                    className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between gap-3 active:scale-[0.99] transition-transform duration-100"
+                    className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
                     onClick={() => handleFinalizeClick(prePassageiro)}
                   >
-                    <div className="flex flex-col gap-1.5 overflow-hidden">
-                      <p className="font-semibold text-gray-900 text-base truncate">
-                        {prePassageiro.nome}
-                      </p>
-                      <div className="flex items-center gap-1.5 text-sm text-gray-500 truncate">
-                        <User className="w-3.5 h-3.5 shrink-0" />
-                        <span>{prePassageiro.nome_responsavel}</span>
+                    {/* Linha 1: Avatar + Nome + Ações */}
+                    <div className="flex justify-between items-start mb-1 relative">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full flex items-center justify-center bg-gray-100 text-gray-500 font-bold text-sm">
+                          {getInitials(prePassageiro.nome)}
+                        </div>
+                        <div className="pr-6">
+                          <p className="font-bold text-gray-900 text-sm">
+                            {prePassageiro.nome}
+                          </p>
+                          <p className="text-xs font-semibold text-gray-900">
+                            {prePassageiro.nome_responsavel}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                        <span className="text-xs text-gray-500 font-medium">
-                          {formatRelativeTime(prePassageiro.created_at)}
-                        </span>
+
+                      {/* Botão de Ação no Topo Direito */}
+                      <div className="-mt-1 -mr-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 rounded-full text-blue-600 hover:bg-blue-50"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFinalizeClick(prePassageiro);
+                          }}
+                        >
+                          <ArrowRight className="w-5 h-5" />
+                        </Button>
                       </div>
                     </div>
 
-                    <Button
-                      size="sm"
-                      className="shrink-0 bg-blue-600 text-white hover:bg-blue-700 h-10 w-10 p-0 rounded-full shadow-sm shadow-blue-200"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleFinalizeClick(prePassageiro);
-                      }}
-                    >
-                      <ArrowRight className="w-5 h-5" />
-                    </Button>
+                    {/* Linha 2: Detalhes Secundários */}
+                    <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+                      <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
+                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                        <span>{formatRelativeTime(prePassageiro.created_at)}</span>
+                      </div>
+                      
+                      <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-full">
+                        Pendente
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
