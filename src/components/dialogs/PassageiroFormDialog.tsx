@@ -890,7 +890,7 @@ export default function PassengerFormDialog({
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent
-          className="w-[90vw] sm:w-full sm:max-w-2xl max-h-[95vh] flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
+          className="w-[90vw] sm:w-full sm:max-w-2xl max-h-[95vh] gap-0 flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
           onOpenAutoFocus={(e) => e.preventDefault()}
           hideCloseButton
           aria-describedby="dialog-description"
@@ -906,7 +906,7 @@ export default function PassengerFormDialog({
             </div>
             <DialogTitle className="text-xl font-bold text-white">
               {mode === "finalize"
-                ? "Cadastrar Passageiro"
+                ? "Solicitação de Cadastro"
                 : editingPassageiro
                 ? "Editar Passageiro"
                 : "Cadastrar Passageiro"}
@@ -930,7 +930,7 @@ export default function PassengerFormDialog({
                         Atenção!
                       </AlertTitle>
                       <AlertDescription className="text-xs">
-                        Para concluir o cadastro, preencha os campos destacados
+                        Para concluir, preencha os campos destacados
                         em vermelho.
                       </AlertDescription>
                     </Alert>

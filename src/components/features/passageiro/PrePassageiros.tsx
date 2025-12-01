@@ -32,16 +32,20 @@ import {
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { formatarTelefone, periodos } from "@/utils/formatters";
+import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
+import { formatarTelefone, formatRelativeTime, periodos } from "@/utils/formatters";
 import { mockGenerator } from "@/utils/mockDataGenerator";
 import { toast } from "@/utils/notifications/toast";
 import {
-  CheckCircle,
+  ArrowRight,
+  Clock,
+  Copy,
   Eye,
   MoreVertical,
   Search,
   Trash2,
-  Users2,
+  User,
+  Users2
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -272,17 +276,34 @@ export default function PrePassageiros({
           {loading ? (
             <PrePassengerListSkeleton />
           ) : prePassageiros.length === 0 ? (
-            <Card className="border-dashed border-gray-200">
+            <Card className="border-dashed border-gray-200 bg-gray-50/50">
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <Users2 className="h-6 w-6 text-gray-400" />
+                <div className="h-16 w-16 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center mb-4">
+                  <Users2 className="h-8 w-8 text-gray-400" />
                 </div>
-                <h3 className="text-sm font-medium text-gray-900">
-                  Nenhuma solicitação pendente
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  Tudo limpo por aqui!
                 </h3>
-                <p className="text-sm text-gray-500 mt-1 max-w-xs">
-                  {searchTerm.length > 0 ? "Nenhuma solicitação pendente encontrada." : "Compartilhe seu link de cadastro para receber novas solicitações de pais e responsáveis."}
+                <p className="text-sm text-gray-500 mb-6 max-w-xs mx-auto leading-relaxed">
+                  {searchTerm.length > 0 
+                    ? "Nenhuma solicitação encontrada para sua busca." 
+                    : "Envie seu link de cadastro para os pais e receba novas solicitações aqui."}
                 </p>
+                
+                {searchTerm.length === 0 && (
+                  <Button 
+                    variant="outline" 
+                    className="rounded-xl border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
+                    onClick={() => {
+                      if (!profile?.id) return;
+                      navigator.clipboard.writeText(buildPrepassageiroLink(profile.id));
+                      toast.success("Link copiado!", { description: "Envie para os pais." });
+                    }}
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copiar Link
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ) : (
@@ -408,61 +429,35 @@ export default function PrePassageiros({
                 {prePassageiros.map((prePassageiro) => (
                   <div
                     key={prePassageiro.id}
-                    className="bg-white p-3 pb-2 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
+                    className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between gap-3 active:scale-[0.99] transition-transform duration-100"
                     onClick={() => handleFinalizeClick(prePassageiro)}
                   >
-                    <div className="flex justify-between items-center mb-1 relative">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm bg-blue-50`}
-                        >
-                          {getInitials(prePassageiro.nome)}
-                        </div>
-                        <div className="pr-6">
-                          <p className="font-bold text-gray-900 text-sm">
-                            {prePassageiro.nome}
-                          </p>
-                          <p className="text-xs text-gray-900">
-                            {prePassageiro.nome_responsavel}
-                          </p>
-                        </div>
+                    <div className="flex flex-col gap-1.5 overflow-hidden">
+                      <p className="font-semibold text-gray-900 text-base truncate">
+                        {prePassageiro.nome}
+                      </p>
+                      <div className="flex items-center gap-1.5 text-sm text-gray-500 truncate">
+                        <User className="w-3.5 h-3.5 shrink-0" />
+                        <span>{prePassageiro.nome_responsavel}</span>
                       </div>
-
-                      <div className="-mt-1 -mr-2">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-gray-400 group-hover:text-gray-600"
-                            >
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => handleFinalizeClick(prePassageiro)}
-                            >
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Aprovar Cadastro
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-red-600 focus:text-red-600"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteDialog({
-                                  open: true,
-                                  prePassageiroId: prePassageiro.id,
-                                });
-                              }}
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Excluir
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                        <span className="text-xs text-gray-500 font-medium">
+                          {formatRelativeTime(prePassageiro.created_at)}
+                        </span>
                       </div>
                     </div>
+
+                    <Button
+                      size="sm"
+                      className="shrink-0 bg-blue-600 text-white hover:bg-blue-700 h-10 w-10 p-0 rounded-full shadow-sm shadow-blue-200"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleFinalizeClick(prePassageiro);
+                      }}
+                    >
+                      <ArrowRight className="w-5 h-5" />
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -497,7 +492,6 @@ export default function PrePassageiros({
           isOpen={isCreatingEscola}
           onClose={handleCloseEscolaFormDialog}
           onSuccess={handleEscolaCreated}
-          profile={profile}
         />
 
         <VeiculoFormDialog
