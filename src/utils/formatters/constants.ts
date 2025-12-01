@@ -39,7 +39,6 @@ export const tiposPagamento = [
 export const periodos = [
   { value: "integral", label: "Integral" },
   { value: "manha", label: "Manhã" },
-  { value: "almoco", label: "Almoço" },
   { value: "tarde", label: "Tarde" },
   { value: "noite", label: "Noite" },
 ];
