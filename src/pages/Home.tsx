@@ -21,7 +21,6 @@ import { PassengerLimitHealthBar } from "@/components/features/passageiro/Passen
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useLayout } from "@/contexts/LayoutContext";
@@ -152,6 +151,7 @@ const StatusCard = ({
   actionLabel,
   onAction,
   progress,
+  steps,
 }: {
   type: "pending" | "success" | "onboarding";
   title: string;
@@ -159,6 +159,7 @@ const StatusCard = ({
   actionLabel?: string;
   onAction?: () => void;
   progress?: { current: number; total: number };
+  steps?: { id: number; done: boolean; label: string; onAction: () => void }[];
 }) => {
   const styles = {
     pending: {
@@ -168,7 +169,7 @@ const StatusCard = ({
       iconColor: "text-orange-600",
       titleColor: "text-orange-900",
       descColor: "text-orange-700",
-      btnVariant: "default" as const,
+      btnVariant: "default",
       btnClass: "bg-orange-500 hover:bg-orange-600 text-white border-none",
     },
     success: {
@@ -178,7 +179,7 @@ const StatusCard = ({
       iconColor: "text-emerald-600",
       titleColor: "text-emerald-900",
       descColor: "text-emerald-700",
-      btnVariant: "outline" as const,
+      btnVariant: "outline",
       btnClass: "border-emerald-200 text-emerald-700 hover:bg-emerald-100",
     },
     onboarding: {
@@ -188,12 +189,17 @@ const StatusCard = ({
       iconColor: "text-indigo-600",
       titleColor: "text-gray-900",
       descColor: "text-gray-500",
-      btnVariant: "default" as const,
+      btnVariant: "default",
       btnClass: "bg-indigo-600 hover:bg-indigo-700 text-white",
     },
   };
 
   const style = styles[type];
+
+  if (!style) {
+    console.error(`StatusCard: Invalid type "${type}"`);
+    return null;
+  }
 
   return (
     <Card
@@ -229,43 +235,79 @@ const StatusCard = ({
               {description}
             </p>
 
-            {type === "onboarding" && progress && (
-              <div className="mb-4">
-                <div className="flex justify-between text-xs font-medium text-gray-500 mb-1.5">
-                  <span>Progresso</span>
-                  <span>
-                    {Math.round((progress.current / progress.total) * 100)}%
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                <Progress
-                  value={(progress.current / progress.total) * 100}
-                    className="h-2 bg-gray-100 flex-1"
-                  indicatorClassName="bg-indigo-600"
-                />
-                  <div
-                    className={cn(
-                      "h-8 w-8 rounded-full flex items-center justify-center transition-all duration-500",
-                      progress.current === progress.total
-                        ? "bg-yellow-100 text-yellow-600 scale-110 shadow-sm"
-                        : "bg-gray-100 text-gray-400"
-                    )}
-                  >
-                    <Trophy className={cn("h-4 w-4", progress.current === progress.total && "animate-pulse")} />
+            {type === "onboarding" && progress && steps && (
+              <div className="mt-4 space-y-3">
+                {progress.current === progress.total ? (
+                  <div className="bg-green-50 border border-green-100 rounded-xl p-4 flex items-center gap-4 animate-in fade-in zoom-in duration-500">
+                    <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
+                      <Trophy className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-green-900">Parabéns! 🎉</h4>
+                      <p className="text-sm text-green-700">Sua van está configurada e pronta para rodar.</p>
+                    </div>
                   </div>
-                </div>
-                {progress.current === progress.total && (
-                  <p className="text-xs text-yellow-600 font-medium mt-1 text-right">
-                    Sua Van está Verificada! 🎁
-                  </p>
+                ) : (
+                  steps.map((step, index) => {
+                    // Determine state
+                    // Done: step.done is true
+                    // Current: step.done is false AND all previous steps are done
+                    // Pending: step.done is false AND some previous step is NOT done
+                    const isDone = step.done;
+                    const previousStepsDone = steps.slice(0, index).every(s => s.done);
+                    const isCurrent = !isDone && previousStepsDone;
+                    const isPending = !isDone && !previousStepsDone;
+
+                    return (
+                      <div 
+                        key={step.id} 
+                        className={cn(
+                          "flex items-center justify-between p-3 rounded-xl border transition-all duration-300",
+                          isCurrent ? "bg-indigo-50/50 border-indigo-200 shadow-sm scale-[1.02]" : "bg-white border-gray-100",
+                          isDone && "bg-gray-50 border-gray-100 opacity-70"
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          {isDone ? (
+                            <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
+                              <CheckCircle2 className="h-4 w-4" />
+                            </div>
+                          ) : (
+                            <div className={cn(
+                              "h-6 w-6 rounded-full border-2 flex items-center justify-center shrink-0",
+                              isCurrent ? "border-indigo-600" : "border-gray-200"
+                            )}>
+                              {isCurrent && <div className="h-2.5 w-2.5 rounded-full bg-indigo-600" />}
+                            </div>
+                          )}
+                          <span className={cn(
+                            "text-sm font-medium",
+                            isDone ? "text-gray-400 line-through" : isCurrent ? "text-indigo-900 font-bold" : "text-gray-400"
+                          )}>
+                            {step.label}
+                          </span>
+                        </div>
+                        
+                        {isCurrent && (
+                          <Button 
+                            size="sm" 
+                            onClick={step.onAction}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white h-8 px-4 rounded-lg text-xs font-bold shadow-indigo-200/50 shadow-lg"
+                          >
+                            Realizar
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })
                 )}
               </div>
             )}
 
-            {actionLabel && (
+            {actionLabel && type !== "onboarding" && (
               <Button
                 size="sm"
-                variant={style.btnVariant}
+                variant={style.btnVariant as "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"}
                 className={cn(
                   "h-9 px-4 rounded-xl font-semibold",
                   style.btnClass
@@ -411,9 +453,24 @@ const Home = () => {
 
   // Onboarding Logic
   const onboardingSteps = [
-    { id: 1, done: escolasCount > 0, label: "Cadastrar escola" },
-    { id: 2, done: veiculosCount > 0, label: "Cadastrar veículo" },
-    { id: 3, done: passageirosCount > 0, label: "Cadastrar passageiro" },
+    { 
+      id: 1, 
+      done: veiculosCount > 0, 
+      label: "Cadastrar um Veículo",
+      onAction: () => setIsCreatingVeiculo(true)
+    },
+    { 
+      id: 2, 
+      done: escolasCount > 0, 
+      label: "Cadastrar uma Escola",
+      onAction: () => setIsCreatingEscola(true)
+    },
+    { 
+      id: 3, 
+      done: passageirosCount > 0, 
+      label: "Cadastrar Primeiro Passageiro",
+      onAction: () => setIsPassageiroDialogOpen(true)
+    },
   ];
   const completedSteps = onboardingSteps.filter((s) => s.done).length;
   const showOnboarding = completedSteps < 3;
@@ -615,17 +672,10 @@ const Home = () => {
           <section>
             <StatusCard
               type="onboarding"
-              title="Primeiros Passos"
-              description="Complete seu cadastro para aproveitar o máximo do sistema."
-              actionLabel="Continuar Cadastro"
-              onAction={() => {
-                const nextStep = onboardingSteps.find((s) => !s.done);
-                if (nextStep?.id === 1) navigate("/escolas?openModal=true");
-                else if (nextStep?.id === 2)
-                  navigate("/veiculos?openModal=true");
-                else navigate("/passageiros?openModal=true");
-              }}
+              title="O Caminho do Sucesso"
+              description="Siga os passos abaixo para configurar sua van e começar a faturar."
               progress={{ current: completedSteps, total: 3 }}
+              steps={onboardingSteps}
             />
           </section>
         )}
