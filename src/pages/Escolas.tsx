@@ -24,10 +24,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useDeleteEscola,
-  useEscolas,
-  useFilters,
-  useToggleAtivoEscola,
+    useDeleteEscola,
+    useEscolas,
+    useFilters,
+    useToggleAtivoEscola,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -127,7 +127,10 @@ export default function Escolas() {
   }, [escolas, selectedStatus, searchTerm]);
 
   const handleSuccessSave = useCallback(
-    (escolaCriada: Escola) => {
+    (escolaCriada: Escola, keepOpen: boolean = false) => {
+      if (keepOpen) {
+        return;
+      }
       safeCloseDialog(() => {
         if (searchParams.get("openModal")) {
           navigate("/inicio", { replace: true });
@@ -269,6 +272,7 @@ export default function Escolas() {
               }}
               editingEscola={editingEscola}
               onSuccess={handleSuccessSave}
+              allowBatchCreation={!editingEscola}
             />
           )}
         </div>

@@ -92,8 +92,8 @@ interface EscolaFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
   editingEscola?: Escola | null;
-  onSuccess: (escola: Escola) => void;
-  profile?: any; // Passar profile como prop para evitar chamadas duplicadas de useProfile
+  onSuccess: (escola: Escola, keepOpen?: boolean) => void;
+  allowBatchCreation?: boolean;
 }
 
 export default function EscolaFormDialog({
@@ -102,10 +102,12 @@ export default function EscolaFormDialog({
   editingEscola = null,
   onSuccess,
   profile: profileProp,
+  allowBatchCreation = false,
 }: EscolaFormDialogProps) {
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "dados-escola",
   ]);
+  const [keepOpen, setKeepOpen] = useState(false);
   const { user } = useSession();
   // Só chamar useProfile se não receber profile como prop e o dialog estiver aberto
   const { profile: profileFromHook } = useProfile(profileProp ? undefined : (isOpen ? user?.id : undefined));
@@ -162,6 +164,7 @@ export default function EscolaFormDialog({
         referencia: "",
         ativo: true,
       });
+      setKeepOpen(false);
     }
   }, [isOpen, form]);
 
@@ -196,8 +199,27 @@ export default function EscolaFormDialog({
         { usuarioId: profile.id, data },
         {
           onSuccess: (escolaSalva) => {
-            onSuccess(escolaSalva);
-            onClose();
+            onSuccess(escolaSalva, keepOpen);
+            
+            if (keepOpen) {              
+              // Resetar formulário mantendo alguns campos se necessário, ou reset total
+              form.reset({
+                nome: "",
+                logradouro: "",
+                numero: "",
+                bairro: "",
+                cidade: "",
+                estado: "",
+                cep: "",
+                referencia: "",
+                ativo: true,
+              });
+              
+              // Focar no campo nome
+              form.setFocus("nome");
+            } else {
+              onClose();
+            }
           },
           onError: (error: any) => {
             // Reverter QuickStart em caso de erro
@@ -503,6 +525,24 @@ export default function EscolaFormDialog({
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
+                
+                {!editingEscola && allowBatchCreation && (
+                  <div className="flex items-center gap-2 px-1">
+                    <Checkbox
+                      id="keepOpen"
+                      checked={keepOpen}
+                      onCheckedChange={(checked) => setKeepOpen(checked as boolean)}
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <label
+                      htmlFor="keepOpen"
+                      className="text-sm font-medium text-gray-600 cursor-pointer select-none"
+                    >
+                      Cadastrar outra em seguida
+                    </label>
+                  </div>
+                )}
+
                 <div className="flex gap-3 pt-4">
                   <Button
                     type="button"

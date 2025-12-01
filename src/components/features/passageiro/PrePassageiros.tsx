@@ -32,7 +32,7 @@ import {
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { formatarTelefone } from "@/utils/formatters";
+import { formatarTelefone, periodos } from "@/utils/formatters";
 import { mockGenerator } from "@/utils/mockDataGenerator";
 import { toast } from "@/utils/notifications/toast";
 import {
@@ -183,6 +183,8 @@ export default function PrePassageiros({
       observacoes: `Solicitação rápida gerada automaticamente`,
       logradouro: endereco.logradouro,
       numero: endereco.numero,
+      periodo: periodos[0].value,
+      escola_id: novaEscolaId,
       bairro: endereco.bairro,
       cidade: endereco.cidade,
       estado: endereco.estado,

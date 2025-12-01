@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { escolaApi } from "@/services/api/escola.api";
 import { Escola } from "@/types/escola";
 import { toast } from "@/utils/notifications/toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateEscola() {
   const queryClient = useQueryClient();
@@ -13,11 +13,11 @@ export function useCreateEscola() {
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       toast.success("escola.sucesso.criada");
     },
-    onError: (error: any) => {
-      toast.error("escola.erro.criar", {
-        description: error.message || "Não foi possível criar a escola.",
-      });
-    },
+    // onError: (error: any) => {
+    //   toast.error("escola.erro.criar", {
+    //     description: error.message || "Não foi possível criar a escola.",
+    //   });
+    // },
   });
 }
 

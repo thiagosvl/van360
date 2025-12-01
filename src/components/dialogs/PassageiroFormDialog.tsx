@@ -311,6 +311,8 @@ export default function PassengerFormDialog({
   const escolasModal = (escolasData as Escola[]) || [];
   const veiculosModal = (veiculosData as Veiculo[]) || [];
 
+
+
   const createPassageiro = useCreatePassageiro();
   const updatePassageiro = useUpdatePassageiro();
   const finalizePreCadastro = useFinalizePreCadastro();
@@ -367,6 +369,26 @@ export default function PassengerFormDialog({
       enviar_cobranca_automatica: false,
     },
   });
+
+  // Selecionar veículo automaticamente se houver apenas 1 (para create ou finalize)
+  useEffect(() => {
+    if (
+      isOpen &&
+      !refreshing && // Aguardar inicialização do formulário
+      (mode === "create" || mode === "finalize") &&
+      !isLoadingVeiculos &&
+      veiculosModal.length === 1
+    ) {
+      const veiculoUnico = veiculosModal[0];
+      const veiculoAtual = form.getValues("veiculo_id");
+      
+      // Só define se ainda não estiver definido
+      if (!veiculoAtual) {
+        form.setValue("veiculo_id", veiculoUnico.id, { shouldValidate: true });
+        setSelectedVeiculo(veiculoUnico.id);
+      }
+    }
+  }, [isOpen, mode, isLoadingVeiculos, veiculosModal, form, refreshing]);
 
   // Aguardar que os dados estejam disponíveis e preencher os campos de escola e veículo
   // Este useEffect garante que os campos sejam preenchidos quando os dados estiverem disponíveis

@@ -88,8 +88,8 @@ const prePassageiroSchema = z.object({
   referencia: z.string().optional(),
   observacoes: z.string().optional(),
 
-  escola_id: z.string().min(1, "Campo obrigatório"),
-  periodo: z.string().min(1, "Campo obrigatório"),
+  escola_id: z.string().optional(),
+  periodo: z.string().optional(),
 
   valor_cobranca: z.string().optional(),
   dia_vencimento: z.string().optional(),
@@ -397,7 +397,7 @@ export default function PassageiroExternalForm() {
                             render={({ field, fieldState }) => (
                               <FormItem>
                                 <FormLabel className="text-gray-700 font-medium ml-1">
-                                  Escola <span className="text-red-500">*</span>
+                                  Escola
                                 </FormLabel>
                                 <Select
                                   onValueChange={field.onChange}
@@ -438,8 +438,7 @@ export default function PassageiroExternalForm() {
                             render={({ field, fieldState }) => (
                               <FormItem>
                                 <FormLabel className="text-gray-700 font-medium ml-1">
-                                  Período{" "}
-                                  <span className="text-red-500">*</span>
+                                  Período
                                 </FormLabel>
                                 <Select
                                   onValueChange={field.onChange}
