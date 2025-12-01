@@ -1,12 +1,16 @@
 import {
   ArrowRight,
+  Bus,
   CheckCircle2,
   CreditCard,
   DollarSign,
   FileText,
+  Lock as LockIcon,
   Plus,
+  School,
   TrendingUp,
   Trophy,
+  User,
   Users,
   Wallet,
   Zap,
@@ -140,8 +144,8 @@ const ShortcutCard = ({
   return (
     <NavLink to={to!} className="group">
       {content}
-  </NavLink>
-);
+    </NavLink>
+  );
 };
 
 const StatusCard = ({
@@ -159,7 +163,14 @@ const StatusCard = ({
   actionLabel?: string;
   onAction?: () => void;
   progress?: { current: number; total: number };
-  steps?: { id: number; done: boolean; label: string; onAction: () => void }[];
+  steps?: {
+    id: number;
+    done: boolean;
+    label: string;
+    onAction: () => void;
+    icon: any;
+    buttonText: string;
+  }[];
 }) => {
   const styles = {
     pending: {
@@ -209,7 +220,7 @@ const StatusCard = ({
         style.border
       )}
     >
-      <CardContent className="p-5">
+      <CardContent className="p-4 md:p-5">
         <div className="flex items-start gap-4">
           <div
             className={cn(
@@ -235,79 +246,18 @@ const StatusCard = ({
               {description}
             </p>
 
-            {type === "onboarding" && progress && steps && (
-              <div className="mt-4 space-y-3">
-                {progress.current === progress.total ? (
-                  <div className="bg-green-50 border border-green-100 rounded-xl p-4 flex items-center gap-4 animate-in fade-in zoom-in duration-500">
-                    <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
-                      <Trophy className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-green-900">Parabéns! 🎉</h4>
-                      <p className="text-sm text-green-700">Sua van está configurada e pronta para rodar.</p>
-                    </div>
-                  </div>
-                ) : (
-                  steps.map((step, index) => {
-                    // Determine state
-                    // Done: step.done is true
-                    // Current: step.done is false AND all previous steps are done
-                    // Pending: step.done is false AND some previous step is NOT done
-                    const isDone = step.done;
-                    const previousStepsDone = steps.slice(0, index).every(s => s.done);
-                    const isCurrent = !isDone && previousStepsDone;
-                    const isPending = !isDone && !previousStepsDone;
-
-                    return (
-                      <div 
-                        key={step.id} 
-                        className={cn(
-                          "flex items-center justify-between p-3 rounded-xl border transition-all duration-300",
-                          isCurrent ? "bg-indigo-50/50 border-indigo-200 shadow-sm scale-[1.02]" : "bg-white border-gray-100",
-                          isDone && "bg-gray-50 border-gray-100 opacity-70"
-                        )}
-                      >
-                        <div className="flex items-center gap-3">
-                          {isDone ? (
-                            <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
-                              <CheckCircle2 className="h-4 w-4" />
-                            </div>
-                          ) : (
-                            <div className={cn(
-                              "h-6 w-6 rounded-full border-2 flex items-center justify-center shrink-0",
-                              isCurrent ? "border-indigo-600" : "border-gray-200"
-                            )}>
-                              {isCurrent && <div className="h-2.5 w-2.5 rounded-full bg-indigo-600" />}
-                            </div>
-                          )}
-                          <span className={cn(
-                            "text-sm font-medium",
-                            isDone ? "text-gray-400 line-through" : isCurrent ? "text-indigo-900 font-bold" : "text-gray-400"
-                          )}>
-                            {step.label}
-                          </span>
-                        </div>
-                        
-                        {isCurrent && (
-                          <Button 
-                            size="sm" 
-                            onClick={step.onAction}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white h-8 px-4 rounded-lg text-xs font-bold shadow-indigo-200/50 shadow-lg"
-                          >
-                            Realizar
-                          </Button>
-                        )}
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            )}
-
             {actionLabel && type !== "onboarding" && (
               <Button
                 size="sm"
-                variant={style.btnVariant as "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"}
+                variant={
+                  style.btnVariant as
+                    | "default"
+                    | "destructive"
+                    | "outline"
+                    | "secondary"
+                    | "ghost"
+                    | "link"
+                }
                 className={cn(
                   "h-9 px-4 rounded-xl font-semibold",
                   style.btnClass
@@ -320,6 +270,97 @@ const StatusCard = ({
             )}
           </div>
         </div>
+
+        {type === "onboarding" && progress && steps && (
+          <div className="mt-4 space-y-3 md:ml-14">
+            {progress.current === progress.total ? (
+              <div className="bg-green-50 border border-green-100 rounded-xl p-4 flex items-center gap-4 animate-in fade-in zoom-in duration-500">
+                <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
+                  <Trophy className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-green-900">Parabéns! 🎉</h4>
+                  <p className="text-sm text-green-700">
+                    Sua van está configurada e pronta para rodar.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                {steps.map((step, index) => {
+                  const isDone = step.done;
+                  const previousStepsDone = steps
+                    .slice(0, index)
+                    .every((s) => s.done);
+                  const isCurrent = !isDone && previousStepsDone;
+                  const StepIcon = step.icon;
+
+                  return (
+                    <div
+                      key={step.id}
+                      className={cn(
+                        "flex items-center justify-between p-3 rounded-xl border transition-all duration-300",
+                        isCurrent
+                          ? "bg-indigo-50/50 border-indigo-200 shadow-sm scale-[1.02]"
+                          : "bg-white border-gray-100",
+                        isDone && "bg-gray-50 border-gray-100 opacity-70"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={cn(
+                            "h-8 w-8 rounded-full flex items-center justify-center shrink-0 transition-colors",
+                            isDone
+                              ? "bg-green-100 text-green-600"
+                              : isCurrent
+                              ? "bg-purple-100 text-purple-600 border border-purple-200"
+                              : "bg-gray-100 text-gray-400"
+                          )}
+                        >
+                          {isDone ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <StepIcon className="h-4 w-4" />
+                          )}
+                        </div>
+                        <span
+                          className={cn(
+                            "text-sm font-medium",
+                            isDone
+                              ? "text-gray-400 line-through"
+                              : isCurrent
+                              ? "text-indigo-900 font-bold"
+                              : "text-gray-400"
+                          )}
+                        >
+                          {step.label}
+                        </span>
+                      </div>
+
+                      {isCurrent && (
+                        <Button
+                          size="sm"
+                          onClick={step.onAction}
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white h-8 px-3 rounded-lg text-xs font-bold shadow-indigo-200/50 shadow-lg animate-in fade-in slide-in-from-right-4 duration-300"
+                        >
+                          {step.buttonText}
+                          <ArrowRight className="ml-1" />
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+
+                <div className="flex items-center gap-2 justify-center pt-2 opacity-60">
+                  <LockIcon className="h-3 w-3 text-gray-400" />
+                  <p className="text-[10px] text-gray-500 font-medium text-center">
+                    Complete as etapas para liberar seu painel oficial.
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -335,7 +376,9 @@ const Home = () => {
 
   // Dialog states
   const [isPassageiroDialogOpen, setIsPassageiroDialogOpen] = useState(false);
-  const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(null);
+  const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(
+    null
+  );
   const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
   const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
   const [isCreatingEscola, setIsCreatingEscola] = useState(false);
@@ -360,10 +403,7 @@ const Home = () => {
     refetch: refetchPassageiros,
     isLoading: isLoadingPassageiros,
     isFetching: isFetchingPassageiros,
-  } = usePassageiros(
-    { usuarioId: profile?.id },
-    { enabled: !!profile?.id }
-  );
+  } = usePassageiros({ usuarioId: profile?.id }, { enabled: !!profile?.id });
 
   const {
     data: escolasData,
@@ -371,7 +411,7 @@ const Home = () => {
     isLoading: isLoadingEscolas,
     isFetching: isFetchingEscolas,
   } = useEscolas(profile?.id, {
-      enabled: !!profile?.id,
+    enabled: !!profile?.id,
   });
 
   const {
@@ -380,7 +420,7 @@ const Home = () => {
     isLoading: isLoadingVeiculos,
     isFetching: isFetchingVeiculos,
   } = useVeiculos(profile?.id, {
-      enabled: !!profile?.id,
+    enabled: !!profile?.id,
   });
 
   // Estado de loading unificado - só renderiza conteúdo quando todas as queries terminarem
@@ -453,23 +493,29 @@ const Home = () => {
 
   // Onboarding Logic
   const onboardingSteps = [
-    { 
-      id: 1, 
-      done: veiculosCount > 0, 
+    {
+      id: 1,
+      done: veiculosCount > 0,
       label: "Cadastrar um Veículo",
-      onAction: () => setIsCreatingVeiculo(true)
+      onAction: () => setIsCreatingVeiculo(true),
+      icon: Bus,
+      buttonText: "Cadastrar",
     },
-    { 
-      id: 2, 
-      done: escolasCount > 0, 
+    {
+      id: 2,
+      done: escolasCount > 0,
       label: "Cadastrar uma Escola",
-      onAction: () => setIsCreatingEscola(true)
+      onAction: () => setIsCreatingEscola(true),
+      icon: School,
+      buttonText: "Cadastrar",
     },
-    { 
-      id: 3, 
-      done: passageirosCount > 0, 
+    {
+      id: 3,
+      done: passageirosCount > 0,
       label: "Cadastrar Primeiro Passageiro",
-      onAction: () => setIsPassageiroDialogOpen(true)
+      onAction: () => setIsPassageiroDialogOpen(true),
+      icon: User,
+      buttonText: "Cadastrar",
     },
   ];
   const completedSteps = onboardingSteps.filter((s) => s.done).length;
@@ -651,168 +697,172 @@ const Home = () => {
 
   return (
     <>
-    <PullToRefreshWrapper onRefresh={handlePullToRefresh}>
-      <div className="space-y-6 pb-20">
-        {/* Header Contextual */}
-        <div className="px-1">
-          <p className="text-sm text-gray-500 capitalize font-medium">
-            {dateContext}
-          </p>
-          <p className="text-xs text-gray-400 mt-0.5">
-            {latePayments.length > 0
-              ? `${latePayments.length} cobrança${
-                  latePayments.length != 1 ? "s" : ""
-                } em atraso`
-              : "Nenhuma pendência hoje"}
-          </p>
-        </div>
+      <PullToRefreshWrapper onRefresh={handlePullToRefresh}>
+        <div className="space-y-6 pb-20">
+          {/* Header Contextual */}
+          <div className="px-1">
+            <p className="text-sm text-gray-500 capitalize font-medium">
+              {dateContext}
+            </p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              {latePayments.length > 0
+                ? `${latePayments.length} cobrança${
+                    latePayments.length != 1 ? "s" : ""
+                  } em atraso`
+                : "Nenhuma pendência hoje"}
+            </p>
+          </div>
 
-        {/* Onboarding - Primeiros Passos */}
-        {showOnboarding && (
-          <section>
-            <StatusCard
-              type="onboarding"
-              title="O Caminho do Sucesso"
-              description="Siga os passos abaixo para configurar sua van e começar a faturar."
-              progress={{ current: completedSteps, total: 3 }}
-              steps={onboardingSteps}
-            />
-          </section>
-        )}
-
-        {/* Mini KPIs */}
-        <div className={cn(
-          "grid gap-4",
-          showOnboarding 
-            ? "grid-cols-1 sm:grid-cols-1" 
-            : "grid-cols-1 sm:grid-cols-3"
-        )}>
-          {!showOnboarding && (
-            <>
-          <MiniKPI
-            label="Receita Prevista"
-            value={formatCurrency(receitaPrevista)}
-            icon={DollarSign}
-            colorClass="text-emerald-600"
-            bgClass="bg-emerald-50"
-            loading={isProfileLoading}
-          />
-          <MiniKPI
-            label="A Receber"
-            value={formatCurrency(aReceber)}
-            icon={Wallet}
-            colorClass={aReceber > 0 ? "text-orange-600" : "text-gray-400"}
-            bgClass={aReceber > 0 ? "bg-orange-50" : "bg-gray-50"}
-            loading={isProfileLoading}
-          />
-            </>
+          {/* Onboarding - Primeiros Passos */}
+          {showOnboarding && (
+            <section>
+              <StatusCard
+                type="onboarding"
+                title="Configure sua conta em 2 minutos"
+                description="Siga estes 3 passos rápidos para profissionalizar sua gestão e eliminar o papel."
+                progress={{ current: completedSteps, total: 3 }}
+                steps={onboardingSteps}
+              />
+            </section>
           )}
-          {hasPassengerLimit ? (
-            <div className="sm:col-span-1">
-              <PassengerLimitHealthBar
-                current={activePassengers}
-                max={Number(limitePassageiros)}
+
+          {/* Mini KPIs */}
+          <div
+            className={cn(
+              "grid gap-4",
+              showOnboarding
+                ? "grid-cols-1 sm:grid-cols-1"
+                : "grid-cols-1 sm:grid-cols-3"
+            )}
+          >
+            {!showOnboarding && (
+              <>
+                <MiniKPI
+                  label="Receita Prevista"
+                  value={formatCurrency(receitaPrevista)}
+                  icon={DollarSign}
+                  colorClass="text-emerald-600"
+                  bgClass="bg-emerald-50"
+                  loading={isProfileLoading}
+                />
+                <MiniKPI
+                  label="A Receber"
+                  value={formatCurrency(aReceber)}
+                  icon={Wallet}
+                  colorClass={
+                    aReceber > 0 ? "text-orange-600" : "text-gray-400"
+                  }
+                  bgClass={aReceber > 0 ? "bg-orange-50" : "bg-gray-50"}
+                  loading={isProfileLoading}
+                />
+              </>
+            )}
+            {hasPassengerLimit ? (
+              <div className="sm:col-span-1">
+                <PassengerLimitHealthBar
+                  current={activePassengers}
+                  max={Number(limitePassageiros)}
+                  label="Passageiros Ativos"
+                  description="Cadastre mais passageiros para crescer seu negócio."
+                  className="mb-0"
+                />
+              </div>
+            ) : (
+              <MiniKPI
+                className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative"
                 label="Passageiros Ativos"
-                description="Cadastre mais passageiros para crescer seu negócio."
-                className="mb-0"
+                value={activePassengers}
+                icon={Users}
+                colorClass="text-blue-600"
+                bgClass="bg-blue-50"
+                loading={isProfileLoading}
+              />
+            )}
+          </div>
+
+          {/* Status Operacional */}
+          {!showOnboarding && cobrancas.length > 0 && (
+            <section>
+              {latePayments.length > 0 ? (
+                <StatusCard
+                  type="pending"
+                  title="Atenção às Cobranças"
+                  description={`Você tem ${formatCurrency(
+                    totalEmAtraso
+                  )} em atraso de ${latePayments.length} passageiro${
+                    latePayments.length != 1 ? "s" : ""
+                  }.`}
+                  actionLabel="Ver Cobranças"
+                  onAction={() => navigate("/cobrancas")}
+                />
+              ) : (
+                <StatusCard
+                  type="success"
+                  title="Tudo em dia!"
+                  description={`Parabéns! Todas as cobranças vencidas foram pagas. Receita prevista: ${formatCurrency(
+                    receitaPrevista
+                  )}.`}
+                />
+              )}
+            </section>
+          )}
+
+          {/* Acessos Rápidos */}
+          <section>
+            <h2 className="text-lg font-bold text-gray-900 mb-4 px-1">
+              Acesso Rápido
+            </h2>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 md:gap-4">
+              <ShortcutCard
+                onClick={handleOpenPassageiroDialog}
+                icon={Plus}
+                label="Cadastrar Passageiro"
+                colorClass="text-indigo-600"
+                bgClass="bg-indigo-50"
+              />
+              <div
+                onClick={handleCopyLink}
+                className="cursor-pointer group flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all duration-200 hover:border-blue-200 hover:shadow-md h-24 w-full"
+              >
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center mb-2 bg-blue-50 text-blue-600 transition-transform group-hover:scale-110">
+                  <Zap className="h-5 w-5" />
+                </div>
+                <span className="text-xs font-semibold text-gray-700 text-center leading-tight group-hover:text-blue-700">
+                  Link de Cadastro
+                </span>
+              </div>
+              <ShortcutCard
+                to="/cobrancas"
+                icon={CreditCard}
+                label="Cobranças"
+                colorClass="text-emerald-600"
+                bgClass="bg-emerald-50"
+              />
+              <ShortcutCard
+                to="/gastos"
+                icon={TrendingUp}
+                label="Gastos"
+                colorClass="text-red-600"
+                bgClass="bg-red-50"
+              />
+              <ShortcutCard
+                to="/relatorios"
+                icon={FileText}
+                label="Relatórios"
+                colorClass="text-purple-600"
+                bgClass="bg-purple-50"
+              />
+              <ShortcutCard
+                to="/passageiros"
+                icon={Users}
+                label="Passageiros"
+                colorClass="text-blue-600"
+                bgClass="bg-blue-50"
               />
             </div>
-          ) : (
-          <MiniKPI
-              className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative"
-            label="Passageiros Ativos"
-            value={activePassengers}
-            icon={Users}
-            colorClass="text-blue-600"
-            bgClass="bg-blue-50" 
-            loading={isProfileLoading}
-          />
-          )}
-        </div>
+          </section>
 
-        {/* Status Operacional */}
-        {!showOnboarding && cobrancas.length > 0 && (
-        <section>
-          {latePayments.length > 0 ? (
-            <StatusCard
-              type="pending"
-              title="Atenção às Cobranças"
-              description={`Você tem ${formatCurrency(
-                totalEmAtraso
-                )} em atraso de ${latePayments.length} passageiro${
-                  latePayments.length != 1 ? "s" : ""
-                }.`}
-              actionLabel="Ver Cobranças"
-              onAction={() => navigate("/cobrancas")}
-            />
-          ) : (
-            <StatusCard
-              type="success"
-              title="Tudo em dia!"
-              description={`Parabéns! Todas as cobranças vencidas foram pagas. Receita prevista: ${formatCurrency(
-                receitaPrevista
-              )}.`}
-            />
-          )}
-        </section>
-        )}
-
-        {/* Acessos Rápidos */}
-        <section>
-          <h2 className="text-lg font-bold text-gray-900 mb-4 px-1">
-            Acesso Rápido
-          </h2>
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 md:gap-4">
-            <ShortcutCard
-              onClick={handleOpenPassageiroDialog}
-              icon={Plus}
-              label="Cadastrar Passageiro"
-              colorClass="text-indigo-600"
-              bgClass="bg-indigo-50"
-            />
-            <div
-              onClick={handleCopyLink}
-              className="cursor-pointer group flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all duration-200 hover:border-blue-200 hover:shadow-md h-24 w-full"
-            >
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center mb-2 bg-blue-50 text-blue-600 transition-transform group-hover:scale-110">
-                <Zap className="h-5 w-5" />
-              </div>
-              <span className="text-xs font-semibold text-gray-700 text-center leading-tight group-hover:text-blue-700">
-                Link de Cadastro
-              </span>
-            </div>
-            <ShortcutCard
-              to="/cobrancas"
-              icon={CreditCard}
-              label="Cobranças"
-              colorClass="text-emerald-600"
-              bgClass="bg-emerald-50"
-            />
-            <ShortcutCard
-              to="/gastos"
-              icon={TrendingUp}
-              label="Gastos"
-              colorClass="text-red-600"
-              bgClass="bg-red-50"
-            />
-            <ShortcutCard
-              to="/relatorios"
-              icon={FileText}
-              label="Relatórios"
-              colorClass="text-purple-600"
-              bgClass="bg-purple-50"
-            />
-            <ShortcutCard
-              to="/passageiros"
-              icon={Users}
-              label="Passageiros"
-              colorClass="text-blue-600"
-              bgClass="bg-blue-50"
-            />
-          </div>
-        </section>
-
-        {/* Marketing / Upsell (Discreto) */}
+          {/* Marketing / Upsell (Discreto) */}
           <section className="pt-2">
             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -820,61 +870,61 @@ const Home = () => {
               </div>
               <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                <h3 className="font-bold text-lg">
-                  {getPlanTitle(plano?.slug)}
-                </h3>
+                  <h3 className="font-bold text-lg">
+                    {getPlanTitle(plano?.slug)}
+                  </h3>
                   <p className="text-indigo-100 text-sm mt-1 max-w-md">
-                  {getPlanMessage(plano?.slug)}
+                    {getPlanMessage(plano?.slug)}
                   </p>
                 </div>
                 <Button
                   variant="secondary"
                   className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold border-none shadow-sm shrink-0"
-                onClick={() => {
-                  const mainSlug = getMainPlanSlug();
-                  const url = mainSlug
-                    ? `/planos?plano=${mainSlug}`
-                    : "/planos";
-                  navigate(url);
-                }}
+                  onClick={() => {
+                    const mainSlug = getMainPlanSlug();
+                    const url = mainSlug
+                      ? `/planos?plano=${mainSlug}`
+                      : "/planos";
+                    navigate(url);
+                  }}
                 >
-                {getPlanCTA(plano?.slug)}
+                  {getPlanCTA(plano?.slug)}
                 </Button>
               </div>
             </div>
           </section>
-      </div>
-    </PullToRefreshWrapper>
+        </div>
+      </PullToRefreshWrapper>
 
-    {/* Dialogs */}
-    <PassageiroFormDialog
-      isOpen={isPassageiroDialogOpen}
-      onClose={handleClosePassageiroDialog}
-      onSuccess={handleSuccessFormPassageiro}
-      editingPassageiro={editingPassageiro}
-      onCreateEscola={() => setIsCreatingEscola(true)}
-      onCreateVeiculo={() => setIsCreatingVeiculo(true)}
-      mode="create"
-      novaEscolaId={novaEscolaId}
-      novoVeiculoId={novoVeiculoId}
-      profile={profile}
-      plano={plano}
-    />
+      {/* Dialogs */}
+      <PassageiroFormDialog
+        isOpen={isPassageiroDialogOpen}
+        onClose={handleClosePassageiroDialog}
+        onSuccess={handleSuccessFormPassageiro}
+        editingPassageiro={editingPassageiro}
+        onCreateEscola={() => setIsCreatingEscola(true)}
+        onCreateVeiculo={() => setIsCreatingVeiculo(true)}
+        mode="create"
+        novaEscolaId={novaEscolaId}
+        novoVeiculoId={novoVeiculoId}
+        profile={profile}
+        plano={plano}
+      />
 
-    <EscolaFormDialog
-      isOpen={isCreatingEscola}
-      onClose={handleCloseEscolaFormDialog}
-      onSuccess={handleEscolaCreated}
-      profile={profile}
-    />
+      <EscolaFormDialog
+        isOpen={isCreatingEscola}
+        onClose={handleCloseEscolaFormDialog}
+        onSuccess={handleEscolaCreated}
+        profile={profile}
+      />
 
-    <VeiculoFormDialog
-      isOpen={isCreatingVeiculo}
-      onClose={handleCloseVeiculoFormDialog}
-      onSuccess={handleVeiculoCreated}
-      profile={profile}
-    />
-  </>
+      <VeiculoFormDialog
+        isOpen={isCreatingVeiculo}
+        onClose={handleCloseVeiculoFormDialog}
+        onSuccess={handleVeiculoCreated}
+        profile={profile}
+      />
+    </>
   );
 };
 

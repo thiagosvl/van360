@@ -196,7 +196,7 @@ export default function Veiculos() {
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6">
-          <Card className="border-none shadow-none bg-transparent mt-3">
+          <Card className="border-none shadow-none bg-transparent">
             <CardHeader className="p-0">
               {/* Toolbar moved inside CardContent or kept here if needed, but we want to remove the separate button */}
             </CardHeader>
