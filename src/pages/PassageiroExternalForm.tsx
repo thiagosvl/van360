@@ -41,6 +41,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 // Services
 import { supabase } from "@/integrations/supabase/client";
+import { prePassageiroApi } from "@/services/api/pre-passageiro.api";
 
 // Utils
 import { useSEO } from "@/hooks/useSEO";
@@ -231,17 +232,13 @@ export default function PassageiroExternalForm() {
           : null,
       };
 
-      const { error } = await supabase.from("pre_passageiros" as any).insert([
-        {
-          ...payload,
-          usuario_id: motoristaId,
-        },
-      ]);
-
-      if (error) throw error;
+      await prePassageiroApi.createPrePassageiro({
+        ...payload,
+        usuario_id: motoristaId,
+      });
 
       setSuccess(true);
-      form.reset();
+      // form.reset(); // Removido para permitir o "Smart Reset" no botão de novo cadastro
     } catch (error: any) {
       toast.error("sistema.erro.enviarDados", {
         description: error.message || "Tente novamente mais tarde.",
@@ -249,6 +246,60 @@ export default function PassageiroExternalForm() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleNewCadastro = () => {
+    const currentValues = form.getValues();
+
+    form.reset({
+      // Manter dados do Responsável
+      nome_responsavel: currentValues.nome_responsavel,
+      email_responsavel: currentValues.email_responsavel,
+      cpf_responsavel: currentValues.cpf_responsavel,
+      telefone_responsavel: currentValues.telefone_responsavel,
+
+      // Manter dados de Endereço
+      cep: currentValues.cep,
+      logradouro: currentValues.logradouro,
+      numero: currentValues.numero,
+      bairro: currentValues.bairro,
+      cidade: currentValues.cidade,
+      estado: currentValues.estado,
+      referencia: currentValues.referencia,
+
+      // Zerar dados do Passageiro e Vínculo
+      nome: "",
+      escola_id: "",
+      periodo: "",
+      observacoes: "",
+      
+      // Zerar dados de Cobrança (pois podem variar)
+      valor_cobranca: "",
+      dia_vencimento: "",
+
+      // Manter configurações padrão
+      emitir_cobranca_mes_atual: false,
+      ativo: true,
+      enviar_cobranca_automatica: false,
+    });
+
+    setSuccess(false);
+    // Focar no formulário de passageiro
+    setOpenAccordionItems([
+      "passageiro",
+      "responsavel",
+      "cobranca",
+      "endereco",
+      "observacoes",
+    ]);
+    
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    toast.info("Dados mantidos!", {
+      description:
+        "Para agilizar, mantivemos os dados do responsável e endereço. Preencha apenas os dados do novo passageiro.",
+      duration: 5000,
+    });
   };
 
   if (loading) {
@@ -277,7 +328,7 @@ export default function PassageiroExternalForm() {
             será notificado que você concluiu o cadastro.
           </p>
           <Button
-            onClick={() => window.location.reload()}
+            onClick={handleNewCadastro}
             className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20"
           >
             Novo Cadastro
@@ -934,8 +985,7 @@ export default function PassageiroExternalForm() {
         {/* Footer */}
         <div className="mt-8 text-center text-gray-500 text-sm">
           <p>
-            © {new Date().getFullYear()} Van Control. Todos os direitos
-            reservados.
+            © {new Date().getFullYear()} Van360. Todos os direitos reservados.
           </p>
         </div>
       </div>

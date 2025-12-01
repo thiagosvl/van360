@@ -37,6 +37,7 @@ import { mockGenerator } from "@/utils/mockDataGenerator";
 import { toast } from "@/utils/notifications/toast";
 import {
   CheckCircle,
+  Eye,
   MoreVertical,
   Search,
   Trash2,
@@ -355,8 +356,8 @@ export default function PrePassageiros({
                                 handleFinalizeClick(prePassageiro);
                               }}
                             >
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Aprovar
+                              <Eye className="w-4 h-4 mr-2" />
+                              Revisar
                             </Button>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -376,8 +377,8 @@ export default function PrePassageiros({
                                     handleFinalizeClick(prePassageiro);
                                   }}
                                 >
-                                  <CheckCircle className="w-4 h-4 mr-2" />
-                                  Aprovar Cadastro
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  Revisar
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="text-red-600 focus:text-red-600"

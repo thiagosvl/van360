@@ -50,9 +50,9 @@ import { toast } from "@/utils/notifications/toast";
 
 // Constants
 import {
-    PLANO_COMPLETO,
-    PLANO_ESSENCIAL,
-    PLANO_GRATUITO
+  PLANO_COMPLETO,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO
 } from "@/constants";
 
 // Types
@@ -868,7 +868,7 @@ export default function Register() {
         {/* Footer / Depoimento (Opcional) */}
         <div className="text-center pt-4">
           <p className="text-sm text-gray-400">
-            &copy; {new Date().getFullYear()} Van360. Todos os direitos reservados.
+            © {new Date().getFullYear()} Van360. Todos os direitos reservados.
           </p>
       </div>
       
