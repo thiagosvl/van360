@@ -14,28 +14,28 @@ import { CepInput, MoneyInput, PhoneInput } from "@/components/forms";
 
 // Components - UI
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -51,19 +51,22 @@ import { toast } from "@/utils/notifications/toast";
 import { cepSchema, cpfSchema, phoneSchema } from "@/utils/validators";
 
 // Icons
+import { periodos } from "@/utils/formatters";
 import {
-    AlertTriangle,
-    CalendarDays,
-    Car,
-    CheckCircle2,
-    Contact,
-    CreditCard,
-    FileText,
-    Hash,
-    Loader2,
-    Mail,
-    MapPin,
-    User
+  AlertTriangle,
+  CalendarDays,
+  Car,
+  CheckCircle2,
+  Contact,
+  CreditCard,
+  FileText,
+  Hash,
+  Loader2,
+  Mail,
+  MapPin,
+  School,
+  Sun,
+  User,
 } from "lucide-react";
 
 const prePassageiroSchema = z.object({
@@ -85,8 +88,11 @@ const prePassageiroSchema = z.object({
   referencia: z.string().optional(),
   observacoes: z.string().optional(),
 
-  valor_cobranca: z.string().min(1, "Campo obrigatório"),
-  dia_vencimento: z.string().min(1, "Campo obrigatório"),
+  escola_id: z.string().min(1, "Campo obrigatório"),
+  periodo: z.string().min(1, "Campo obrigatório"),
+
+  valor_cobranca: z.string().optional(),
+  dia_vencimento: z.string().optional(),
 });
 
 type PrePassageiroFormData = z.infer<typeof prePassageiroSchema>;
@@ -113,6 +119,7 @@ export default function PassageiroExternalForm() {
     "endereco",
     "observacoes",
   ]);
+  const [escolas, setEscolas] = useState<{ id: string; nome: string }[]>([]);
 
   const form = useForm<PrePassageiroFormData>({
     resolver: zodResolver(prePassageiroSchema),
@@ -132,6 +139,8 @@ export default function PassageiroExternalForm() {
       observacoes: "",
       valor_cobranca: "",
       dia_vencimento: "",
+      escola_id: "",
+      periodo: "",
     },
     mode: "onBlur",
   });
@@ -176,6 +185,16 @@ export default function PassageiroExternalForm() {
       setHasAccess(accessValidation.hasAccess);
       setAccessReason(accessValidation.reason || null);
 
+      // Buscar escolas do motorista
+      const { data: escolasData } = await supabase
+        .from("escolas")
+        .select("id, nome")
+        .eq("usuario_id", motoristaId)
+        .eq("ativo", true)
+        .order("nome");
+
+      setEscolas(escolasData || []);
+
       setLoading(false);
     };
 
@@ -199,10 +218,17 @@ export default function PassageiroExternalForm() {
 
       const payload = {
         ...data,
-        telefone_responsavel: String(data.telefone_responsavel || "").replace(/\D/g, ""),
+        telefone_responsavel: String(data.telefone_responsavel || "").replace(
+          /\D/g,
+          ""
+        ),
         cpf_responsavel: String(data.cpf_responsavel || "").replace(/\D/g, ""),
-        valor_cobranca: moneyToNumber(String(data.valor_cobranca || "")),
-        dia_vencimento: parseInt(String(data.dia_vencimento || "")),
+        valor_cobranca: data.valor_cobranca
+          ? moneyToNumber(String(data.valor_cobranca))
+          : null,
+        dia_vencimento: data.dia_vencimento
+          ? parseInt(String(data.dia_vencimento))
+          : null,
       };
 
       const { error } = await supabase.from("pre_passageiros" as any).insert([
@@ -244,9 +270,13 @@ export default function PassageiroExternalForm() {
             Cadastro realizado!
           </h2>
           <p className="text-gray-600 mb-8 text-lg">
-            O condutor <span className="font-semibold text-gray-900">{motoristaApelido}</span> será notificado que você concluiu o cadastro.
+            O condutor{" "}
+            <span className="font-semibold text-gray-900">
+              {motoristaApelido}
+            </span>{" "}
+            será notificado que você concluiu o cadastro.
           </p>
-          <Button 
+          <Button
             onClick={() => window.location.reload()}
             className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20"
           >
@@ -269,14 +299,18 @@ export default function PassageiroExternalForm() {
             Funcionalidade Indisponível
           </h2>
           <p className="text-gray-600 mb-6 text-base leading-relaxed">
-            {accessReason || "O motorista não possui acesso a esta funcionalidade."}
+            {accessReason ||
+              "O motorista não possui acesso a esta funcionalidade."}
           </p>
           <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6 text-left">
             <p className="text-sm text-orange-800 font-medium">
               <strong>O que fazer?</strong>
             </p>
             <p className="text-sm text-orange-700 mt-2">
-              Entre em contato com o condutor <span className="font-semibold">{motoristaApelido}</span> e informe que ele precisa contratar ou regularizar a assinatura para disponibilizar esta funcionalidade.
+              Entre em contato com o condutor{" "}
+              <span className="font-semibold">{motoristaApelido}</span> e
+              informe que ele precisa contratar ou regularizar a assinatura para
+              disponibilizar esta funcionalidade.
             </p>
           </div>
         </div>
@@ -318,7 +352,10 @@ export default function PassageiroExternalForm() {
                   className="w-full space-y-4"
                 >
                   {/* DADOS DO PASSAGEIRO */}
-                  <AccordionItem value="passageiro" className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                  <AccordionItem
+                    value="passageiro"
+                    className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm"
+                  >
                     <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
                       <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
                         <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
@@ -335,7 +372,8 @@ export default function PassageiroExternalForm() {
                           render={({ field, fieldState }) => (
                             <FormItem>
                               <FormLabel className="text-gray-700 font-medium ml-1">
-                                Nome Completo <span className="text-red-500">*</span>
+                                Nome{" "}
+                                <span className="text-red-500">*</span>
                               </FormLabel>
                               <FormControl>
                                 <div className="relative">
@@ -352,12 +390,99 @@ export default function PassageiroExternalForm() {
                             </FormItem>
                           )}
                         />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <FormField
+                            control={form.control}
+                            name="escola_id"
+                            render={({ field, fieldState }) => (
+                              <FormItem>
+                                <FormLabel className="text-gray-700 font-medium ml-1">
+                                  Escola <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                >
+                                  <FormControl>
+                                    <div className="relative">
+                                      <School className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                      <SelectTrigger
+                                        className={cn(
+                                          "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                          fieldState.error && "border-red-500"
+                                        )}
+                                      >
+                                        <SelectValue placeholder="Selecione a escola" />
+                                      </SelectTrigger>
+                                    </div>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {escolas.map((escola) => (
+                                      <SelectItem
+                                        key={escola.id}
+                                        value={escola.id}
+                                      >
+                                        {escola.nome}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="periodo"
+                            render={({ field, fieldState }) => (
+                              <FormItem>
+                                <FormLabel className="text-gray-700 font-medium ml-1">
+                                  Período{" "}
+                                  <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                >
+                                  <FormControl>
+                                    <div className="relative">
+                                      <Sun className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                      <SelectTrigger
+                                        className={cn(
+                                          "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                          fieldState.error && "border-red-500"
+                                        )}
+                                      >
+                                        <SelectValue placeholder="Selecione o período" />
+                                      </SelectTrigger>
+                                    </div>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {periodos.map((periodo) => (
+                                      <SelectItem
+                                        key={periodo.value}
+                                        value={periodo.value}
+                                      >
+                                        {periodo.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       </div>
                     </AccordionContent>
                   </AccordionItem>
 
                   {/* DADOS DO RESPONSÁVEL */}
-                  <AccordionItem value="responsavel" className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                  <AccordionItem
+                    value="responsavel"
+                    className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm"
+                  >
                     <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
                       <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
                         <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
@@ -373,13 +498,16 @@ export default function PassageiroExternalForm() {
                       >
                         <AlertTriangle className="h-5 w-5 text-blue-600" />
                         <div className="ml-2">
-                          <AlertTitle className="font-bold text-blue-800">Atenção</AlertTitle>
+                          <AlertTitle className="font-bold text-blue-800">
+                            Atenção
+                          </AlertTitle>
                           <AlertDescription className="text-blue-700">
-                            Preencha com os dados do responsável financeiro e legal do passageiro.
+                            Preencha com os dados do responsável financeiro e
+                            legal do passageiro.
                           </AlertDescription>
                         </div>
                       </Alert>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField
                           control={form.control}
@@ -387,13 +515,14 @@ export default function PassageiroExternalForm() {
                           render={({ field, fieldState }) => (
                             <FormItem>
                               <FormLabel className="text-gray-700 font-medium ml-1">
-                                Nome do Responsável <span className="text-red-500">*</span>
+                                Nome do Responsável{" "}
+                                <span className="text-red-500">*</span>
                               </FormLabel>
                               <FormControl>
                                 <div className="relative">
                                   <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                                  <Input 
-                                    {...field} 
+                                  <Input
+                                    {...field}
                                     className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                     aria-invalid={!!fieldState.error}
                                   />
@@ -474,7 +603,10 @@ export default function PassageiroExternalForm() {
                   </AccordionItem>
 
                   {/* COBRANÇA */}
-                  <AccordionItem value="cobranca" className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                  <AccordionItem
+                    value="cobranca"
+                    className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm"
+                  >
                     <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
                       <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
                         <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
@@ -492,7 +624,6 @@ export default function PassageiroExternalForm() {
                             <MoneyInput
                               field={field}
                               label="Valor da Mensalidade"
-                              required
                               inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                             />
                           )}
@@ -503,7 +634,7 @@ export default function PassageiroExternalForm() {
                           render={({ field, fieldState }) => (
                             <FormItem>
                               <FormLabel className="text-gray-700 font-medium ml-1">
-                                Dia do Vencimento <span className="text-red-500">*</span>
+                                Dia do Vencimento
                               </FormLabel>
                               <Select
                                 onValueChange={field.onChange}
@@ -512,7 +643,7 @@ export default function PassageiroExternalForm() {
                                 <FormControl>
                                   <div className="relative">
                                     <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                    <SelectTrigger 
+                                    <SelectTrigger
                                       className={cn(
                                         "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
                                         fieldState.error && "border-red-500"
@@ -524,13 +655,14 @@ export default function PassageiroExternalForm() {
                                   </div>
                                 </FormControl>
                                 <SelectContent className="max-h-60 overflow-y-auto">
-                                  {Array.from({ length: 31 }, (_, i) => i + 1).map(
-                                    (dia) => (
-                                      <SelectItem key={dia} value={String(dia)}>
-                                        Dia {dia}
-                                      </SelectItem>
-                                    )
-                                  )}
+                                  {Array.from(
+                                    { length: 31 },
+                                    (_, i) => i + 1
+                                  ).map((dia) => (
+                                    <SelectItem key={dia} value={String(dia)}>
+                                      Dia {dia}
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -542,7 +674,10 @@ export default function PassageiroExternalForm() {
                   </AccordionItem>
 
                   {/* ENDEREÇO */}
-                  <AccordionItem value="endereco" className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                  <AccordionItem
+                    value="endereco"
+                    className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm"
+                  >
                     <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
                       <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
                         <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
@@ -572,7 +707,8 @@ export default function PassageiroExternalForm() {
                           render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-4">
                               <FormLabel className="text-gray-700 font-medium ml-1">
-                                Logradouro <span className="text-red-500">*</span>
+                                Logradouro{" "}
+                                <span className="text-red-500">*</span>
                               </FormLabel>
                               <FormControl>
                                 <Input
@@ -595,8 +731,8 @@ export default function PassageiroExternalForm() {
                                 Número <span className="text-red-500">*</span>
                               </FormLabel>
                               <FormControl>
-                                <Input 
-                                  {...field} 
+                                <Input
+                                  {...field}
                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                   aria-invalid={!!fieldState.error}
                                 />
@@ -614,8 +750,8 @@ export default function PassageiroExternalForm() {
                                 Bairro <span className="text-red-500">*</span>
                               </FormLabel>
                               <FormControl>
-                                <Input 
-                                  {...field} 
+                                <Input
+                                  {...field}
                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                   aria-invalid={!!fieldState.error}
                                 />
@@ -633,8 +769,8 @@ export default function PassageiroExternalForm() {
                                 Cidade <span className="text-red-500">*</span>
                               </FormLabel>
                               <FormControl>
-                                <Input 
-                                  {...field} 
+                                <Input
+                                  {...field}
                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                   aria-invalid={!!fieldState.error}
                                 />
@@ -656,7 +792,7 @@ export default function PassageiroExternalForm() {
                                 value={field.value}
                               >
                                 <FormControl>
-                                  <SelectTrigger 
+                                  <SelectTrigger
                                     className={cn(
                                       "h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
                                       fieldState.error && "border-red-500"
@@ -681,11 +817,15 @@ export default function PassageiroExternalForm() {
                                   </SelectItem>
                                   <SelectItem value="GO">Goiás</SelectItem>
                                   <SelectItem value="MA">Maranhão</SelectItem>
-                                  <SelectItem value="MT">Mato Grosso</SelectItem>
+                                  <SelectItem value="MT">
+                                    Mato Grosso
+                                  </SelectItem>
                                   <SelectItem value="MS">
                                     Mato Grosso do Sul
                                   </SelectItem>
-                                  <SelectItem value="MG">Minas Gerais</SelectItem>
+                                  <SelectItem value="MG">
+                                    Minas Gerais
+                                  </SelectItem>
                                   <SelectItem value="PA">Pará</SelectItem>
                                   <SelectItem value="PB">Paraíba</SelectItem>
                                   <SelectItem value="PR">Paraná</SelectItem>
@@ -720,7 +860,9 @@ export default function PassageiroExternalForm() {
                           name="referencia"
                           render={({ field }) => (
                             <FormItem className="col-span-1 md:col-span-6">
-                              <FormLabel className="text-gray-700 font-medium ml-1">Referência</FormLabel>
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Referência
+                              </FormLabel>
                               <FormControl>
                                 <Textarea
                                   placeholder="Ex: próximo ao mercado"
@@ -737,7 +879,10 @@ export default function PassageiroExternalForm() {
                   </AccordionItem>
 
                   {/* OBSERVAÇÕES */}
-                  <AccordionItem value="observacoes" className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                  <AccordionItem
+                    value="observacoes"
+                    className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm"
+                  >
                     <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
                       <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
                         <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
@@ -786,10 +931,13 @@ export default function PassageiroExternalForm() {
             </Form>
           </div>
         </div>
-        
+
         {/* Footer */}
         <div className="mt-8 text-center text-gray-500 text-sm">
-          <p>© {new Date().getFullYear()} Van Control. Todos os direitos reservados.</p>
+          <p>
+            © {new Date().getFullYear()} Van Control. Todos os direitos
+            reservados.
+          </p>
         </div>
       </div>
     </div>

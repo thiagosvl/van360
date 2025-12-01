@@ -1,6 +1,6 @@
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
-import { canUseNotificacoes } from "@/utils/domain/plano/accessRules";
 import { Cobranca } from "@/types/cobranca";
+import { canUseNotificacoes } from "@/utils/domain/plano/accessRules";
 
 export const seForPago = (cobranca: Cobranca): boolean => {
   return cobranca.status === PASSAGEIRO_COBRANCA_STATUS_PAGO;
@@ -58,7 +58,7 @@ export const disableDesfazerPagamento = (cobranca: Cobranca): boolean => {
 };
 
 export const disableExcluirCobranca = (cobranca: Cobranca): boolean => {
-  return false;
+  return seForPago(cobranca) && !sePagamentoManual(cobranca);
 };
 
 export const disableEditarCobranca = (cobranca: Cobranca): boolean => {

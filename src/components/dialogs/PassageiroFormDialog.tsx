@@ -14,7 +14,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -66,7 +66,6 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertTriangle,
-  Calendar,
   CalendarDays,
   Car,
   Contact,
@@ -77,6 +76,7 @@ import {
   Mail,
   MapPin,
   School,
+  Sun,
   User,
   X,
 } from "lucide-react";
@@ -108,8 +108,8 @@ const passageiroSchema = z
       .string()
       .min(1, "Campo obrigatório")
       .email("E-mail inválido"),
-  cpf_responsavel: cpfSchema(true),
-  telefone_responsavel: phoneSchema(true),
+    cpf_responsavel: cpfSchema(true),
+    telefone_responsavel: phoneSchema(true),
 
     valor_cobranca: z.string().min(1, "Campo obrigatório"),
     dia_vencimento: z.string().min(1, "Campo obrigatório"),
@@ -763,7 +763,7 @@ export default function PassengerFormDialog({
   const cpfResponsavelValue = form.watch("cpf_responsavel");
   useEffect(() => {
     if (!cpfResponsavelValue) return;
-    
+
     const unmasked = cpfResponsavelValue.replace(/\D/g, "");
     if (unmasked.length === 11) {
       handleSearchResponsavel(unmasked);
@@ -960,50 +960,6 @@ export default function PassengerFormDialog({
                         />
                         <FormField
                           control={form.control}
-                          name="periodo"
-                          render={({ field, fieldState }) => (
-                            <FormItem className="md:col-span-1">
-                              <FormLabel className="text-gray-700 font-medium ml-1">
-                                Período <span className="text-red-600">*</span>
-                              </FormLabel>
-                              <Select
-                                onValueChange={field.onChange}
-                                value={field.value || undefined}
-                              >
-                                <FormControl>
-                                  <div className="relative">
-                                    <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                    <SelectTrigger 
-                                      className={cn(
-                                        "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
-                                        fieldState.error && "border-red-500"
-                                      )}
-                                      aria-invalid={!!fieldState.error}
-                                    >
-                                      <SelectValue placeholder="Selecione o período" />
-                                    </SelectTrigger>
-                                  </div>
-                                </FormControl>
-                                <SelectContent>
-                                  {periodos.map((tipo) => (
-                                    <SelectItem
-                                      key={tipo.value}
-                                      value={tipo.value}
-                                    >
-                                      {tipo.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
                           name="veiculo_id"
                           render={({ field, fieldState }) => (
                             <FormItem>
@@ -1024,7 +980,7 @@ export default function PassengerFormDialog({
                                 <FormControl>
                                   <div className="relative">
                                     <Car className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                    <SelectTrigger 
+                                    <SelectTrigger
                                       className={cn(
                                         "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
                                         fieldState.error && "border-red-500"
@@ -1056,7 +1012,9 @@ export default function PassengerFormDialog({
                             </FormItem>
                           )}
                         />
+                      </div>
 
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="escola_id"
@@ -1079,7 +1037,7 @@ export default function PassengerFormDialog({
                                 <FormControl>
                                   <div className="relative">
                                     <School className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                    <SelectTrigger 
+                                    <SelectTrigger
                                       className={cn(
                                         "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
                                         fieldState.error && "border-red-500"
@@ -1105,6 +1063,48 @@ export default function PassengerFormDialog({
                                   >
                                     + Cadastrar Escola
                                   </SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="periodo"
+                          render={({ field, fieldState }) => (
+                            <FormItem className="md:col-span-1">
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Período <span className="text-red-600">*</span>
+                              </FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value || undefined}
+                              >
+                                <FormControl>
+                                  <div className="relative">
+                                    <Sun className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
+                                    <SelectTrigger
+                                      className={cn(
+                                        "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                        fieldState.error && "border-red-500"
+                                      )}
+                                      aria-invalid={!!fieldState.error}
+                                    >
+                                      <SelectValue placeholder="Selecione o período" />
+                                    </SelectTrigger>
+                                  </div>
+                                </FormControl>
+                                <SelectContent>
+                                  {periodos.map((tipo) => (
+                                    <SelectItem
+                                      key={tipo.value}
+                                      value={tipo.value}
+                                    >
+                                      {tipo.label}
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -1287,7 +1287,7 @@ export default function PassengerFormDialog({
                                 <FormControl>
                                   <div className="relative">
                                     <CalendarDays className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                    <SelectTrigger 
+                                    <SelectTrigger
                                       className={cn(
                                         "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
                                         fieldState.error && "border-red-500"
@@ -1577,7 +1577,7 @@ export default function PassengerFormDialog({
                               >
                                 <FormControl>
                                   <div className="relative">
-                                    <SelectTrigger 
+                                    <SelectTrigger
                                       className={cn(
                                         "h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
                                         fieldState.error && "border-red-500"
