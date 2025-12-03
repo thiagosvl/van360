@@ -123,7 +123,7 @@ export default function CobrancaEditDialog({
 
   const cobrancaMesAnoDate = new Date(cobranca.data_vencimento);
 
-  const shouldDisableValueDate = (isPaga && !isPagamentoManual) || seOrigemAutomatica(cobranca);
+  const shouldDisableValueDate = (seForPago(cobranca) && !isPagamentoManual) || seOrigemAutomatica(cobranca);
 
   const shouldDisableDueDateField = isPaga;
 

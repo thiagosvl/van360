@@ -7,11 +7,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Cobranca } from "@/types/cobranca";
 import {
-  cobrancaPodeReceberNotificacao,
   disableDesfazerPagamento,
   disableEditarCobranca,
   disableExcluirCobranca,
-  disableRegistrarPagamento
+  disableRegistrarPagamento,
+  seForPago,
 } from "@/utils/domain/cobranca/disableActions";
 import { canUseNotificacoes } from "@/utils/domain/plano/accessRules";
 import {
@@ -24,7 +24,7 @@ import {
   MoreVertical,
   Send,
   Trash2,
-  User
+  User,
 } from "lucide-react";
 
 interface CobrancaActionsMenuProps {
@@ -149,35 +149,38 @@ export function CobrancaActionsMenu({
               Registrar Pagamento
             </DropdownMenuItem>
           )}
-          {/* Botão Enviar Cobrança - Sempre visível */}
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEnviarNotificacao();
-            }}
-          >
-            <Send className="mr-2 h-4 w-4" />
-            Enviar Cobrança
-          </DropdownMenuItem>
-          {/* Botão de Notificações - Sempre visível */}
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleToggleNotificacoes();
-            }}
-            disabled={!cobrancaPodeReceberNotificacao(cobranca) && hasNotificacoesAccess}
-          >
-            {cobranca.desativar_lembretes ? (
-              <Bell className="mr-2 h-4 w-4" />
-            ) : (
-              <BellOff className="mr-2 h-4 w-4" />
-            )}
-            {cobranca.desativar_lembretes
-              ? "Ativar Notificações"
-              : "Pausar Notificações"}
-          </DropdownMenuItem>
+          {!seForPago(cobranca) && (
+            <>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                disabled={hasNotificacoesAccess || seForPago(cobranca)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEnviarNotificacao();
+                }}
+              >
+                <Send className="mr-2 h-4 w-4" />
+                Enviar Cobrança
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleNotificacoes();
+                }}
+                disabled={hasNotificacoesAccess || seForPago(cobranca)}
+              >
+                {cobranca.desativar_lembretes ? (
+                  <Bell className="mr-2 h-4 w-4" />
+                ) : (
+                  <BellOff className="mr-2 h-4 w-4" />
+                )}
+                {cobranca.desativar_lembretes
+                  ? "Ativar Notificações"
+                  : "Pausar Notificações"}
+              </DropdownMenuItem>
+            </>
+          )}
           {!disableDesfazerPagamento(cobranca) && (
             <DropdownMenuItem
               className="cursor-pointer"

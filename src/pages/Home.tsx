@@ -451,7 +451,6 @@ const Home = () => {
   // Derived Data
   const cobrancas = cobrancasData?.all || [];
   const passageirosList = passageirosData?.list || [];
-  const activePassengers = passageirosList.filter((p) => p.ativo).length;
 
   const escolasCount =
     (escolasData as { total?: number } | undefined)?.total ?? 0;
@@ -745,6 +744,9 @@ const Home = () => {
                 <MiniKPI
                   label="Receita Prevista"
                   value={formatCurrency(receitaPrevista)}
+                  subtext={`${cobrancas.length} cobrança${
+                    cobrancas.length !== 1 ? "s" : ""
+                  }`}
                   icon={DollarSign}
                   colorClass="text-emerald-600"
                   bgClass="bg-emerald-50"
@@ -753,6 +755,9 @@ const Home = () => {
                 <MiniKPI
                   label="A Receber"
                   value={formatCurrency(aReceber)}
+                  subtext={`${cobrancasPendentes.length} pendente${
+                    cobrancasPendentes.length !== 1 ? "s" : ""
+                  }`}
                   icon={Wallet}
                   colorClass={
                     aReceber > 0 ? "text-orange-600" : "text-gray-400"
@@ -765,17 +770,17 @@ const Home = () => {
             {hasPassengerLimit ? (
               <div className="sm:col-span-1">
                 <PassengerLimitHealthBar
-                  current={activePassengers}
+                  current={passageirosCount}
                   max={Number(limitePassageiros)}
-                  label="Passageiros Ativos"
+                  label="Passageiros"
                   className="mb-0"
                 />
               </div>
             ) : (
               <MiniKPI
                 className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative"
-                label="Passageiros Ativos"
-                value={activePassengers}
+                label="Passageiros"
+                value={passageirosCount}
                 showPassageirosLimitSubtext={true}
                 icon={Users}
                 colorClass="text-blue-600"

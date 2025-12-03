@@ -19,30 +19,30 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,10 +50,10 @@ import { Textarea } from "@/components/ui/textarea";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreateGasto,
-    useDeleteGasto,
-    useGastos,
-    useUpdateGasto,
+  useCreateGasto,
+  useDeleteGasto,
+  useGastos,
+  useUpdateGasto,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -76,13 +76,13 @@ import { KPICard } from "@/components/common/KPICard";
 import { GastosList } from "@/components/features/financeiro/GastosList";
 import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
 import {
-    CalendarIcon,
-    FileText,
-    Lock,
-    Tag,
-    TrendingDown,
-    TrendingUp,
-    X,
+  CalendarIcon,
+  FileText,
+  Lock,
+  Tag,
+  TrendingDown,
+  TrendingUp,
+  X,
 } from "lucide-react";
 
 const gastoSchema = z.object({
@@ -164,7 +164,7 @@ export default function Gastos() {
   // Verificar permissão antes de fazer requisição
   useEffect(() => {
     if (!profile?.id) return;
-    setEnabledPageActions(enablePageActions("/gastos", plano));
+    setEnabledPageActions(!enablePageActions("/gastos", plano));
   }, [profile?.id, plano]);
   
   const {
@@ -490,7 +490,7 @@ export default function Gastos() {
                       onClick={() => window.location.href = "/planos?plano=essencial"}
                       className="bg-orange-600 hover:bg-orange-700 text-white"
                     >
-                      Ver Planos
+                      Liberar Controle de Gastos
                     </Button>
                   </div>
                 ) : loading ? (

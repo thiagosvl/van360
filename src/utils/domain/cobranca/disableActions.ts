@@ -29,30 +29,6 @@ export const planoPermiteEnviarNotificacao = (
   return canUseNotificacoes(plano as any);
 };
 
-/**
- * Valida se a cobrança pode receber notificação
- * Uma cobrança pode receber notificação se:
- * - Não estiver paga
- * - Estiver vencida (data_vencimento < hoje)
- * @param cobranca - Objeto da cobrança
- * @returns true se a cobrança pode receber notificação
- */
-export const cobrancaPodeReceberNotificacao = (cobranca: Cobranca): boolean => {
-  // Não pode receber notificação se já estiver paga
-  if (seForPago(cobranca)) {
-    return false;
-  }
-
-  // Verifica se a data de vencimento já passou (está vencida)
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  
-  const dataVencimento = new Date(cobranca.data_vencimento);
-  dataVencimento.setHours(0, 0, 0, 0);
-
-  return dataVencimento < hoje;
-};
-
 export const disableDesfazerPagamento = (cobranca: Cobranca): boolean => {
   return !seForPago(cobranca) || !cobranca.pagamento_manual;
 };

@@ -29,8 +29,8 @@ export function PassengerLimitHealthBar({
   else if (current >= max - 1) colorClass = "bg-yellow-500";
 
   const defaultDescription = current >= max 
-    ? "Você atingiu o limite do plano Gratuito." 
-    : "Cadastre mais passageiros e organize a sua rotina.";
+    ? "Você atingiu o limite." 
+    : `Você ainda pode cadastrar ${max - current} ${max - current === 1 ? "passageiro" : "passageiros"}.`;
 
   const finalDescription = description ?? defaultDescription;
 
@@ -86,8 +86,8 @@ export function PassengerLimitHealthBar({
         indicatorClassName={colorClass}
       />
       
-      <div className="mt-3 flex flex-col md:flex-row md:justify-between items-center gap-2 md:gap-0 text-center md:text-left">
-        <p className="text-xs text-gray-500">
+      <div className="mt-2 flex flex-col md:flex-row md:justify-between items-center gap-2 md:gap-0 text-center md:text-left">
+        <p className="text-xs text-gray-400 mt-1">
           {finalDescription}
         </p>
         {showIncreaseLimit && (

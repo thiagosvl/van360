@@ -26,10 +26,10 @@ import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import { Passageiro } from "@/types/passageiro";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
-  cobrancaPodeReceberNotificacao,
   disableEditarCobranca,
   disableExcluirCobranca,
-  disableRegistrarPagamento
+  disableRegistrarPagamento,
+  seForPago,
 } from "@/utils/domain/cobranca/disableActions";
 import { canUseNotificacoes } from "@/utils/domain/plano/accessRules";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
@@ -267,7 +267,8 @@ export default function PassageiroCobranca() {
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
-  const [upgradeDialogEnviarLembrete, setUpgradeDialogEnviarLembrete] = useState(false);
+  const [upgradeDialogEnviarLembrete, setUpgradeDialogEnviarLembrete] =
+    useState(false);
 
   // Buscar cobrança usando React Query
   const {
@@ -389,7 +390,7 @@ export default function PassageiroCobranca() {
 
   const handleEnviarLembreteClick = () => {
     if (!cobranca) return;
-    
+
     if (hasNotificacoesAccess) {
       // Usuário tem permissão: abre dialog de confirmação
       setConfirmDialogEnvioNotificacao({
@@ -743,9 +744,7 @@ export default function PassageiroCobranca() {
                   {cobrancaTyped.desativar_lembretes && !isPago && (
                     <div className="bg-orange-50 border-b border-orange-100 px-6 py-2 flex items-center justify-center gap-2 text-xs font-medium text-orange-700 animate-in fade-in slide-in-from-top-2">
                       <BellOff className="w-3.5 h-3.5 text-orange-700" />
-                      <span>
-                        Notificações desativadas para esta cobrança.
-                      </span>
+                      <span>Notificações desativadas para esta cobrança.</span>
                     </div>
                   )}
 
@@ -835,42 +834,35 @@ export default function PassageiroCobranca() {
                         <Pencil className="w-3.5 h-3.5 mr-2" /> Editar Cobrança
                       </Button>
 
-                      {/* Botão Enviar Cobrança - Sempre visível */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
-                        disabled={
-                          !cobrancaPodeReceberNotificacao(cobrancaTyped) &&
-                          hasNotificacoesAccess
-                        }
-                        onClick={handleEnviarLembreteClick}
-                      >
-                        <Send className="w-3.5 h-3.5 mr-2" /> Enviar Cobrança
-                      </Button>
-                      {/* Botão de Notificações - Sempre visível */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
-                        disabled={
-                          !cobrancaPodeReceberNotificacao(cobrancaTyped) &&
-                          hasNotificacoesAccess
-                        }
-                        onClick={handleToggleNotificacoesClick}
-                      >
-                        {cobrancaTyped.desativar_lembretes ? (
-                          <>
-                            <Bell className="w-3.5 h-3.5 mr-2" /> Ativar
-                            Notificações
-                          </>
-                        ) : (
-                          <>
-                            <BellOff className="w-3.5 h-3.5 mr-2" /> Pausar
-                            Notificações
-                          </>
-                        )}
-                      </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
+                            disabled={hasNotificacoesAccess || seForPago(cobrancaTyped)}
+                            onClick={handleEnviarLembreteClick}
+                          >
+                            <Send className="w-3.5 h-3.5 mr-2" /> Enviar
+                            Cobrança
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
+                            disabled={hasNotificacoesAccess || seForPago(cobrancaTyped)}
+                            onClick={handleToggleNotificacoesClick}
+                          >
+                            {cobrancaTyped.desativar_lembretes ? (
+                              <>
+                                <Bell className="w-3.5 h-3.5 mr-2" /> Ativar
+                                Notificações
+                              </>
+                            ) : (
+                              <>
+                                <BellOff className="w-3.5 h-3.5 mr-2" /> Pausar
+                                Notificações
+                              </>
+                            )}
+                          </Button>
                     </div>
 
                     {/* Dialog de Upgrade para Notificações Automáticas */}
@@ -881,7 +873,7 @@ export default function PassageiroCobranca() {
                       description="Automatize o envio de lembretes e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
                       redirectTo="/planos?slug=completo"
                     />
-                    
+
                     {/* Dialog de Upgrade para Enviar Cobrança */}
                     <UpgradePlanDialog
                       open={upgradeDialogEnviarLembrete}
