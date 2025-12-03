@@ -21,6 +21,7 @@ interface CepInputProps<T extends FieldValues> {
   }) => void;
   className?: string;
   inputClassName?: string;
+  nextField?: FieldPath<T>;
 }
 
 export function CepInput<T extends FieldValues>({
@@ -30,6 +31,7 @@ export function CepInput<T extends FieldValues>({
   onAddressFetched,
   className,
   inputClassName,
+  nextField = "numero" as FieldPath<T>,
 }: CepInputProps<T>) {
   const [loadingCep, setLoadingCep] = useState(false);
   const form = useFormContext<T>();
@@ -59,6 +61,13 @@ export function CepInput<T extends FieldValues>({
             if (form.getValues("estado" as FieldPath<T>) !== undefined) {
               form.setValue("estado" as FieldPath<T>, endereco.estado);
             }
+            // Limpar número e referência para evitar dados incorretos
+            if (form.getValues("numero" as FieldPath<T>) !== undefined) {
+              form.setValue("numero" as FieldPath<T>, "" as any);
+            }
+            if (form.getValues("referencia" as FieldPath<T>) !== undefined) {
+              form.setValue("referencia" as FieldPath<T>, "" as any);
+            }
           } catch {
             // Campos podem não existir no form, ignorar
           }
@@ -66,6 +75,41 @@ export function CepInput<T extends FieldValues>({
           // Callback opcional para customização
           if (onAddressFetched) {
             onAddressFetched(endereco);
+          }
+
+          // Focar no próximo campo (padrão: numero) e rolar até ele
+          if (nextField) {
+            setTimeout(() => {
+              form.setFocus(nextField);
+              
+              // Tenta encontrar o elemento pelo nome
+              const element = document.querySelector(`[name="${nextField}"]`) as HTMLElement;
+              if (element) {
+                // Função customizada para rolar apenas o container pai scrollável
+                // Isso evita que o Dialog inteiro role e mostre o fundo azul (bug visual)
+                let parent = element.parentElement;
+                while (parent) {
+                  const style = window.getComputedStyle(parent);
+                  if (
+                    (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
+                    parent.scrollHeight > parent.clientHeight
+                  ) {
+                    const parentRect = parent.getBoundingClientRect();
+                    const elementRect = element.getBoundingClientRect();
+                    
+                    const relativeTop = elementRect.top - parentRect.top;
+                    const targetScrollTop = parent.scrollTop + relativeTop - (parent.clientHeight / 2) + (element.clientHeight / 2);
+                    
+                    parent.scrollTo({
+                      top: targetScrollTop,
+                      behavior: 'smooth'
+                    });
+                    break;
+                  }
+                  parent = parent.parentElement;
+                }
+              }
+            }, 100);
           }
         } else {
           toast.info("sistema.info.cepNaoEncontrado", {

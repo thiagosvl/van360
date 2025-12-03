@@ -76,25 +76,25 @@ export const formatRelativeTime = (date: string | Date): string => {
   const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
 
   if (diffInSeconds < 60) {
-    return "agora mesmo";
+    return "Agora mesmo";
   }
 
   const diffInMinutes = Math.floor(diffInSeconds / 60);
   if (diffInMinutes < 60) {
-    return `há ${diffInMinutes} min`;
+    return `Há ${diffInMinutes} min`;
   }
 
   const diffInHours = Math.floor(diffInMinutes / 60);
   if (diffInHours < 24) {
-    return `há ${diffInHours} h`;
+    return `Há ${diffInHours} h`;
   }
 
-  const diffInDays = Math.floor(diffInHours / 24);
+  const diffInDays = Math.round(diffInHours / 24);
   if (diffInDays === 1) {
-    return "ontem";
+    return "Ontem";
   }
   if (diffInDays < 7) {
-    return `há ${diffInDays} dias`;
+    return `Há ${diffInDays} dias`;
   }
 
   return formatDateToBR(past);

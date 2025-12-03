@@ -319,7 +319,7 @@ export default function PrePassageiros({
                         WhatsApp
                       </TableHead>
                       <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Data
+                        Quando
                       </TableHead>
                       <TableHead className="text-right pr-20 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
                         Ações
@@ -361,9 +361,7 @@ export default function PrePassageiros({
                         </TableCell>
                         <TableCell className="py-4">
                           <span className="text-sm text-gray-500">
-                            {new Date(
-                              prePassageiro.created_at
-                            ).toLocaleDateString()}
+                            {formatRelativeTime(prePassageiro.created_at)}
                           </span>
                         </TableCell>
                         <TableCell className="text-right py-4 pr-6">

@@ -768,7 +768,7 @@ export default function PassengerFormDialog({
         form.setValue("email_responsavel", responsavel.email_responsavel || "");
         form.setValue(
           "telefone_responsavel",
-          responsavel.telefone_responsavel || ""
+          phoneMask(responsavel.telefone_responsavel) || ""
         );
       }
     } catch (error) {
@@ -919,23 +919,6 @@ export default function PassengerFormDialog({
                 onSubmit={form.handleSubmit(handleSubmit, onFormError)}
                 className="space-y-6"
               >
-                {mode === "finalize" && prePassageiro && (
-                  <div className="mb-6">
-                    <Alert
-                      variant="default"
-                      className="bg-orange-50 border-orange-200 text-orange-900 [&>svg]:text-orange-600"
-                    >
-                      <AlertTriangle className="h-4 w-4 mt-0.5" />
-                      <AlertTitle className="font-semibold text-sm">
-                        Atenção!
-                      </AlertTitle>
-                      <AlertDescription className="text-xs">
-                        Para concluir, preencha os campos destacados
-                        em vermelho.
-                      </AlertDescription>
-                    </Alert>
-                  </div>
-                )}
 
                 <Accordion
                   type="multiple"
@@ -1152,7 +1135,7 @@ export default function PassengerFormDialog({
                                   htmlFor="ativo"
                                   className="flex-1 cursor-pointer font-medium text-gray-700 m-0 mt-0"
                                 >
-                                  Ativo
+                                  Passageiro Ativo
                                 </FormLabel>
                               </FormItem>
                             )}

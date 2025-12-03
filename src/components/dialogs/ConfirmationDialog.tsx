@@ -39,9 +39,9 @@ export default function ConfirmationDialog({
         <div
           className={`${
             variant === "destructive" ? "bg-red-600" : "bg-blue-600"
-          } p-6 text-center`}
+          } px-6 py-4 text-center`}
         >
-          <div className="mx-auto bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
+          <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
             {variant === "destructive" ? (
               <AlertTriangle className="w-6 h-6 text-white" />
             ) : (
@@ -49,7 +49,7 @@ export default function ConfirmationDialog({
             )}
           </div>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl font-bold text-white text-center">
+            <AlertDialogTitle className="text-xl font-bold text-white text-center">
               {title}
             </AlertDialogTitle>
           </AlertDialogHeader>

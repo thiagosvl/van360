@@ -30,7 +30,7 @@ export function PassengerLimitHealthBar({
 
   const defaultDescription = current >= max 
     ? "Você atingiu o limite do plano Gratuito." 
-    : "Cadastre mais passageiros para crescer seu negócio.";
+    : "Cadastre mais passageiros e organize a sua rotina.";
 
   const finalDescription = description ?? defaultDescription;
 
