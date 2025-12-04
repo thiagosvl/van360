@@ -310,6 +310,7 @@ export type Database = {
           date: string
           categoria: number
           notas: string
+          veiculo_id: string | null
         }
         Insert: {
           id: string
@@ -320,6 +321,7 @@ export type Database = {
           date: string
           categoria: number
           notas: string
+          veiculo_id?: string | null
         }
         Update: {
           id: string
@@ -330,6 +332,7 @@ export type Database = {
           date: string
           categoria: number
           notas: string
+          veiculo_id?: string | null
         }
         Relationships: [
           {

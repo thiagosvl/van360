@@ -1,141 +1,93 @@
 // React
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
 
 // Third-party
-import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { z } from "zod";
+import { toast } from "@/utils/notifications/toast";
 
 // Components - Alerts
-
-import { MoneyInput } from "@/components/forms";
-import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+import { PremiumBanner } from "@/components/alerts/PremiumBanner";
 
 // Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
+
+// Components - Navigation
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+
+// Components - Common
+import { BlurredValue } from "@/components/common/BlurredValue";
+import { DateNavigation } from "@/components/common/DateNavigation";
+import { KPICard } from "@/components/common/KPICard";
+
+// Components - Features
+import { GastosList } from "@/components/features/financeiro/GastosList";
+import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
+
+// Components - Dialogs
+import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreateGasto,
   useDeleteGasto,
+  useFilters,
   useGastos,
-  useUpdateGasto,
+  useVeiculos,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 // Utils
 import { cn } from "@/lib/utils";
-import { safeCloseDialog } from "@/utils/dialogUtils";
 import { enablePageActions } from "@/utils/domain/pages/pagesUtils";
-import { moneyMask } from "@/utils/masks";
-import { toast } from "@/utils/notifications/toast";
 
 // Types
-import { Gasto } from "@/types/gasto";
+import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 
 // Icons
-import { PremiumBanner } from "@/components/alerts/PremiumBanner";
-import { BlurredValue } from "@/components/common/BlurredValue";
-import { DateNavigation } from "@/components/common/DateNavigation";
-import { KPICard } from "@/components/common/KPICard";
-import { GastosList } from "@/components/features/financeiro/GastosList";
-import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
 import {
   CalendarIcon,
   FileText,
   Lock,
-  Tag,
   TrendingDown,
   TrendingUp,
-  X,
 } from "lucide-react";
 
-const gastoSchema = z.object({
-  valor: z.string().min(1, "O valor é obrigatório."),
-  data: z.date({ required_error: "A data é obrigatória." }),
-  categoria: z.string().min(1, "A categoria é obrigatória."),
-  descricao: z.string().optional(),
-});
-
-type GastoFormData = z.infer<typeof gastoSchema>;
-
-const categoriasGastos = [
-  "Salário",
-  "Combustível",
-  "Manutenção",
-  "Vistorias",
-  "Documentação",
-  "Outros",
-];
-
 const MOCK_DATA_NO_ACCESS = {
-  totalGasto: 0,
+  totalGasto: 12500.5,
   principalCategoriaData: {
     name: "Combustível",
-    value: 0,
-    percentage: 45,
+    value: 4500.0,
+    percentage: 36,
   },
-  mediaDiaria: 0,
+  mediaDiaria: 416.68,
   gastos: [
     {
-      id: "mock-1",
-      valor: 0,
-      data: new Date().toISOString(),
+      id: "1",
       categoria: "Combustível",
       descricao: "Abastecimento Semanal",
+      valor: 450.0,
+      data: new Date().toISOString(),
       created_at: new Date().toISOString(),
       usuario_id: "mock",
     },
     {
-      id: "mock-2",
-      valor: 0,
-      data: new Date().toISOString(),
+      id: "2",
       categoria: "Manutenção",
       descricao: "Troca de Óleo",
+      valor: 250.0,
+      data: new Date().toISOString(),
       created_at: new Date().toISOString(),
       usuario_id: "mock",
     },
     {
-      id: "mock-3",
-      valor: 0,
-      data: new Date().toISOString(),
+      id: "3",
       categoria: "Salário",
-      descricao: "Pagamento Monitora",
+      descricao: "Adiantamento Motorista",
+      valor: 1200.0,
+      data: new Date().toISOString(),
       created_at: new Date().toISOString(),
       usuario_id: "mock",
     },
@@ -144,17 +96,30 @@ const MOCK_DATA_NO_ACCESS = {
 
 export default function Gastos() {
   const { setPageTitle } = useLayout();
-  const [openCalendar, setOpenCalendar] = useState(false);
-  const createGasto = useCreateGasto();
-  const updateGasto = useUpdateGasto();
   const deleteGasto = useDeleteGasto();
 
-  const isActionLoading =
-    createGasto.isPending || updateGasto.isPending || deleteGasto.isPending;
-  const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
-  const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
-  const [categoriaFilter, setCategoriaFilter] = useState("todas");
-  const [searchTerm, setSearchTerm] = useState("");
+  const isActionLoading = deleteGasto.isPending;
+
+  const {
+    searchTerm,
+    setSearchTerm,
+    selectedMes: mesFilter = new Date().getMonth() + 1,
+    setSelectedMes,
+    selectedAno: anoFilter = new Date().getFullYear(),
+    setSelectedAno,
+    selectedCategoria: categoriaFilter = "todas",
+    setSelectedCategoria,
+    selectedVeiculo: veiculoFilter = "todos",
+    setSelectedVeiculo,
+    setFilters,
+  } = useFilters({
+    mesParam: "mes",
+    anoParam: "ano",
+    categoriaParam: "categoria",
+    veiculoParam: "veiculo",
+    searchParam: "search",
+  });
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingGasto, setEditingGasto] = useState<Gasto | null>(null);
   const { user } = useSession();
@@ -164,9 +129,12 @@ export default function Gastos() {
   // Verificar permissão antes de fazer requisição
   useEffect(() => {
     if (!profile?.id) return;
-    setEnabledPageActions(!enablePageActions("/gastos", plano));
+
+    const canAccess = !enablePageActions("/gastos", plano);
+
+    setEnabledPageActions(canAccess);
   }, [profile?.id, plano]);
-  
+
   const {
     data: gastos = [],
     isLoading: isGastosLoading,
@@ -178,6 +146,7 @@ export default function Gastos() {
       mes: mesFilter,
       ano: anoFilter,
       categoria: categoriaFilter !== "todas" ? categoriaFilter : undefined,
+      veiculoId: veiculoFilter !== "todos" ? veiculoFilter : undefined,
     },
     {
       enabled: !!profile?.id && enabledPageActions,
@@ -185,7 +154,10 @@ export default function Gastos() {
     }
   );
 
-  const form = useForm<GastoFormData>({ resolver: zodResolver(gastoSchema) });
+  const { data: veiculosData } = useVeiculos(profile?.id, {
+    enabled: !!profile?.id,
+  });
+  const veiculos = veiculosData?.list || [];
 
   const gastosFiltrados = useMemo(() => {
     if (!searchTerm) return gastos;
@@ -200,7 +172,7 @@ export default function Gastos() {
   const { totalGasto, principalCategoriaData, mediaDiaria } = useMemo(() => {
     // Garantir que gastos seja um array válido
     const gastosArray = Array.isArray(gastos) ? gastos : [];
-    
+
     const total = gastosArray.reduce((sum, g) => {
       const valor = Number(g?.valor) || 0;
       return sum + (isNaN(valor) ? 0 : valor);
@@ -246,9 +218,8 @@ export default function Gastos() {
     }
 
     const media = total > 0 && daysPassed > 0 ? total / daysPassed : 0;
-    const topCatPercentage = principal && total > 0 
-      ? (principal[1].total / total) * 100 
-      : 0;
+    const topCatPercentage =
+      principal && total > 0 ? (principal[1].total / total) * 100 : 0;
 
     return {
       totalGasto: isNaN(total) ? 0 : total,
@@ -282,37 +253,7 @@ export default function Gastos() {
     setPageTitle("Controle de Gastos");
   }, [setPageTitle]);
 
-  const handleNavigation = useCallback((newMes: number, newAno: number) => {
-    setMesFilter(newMes);
-    setAnoFilter(newAno);
-  }, []);
 
-  const handleSubmit = useCallback(
-    async (data: GastoFormData) => {
-      if (!profile?.id) return;
-
-      if (editingGasto) {
-        updateGasto.mutate(
-          { id: editingGasto.id, data },
-          {
-            onSuccess: () => {
-              safeCloseDialog(() => setIsDialogOpen(false));
-            },
-          }
-        );
-      } else {
-        createGasto.mutate(
-          { usuarioId: profile.id, data },
-          {
-            onSuccess: () => {
-              safeCloseDialog(() => setIsDialogOpen(false));
-            },
-          }
-        );
-      }
-    },
-    [profile?.id, editingGasto, updateGasto, createGasto]
-  );
 
   const handleDelete = useCallback(
     async (id: string) => {
@@ -324,25 +265,9 @@ export default function Gastos() {
   const openDialog = useCallback(
     (gasto: Gasto | null = null) => {
       setEditingGasto(gasto);
-      if (gasto) {
-        const valorEmCentavos = Math.round(Number(gasto.valor) * 100);
-        form.reset({
-          valor: moneyMask(String(valorEmCentavos)),
-          data: new Date(new Date(gasto.data).valueOf() + 1000 * 3600 * 24),
-          categoria: gasto.categoria,
-          descricao: gasto.descricao || "",
-        });
-      } else {
-        form.reset({
-          valor: "",
-          data: undefined,
-          categoria: "",
-          descricao: "",
-        });
-      }
       setIsDialogOpen(true);
     },
-    [form]
+    []
   );
 
   const pullToRefreshReload = async () => {
@@ -371,7 +296,10 @@ export default function Gastos() {
               <DateNavigation
                 mes={mesFilter}
                 ano={anoFilter}
-                onNavigate={handleNavigation}
+                onNavigate={(m, a) => {
+                  if (setSelectedMes) setSelectedMes(m);
+                  if (setSelectedAno) setSelectedAno(a);
+                }}
                 disabled={!enabledPageActions}
               />
             </div>
@@ -467,9 +395,16 @@ export default function Gastos() {
               <CardContent className="px-0">
                 <GastosToolbar
                   categoriaFilter={categoriaFilter}
-                  onCategoriaChange={setCategoriaFilter}
+                  onCategoriaChange={(val) =>
+                    setSelectedCategoria && setSelectedCategoria(val)
+                  }
+                  veiculoFilter={veiculoFilter}
+                  onVeiculoChange={(val) =>
+                    setSelectedVeiculo && setSelectedVeiculo(val)
+                  }
                   onRegistrarGasto={() => openDialog()}
-                  categorias={categoriasGastos}
+                  categorias={CATEGORIAS_GASTOS}
+                  veiculos={veiculos.map((v) => ({ id: v.id, placa: v.placa }))}
                   disabled={!enabledPageActions}
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
@@ -484,10 +419,14 @@ export default function Gastos() {
                       Acesso Restrito
                     </h3>
                     <p className="text-sm text-gray-600 mb-4 max-w-md">
-                      Esta funcionalidade está disponível apenas nos planos Essencial ou Completo. Troque de plano para visualizar e gerenciar seus gastos.
+                      Esta funcionalidade está disponível apenas nos planos
+                      Essencial ou Completo. Troque de plano para visualizar e
+                      gerenciar seus gastos.
                     </p>
                     <Button
-                      onClick={() => window.location.href = "/planos?plano=essencial"}
+                      onClick={() =>
+                        (window.location.href = "/planos?plano=essencial")
+                      }
                       className="bg-orange-600 hover:bg-orange-700 text-white"
                     >
                       Liberar Controle de Gastos
@@ -509,201 +448,27 @@ export default function Gastos() {
                     gastos={gastosFiltrados}
                     onEdit={openDialog}
                     onDelete={handleDelete}
+                    isRestricted={!enabledPageActions}
+                    veiculos={veiculos.map((v) => ({
+                      id: v.id,
+                      placa: v.placa,
+                    }))}
                   />
                 )}
               </CardContent>
             </Card>
           </div>
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent
-              onOpenAutoFocus={(e) => e.preventDefault()}
-              className="w-[90vw] sm:w-full sm:max-w-md max-h-[95vh] flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
-              hideCloseButton
-            >
-              <div className="bg-blue-600 p-4 text-center relative shrink-0">
-                <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
-                  <X className="h-6 w-6" />
-                  <span className="sr-only">Close</span>
-                </DialogClose>
-
-                <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
-                  <TrendingDown className="w-5 h-5 text-white" />
-                </div>
-                <DialogTitle className="text-xl font-bold text-white">
-                  {editingGasto ? "Editar Gasto" : "Registrar Gasto"}
-                </DialogTitle>
-              </div>
-
-              <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(handleSubmit)}
-                    className="space-y-4"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="categoria"
-                      render={({ field, fieldState }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 font-medium ml-1">
-                            Categoria <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <div className="relative">
-                                <Tag className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                <SelectTrigger
-                                  className={cn(
-                                    "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
-                                    fieldState.error &&
-                                      "border-red-500"
-                                  )}
-                                  aria-invalid={!!fieldState.error}
-                                >
-                                  <SelectValue placeholder="Selecione a categoria" />
-                                </SelectTrigger>
-                              </div>
-                            </FormControl>
-                            <SelectContent className="max-h-60 overflow-y-auto">
-                              {categoriasGastos.map((cat) => (
-                                <SelectItem key={cat} value={cat}>
-                                  {cat}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="data"
-                        render={({ field, fieldState }) => (
-                          <FormItem className="flex flex-col">
-                            <FormLabel className="text-gray-700 font-medium ml-1">
-                              Data <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <Popover
-                              open={openCalendar}
-                              onOpenChange={setOpenCalendar}
-                            >
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <div className="relative">
-                                    <CalendarIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      className={cn(
-                                        "w-full pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-left font-normal hover:bg-gray-100 justify-start",
-                                        !field.value && "text-muted-foreground",
-                                        fieldState.error &&
-                                          "border-red-500 ring-red-500"
-                                      )}
-                                      aria-invalid={!!fieldState.error}
-                                    >
-                                      {field.value ? (
-                                        format(field.value, "dd/MM/yyyy")
-                                      ) : (
-                                        <span className="text-gray-500">
-                                          Selecione
-                                        </span>
-                                      )}
-                                    </Button>
-                                  </div>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={(date) => {
-                                    if (date) {
-                                      field.onChange(date);
-                                      setOpenCalendar(false);
-                                    }
-                                  }}
-                                  initialFocus
-                                  locale={ptBR}
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="valor"
-                        render={({ field }) => (
-                          <MoneyInput
-                            field={field}
-                            required
-                            label="Valor"
-                            className="flex flex-col"
-                            inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
-                          />
-                        )}
-                      />
-                    </div>
-                    <FormField
-                      control={form.control}
-                      name="descricao"
-                      render={({ field, fieldState }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700 font-medium ml-1">
-                            Descrição
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              placeholder="Detalhes do gasto (opcional)"
-                              className="min-h-[100px] rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all resize-none"
-                              aria-invalid={!!fieldState.error}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="flex gap-3 pt-4">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() =>
-                          safeCloseDialog(() => setIsDialogOpen(false))
-                        }
-                        className="flex-1 h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        type="submit"
-                        className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all"
-                        disabled={isActionLoading}
-                      >
-                        {isActionLoading ? (
-                          <>
-                            <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                            Salvando...
-                          </>
-                        ) : (
-                          "Salvar Gasto"
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <GastoFormDialog
+            isOpen={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
+            gastoToEdit={editingGasto}
+            veiculos={veiculos.map((v) => ({ id: v.id, placa: v.placa }))}
+            usuarioId={profile?.id}
+            onSuccess={() => {
+              // Optional: Refetch or show success message if needed
+            }}
+          />
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Aguarde..." />

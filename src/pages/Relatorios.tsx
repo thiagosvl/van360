@@ -154,9 +154,30 @@ const MOCK_DATA_NO_ACCESS = {
       { nome: "Tarde", passageiros: 0, valor: 2000, percentual: 33 },
     ],
     veiculos: [
-      { placa: "ABC-1234", passageiros: 0, valor: 4000, marca: "Chevrolet", modelo: "Camaro", percentual: 33 },
-      { placa: "XYZ-5678", passageiros: 0, valor: 1500, marca: "Chevrolet", modelo: "Camaro", percentual: 33 },
-      { placa: "DEF-9012", passageiros: 0, valor: 0, marca: "Chevrolet", modelo: "Camaro", percentual: 33 },
+      {
+        placa: "ABC-1234",
+        passageiros: 0,
+        valor: 4000,
+        marca: "Chevrolet",
+        modelo: "Camaro",
+        percentual: 33,
+      },
+      {
+        placa: "XYZ-5678",
+        passageiros: 0,
+        valor: 1500,
+        marca: "Chevrolet",
+        modelo: "Camaro",
+        percentual: 33,
+      },
+      {
+        placa: "DEF-9012",
+        passageiros: 0,
+        valor: 0,
+        marca: "Chevrolet",
+        modelo: "Camaro",
+        percentual: 33,
+      },
     ],
   },
   automacao: {
@@ -176,7 +197,7 @@ export default function Relatorios() {
   const [ano, setAno] = useState(new Date().getFullYear());
 
   // Access Logic - baseado no plano completo
-  const hasAccess = !canViewRelatorios(profilePlano);
+  const hasAccess = canViewRelatorios(profilePlano);
   const passageirosLimit = profilePlano?.planoCompleto?.limite_passageiros || null;
   const isFreePlan = profilePlano?.isFreePlan;
 
@@ -257,7 +278,7 @@ export default function Relatorios() {
 
     // Passageiros
     const passageirosList = passageirosData?.list || [];
-    const passageirosCount = passageirosList.filter((p) => p.ativo).length;
+    const passageirosCount = passageirosList.length;
 
     // Custo por Passageiro
     const custoPorPassageiro =
@@ -1035,7 +1056,14 @@ export default function Relatorios() {
                                 visible={hasAccess}
                                 type="number"
                               />{" "}
-                              {cat.count === 1 ? "registro" : "registros"}
+                              <span
+                                className={cn(
+                                  "text-xs text-gray-400 mt-1",
+                                  !hasAccess && "blur-sm select-none"
+                                )}
+                              >
+                                {cat.count === 1 ? "registro" : "registros"}
+                              </span>
                             </span>
                           </span>
                         </div>
@@ -1141,9 +1169,7 @@ export default function Relatorios() {
                       variant="secondary"
                       size="sm"
                       className="mt-4 px-5 rounded-full border-white/30 bg-white/20 text-white hover:bg-white/30 font-semibold"
-                      onClick={() =>
-                        navigate("/planos?plano=completo")
-                      }
+                      onClick={() => navigate("/planos?plano=completo")}
                     >
                       Quero automação total →
                     </Button>
@@ -1182,7 +1208,14 @@ export default function Relatorios() {
                             visible={hasAccess}
                             type="number"
                           />{" "}
-                          passageiros
+                           <span
+                            className={cn(
+                              "text-xs text-gray-400 mt-1",
+                              !hasAccess && "blur-sm select-none"
+                            )}
+                          >
+                            passageiros
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1229,7 +1262,14 @@ export default function Relatorios() {
                             visible={hasAccess}
                             type="number"
                           />{" "}
-                          passageiros
+                           <span
+                            className={cn(
+                              "text-xs text-gray-400 mt-1",
+                              !hasAccess && "blur-sm select-none"
+                            )}
+                          >
+                            passageiros
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1261,7 +1301,9 @@ export default function Relatorios() {
                     <div className="flex justify-between items-end text-sm">
                       <div>
                         <div className="text-xs text-gray-500">{`${veiculo.marca} ${veiculo.modelo}`}</div>
-                        <div className="font-medium text-gray-700">{veiculo.placa}</div>
+                        <div className="font-medium text-gray-700">
+                          {veiculo.placa}
+                        </div>
                       </div>
                       <div className="text-right">
                         <div className="text-xs text-gray-500">
@@ -1277,7 +1319,14 @@ export default function Relatorios() {
                             visible={hasAccess}
                             type="number"
                           />{" "}
-                          passageiros
+                          <span
+                            className={cn(
+                              "text-xs text-gray-400 mt-1",
+                              !hasAccess && "blur-sm select-none"
+                            )}
+                          >
+                            passageiros
+                          </span>
                         </div>
                       </div>
                     </div>

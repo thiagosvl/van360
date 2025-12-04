@@ -8,6 +8,7 @@ export interface UseGastosFilters {
   mes: number;
   ano: number;
   categoria?: string;
+  veiculoId?: string;
 }
 
 const buildQueryKey = (filters: UseGastosFilters) => [
@@ -16,6 +17,7 @@ const buildQueryKey = (filters: UseGastosFilters) => [
   filters.ano,
   filters.mes,
   filters.categoria || "todas",
+  filters.veiculoId || "todos",
 ];
 
 export function useGastos(
@@ -42,6 +44,7 @@ export function useGastos(
         mes: filters.mes.toString(),
         ano: filters.ano.toString(),
         categoria: filters.categoria && filters.categoria !== "todas" ? filters.categoria : undefined,
+        veiculoId: filters.veiculoId && filters.veiculoId !== "todos" ? filters.veiculoId : undefined,
       });
 
       return (data as Gasto[]) ?? [];

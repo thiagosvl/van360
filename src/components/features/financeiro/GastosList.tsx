@@ -11,16 +11,19 @@ import { Gasto } from "@/types/gasto";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { formatDateToBR } from "@/utils/formatters";
 import {
+  Bus,
   Calendar,
   ClipboardCheck,
+  Cog,
   Edit,
+  Ellipsis,
   FileText,
   Fuel,
   HelpCircle,
   MoreVertical,
   Trash2,
   Wallet,
-  Wrench,
+  Wrench
 } from "lucide-react";
 
 interface GastosListProps {
@@ -28,6 +31,7 @@ interface GastosListProps {
   onEdit: (gasto: Gasto) => void;
   onDelete: (id: string) => void;
   isRestricted?: boolean;
+  veiculos?: { id: string; placa: string }[];
 }
 
 interface GastoActionsDropdownProps {
@@ -114,6 +118,18 @@ const getCategoryConfig = (categoria: string) => {
       };
     case "Documentação":
       return { icon: FileText, color: "text-yellow-600", bg: "bg-yellow-100" };
+    case "Administrativa":
+      return {
+        icon: Cog,
+        color: "text-purple-600",
+        bg: "bg-purple-100",
+      };
+    case "Outro":
+      return {
+        icon: Ellipsis,
+        color: "text-red-600",
+        bg: "bg-red-100",
+      };
     default:
       return {
         icon: HelpCircle,
@@ -128,7 +144,13 @@ export function GastosList({
   onEdit,
   onDelete,
   isRestricted = false,
+  veiculos = [],
 }: GastosListProps) {
+  const getVeiculoPlaca = (veiculoId?: string | null) => {
+    if (!veiculoId) return null;
+    return veiculos.find((v) => v.id === veiculoId)?.placa || null;
+  };
+
   return (
     <>
       {/* Desktop Table */}
@@ -136,8 +158,11 @@ export function GastosList({
         <table className="w-full">
           <thead className="bg-gray-50/50">
             <tr className="border-b border-gray-100">
-              <th className="w-[300px] py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider pl-6">
+              <th className="w-[250px] py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider pl-6">
                 Categoria
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                Veículo
               </th>
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Descrição
@@ -160,6 +185,8 @@ export function GastosList({
                 color,
                 bg,
               } = getCategoryConfig(gasto.categoria);
+              const placa = getVeiculoPlaca(gasto.veiculo_id);
+
               return (
                 <tr
                   key={gasto.id}
@@ -184,7 +211,18 @@ export function GastosList({
                     </div>
                   </td>
                   <td className="px-6 py-4 align-middle">
-                    <span className="text-sm text-gray-500 max-w-[200px] block">
+                    {placa ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-gray-700 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
+                          {placa}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-400">-</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 align-middle">
+                    <span className="text-sm text-gray-500 max-w-[200px] block truncate">
                       {gasto.descricao || "-"}
                     </span>
                   </td>
@@ -221,6 +259,8 @@ export function GastosList({
       <div className="md:hidden space-y-3">
         {gastos.map((gasto) => {
           const { icon: Icon, color, bg } = getCategoryConfig(gasto.categoria);
+          const placa = getVeiculoPlaca(gasto.veiculo_id);
+
           return (
             <div
               key={gasto.id}
@@ -237,9 +277,19 @@ export function GastosList({
                   >
                     <Icon className="h-4 w-4" />
                   </div>
-                  <p className="font-bold text-gray-900 text-sm">
-                    {gasto.categoria}
-                  </p>
+                  <div className="flex flex-col">
+                    <p className="font-bold text-gray-900 text-sm leading-tight">
+                      {gasto.categoria}
+                    </p>
+                    {placa && (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Bus className="w-3 h-3 text-gray-400" />
+                        <span className="text-[10px] font-medium text-gray-500">
+                          {placa}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="-mr-2 -mt-2">
                   <GastoActionsDropdown
@@ -253,7 +303,7 @@ export function GastosList({
               </div>
 
               <div className="flex justify-between items-end mb-3">
-                <p className="text-xs text-muted-foreground max-w-[60%]">
+                <p className="text-xs text-muted-foreground max-w-[60%] line-clamp-2">
                   {gasto.descricao || "Sem descrição"}
                 </p>
                 <p className="font-bold text-gray-900 text-base">

@@ -7,7 +7,9 @@ import {
   FileText,
   Lock as LockIcon,
   Plus,
+  Receipt,
   School,
+  TrendingDown,
   TrendingUp,
   Trophy,
   User,
@@ -35,6 +37,7 @@ import { useVeiculos } from "@/hooks/api/useVeiculos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
+import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import {
   PASSAGEIRO_COBRANCA_STATUS_PAGO,
   PLANO_COMPLETO,
@@ -388,6 +391,7 @@ const Home = () => {
   const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
   const [isCreatingEscola, setIsCreatingEscola] = useState(false);
   const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
+  const [isGastoDialogOpen, setIsGastoDialogOpen] = useState(false);
 
   const mesAtual = new Date().getMonth() + 1;
   const anoAtual = new Date().getFullYear();
@@ -573,7 +577,7 @@ const Home = () => {
     try {
       navigator.clipboard.writeText(buildPrepassageiroLink(profile?.id));
       toast.success("Link de cadastro copiado!", {
-        description: "Envie para os responsáveis.",
+        description: "Envie para os pais/responsáveis.",
       });
     } catch (error) {
       toast.error("Erro ao copiar link");
@@ -584,6 +588,10 @@ const Home = () => {
   const handleOpenPassageiroDialog = useCallback(() => {
     setEditingPassageiro(null);
     setIsPassageiroDialogOpen(true);
+  }, []);
+
+  const handleOpenGastoDialog = useCallback(() => {
+    setIsGastoDialogOpen(true);
   }, []);
 
   const handleClosePassageiroDialog = useCallback(() => {
@@ -830,6 +838,13 @@ const Home = () => {
                 colorClass="text-indigo-600"
                 bgClass="bg-indigo-50"
               />
+              <ShortcutCard
+                onClick={handleOpenGastoDialog}
+                icon={TrendingDown}
+                label="Registrar Gasto"
+                colorClass="text-red-600"
+                bgClass="bg-red-50"
+              />
               <div
                 onClick={handleCopyLink}
                 className="cursor-pointer group flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all duration-200 hover:border-blue-200 hover:shadow-md h-24 w-full"
@@ -842,11 +857,11 @@ const Home = () => {
                 </span>
               </div>
               <ShortcutCard
-                to="/cobrancas"
-                icon={CreditCard}
-                label="Cobranças"
-                colorClass="text-emerald-600"
-                bgClass="bg-emerald-50"
+                to="/passageiros"
+                icon={Users}
+                label="Passageiros"
+                colorClass="text-blue-600"
+                bgClass="bg-blue-50"
               />
               <ShortcutCard
                 to="/gastos"
@@ -863,11 +878,18 @@ const Home = () => {
                 bgClass="bg-purple-50"
               />
               <ShortcutCard
-                to="/passageiros"
-                icon={Users}
-                label="Passageiros"
-                colorClass="text-blue-600"
-                bgClass="bg-blue-50"
+                to="/cobrancas"
+                icon={CreditCard}
+                label="Cobranças"
+                colorClass="text-emerald-600"
+                bgClass="bg-emerald-50"
+              />
+              <ShortcutCard
+                to="/assinatura"
+                icon={Receipt}
+                label="Minha Assinatura"
+                colorClass="text-yellow-600"
+                bgClass="bg-yellow-50"
               />
             </div>
           </section>
@@ -933,6 +955,16 @@ const Home = () => {
         onClose={handleCloseVeiculoFormDialog}
         onSuccess={handleVeiculoCreated}
         profile={profile}
+      />
+
+      <GastoFormDialog
+        isOpen={isGastoDialogOpen}
+        onOpenChange={setIsGastoDialogOpen}
+        veiculos={veiculosData?.list || []}
+        usuarioId={profile?.id}
+        onSuccess={() => {
+          toast.success("Gasto registrado com sucesso!");
+        }}
       />
     </>
   );

@@ -1,6 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
 import { veiculoApi } from "@/services/api/veiculo.api";
 import { Veiculo } from "@/types/veiculo";
+import { useQuery } from "@tanstack/react-query";
+
+import { useEffect } from "react";
 
 export function useVeiculos(
   usuarioId?: string,
@@ -9,10 +11,18 @@ export function useVeiculos(
     onError?: (error: unknown) => void;
   }
 ) {
-  return useQuery({
+  const query = useQuery<
+    (Veiculo & { passageiros_ativos_count?: number })[],
+    unknown,
+    {
+      list: (Veiculo & { passageiros_ativos_count?: number })[];
+      total: number;
+      ativos: number;
+    }
+  >({
     queryKey: ["veiculos", usuarioId],
     enabled: (options?.enabled ?? true) && Boolean(usuarioId),
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
     // Considera os dados stale imediatamente para garantir refetch quando necessário
     staleTime: 0,
     // Sempre refetch quando o componente montar para garantir dados atualizados
@@ -25,11 +35,7 @@ export function useVeiculos(
       const data = await veiculoApi.listVeiculosComContagemAtivos(usuarioId);
       return (data as (Veiculo & { passageiros_ativos_count?: number })[]) ?? [];
     },
-    select: (veiculos): {
-      list: (Veiculo & { passageiros_ativos_count?: number })[];
-      total: number;
-      ativos: number;
-    } => {
+    select: (veiculos) => {
       const list = veiculos ?? [];
       const ativos = list.filter((veiculo) => veiculo.ativo).length;
 
@@ -39,7 +45,14 @@ export function useVeiculos(
         ativos,
       };
     },
-    onError: options?.onError,
   });
+
+  useEffect(() => {
+    if (query.error && options?.onError) {
+      options.onError(query.error);
+    }
+  }, [query.error, options]);
+
+  return query;
 }
 

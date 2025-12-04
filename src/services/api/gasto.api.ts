@@ -1,6 +1,6 @@
 import { toLocalDateString } from "@/utils/formatters";
-import { cleanString } from "@/utils/string";
 import { moneyToNumber } from "@/utils/masks";
+import { cleanString } from "@/utils/string";
 import { apiClient } from "./client";
 
 export const gastoApi = {
@@ -11,6 +11,7 @@ export const gastoApi = {
       data: toLocalDateString(data.data),
       descricao: cleanString(data.descricao, true),
       categoria: data.categoria,
+      veiculo_id: data.veiculo_id,
     }
 
     return apiClient
@@ -18,7 +19,7 @@ export const gastoApi = {
       .then(res => res.data);
   },
 
-  listGastos: (usuarioId: string, filtros?: Record<string, string>) =>
+  listGastos: (usuarioId: string, filtros?: Record<string, string | undefined>) =>
     apiClient
       .get(`/gastos/usuario/${usuarioId}`, { params: filtros })
       .then(res => res.data),
@@ -35,6 +36,7 @@ export const gastoApi = {
       data: toLocalDateString(data.data),
       descricao: cleanString(data.descricao, true),
       categoria: data.categoria,
+      veiculo_id: data.veiculo_id,
     }
 
     return apiClient

@@ -1,4 +1,3 @@
-
 export interface Gasto {
   id: string;
   created_at: string;
@@ -8,4 +7,19 @@ export interface Gasto {
   data: string;
   categoria: string;
   notas?: string | null;
+  veiculo_id?: string | null;
+  veiculo?: {
+    id: string;
+    placa: string;
+  } | null;
 };
+
+export const CATEGORIAS_GASTOS = [
+  "Salário",
+  "Combustível",
+  "Manutenção",
+  "Vistorias",
+  "Documentação",
+  "Administrativa",
+  "Outro",
+];

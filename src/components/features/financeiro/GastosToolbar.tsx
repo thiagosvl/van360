@@ -2,24 +2,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
 } from "@/components/ui/sheet";
 import { Filter, ListFilter, Plus, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -27,8 +27,11 @@ import { useEffect, useState } from "react";
 interface GastosToolbarProps {
   categoriaFilter: string;
   onCategoriaChange: (value: string) => void;
+  veiculoFilter: string;
+  onVeiculoChange: (value: string) => void;
   onRegistrarGasto: () => void;
   categorias: string[];
+  veiculos: { id: string; placa: string }[];
   disabled?: boolean;
   searchTerm: string;
   onSearchChange: (value: string) => void;
@@ -37,8 +40,11 @@ interface GastosToolbarProps {
 export function GastosToolbar({
   categoriaFilter,
   onCategoriaChange,
+  veiculoFilter,
+  onVeiculoChange,
   onRegistrarGasto,
   categorias,
+  veiculos,
   disabled,
   searchTerm,
   onSearchChange,
@@ -48,6 +54,7 @@ export function GastosToolbar({
 
   // Temporary state for mobile sheet
   const [tempCategoria, setTempCategoria] = useState(categoriaFilter);
+  const [tempVeiculo, setTempVeiculo] = useState(veiculoFilter);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -59,23 +66,27 @@ export function GastosToolbar({
   useEffect(() => {
     if (open) {
       setTempCategoria(categoriaFilter);
+      setTempVeiculo(veiculoFilter);
     }
-  }, [open, categoriaFilter]);
+  }, [open, categoriaFilter, veiculoFilter]);
 
   const handleApplyFilters = () => {
     onCategoriaChange(tempCategoria);
+    onVeiculoChange(tempVeiculo);
     setOpen(false);
   };
 
   const handleClearMobileFilters = () => {
     setTempCategoria("todas");
+    setTempVeiculo("todos");
   };
 
   const handleClearDesktopFilters = () => {
     onCategoriaChange("todas");
+    onVeiculoChange("todos");
   };
 
-  const activeFiltersCount = categoriaFilter !== "todas" ? 1 : 0;
+  const activeFiltersCount = (categoriaFilter !== "todas" ? 1 : 0) + (veiculoFilter !== "todos" ? 1 : 0);
 
   const FilterContent = () => (
     <div className="space-y-4">
@@ -90,6 +101,23 @@ export function GastosToolbar({
             {categorias.map((cat) => (
               <SelectItem key={cat} value={cat}>
                 {cat}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Veículo</Label>
+        <Select value={tempVeiculo} onValueChange={setTempVeiculo}>
+          <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200">
+            <SelectValue placeholder="Todos os Veículos" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos os Veículos</SelectItem>
+            {veiculos.map((v) => (
+              <SelectItem key={v.id} value={v.id}>
+                {v.placa}
               </SelectItem>
             ))}
           </SelectContent>
@@ -239,6 +267,30 @@ export function GastosToolbar({
                     {categorias.map((cat) => (
                       <SelectItem key={cat} value={cat}>
                         {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold text-gray-500 uppercase">
+                  Veículo
+                </Label>
+                <Select
+                  value={veiculoFilter}
+                  onValueChange={(val) => {
+                    onVeiculoChange(val);
+                  }}
+                >
+                  <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200">
+                    <SelectValue placeholder="Todos os Veículos" />
+                  </SelectTrigger>
+                  <SelectContent className="z-[9999]">
+                    <SelectItem value="todos">Todos os Veículos</SelectItem>
+                    {veiculos.map((v) => (
+                      <SelectItem key={v.id} value={v.id}>
+                        {v.placa}
                       </SelectItem>
                     ))}
                   </SelectContent>
