@@ -1,6 +1,6 @@
 import { PremiumBanner } from "@/components/alerts/PremiumBanner";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Zap } from "lucide-react";
+import { Bot, ChevronRight, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -41,7 +41,7 @@ export function AutomaticChargesPrompt({
       <div className="hidden md:flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-xl p-3 px-4 shadow-sm mb-6 animate-in fade-in slide-in-from-top-2 duration-500">
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-            <Zap className="h-4 w-4 text-indigo-600" />
+            <Bot className="h-4 w-4 text-indigo-600" />
           </div>
           <p className="text-sm font-medium text-indigo-900">
             Cansado de cobrar um por um? <span className="font-normal text-indigo-700">Automatize o envio de cobranças e reduza a inadimplência.</span>
@@ -66,7 +66,7 @@ export function AutomaticChargesPrompt({
       >
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-            <Zap className="h-4 w-4 text-indigo-600" />
+            <Bot className="h-4 w-4 text-indigo-600" />
           </div>
           <div>
             <p className="text-sm font-bold text-indigo-900 leading-tight">

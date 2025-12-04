@@ -60,7 +60,7 @@ import {
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { cn } from "@/lib/utils";
-import { BellOff, CheckCircle2, DollarSign, Search, TrendingUp, Wallet, Zap } from "lucide-react";
+import { BellOff, Bot, CheckCircle2, DollarSign, Search, TrendingUp, Wallet } from "lucide-react";
 
 // --- Internal Components ---
 
@@ -421,7 +421,7 @@ const Cobrancas = () => {
                     "Automatize o envio de cobranças e reduza a inadimplência."
                   )}
                 >
-                  <Zap className="w-4 h-4" />
+                  <Bot className="w-4 h-4" />
                   Automatizar
                 </Button>
               )}

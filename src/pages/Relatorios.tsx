@@ -7,11 +7,11 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCobrancas,
-    useEscolas,
-    useGastos,
-    usePassageiros,
-    useVeiculos,
+  useCobrancas,
+  useEscolas,
+  useGastos,
+  usePassageiros,
+  useVeiculos,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -20,23 +20,24 @@ import { canViewRelatorios } from "@/utils/domain/plano/accessRules";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { periodos as periodosConstants } from "@/utils/formatters/constants";
 import {
-    AlertTriangle,
-    ArrowDownCircle,
-    ArrowUpCircle,
-    BarChart3,
-    ClipboardCheck,
-    Coins,
-    FileText,
-    Fuel,
-    HelpCircle,
-    Lock,
-    Percent,
-    TrendingDown,
-    TrendingUp,
-    Users,
-    Wallet,
-    Wrench,
-    Zap,
+  AlertTriangle,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  BarChart3,
+  Bot,
+  ClipboardCheck,
+  Cog,
+  Coins,
+  FileText,
+  Fuel,
+  HelpCircle,
+  Lock,
+  Percent,
+  TrendingDown,
+  TrendingUp,
+  Users,
+  Wallet,
+  Wrench
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -58,6 +59,11 @@ const CATEGORIA_ICONS: Record<
     color: "text-yellow-600",
     bg: "bg-yellow-100",
   },
+  Administrativa: {
+    icon: Cog,
+    color: "text-purple-600",
+    bg: "bg-purple-100",
+  },
   Outros: { icon: HelpCircle, color: "text-gray-600", bg: "bg-gray-100" },
 };
 
@@ -77,60 +83,60 @@ const FORMAS_PAGAMENTO_LABELS: Record<
 // Mock data para quando não tem acesso (com blur)
 const MOCK_DATA_NO_ACCESS = {
   visaoGeral: {
-    lucroEstimado: 0,
-    recebido: 0,
-    gasto: 0,
-    custoPorPassageiro: 0,
+    lucroEstimado: 12500.0,
+    recebido: 25000.0,
+    gasto: 12500.0,
+    custoPorPassageiro: 150.0,
     atrasos: {
-      valor: 0,
+      valor: 1200.0,
       passageiros: 4,
     },
     taxaRecebimento: 90.9,
   },
   entradas: {
-    previsto: 0,
-    realizado: 0,
-    ticketMedio: 0,
-    passageirosPagantes: 0,
-    passageirosPagos: 0,
+    previsto: 28000.0,
+    realizado: 25000.0,
+    ticketMedio: 350.0,
+    passageirosPagantes: 75,
+    passageirosPagos: 68,
     formasPagamento: [
-      { metodo: "Pix", valor: 0, percentual: 33, color: "bg-emerald-500" },
+      { metodo: "Pix", valor: 12000, percentual: 48, color: "bg-emerald-500" },
       {
         metodo: "Dinheiro",
-        valor: 2500,
-        percentual: 29,
+        valor: 5000,
+        percentual: 20,
         color: "bg-green-500",
       },
-      { metodo: "Cartão", valor: 0, percentual: 33, color: "bg-teal-500" },
+      { metodo: "Cartão", valor: 8000, percentual: 32, color: "bg-teal-500" },
     ],
   },
   saidas: {
-    total: 0,
-    margemOperacional: 0,
-    mediaDiaria: 0,
-    diasContabilizados: 0,
-    custoPorPassageiro: 0,
+    total: 12500.0,
+    margemOperacional: 50.0,
+    mediaDiaria: 416.0,
+    diasContabilizados: 30,
+    custoPorPassageiro: 150.0,
     topCategorias: [
       {
         nome: "Combustível",
-        valor: 0,
-        count: 0,
+        valor: 4500,
+        count: 12,
         icon: Fuel,
         color: "text-orange-600",
         bg: "bg-orange-100",
       },
       {
         nome: "Manutenção",
-        valor: 0,
-        count: 0,
+        valor: 2500,
+        count: 2,
         icon: Wrench,
         color: "text-blue-600",
         bg: "bg-blue-100",
       },
       {
         nome: "Outros",
-        valor: 0,
-        count: 0,
+        valor: 5500,
+        count: 5,
         icon: HelpCircle,
         color: "text-gray-600",
         bg: "bg-gray-100",
@@ -138,45 +144,37 @@ const MOCK_DATA_NO_ACCESS = {
     ],
   },
   operacional: {
-    passageirosCount: 0,
+    passageirosCount: 5,
     escolas: [
-      { nome: "Colégio Objetivo", passageiros: 0, valor: 2500, percentual: 33 },
+      { nome: "Colégio Objetivo", passageiros: 35, valor: 12250, percentual: 41 },
       {
         nome: "Escola Adventista",
-        passageiros: 0,
-        valor: 1800,
-        percentual: 33,
+        passageiros: 25,
+        valor: 8750,
+        percentual: 29,
       },
-      { nome: "Colégio Anglo", passageiros: 0, valor: 1200, percentual: 33 },
+      { nome: "Colégio Anglo", passageiros: 25, valor: 8750, percentual: 29 },
     ],
     periodos: [
-      { nome: "Manhã", passageiros: 0, valor: 3500, percentual: 33 },
-      { nome: "Tarde", passageiros: 0, valor: 2000, percentual: 33 },
+      { nome: "Manhã", passageiros: 45, valor: 15750, percentual: 53 },
+      { nome: "Tarde", passageiros: 40, valor: 14000, percentual: 47 },
     ],
     veiculos: [
       {
         placa: "ABC-1234",
-        passageiros: 0,
-        valor: 4000,
-        marca: "Chevrolet",
-        modelo: "Camaro",
-        percentual: 33,
+        passageiros: 45,
+        valor: 15750,
+        marca: "Mercedes",
+        modelo: "Sprinter",
+        percentual: 53,
       },
       {
         placa: "XYZ-5678",
-        passageiros: 0,
-        valor: 1500,
-        marca: "Chevrolet",
-        modelo: "Camaro",
-        percentual: 33,
-      },
-      {
-        placa: "DEF-9012",
-        passageiros: 0,
-        valor: 0,
-        marca: "Chevrolet",
-        modelo: "Camaro",
-        percentual: 33,
+        passageiros: 40,
+        valor: 14000,
+        marca: "Renault",
+        modelo: "Master",
+        percentual: 47,
       },
     ],
   },
@@ -203,6 +201,8 @@ export default function Relatorios() {
 
   // Buscar dados reais - APENAS se tiver acesso
   const shouldFetchData = hasAccess && !!profile?.id;
+  // Passageiros sempre busca para exibir o health bar corretamente
+  const shouldFetchPassageiros = !!profile?.id;
 
   const { data: cobrancasData } = useCobrancas(
     {
@@ -224,7 +224,7 @@ export default function Relatorios() {
 
   const { data: passageirosData } = usePassageiros(
     { usuarioId: profile?.id },
-    { enabled: shouldFetchData }
+    { enabled: shouldFetchPassageiros }
   );
 
   const { data: escolasData } = useEscolas(profile?.id, {
@@ -455,8 +455,11 @@ export default function Relatorios() {
     const passageirosComAutomatica = passageirosList.filter(
       (p) => p.enviar_cobranca_automatica && p.ativo
     ).length;
+    const assinatura = profile?.assinaturas_usuarios?.[0];
     const limiteAutomatica =
-      profilePlano?.planoCompleto?.franquia_contratada_cobrancas || 50;
+      assinatura?.franquia_contratada_cobrancas ||
+      profilePlano?.planoCompleto?.franquia_contratada_cobrancas ||
+      50;
 
     return {
       visaoGeral: {
@@ -511,7 +514,19 @@ export default function Relatorios() {
   ]);
 
   // Usar dados reais ou mock (com blur) - mock só para quem não tem acesso
-  const dados = hasAccess && dadosReais ? dadosReais : MOCK_DATA_NO_ACCESS;
+  const realPassageirosCount = passageirosData?.list?.length || 0;
+  
+  const dados = useMemo(() => {
+    if (hasAccess && dadosReais) return dadosReais;
+    
+    return {
+      ...MOCK_DATA_NO_ACCESS,
+      operacional: {
+        ...MOCK_DATA_NO_ACCESS.operacional,
+        passageirosCount: realPassageirosCount,
+      },
+    };
+  }, [hasAccess, dadosReais, realPassageirosCount]);
 
   useEffect(() => {
     setPageTitle("Relatórios");
@@ -558,11 +573,11 @@ export default function Relatorios() {
             </div>
             <div>
               <p className="text-sm font-semibold text-amber-900">
-                Modo de Demonstração
+                Você sabe o lucro exato da sua van?
               </p>
               <p className="text-xs text-amber-700">
-                Você está vendo dados fictícios. Assine para ver seus números
-                reais.
+                Libere o acesso agora e veja seus números reais de faturamento e
+                despesas.
               </p>
             </div>
           </div>
@@ -571,7 +586,7 @@ export default function Relatorios() {
             size="sm"
             className="bg-amber-600 hover:bg-amber-700 text-white border-none shadow-none"
           >
-            Assinar Agora
+            Ver meu Lucro Real
           </Button>
         </div>
       )}
@@ -615,7 +630,7 @@ export default function Relatorios() {
             {/* Lucro Estimado */}
             <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
               <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-widest">
                   Lucro Estimado
                 </CardTitle>
                 <div
@@ -655,7 +670,7 @@ export default function Relatorios() {
             {/* Atrasos */}
             <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
               <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-widest">
                   Em Atraso
                 </CardTitle>
                 <div className="p-2 rounded-full bg-red-50 text-red-600">
@@ -695,7 +710,7 @@ export default function Relatorios() {
             {/* Custo por Passageiro */}
             <Card className="border-none shadow-sm rounded-2xl bg-white">
               <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-widest">
                   Custo por Passageiro
                 </CardTitle>
                 <Users className="h-4 w-4 text-orange-500" />
@@ -721,7 +736,7 @@ export default function Relatorios() {
 
             <Card className="border-none shadow-sm rounded-2xl bg-white">
               <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-widest">
                   Taxa de Recebimento
                 </CardTitle>
                 <Percent className="h-4 w-4 text-emerald-500" />
@@ -1101,7 +1116,7 @@ export default function Relatorios() {
                   <h3 className="text-xl md:text-2xl font-bold text-gray-900 leading-none">
                     <BlurredValue
                       value={dados.operacional.passageirosCount}
-                      visible={hasAccess}
+                      visible={true}
                       type="number"
                     />
                     <span className="text-xs text-gray-400 font-normal ml-1">
@@ -1119,7 +1134,7 @@ export default function Relatorios() {
                   <div className="flex items-center justify-between mb-2">
                     <div>
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                        Cobranças Automáticas
+                        Passageiros no Automático
                       </p>
                       <h3 className="text-xl md:text-2xl font-bold text-gray-900 leading-none">
                         <BlurredValue
@@ -1133,7 +1148,7 @@ export default function Relatorios() {
                       </h3>
                     </div>
                     <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-amber-50 text-amber-600">
-                      <Zap className="h-5 w-5" />
+                      <Bot className="h-5 w-5" />
                     </div>
                   </div>
                   <Progress
@@ -1144,7 +1159,7 @@ export default function Relatorios() {
                     indicatorClassName="bg-amber-500 rounded-full"
                   />
                   <p className="text-xs text-gray-400 mt-2">
-                    Passageiros com envio automático ativado
+                    Vagas de automação utilizadas
                   </p>
                 </CardContent>
               </Card>
@@ -1167,7 +1182,7 @@ export default function Relatorios() {
                       className="mt-4 px-5 rounded-full border-white/30 bg-white/20 text-white hover:bg-white/30 font-semibold"
                       onClick={() => navigate("/planos?plano=completo")}
                     >
-                      Quero automação total →
+                      Quero Automação Total →
                     </Button>
                   </div>
                 </CardContent>
@@ -1349,10 +1364,10 @@ export default function Relatorios() {
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1">
               <p className="text-sm font-semibold text-white leading-tight">
-                Visualize seu lucro real.
+                Você sabe o lucro exato da sua van?
               </p>
               <p className="text-xs text-gray-400 mt-0.5">
-                Libere o acesso agora.
+                Veja seus números reais.
               </p>
             </div>
             <Button
@@ -1360,7 +1375,7 @@ export default function Relatorios() {
               size="sm"
               className="bg-orange-600 hover:bg-orange-700 text-white font-semibold whitespace-nowrap"
             >
-              Ver Planos
+              Ver meu Lucro Real
             </Button>
           </div>
         </div>

@@ -68,8 +68,8 @@ const MOCK_DATA_NO_ACCESS = {
       categoria: "Combustível",
       descricao: "Abastecimento Semanal",
       valor: 450.0,
-      data: new Date().toISOString(),
-      created_at: new Date().toISOString(),
+      data: "2024-03-10",
+      created_at: "2024-03-10T10:00:00.000Z",
       usuario_id: "mock",
     },
     {
@@ -77,8 +77,8 @@ const MOCK_DATA_NO_ACCESS = {
       categoria: "Manutenção",
       descricao: "Troca de Óleo",
       valor: 250.0,
-      data: new Date().toISOString(),
-      created_at: new Date().toISOString(),
+      data: "2024-03-12",
+      created_at: "2024-03-12T14:30:00.000Z",
       usuario_id: "mock",
     },
     {
@@ -86,8 +86,8 @@ const MOCK_DATA_NO_ACCESS = {
       categoria: "Salário",
       descricao: "Adiantamento Motorista",
       valor: 1200.0,
-      data: new Date().toISOString(),
-      created_at: new Date().toISOString(),
+      data: "2024-03-15",
+      created_at: "2024-03-15T09:00:00.000Z",
       usuario_id: "mock",
     },
     {
@@ -95,8 +95,8 @@ const MOCK_DATA_NO_ACCESS = {
       categoria: "Vistorias",
       descricao: "Vistoria Semestral",
       valor: 150.0,
-      data: new Date().toISOString(),
-      created_at: new Date().toISOString(),
+      data: "2024-03-18",
+      created_at: "2024-03-18T11:00:00.000Z",
       usuario_id: "mock",
     },
     {
@@ -104,8 +104,8 @@ const MOCK_DATA_NO_ACCESS = {
       categoria: "Documentação",
       descricao: "Licenciamento Anual",
       valor: 350.0,
-      data: new Date().toISOString(),
-      created_at: new Date().toISOString(),
+      data: "2024-03-20",
+      created_at: "2024-03-20T16:00:00.000Z",
       usuario_id: "mock",
     },
   ] as Gasto[],
@@ -422,7 +422,7 @@ export default function Gastos() {
                 {loading ? (
                   <Skeleton className="h-40 w-full" />
                 ) : (
-                  <div className="relative">
+                  <div className={cn("relative", !enabledPageActions && "pb-32 md:pb-0")}>
                     <GastosList
                       gastos={
                         enabledPageActions
@@ -439,17 +439,18 @@ export default function Gastos() {
                     />
 
                     {!enabledPageActions && (
-                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-white z-10 hidden md:flex flex-col items-center justify-end pb-12">
-                        <div className="flex flex-col items-center text-center max-w-md px-4 bg-white/80 backdrop-blur-sm p-8 rounded-3xl shadow-xl border border-white/50">
+                      <div className="absolute inset-0 bg-gradient-to-b from-white/0 via-white/90 to-white z-10 hidden md:flex flex-col items-center justify-end pb-10">
+                        <div className="flex flex-col items-center text-center max-w-md px-4 bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
                           <div className="bg-orange-100 rounded-full p-4 mb-4 shadow-sm">
                             <Lock className="w-8 h-8 text-orange-600" />
                           </div>
                           <h3 className="text-xl font-bold text-gray-900 mb-2">
-                            Libere seu Controle de Gastos
+                            Para onde está indo seu dinheiro?
                           </h3>
                           <p className="text-sm text-gray-600 mb-6">
-                            Tenha visibilidade total das despesas do seu negócio
-                            e saiba exatamente para onde está indo seu dinheiro.
+                            Não deixe o lucro escapar pelo ralo. Controle
+                            combustível e manutenção com precisão para saber seu
+                            lucro real.
                           </p>
                           <Button
                             onClick={() =>
@@ -458,7 +459,7 @@ export default function Gastos() {
                             }
                             className="bg-orange-600 hover:bg-orange-700 text-white font-semibold h-12 px-8 rounded-xl shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all transform hover:-translate-y-0.5"
                           >
-                            Liberar Agora
+                            Quero controlar meus gastos
                           </Button>
                         </div>
                       </div>
@@ -498,13 +499,13 @@ export default function Gastos() {
       
       {/* Mobile Sticky Footer for No Access */}
       {!enabledPageActions && (
-        <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50 md:hidden safe-area-pb">
+        <div className="fixed bottom-0 left-0 w-full bg-gray-900 border-t border-gray-800 p-4 z-50 md:hidden safe-area-pb">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-900 leading-tight">
+              <p className="text-sm font-semibold text-white leading-tight">
                 Visualize seus dados reais.
               </p>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs text-gray-400 mt-0.5">
                 Libere o acesso agora.
               </p>
             </div>
@@ -513,7 +514,7 @@ export default function Gastos() {
               size="sm"
               className="bg-orange-600 hover:bg-orange-700 text-white font-semibold whitespace-nowrap"
             >
-              Liberar Acesso
+              Ver Planos
             </Button>
           </div>
         </div>

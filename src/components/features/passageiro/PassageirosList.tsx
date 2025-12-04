@@ -20,13 +20,13 @@ import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { formatPeriodo } from "@/utils/formatters";
 import {
   Bot,
+  BotOff,
   CreditCard,
   MoreVertical,
   Pencil,
   ToggleLeft,
   ToggleRight,
-  Trash2,
-  Zap,
+  Trash2
 } from "lucide-react";
 
 interface PassageirosListProps {
@@ -127,12 +127,12 @@ export function PassageirosList({
         >
           {passageiro.enviar_cobranca_automatica ? (
             <>
-              <Bot className="w-4 h-4 mr-2" />
+              <BotOff className="w-4 h-4 mr-2" />
               Pausar Cobrança Automática
             </>
           ) : (
             <>
-              <Zap className="w-4 h-4 mr-2" />
+              <Bot className="w-4 h-4 mr-2" />
               Ativar Cobrança Automática
             </>
           )}

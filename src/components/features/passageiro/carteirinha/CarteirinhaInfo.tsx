@@ -13,6 +13,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
   Bot,
+  BotOff,
   CalendarDays,
   Car,
   CheckCircle,
@@ -22,6 +23,7 @@ import {
   Copy,
   CreditCard,
   HeartPulse,
+  Lock,
   Mail,
   MapPin,
   Pencil,
@@ -29,8 +31,7 @@ import {
   School,
   Trash2,
   User,
-  Zap,
-  ZapOff
+  UserCheck
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { InfoItem } from "./InfoItem";
@@ -337,7 +338,7 @@ export const CarteirinhaInfo = ({
                 className="w-full pl-0 text-muted-foreground hover:bg-transparent hover:text-primary justify-start"
                 onClick={handleCobrancaAutomaticaClick}
               >
-                <Bot className="h-4 w-4 mr-2" />
+                <BotOff className="h-4 w-4 mr-2" />
                 Pausar Cobrança Automática
               </Button>
             ) : (
@@ -347,7 +348,7 @@ export const CarteirinhaInfo = ({
                 className="w-full pl-0 text-muted-foreground hover:bg-transparent hover:text-primary justify-start"
                 onClick={handleCobrancaAutomaticaClick}
               >
-                <Zap className="h-4 w-4 mr-2" />
+                <Bot className="h-4 w-4 mr-2" />
                 Ativar Cobrança Automática
               </Button>
             )}
@@ -358,7 +359,7 @@ export const CarteirinhaInfo = ({
                 className="w-full pl-0 text-muted-foreground hover:bg-transparent hover:text-primary justify-start"
                 onClick={() => onToggleClick(passageiro.ativo)}
               >
-                <ZapOff className="h-4 w-4 mr-2" />
+                <Lock className="h-4 w-4 mr-2" />
                 Desativar Passageiro
               </Button>
             ) : (
@@ -367,7 +368,7 @@ export const CarteirinhaInfo = ({
                 className="w-full pl-0 text-muted-foreground hover:bg-transparent hover:text-primary justify-start"
                 onClick={() => onToggleClick(passageiro.ativo)}
               >
-                <Zap className="h-4 w-4 mr-2" />
+                <UserCheck className="h-4 w-4 mr-2" />
                 Reativar Passageiro
               </Button>
             )}
