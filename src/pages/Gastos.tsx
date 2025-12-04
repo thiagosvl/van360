@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "@/utils/notifications/toast";
 
 // Components - Alerts
-import { PremiumBanner } from "@/components/alerts/PremiumBanner";
 
 // Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
@@ -91,6 +90,24 @@ const MOCK_DATA_NO_ACCESS = {
       created_at: new Date().toISOString(),
       usuario_id: "mock",
     },
+    {
+      id: "4",
+      categoria: "Vistorias",
+      descricao: "Vistoria Semestral",
+      valor: 150.0,
+      data: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      usuario_id: "mock",
+    },
+    {
+      id: "5",
+      categoria: "Documentação",
+      descricao: "Licenciamento Anual",
+      valor: 350.0,
+      data: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      usuario_id: "mock",
+    },
   ] as Gasto[],
 };
 
@@ -130,7 +147,7 @@ export default function Gastos() {
   useEffect(() => {
     if (!profile?.id) return;
 
-    const canAccess = !enablePageActions("/gastos", plano);
+    const canAccess = enablePageActions("/gastos", plano);
 
     setEnabledPageActions(canAccess);
   }, [profile?.id, plano]);
@@ -280,15 +297,7 @@ export default function Gastos() {
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div>
-          {!enabledPageActions && (
-            <PremiumBanner
-              title="Controle seus gastos"
-              description="Tenha visibilidade total das despesas do seu negócio e saiba exatamente para onde está indo seu dinheiro."
-              ctaText="Liberar Controle de Gastos"
-              variant="orange"
-              className="mb-6"
-            />
-          )}
+
 
           <div className="space-y-6 md:space-y-8">
             {/* 1. Header & Navigation */}
@@ -392,7 +401,7 @@ export default function Gastos() {
                 {/* Toolbar is here now */}
               </CardHeader>
 
-              <CardContent className="px-0">
+              <CardContent className="px-0 relative">
                 <GastosToolbar
                   categoriaFilter={categoriaFilter}
                   onCategoriaChange={(val) =>
@@ -410,51 +419,65 @@ export default function Gastos() {
                   onSearchChange={setSearchTerm}
                 />
 
-                {!enabledPageActions ? (
-                  <div className="flex flex-col items-center justify-center text-center py-12 bg-white rounded-2xl border border-gray-200">
-                    <div className="bg-orange-100 rounded-full p-4 mb-4">
-                      <Lock className="w-8 h-8 text-orange-600" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      Acesso Restrito
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-4 max-w-md">
-                      Esta funcionalidade está disponível apenas nos planos
-                      Essencial ou Completo. Troque de plano para visualizar e
-                      gerenciar seus gastos.
-                    </p>
-                    <Button
-                      onClick={() =>
-                        (window.location.href = "/planos?plano=essencial")
-                      }
-                      className="bg-orange-600 hover:bg-orange-700 text-white"
-                    >
-                      Liberar Controle de Gastos
-                    </Button>
-                  </div>
-                ) : loading ? (
+                {loading ? (
                   <Skeleton className="h-40 w-full" />
-                ) : gastosFiltrados.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground bg-white rounded-2xl border border-dashed border-gray-200">
-                    <FileText className="w-12 h-12 mb-4 text-gray-300" />
-                    <p>
-                      {searchTerm
-                        ? `Nenhum gasto encontrado para "${searchTerm}"`
-                        : "Nenhum gasto registrado no mês indicado"}
-                    </p>
-                  </div>
                 ) : (
-                  <GastosList
-                    gastos={gastosFiltrados}
-                    onEdit={openDialog}
-                    onDelete={handleDelete}
-                    isRestricted={!enabledPageActions}
-                    veiculos={veiculos.map((v) => ({
-                      id: v.id,
-                      placa: v.placa,
-                    }))}
-                  />
+                  <div className="relative">
+                    <GastosList
+                      gastos={
+                        enabledPageActions
+                          ? gastosFiltrados
+                          : MOCK_DATA_NO_ACCESS.gastos
+                      }
+                      onEdit={openDialog}
+                      onDelete={handleDelete}
+                      isRestricted={!enabledPageActions}
+                      veiculos={veiculos.map((v) => ({
+                        id: v.id,
+                        placa: v.placa,
+                      }))}
+                    />
+
+                    {!enabledPageActions && (
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-white z-10 hidden md:flex flex-col items-center justify-end pb-12">
+                        <div className="flex flex-col items-center text-center max-w-md px-4 bg-white/80 backdrop-blur-sm p-8 rounded-3xl shadow-xl border border-white/50">
+                          <div className="bg-orange-100 rounded-full p-4 mb-4 shadow-sm">
+                            <Lock className="w-8 h-8 text-orange-600" />
+                          </div>
+                          <h3 className="text-xl font-bold text-gray-900 mb-2">
+                            Libere seu Controle de Gastos
+                          </h3>
+                          <p className="text-sm text-gray-600 mb-6">
+                            Tenha visibilidade total das despesas do seu negócio
+                            e saiba exatamente para onde está indo seu dinheiro.
+                          </p>
+                          <Button
+                            onClick={() =>
+                              (window.location.href =
+                                "/planos?plano=essencial")
+                            }
+                            className="bg-orange-600 hover:bg-orange-700 text-white font-semibold h-12 px-8 rounded-xl shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all transform hover:-translate-y-0.5"
+                          >
+                            Liberar Agora
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
+
+                {enabledPageActions &&
+                  !loading &&
+                  gastosFiltrados.length === 0 && (
+                    <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground bg-white rounded-2xl border border-dashed border-gray-200">
+                      <FileText className="w-12 h-12 mb-4 text-gray-300" />
+                      <p>
+                        {searchTerm
+                          ? `Nenhum gasto encontrado para "${searchTerm}"`
+                          : "Nenhum gasto registrado no mês indicado"}
+                      </p>
+                    </div>
+                  )}
               </CardContent>
             </Card>
           </div>
@@ -472,6 +495,29 @@ export default function Gastos() {
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Aguarde..." />
+      
+      {/* Mobile Sticky Footer for No Access */}
+      {!enabledPageActions && (
+        <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50 md:hidden safe-area-pb">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-gray-900 leading-tight">
+                Visualize seus dados reais.
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Libere o acesso agora.
+              </p>
+            </div>
+            <Button
+              onClick={() => (window.location.href = "/planos?plano=essencial")}
+              size="sm"
+              className="bg-orange-600 hover:bg-orange-700 text-white font-semibold whitespace-nowrap"
+            >
+              Liberar Acesso
+            </Button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

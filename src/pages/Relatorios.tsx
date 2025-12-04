@@ -1,4 +1,3 @@
-import { PremiumBanner } from "@/components/alerts/PremiumBanner";
 import { BlurredValue } from "@/components/common/BlurredValue";
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { PassengerLimitHealthBar } from "@/components/features/passageiro/PassengerLimitHealthBar";
@@ -8,11 +7,11 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCobrancas,
-  useEscolas,
-  useGastos,
-  usePassageiros,
-  useVeiculos,
+    useCobrancas,
+    useEscolas,
+    useGastos,
+    usePassageiros,
+    useVeiculos,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -21,22 +20,23 @@ import { canViewRelatorios } from "@/utils/domain/plano/accessRules";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { periodos as periodosConstants } from "@/utils/formatters/constants";
 import {
-  AlertTriangle,
-  ArrowDownCircle,
-  ArrowUpCircle,
-  BarChart3,
-  ClipboardCheck,
-  Coins,
-  FileText,
-  Fuel,
-  HelpCircle,
-  Percent,
-  TrendingDown,
-  TrendingUp,
-  Users,
-  Wallet,
-  Wrench,
-  Zap,
+    AlertTriangle,
+    ArrowDownCircle,
+    ArrowUpCircle,
+    BarChart3,
+    ClipboardCheck,
+    Coins,
+    FileText,
+    Fuel,
+    HelpCircle,
+    Lock,
+    Percent,
+    TrendingDown,
+    TrendingUp,
+    Users,
+    Wallet,
+    Wrench,
+    Zap,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -359,30 +359,19 @@ export default function Relatorios() {
       });
 
     // Operacional
-    const escolasList =
-      (
-        escolasData as
-          | {
-              list?: Array<{
-                id: number;
-                nome: string;
-                passageiros_ativos_count?: number;
-              }>;
-            }
-          | undefined
-      )?.list || [];
+    const escolasList = (escolasData as any)?.list || [];
 
     const totalPassageirosPorEscola = escolasList.reduce(
-      (acc, e) => acc + (e.passageiros_ativos_count || 0),
+      (acc: number, e: any) => acc + (e.passageiros_ativos_count || 0),
       0
     );
 
     const escolas = escolasList
-      .filter((e) => (e.passageiros_ativos_count || 0) > 0)
-      .map((e) => {
+      .filter((e: any) => (e.passageiros_ativos_count || 0) > 0)
+      .map((e: any) => {
         // Calcular valor financeiro da escola
         const valor = passageirosList
-          .filter((p) => p.ativo && p.escola_id === e.id)
+          .filter((p) => p.ativo && String(p.escola_id) === String(e.id))
           .reduce((acc, p) => acc + Number(p.valor_cobranca || 0), 0);
 
         return {
@@ -397,35 +386,22 @@ export default function Relatorios() {
               : 0,
         };
       })
-      .sort((a, b) => b.passageiros - a.passageiros)
+      .sort((a: any, b: any) => b.passageiros - a.passageiros)
       .slice(0, 5);
 
-    const veiculosList =
-      (
-        veiculosData as
-          | {
-              list?: Array<{
-                id: number;
-                placa: string;
-                marca: string;
-                modelo: string;
-                passageiros_ativos_count?: number;
-              }>;
-            }
-          | undefined
-      )?.list || [];
+    const veiculosList = (veiculosData as any)?.list || [];
 
     const totalPassageirosPorVeiculo = veiculosList.reduce(
-      (acc, v) => acc + (v.passageiros_ativos_count || 0),
+      (acc: number, v: any) => acc + (v.passageiros_ativos_count || 0),
       0
     );
 
     const veiculos = veiculosList
-      .filter((v) => (v.passageiros_ativos_count || 0) > 0)
-      .map((v) => {
+      .filter((v: any) => (v.passageiros_ativos_count || 0) > 0)
+      .map((v: any) => {
         // Calcular valor financeiro do veículo
         const valor = passageirosList
-          .filter((p) => p.ativo && p.veiculo_id === v.id)
+          .filter((p) => p.ativo && String(p.veiculo_id) === String(v.id))
           .reduce((acc, p) => acc + Number(p.valor_cobranca || 0), 0);
 
         return {
@@ -442,7 +418,7 @@ export default function Relatorios() {
               : 0,
         };
       })
-      .sort((a, b) => b.passageiros - a.passageiros)
+      .sort((a: any, b: any) => b.passageiros - a.passageiros)
       .slice(0, 5);
 
     const periodosMap: Record<string, { count: number; valor: number }> = {};
@@ -561,14 +537,7 @@ export default function Relatorios() {
   return (
     <div className="relative min-h-screen pb-20 space-y-6 bg-gray-50/50">
       {/* Premium Banner (Top of Page) */}
-      {!hasAccess && (
-        <PremiumBanner
-          title="Você está dirigindo no escuro?"
-          description="Descubra para onde está indo seu dinheiro. Escolha um plano para ver seu lucro real, quem está devendo e onde cortar gastos."
-          ctaText="Liberar meus Relatórios"
-          variant="orange"
-        />
-      )}
+
 
       {/* Header & Navigation */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -579,6 +548,33 @@ export default function Relatorios() {
           disabled={!hasAccess}
         />
       </div>
+
+      {/* Desktop Alert Banner for No Access */}
+      {!hasAccess && (
+        <div className="hidden md:flex bg-amber-50 border border-amber-200 rounded-xl p-4 items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-amber-100 rounded-full text-amber-700">
+              <Lock className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-amber-900">
+                Modo de Demonstração
+              </p>
+              <p className="text-xs text-amber-700">
+                Você está vendo dados fictícios. Assine para ver seus números
+                reais.
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={() => (window.location.href = "/planos?plano=essencial")}
+            size="sm"
+            className="bg-amber-600 hover:bg-amber-700 text-white border-none shadow-none"
+          >
+            Assinar Agora
+          </Button>
+        </div>
+      )}
 
       {/* Main Content */}
       <Tabs defaultValue="visao-geral" className="w-full space-y-6">
@@ -1347,6 +1343,28 @@ export default function Relatorios() {
           </div>
         </TabsContent>
       </Tabs>
+      {/* Mobile Sticky Footer for No Access */}
+      {!hasAccess && (
+        <div className="fixed bottom-0 left-0 w-full bg-gray-900 border-t border-gray-800 p-4 z-50 md:hidden safe-area-pb">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white leading-tight">
+                Visualize seu lucro real.
+              </p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Libere o acesso agora.
+              </p>
+            </div>
+            <Button
+              onClick={() => (window.location.href = "/planos?plano=essencial")}
+              size="sm"
+              className="bg-orange-600 hover:bg-orange-700 text-white font-semibold whitespace-nowrap"
+            >
+              Ver Planos
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
