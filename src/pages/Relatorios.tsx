@@ -16,11 +16,10 @@ import {
   usePassageiros,
   useVeiculos,
 } from "@/hooks";
-import { useProfile } from "@/hooks/business/useProfile";
+import { useAccessControl } from "@/hooks/business/useAccessControl";
 import { useRelatoriosCalculations } from "@/hooks/business/useRelatoriosCalculations";
 import { useSession } from "@/hooks/business/useSession";
 import { cn } from "@/lib/utils";
-import { canViewRelatorios } from "@/utils/domain/plano/accessRules";
 import {
   AlertTriangle,
   ArrowDownCircle,
@@ -42,16 +41,17 @@ export default function Relatorios() {
   const navigate = useNavigate();
   const { setPageTitle, openPlanosDialog } = useLayout();
   const { user } = useSession();
-  const { profile, plano: profilePlano } = useProfile(user?.id);
+  
+  // Use Access Control Hook
+  const { profile, plano: profilePlano, permissions } = useAccessControl();
 
   const [mes, setMes] = useState(new Date().getMonth() + 1);
   const [ano, setAno] = useState(new Date().getFullYear());
   const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
 
-  // Access Logic - baseado no plano completo
-  const hasAccess = canViewRelatorios(profilePlano);
-  const passageirosLimit = profilePlano?.planoCompleto?.limite_passageiros || null;
-  const isFreePlan = profilePlano?.isFreePlan;
+  // Access Logic
+  const hasAccess = permissions.canViewRelatorios;
+  const isFreePlan = permissions.isFreePlan;
 
   // Buscar dados reais - APENAS se tiver acesso
   const shouldFetchData = hasAccess && !!profile?.id;

@@ -25,7 +25,7 @@ import { useCobrancas } from "@/hooks/api/useCobrancas";
 import { useEscolas } from "@/hooks/api/useEscolas";
 import { usePassageiros } from "@/hooks/api/usePassageiros";
 import { useVeiculos } from "@/hooks/api/useVeiculos";
-import { useProfile } from "@/hooks/business/useProfile";
+import { useAccessControl } from "@/hooks/business/useAccessControl";
 import { useSession } from "@/hooks/business/useSession";
 
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
@@ -53,7 +53,17 @@ import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard"
 const Home = () => {
   const { setPageTitle, openPlanosDialog } = useLayout();
   const { user, loading: isSessionLoading } = useSession();
-  const { profile, isLoading: isProfileLoading, plano } = useProfile(user?.id);
+  
+  // Use Access Control Hook
+  const { 
+    profile, 
+    isLoading: isProfileLoading, 
+    plano, 
+    limits, 
+    checks, 
+    permissions 
+  } = useAccessControl();
+
   const navigate = useNavigate();
 
   // Dialog states
@@ -147,10 +157,8 @@ const Home = () => {
   const passageirosAtivosCount = passageirosList.filter((p) => p.ativo).length;
 
   // Passenger Limit Logic
-  const limitePassageiros =
-    profile?.assinaturas_usuarios?.[0]?.planos?.limite_passageiros ?? null;
-  const isLimitedUser = !!plano && plano.isFreePlan;
-  const hasPassengerLimit = isLimitedUser && limitePassageiros != null;
+  const limitePassageiros = limits.passageiros;
+  const hasPassengerLimit = limits.hasPassengerLimit;
 
   // Financial KPIs
   const receitaPrevista = cobrancas.reduce(
@@ -249,8 +257,8 @@ const Home = () => {
   // Passageiro Dialog Handlers
   const handleOpenPassageiroDialog = useCallback(() => {
     // Validação de limite para plano gratuito
-    if (plano?.isFreePlan) {
-      const limite = Number(limitePassageiros || 0);
+    if (permissions.isFreePlan) {
+      const limite = Number(limits.passageiros || 0);
       if (passageirosCount >= limite) {
         setUpgradeDialog({
           open: true,
@@ -263,11 +271,15 @@ const Home = () => {
 
     setEditingPassageiro(null);
     setIsPassageiroDialogOpen(true);
-  }, [plano, limitePassageiros, passageirosCount]);
+  }, [permissions.isFreePlan, limits.passageiros, passageirosCount]);
 
   const handleOpenGastoDialog = useCallback(() => {
     // Validação de acesso para plano gratuito
-    if (plano?.isFreePlan) {
+    if (!permissions.canViewGastos) {
+      // Note: Logic inverted or specific check? 
+      // Original was: if (plano?.isFreePlan) ...
+      // CanViewGastos is true for Essential/Complete. False for Free.
+      // So !canViewGastos is correct for Free plan (or unauthed).
       setUpgradeDialog({
         open: true,
         featureName: "Controle Financeiro",
@@ -277,7 +289,7 @@ const Home = () => {
     }
 
     setIsGastoDialogOpen(true);
-  }, [plano]);
+  }, [permissions.canViewGastos]);
 
   const handleClosePassageiroDialog = useCallback(() => {
     safeCloseDialog(() => {
