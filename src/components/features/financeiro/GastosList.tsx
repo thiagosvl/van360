@@ -259,7 +259,7 @@ export function GastosList({
       <div className="md:hidden space-y-3">
         {isRestricted && (
           <div className="text-center bg-primary/10 text-muted-foreground rounded-xl text-xs p-2">
-            Os registros abaixo são apenas fictícios.
+            Os registros abaixo são demonstrativos.
           </div>
         )}
 
@@ -323,7 +323,7 @@ export function GastosList({
 
               <div className="flex items-center pt-2 border-t border-gray-50 text-xs text-gray-500">
                 <Calendar className="w-3 h-3 mr-1.5" />
-                {!isRestricted ? formatDateToBR(gasto.data) : "Data"}
+                {!isRestricted ? formatDateToBR(gasto.data) : "Dia, mês e ano"}
               </div>
             </div>
           );
