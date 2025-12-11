@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { veiculoApi } from "@/services/api/veiculo.api";
 import { Veiculo } from "@/types/veiculo";
 import { toast } from "@/utils/notifications/toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateVeiculo() {
   const queryClient = useQueryClient();
@@ -15,7 +15,7 @@ export function useCreateVeiculo() {
     },
     onError: (error: any) => {
       toast.error("veiculo.erro.criar", {
-        description: error.message || "Não foi possível criar o veículo.",
+        description: error.message || "veiculo.erro.criarDetalhe",
       });
     },
   });
@@ -52,7 +52,7 @@ export function useUpdateVeiculo() {
         });
       }
       toast.error("veiculo.erro.atualizar", {
-        description: error.message || "Não foi possível atualizar o veículo.",
+        description: error.message || "veiculo.erro.atualizarDetalhe",
       });
     },
     onSuccess: () => {
@@ -96,7 +96,7 @@ export function useDeleteVeiculo() {
         });
       }
       toast.error("veiculo.erro.excluir", {
-        description: error.message || "Não foi possível excluir o veículo.",
+        description: error.message || "veiculo.erro.excluirDetalhe",
       });
     },
     onSuccess: () => {
@@ -145,7 +145,7 @@ export function useToggleAtivoVeiculo() {
         });
       }
       toast.error("veiculo.erro.alterarStatus", {
-        description: error.message || "Não foi possível alterar o status.",
+        description: error.message || "veiculo.erro.alterarStatusDetalhe",
       });
     },
     onSuccess: (data, variables) => {

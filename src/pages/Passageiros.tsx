@@ -206,7 +206,7 @@ export default function Passageiros() {
     enabled: !!profile?.id,
     onError: () =>
       toast.error("passageiro.erro.excluir", {
-        description: "Não foi possível obter os dados no momento.",
+        description: "passageiro.erro.carregarDetalhe",
       }),
   });
 
@@ -471,15 +471,13 @@ export default function Passageiros() {
 
     if (!escolas || escolas.length === 0) {
       toast.error("erro.operacao", {
-        description:
-          "Cadastre pelo menos uma escola ativa antes de usar o Cadastro FAKE.",
+        description: "passageiro.erro.escolaNecessaria",
       });
       return;
     }
     if (!veiculos || veiculos.length === 0) {
       toast.error("erro.operacao", {
-        description:
-          "Cadastre pelo menos um veículo ativo antes de usar o Cadastro FAKE.",
+        description: "passageiro.erro.veiculoNecessario",
       });
       return;
     }

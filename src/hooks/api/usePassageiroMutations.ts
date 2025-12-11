@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { passageiroApi } from "@/services/api/passageiro.api";
 import { Passageiro } from "@/types/passageiro";
 import { toast } from "@/utils/notifications/toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useCreatePassageiro() {
   const queryClient = useQueryClient();
@@ -18,7 +18,7 @@ export function useCreatePassageiro() {
     },
     onError: (error: any) => {
       toast.error("passageiro.erro.criar", {
-        description: error.response?.data?.error || error.message || "Não foi possível criar o passageiro.",
+        description: error.response?.data?.error || error.message || "passageiro.erro.criarDetalhe",
       });
     },
   });
@@ -78,7 +78,7 @@ export function useUpdatePassageiro() {
         queryClient.setQueryData(["passageiro", variables.id], context.previousPassageiro);
       }
       toast.error("passageiro.erro.atualizar", {
-        description: error.message || "Não foi possível atualizar o passageiro.",
+        description: error.message || "passageiro.erro.atualizarDetalhe",
       });
     },
     onSuccess: (data, variables) => {
@@ -170,7 +170,7 @@ export function useDeletePassageiro() {
         });
       } else {
         toast.error("passageiro.erro.excluir", {
-          description: errorMessage || "Não foi possível excluir o passageiro.",
+          description: errorMessage || "passageiro.erro.excluirDetalhe",
         });
       }
     },
@@ -245,7 +245,7 @@ export function useToggleAtivoPassageiro() {
       toast.error(
         variables.novoStatus ? "passageiro.erro.ativar" : "passageiro.erro.desativar",
         {
-          description: error.message || "Não foi possível alterar o status.",
+          description: error.message || "passageiro.erro.statusDetalhe",
         }
       );
     },
@@ -297,7 +297,7 @@ export function useFinalizePreCadastro() {
     },
     onError: (error: any) => {
       toast.error("passageiro.erro.criar", {
-        description: error.message || "Não foi possível finalizar o cadastro.",
+        description: error.message || "passageiro.erro.finalizarDetalhe",
       });
     },
   });

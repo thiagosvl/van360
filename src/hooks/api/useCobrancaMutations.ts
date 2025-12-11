@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { cobrancaApi } from "@/services/api/cobranca.api";
 import { Cobranca } from "@/types/cobranca";
 import { toast } from "@/utils/notifications/toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateCobranca() {
   const queryClient = useQueryClient();
@@ -28,7 +28,7 @@ export function useCreateCobranca() {
       }
     
       toast.error("cobranca.erro.criar", {
-        description: error.message || "Não foi possível criar a cobrança.",
+        description: error.message || "cobranca.erro.criarDetalhe",
       });
     },
   });
@@ -87,7 +87,7 @@ export function useUpdateCobranca() {
         });
       }
       toast.error("cobranca.erro.atualizar", {
-        description: error.message || "Não foi possível atualizar a cobrança.",
+        description: error.message || "cobranca.erro.atualizarDetalhe",
       });
     },
     onSuccess: (_, variables) => {
@@ -152,7 +152,7 @@ export function useDeleteCobranca() {
         });
       }
       toast.error("cobranca.erro.excluir", {
-        description: error.message || "Não foi possível excluir a cobrança.",
+        description: error.message || "cobranca.erro.excluirDetalhe",
       });
     },
     onSuccess: () => {
@@ -201,7 +201,7 @@ export function useDesfazerPagamento() {
     },
     onError: (error: any) => {
       toast.error("cobranca.erro.desfazerPagamento", {
-        description: error.message || "Não foi possível desfazer o pagamento.",
+        description: error.message || "cobranca.erro.desfazerPagamentoDetalhe",
       });
     },
   });
@@ -236,7 +236,7 @@ export function useRegistrarPagamentoManual() {
     },
     onError: (error: any) => {
       toast.error("cobranca.erro.registrarPagamento", {
-        description: error.message || "Não foi possível registrar o pagamento.",
+        description: error.message || "cobranca.erro.registrarPagamentoDetalhe",
       });
     },
   });
@@ -259,7 +259,7 @@ export function useEnviarNotificacaoCobranca() {
     },
     onError: (error: any) => {
       toast.error("cobranca.erro.notificacao", {
-        description: error.message || "Não foi possível enviar a notificação.",
+        description: error.message || "cobranca.erro.notificacaoDetalhe",
       });
     },
   });
@@ -287,7 +287,7 @@ export function useToggleNotificacoesCobranca() {
     },
     onError: (error: any) => {
       toast.error("cobranca.erro.alterarNotificacoes", {
-        description: error.message || "Não foi possível alterar as notificações.",
+        description: error.message || "cobranca.erro.alterarNotificacoesDetalhe",
       });
     },
   });

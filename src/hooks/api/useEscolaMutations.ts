@@ -52,7 +52,7 @@ export function useUpdateEscola() {
         });
       }
       toast.error("escola.erro.atualizar", {
-        description: error.message || "Não foi possível atualizar a escola.",
+        description: error.message || "escola.erro.atualizarDetalhe",
       });
     },
     onSuccess: () => {
@@ -96,7 +96,7 @@ export function useDeleteEscola() {
         });
       }
       toast.error("escola.erro.excluir", {
-        description: error.message || "Não foi possível excluir a escola.",
+        description: error.message || "escola.erro.excluirDetalhe",
       });
     },
     onSuccess: () => {
@@ -145,7 +145,7 @@ export function useToggleAtivoEscola() {
         });
       }
       toast.error("escola.erro.alterarStatus", {
-        description: error.message || "Não foi possível alterar o status.",
+        description: error.message || "escola.erro.alterarStatusDetalhe",
       });
     },
     onSuccess: (data, variables) => {
