@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useLayout } from "@/contexts/LayoutContext";
 import {
   useCreatePrePassageiro,
   useDeletePrePassageiro,
@@ -48,7 +49,7 @@ import {
   MoreVertical,
   Search,
   Trash2,
-  Users2
+  Users2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -79,6 +80,7 @@ export default function PrePassageiros({
   const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
   const [isCreatingEscola, setIsCreatingEscola] = useState(false);
   const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
+  const { openPlanosDialog } = useLayout();
 
   const createPrePassageiro = useCreatePrePassageiro();
   const deletePrePassageiro = useDeletePrePassageiro();
@@ -295,13 +297,15 @@ export default function PrePassageiros({
   return (
     <>
       <div className="space-y-6">
-        <Button
-          onClick={handleCadastrarRapidoLink}
-          variant="outline"
-          className="w-full md:w-auto gap-2 text-uppercase"
-        >
-          GERAR PRÉ-CADASTRO FAKE
-        </Button>
+        {process.env.NODE_ENV === "development" && (
+          <Button
+            onClick={handleCadastrarRapidoLink}
+            variant="outline"
+            className="w-full md:w-auto gap-2 text-uppercase"
+          >
+            GERAR PRÉ-CADASTRO FAKE
+          </Button>
+        )}
 
         <QuickRegistrationLink
           blueTheme
@@ -554,7 +558,10 @@ export default function PrePassageiros({
         onOpenChange={setIsUpgradeDialogOpen}
         featureName="Limite de Passageiros"
         description="Você atingiu o limite de passageiros do seu Plano Gratuito. Para aprovar novas solicitações, faça um upgrade."
-        redirectTo="/planos"
+        onConfirm={() => {
+          setIsUpgradeDialogOpen(false);
+          openPlanosDialog();
+        }}
       />
 
       <LoadingOverlay active={isActionLoading} text="Processando..." />

@@ -1,6 +1,6 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
 import { planoApi } from "@/services/api/plano.api";
 import { Plano, SubPlano } from "@/types/plano";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 export function usePlanos(
   filtros?: Record<string, string>,
@@ -19,6 +19,7 @@ export function usePlanos(
       return { bases, sub };
     },
     onError: options?.onError,
+    staleTime: 1000 * 60 * 10, // 10 minutos de cache
   });
 }
 

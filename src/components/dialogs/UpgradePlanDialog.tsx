@@ -1,22 +1,21 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { CheckCircle2, Crown, Rocket, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 interface UpgradePlanDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   featureName?: string;
   description?: string;
-  redirectTo?: string; // URL customizada para redirecionamento (ex: "/planos?slug=completo")
+  onConfirm: () => void;
 }
 
 export default function UpgradePlanDialog({
@@ -24,9 +23,8 @@ export default function UpgradePlanDialog({
   onOpenChange,
   featureName = "Recurso Premium",
   description = "Este recurso é exclusivo dos planos Essencial e Completo.",
-  redirectTo,
+  onConfirm,
 }: UpgradePlanDialogProps) {
-  const navigate = useNavigate();
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
@@ -104,7 +102,9 @@ export default function UpgradePlanDialog({
           <DialogFooter className="flex-col sm:flex-col gap-3">
             <Button
               className="w-full h-12 text-base font-bold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-200"
-              onClick={() => safeCloseDialog(() => navigate(redirectTo || "/planos?plano=essencial"))}
+              onClick={() => safeCloseDialog(() => {
+                onConfirm();
+              })}
             >
               <Crown className="w-4 h-4 mr-2" />
               Ver Planos Disponíveis

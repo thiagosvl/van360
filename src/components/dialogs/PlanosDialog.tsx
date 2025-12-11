@@ -2,22 +2,16 @@
 import { useEffect, useRef, useState } from "react";
 
 // React Router
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // Third-party
-import type { RealtimeChannel } from "@supabase/supabase-js";
 
 // Components - Features
 import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaDialog";
-import { PagamentoSucessoDialog } from "@/components/dialogs/PagamentoSucessoDialog";
 import { SelecaoPassageirosDialog } from "@/components/dialogs/SelecaoPassageirosDialog";
 import { PlanoCard } from "@/components/features/register/PlanoCard";
 
-// Components - Navigation
-import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-
 // Components - UI
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,37 +21,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 
 // Hooks
-import { useLayout } from "@/contexts/LayoutContext";
+import { useCalcularPrecoPreview, usePlanos } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 // Services
-import { useCalcularPrecoPreview, usePlanos } from "@/hooks";
 import { usuarioApi } from "@/services";
 
 // Utils
-import { cn } from "@/lib/utils";
+import { PLANO_COMPLETO, PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
 import { getQuantidadeMinimaPersonalizada } from "@/utils/domain/plano/planoStructureUtils";
 import { getAssinaturaAtiva } from "@/utils/domain/plano/planoUtils";
 import { toast } from "@/utils/notifications/toast";
 
-// Constants
-import {
-  PLANO_COMPLETO,
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO
-} from "@/constants";
-
-// Types
-
-// Icons
-
-// Mensagens de downgrade
+// Mensagens de downgrade (Mantidas do original)
 const MENSAGENS_DOWNGRADE = {
   [`${PLANO_COMPLETO}-${PLANO_ESSENCIAL}`]: {
     titulo: "Confirmar mudança de plano?",
@@ -81,21 +63,24 @@ const MENSAGENS_DOWNGRADE = {
   },
 };
 
-export default function Planos() {
-  const { setPageTitle } = useLayout();
-  const { user, loading: isSessionLoading } = useSession();
+interface PlanosDialogProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps) {
+  const { user } = useSession();
   const { profile, plano, isLoading: isProfileLoading, refreshProfile } = useProfile(user?.id);
-  const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Usar hook do React Query para buscar planos
   const {
     data: planosData = { bases: [], sub: [] },
-    refetch: refetchPlanos,
   } = usePlanos({ ativo: "true" }, {
     onError: () => {
       toast.error("plano.erro.carregar");
     },
+    enabled: isOpen, // Só carrega quando aberto
   });
 
   const planosDataTyped: { bases: any[]; sub: any[] } = (planosData as
@@ -116,6 +101,8 @@ export default function Planos() {
     valorPorCobranca: number;
   } | null>(null);
   const [isCalculandoPreco, setIsCalculandoPreco] = useState(false);
+  
+  // Dialogs internos
   const [pagamentoDialog, setPagamentoDialog] = useState<{
     isOpen: boolean;
     cobrancaId: string;
@@ -139,21 +126,11 @@ export default function Planos() {
     precoOrigem?: string;
     cobrancaId?: string;
   } | null>(null);
-  const [pagamentoSucessoDialog, setPagamentoSucessoDialog] = useState<{
-    isOpen: boolean;
-    nomePlano?: string;
-    quantidadeAlunos?: number;
-  }>({
-    isOpen: false,
-  });
-  const realtimeChannelRef = useRef<RealtimeChannel | null>(null);
+  // Pagamento successo dialog removido ou simplificado pois não estamos em rota
+
   const planosRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  useEffect(() => {
-    setPageTitle("Planos");
-  }, [setPageTitle]);
+  // const [searchParams] = useSearchParams(); // Opcional no dialog, removendo para simplificar
 
   // Determinar se é upgrade ou downgrade
   const getTipoMudanca = (
@@ -179,18 +156,14 @@ export default function Planos() {
     const assinaturaAtiva = getAssinaturaAtiva(profile);
     if (!assinaturaAtiva) return false;
 
-    // Se o plano atual é um subplano (tem parent), comparar com o parent_id do plano base
     const planoAtual = assinaturaAtiva.planos;
     if (!planoAtual) return false;
 
-    // Se o plano atual tem parent, significa que é subplano, então o plano base é o parent
     if (planoAtual.parent_id) {
-      // Está em um subplano, então o plano base Completo está ativo
       const planoCompletoBase = planos.find((p) => p.slug === PLANO_COMPLETO);
       return planoCompletoBase?.id === planoId;
     }
 
-    // Plano base sem subplano
     return planoAtual.id === planoId;
   };
 
@@ -206,15 +179,12 @@ export default function Planos() {
 
     const slugPlanoAtual = planoAtual.parent?.slug || planoAtual.slug;
     if (slugPlanoAtual === PLANO_COMPLETO && !planoAtual.parent_id) {
-      // É quantidade personalizada, nenhum sub-plano pré-definido está ativo
       return false;
     }
 
-    // Comparar diretamente com o ID do plano atual (só para sub-planos pré-definidos)
     return planoAtual.id === subPlanoId;
   };
 
-  // Verificar se usuário está em quantidade personalizada
   const isQuantidadePersonalizadaAtiva = () => {
     if (!plano || !profile) return false;
 
@@ -228,65 +198,13 @@ export default function Planos() {
     return slugPlanoAtual === PLANO_COMPLETO && !planoAtual.parent_id;
   };
 
-  // Verificar se é o plano principal (não subplano)
-  const isPlanoPrincipal = (planoId: string) => {
-    const planoData = planos.find((p) => p.id === planoId);
-    return planoData?.tipo === "base";
-  };
-
-  // Seleção visual automática via query string (sem executar ações)
-  useEffect(() => {
-    const slugParam = searchParams.get("slug");
-    if (
-      !slugParam ||
-      planos.length === 0 ||
-      loading ||
-      isProfileLoading ||
-      !profile
-    )
-      return;
-
-    // Calcular planos disponíveis (mesma lógica do componente)
-    const assinaturaAtiva = profile?.assinaturas_usuarios?.find(
-      (a: any) => a.ativo === true
-    );
-    const planoAtualDoUsuario = assinaturaAtiva?.planos;
-    const slugPlanoAtual =
-      planoAtualDoUsuario?.parent?.slug || planoAtualDoUsuario?.slug;
-
-    // Buscar plano base pelo slug - apenas fazer scroll para o plano, sem selecionar
-    const planoEncontrado = planos.find((p) => p.slug === slugParam);
-    if (planoEncontrado && !pagamentoDialog) {
-      // Verificar se o plano está disponível para seleção (não está desabilitado)
-      const isAtivo =
-        isPlanoAtivo(planoEncontrado.id) &&
-        isPlanoPrincipal(planoEncontrado.id);
-
-      // Só fazer scroll se não for o plano atual e se não for gratuito
-      if (!isAtivo && planoEncontrado.slug !== PLANO_GRATUITO) {
-        // Scroll suave para o plano
-        setTimeout(() => {
-          const planoElement = planosRefs.current[planoEncontrado.id];
-          if (planoElement) {
-            planoElement.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-              inline: "nearest",
-            });
-          }
-        }, 300);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, planos.length, loading, isProfileLoading, profile]);
-
+  // Handlers (Copy-paste adaptado)
   const handlePlanoSelect = (planoId: string) => {
     if (!plano || !profile?.assinaturas_usuarios) return;
 
     const planoSelecionado = planos.find((p) => p.id === planoId);
     if (!planoSelecionado) return;
 
-    // Nunca permitir selecionar Gratuito
     if (planoSelecionado.slug === PLANO_GRATUITO) {
       return;
     }
@@ -297,7 +215,6 @@ export default function Planos() {
     setQuantidadePersonalizada("");
     setPrecoCalculadoPreview(null);
 
-    // Obter slug do plano atual
     const assinaturaAtiva = profile.assinaturas_usuarios.find(
       (a: any) => a.ativo === true
     );
@@ -306,11 +223,9 @@ export default function Planos() {
     const planoAtual = assinaturaAtiva.planos;
     const slugAtual = planoAtual.parent?.slug || planoAtual.slug;
 
-    // Verificar tipo de mudança
     const tipoMudanca = getTipoMudanca(slugAtual, planoSelecionado.slug);
 
     if (tipoMudanca === "downgrade") {
-      // Mostrar dialog de confirmação
       const mensagemDowngrade =
         MENSAGENS_DOWNGRADE[`${slugAtual}-${planoSelecionado.slug}`] || {
           titulo: "Confirmar downgrade",
@@ -323,24 +238,18 @@ export default function Planos() {
       });
       setShowDowngradeDialog(true);
     } else if (tipoMudanca === "upgrade") {
-      // Fazer upgrade imediatamente
       handleUpgrade(planoId);
     }
   };
 
-  const handleSubPlanoSelect = async (subPlanoId: string) => {
+   const handleSubPlanoSelect = async (subPlanoId: string) => {
     if (!plano || !profile?.assinaturas_usuarios) return;
-
-    // Se for o subplano atual, não fazer nada
-    if (isSubPlanoAtivo(subPlanoId)) {
-      return;
-    }
+    if (isSubPlanoAtivo(subPlanoId)) return;
 
     setSelectedSubPlanoId(subPlanoId);
     setQuantidadePersonalizada("");
     setPrecoCalculadoPreview(null);
 
-    // Verificar se o usuário está no Completo
     const assinaturaAtiva = profile.assinaturas_usuarios.find(
       (a: any) => a.ativo === true
     );
@@ -359,7 +268,6 @@ export default function Planos() {
     const subPlanoNovo = subPlanos.find((s) => s.id === subPlanoId);
     if (!subPlanoNovo) return;
 
-    // Se não está no Completo, sempre será upgrade (não precisa verificar preço)
     if (!estaNoCompleto) {
       handleTrocaSubplano(subPlanoId);
       return;
@@ -378,25 +286,19 @@ export default function Planos() {
         : subPlanoNovo.preco
     );
 
-    // Usar a franquia contratada da assinatura para comparação
     const franquiaAtual = assinaturaAtiva.franquia_contratada_cobrancas || 0;
     const franquiaNova = subPlanoNovo.franquia_cobrancas_mes || 0;
 
-    // Verificar se é downgrade: preço menor OU franquia menor OU mudança de personalizado para pré-definido
     const isDowngrade =
       precoNovo < precoAtual ||
       franquiaNova < franquiaAtual ||
       estaEmQuantidadePersonalizada;
 
     if (isDowngrade) {
-      // Downgrade de subplano ou mudança de personalizado para pré-definido
-      // Quando está em quantidade personalizada e muda para pré-definido, SEMPRE há redução
-      // porque o personalizado exige mínimo = maior sub-plano + 1
       const mensagemDowngrade = estaEmQuantidadePersonalizada
         ? MENSAGENS_DOWNGRADE["personalizado-reducao"]
         : MENSAGENS_DOWNGRADE["subplano-menor"];
       
-      // Formatar mensagem com valores reais
       const mensagemFormatada = mensagemDowngrade.mensagem
         .replace("X", franquiaNova.toString())
         .replace("Y", franquiaAtual.toString());
@@ -433,7 +335,6 @@ export default function Planos() {
           cobrancaId: (result as any).cobrancaId,
         });
       } else if (result.qrCodePayload && (result as any).cobrancaId) {
-        // Abrir dialog de pagamento com o novo componente
         setPagamentoDialog({
           isOpen: true,
           cobrancaId: String((result as any).cobrancaId),
@@ -441,12 +342,9 @@ export default function Planos() {
         });
         setSelectedPlanoId(planoId);
       } else {
-        // Atualização imediata (sem pagamento)
         await refreshProfile();
         toast.success("assinatura.sucesso.atualizada");
-        setTimeout(() => {
-          navigate("/assinatura");
-        }, 1000);
+        setTimeout(() => onOpenChange(false), 500); // Fechar dialog no sucesso imediato
       }
     } catch (error: any) {
       toast.error("assinatura.erro.processar", {
@@ -466,7 +364,6 @@ export default function Planos() {
       setLoading(true);
       setShowDowngradeDialog(false);
 
-      // Verificar se é downgrade de subplano (dentro do Completo)
       const assinaturaAtiva = profile.assinaturas_usuarios.find(
         (a: any) => a.ativo === true
       );
@@ -475,7 +372,6 @@ export default function Planos() {
         planoAtualDoUsuario?.parent?.slug || planoAtualDoUsuario?.slug;
       const estaNoCompleto = slugPlanoAtual === PLANO_COMPLETO;
 
-      // Verificar se o planoId é um subplano (verificar se existe nos subplanos)
       const isSubplano = subPlanos.some((s) => s.id === downgradeInfo.planoId);
       const planoAtual = assinaturaAtiva?.planos;
       const estaEmQuantidadePersonalizada =
@@ -484,14 +380,12 @@ export default function Planos() {
         (planoAtual.parent?.slug || planoAtual.slug) === PLANO_COMPLETO &&
         !planoAtual.parent_id;
 
-      // Verificar se é redução de quantidade personalizada
       if (estaEmQuantidadePersonalizada && quantidadePersonalizada) {
         const quantidade = parseInt(quantidadePersonalizada);
         if (!isNaN(quantidade)) {
-          // Verificar se é a mesma quantidade já contratada
           const quantidadeAtual = assinaturaAtiva.franquia_contratada_cobrancas || 0;
           if (quantidade === quantidadeAtual) {
-            toast.info("assinatura.info.quantidadeIgual", {
+             toast.info("assinatura.info.quantidadeIgual", {
               description: `assinatura.info.quantidadeIgualDescricao`,
             });
             return;
@@ -521,12 +415,9 @@ export default function Planos() {
               valor: Number((result as any).preco_aplicado || (result as any).valor || 0),
             });
           } else {
-            // Atualização imediata (downgrade) - aguardar e atualizar profile antes de redirecionar
             await refreshProfile();
             toast.success("assinatura.sucesso.atualizada");
-            setTimeout(() => {
-              navigate("/assinatura");
-            }, 1000);
+            setTimeout(() => onOpenChange(false), 500);
           }
           return;
         }
@@ -560,27 +451,19 @@ export default function Planos() {
             planos.find((p) => p.slug === PLANO_COMPLETO)?.id || null
           );
         } else {
-          // Atualização imediata (downgrade) - aguardar e atualizar profile antes de redirecionar
           await refreshProfile();
           toast.success("assinatura.sucesso.atualizada");
-          setTimeout(() => {
-            navigate("/assinatura");
-          }, 1000);
+          setTimeout(() => onOpenChange(false), 500);
         }
       } else {
-        // Downgrade de plano base (Completo -> Essencial, etc)
         await usuarioApi.downgradePlano({
           usuario_id: profile.id,
           plano_id: downgradeInfo.planoId,
         });
 
-        // Atualizar profile antes de redirecionar
         await refreshProfile();
         toast.success("assinatura.sucesso.atualizada");
-
-        setTimeout(() => {
-          navigate("/assinatura");
-        }, 1000);
+        setTimeout(() => onOpenChange(false), 500);
       }
     } catch (error: any) {
       toast.error("assinatura.erro.processar", {
@@ -623,12 +506,9 @@ export default function Planos() {
           valor: Number((result as any).preco_aplicado || (result as any).valor || 0),
         });
       } else {
-        // Downgrade de subplano - sucesso imediato
         await refreshProfile();
         toast.success("assinatura.sucesso.atualizada");
-        setTimeout(() => {
-          navigate("/assinatura");
-        }, 1000);
+        setTimeout(() => onOpenChange(false), 500);
       }
     } catch (error: any) {
       toast.error("assinatura.erro.processar", {
@@ -640,12 +520,11 @@ export default function Planos() {
     }
   };
 
-  // Obter maior subplano do Completo dinamicamente
-  // Usar utilitários compartilhados
   const getQuantidadeMinima = () => {
     return getQuantidadeMinimaPersonalizada(planos, subPlanos);
   };
 
+  // Effect para preço preview
   useEffect(() => {
     if (!quantidadePersonalizada || subPlanos.length === 0 || planos.length === 0) {
       setPrecoCalculadoPreview(null);
@@ -660,7 +539,6 @@ export default function Planos() {
       return;
     }
 
-    // Verificar quantidade mínima
     const quantidadeMinima = getQuantidadeMinima();
     if (!quantidadeMinima || quantidade < quantidadeMinima) {
       setPrecoCalculadoPreview(null);
@@ -668,7 +546,6 @@ export default function Planos() {
       return;
     }
 
-    // Debounce: aguardar 500ms antes de buscar
     setIsCalculandoPreco(true);
     const timeoutId = setTimeout(() => {
       calcularPrecoPreview.mutate(quantidade, {
@@ -697,7 +574,7 @@ export default function Planos() {
       clearTimeout(timeoutId);
       setIsCalculandoPreco(false);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quantidadePersonalizada, subPlanos, planos]);
 
   const handleQuantidadePersonalizadaSelect = async () => {
@@ -731,17 +608,14 @@ export default function Planos() {
         })()
       : false;
 
-    // Verificar se está reduzindo quantidade personalizada (downgrade) ou tentando contratar mesma quantidade
     if (estaNoCompleto && assinaturaAtiva) {
       const planoAtual = assinaturaAtiva.planos;
       const estaEmQuantidadePersonalizada =
         (planoAtual?.parent?.slug || planoAtual?.slug) === PLANO_COMPLETO &&
         !planoAtual?.parent_id;
 
-      // Usar a franquia contratada da assinatura, não do plano
       const quantidadeAtual = assinaturaAtiva.franquia_contratada_cobrancas || 0;
       
-      // Se for a mesma quantidade, não fazer nada (tanto para personalizado quanto para sub-plano)
       if (quantidade === quantidadeAtual) {
         toast.info("assinatura.info.quantidadeIgual", {
           description: `assinatura.info.quantidadeIgualDescricao`,
@@ -750,9 +624,7 @@ export default function Planos() {
       }
 
       if (estaEmQuantidadePersonalizada) {
-        
         if (quantidade < quantidadeAtual) {
-          // Redução de quantidade personalizada - mostrar dialog de confirmação
           const mensagemDowngrade = MENSAGENS_DOWNGRADE["personalizado-reducao"];
           setDowngradeInfo({
             planoId: planos.find((p) => p.slug === PLANO_COMPLETO)?.id || "",
@@ -795,411 +667,162 @@ export default function Planos() {
             planos.find((p) => p.slug === PLANO_COMPLETO)?.id || null
           );
       } else {
-        // Atualização imediata (downgrade) - aguardar e atualizar profile antes de redirecionar
         await refreshProfile();
         toast.success("assinatura.sucesso.atualizada");
-        setTimeout(() => {
-          navigate("/assinatura");
-        }, 1500);
+        setTimeout(() => onOpenChange(false), 500);
       }
     } catch (error: any) {
-      // Se o erro for sobre quantidade igual, mostrar toast info ao invés de error
-      const errorMessage = error.response?.data?.error || error.message || "";
-      if (errorMessage.includes("já possui esta quantidade") || errorMessage.includes("já possui")) {
-        toast.info("assinatura.info.quantidadeIgual", {
-          description: "Você já está com este plano ativo. Não é necessário fazer alterações.",
-        });
-      } else {
-        toast.error("assinatura.erro.processar", {
-          description: errorMessage || "Não foi possível criar o plano personalizado.",
-        });
-      }
+      toast.error("assinatura.erro.processar", {
+        description:
+          error.response?.data?.error ||
+          "Não foi possível contratar a quantidade personalizada.",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-
-  // Handler para quando o pagamento for confirmado
-  const handlePaymentSuccess = async () => {
-    // Aguardar um pouco para o backend processar a atualização da assinatura
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    // Forçar refresh do profile para garantir que os dados estão atualizados
-    await refreshProfile();
-    
-    // Fechar o dialog após o sucesso e redirecionar
-    setPagamentoDialog(null);
-    navigate("/assinatura");
-  };
-
-  // Handler para quando precisar de seleção manual de passageiros
-  const handlePrecisaSelecaoManual = (data: {
-    tipo: "upgrade" | "downgrade";
-    franquia: number;
-    cobrancaId: string;
-  }) => {
-    setPagamentoDialog(null);
-    setSelecaoPassageirosDialog({
-      isOpen: true,
-      tipo: data.tipo,
-      franquia: data.franquia,
-      cobrancaId: data.cobrancaId,
-      planoId: selectedPlanoId || undefined,
-    });
-  };
-
-  const pullToRefreshReload = async () => {
-    setRefreshing(true);
-    await refetchPlanos();
-    setRefreshing(false);
-  };
-
-  if (isSessionLoading || isProfileLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
-        <p>Carregando informações...</p>
-      </div>
-    );
-  }
-
-  // Determinar plano atual do usuário
-  const assinaturaAtiva = profile?.assinaturas_usuarios?.find(
-    (a: any) => a.ativo === true
-  );
-  const planoAtualDoUsuario = assinaturaAtiva?.planos;
-  const slugPlanoAtual =
-    planoAtualDoUsuario?.parent?.slug || planoAtualDoUsuario?.slug;
-  const estaNoCompleto = slugPlanoAtual === PLANO_COMPLETO;
-
-  // Filtrar planos disponíveis para escolha (nunca mostrar Gratuito como opção)
-  const planosDisponiveis = planos.filter((p) => {
-    if (p.slug === PLANO_GRATUITO) return false; // Nunca mostrar Gratuito como opção
-
-    if (slugPlanoAtual === PLANO_GRATUITO) {
-      return p.slug === PLANO_ESSENCIAL || p.slug === PLANO_COMPLETO;
-    }
-
-    if (slugPlanoAtual === PLANO_ESSENCIAL) {
-      return p.slug === PLANO_COMPLETO;
-    }
-
-    if (slugPlanoAtual === PLANO_COMPLETO) {
-      return p.slug === PLANO_COMPLETO || p.slug === PLANO_ESSENCIAL;
-    }
-
-    return true; // Fallback
-  });
-
   return (
     <>
-      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div className="space-y-6 p-0 md:p-6  overflow-visible">
-          {/* Resumo do Plano Atual */}
-          {planoAtualDoUsuario && (
-            <Card className="shadow-md">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-700">Seu Plano:</span>
-                  <Badge
-                    variant="secondary"
-                    className="bg-blue-100 text-blue-800"
-                  >
-                    {planoAtualDoUsuario?.parent
-                      ? planoAtualDoUsuario?.parent.nome
-                      : planoAtualDoUsuario?.nome}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Título para escolha de planos */}
-          {planosDisponiveis.length > 0 && (
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">
-                {estaNoCompleto ? "Planos disponíveis" : "Gostaria de mais funcionalidades e benefícios?"}
-              </h2>
-            </div>
-          )}
-
-          {/* Planos - Cards unificados (mobile e desktop) */}
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            {planosDisponiveis.map((planoItem) => {
-              const subPlanosDoPlano =
-                planoItem.slug === PLANO_COMPLETO
-                  ? subPlanos.filter(
-                      (s) => String(s.parent_id) === String(planoItem.id)
-                    )
-                  : [];
-              const isAtivo =
-                isPlanoAtivo(planoItem.id) && isPlanoPrincipal(planoItem.id);
-              const isDisabled = isAtivo && planoItem.slug !== PLANO_COMPLETO;
-
-              const actionLabel =
-                planoItem.slug === PLANO_COMPLETO
-                  ? isAtivo
-                    ? "Gerenciar plano"
-                    : "Ver opções"
-                  : isAtivo
-                  ? "Plano atual"
-                  : "Escolher Plano";
-
-              const actionButtonClassName =
-                planoItem.slug === PLANO_COMPLETO
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : isAtivo
-                  ? "bg-gray-600 hover:bg-gray-700 cursor-not-allowed"
-                  : undefined;
-
-              return (
-                <div
-                  key={planoItem.id}
-                  ref={(el) => {
-                    planosRefs.current[planoItem.id] = el;
-                  }}
-                  className="relative"
-                >
-                  {isAtivo && planoItem.slug !== PLANO_COMPLETO && (
-                    <div className="absolute top-2 right-2 md:top-3 md:right-3 px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold text-white bg-gray-700 rounded-full z-10 shadow-md">
-                      Plano atual
-                    </div>
-                  )}
-                  <PlanoCard
-                    plano={planoItem}
-                    subPlanos={subPlanosDoPlano}
-                    isSelected={selectedPlanoId === planoItem.id}
-                    onSelect={(id) => {
-                      if (isDisabled) return;
-                      setSelectedPlanoId(id);
-                      if (planoItem.slug !== PLANO_COMPLETO) {
-                        setSelectedSubPlanoId(null);
-                        setQuantidadePersonalizada("");
-                        setPrecoCalculadoPreview(null);
-                      }
-                    }}
-                    selectedSubPlanoId={selectedSubPlanoId}
-                    quantidadePersonalizada={quantidadePersonalizada}
-                    onSubPlanoSelect={(subPlanoSelecionado) => {
-                      if (!subPlanoSelecionado) {
-                        setSelectedSubPlanoId(null);
-                        return;
-                      }
-                      setSelectedSubPlanoId(subPlanoSelecionado);
-                      setQuantidadePersonalizada("");
-                    }}
-                    onQuantidadePersonalizadaChange={
-                      setQuantidadePersonalizada
-                    }
-                    precoCalculadoPreview={precoCalculadoPreview?.preco ?? null}
-                    valorPorCobranca={
-                      precoCalculadoPreview?.valorPorCobranca ?? null
-                    }
-                    isCalculandoPreco={
-                      isCalculandoPreco || calcularPrecoPreview.isPending
-                    }
-                    getQuantidadeMinima={getQuantidadeMinima}
-                    onQuantidadePersonalizadaConfirm={
-                      handleQuantidadePersonalizadaSelect
-                    }
-                    onAvancarStep={() => {
-                      if (selectedSubPlanoId) {
-                        handleSubPlanoSelect(selectedSubPlanoId);
-                      }
-                    }}
-                    isSubPlanoAtivo={isSubPlanoAtivo}
-                    isQuantidadePersonalizadaAtiva={isQuantidadePersonalizadaAtiva()}
-                    cardClassName={cn(
-                      isDisabled
-                        ? "border-gray-400 bg-gray-50 cursor-not-allowed opacity-80"
-                        : ""
-                    )}
-                    actionLabel={actionLabel}
-                    actionDisabled={isDisabled || loading}
-                    actionButtonClassName={actionButtonClassName}
-                    onAction={(e) => {
-                      e.stopPropagation();
-                      if (planoItem.slug === PLANO_COMPLETO) {
-                        setSelectedPlanoId(planoItem.id);
-                        planosRefs.current[planoItem.id]?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "center",
-                        });
-                      } else if (!isDisabled) {
-                        handlePlanoSelect(planoItem.id);
-                      }
-                    }}
-                    autoAdvanceOnSubPlanoSelect={false}
-                  />
-                </div>
-              );
-            })}
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-full">
+        <DialogHeader>
+          <DialogTitle>Planos e Preços</DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {planos.map((plano) => (
+              <div 
+                key={plano.id} 
+                ref={(el) => (planosRefs.current[plano.id] = el)}
+                className="flex"
+              >
+                <PlanoCard
+                  plano={plano}
+                  subPlanos={subPlanos}
+                  isSelected={selectedPlanoId === plano.id}
+                  onSelect={() => handlePlanoSelect(plano.id)}
+                  // Props específicas para Plano Completo (Customizável)
+                  isSubPlanoAtivo={isSubPlanoAtivo}
+                  onSubPlanoSelect={(id) => id ? handleSubPlanoSelect(id) : setSelectedSubPlanoId(null)}
+                  selectedSubPlanoId={selectedSubPlanoId}
+                  quantidadePersonalizada={quantidadePersonalizada}
+                  onQuantidadePersonalizadaChange={setQuantidadePersonalizada}
+                  onQuantidadePersonalizadaConfirm={handleQuantidadePersonalizadaSelect}
+                  precoCalculadoPreview={precoCalculadoPreview?.preco ?? null}
+                  valorPorCobranca={precoCalculadoPreview?.valorPorCobranca ?? null}
+                  isCalculandoPreco={isCalculandoPreco}
+                  isQuantidadePersonalizadaAtiva={isQuantidadePersonalizadaAtiva()}
+                />
+              </div>
+            ))}
           </div>
-
         </div>
-      </PullToRefreshWrapper>
 
-      <LoadingOverlay active={refreshing || loading} text="Processando..." />
+      </DialogContent>
+    </Dialog>
 
-      {selecaoPassageirosDialog && profile?.id && (
-        <SelecaoPassageirosDialog
-          isOpen={selecaoPassageirosDialog.isOpen}
-          onClose={() => setSelecaoPassageirosDialog(null)}
-          onConfirm={async (passageiroIds) => {
-            try {
-              setLoading(true);
-              const tipo = selecaoPassageirosDialog.tipo;
-              const cobrancaId = selecaoPassageirosDialog.cobrancaId;
+    <LoadingOverlay active={loading} text="Processando..." />
 
-              // Se for upgrade e tiver cobrancaId, salvar seleção primeiro
-              if (tipo === "upgrade" && cobrancaId) {
-                await usuarioApi.salvarSelecaoPassageiros(profile.id!, {
-                  cobrancaId,
-                  passageiroIds,
-                  tipo,
-                  franquia: selecaoPassageirosDialog.franquia,
-                });
-              }
-
-              // Confirmar seleção (gera PIX se for upgrade, ou faz downgrade se for downgrade)
-              const resultado = await usuarioApi.confirmarSelecaoPassageiros(
-                profile.id!,
-                { 
-                  passageiroIds, 
-                  franquia: selecaoPassageirosDialog.franquia,
-                  tipoDowngrade: selecaoPassageirosDialog.tipoDowngrade,
-                  subplanoId: selecaoPassageirosDialog.subplanoId,
-                  quantidadePersonalizada: selecaoPassageirosDialog.quantidadePersonalizada,
-                  tipo,
-                  planoId: selecaoPassageirosDialog.planoId,
-                  precoAplicado: selecaoPassageirosDialog.precoAplicado,
-                  precoOrigem: selecaoPassageirosDialog.precoOrigem,
-                  cobrancaId,
-                } as any
-              );
-              
-              const temPagamento = resultado.qrCodePayload;
-              
-              setSelecaoPassageirosDialog(null);
-              
-              if (tipo === "downgrade" && resultado.ativados !== undefined) {
-                toast.success("assinatura.sucesso.atualizada", {
-                  description: `${resultado.ativados} passageiros ativados, ${resultado.desativados} desativados.`,
-                });
-              }
-              
-              if (tipo === "upgrade" && temPagamento) {
-                // Abrir dialog de pagamento com PIX gerado
-                setPagamentoDialog({
-                  isOpen: true,
-                  cobrancaId: String((resultado as any).cobrancaId),
-                  valor: Number((resultado as any).preco_aplicado || (resultado as any).valor || 0),
-                });
-              } else {
-                await refreshProfile();
-                setTimeout(() => {
-                  navigate("/assinatura");
-                }, 1500);
-              }
-            } catch (error: any) {
-              toast.error("assinatura.erro.processar", {
-                description: error.response?.data?.error || "Erro ao confirmar seleção.",
-              });
-            } finally {
-              setLoading(false);
-            }
-          }}
-          tipo={selecaoPassageirosDialog.tipo}
-          franquia={selecaoPassageirosDialog.franquia}
-          usuarioId={profile.id}
-        />
-      )}
-
-      {/* Dialog de Pagamento PIX */}
-      {pagamentoDialog && pagamentoDialog.cobrancaId && (
-        <PagamentoAssinaturaDialog
-          isOpen={pagamentoDialog.isOpen}
-          onClose={() => {
-            // Apenas fechar o dialog de pagamento, mantendo seleção atual
-            setPagamentoDialog(null);
-          }}
-          cobrancaId={String(pagamentoDialog.cobrancaId)}
-          valor={Number(pagamentoDialog.valor || 0)}
-          onPaymentSuccess={handlePaymentSuccess}
-          usuarioId={profile?.id}
-          onPrecisaSelecaoManual={handlePrecisaSelecaoManual}
-          nomePlano={selectedPlanoId ? planos.find((p) => p.id === selectedPlanoId)?.nome : undefined}
-          quantidadeAlunos={undefined}
-          context="upgrade"
-          onIrParaInicio={() => {
-            setPagamentoDialog(null);
-            navigate("/inicio");
-          }}
-          onIrParaAssinatura={() => {
-            setPagamentoDialog(null);
-            navigate("/assinatura");
-          }}
-        />
-      )}
-
-      {/* Dialog de Sucesso após Pagamento */}
-      <PagamentoSucessoDialog
-        isOpen={pagamentoSucessoDialog.isOpen}
-        onClose={() => {
-          setPagamentoSucessoDialog({ isOpen: false });
-        }}
-        nomePlano={pagamentoSucessoDialog.nomePlano}
-        quantidadeAlunos={pagamentoSucessoDialog.quantidadeAlunos}
-        onIrParaInicio={() => {
-          navigate("/inicio");
-        }}
-        onIrParaAssinatura={() => {
-          navigate("/assinatura");
+    {/* DIALOGS AUXILIARES (Renderizados fora do Dialog principal para evitar problemas de stack/overflow) */}
+    {/* Pagamento Dialog */}
+    {pagamentoDialog && (
+      <PagamentoAssinaturaDialog
+        isOpen={pagamentoDialog.isOpen}
+        onClose={() => setPagamentoDialog(null)}
+        cobrancaId={pagamentoDialog.cobrancaId}
+        valor={pagamentoDialog.valor}
+        onPaymentSuccess={() => {
+          setPagamentoDialog(null);
+          // onSuccess é chamado após pagamento confirmado, mas o webhook pode demorar
+          // Ideal seria mostrar a tela de sucesso
+          toast.success("Pagamento identificado! Atualizando seu plano...");
+          setTimeout(() => {
+              refreshProfile().then(() => onOpenChange(false));
+          }, 2000);
         }}
       />
+    )}
 
-      {/* Dialog de Confirmação de Downgrade */}
-      {showDowngradeDialog && (
-        <AlertDialog
-          open={showDowngradeDialog}
-          onOpenChange={(open) => {
-            // Controlar manualmente - só permitir abrir, não fechar via onOpenChange
-            // O fechamento será controlado apenas pelos botões
-            if (open === false) {
-              // Não fazer nada - deixar os botões controlarem o fechamento
-              // Isso evita que o diálogo feche automaticamente e afete o modal de seleção
+    {/* Seleção de Passageiros Dialog (Upgrade/Downgrade complexo) */}
+    {selecaoPassageirosDialog && (
+      <SelecaoPassageirosDialog
+        isOpen={selecaoPassageirosDialog.isOpen}
+        onClose={() => setSelecaoPassageirosDialog(null)}
+        tipo={selecaoPassageirosDialog.tipo}
+        franquia={selecaoPassageirosDialog.franquia}
+        usuarioId={profile?.id || ""}
+        onConfirm={async (ids) => {
+            if (!profile?.id) return;
+            try {
+                setLoading(true);
+                const result = await usuarioApi.confirmarSelecaoPassageiros(profile.id, {
+                    passageiroIds: ids,
+                    franquia: selecaoPassageirosDialog.franquia,
+                    tipoDowngrade: selecaoPassageirosDialog.tipoDowngrade,
+                    subplanoId: selecaoPassageirosDialog.subplanoId,
+                    quantidadePersonalizada: selecaoPassageirosDialog.quantidadePersonalizada,
+                    tipo: selecaoPassageirosDialog.tipo,
+                    planoId: selecaoPassageirosDialog.planoId,
+                    precoAplicado: selecaoPassageirosDialog.precoAplicado,
+                    precoOrigem: selecaoPassageirosDialog.precoOrigem,
+                });
+
+                if (result.qrCodePayload && result.cobrancaId) {
+                    setSelecaoPassageirosDialog(null);
+                    setPagamentoDialog({
+                        isOpen: true,
+                        cobrancaId: String(result.cobrancaId),
+                        valor: Number(result.preco_aplicado || result.valor || 0),
+                    });
+                } else {
+                    setSelecaoPassageirosDialog(null);
+                    await refreshProfile();
+                    toast.success("assinatura.sucesso.atualizada");
+                    setTimeout(() => onOpenChange(false), 500);
+                }
+            } catch (error: any) {
+                toast.error("Erro ao confirmar seleção", {
+                    description: error.response?.data?.error || "Ocorreu um erro ao processar sua solicitação."
+                });
+            } finally {
+                setLoading(false);
             }
-          }}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                {downgradeInfo?.titulo || "Confirmar downgrade"}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {downgradeInfo?.mensagem ||
-                  "Tem certeza que deseja fazer downgrade do seu plano?"}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowDowngradeDialog(false);
-                  // Resetar a seleção do sub-plano que causou o downgrade
-                  setSelectedSubPlanoId(null);
-                  setDowngradeInfo(null);
-                }}
-              >
-                Cancelar
-              </Button>
-              <AlertDialogAction onClick={handleDowngrade}>
-                Confirmar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
+        }}
+      />
+    )}
+
+    {/* Downgrade Confirmation Dialog */}
+    <AlertDialog
+      open={showDowngradeDialog}
+      onOpenChange={setShowDowngradeDialog}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{downgradeInfo?.titulo}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {downgradeInfo?.mensagem}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogAction
+            onClick={handleDowngrade}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            Confirmar Downgrade
+          </AlertDialogAction>
+          <Button
+            variant="ghost"
+            onClick={() => setShowDowngradeDialog(false)}
+          >
+            Cancelar
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+
     </>
   );
 }

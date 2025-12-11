@@ -1,10 +1,11 @@
 // Imports updated
+import { UpgradeStickyFooter } from "@/components/common/UpgradeStickyFooter";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
+import { ContextualUpsellDialog } from "@/components/dialogs/ContextualUpsellDialog";
 import { DialogExcessoFranquia } from "@/components/dialogs/DialogExcessoFranquia";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
-import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PassageirosList } from "@/components/features/passageiro/PassageirosList";
@@ -18,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   useCreatePassageiro,
@@ -29,7 +31,7 @@ import {
   useToggleAtivoPassageiro,
   useUpdatePassageiro,
   useValidarFranquia,
-  useVeiculos
+  useVeiculos,
 } from "@/hooks";
 import { usePassengerLimits } from "@/hooks/business/usePassengerLimits";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -51,7 +53,7 @@ export default function Passageiros() {
   const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
   const [isCreatingEscola, setIsCreatingEscola] = useState(false);
   const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
-  const { setPageTitle } = useLayout();
+  const { setPageTitle, openPlanosDialog } = useLayout();
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -141,6 +143,7 @@ export default function Passageiros() {
     action: "" as "ativar" | "desativar" | "",
   });
   const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
+
   const [limiteFranquiaDialog, setLimiteFranquiaDialog] = useState<{
     open: boolean;
     franquiaContratada: number;
@@ -153,7 +156,7 @@ export default function Passageiros() {
     franquiaContratada: 0,
     cobrancasEmUso: 0,
   });
-  
+
   const [dialogExcessoFranquia, setDialogExcessoFranquia] = useState<{
     open: boolean;
     limiteAtual: number;
@@ -165,7 +168,8 @@ export default function Passageiros() {
     limiteApos: 0,
     passageiro: null,
   });
-  const [pendingActionPassageiro, setPendingActionPassageiro] = useState<Passageiro | null>(null);
+  const [pendingActionPassageiro, setPendingActionPassageiro] =
+    useState<Passageiro | null>(null);
 
   const { validacao: validacaoFranquiaGeral } = useValidarFranquia(
     user?.id,
@@ -179,7 +183,8 @@ export default function Passageiros() {
       franquiaContratada: validacaoFranquiaGeral.franquiaContratada,
       cobrancasEmUso: validacaoFranquiaGeral.cobrancasEmUso,
       title: "Cobrança Automática",
-      description: "A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Completo.",
+      description:
+        "A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Completo.",
       hideLimitInfo: true,
     });
   }, [validacaoFranquiaGeral]);
@@ -356,7 +361,11 @@ export default function Passageiros() {
 
     const novoStatus = !p.ativo;
 
-    if (novoStatus && canUseCobrancaAutomatica(plano) && p.enviar_cobranca_automatica) {
+    if (
+      novoStatus &&
+      canUseCobrancaAutomatica(plano) &&
+      p.enviar_cobranca_automatica
+    ) {
       const franquiaContratada = validacaoFranquiaGeral.franquiaContratada;
       const cobrancasEmUso = validacaoFranquiaGeral.cobrancasEmUso;
 
@@ -426,12 +435,7 @@ export default function Passageiros() {
         data: { enviar_cobranca_automatica: novoValor },
       });
     },
-    [
-      profile?.id,
-      plano,
-      updatePassageiro,
-      validacaoFranquiaGeral,
-    ]
+    [profile?.id, plano, updatePassageiro, validacaoFranquiaGeral]
   );
 
   const handleUpgradeSuccess = useCallback(() => {
@@ -518,7 +522,7 @@ export default function Passageiros() {
       {
         ...fakeData,
         usuario_id: profile.id,
-        emitir_cobranca_mes_atual: true,
+        emitir_cobranca_mes_atual: false,
       },
       {
         onError: () => {
@@ -550,7 +554,6 @@ export default function Passageiros() {
     refetchPrePassageiros,
   ]);
 
-
   if (isProfileLoading || !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
@@ -569,7 +572,11 @@ export default function Passageiros() {
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6">
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full space-y-6">
+          <Tabs
+            value={activeTab}
+            onValueChange={handleTabChange}
+            className="w-full space-y-6"
+          >
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <TabsList className="bg-slate-100/80 p-1 rounded-xl h-10 md:h-12 w-full md:w-auto self-start">
                 <TabsTrigger
@@ -608,30 +615,33 @@ export default function Passageiros() {
                 <PassengerLimitHealthBar
                   current={countPassageiros || 0}
                   max={limitePassageiros}
+                  onIncreaseLimit={() => setIsUpgradeDialogOpen(true)}
                 />
               )}
 
               <Card className="border-none shadow-none bg-transparent">
-                <CardHeader className="p-0">
-                  <div className="flex justify-end mb-4 md:hidden">
-                    <Button
-                      onClick={handleCadastrarRapido}
-                      variant="outline"
-                      className="gap-2 text-uppercase w-full"
-                    >
-                      GERAR PASSAGEIRO FAKE
-                    </Button>
-                  </div>
-                  <div className="hidden md:flex justify-end mb-4">
-                    <Button
-                      onClick={handleCadastrarRapido}
-                      variant="outline"
-                      className="gap-2 text-uppercase"
-                    >
-                      GERAR PASSAGEIRO FAKE
-                    </Button>
-                  </div>
-                </CardHeader>
+                {process.env.NODE_ENV === "development" && (
+                  <CardHeader className="p-0">
+                    <div className="flex justify-end mb-4 md:hidden">
+                      <Button
+                        onClick={handleCadastrarRapido}
+                        variant="outline"
+                        className="gap-2 text-uppercase w-full"
+                      >
+                        GERAR PASSAGEIRO FAKE
+                      </Button>
+                    </div>
+                    <div className="hidden md:flex justify-end mb-4">
+                      <Button
+                        onClick={handleCadastrarRapido}
+                        variant="outline"
+                        className="gap-2 text-uppercase"
+                      >
+                        GERAR PASSAGEIRO FAKE
+                      </Button>
+                    </div>
+                  </CardHeader>
+                )}
 
                 <CardContent className="px-0">
                   <div className="mb-6">
@@ -762,7 +772,6 @@ export default function Passageiros() {
               confirmToggleDialog.action === "ativar"
                 ? "Deseja realmente reativar este passageiro? Esta ação pode afetar a geração de cobranças."
                 : "Deseja realmente desativar este passageiro? Esta ação pode afetar a geração de cobranças."
-
             }
             onConfirm={handleToggleConfirm}
             confirmText="Confirmar"
@@ -798,13 +807,25 @@ export default function Passageiros() {
             hideLimitInfo={limiteFranquiaDialog.hideLimitInfo}
           />
 
-          <UpgradePlanDialog
-            open={isUpgradeDialogOpen}
-            onOpenChange={setIsUpgradeDialogOpen}
-            featureName="Limite de Passageiros"
-            description="Você atingiu o limite de passageiros do seu Plano Gratuito. Adquira mais passageiros ou mude de plano para continuar crescendo."
-            redirectTo="/planos"
-          />
+          {isUpgradeDialogOpen && (
+            <ContextualUpsellDialog
+              open={isUpgradeDialogOpen}
+              onOpenChange={setIsUpgradeDialogOpen}
+              feature="passageiros"
+              targetPlan={PLANO_ESSENCIAL}
+              onConfirm={() => {
+                // handled internally
+              }}
+              onViewAllPlans={() => {
+                setIsUpgradeDialogOpen(false);
+                openPlanosDialog();
+              }}
+              onSuccess={() => {
+                // Already handled internally via refetchProfile, but we can also refetch list
+                refetchPassageiros();
+              }}
+            />
+          )}
 
           <DialogExcessoFranquia
             isOpen={dialogExcessoFranquia.open}
@@ -816,7 +837,7 @@ export default function Passageiros() {
             contexto="reativacao"
             onVerPlanos={() => {
               setDialogExcessoFranquia((prev) => ({ ...prev, open: false }));
-              navigate("/planos");
+              openPlanosDialog();
             }}
             onContinuarSemAtivar={() => {
               setDialogExcessoFranquia((prev) => ({ ...prev, open: false }));
@@ -825,14 +846,22 @@ export default function Passageiros() {
                   id: dialogExcessoFranquia.passageiro.id,
                   data: {
                     ativo: true,
-                    enviar_cobranca_automatica: false
-                  }
+                    enviar_cobranca_automatica: false,
+                  },
                 });
               }
             }}
           />
         </div>
       </PullToRefreshWrapper>
+      <UpgradeStickyFooter
+        visible={!!plano?.isFreePlan}
+        title="Quer cadastrar todos seus passageiros?"
+        description="Remova os limites do plano gratuito."
+        buttonText="Ver Planos"
+        onAction={() => setIsUpgradeDialogOpen(true)}
+      />
+
       <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>
   );

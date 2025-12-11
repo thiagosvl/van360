@@ -26,20 +26,17 @@ import { GastosList } from "@/components/features/financeiro/GastosList";
 import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
 
 // Components - Dialogs
+import { ContextualUpsellDialog } from "@/components/dialogs/ContextualUpsellDialog";
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
-import {
-  useDeleteGasto,
-  useFilters,
-  useGastos,
-  useVeiculos,
-} from "@/hooks";
+import { useDeleteGasto, useFilters, useGastos, useVeiculos } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 // Utils
+import { PLANO_ESSENCIAL } from "@/constants";
 import { cn } from "@/lib/utils";
 import { enablePageActions } from "@/utils/domain/pages/pagesUtils";
 
@@ -47,12 +44,13 @@ import { enablePageActions } from "@/utils/domain/pages/pagesUtils";
 import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 
 // Icons
+import { UpgradeStickyFooter } from "@/components/common/UpgradeStickyFooter";
 import {
   CalendarIcon,
   Lock,
   TrendingDown,
   TrendingUp,
-  Wallet
+  Wallet,
 } from "lucide-react";
 
 const MOCK_DATA_NO_ACCESS = {
@@ -113,7 +111,7 @@ const MOCK_DATA_NO_ACCESS = {
 };
 
 export default function Gastos() {
-  const { setPageTitle } = useLayout();
+  const { setPageTitle, openPlanosDialog } = useLayout();
   const deleteGasto = useDeleteGasto();
 
   const isActionLoading = deleteGasto.isPending;
@@ -139,18 +137,21 @@ export default function Gastos() {
   });
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
   const [editingGasto, setEditingGasto] = useState<Gasto | null>(null);
   const { user } = useSession();
   const { profile, plano } = useProfile(user?.id);
   const [enabledPageActions, setEnabledPageActions] = useState(false);
+  const [loadingActions, setLoadingActions] = useState(true);
 
   // Verificar permissão antes de fazer requisição
   useEffect(() => {
-    if (!profile?.id) return;
+    if (!profile?.id && !plano) return; // Wait for profile load
 
     const canAccess = enablePageActions("/gastos", plano);
 
     setEnabledPageActions(canAccess);
+    setLoadingActions(false);
   }, [profile?.id, plano]);
 
   const {
@@ -252,26 +253,48 @@ export default function Gastos() {
     };
   }, [gastos, mesFilter, anoFilter]);
 
-  // Use mock data if access is restricted
-  const displayData = enabledPageActions
-    ? {
+  // Use mock data ONLY if explicitly restricted and not loading
+  const displayData = useMemo(() => {
+    // Se ainda está carregando permissões, mostra "vazio" (esqueleto vai cobrir) ou real (se já tiver)
+    if (loadingActions)
+      return {
+        totalGasto: 0,
+        principalCategoriaData: null,
+        mediaDiaria: 0,
+        gastosFiltrados: [],
+      };
+
+    if (enabledPageActions) {
+      return {
         totalGasto,
         principalCategoriaData,
         mediaDiaria,
         gastosFiltrados,
-      }
-    : {
-        totalGasto: MOCK_DATA_NO_ACCESS.totalGasto,
-        principalCategoriaData: MOCK_DATA_NO_ACCESS.principalCategoriaData,
-        mediaDiaria: MOCK_DATA_NO_ACCESS.mediaDiaria,
-        gastosFiltrados: MOCK_DATA_NO_ACCESS.gastos,
       };
+    }
+
+    // Se NÃO tem permissão, aí sim mostra mock
+    return {
+      totalGasto: MOCK_DATA_NO_ACCESS.totalGasto,
+      principalCategoriaData: MOCK_DATA_NO_ACCESS.principalCategoriaData,
+      mediaDiaria: MOCK_DATA_NO_ACCESS.mediaDiaria,
+      gastosFiltrados: MOCK_DATA_NO_ACCESS.gastos,
+    };
+  }, [
+    enabledPageActions,
+    loadingActions,
+    totalGasto,
+    principalCategoriaData,
+    mediaDiaria,
+    gastosFiltrados,
+  ]);
+
+  // Debug log removed
+  // console.log(displayData.gastosFiltrados);
 
   useEffect(() => {
     setPageTitle("Controle de Gastos");
   }, [setPageTitle]);
-
-
 
   const handleDelete = useCallback(
     async (id: string) => {
@@ -280,13 +303,10 @@ export default function Gastos() {
     [deleteGasto]
   );
 
-  const openDialog = useCallback(
-    (gasto: Gasto | null = null) => {
-      setEditingGasto(gasto);
-      setIsDialogOpen(true);
-    },
-    []
-  );
+  const openDialog = useCallback((gasto: Gasto | null = null) => {
+    setEditingGasto(gasto);
+    setIsDialogOpen(true);
+  }, []);
 
   const pullToRefreshReload = async () => {
     await refetchGastos();
@@ -298,8 +318,6 @@ export default function Gastos() {
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div>
-
-
           <div className="space-y-6 md:space-y-8">
             {/* 1. Header & Navigation */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -329,7 +347,7 @@ export default function Gastos() {
                 icon={TrendingDown}
                 bgClass="bg-red-50"
                 colorClass="text-red-600"
-                countLabel="Lançamento"
+                countLabel="Registro"
                 className="col-span-2 md:col-span-1"
                 countVisible={enabledPageActions}
               />
@@ -412,10 +430,14 @@ export default function Gastos() {
                   onVeiculoChange={(val) =>
                     setSelectedVeiculo && setSelectedVeiculo(val)
                   }
-                  onRegistrarGasto={() => openDialog()}
+                  onRegistrarGasto={() =>
+                    enabledPageActions
+                      ? openDialog()
+                      : setIsUpgradeDialogOpen(true)
+                  }
                   categorias={CATEGORIAS_GASTOS}
                   veiculos={veiculos.map((v) => ({ id: v.id, placa: v.placa }))}
-                  disabled={!enabledPageActions}
+                  disabled={loading || loadingActions}
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
                 />
@@ -423,7 +445,19 @@ export default function Gastos() {
                 {loading ? (
                   <Skeleton className="h-40 w-full" />
                 ) : (
-                  <div className={cn("relative", !enabledPageActions && "pb-32 md:pb-0")}>
+                  <div
+                    className={cn(
+                      "relative",
+                      !enabledPageActions && "pb-32 md:pb-0"
+                    )}
+                  >
+                    {!enabledPageActions && !loading && (
+                      <div className="mb-4 bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-center justify-center gap-2 text-xs text-orange-800 font-medium">
+                        <Lock className="w-4 h-4" />
+                        <span>Os registros abaixo são demonstrativos</span>
+                      </div>
+                    )}
+
                     <GastosList
                       gastos={
                         enabledPageActions
@@ -455,8 +489,7 @@ export default function Gastos() {
                           </p>
                           <Button
                             onClick={() =>
-                              (window.location.href =
-                                "/planos?plano=essencial")
+                              (window.location.href = "/planos?plano=essencial")
                             }
                             className="bg-orange-600 hover:bg-orange-700 text-white font-semibold h-12 px-8 rounded-xl shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all transform hover:-translate-y-0.5"
                           >
@@ -503,32 +536,33 @@ export default function Gastos() {
               // Optional: Refetch or show success message if needed
             }}
           />
+
+          <ContextualUpsellDialog
+            open={isUpgradeDialogOpen}
+            onOpenChange={setIsUpgradeDialogOpen}
+            feature="controle_gastos"
+            targetPlan={PLANO_ESSENCIAL}
+            onViewAllPlans={() => {
+              setIsUpgradeDialogOpen(false);
+              openPlanosDialog();
+            }}
+            onSuccess={() => {
+              // Ao confirmar pagamento, forçamos recarregamento de permissões
+              window.location.reload();
+            }}
+          />
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Aguarde..." />
-      
+
       {/* Mobile Sticky Footer for No Access */}
-      {!enabledPageActions && (
-        <div className="fixed bottom-0 left-0 w-full bg-gray-900 border-t border-gray-800 p-4 z-50 md:hidden safe-area-pb">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-white leading-tight">
-                Visualize seus dados reais.
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Libere o acesso agora.
-              </p>
-            </div>
-            <Button
-              onClick={() => (window.location.href = "/planos?plano=essencial")}
-              size="sm"
-              className="bg-orange-600 hover:bg-orange-700 text-white font-semibold whitespace-nowrap"
-            >
-              Ver Planos
-            </Button>
-          </div>
-        </div>
-      )}
+      <UpgradeStickyFooter
+        visible={!enabledPageActions}
+        title="Visualize seus dados reais."
+        description="Libere o acesso agora."
+        buttonText="Ver Planos"
+        onAction={() => setIsUpgradeDialogOpen(true)}
+      />
     </>
   );
 }

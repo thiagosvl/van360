@@ -378,7 +378,7 @@ const StatusCard = ({
 // --- Main Component ---
 
 const Home = () => {
-  const { setPageTitle } = useLayout();
+  const { setPageTitle, openPlanosDialog } = useLayout();
   const { user, loading: isSessionLoading } = useSession();
   const { profile, isLoading: isProfileLoading, plano } = useProfile(user?.id);
   const navigate = useNavigate();
@@ -814,6 +814,11 @@ const Home = () => {
                 <PassengerLimitHealthBar
                   current={passageirosCount}
                   max={Number(limitePassageiros)}
+                  onIncreaseLimit={() => setUpgradeDialog({
+                    open: true,
+                    featureName: "Limite de Passageiros",
+                    description: "Você atingiu o limite de passageiros do seu Plano Gratuito. Adquira mais passageiros ou mude de plano para continuar crescendo."
+                  })}
                   label="Passageiros"
                   className="mb-0"
                 />
@@ -947,11 +952,7 @@ const Home = () => {
                   variant="secondary"
                   className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold border-none shadow-sm shrink-0"
                   onClick={() => {
-                    const mainSlug = getMainPlanSlug();
-                    const url = mainSlug
-                      ? `/planos?plano=${mainSlug}`
-                      : "/planos";
-                    navigate(url);
+                    openPlanosDialog();
                   }}
                 >
                   {getPlanCTA(plano?.slug)}
@@ -1006,6 +1007,10 @@ const Home = () => {
         onOpenChange={(open) => setUpgradeDialog((prev) => ({ ...prev, open }))}
         featureName={upgradeDialog.featureName}
         description={upgradeDialog.description}
+        onConfirm={() => {
+          setUpgradeDialog((prev) => ({ ...prev, open: false }));
+          openPlanosDialog();
+        }}
       />
     </>
   );

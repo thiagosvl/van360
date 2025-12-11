@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
 
 interface PassengerLimitHealthBarProps {
   current: number;
@@ -11,6 +10,7 @@ interface PassengerLimitHealthBarProps {
   showIncreaseLimit?: boolean;
   variant?: "full" | "compact";
   className?: string;
+  onIncreaseLimit?: () => void;
 }
 
 export function PassengerLimitHealthBar({ 
@@ -20,7 +20,8 @@ export function PassengerLimitHealthBar({
   description,
   showIncreaseLimit = true,
   variant = "full",
-  className
+  className,
+  onIncreaseLimit
 }: PassengerLimitHealthBarProps) {
   const percentage = Math.min((current / max) * 100, 100);
   
@@ -54,13 +55,15 @@ export function PassengerLimitHealthBar({
           indicatorClassName={colorClass}
         />
         
-        {showIncreaseLimit && (
+        {showIncreaseLimit && onIncreaseLimit && (
           <div className="mt-2 flex justify-end">
-            <Link to="/planos">
-              <Button variant="outline" className="h-auto p-0 text-primary bg-transparent hover:text-blue-800 border-0 hover:bg-transparent font-semibold text-xs">
-                Aumentar limite
-              </Button>
-            </Link>
+            <Button 
+              variant="outline" 
+              onClick={onIncreaseLimit}
+              className="h-auto p-0 text-primary bg-transparent hover:text-blue-800 border-0 hover:bg-transparent font-semibold text-xs"
+            >
+              Aumentar limite
+            </Button>
           </div>
         )}
       </div>
@@ -90,12 +93,14 @@ export function PassengerLimitHealthBar({
         <p className="text-xs text-gray-400 mt-1">
           {finalDescription}
         </p>
-        {showIncreaseLimit && (
-          <Link to="/planos">
-            <Button variant="outline" className="h-auto p-0 text-primary bg-transparent hover:text-blue-800 border-0 hover:bg-transparent font-semibold text-xs">
-              Aumentar limite
-            </Button>
-          </Link>
+        {showIncreaseLimit && onIncreaseLimit && (
+          <Button 
+            variant="outline" 
+            onClick={onIncreaseLimit}
+            className="h-auto p-0 text-primary bg-transparent hover:text-blue-800 border-0 hover:bg-transparent font-semibold text-xs"
+          >
+            Aumentar limite
+          </Button>
         )}
       </div>
     </div>

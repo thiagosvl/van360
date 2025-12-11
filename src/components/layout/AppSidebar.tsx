@@ -10,8 +10,11 @@ interface AppSidebarProps {
   plano?: any;
 }
 
+import { useLayout } from "@/contexts/LayoutContext";
+
 export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
   const navigate = useNavigate();
+  const { openPlanosDialog } = useLayout();
   const userItems = pagesItems.map((item) => ({
     ...item,
   }));
@@ -123,9 +126,7 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
           variant="secondary"
           size="sm"
           onClick={() => {
-            const mainSlug = plano?.slug;
-            const url = mainSlug ? `/planos?plano=${mainSlug}` : "/planos";
-            navigate(url);
+            openPlanosDialog();
             onLinkClick?.();
           }}
           className="mt-4 w-full rounded-full border-white/30 bg-white/20 text-white hover:bg-white/30 font-semibold"

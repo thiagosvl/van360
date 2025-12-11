@@ -1,12 +1,12 @@
 import { AppGate } from "@/components/auth/AppGate";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -32,7 +32,7 @@ const Register = lazyLoad(() => import("./pages/Register"));
 const NovaSenha = lazyLoad(() => import("./pages/NovaSenha"));
 const Index = lazyLoad(() => import("./pages/lp/Index"));
 const Home = lazyLoad(() => import("./pages/Home"));
-const Planos = lazyLoad(() => import("./pages/Planos"));
+
 const Assinatura = lazyLoad(() => import("./pages/Assinatura"));
 const Passageiros = lazyLoad(() => import("./pages/Passageiros"));
 const PassageiroCarteirinha = lazyLoad(() => import("./pages/PassageiroCarteirinha"));
@@ -252,7 +252,6 @@ const App = () => {
 
               {/* Motorista */}
               <Route path="inicio" element={<Home />} />
-              <Route path="planos" element={<Planos />} />
               <Route path="assinatura" element={<Assinatura />} />
               <Route path="passageiros" element={<Passageiros />} />
               <Route

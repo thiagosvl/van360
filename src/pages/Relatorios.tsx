@@ -1,10 +1,13 @@
 import { BlurredValue } from "@/components/common/BlurredValue";
 import { DateNavigation } from "@/components/common/DateNavigation";
+import { UpgradeStickyFooter } from "@/components/common/UpgradeStickyFooter";
+import { ContextualUpsellDialog } from "@/components/dialogs/ContextualUpsellDialog";
 import { PassengerLimitHealthBar } from "@/components/features/passageiro/PassengerLimitHealthBar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   useCobrancas,
@@ -145,6 +148,7 @@ const MOCK_DATA_NO_ACCESS = {
   },
   operacional: {
     passageirosCount: 5,
+    passageirosAtivosCount: 5,
     escolas: [
       { nome: "Colégio Objetivo", passageiros: 35, valor: 12250, percentual: 41 },
       {
@@ -187,12 +191,13 @@ const MOCK_DATA_NO_ACCESS = {
 
 export default function Relatorios() {
   const navigate = useNavigate();
-  const { setPageTitle } = useLayout();
+  const { setPageTitle, openPlanosDialog } = useLayout();
   const { user } = useSession();
   const { profile, plano: profilePlano } = useProfile(user?.id);
 
   const [mes, setMes] = useState(new Date().getMonth() + 1);
   const [ano, setAno] = useState(new Date().getFullYear());
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
 
   // Access Logic - baseado no plano completo
   const hasAccess = canViewRelatorios(profilePlano);
@@ -584,7 +589,7 @@ export default function Relatorios() {
             </div>
           </div>
           <Button
-            onClick={() => (window.location.href = "/planos?plano=essencial")}
+            onClick={() => setIsUpgradeDialogOpen(true)}
             size="sm"
             className="bg-amber-600 hover:bg-amber-700 text-white border-none shadow-none"
           >
@@ -1361,27 +1366,28 @@ export default function Relatorios() {
         </TabsContent>
       </Tabs>
       {/* Mobile Sticky Footer for No Access */}
-      {!hasAccess && (
-        <div className="fixed bottom-0 left-0 w-full bg-gray-900 border-t border-gray-800 p-4 z-50 md:hidden safe-area-pb">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-white leading-tight">
-                Você sabe o lucro exato da sua van?
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Veja seus números reais.
-              </p>
-            </div>
-            <Button
-              onClick={() => (window.location.href = "/planos?plano=essencial")}
-              size="sm"
-              className="bg-orange-600 hover:bg-orange-700 text-white font-semibold whitespace-nowrap"
-            >
-              Ver meu Lucro Real
-            </Button>
-          </div>
-        </div>
-      )}
+      <UpgradeStickyFooter
+        visible={!hasAccess}
+        title="Você sabe o lucro exato da sua van?"
+        description="Veja seus números reais."
+        buttonText="Ver meu Lucro Real"
+        onAction={() => setIsUpgradeDialogOpen(true)}
+      />
+      
+      <ContextualUpsellDialog
+        open={isUpgradeDialogOpen}
+        onOpenChange={setIsUpgradeDialogOpen}
+        feature="relatorios"
+        targetPlan={PLANO_ESSENCIAL}
+        onViewAllPlans={() => {
+            setIsUpgradeDialogOpen(false);
+            openPlanosDialog();
+        }}
+        onSuccess={() => {
+            // Recarregar permissões e dados
+            window.location.reload(); 
+        }}
+      />
     </div>
   );
 }

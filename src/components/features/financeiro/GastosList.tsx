@@ -257,11 +257,6 @@ export function GastosList({
 
       {/* Mobile Cards */}
       <div className="md:hidden space-y-3">
-        {isRestricted && (
-          <div className="text-center bg-primary/10 text-muted-foreground rounded-xl text-xs p-2">
-            Os registros abaixo são demonstrativos.
-          </div>
-        )}
 
         {gastos.map((gasto) => {
           const { icon: Icon, color, bg } = getCategoryConfig(gasto.categoria);

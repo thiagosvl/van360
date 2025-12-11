@@ -182,18 +182,18 @@ export default function PagamentoPixContent({
 
     // Exibir tela de sucesso dentro do mesmo dialog
     setPaymentConfirmed(true);
+    toast.success("Pagamento confirmado! Finalizando liberação...");
 
     // Notificar pai imediatamente que o sucesso ocorreu (para impedir fechamento parcial)
     if (onPaymentVerified) {
         onPaymentVerified();
     }
 
-    // Invalidate queries to ensure UI updates immediately
-    // Centraliza a atualização do cache aqui para garantir que qualquer pagamento via PIX atualize o estado
-    queryClient.invalidateQueries({ queryKey: ["profile"] });
-    queryClient.invalidateQueries({ queryKey: ["plano"] });
-    queryClient.invalidateQueries({ queryKey: ["passageiros"] });
-    queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+    // Invalidate queries removed from here to prevent race conditions.
+    // The parent component (ContextualUpsellDialog) handles the orchestration:
+    // 1. Wait for delay (DB propagation)
+    // 2. Invalidate queries once
+    // 3. Close dialogs
 
     // Iniciar contagem regressiva antes de disparar o callback (login/redirect)
     if (!redirectSeconds) {
