@@ -145,7 +145,7 @@ const Cobrancas = () => {
 
   const { validacao: validacaoFranquiaGeral } = useValidarFranquia(
     user?.id,
-    undefined, // passageiro_id não é relevante aqui a menos que seja sobre um passageiro específico, mas para lista geral ok.
+    undefined,
     profile
   );
 

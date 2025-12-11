@@ -1,4 +1,3 @@
-import { AvisoInlineExcessoFranquia } from "@/components/dialogs/AvisoInlineExcessoFranquia";
 import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import { CepInput, MoneyInput, PhoneInput } from "@/components/forms";
 import {
@@ -1352,9 +1351,6 @@ export default function PassengerFormDialog({
                           control={form.control}
                           name="enviar_cobranca_automatica"
                           render={({ field }) => {
-                            const mostrarAvisoFranquia =
-                              field.value && !validacaoFranquia.podeAtivar;
-
                             return (
                               <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
                                 <FormControl>
@@ -1405,13 +1401,6 @@ export default function PassengerFormDialog({
                                     As cobranças serão enviadas automaticamente
                                     todo mês para este passageiro.
                                   </FormDescription>
-                                  {mostrarAvisoFranquia && (
-                                    <AvisoInlineExcessoFranquia
-                                      limiteAtual={
-                                        validacaoFranquia.franquiaContratada
-                                      }
-                                    />
-                                  )}
                                 </div>
                               </FormItem>
                             );
