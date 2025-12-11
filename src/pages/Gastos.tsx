@@ -148,7 +148,7 @@ export default function Gastos() {
   useEffect(() => {
     if (!profile?.id) return;
 
-    const canAccess = !enablePageActions("/gastos", plano);
+    const canAccess = enablePageActions("/gastos", plano);
 
     setEnabledPageActions(canAccess);
   }, [profile?.id, plano]);
