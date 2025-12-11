@@ -43,7 +43,7 @@ export default function Relatorios() {
   const { user } = useSession();
   
   // Use Access Control Hook
-  const { profile, plano: profilePlano, permissions } = useAccessControl();
+  const { profile, plano: profilePlano, permissions, limits } = useAccessControl();
 
   const [mes, setMes] = useState(new Date().getMonth() + 1);
   const [ano, setAno] = useState(new Date().getFullYear());
@@ -671,7 +671,7 @@ export default function Relatorios() {
             {isFreePlan ? (
               <PassengerLimitHealthBar
                 current={dados.operacional.passageirosCount}
-                max={passageirosLimit}
+                max={limits.passageiros}
                 label="Passageiros"
                 className="mb-0"
               />

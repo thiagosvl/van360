@@ -1,5 +1,5 @@
 // React
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // Third-party
 import { toast } from "@/utils/notifications/toast";
@@ -32,13 +32,13 @@ import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import { useDeleteGasto, useFilters, useGastos, useVeiculos } from "@/hooks";
-import { useProfile } from "@/hooks/business/useProfile";
-import { useSession } from "@/hooks/business/useSession";
+import { useAccessControl } from "@/hooks/business/useAccessControl"; // NEW
+import { useGastosCalculations } from "@/hooks/business/useGastosCalculations"; // NEW
 
 // Utils
 import { PLANO_ESSENCIAL } from "@/constants";
 import { cn } from "@/lib/utils";
-import { enablePageActions } from "@/utils/domain/pages/pagesUtils";
+// import { enablePageActions } from "@/utils/domain/pages/pagesUtils"; // DEPRECATED
 
 // Types
 import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
@@ -52,63 +52,6 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
-
-const MOCK_DATA_NO_ACCESS = {
-  totalGasto: 12500.5,
-  principalCategoriaData: {
-    name: "Combustível",
-    value: 4500.0,
-    percentage: 36,
-  },
-  mediaDiaria: 416.68,
-  gastos: [
-    {
-      id: "1",
-      categoria: "Combustível",
-      descricao: "Abastecimento Semanal",
-      valor: 450.0,
-      data: null,
-      created_at: "2024-03-10T10:00:00.000Z",
-      usuario_id: "mock",
-    },
-    {
-      id: "2",
-      categoria: "Manutenção",
-      descricao: "Troca de Óleo",
-      valor: 250.0,
-      data: null,
-      created_at: "2024-03-12T14:30:00.000Z",
-      usuario_id: "mock",
-    },
-    {
-      id: "3",
-      categoria: "Salário",
-      descricao: "Adiantamento Motorista",
-      valor: 1200.0,
-      data: null,
-      created_at: "2024-03-15T09:00:00.000Z",
-      usuario_id: "mock",
-    },
-    {
-      id: "4",
-      categoria: "Vistorias",
-      descricao: "Vistoria Semestral",
-      valor: 150.0,
-      data: null,
-      created_at: "2024-03-18T11:00:00.000Z",
-      usuario_id: "mock",
-    },
-    {
-      id: "5",
-      categoria: "Documentação",
-      descricao: "Licenciamento Anual",
-      valor: 350.0,
-      data: null,
-      created_at: "2024-03-20T16:00:00.000Z",
-      usuario_id: "mock",
-    },
-  ] as Gasto[],
-};
 
 export default function Gastos() {
   const { setPageTitle, openPlanosDialog } = useLayout();
@@ -139,20 +82,11 @@ export default function Gastos() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
   const [editingGasto, setEditingGasto] = useState<Gasto | null>(null);
-  const { user } = useSession();
-  const { profile, plano } = useProfile(user?.id);
-  const [enabledPageActions, setEnabledPageActions] = useState(false);
-  const [loadingActions, setLoadingActions] = useState(true);
-
-  // Verificar permissão antes de fazer requisição
-  useEffect(() => {
-    if (!profile?.id && !plano) return; // Wait for profile load
-
-    const canAccess = enablePageActions("/gastos", plano);
-
-    setEnabledPageActions(canAccess);
-    setLoadingActions(false);
-  }, [profile?.id, plano]);
+  
+  // Authorization Hook
+  const { profile, isLoading: isAuthLoading, permissions } = useAccessControl();
+  const enabledPageActions = permissions.canViewGastos;
+  const loadingActions = isAuthLoading;
 
   const {
     data: gastos = [],
@@ -178,119 +112,15 @@ export default function Gastos() {
   });
   const veiculos = veiculosData?.list || [];
 
-  const gastosFiltrados = useMemo(() => {
-    if (!searchTerm) return gastos;
-    const lowerSearch = searchTerm.toLowerCase();
-    return gastos.filter(
-      (g) =>
-        g.descricao?.toLowerCase().includes(lowerSearch) ||
-        g.categoria.toLowerCase().includes(lowerSearch)
-    );
-  }, [gastos, searchTerm]);
-
-  const { totalGasto, principalCategoriaData, mediaDiaria } = useMemo(() => {
-    // Garantir que gastos seja um array válido
-    const gastosArray = Array.isArray(gastos) ? gastos : [];
-
-    const total = gastosArray.reduce((sum, g) => {
-      const valor = Number(g?.valor) || 0;
-      return sum + (isNaN(valor) ? 0 : valor);
-    }, 0);
-
-    const gastosPorCategoria = gastosArray.reduce((acc, gasto) => {
-      if (!gasto?.categoria) return acc;
-      if (!acc[gasto.categoria]) {
-        acc[gasto.categoria] = { total: 0, count: 0 };
-      }
-      const valor = Number(gasto.valor) || 0;
-      acc[gasto.categoria].total += isNaN(valor) ? 0 : valor;
-      acc[gasto.categoria].count += 1;
-      return acc;
-    }, {} as Record<string, { total: number; count: number }>);
-
-    const principal =
-      gastosArray.length > 0 && Object.keys(gastosPorCategoria).length > 0
-        ? Object.entries(gastosPorCategoria).reduce((a, b) =>
-            a[1].total > b[1].total ? a : b
-          )
-        : null;
-
-    // Calculate Daily Average
-    const now = new Date();
-    let daysPassed = 1;
-
-    if (
-      anoFilter < now.getFullYear() ||
-      (anoFilter === now.getFullYear() && mesFilter < now.getMonth() + 1)
-    ) {
-      // Past month: use total days in month
-      daysPassed = new Date(anoFilter, mesFilter, 0).getDate();
-    } else if (
-      anoFilter === now.getFullYear() &&
-      mesFilter === now.getMonth() + 1
-    ) {
-      // Current month: use current day
-      daysPassed = now.getDate();
-    } else {
-      // Future month: 1 (avoid division by zero, though no expenses should exist)
-      daysPassed = 1;
-    }
-
-    const media = total > 0 && daysPassed > 0 ? total / daysPassed : 0;
-    const topCatPercentage =
-      principal && total > 0 ? (principal[1].total / total) * 100 : 0;
-
-    return {
-      totalGasto: isNaN(total) ? 0 : total,
-      principalCategoriaData: principal
-        ? {
-            name: principal[0] || "-",
-            value: isNaN(principal[1].total) ? 0 : principal[1].total,
-            percentage: isNaN(topCatPercentage) ? 0 : topCatPercentage,
-          }
-        : null,
-      mediaDiaria: isNaN(media) ? 0 : media,
-    };
-  }, [gastos, mesFilter, anoFilter]);
-
-  // Use mock data ONLY if explicitly restricted and not loading
-  const displayData = useMemo(() => {
-    // Se ainda está carregando permissões, mostra "vazio" (esqueleto vai cobrir) ou real (se já tiver)
-    if (loadingActions)
-      return {
-        totalGasto: 0,
-        principalCategoriaData: null,
-        mediaDiaria: 0,
-        gastosFiltrados: [],
-      };
-
-    if (enabledPageActions) {
-      return {
-        totalGasto,
-        principalCategoriaData,
-        mediaDiaria,
-        gastosFiltrados,
-      };
-    }
-
-    // Se NÃO tem permissão, aí sim mostra mock
-    return {
-      totalGasto: MOCK_DATA_NO_ACCESS.totalGasto,
-      principalCategoriaData: MOCK_DATA_NO_ACCESS.principalCategoriaData,
-      mediaDiaria: MOCK_DATA_NO_ACCESS.mediaDiaria,
-      gastosFiltrados: MOCK_DATA_NO_ACCESS.gastos,
-    };
-  }, [
+  // Calculation Hook
+  const displayData = useGastosCalculations({
+    gastos,
+    mesFilter,
+    anoFilter,
+    searchTerm,
     enabledPageActions,
     loadingActions,
-    totalGasto,
-    principalCategoriaData,
-    mediaDiaria,
-    gastosFiltrados,
-  ]);
-
-  // Debug log removed
-  // console.log(displayData.gastosFiltrados);
+  });
 
   useEffect(() => {
     setPageTitle("Controle de Gastos");
@@ -459,11 +289,7 @@ export default function Gastos() {
                     )}
 
                     <GastosList
-                      gastos={
-                        enabledPageActions
-                          ? gastosFiltrados
-                          : MOCK_DATA_NO_ACCESS.gastos
-                      }
+                      gastos={displayData.gastosFiltrados}
                       onEdit={openDialog}
                       onDelete={handleDelete}
                       isRestricted={!enabledPageActions}
@@ -503,7 +329,7 @@ export default function Gastos() {
 
                 {enabledPageActions &&
                   !loading &&
-                  gastosFiltrados.length === 0 && (
+                  displayData.gastosFiltrados.length === 0 && (
                     <UnifiedEmptyState
                       icon={Wallet}
                       title="Nenhum gasto encontrado"
