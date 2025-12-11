@@ -416,15 +416,28 @@ export default function Passageiros() {
         const podeAtivar = restante > 0;
 
         if (!podeAtivar) {
-          setLimiteFranquiaDialog({
-            open: true,
-            franquiaContratada,
-            cobrancasEmUso,
-            // Reset custom props if needed, but for "limit reached" they are not used
-            title: undefined,
-            description: undefined,
-            hideLimitInfo: false,
-          });
+          // Se franquia contratada for 0, usa a mensagem de upgrade/primeira ativação
+          if (franquiaContratada === 0) {
+            setLimiteFranquiaDialog({
+              open: true,
+              franquiaContratada,
+              cobrancasEmUso,
+              title: "Cobrança Automática",
+              description:
+                "A Cobrança Automática envia as faturas e lembretes sozinhas. Automatize sua rotina com o Plano Completo.",
+              hideLimitInfo: true,
+            });
+          } else {
+            // Caso contrário, usa a lógica padrão de limite atingido
+            setLimiteFranquiaDialog({
+              open: true,
+              franquiaContratada,
+              cobrancasEmUso,
+              title: undefined,
+              description: undefined,
+              hideLimitInfo: false,
+            });
+          }
           setPendingActionPassageiro(passageiro);
           return;
         }

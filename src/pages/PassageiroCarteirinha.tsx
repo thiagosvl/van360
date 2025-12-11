@@ -1,10 +1,10 @@
 import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+    Suspense,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
 } from "react";
 
 // React Router
@@ -58,18 +58,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useAvailableYears,
-  useCobrancasByPassageiro,
-  useDeleteCobranca,
-  useDeletePassageiro,
-  useDesfazerPagamento,
-  useEnviarNotificacaoCobranca,
-  usePassageiro,
-  usePassageiros,
-  useToggleAtivoPassageiro,
-  useToggleNotificacoesCobranca,
-  useUpdateCobranca,
-  useUpdatePassageiro
+    useAvailableYears,
+    useCobrancasByPassageiro,
+    useDeleteCobranca,
+    useDeletePassageiro,
+    useDesfazerPagamento,
+    useEnviarNotificacaoCobranca,
+    usePassageiro,
+    usePassageiros,
+    useToggleAtivoPassageiro,
+    useToggleNotificacoesCobranca,
+    useUpdateCobranca,
+    useUpdatePassageiro
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -446,13 +446,24 @@ export default function PassageiroCarteirinha() {
     if (novoValor && canUseCobrancaAutomatica(plano)) {
       // Usar validação já calculada via hook
         if (!validacaoFranquiaGeral.podeAtivar) {
-          setLimiteFranquiaDialog({
-            open: true,
-            franquiaContratada: validacaoFranquiaGeral.franquiaContratada,
-            cobrancasEmUso: validacaoFranquiaGeral.cobrancasEmUso,
-            // Passar targetPassengerId para ativar automaticamente no backend após pagamento
-            targetPassengerId: passageiro_id, 
-          });
+          if (validacaoFranquiaGeral.franquiaContratada === 0) {
+             setLimiteFranquiaDialog({
+              open: true,
+              franquiaContratada: validacaoFranquiaGeral.franquiaContratada,
+              cobrancasEmUso: validacaoFranquiaGeral.cobrancasEmUso,
+              targetPassengerId: passageiro_id,
+              title: "Cobrança Automática",
+              description: "A Cobrança Automática envia as faturas e lembretes sozinhas. Automatize sua rotina com o Plano Completo.",
+              hideLimitInfo: true,
+            });
+          } else {
+            setLimiteFranquiaDialog({
+              open: true,
+              franquiaContratada: validacaoFranquiaGeral.franquiaContratada,
+              cobrancasEmUso: validacaoFranquiaGeral.cobrancasEmUso,
+              targetPassengerId: passageiro_id,
+            });
+          }
           return;
         }
     }

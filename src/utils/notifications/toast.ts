@@ -12,8 +12,8 @@
  * - toast.success('veiculo.sucesso.criado', { description: 'Descrição customizada' }) // título chave, descrição customizada
  */
 
-import { toast as sonnerToast } from "sonner";
 import { getMessage, type MessageKey } from "@/constants/messages";
+import { toast as sonnerToast } from "sonner";
 
 type ToastOptions = {
   description?: string;
@@ -53,6 +53,24 @@ function getToastDescription(description?: string): string | undefined {
   return getToastMessage(description);
 }
 
+// Helper to safely format options for sonner
+const formatOptions = (options?: ToastOptions) => {
+  if (!options) return undefined;
+  
+  return {
+    description: getToastDescription(options.description),
+    duration: options.duration,
+    action: options.action ? {
+      label: options.action.label,
+      onClick: options.action.onClick || (() => {}),
+    } : undefined,
+    cancel: options.cancel ? {
+      label: options.cancel.label,
+      onClick: options.cancel.onClick || (() => {}),
+    } : undefined,
+  };
+};
+
 /**
  * Sistema de toast padronizado
  */
@@ -61,48 +79,38 @@ export const toast = {
    * Exibe uma notificação de sucesso
    */
   success: (message: string, options?: ToastOptions) => {
-    return sonnerToast.success(getToastMessage(message), {
-      description: getToastDescription(options?.description),
-      duration: options?.duration,
-      action: options?.action,
-      cancel: options?.cancel,
-    });
+    sonnerToast.dismiss(); // Fecha anteriores
+    return sonnerToast.success(getToastMessage(message), formatOptions(options));
   },
 
   /**
    * Exibe uma notificação de erro
    */
   error: (message: string, options?: ToastOptions) => {
-    return sonnerToast.error(getToastMessage(message), {
-      description: getToastDescription(options?.description),
-      duration: options?.duration || 5000, // Erros ficam mais tempo por padrão
-      action: options?.action,
-      cancel: options?.cancel,
-    });
+    sonnerToast.dismiss(); // Fecha anteriores
+    // Erros ficam mais tempo por padrão se não especificado
+    const formatted = formatOptions(options);
+    if (!formatted?.duration) {
+      if (formatted) formatted.duration = 5000;
+      else return sonnerToast.error(getToastMessage(message), { duration: 5000 });
+    }
+    return sonnerToast.error(getToastMessage(message), formatted);
   },
 
   /**
    * Exibe uma notificação de informação
    */
   info: (message: string, options?: ToastOptions) => {
-    return sonnerToast.info(getToastMessage(message), {
-      description: getToastDescription(options?.description),
-      duration: options?.duration,
-      action: options?.action,
-      cancel: options?.cancel,
-    });
+    sonnerToast.dismiss(); // Fecha anteriores
+    return sonnerToast.info(getToastMessage(message), formatOptions(options));
   },
 
   /**
    * Exibe uma notificação de aviso
    */
   warning: (message: string, options?: ToastOptions) => {
-    return sonnerToast.warning(getToastMessage(message), {
-      description: getToastDescription(options?.description),
-      duration: options?.duration,
-      action: options?.action,
-      cancel: options?.cancel,
-    });
+    sonnerToast.dismiss(); // Fecha anteriores
+    return sonnerToast.warning(getToastMessage(message), formatOptions(options));
   },
 
   /**
@@ -131,8 +139,7 @@ export const toast = {
           : messages.error;
         return getToastMessage(message);
       },
-      ...options,
-      description: getToastDescription(options?.description),
+      ...formatOptions(options),
     });
   },
 

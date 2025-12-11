@@ -1,9 +1,9 @@
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -304,7 +304,7 @@ export default function LimiteFranquiaDialog({
                     onOpenChange(false);
                   }}
                 >
-                  Cancelar e voltar
+                  Agora não
                 </Button>
               </AlertDialogFooter>
           </div>

@@ -505,6 +505,7 @@ export default function PassengerFormDialog({
     targetPassengerId?: string;
     title?: string;
     description?: string;
+    hideLimitInfo?: boolean;
   }>({
     open: false,
     franquiaContratada: 0,
@@ -1365,17 +1366,26 @@ export default function PassengerFormDialog({
                                         checked &&
                                         !validacaoFranquia.podeAtivar
                                       ) {
-                                        setLimiteFranquiaDialog({
-                                          open: true,
-                                          franquiaContratada:
-                                            validacaoFranquia.franquiaContratada,
-                                          cobrancasEmUso:
-                                            validacaoFranquia.cobrancasEmUso,
-                                          targetPassengerId:
-                                            editingPassageiro?.id,
-                                          title: "Ativar Cobrança Automática",
-                                          description: "Para ativar esses recursos, contrate um plano para sua frota."
-                                        });
+                                        if (validacaoFranquia.franquiaContratada === 0) {
+                                          setLimiteFranquiaDialog({
+                                            open: true,
+                                            franquiaContratada: validacaoFranquia.franquiaContratada,
+                                            cobrancasEmUso: validacaoFranquia.cobrancasEmUso,
+                                            targetPassengerId: editingPassageiro?.id,
+                                            title: "Cobrança Automática",
+                                            description: "A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Completo.",
+                                            hideLimitInfo: true,
+                                          });
+                                        } else {
+                                          setLimiteFranquiaDialog({
+                                            open: true,
+                                            franquiaContratada: validacaoFranquia.franquiaContratada,
+                                            cobrancasEmUso: validacaoFranquia.cobrancasEmUso,
+                                            targetPassengerId: editingPassageiro?.id,
+                                            title: undefined, 
+                                            description: undefined,
+                                          });
+                                        }
                                         return;
                                       }
                                       field.onChange(checked);
@@ -1790,6 +1800,9 @@ export default function PassengerFormDialog({
           });
         }}
         targetPassengerId={limiteFranquiaDialog.targetPassengerId}
+        title={limiteFranquiaDialog.title}
+        description={limiteFranquiaDialog.description}
+        hideLimitInfo={limiteFranquiaDialog.hideLimitInfo}
       />
     </>
   );
