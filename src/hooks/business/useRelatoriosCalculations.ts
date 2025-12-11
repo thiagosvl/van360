@@ -1,0 +1,475 @@
+import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
+import { periodos as periodosConstants } from "@/utils/formatters/constants";
+import {
+    ClipboardCheck,
+    Cog,
+    FileText,
+    Fuel,
+    HelpCircle,
+    Wallet,
+    Wrench,
+} from "lucide-react";
+import { useMemo } from "react";
+
+// Types needed for the hook
+// (Assuming these types are inferred in the original file, we might need to define them or rely on inference)
+// For now, using 'any' for incoming data types if strict types aren't readily available, 
+// but maintaining the structure is key.
+
+export const CATEGORIA_ICONS: Record<
+  string,
+  { icon: any; color: string; bg: string }
+> = {
+  Combustível: { icon: Fuel, color: "text-orange-600", bg: "bg-orange-100" },
+  Manutenção: { icon: Wrench, color: "text-blue-600", bg: "bg-blue-100" },
+  Salário: { icon: Wallet, color: "text-green-600", bg: "bg-green-100" },
+  Vistorias: {
+    icon: ClipboardCheck,
+    color: "text-purple-600",
+    bg: "bg-purple-100",
+  },
+  Documentação: {
+    icon: FileText,
+    color: "text-yellow-600",
+    bg: "bg-yellow-100",
+  },
+  Administrativa: {
+    icon: Cog,
+    color: "text-purple-600",
+    bg: "bg-purple-100",
+  },
+  Outros: { icon: HelpCircle, color: "text-gray-600", bg: "bg-gray-100" },
+};
+
+export const FORMAS_PAGAMENTO_LABELS: Record<
+  string,
+  { label: string; color: string }
+> = {
+  pix: { label: "PIX", color: "bg-emerald-500" },
+  dinheiro: { label: "Dinheiro", color: "bg-green-500" },
+  "cartao-credito": { label: "Cartão de Crédito", color: "bg-orange-500" },
+  "cartao-debito": { label: "Cartão de Débito", color: "bg-yellow-500" },
+  transferencia: { label: "Transferência", color: "bg-blue-500" },
+  boleto: { label: "Boleto", color: "bg-purple-500" },
+};
+
+export const MOCK_DATA_NO_ACCESS = {
+  visaoGeral: {
+    lucroEstimado: 12500.0,
+    recebido: 25000.0,
+    gasto: 12500.0,
+    custoPorPassageiro: 150.0,
+    atrasos: {
+      valor: 1200.0,
+      passageiros: 4,
+    },
+    taxaRecebimento: 90.9,
+  },
+  entradas: {
+    previsto: 28000.0,
+    realizado: 25000.0,
+    ticketMedio: 350.0,
+    passageirosPagantes: 75,
+    passageirosPagos: 68,
+    formasPagamento: [
+      { metodo: "Pix", valor: 12000, percentual: 48, color: "bg-emerald-500" },
+      {
+        metodo: "Dinheiro",
+        valor: 5000,
+        percentual: 20,
+        color: "bg-green-500",
+      },
+      { metodo: "Cartão", valor: 8000, percentual: 32, color: "bg-teal-500" },
+    ],
+  },
+  saidas: {
+    total: 12500.0,
+    margemOperacional: 50.0,
+    mediaDiaria: 416.0,
+    diasContabilizados: 30,
+    custoPorPassageiro: 150.0,
+    topCategorias: [
+      {
+        nome: "Combustível",
+        valor: 4500,
+        count: 12,
+        icon: Fuel,
+        color: "text-orange-600",
+        bg: "bg-orange-100",
+      },
+      {
+        nome: "Manutenção",
+        valor: 2500,
+        count: 2,
+        icon: Wrench,
+        color: "text-blue-600",
+        bg: "bg-blue-100",
+      },
+      {
+        nome: "Outros",
+        valor: 5500,
+        count: 5,
+        icon: HelpCircle,
+        color: "text-gray-600",
+        bg: "bg-gray-100",
+      },
+    ],
+  },
+  operacional: {
+    passageirosCount: 5,
+    passageirosAtivosCount: 5,
+    escolas: [
+      { nome: "Colégio Objetivo", passageiros: 35, valor: 12250, percentual: 41 },
+      {
+        nome: "Escola Adventista",
+        passageiros: 25,
+        valor: 8750,
+        percentual: 29,
+      },
+      { nome: "Colégio Anglo", passageiros: 25, valor: 8750, percentual: 29 },
+    ],
+    periodos: [
+      { nome: "Manhã", passageiros: 45, valor: 15750, percentual: 53 },
+      { nome: "Tarde", passageiros: 40, valor: 14000, percentual: 47 },
+    ],
+    veiculos: [
+      {
+        placa: "ABC-1234",
+        passageiros: 45,
+        valor: 15750,
+        marca: "Mercedes",
+        modelo: "Sprinter",
+        percentual: 53,
+      },
+      {
+        placa: "XYZ-5678",
+        passageiros: 40,
+        valor: 14000,
+        marca: "Renault",
+        modelo: "Master",
+        percentual: 47,
+      },
+    ],
+  },
+  automacao: {
+    envios: 25,
+    limite: 50,
+    tempoEconomizado: "8h",
+  },
+};
+
+interface UseRelatoriosCalculationsProps {
+  hasAccess: boolean;
+  cobrancasData: any;
+  gastosData: any[];
+  passageirosData: any;
+  escolasData: any;
+  veiculosData: any;
+  profilePlano: any;
+  profile: any;
+}
+
+export const useRelatoriosCalculations = ({
+  hasAccess,
+  cobrancasData,
+  gastosData,
+  passageirosData,
+  escolasData,
+  veiculosData,
+  profilePlano,
+  profile,
+}: UseRelatoriosCalculationsProps) => {
+  const dadosReais = useMemo(() => {
+    if (!hasAccess || !cobrancasData || !gastosData || !passageirosData) {
+      return null;
+    }
+
+    if (escolasData === undefined || veiculosData === undefined) {
+      return null;
+    }
+
+    const cobrancas = cobrancasData.all || [];
+    const cobrancasPagas = cobrancasData.pagas || [];
+    const cobrancasAbertas = cobrancasData.abertas || [];
+
+    // Visão Geral
+    const recebido = cobrancasPagas.reduce(
+      (acc: number, c: any) => acc + Number(c.valor || 0),
+      0
+    );
+    const gasto = gastosData.reduce((acc: number, g: any) => acc + Number(g.valor || 0), 0);
+    const lucroEstimado = recebido - gasto;
+
+    // Atrasos (cobranças vencidas não pagas)
+    const hoje = new Date();
+    const atrasos = cobrancasAbertas.filter((c: any) => {
+      const vencimento = new Date(c.data_vencimento);
+      return vencimento < hoje;
+    });
+    const valorAtrasos = atrasos.reduce(
+      (acc: number, c: any) => acc + Number(c.valor || 0),
+      0
+    );
+
+    // Taxa de Recebimento
+    const totalPrevisto = cobrancas.reduce(
+      (acc: number, c: any) => acc + Number(c.valor || 0),
+      0
+    );
+    const taxaRecebimento =
+      totalPrevisto > 0 ? (recebido / totalPrevisto) * 100 : 0;
+
+    // Passageiros
+    const passageirosList = passageirosData?.list || [];
+    const passageirosCount = passageirosList.length;
+    const passageirosAtivosCount = passageirosList.filter((p: any) => p.ativo).length;
+
+    // Custo por Passageiro
+    const custoPorPassageiro =
+      passageirosAtivosCount > 0 ? gasto / passageirosAtivosCount : 0;
+
+    // Entradas
+    const passageirosPagantes = new Set(cobrancas.map((c: any) => c.passageiro_id))
+      .size;
+    const passageirosPagos = new Set(cobrancasPagas.map((c: any) => c.passageiro_id))
+      .size;
+    const ticketMedio = passageirosPagos > 0 ? recebido / passageirosPagos : 0;
+
+    // Formas de pagamento - usar apenas os tipos do constants.ts
+    const formasPagamentoMap: Record<string, { valor: number; count: number }> =
+      {};
+    cobrancasPagas.forEach((c: any) => {
+      const tipo = c.tipo_pagamento?.toLowerCase() || "";
+      // Validar se é um tipo válido do constants.ts
+      if (tipo) {
+        if (!formasPagamentoMap[tipo]) {
+          formasPagamentoMap[tipo] = { valor: 0, count: 0 };
+        }
+        formasPagamentoMap[tipo].valor += Number(c.valor || 0);
+        formasPagamentoMap[tipo].count += 1;
+      }
+    });
+
+    const formasPagamento = Object.entries(formasPagamentoMap)
+      .map(([tipo, dados]) => {
+        const labelData = FORMAS_PAGAMENTO_LABELS[tipo] || {
+          label: tipo,
+          color: "bg-gray-500",
+        };
+        return {
+          metodo: labelData.label,
+          valor: dados.valor,
+          percentual: recebido > 0 ? (dados.valor / recebido) * 100 : 0,
+          color: labelData.color,
+        };
+      })
+      .filter((f) => f.valor > 0)
+      .sort((a, b) => b.valor - a.valor);
+
+    // Saídas
+    const diasComGastos = new Set(
+      gastosData.map((g: any) => new Date(g.data).getDate())
+    ).size;
+    const mediaDiaria = diasComGastos > 0 ? gasto / diasComGastos : 0;
+    const margemOperacional =
+      recebido > 0 ? ((recebido - gasto) / recebido) * 100 : 0;
+
+    // Categorias de gastos - usar dados reais
+    const categoriasMap: Record<
+      string,
+      { valor: number; count: number; nome: string }
+    > = {};
+    gastosData.forEach((g: any) => {
+      const cat = g.categoria || "Outros";
+      if (!categoriasMap[cat]) {
+        categoriasMap[cat] = { valor: 0, count: 0, nome: cat };
+      }
+      categoriasMap[cat].valor += Number(g.valor || 0);
+      categoriasMap[cat].count += 1;
+    });
+
+    const topCategorias = Object.values(categoriasMap)
+      .sort((a, b) => b.valor - a.valor)
+      .map((cat) => {
+        const iconData = CATEGORIA_ICONS[cat.nome] || CATEGORIA_ICONS.Outros;
+        return {
+          nome: cat.nome,
+          valor: cat.valor,
+          count: cat.count,
+          icon: iconData.icon,
+          color: iconData.color,
+          bg: iconData.bg,
+        };
+      });
+
+    // Operacional
+    const escolasList = (escolasData as any)?.list || [];
+
+    const totalPassageirosPorEscola = escolasList.reduce(
+      (acc: number, e: any) => acc + (e.passageiros_ativos_count || 0),
+      0
+    );
+
+    const escolas = escolasList
+      .filter((e: any) => (e.passageiros_ativos_count || 0) > 0)
+      .map((e: any) => {
+        // Calcular valor financeiro da escola
+        const valor = passageirosList
+          .filter((p: any) => p.ativo && String(p.escola_id) === String(e.id))
+          .reduce((acc: number, p: any) => acc + Number(p.valor_cobranca || 0), 0);
+
+        return {
+          nome: e.nome,
+          passageiros: e.passageiros_ativos_count || 0,
+          valor,
+          percentual:
+            totalPassageirosPorEscola > 0
+              ? ((e.passageiros_ativos_count || 0) /
+                  totalPassageirosPorEscola) *
+                100
+              : 0,
+        };
+      })
+      .sort((a: any, b: any) => b.passageiros - a.passageiros)
+      .slice(0, 5);
+
+    const veiculosList = (veiculosData as any)?.list || [];
+
+    const totalPassageirosPorVeiculo = veiculosList.reduce(
+      (acc: number, v: any) => acc + (v.passageiros_ativos_count || 0),
+      0
+    );
+
+    const veiculos = veiculosList
+      .filter((v: any) => (v.passageiros_ativos_count || 0) > 0)
+      .map((v: any) => {
+        // Calcular valor financeiro do veículo
+        const valor = passageirosList
+          .filter((p: any) => p.ativo && String(p.veiculo_id) === String(v.id))
+          .reduce((acc: number, p: any) => acc + Number(p.valor_cobranca || 0), 0);
+
+        return {
+          placa: formatarPlacaExibicao(v.placa),
+          passageiros: v.passageiros_ativos_count || 0,
+          valor,
+          marca: v.marca,
+          modelo: v.modelo,
+          percentual:
+            totalPassageirosPorVeiculo > 0
+              ? ((v.passageiros_ativos_count || 0) /
+                  totalPassageirosPorVeiculo) *
+                100
+              : 0,
+        };
+      })
+      .sort((a: any, b: any) => b.passageiros - a.passageiros)
+      .slice(0, 5);
+
+    const periodosMap: Record<string, { count: number; valor: number }> = {};
+    passageirosList
+      .filter((p: any) => p.ativo)
+      .forEach((p: any) => {
+        const periodo = p.periodo || "Outros";
+        if (!periodosMap[periodo]) {
+          periodosMap[periodo] = { count: 0, valor: 0 };
+        }
+        periodosMap[periodo].count += 1;
+        periodosMap[periodo].valor += Number(p.valor_cobranca || 0);
+      });
+
+    const totalPorPeriodo = Object.values(periodosMap).reduce(
+      (acc, v) => acc + v.count,
+      0
+    );
+
+    const periodos = Object.entries(periodosMap)
+      .map(([value, data]) => {
+        const periodoData = periodosConstants.find((p) => p.value === value);
+        return {
+          nome: periodoData?.label || value,
+          passageiros: data.count,
+          valor: data.valor,
+          percentual:
+            totalPorPeriodo > 0 ? (data.count / totalPorPeriodo) * 100 : 0,
+        };
+      })
+      .sort((a, b) => b.passageiros - a.passageiros);
+
+    // Automação (cobranças automáticas)
+    const passageirosComAutomatica = passageirosList.filter(
+      (p: any) => p.enviar_cobranca_automatica && p.ativo
+    ).length;
+    const assinatura = profile?.assinaturas_usuarios?.[0];
+    const limiteAutomatica =
+      assinatura?.franquia_contratada_cobrancas ||
+      profilePlano?.planoCompleto?.franquia_contratada_cobrancas ||
+      50;
+
+    return {
+      visaoGeral: {
+        lucroEstimado,
+        recebido,
+        gasto,
+        custoPorPassageiro,
+        atrasos: {
+          valor: valorAtrasos,
+          passageiros: atrasos.length,
+        },
+        taxaRecebimento,
+      },
+      entradas: {
+        previsto: totalPrevisto,
+        realizado: recebido,
+        ticketMedio,
+        passageirosPagantes,
+        passageirosPagos,
+        formasPagamento,
+      },
+      saidas: {
+        total: gasto,
+        margemOperacional,
+        mediaDiaria,
+        diasContabilizados: diasComGastos,
+        custoPorPassageiro,
+        topCategorias,
+      },
+      operacional: {
+        passageirosCount,
+        passageirosAtivosCount,
+        escolas,
+        periodos,
+        veiculos,
+      },
+      automacao: {
+        envios: passageirosComAutomatica,
+        limite: limiteAutomatica,
+        tempoEconomizado: `${Math.round(passageirosComAutomatica * 0.08)}h`,
+      },
+    };
+  }, [
+    hasAccess,
+    cobrancasData,
+    gastosData,
+    passageirosData,
+    escolasData,
+    veiculosData,
+    profilePlano,
+    profile, // Added profile for assinatura access
+  ]);
+
+  const realPassageirosCount = passageirosData?.list?.length || 0;
+
+  const dados = useMemo(() => {
+    if (hasAccess && dadosReais) return dadosReais;
+
+    return {
+      ...MOCK_DATA_NO_ACCESS,
+      operacional: {
+        ...MOCK_DATA_NO_ACCESS.operacional,
+        passageirosCount: realPassageirosCount,
+      },
+    };
+  }, [hasAccess, dadosReais, realPassageirosCount]);
+
+  return dados;
+};
