@@ -1,61 +1,27 @@
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useEffect, useState, useMemo } from "react";
+import { cn } from "@/lib/utils";
+import { ArrowRight, Bus, CheckCircle2, Lock as LockIcon, School, Trophy, User } from "lucide-react";
+import { useMemo } from "react";
 
-import { Form, FormLabel } from "@/components/ui/form";
-import { Progress } from "@/components/ui/progress";
-import { STORAGE_KEY_QUICKSTART_STATUS } from "@/constants";
+// Hooks
+import { useEscolas } from "@/hooks/api/useEscolas";
+import { usePassageiros } from "@/hooks/api/usePassageiros";
+import { useVeiculos } from "@/hooks/api/useVeiculos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { useEscolas } from "@/hooks/api/useEscolas";
-import { useVeiculos } from "@/hooks/api/useVeiculos";
-import { usePassageiros } from "@/hooks/api/usePassageiros";
-import { ChevronRight } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { NavLink } from "react-router-dom";
-import { z } from "zod";
 
-const QUICK_START_STEPS = [
-  {
-    id: 1,
-    title: "Cadastrar a primeira escola",
-    href: "/escolas?openModal=true",
-  },
-  {
-    id: 2,
-    title: "Cadastrar o primeiro veículo",
-    href: "/veiculos?openModal=true",
-  },
-  {
-    id: 3,
-    title: "Cadastrar o primeiro passageiro",
-    href: "/passageiros?openModal=true",
-  },
-];
+interface QuickStartCardProps {
+  onOpenVeiculoDialog: () => void;
+  onOpenEscolaDialog: () => void;
+  onOpenPassageiroDialog: () => void;
+}
 
-const quickStartSchema = z.object({
-  stepsStatus: z.record(z.string(), z.boolean()).default({
-    step_1: false,
-    step_2: false,
-    step_3: false,
-    step_4: false,
-  }),
-});
-
-type QuickStartFormValues = z.infer<typeof quickStartSchema>;
-
-const defaultValues = {
-  stepsStatus: QUICK_START_STEPS.reduce((acc, step) => {
-    acc[`step_${step.id}`] = false;
-    return acc;
-  }, {} as Record<string, boolean>),
-};
-
-export const QuickStartCard = () => {
-  const form = useForm<QuickStartFormValues>({
-    defaultValues: defaultValues,
-  });
-
+export const QuickStartCard = ({
+  onOpenVeiculoDialog,
+  onOpenEscolaDialog,
+  onOpenPassageiroDialog,
+}: QuickStartCardProps) => {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
 
@@ -85,100 +51,139 @@ export const QuickStartCard = () => {
 
   const loading = isEscolasLoading || isVeiculosLoading || isPassageirosLoading;
 
-  const stepsStatus = useMemo(() => {
-    const escolasCount = (escolasData as { total?: number } | undefined)?.total ?? 0;
-    const veiculosCount = (veiculosData as { total?: number } | undefined)?.total ?? 0;
-    const passageirosCount = (passageirosData as { total?: number } | undefined)?.total ?? 0;
+  const escolasCount = (escolasData as { total?: number } | undefined)?.total ?? 0;
+  const veiculosCount = (veiculosData as { total?: number } | undefined)?.total ?? 0;
+  const passageirosCount = (passageirosData as { total?: number } | undefined)?.total ?? 0;
 
-    return {
-      step_escolas: escolasCount > 0,
-      step_veiculos: veiculosCount > 0,
-      step_passageiros: passageirosCount > 0,
-    };
-  }, [escolasData?.total, veiculosData?.total, passageirosData?.total]);
+  const steps = useMemo(() => [
+    {
+      id: 1,
+      done: veiculosCount > 0,
+      label: "Cadastrar um Veículo",
+      onAction: onOpenVeiculoDialog,
+      icon: Bus,
+      buttonText: "Cadastrar",
+    },
+    {
+      id: 2,
+      done: escolasCount > 0,
+      label: "Cadastrar uma Escola",
+      onAction: onOpenEscolaDialog,
+      icon: School,
+      buttonText: "Cadastrar",
+    },
+    {
+      id: 3,
+      done: passageirosCount > 0,
+      label: "Cadastrar Primeiro Passageiro",
+      onAction: onOpenPassageiroDialog,
+      icon: User,
+      buttonText: "Cadastrar",
+    },
+  ], [veiculosCount, escolasCount, passageirosCount, onOpenVeiculoDialog, onOpenEscolaDialog, onOpenPassageiroDialog]);
 
-  const showing = useMemo(() => {
-    return !Object.values(stepsStatus).every(Boolean);
-  }, [stepsStatus]);
-
-  useEffect(() => {
-    if (!loading && profile?.id) {
-      const storageKey = STORAGE_KEY_QUICKSTART_STATUS;
-      localStorage.setItem(storageKey, JSON.stringify(stepsStatus));
-    }
-  }, [stepsStatus, loading, profile?.id]);
-
-  const completedSteps = Object.values(stepsStatus).filter(Boolean).length;
-  const totalSteps = QUICK_START_STEPS.length;
-  const progressValue = (completedSteps / totalSteps) * 100;
-
-  const formSteps = QUICK_START_STEPS.map((step) => ({
-    ...step,
-    formKey: `stepsStatus.step_${step.id}`,
-  }));
+  const completedSteps = steps.filter((step) => step.done).length;
+  const totalSteps = steps.length;
+  // Use a slight buffer for completed state if needed, or strict done check
+  const isComplete = completedSteps === totalSteps;
 
   if (loading) return null;
+  if (isComplete) return null; // Or return a "Success" card version
 
-  return showing ? (
-    <Card>
-      <CardContent className="p-4 sm:p-6">
-        <h2 className="text-xl font-semibold mb-2">Primeiros Passos</h2>
-        <p className="text-sm text-muted-foreground mb-4">
-          Concluído {completedSteps} de {totalSteps}
-        </p>
-
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-bold">Progresso</h3>
-          <p className="text-sm font-semibold text-primary">
-            {completedSteps} / {totalSteps}
-          </p>
+  return (
+    <Card className="border shadow-sm rounded-2xl overflow-hidden bg-white border-indigo-100">
+      <CardContent className="p-4 md:p-5">
+        
+        {/* Header */}
+        <div className="flex items-start gap-4 mb-4">
+          <div className="h-10 w-10 rounded-full flex items-center justify-center shrink-0 bg-indigo-50 text-indigo-600">
+             <Trophy className="h-5 w-5" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-lg leading-tight text-gray-900">
+              Primeiros Passos
+            </h3>
+            <p className="text-sm mt-1 mb-3 text-gray-500">
+              Complete as etapas para configurar sua van.
+            </p>
+          </div>
         </div>
 
-        <Progress value={progressValue} className="h-2 mb-6" />
+        {/* Steps List */}
+        <div className="space-y-3 md:ml-14">
+            {steps.map((step, index) => {
+                const isDone = step.done;
+                // If it's the first undone step, it's the "current" one.
+                // Or: allow any order? Home uses sequential logic mostly for highlighting.
+                // Let's copy Home logic: "isCurrent" if previous are done.
+                const previousStepsDone = steps.slice(0, index).every((s) => s.done);
+                const isCurrent = !isDone && previousStepsDone;
+                const StepIcon = step.icon;
 
-        <Form {...form}>
-          <form className="space-y-4">
-            {formSteps.map((step) => (
-              <div
-                key={step.id}
-                className="flex items-center justify-between py-2 border-b last:border-b-0 transition-colors rounded-sm"
-              >
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    checked={
-                      (step.id === 1 && stepsStatus.step_escolas) ||
-                      (step.id === 2 && stepsStatus.step_veiculos) ||
-                      (step.id === 3 && stepsStatus.step_passageiros)
-                    }
-                    disabled
-                    className="h-5 w-5 rounded focus:ring-primary shrink-0 cursor-default opacity-80"
-                  />
-
-                  <NavLink to={step.href}>
-                    <FormLabel
-                      className={`text-base font-semibold transition-colors cursor-pointer leading-snug ${
-                        (step.id === 1 && stepsStatus.step_escolas) ||
-                        (step.id === 2 && stepsStatus.step_veiculos) ||
-                        (step.id === 3 && stepsStatus.step_passageiros)
-                          ? "text-gray-500 line-through"
-                          : "text-foreground"
-                      }`}
+                return (
+                <div
+                    key={step.id}
+                    className={cn(
+                    "flex items-center justify-between p-3 rounded-xl border transition-all duration-300",
+                    isCurrent
+                        ? "bg-indigo-50/50 border-indigo-200 shadow-sm scale-[1.02]"
+                        : "bg-white border-gray-100",
+                    isDone && "bg-gray-50 border-gray-100 opacity-70"
+                    )}
+                >
+                    <div className="flex items-center gap-3">
+                    <div
+                        className={cn(
+                        "h-8 w-8 rounded-full flex items-center justify-center shrink-0 transition-colors",
+                        isDone
+                            ? "bg-green-100 text-green-600"
+                            : isCurrent
+                            ? "bg-purple-100 text-purple-600 border border-purple-200"
+                            : "bg-gray-100 text-gray-400"
+                        )}
                     >
-                      <span title={step.title}>{step.title}</span>
-                    </FormLabel>
-                  </NavLink>
+                        {isDone ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                        ) : (
+                        <StepIcon className="h-4 w-4" />
+                        )}
+                    </div>
+                    <span
+                        className={cn(
+                        "text-sm font-medium",
+                        isDone
+                            ? "text-gray-400 line-through"
+                            : isCurrent
+                            ? "text-indigo-900 font-bold"
+                            : "text-gray-400"
+                        )}
+                    >
+                        {step.label}
+                    </span>
+                    </div>
+
+                    {isCurrent && (
+                    <Button
+                        size="sm"
+                        onClick={step.onAction}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white h-8 px-3 rounded-lg text-xs font-bold shadow-indigo-200/50 shadow-lg"
+                    >
+                        {step.buttonText}
+                        <ArrowRight className="ml-1 h-3 w-3" />
+                    </Button>
+                    )}
                 </div>
+                );
+            })}
 
-                <NavLink to={step.href}>
-                  <ChevronRight className="h-5 w-5 text-primary hover:text-primary/80 transition-colors" />
-                </NavLink>
-              </div>
-            ))}
-
-            <button type="submit" className="hidden" />
-          </form>
-        </Form>
+            <div className="flex items-center gap-2 justify-center pt-2 opacity-60">
+                <LockIcon className="h-3 w-3 text-gray-400" />
+                <p className="text-[10px] text-gray-500 font-medium text-center">
+                Complete as etapas para organizar seu painel.
+                </p>
+            </div>
+        </div>
       </CardContent>
     </Card>
-  ) : null;
+  );
 };
