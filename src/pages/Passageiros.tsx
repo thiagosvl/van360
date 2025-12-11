@@ -1,11 +1,11 @@
+// Imports updated
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import { DialogExcessoFranquia } from "@/components/dialogs/DialogExcessoFranquia";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
-import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
-import { EmptyState } from "@/components/empty";
+import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PassageirosList } from "@/components/features/passageiro/PassageirosList";
 import { PassageirosToolbar } from "@/components/features/passageiro/PassageirosToolbar";
 import { PassengerLimitHealthBar } from "@/components/features/passageiro/PassengerLimitHealthBar";
@@ -126,6 +126,7 @@ export default function Passageiros() {
     createPassageiro.isPending ||
     updatePassageiro.isPending ||
     deletePassageiro.isPending ||
+    deletePassageiro.isPending ||
     toggleAtivoPassageiro.isPending;
 
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -141,12 +142,15 @@ export default function Passageiros() {
     open: boolean;
     franquiaContratada: number;
     cobrancasEmUso: number;
+    title?: string;
+    description?: string;
+    hideLimitInfo?: boolean;
   }>({
     open: false,
     franquiaContratada: 0,
     cobrancasEmUso: 0,
   });
-  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
+  
   const [dialogExcessoFranquia, setDialogExcessoFranquia] = useState<{
     open: boolean;
     limiteAtual: number;
@@ -158,6 +162,24 @@ export default function Passageiros() {
     limiteApos: 0,
     passageiro: null,
   });
+  const [pendingActionPassageiro, setPendingActionPassageiro] = useState<Passageiro | null>(null);
+
+  const { validacao: validacaoFranquiaGeral } = useValidarFranquia(
+    user?.id,
+    undefined,
+    profile
+  );
+
+  const handleOpenUpgradeDialog = useCallback(() => {
+    setLimiteFranquiaDialog({
+      open: true,
+      franquiaContratada: validacaoFranquiaGeral.franquiaContratada,
+      cobrancasEmUso: validacaoFranquiaGeral.cobrancasEmUso,
+      title: "Cobrança Automática",
+      description: "A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Completo.",
+      hideLimitInfo: true,
+    });
+  }, [validacaoFranquiaGeral]);
 
   const passageiroFilters = {
     usuarioId: profile?.id,
@@ -318,12 +340,6 @@ export default function Passageiros() {
     setConfirmToggleDialog({ open: true, passageiro, action });
   }, []);
 
-  const { validacao: validacaoFranquiaGeral } = useValidarFranquia(
-    user?.id,
-    undefined,
-    profile
-  );
-
   const handleToggleConfirm = useCallback(async () => {
     const p = confirmToggleDialog.passageiro;
     if (!p) return;
@@ -385,7 +401,12 @@ export default function Passageiros() {
             open: true,
             franquiaContratada,
             cobrancasEmUso,
+            // Reset custom props if needed, but for "limit reached" they are not used
+            title: undefined,
+            description: undefined,
+            hideLimitInfo: false,
           });
+          setPendingActionPassageiro(passageiro);
           return;
         }
       }
@@ -402,6 +423,13 @@ export default function Passageiros() {
       validacaoFranquiaGeral,
     ]
   );
+
+  const handleUpgradeSuccess = useCallback(() => {
+    // Backend activates passenger via webhook (using targetPassengerId passed to dialog).
+    // Just refresh the list to reflect status.
+    refetchPassageiros();
+    setPendingActionPassageiro(null);
+  }, [refetchPassageiros]);
 
   const handleEdit = useCallback((passageiro: Passageiro) => {
     safeCloseDialog(() => {
@@ -627,9 +655,22 @@ export default function Passageiros() {
                   {isPassageirosLoading ? (
                     <ListSkeleton count={5} />
                   ) : passageiros.length === 0 ? (
-                    <EmptyState
+                    <UnifiedEmptyState
                       icon={Users2}
-                      description="Nenhum passageiro encontrado."
+                      title="Nenhum passageiro encontrado"
+                      description={
+                        searchTerm.length > 0
+                          ? "Não encontramos passageiros com os filtros selecionados."
+                          : "Comece cadastrando seu primeiro passageiro para gerenciar o transporte."
+                      }
+                      action={
+                        searchTerm.length === 0
+                          ? {
+                              label: "Cadastrar Passageiro",
+                              onClick: handleOpenNewDialog,
+                            }
+                          : undefined
+                      }
                     />
                   ) : (
                     <PassageirosList
@@ -644,7 +685,7 @@ export default function Passageiros() {
                       onSetDeleteDialog={(id) =>
                         setDeleteDialog({ open: true, passageiroId: id })
                       }
-                      onOpenUpgradeDialog={() => setIsUpgradeDialogOpen(true)}
+                      onOpenUpgradeDialog={handleOpenUpgradeDialog}
                     />
                   )}
                 </CardContent>
@@ -695,7 +736,7 @@ export default function Passageiros() {
             title="Excluir Passageiro"
             description="Deseja excluir permanentemente este passageiro? Essa ação não pode ser desfeita."
             onConfirm={handleDelete}
-            confirmText="Excluir"
+            confirmText="Excluir Passageiro"
             variant="destructive"
             isLoading={deletePassageiro.isPending}
           />
@@ -737,6 +778,21 @@ export default function Passageiros() {
             }
             franquiaContratada={limiteFranquiaDialog.franquiaContratada}
             cobrancasEmUso={limiteFranquiaDialog.cobrancasEmUso}
+            usuarioId={profile?.id}
+            totalPassageiros={countPassageiros || 0}
+            onUpgradeSuccess={handleUpgradeSuccess}
+            dataVencimento={
+              profile?.assinaturas_usuarios?.[0]?.vigencia_fim ??
+              profile?.assinaturas_usuarios?.[0]?.anchor_date
+            }
+            valorAtualMensal={
+              profile?.assinaturas_usuarios?.[0]?.preco_aplicado ??
+              profile?.assinaturas_usuarios?.[0]?.planos?.preco
+            }
+            targetPassengerId={pendingActionPassageiro?.id}
+            title={limiteFranquiaDialog.title}
+            description={limiteFranquiaDialog.description}
+            hideLimitInfo={limiteFranquiaDialog.hideLimitInfo}
           />
 
           <DialogExcessoFranquia
@@ -754,9 +810,12 @@ export default function Passageiros() {
             onContinuarSemAtivar={() => {
               setDialogExcessoFranquia((prev) => ({ ...prev, open: false }));
               if (dialogExcessoFranquia.passageiro) {
-                toggleAtivoPassageiro.mutate({
+                updatePassageiro.mutate({
                   id: dialogExcessoFranquia.passageiro.id,
-                  novoStatus: !dialogExcessoFranquia.passageiro.ativo,
+                  data: {
+                    ativo: true,
+                    enviar_cobranca_automatica: false
+                  }
                 });
               }
             }}
@@ -764,15 +823,6 @@ export default function Passageiros() {
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Processando..." />
-      
-      {/* Dialog de Upgrade para Cobrança Automática */}
-      <UpgradePlanDialog
-        open={isUpgradeDialogOpen}
-        onOpenChange={setIsUpgradeDialogOpen}
-        featureName="Cobrança Automática"
-        description="A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Completo."
-        redirectTo="/planos?slug=completo"
-      />
     </>
   );
 }

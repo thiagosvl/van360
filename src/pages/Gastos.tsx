@@ -7,6 +7,7 @@ import { toast } from "@/utils/notifications/toast";
 // Components - Alerts
 
 // Components - UI
+import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -48,10 +49,10 @@ import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 // Icons
 import {
   CalendarIcon,
-  FileText,
   Lock,
   TrendingDown,
   TrendingUp,
+  Wallet
 } from "lucide-react";
 
 const MOCK_DATA_NO_ACCESS = {
@@ -68,7 +69,7 @@ const MOCK_DATA_NO_ACCESS = {
       categoria: "Combustível",
       descricao: "Abastecimento Semanal",
       valor: 450.0,
-      data: "2024-03-10",
+      data: null,
       created_at: "2024-03-10T10:00:00.000Z",
       usuario_id: "mock",
     },
@@ -77,7 +78,7 @@ const MOCK_DATA_NO_ACCESS = {
       categoria: "Manutenção",
       descricao: "Troca de Óleo",
       valor: 250.0,
-      data: "2024-03-12",
+      data: null,
       created_at: "2024-03-12T14:30:00.000Z",
       usuario_id: "mock",
     },
@@ -86,7 +87,7 @@ const MOCK_DATA_NO_ACCESS = {
       categoria: "Salário",
       descricao: "Adiantamento Motorista",
       valor: 1200.0,
-      data: "2024-03-15",
+      data: null,
       created_at: "2024-03-15T09:00:00.000Z",
       usuario_id: "mock",
     },
@@ -95,7 +96,7 @@ const MOCK_DATA_NO_ACCESS = {
       categoria: "Vistorias",
       descricao: "Vistoria Semestral",
       valor: 150.0,
-      data: "2024-03-18",
+      data: null,
       created_at: "2024-03-18T11:00:00.000Z",
       usuario_id: "mock",
     },
@@ -104,7 +105,7 @@ const MOCK_DATA_NO_ACCESS = {
       categoria: "Documentação",
       descricao: "Licenciamento Anual",
       valor: 350.0,
-      data: "2024-03-20",
+      data: null,
       created_at: "2024-03-20T16:00:00.000Z",
       usuario_id: "mock",
     },
@@ -147,7 +148,7 @@ export default function Gastos() {
   useEffect(() => {
     if (!profile?.id) return;
 
-    const canAccess = enablePageActions("/gastos", plano);
+    const canAccess = !enablePageActions("/gastos", plano);
 
     setEnabledPageActions(canAccess);
   }, [profile?.id, plano]);
@@ -470,14 +471,23 @@ export default function Gastos() {
                 {enabledPageActions &&
                   !loading &&
                   gastosFiltrados.length === 0 && (
-                    <div className="flex flex-col items-center justify-center text-center py-12 text-muted-foreground bg-white rounded-2xl border border-dashed border-gray-200">
-                      <FileText className="w-12 h-12 mb-4 text-gray-300" />
-                      <p>
-                        {searchTerm
+                    <UnifiedEmptyState
+                      icon={Wallet}
+                      title="Nenhum gasto encontrado"
+                      description={
+                        searchTerm
                           ? `Nenhum gasto encontrado para "${searchTerm}"`
-                          : "Nenhum gasto registrado no mês indicado"}
-                      </p>
-                    </div>
+                          : "Nenhum gasto registrado no mês indicado."
+                      }
+                      action={
+                        !searchTerm
+                          ? {
+                              label: "Registrar Gasto",
+                              onClick: () => openDialog(),
+                            }
+                          : undefined
+                      }
+                    />
                   )}
               </CardContent>
             </Card>

@@ -7,11 +7,11 @@ import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 
 // Components - Features
+import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { EscolasList } from "@/components/features/escola/EscolasList";
 import { EscolasToolbar } from "@/components/features/escola/EscolasToolbar";
 
 // Components - Empty & Skeletons
-import { EmptyState } from "@/components/empty";
 import { ListSkeleton } from "@/components/skeletons";
 
 // Components - Navigation
@@ -24,10 +24,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useDeleteEscola,
-    useEscolas,
-    useFilters,
-    useToggleAtivoEscola,
+  useDeleteEscola,
+  useEscolas,
+  useFilters,
+  useToggleAtivoEscola,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -40,7 +40,7 @@ import { toast } from "@/utils/notifications/toast";
 import { Escola } from "@/types/escola";
 
 // Icons
-import { School } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 
 export default function Escolas() {
   const { setPageTitle } = useLayout();
@@ -231,12 +231,21 @@ export default function Escolas() {
               {isEscolasLoading ? (
                 <ListSkeleton />
               ) : escolasFiltradas.length === 0 ? (
-                <EmptyState
-                  icon={School}
+                <UnifiedEmptyState
+                  icon={GraduationCap}
+                  title="Nenhuma escola encontrada"
                   description={
                     searchTerm
                       ? `Nenhuma escola encontrada para "${searchTerm}"`
-                      : "Nenhuma escola encontrada"
+                      : "Cadastre as escolas que você atende para organizar seus passageiros."
+                  }
+                  action={
+                    !searchTerm
+                      ? {
+                          label: "Cadastrar Escola",
+                          onClick: () => setIsDialogOpen(true),
+                        }
+                      : undefined
                   }
                 />
               ) : (

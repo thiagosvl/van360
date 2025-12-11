@@ -14,16 +14,17 @@ export const planoApi = {
     /**
      * Calcula o preço preview para quantidade personalizada do Plano Completo
      * @param quantidade - Quantidade de cobranças desejada
+     * @param ignorarMinimo - Se true, ignora o mínimo do plano e calcula proporcional
      * @returns Objeto com preco, valorPorCobranca ou null se a quantidade for inválida
      */
-    calcularPrecoPreview: async (quantidade: number): Promise<{
+    calcularPrecoPreview: async (quantidade: number, ignorarMinimo: boolean = false): Promise<{
         preco: number;
         valorPorCobranca: number;
     } | null> => {
         try {
             const response = await apiClient.post(
                 `/planos/calcular-preco-preview`,
-                { quantidade }
+                { quantidade, ignorarMinimo }
             );
             // Se preco for null, retorna null (quantidade inválida)
             if (response.data.preco === null) {

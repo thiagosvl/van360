@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogTitle
 } from "@/components/ui/dialog";
 import {
@@ -165,8 +166,8 @@ export default function VeiculoFormDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className="w-[90vw] sm:w-full sm:max-w-md max-h-[95vh] gap-0 flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
-        onOpenAutoFocus={(e) => e.preventDefault()}
         hideCloseButton
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
@@ -180,6 +181,9 @@ export default function VeiculoFormDialog({
           <DialogTitle className="text-xl font-bold text-white">
             {editingVeiculo ? "Editar Veículo" : "Cadastrar Veículo"}
           </DialogTitle>
+          <DialogDescription className="text-blue-100/80 text-sm mt-1">
+            {editingVeiculo ? "Atualize as informações do veículo." : "Insira os dados do novo veículo."}
+          </DialogDescription>
         </div>
 
         <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">

@@ -14,6 +14,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
@@ -40,6 +41,7 @@ import {
   useCreatePassageiro,
   useEscolasWithFilters,
   useFinalizePreCadastro,
+  usePassageiros,
   useUpdatePassageiro,
   useValidarFranquia,
   useVeiculosWithFilters,
@@ -311,7 +313,12 @@ export default function PassengerFormDialog({
   const escolasModal = (escolasData as Escola[]) || [];
   const veiculosModal = (veiculosData as Veiculo[]) || [];
 
-
+  // Buscar todos os passageiros para saber o total (necessário para o cálculo do upgrade "Cobrir Todos")
+  const { data: allPassageirosData } = usePassageiros(
+    { usuarioId: profile?.id },
+    { enabled: !!profile?.id && isOpen }
+  );
+  const totalPassageiros = allPassageirosData?.total || 0;
 
   const createPassageiro = useCreatePassageiro();
   const updatePassageiro = useUpdatePassageiro();
@@ -325,7 +332,7 @@ export default function PassengerFormDialog({
   const { validacao: validacaoFranquia } = useValidarFranquia(
     user?.id,
     editingPassageiro?.id,
-    profile
+    undefined // Forçar uso do hook interno para garantir dados frescos do cache global
   );
 
   const loading =
@@ -370,6 +377,8 @@ export default function PassengerFormDialog({
     },
   });
 
+  const veiculoIdWatched = form.watch("veiculo_id");
+
   // Selecionar veículo automaticamente se houver apenas 1 (para create ou finalize)
   useEffect(() => {
     if (
@@ -381,14 +390,22 @@ export default function PassengerFormDialog({
     ) {
       const veiculoUnico = veiculosModal[0];
       const veiculoAtual = form.getValues("veiculo_id");
-      
+
       // Só define se ainda não estiver definido
       if (!veiculoAtual) {
         form.setValue("veiculo_id", veiculoUnico.id, { shouldValidate: true });
         setSelectedVeiculo(veiculoUnico.id);
       }
     }
-  }, [isOpen, mode, isLoadingVeiculos, veiculosModal, form, refreshing]);
+  }, [
+    isOpen,
+    mode,
+    isLoadingVeiculos,
+    veiculosModal,
+    form,
+    refreshing,
+    veiculoIdWatched,
+  ]);
 
   // Aguardar que os dados estejam disponíveis e preencher os campos de escola e veículo
   // Este useEffect garante que os campos sejam preenchidos quando os dados estiverem disponíveis
@@ -485,6 +502,9 @@ export default function PassengerFormDialog({
     open: boolean;
     franquiaContratada: number;
     cobrancasEmUso: number;
+    targetPassengerId?: string;
+    title?: string;
+    description?: string;
   }>({
     open: false,
     franquiaContratada: 0,
@@ -674,7 +694,7 @@ export default function PassengerFormDialog({
             dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
             emitir_cobranca_mes_atual: false,
             ativo: true,
-            enviar_cobranca_automatica: canUseCobrancaAutomatica(plano),
+            enviar_cobranca_automatica: canUseCobrancaAutomatica(plano as any) && validacaoFranquia.podeAtivar,
           });
 
           form.trigger([
@@ -726,7 +746,7 @@ export default function PassengerFormDialog({
             dia_vencimento: "",
             emitir_cobranca_mes_atual: false,
             ativo: true,
-            enviar_cobranca_automatica: canUseCobrancaAutomatica(plano),
+            enviar_cobranca_automatica: canUseCobrancaAutomatica(plano as any) && validacaoFranquia.podeAtivar,
           });
         }
       } catch (error: any) {
@@ -776,11 +796,6 @@ export default function PassengerFormDialog({
     }
   };
 
-  const handleCpfBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
-    const cpf = e.target.value.replace(/\D/g, "");
-    handleSearchResponsavel(cpf);
-  };
-
   // Monitorar mudanças no CPF para busca automática
   const cpfResponsavelValue = form.watch("cpf_responsavel");
   useEffect(() => {
@@ -803,7 +818,7 @@ export default function PassengerFormDialog({
     if (
       novoValorEnviarCobranca &&
       !valorAtualEnviarCobranca &&
-      canUseCobrancaAutomatica(plano)
+      canUseCobrancaAutomatica(plano as any)
     ) {
       // Usar validação já calculada via hook
       if (!validacaoFranquia.podeAtivar) {
@@ -888,12 +903,19 @@ export default function PassengerFormDialog({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            // Prevent closing if the upgrade dialog is active
+            if (limiteFranquiaDialog.open) return;
+            onClose();
+          }
+        }}
+      >
         <DialogContent
           className="w-[90vw] sm:w-full sm:max-w-2xl max-h-[95vh] gap-0 flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
-          onOpenAutoFocus={(e) => e.preventDefault()}
           hideCloseButton
-          aria-describedby="dialog-description"
         >
           <div className="bg-blue-600 p-4 text-center relative shrink-0">
             <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
@@ -911,6 +933,13 @@ export default function PassengerFormDialog({
                 ? "Editar Passageiro"
                 : "Cadastrar Passageiro"}
             </DialogTitle>
+            <DialogDescription className="text-blue-100/80 text-sm mt-1">
+              {mode === "finalize"
+                ? "Confirme os dados para enviar a solicitação."
+                : editingPassageiro
+                ? "Atualize as informações do passageiro."
+                : "Preencha os dados do novo passageiro."}
+            </DialogDescription>
           </div>
 
           <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
@@ -919,7 +948,6 @@ export default function PassengerFormDialog({
                 onSubmit={form.handleSubmit(handleSubmit, onFormError)}
                 className="space-y-6"
               >
-
                 <Accordion
                   type="multiple"
                   value={openAccordionItems}
@@ -1085,7 +1113,7 @@ export default function PassengerFormDialog({
                               </FormLabel>
                               <Select
                                 onValueChange={field.onChange}
-                                value={field.value || undefined}
+                                value={field.value}
                               >
                                 <FormControl>
                                   <div className="relative">
@@ -1174,10 +1202,6 @@ export default function PassengerFormDialog({
                                     placeholder="000.000.000-00"
                                     onChange={(e) => {
                                       field.onChange(cpfMask(e.target.value));
-                                    }}
-                                    onBlur={(e) => {
-                                      field.onBlur();
-                                      handleCpfBlur(e);
                                     }}
                                     className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                     aria-invalid={!!fieldState.error}
@@ -1322,60 +1346,68 @@ export default function PassengerFormDialog({
                           )}
                         />
                       </div>
-                      {canUseCobrancaAutomatica(plano) && (
-                        <div className="mt-4">
-                          <FormField
-                            control={form.control}
-                            name="enviar_cobranca_automatica"
-                            render={({ field }) => {
-                              const mostrarAvisoFranquia =
-                                field.value && !validacaoFranquia.podeAtivar;
+                      <div className="mt-4">
+                        <FormField
+                          control={form.control}
+                          name="enviar_cobranca_automatica"
+                          render={({ field }) => {
+                            const mostrarAvisoFranquia =
+                              field.value && !validacaoFranquia.podeAtivar;
 
-                              return (
-                                <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
-                                  <FormControl>
-                                    <Checkbox
-                                      id="enviar_cobranca_automatica"
-                                      checked={field.value}
-                                      onCheckedChange={(checked) => {
-                                        if (
-                                          checked &&
-                                          !validacaoFranquia.podeAtivar
-                                        ) {
-                                          return;
-                                        }
-                                        field.onChange(checked);
-                                      }}
-                                      disabled={mostrarAvisoFranquia}
-                                      className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 mt-0"
+                            return (
+                              <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    id="enviar_cobranca_automatica"
+                                    checked={field.value}
+                                    onCheckedChange={(checked) => {
+                                      if (
+                                        checked &&
+                                        !validacaoFranquia.podeAtivar
+                                      ) {
+                                        setLimiteFranquiaDialog({
+                                          open: true,
+                                          franquiaContratada:
+                                            validacaoFranquia.franquiaContratada,
+                                          cobrancasEmUso:
+                                            validacaoFranquia.cobrancasEmUso,
+                                          targetPassengerId:
+                                            editingPassageiro?.id,
+                                          title: "Ativar Cobrança Automática",
+                                          description: "Para ativar esses recursos, contrate um plano para sua frota."
+                                        });
+                                        return;
+                                      }
+                                      field.onChange(checked);
+                                    }}
+                                    disabled={false} // Nunca desabilitar, permitir clique para abrir upgrade
+                                    className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 mt-0"
+                                  />
+                                </FormControl>
+                                <div className="space-y-1 leading-none flex-1">
+                                  <FormLabel
+                                    htmlFor="enviar_cobranca_automatica"
+                                    className="text-base font-medium text-gray-700 cursor-pointer"
+                                  >
+                                    Ativar Cobrança Automática
+                                  </FormLabel>
+                                  <FormDescription className="text-sm text-gray-500">
+                                    As cobranças serão enviadas automaticamente
+                                    todo mês para este passageiro.
+                                  </FormDescription>
+                                  {mostrarAvisoFranquia && (
+                                    <AvisoInlineExcessoFranquia
+                                      limiteAtual={
+                                        validacaoFranquia.franquiaContratada
+                                      }
                                     />
-                                  </FormControl>
-                                  <div className="space-y-1 leading-none flex-1">
-                                    <FormLabel
-                                      htmlFor="enviar_cobranca_automatica"
-                                      className="text-base font-medium text-gray-700 cursor-pointer"
-                                    >
-                                      Enviar cobranças automáticas
-                                    </FormLabel>
-                                    <FormDescription className="text-sm text-gray-500">
-                                      As cobranças serão enviadas
-                                      automaticamente todo mês para este
-                                      passageiro.
-                                    </FormDescription>
-                                    {mostrarAvisoFranquia && (
-                                      <AvisoInlineExcessoFranquia
-                                        limiteAtual={
-                                          validacaoFranquia.franquiaContratada
-                                        }
-                                      />
-                                    )}
-                                  </div>
-                                </FormItem>
-                              );
-                            }}
-                          />
-                        </div>
-                      )}
+                                  )}
+                                </div>
+                              </FormItem>
+                            );
+                          }}
+                        />
+                      </div>
                       {!editingPassageiro && (
                         <div className="mt-4">
                           <FormField
@@ -1748,6 +1780,16 @@ export default function PassengerFormDialog({
         }
         franquiaContratada={limiteFranquiaDialog.franquiaContratada}
         cobrancasEmUso={limiteFranquiaDialog.cobrancasEmUso}
+        usuarioId={profile?.id}
+        totalPassageiros={editingPassageiro ? totalPassageiros : totalPassageiros + 1}
+        onUpgradeSuccess={() => {
+          form.setValue("enviar_cobranca_automatica", true);
+          toast.success("Upgrade realizado com sucesso!", {
+            description:
+              "A cobrança automática foi ativada para este passageiro.",
+          });
+        }}
+        targetPassengerId={limiteFranquiaDialog.targetPassengerId}
       />
     </>
   );

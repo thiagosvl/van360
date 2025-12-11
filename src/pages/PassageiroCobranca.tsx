@@ -1,7 +1,7 @@
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
+import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
-import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,12 +11,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCobranca,
-  useCobrancaNotificacoes,
-  useDeleteCobranca,
-  useDesfazerPagamento,
-  useEnviarNotificacaoCobranca,
-  useToggleNotificacoesCobranca,
+    useCobranca,
+    useCobrancaNotificacoes,
+    useDeleteCobranca,
+    useDesfazerPagamento,
+    useEnviarNotificacaoCobranca,
+    useToggleNotificacoesCobranca,
+    useValidarFranquia,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -26,52 +27,52 @@ import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import { Passageiro } from "@/types/passageiro";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
-  disableEditarCobranca,
-  disableExcluirCobranca,
-  disableRegistrarPagamento,
-  seForPago,
+    disableEditarCobranca,
+    disableExcluirCobranca,
+    disableRegistrarPagamento,
+    seForPago,
 } from "@/utils/domain/cobranca/disableActions";
 import { canUseNotificacoes } from "@/utils/domain/plano/accessRules";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
-  formatCobrancaOrigem,
-  formatDateToBR,
-  formatPaymentType,
-  formatarEnderecoCompleto,
-  formatarTelefone,
-  getStatusColor,
-  getStatusText,
-  meses,
+    formatCobrancaOrigem,
+    formatDateToBR,
+    formatPaymentType,
+    formatarEnderecoCompleto,
+    formatarTelefone,
+    getStatusColor,
+    getStatusText,
+    meses,
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowRight,
-  BadgeCheck,
-  Bell,
-  BellOff,
-  Bot,
-  Calendar,
-  CalendarDays,
-  Car,
-  CheckCircle,
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
-  Copy,
-  CreditCard,
-  History,
-  IdCard,
-  MapPin,
-  Pencil,
-  Phone,
-  School,
-  Send,
-  Trash2,
-  User,
-  Wallet,
-  XCircle,
+    ArrowRight,
+    BadgeCheck,
+    Bell,
+    BellOff,
+    Bot,
+    Calendar,
+    CalendarDays,
+    Car,
+    CheckCircle,
+    CheckCircle2,
+    ChevronDown,
+    ChevronUp,
+    Copy,
+    CreditCard,
+    History,
+    IdCard,
+    MapPin,
+    Pencil,
+    Phone,
+    School,
+    Send,
+    Trash2,
+    User,
+    Wallet,
+    XCircle,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -259,16 +260,43 @@ export default function PassageiroCobranca() {
   const [confirmDialogEnvioNotificacao, setConfirmDialogEnvioNotificacao] =
     useState({ open: false, cobranca: null });
   const { user } = useSession();
-  const { plano } = useProfile(user?.id);
+  const { plano, profile } = useProfile(user?.id);
   const deleteCobrancaMutation = useDeleteCobranca();
   const enviarNotificacaoMutation = useEnviarNotificacaoCobranca();
   const toggleNotificacoesMutation = useToggleNotificacoesCobranca();
   const desfazerPagamentoMutation = useDesfazerPagamento();
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
-  const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
-  const [upgradeDialogEnviarLembrete, setUpgradeDialogEnviarLembrete] =
-    useState(false);
+  
+  const [limiteFranquiaDialog, setLimiteFranquiaDialog] = useState<{
+    open: boolean;
+    franquiaContratada: number;
+    cobrancasEmUso: number;
+    title?: string;
+    description?: string;
+    hideLimitInfo?: boolean;
+  }>({
+    open: false,
+    franquiaContratada: 0,
+    cobrancasEmUso: 0,
+  });
+
+  const { validacao: validacaoFranquiaGeral } = useValidarFranquia(
+    user?.id,
+    passageiro_id,
+    profile
+  );
+
+  const handleUpgrade = (featureName: string, description: string) => {
+    setLimiteFranquiaDialog({
+      open: true,
+      franquiaContratada: validacaoFranquiaGeral.franquiaContratada,
+      cobrancasEmUso: validacaoFranquiaGeral.cobrancasEmUso,
+      title: featureName,
+      description: description,
+      hideLimitInfo: true,
+    });
+  };
 
   // Buscar cobrança usando React Query
   const {
@@ -384,7 +412,10 @@ export default function PassageiroCobranca() {
       handleToggleLembretes();
     } else {
       // Usuário não tem permissão: abre dialog de upgrade
-      setUpgradeDialogOpen(true);
+      handleUpgrade(
+        "Notificações Automáticas",
+        "Automatize o envio de lembretes e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
+      );
     }
   };
 
@@ -399,7 +430,10 @@ export default function PassageiroCobranca() {
       });
     } else {
       // Usuário não tem permissão: abre dialog de upgrade
-      setUpgradeDialogEnviarLembrete(true);
+       handleUpgrade(
+        "Envio de Cobranças",
+        "Automatize o envio de cobranças e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
+      );
     }
   };
 
@@ -865,24 +899,6 @@ export default function PassageiroCobranca() {
                           </Button>
                     </div>
 
-                    {/* Dialog de Upgrade para Notificações Automáticas */}
-                    <UpgradePlanDialog
-                      open={upgradeDialogOpen}
-                      onOpenChange={setUpgradeDialogOpen}
-                      featureName="Notificações Automáticas"
-                      description="Automatize o envio de lembretes e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
-                      redirectTo="/planos?slug=completo"
-                    />
-
-                    {/* Dialog de Upgrade para Enviar Cobrança */}
-                    <UpgradePlanDialog
-                      open={upgradeDialogEnviarLembrete}
-                      onOpenChange={setUpgradeDialogEnviarLembrete}
-                      featureName="Envio de Cobranças"
-                      description="Automatize o envio de cobranças e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
-                      redirectTo="/planos?slug=completo"
-                    />
-
                     {/* Delete Action (Separado por borda para segurança) */}
                     <div className="pt-6 border-t border-gray-50 mt-auto w-full flex justify-center">
                       <Button
@@ -1036,6 +1052,19 @@ export default function PassageiroCobranca() {
               toggleNotificacoesMutation.isPending ||
               desfazerPagamentoMutation.isPending
             }
+          />
+          
+          <LimiteFranquiaDialog
+            open={limiteFranquiaDialog.open}
+            onOpenChange={(open) =>
+              setLimiteFranquiaDialog((prev) => ({ ...prev, open }))
+            }
+            franquiaContratada={limiteFranquiaDialog.franquiaContratada}
+            cobrancasEmUso={limiteFranquiaDialog.cobrancasEmUso}
+            usuarioId={user?.id}
+            title={limiteFranquiaDialog.title}
+            description={limiteFranquiaDialog.description}
+            hideLimitInfo={limiteFranquiaDialog.hideLimitInfo}
           />
         </div>
       </PullToRefreshWrapper>

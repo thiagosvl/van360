@@ -1,17 +1,18 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -133,6 +134,9 @@ export default function AlterarSenhaDialog({
           <DialogTitle className="text-xl font-bold text-white">
             Alterar Senha
           </DialogTitle>
+          <DialogDescription className="text-blue-100/80 text-sm mt-1">
+            Preencha os campos abaixo para alterar sua senha.
+          </DialogDescription>
         </div>
 
         <Form {...form}>

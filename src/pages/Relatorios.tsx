@@ -279,10 +279,11 @@ export default function Relatorios() {
     // Passageiros
     const passageirosList = passageirosData?.list || [];
     const passageirosCount = passageirosList.length;
+    const passageirosAtivosCount = passageirosList.filter((p) => p.ativo).length;
 
     // Custo por Passageiro
     const custoPorPassageiro =
-      passageirosCount > 0 ? gasto / passageirosCount : 0;
+      passageirosAtivosCount > 0 ? gasto / passageirosAtivosCount : 0;
 
     // Entradas
     const passageirosPagantes = new Set(cobrancas.map((c) => c.passageiro_id))
@@ -491,6 +492,7 @@ export default function Relatorios() {
       },
       operacional: {
         passageirosCount,
+        passageirosAtivosCount,
         escolas,
         periodos,
         veiculos,
@@ -1115,7 +1117,7 @@ export default function Relatorios() {
                 <CardContent className="px-6 pb-6">
                   <h3 className="text-xl md:text-2xl font-bold text-gray-900 leading-none">
                     <BlurredValue
-                      value={dados.operacional.passageirosCount}
+                      value={dados.operacional.passageirosAtivosCount}
                       visible={true}
                       type="number"
                     />

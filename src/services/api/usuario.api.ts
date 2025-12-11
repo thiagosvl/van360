@@ -30,7 +30,7 @@ export const usuarioApi = {
   trocarSubplano: (payload: { usuario_id: string; subplano_id: string }) =>
     apiClient.post(`/usuarios/trocar-subplano`, payload).then(res => res.data),
 
-  criarAssinaturaCompletoPersonalizado: (payload: { usuario_id: string; quantidade: number }) =>
+  criarAssinaturaCompletoPersonalizado: (payload: { usuario_id: string; quantidade: number; targetPassengerId?: string }) =>
     apiClient.post(`/usuarios/criar-assinatura-completo-personalizado`, payload).then(res => res.data),
 
   listarPassageirosParaSelecao: (usuarioId: string, tipo: "upgrade" | "downgrade", franquia: number) =>

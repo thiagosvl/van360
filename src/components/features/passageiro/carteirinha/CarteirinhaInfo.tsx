@@ -1,4 +1,3 @@
-import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -47,6 +46,7 @@ interface CarteirinhaInfoProps {
   onToggleCobrancaAutomatica: () => void;
   onToggleClick: (statusAtual: boolean) => void;
   onDeleteClick: () => void;
+  onUpgrade: (featureName: string, description: string) => void;
 }
 
 export const CarteirinhaInfo = ({
@@ -60,9 +60,9 @@ export const CarteirinhaInfo = ({
   onToggleCobrancaAutomatica,
   onToggleClick,
   onDeleteClick,
+  onUpgrade,
 }: CarteirinhaInfoProps) => {
   const [mostrarMaisInfo, setMostrarMaisInfo] = useState(false);
-  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const hasCobrancaAutomaticaAccess = canUseCobrancaAutomatica(plano as any);
@@ -72,8 +72,11 @@ export const CarteirinhaInfo = ({
       // Usuário tem permissão: executa a ação normal
       onToggleCobrancaAutomatica();
     } else {
-      // Usuário não tem permissão: abre dialog de upgrade
-      setIsUpgradeDialogOpen(true);
+      // Usuário não tem permissão: chama função de upgrade do pai
+      onUpgrade(
+        "Cobrança Automática",
+        "A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Completo."
+      );
     }
   };
 
@@ -422,15 +425,6 @@ export const CarteirinhaInfo = ({
           </div>
         </CardContent>
       </Card>
-
-      {/* Dialog de Upgrade para Cobrança Automática */}
-      <UpgradePlanDialog
-        open={isUpgradeDialogOpen}
-        onOpenChange={setIsUpgradeDialogOpen}
-        featureName="Cobrança Automática"
-        description="A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Completo."
-        redirectTo="/planos?slug=completo"
-      />
     </motion.div>
   );
 };

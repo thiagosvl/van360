@@ -18,7 +18,7 @@ import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
-import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
+
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 
 // Components - Empty & Skeletons
@@ -65,10 +65,11 @@ import {
   useDesfazerPagamento,
   useEnviarNotificacaoCobranca,
   usePassageiro,
+  usePassageiros,
   useToggleAtivoPassageiro,
   useToggleNotificacoesCobranca,
   useUpdateCobranca,
-  useUpdatePassageiro,
+  useUpdatePassageiro
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -142,31 +143,25 @@ export default function PassageiroCarteirinha() {
   const [deletePassageiroDialog, setDeletePassageiroDialog] = useState({
     open: false,
   });
+  // State for year filter
+  const [yearFilter, setYearFilter] = useState(currentYear);
+
   const [limiteFranquiaDialog, setLimiteFranquiaDialog] = useState<{
     open: boolean;
     franquiaContratada: number;
     cobrancasEmUso: number;
+    title?: string;
+    description?: string;
+    hideLimitInfo?: boolean;
+    targetPassengerId?: string;
   }>({
     open: false,
     franquiaContratada: 0,
     cobrancasEmUso: 0,
   });
-  const [upgradeDialog, setUpgradeDialog] = useState({
-    open: false,
-    featureName: "",
-    description: "",
-  });
+  
 
-  const handleUpgrade = useCallback((featureName: string, description: string) => {
-    safeCloseDialog(() => {
-      setUpgradeDialog({
-        open: true,
-        featureName,
-        description,
-      });
-    });
-  }, []);
-  const [yearFilter, setYearFilter] = useState(currentYear);
+
   const [isObservacoesEditing, setIsObservacoesEditing] = useState(false);
   const [obsText, setObsText] = useState("");
   const [mostrarTodasCobrancas, setMostrarTodasCobrancas] = useState(false);
@@ -174,6 +169,43 @@ export default function PassageiroCarteirinha() {
   const { user, loading: isSessionLoading } = useSession();
   const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
   const planoCompletoAtivo = canUseCobrancaAutomatica(plano);
+
+  // Hook para validar franquia (dados já carregados)
+  // Passar user?.id (auth_uid) e profile para evitar chamadas duplicadas
+  const { validacao: validacaoFranquiaGeral } = useValidarFranquia(
+    user?.id,
+    passageiro_id,
+    profile
+  );
+
+  const { data: allPassageirosData } = usePassageiros(
+    { usuarioId: profile?.id },
+    { enabled: !!profile?.id }
+  );
+  const totalPassageiros = (allPassageirosData as any)?.total || 0;
+
+  const handleUpgradeSuccess = () => {
+    // Backend activates passenger via webhook (using targetPassengerId)
+  };
+
+  const handleUpgrade = useCallback((featureName: string, description: string) => {
+    safeCloseDialog(() => {
+      setLimiteFranquiaDialog({
+        open: true,
+        franquiaContratada: validacaoFranquiaGeral.franquiaContratada,
+        cobrancasEmUso: validacaoFranquiaGeral.cobrancasEmUso,
+        title: featureName,
+        description: description,
+        hideLimitInfo: true,
+      });
+    });
+  }, [validacaoFranquiaGeral]);
+  
+  // ... (rest of code)
+
+
+
+
 
   const {
     data: passageiroData,
@@ -213,13 +245,7 @@ export default function PassageiroCarteirinha() {
 
   const availableYears = (availableYearsData || [currentYear]) as string[];
 
-  // Hook para validar franquia (dados já carregados)
-  // Passar user?.id (auth_uid) e profile para evitar chamadas duplicadas
-  const { validacao: validacaoFranquiaGeral } = useValidarFranquia(
-    user?.id,
-    passageiro_id,
-    profile
-  );
+
 
   const loading =
     isSessionLoading ||
@@ -419,14 +445,16 @@ export default function PassageiroCarteirinha() {
 
     if (novoValor && canUseCobrancaAutomatica(plano)) {
       // Usar validação já calculada via hook
-      if (!validacaoFranquiaGeral.podeAtivar) {
-        setLimiteFranquiaDialog({
-          open: true,
-          franquiaContratada: validacaoFranquiaGeral.franquiaContratada,
-          cobrancasEmUso: validacaoFranquiaGeral.cobrancasEmUso,
-        });
-        return;
-      }
+        if (!validacaoFranquiaGeral.podeAtivar) {
+          setLimiteFranquiaDialog({
+            open: true,
+            franquiaContratada: validacaoFranquiaGeral.franquiaContratada,
+            cobrancasEmUso: validacaoFranquiaGeral.cobrancasEmUso,
+            // Passar targetPassengerId para ativar automaticamente no backend após pagamento
+            targetPassengerId: passageiro_id, 
+          });
+          return;
+        }
     }
 
     updatePassageiro.mutate({
@@ -577,6 +605,7 @@ export default function PassageiroCarteirinha() {
                       onDeleteClick={() =>
                         setDeletePassageiroDialog({ open: true })
                       }
+                      onUpgrade={handleUpgrade}
                     />
                   </Suspense>
                 </div>
@@ -706,7 +735,7 @@ export default function PassageiroCarteirinha() {
                 ? "Reativar Passageiro"
                 : "Desativar Passageiro"
             }
-            description={`Deseja realmente ${confirmToggleDialog.action} este passageiro? Esta ação pode afetar a geração de cobranças.`}
+            description={`Deseja realmente ${confirmToggleDialog.action === 'ativar' ? "reativar" : "desativar"} este passageiro? Esta ação pode afetar a geração de cobranças.`}
             onConfirm={handleToggleConfirm}
             confirmText="Confirmar"
             variant={
@@ -728,10 +757,11 @@ export default function PassageiroCarteirinha() {
             }
             description={
               confirmDialog.action === "enviar"
-                ? "Deseja enviar esta cobrança para o responsável?"
-                : "Deseja realmente desfazer o pagamento desta cobrança?"
+                ? "Ao confirmar, esta cobrança será enviada para o responsável. Deseja continuar?"
+                : "Ao confirmar, o pagamento desta cobrança será desfeito. Deseja continuar?"
             }
             onConfirm={handleConfirmAction}
+            confirmText="Confirmar"
             variant={
               confirmDialog.action === "enviar" ? "default" : "destructive"
             }
@@ -746,8 +776,8 @@ export default function PassageiroCarteirinha() {
             onOpenChange={(open) =>
               setDeleteCobrancaDialog({ ...deleteCobrancaDialog, open })
             }
-            title="Excluir"
-            description="Deseja excluir permanentemente essa cobrança?"
+            title="Excluir Cobrança"
+            description="Ao confirmar, esta cobrança será excluída permanentemente. Deseja continuar?"
             onConfirm={handleDeleteCobranca}
             confirmText="Confirmar"
             variant="destructive"
@@ -757,7 +787,7 @@ export default function PassageiroCarteirinha() {
             open={deletePassageiroDialog.open}
             onOpenChange={(open) => setDeletePassageiroDialog({ open })}
             title="Excluir Passageiro"
-            description="Deseja excluir permanentemente este passageiro?"
+            description="Ao confirmar, este passageiro será excluído permanentemente. Deseja continuar?"
             onConfirm={handleDelete}
             confirmText="Confirmar"
             variant="destructive"
@@ -810,18 +840,27 @@ export default function PassageiroCarteirinha() {
       <LimiteFranquiaDialog
         open={limiteFranquiaDialog.open}
         onOpenChange={(open) =>
-          setLimiteFranquiaDialog({ ...limiteFranquiaDialog, open })
+          setLimiteFranquiaDialog((prev) => ({ ...prev, open }))
         }
         franquiaContratada={limiteFranquiaDialog.franquiaContratada}
         cobrancasEmUso={limiteFranquiaDialog.cobrancasEmUso}
+        usuarioId={profile?.id}
+        totalPassageiros={totalPassageiros}
+        onUpgradeSuccess={handleUpgradeSuccess}
+        dataVencimento={
+          profile?.assinaturas_usuarios?.[0]?.vigencia_fim ??
+          profile?.assinaturas_usuarios?.[0]?.anchor_date
+        }
+        valorAtualMensal={
+          profile?.assinaturas_usuarios?.[0]?.preco_aplicado ??
+          profile?.assinaturas_usuarios?.[0]?.planos?.preco
+        }
+        targetPassengerId={limiteFranquiaDialog.targetPassengerId}
+        title={limiteFranquiaDialog.title}
+        description={limiteFranquiaDialog.description}
+        hideLimitInfo={limiteFranquiaDialog.hideLimitInfo}
       />
-      <UpgradePlanDialog
-        open={upgradeDialog.open}
-        onOpenChange={(open) => setUpgradeDialog((prev) => ({ ...prev, open }))}
-        featureName={upgradeDialog.featureName}
-        description={upgradeDialog.description}
-        redirectTo="/planos?slug=completo"
-      />
+
     </>
   );
 }

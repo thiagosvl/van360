@@ -16,9 +16,8 @@ import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActi
 // Components - Dialogs
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
-
+import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
-import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 
 // Components - Empty & Skeletons
 import { ListSkeleton } from "@/components/skeletons";
@@ -28,6 +27,7 @@ import {
   useDesfazerPagamento,
   useEnviarNotificacaoCobranca,
   useToggleNotificacoesCobranca,
+  useValidarFranquia,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -127,24 +127,40 @@ const Cobrancas = () => {
     cobranca: null as Cobranca | null,
   });
 
-  const [upgradeDialog, setUpgradeDialog] = useState({
+  const [limiteFranquiaDialog, setLimiteFranquiaDialog] = useState<{
+    open: boolean;
+    franquiaContratada: number;
+    cobrancasEmUso: number;
+    title?: string;
+    description?: string;
+    hideLimitInfo?: boolean;
+  }>({
     open: false,
-    featureName: "",
-    description: "",
+    franquiaContratada: 0,
+    cobrancasEmUso: 0,
   });
+  
+  const { user, loading: isSessionLoading } = useSession();
+  const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
+
+  const { validacao: validacaoFranquiaGeral } = useValidarFranquia(
+    user?.id,
+    undefined, // passageiro_id não é relevante aqui a menos que seja sobre um passageiro específico, mas para lista geral ok.
+    profile
+  );
 
   const handleUpgrade = useCallback((featureName: string, description: string) => {
     safeCloseDialog(() => {
-      setUpgradeDialog({
+      setLimiteFranquiaDialog({
         open: true,
-        featureName,
-        description,
+        franquiaContratada: validacaoFranquiaGeral.franquiaContratada,
+        cobrancasEmUso: validacaoFranquiaGeral.cobrancasEmUso,
+        title: featureName,
+        description: description,
+        hideLimitInfo: true,
       });
     });
-  }, []);
-
-  const { user, loading: isSessionLoading } = useSession();
-  const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
+  }, [validacaoFranquiaGeral]);
 
   const toggleNotificacoes = useToggleNotificacoesCobranca();
   const enviarNotificacao = useEnviarNotificacaoCobranca();
@@ -974,7 +990,7 @@ const Cobrancas = () => {
               })
             }
             title="Enviar Cobrança"
-            description="Deseja enviar esta cobrança para o responsável?"
+            description="Ao confirmar, esta cobrança será enviada para o responsável. Deseja continuar?"
             onConfirm={enviarNotificacaoCobranca}
             isLoading={enviarNotificacao.isPending}
           />
@@ -984,7 +1000,7 @@ const Cobrancas = () => {
               setConfirmDialogDesfazer({ open, cobrancaId: "" })
             }
             title="Desfazer Pagamento"
-            description="Deseja realmente desfazer o pagamento desta cobrança?"
+            description="Ao confirmar, o pagamento desta cobrança será desfeito. Deseja continuar?"
             onConfirm={handleDesfazerPagamento}
             variant="destructive"
             confirmText="Confirmar"
@@ -996,7 +1012,7 @@ const Cobrancas = () => {
               setDeleteCobrancaDialog({ ...deleteCobrancaDialog, open })
             }
             title="Excluir"
-            description="Deseja excluir permanentemente essa cobrança?"
+            description="Ao confirmar, esta cobrança será excluída permanentemente. Deseja continuar?"
             onConfirm={handleDeleteCobranca}
             confirmText="Confirmar"
             variant="destructive"
@@ -1012,13 +1028,18 @@ const Cobrancas = () => {
             />
           )}
 
-          {/* Dialog de Upgrade */}
-          <UpgradePlanDialog
-            open={upgradeDialog.open}
-            onOpenChange={(open) => setUpgradeDialog((prev) => ({ ...prev, open }))}
-            featureName={upgradeDialog.featureName}
-            description={upgradeDialog.description}
-            redirectTo="/planos?slug=completo"
+          {/* Dialog de Upgrade substituído por LimiteFranquiaDialog */}
+          <LimiteFranquiaDialog
+            open={limiteFranquiaDialog.open}
+            onOpenChange={(open) =>
+              setLimiteFranquiaDialog((prev) => ({ ...prev, open }))
+            }
+            franquiaContratada={limiteFranquiaDialog.franquiaContratada}
+            cobrancasEmUso={limiteFranquiaDialog.cobrancasEmUso}
+            usuarioId={profile?.id}
+            title={limiteFranquiaDialog.title}
+            description={limiteFranquiaDialog.description}
+            hideLimitInfo={limiteFranquiaDialog.hideLimitInfo}
           />
         </div>
       </PullToRefreshWrapper>

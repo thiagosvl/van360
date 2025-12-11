@@ -59,6 +59,8 @@ export const PlanoCardSelection = ({
   // Estado local para controlar se o personalizado foi clicado e se o slider está expandido
   const [personalizadoClicado, setPersonalizadoClicado] = useState(false);
   const [sliderExpandido, setSliderExpandido] = useState(false);
+  const [inputValue, setInputValue] = useState(quantidadePersonalizada);
+  const [isTyping, setIsTyping] = useState(false);
 
   // Sub-planos do Completo
   const subPlanosCompleto = isCompleto
@@ -78,32 +80,14 @@ export const PlanoCardSelection = ({
     ? maiorSubplano.franquia_cobrancas_mes + 1
     : 0;
 
-  // Determinar qual opção está selecionada (sub-plano ou personalizado)
-  const opcaoSelecionada = selectedSubPlanoId
-    ? selectedSubPlanoId
-    : quantidadePersonalizada || personalizadoClicado
-    ? "personalizado"
-    : null;
+  // Sync prop to local state
+  useEffect(() => {
+    if (!isTyping) {
+      setInputValue(quantidadePersonalizada);
+    }
+  }, [quantidadePersonalizada, isTyping]);
 
-  // Obter quantidade mínima
-  const quantidadeMinima = getQuantidadeMinima?.() ?? null;
-  // Usar quantidadeMinimaSlider se disponível (maior sub-plano + 1), senão usar quantidadeMinima
-  const quantidadeMinimaParaValidacao =
-    isCompleto && quantidadeMinimaSlider > 0
-      ? quantidadeMinimaSlider
-      : quantidadeMinima;
-
-  // Verificar se a quantidade personalizada é válida
-  const quantidadeDigitada = quantidadePersonalizada
-    ? Number(quantidadePersonalizada)
-    : 0;
-  const isQuantidadeValida =
-    quantidadePersonalizada &&
-    quantidadeMinimaParaValidacao !== null &&
-    quantidadeDigitada > 0 &&
-    quantidadeDigitada >= quantidadeMinimaParaValidacao;
-
-  // Handler para mudança de quantidade personalizada
+  // Handler (Commiter) for changes
   const handleQuantidadeChange = (value: string) => {
     const numericValue = value.replace(/\D/g, "");
 
@@ -131,6 +115,75 @@ export const PlanoCardSelection = ({
     }
   };
 
+  // Debounce Effect
+  useEffect(() => {
+    if (!isTyping) return;
+
+    const timer = setTimeout(() => {
+      const numericValue = Number(inputValue);
+      let finalValue = inputValue;
+
+      // Auto-correct to minimum
+      // Só corrige se tiver algo digitado, não estiver vazio (se vazio, assume 0 ou deixa limpar)
+      // Mas o requisito diz "valor digitado inferior ao minimo", assumindo que user digitou algo válido
+      if (inputValue !== "" && numericValue < quantidadeMinimaSlider) {
+        finalValue = String(quantidadeMinimaSlider);
+        setInputValue(finalValue);
+      }
+
+      handleQuantidadeChange(finalValue);
+      setIsTyping(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [inputValue, isTyping, quantidadeMinimaSlider, handleQuantidadeChange]); // TODO: handleQuantidadeChange must be stable or use ref but it depends on props. Warning?
+
+    // Handler for Local Input
+  const handleLocalInputChange = (value: string) => {
+    const numericValue = value.replace(/\D/g, "");
+    if (numericValue.length > 4) return;
+    const numValue = Number(numericValue);
+    if (numValue > QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO) return;
+
+    setInputValue(numericValue);
+    setIsTyping(true);
+
+    if (!isSelected) {
+        onSelect(plano.id);
+    }
+    if (selectedSubPlanoId && numericValue !== "") {
+        onSubPlanoSelect?.(undefined);
+    }
+    if (!personalizadoClicado) {
+        handlePersonalizadoSelect();
+    }
+  };
+
+  // Determinar qual opção está selecionada (sub-plano ou personalizado)
+  const opcaoSelecionada = selectedSubPlanoId
+    ? selectedSubPlanoId
+    : quantidadePersonalizada || personalizadoClicado
+    ? "personalizado"
+    : null;
+
+  // Obter quantidade mínima
+  const quantidadeMinima = getQuantidadeMinima?.() ?? null;
+  // Usar quantidadeMinimaSlider se disponível (maior sub-plano + 1), senão usar quantidadeMinima
+  const quantidadeMinimaParaValidacao =
+    isCompleto && quantidadeMinimaSlider > 0
+      ? quantidadeMinimaSlider
+      : quantidadeMinima;
+
+  // Verificar se a quantidade personalizada é válida
+  const quantidadeDigitada = quantidadePersonalizada
+    ? Number(quantidadePersonalizada)
+    : 0;
+  const isQuantidadeValida =
+    quantidadePersonalizada &&
+    quantidadeMinimaParaValidacao !== null &&
+    quantidadeDigitada > 0 &&
+    quantidadeDigitada >= quantidadeMinimaParaValidacao;
+
   // Handler para seleção de sub-plano via pill
   const handleSubPlanoSelect = (subPlanoId: string) => {
     onSelect(plano.id);
@@ -139,8 +192,12 @@ export const PlanoCardSelection = ({
     setSliderExpandido(false);
     onSubPlanoSelect?.(subPlanoId);
     onQuantidadePersonalizadaChange?.("");
+    setIsTyping(false); // Reset typing
+    setInputValue(""); // Clear input
   };
-
+  
+  // NOTE: removed original handleQuantidadeChange definition from here since I moved it up
+  
   // Resetar estado do slider quando selecionar outro plano ou limpar seleção
   useEffect(() => {
     if (!isSelected && sliderExpandido) {
@@ -188,6 +245,7 @@ export const PlanoCardSelection = ({
       // Definir valor inicial como o mínimo do slider (maior sub-plano + 1)
       if (quantidadeMinimaSlider > 0 && !quantidadePersonalizada) {
         onQuantidadePersonalizadaChange?.(String(quantidadeMinimaSlider));
+        setInputValue(String(quantidadeMinimaSlider)); // Update local too
       }
       // Scroll suave para baixo após expandir o slider
       setTimeout(() => {
@@ -214,6 +272,7 @@ export const PlanoCardSelection = ({
       handlePersonalizadoSelect();
     }
   };
+
 
   // Calcular preço dinâmico baseado na seleção
   const precoExibido = useMemo(() => {
@@ -440,14 +499,14 @@ export const PlanoCardSelection = ({
                     Personalizado:
                   </span>
                   <span className="text-base font-bold text-blue-600">
-                    {quantidadePersonalizada || "0"}
+                    {inputValue || "0"}
                   </span>
                 </div>
                 
                 <Slider
                   value={[
-                    quantidadePersonalizada
-                      ? parseInt(quantidadePersonalizada)
+                    inputValue
+                      ? parseInt(inputValue)
                       : quantidadeMinimaSlider,
                   ]}
                   min={quantidadeMinimaSlider}
@@ -469,12 +528,9 @@ export const PlanoCardSelection = ({
                     type="number"
                     min={quantidadeMinimaSlider}
                     max={QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO}
-                    value={quantidadePersonalizada}
+                    value={inputValue}
                     onChange={(e) => {
-                      handleQuantidadeChange(e.target.value);
-                      if (!personalizadoClicado) {
-                        handlePersonalizadoSelect();
-                      }
+                      handleLocalInputChange(e.target.value);
                     }}
                     onFocus={handleInputFocus}
                     className="h-8 text-sm text-center bg-gray-50"

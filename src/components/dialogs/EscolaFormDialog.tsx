@@ -11,6 +11,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogTitle
 } from "@/components/ui/dialog";
 import {
@@ -94,6 +95,7 @@ interface EscolaFormDialogProps {
   editingEscola?: Escola | null;
   onSuccess: (escola: Escola, keepOpen?: boolean) => void;
   allowBatchCreation?: boolean;
+  profile?: any;
 }
 
 export default function EscolaFormDialog({
@@ -253,8 +255,8 @@ export default function EscolaFormDialog({
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent
-          className="w-[90vw] sm:w-full sm:max-w-2xl max-h-[95vh] gap-0 flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
           onOpenAutoFocus={(e) => e.preventDefault()}
+          className="w-[90vw] sm:w-full sm:max-w-2xl max-h-[95vh] gap-0 flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
           hideCloseButton
         >
           <div className="bg-blue-600 p-4 text-center relative shrink-0">
@@ -269,6 +271,9 @@ export default function EscolaFormDialog({
             <DialogTitle className="text-xl font-bold text-white">
               {editingEscola ? "Editar Escola" : "Cadastrar Escola"}
             </DialogTitle>
+            <DialogDescription className="text-blue-100/80 text-sm mt-1">
+              {editingEscola ? "Atualize as informações da escola." : "Preencha os dados da nova escola."}
+            </DialogDescription>
           </div>
 
           <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">

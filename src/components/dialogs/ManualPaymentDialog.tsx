@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogTitle
 } from "@/components/ui/dialog";
 import {
@@ -143,6 +144,9 @@ export default function ManualPaymentDialog({
           <DialogTitle className="text-xl font-bold text-white">
             Registrar Pagamento
           </DialogTitle>
+          <DialogDescription className="text-blue-100/80 text-sm mt-1">
+             Informe o valor e a data do pagamento.
+          </DialogDescription>
         </div>
 
         <div className="p-4 sm:p-6 pt-2 flex-1 overflow-y-auto">

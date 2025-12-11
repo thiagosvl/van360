@@ -23,7 +23,7 @@ import {
   MoreVertical,
   Trash2,
   Wallet,
-  Wrench
+  Wrench,
 } from "lucide-react";
 
 interface GastosListProps {
@@ -257,6 +257,12 @@ export function GastosList({
 
       {/* Mobile Cards */}
       <div className="md:hidden space-y-3">
+        {isRestricted && (
+          <div className="text-center bg-primary/10 text-muted-foreground rounded-xl text-xs p-2">
+            Os registros abaixo são apenas fictícios.
+          </div>
+        )}
+
         {gastos.map((gasto) => {
           const { icon: Icon, color, bg } = getCategoryConfig(gasto.categoria);
           const placa = getVeiculoPlaca(gasto.veiculo_id);
@@ -317,7 +323,7 @@ export function GastosList({
 
               <div className="flex items-center pt-2 border-t border-gray-50 text-xs text-gray-500">
                 <Calendar className="w-3 h-3 mr-1.5" />
-                {formatDateToBR(gasto.data)}
+                {!isRestricted ? formatDateToBR(gasto.data) : "Data"}
               </div>
             </div>
           );

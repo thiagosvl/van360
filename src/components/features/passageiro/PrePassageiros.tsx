@@ -1,12 +1,13 @@
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
+import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
+import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
 import { PrePassengerListSkeleton } from "@/components/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,7 +34,11 @@ import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
-import { formatarTelefone, formatRelativeTime, periodos } from "@/utils/formatters";
+import {
+  formatarTelefone,
+  formatRelativeTime,
+  periodos,
+} from "@/utils/formatters";
 import { mockGenerator } from "@/utils/mockDataGenerator";
 import { toast } from "@/utils/notifications/toast";
 import {
@@ -44,9 +49,10 @@ import {
   MoreVertical,
   Search,
   Trash2,
-  Users2
+  Users2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 type PlanoUsuario = {
   slug: string;
@@ -76,6 +82,7 @@ export default function PrePassageiros({
   profile,
   plano,
 }: PrePassageirosProps) {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
@@ -97,6 +104,8 @@ export default function PrePassageiros({
   const [isFinalizeDialogOpen, setIsFinalizeDialogOpen] = useState(false);
   const [selectedPrePassageiro, setSelectedPrePassageiro] =
     useState<PrePassageiro | null>(null);
+
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
 
   const {
     data: prePassageirosData,
@@ -123,7 +132,22 @@ export default function PrePassageiros({
     (prePassageirosData as PrePassageiro[] | undefined) ?? [];
   const countPassageiros =
     (passageirosData as { list?: any[] } | undefined)?.list?.length || 0;
+
   const loading = isPrePassageirosLoading || isPrePassageirosFetching;
+
+  // --- Lógica de Limite (replicada de Passageiros.tsx) ---
+  const limitePassageiros =
+    profile?.assinaturas_usuarios?.[0]?.planos?.limite_passageiros ?? null;
+  const restantePassageiros =
+    countPassageiros == null
+      ? null
+      : limitePassageiros == null
+      ? null
+      : Number(limitePassageiros) - countPassageiros;
+  const isLimitedUser = !!plano && plano.isFreePlan;
+  const isLimitReached =
+    typeof restantePassageiros === "number" && restantePassageiros <= 0;
+  // -------------------------------------------------------
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -210,6 +234,11 @@ export default function PrePassageiros({
   };
 
   const handleFinalizeClick = (prePassageiro: PrePassageiro) => {
+    if (isLimitedUser && isLimitReached) {
+      setIsUpgradeDialogOpen(true);
+      return;
+    }
+
     setSelectedPrePassageiro(prePassageiro);
     setIsFinalizeDialogOpen(true);
   };
@@ -275,36 +304,32 @@ export default function PrePassageiros({
           {loading ? (
             <PrePassengerListSkeleton />
           ) : prePassageiros.length === 0 ? (
-            <Card className="border-dashed border-gray-200 bg-gray-50/50">
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="h-16 w-16 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center mb-4">
-                  <Users2 className="h-8 w-8 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  Tudo limpo por aqui!
-                </h3>
-                <p className="text-sm text-gray-500 mb-6 max-w-xs mx-auto leading-relaxed">
-                  {searchTerm.length > 0 
-                    ? "Nenhuma solicitação encontrada para sua busca." 
-                    : "Envie seu link de cadastro para os pais e receba novas solicitações aqui."}
-                </p>
-                
-                {searchTerm.length === 0 && (
-                  <Button 
-                    variant="outline" 
-                    className="rounded-xl border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
-                    onClick={() => {
-                      if (!profile?.id) return;
-                      navigator.clipboard.writeText(buildPrepassageiroLink(profile.id));
-                      toast.success("Link copiado!", { description: "Envie para os pais." });
-                    }}
-                  >
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copiar Link
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+            <UnifiedEmptyState
+              icon={Users2}
+              title="Tudo limpo por aqui!"
+              description={
+                searchTerm.length > 0
+                  ? "Nenhuma solicitação encontrada para sua busca."
+                  : "Envie seu link de cadastro para os pais e receba novas solicitações aqui."
+              }
+              action={
+                searchTerm.length === 0
+                  ? {
+                      label: "Copiar Link",
+                      icon: Copy,
+                      onClick: () => {
+                        if (!profile?.id) return;
+                        navigator.clipboard.writeText(
+                          buildPrepassageiroLink(profile.id)
+                        );
+                        toast.success("Link copiado!", {
+                          description: "Envie para os pais.",
+                        });
+                      },
+                    }
+                  : undefined
+              }
+            />
           ) : (
             <>
               {/* Desktop Table */}
@@ -465,9 +490,11 @@ export default function PrePassageiros({
                     <div className="flex justify-between items-center pt-2 border-t border-gray-50">
                       <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
                         <Clock className="w-3.5 h-3.5 text-gray-400" />
-                        <span>{formatRelativeTime(prePassageiro.created_at)}</span>
+                        <span>
+                          {formatRelativeTime(prePassageiro.created_at)}
+                        </span>
                       </div>
-                      
+
                       <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-full">
                         Pendente
                       </span>
@@ -528,6 +555,14 @@ export default function PrePassageiros({
           isLoading={deletePrePassageiro.isPending}
         />
       </div>
+      <UpgradePlanDialog
+        open={isUpgradeDialogOpen}
+        onOpenChange={setIsUpgradeDialogOpen}
+        featureName="Limite de Passageiros"
+        description="Você atingiu o limite de passageiros do seu Plano Gratuito. Para aprovar novas solicitações, faça um upgrade."
+        redirectTo="/planos"
+      />
+
       <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>
   );

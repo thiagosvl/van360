@@ -6,6 +6,7 @@ import { useGerarPixParaCobranca } from "@/hooks";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/utils/notifications/toast";
 import type { RealtimeChannel } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Copy, Loader2, Smartphone } from "lucide-react";
 import QRCode from "qrcode";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -24,6 +25,7 @@ interface PagamentoPixContentProps {
   quantidadeAlunos?: number; // Para exibir no sucesso
   onIrParaInicio?: () => void; // Callback para ir para início
   onIrParaAssinatura?: () => void; // Callback para ir para assinatura
+  onPaymentVerified?: () => void; // Novo: Callback imediato quando pagamento é confirmado
   context?: "register" | "upgrade"; // Para adaptar textos ao cenário
 }
 
@@ -37,8 +39,10 @@ export default function PagamentoPixContent({
   quantidadeAlunos,
   onIrParaInicio,
   onIrParaAssinatura,
+  onPaymentVerified,
   context,
 }: PagamentoPixContentProps) {
+  const queryClient = useQueryClient();
   const gerarPix = useGerarPixParaCobranca();
   const [dadosPagamento, setDadosPagamento] = useState<{
     qrCodePayload: string;
@@ -103,7 +107,10 @@ export default function PagamentoPixContent({
     if (!dadosPagamento) return;
 
     if (timeLeft === 0 && !paymentConfirmed) {
-      onClose();
+      // Fix: Wrap onClose in setTimeout to avoid "Cannot update a component while rendering a different component"
+      setTimeout(() => {
+        onClose();
+      }, 0);
     }
   }, [timeLeft, paymentConfirmed, onClose, dadosPagamento]);
 
@@ -176,6 +183,18 @@ export default function PagamentoPixContent({
     // Exibir tela de sucesso dentro do mesmo dialog
     setPaymentConfirmed(true);
 
+    // Notificar pai imediatamente que o sucesso ocorreu (para impedir fechamento parcial)
+    if (onPaymentVerified) {
+        onPaymentVerified();
+    }
+
+    // Invalidate queries to ensure UI updates immediately
+    // Centraliza a atualização do cache aqui para garantir que qualquer pagamento via PIX atualize o estado
+    queryClient.invalidateQueries({ queryKey: ["profile"] });
+    queryClient.invalidateQueries({ queryKey: ["plano"] });
+    queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+    queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+
     // Iniciar contagem regressiva antes de disparar o callback (login/redirect)
     if (!redirectSeconds) {
       setRedirectSeconds(10);
@@ -185,7 +204,7 @@ export default function PagamentoPixContent({
           if (prev <= 1) {
             clearInterval(interval);
             if (onPaymentSuccess) {
-              onPaymentSuccess();
+              setTimeout(() => onPaymentSuccess(), 0);
             }
             return 0;
           }
@@ -402,7 +421,8 @@ export default function PagamentoPixContent({
               <Button
                 onClick={() => {
                   onIrParaInicio();
-                  if (onClose) onClose();
+                  if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
+                  else if (onClose) setTimeout(onClose, 0);
                 }}
                 className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/20"
               >
@@ -413,7 +433,8 @@ export default function PagamentoPixContent({
               <Button
                 onClick={() => {
                   onIrParaAssinatura();
-                  if (onClose) onClose();
+                  if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
+                  else if (onClose) setTimeout(onClose, 0);
                 }}
                 variant="ghost"
                 className="w-full h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
@@ -427,7 +448,8 @@ export default function PagamentoPixContent({
               <Button
                 onClick={() => {
                   onIrParaAssinatura();
-                  if (onClose) onClose();
+                  if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
+                  else if (onClose) setTimeout(onClose, 0);
                 }}
                 className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/20"
               >
@@ -438,7 +460,8 @@ export default function PagamentoPixContent({
               <Button
                 onClick={() => {
                   onIrParaInicio();
-                  if (onClose) onClose();
+                  if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
+                  else if (onClose) setTimeout(onClose, 0);
                 }}
                 variant="ghost"
                 className="w-full h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
@@ -452,7 +475,8 @@ export default function PagamentoPixContent({
               <Button
                 onClick={() => {
                   onIrParaAssinatura();
-                  if (onClose) onClose();
+                  if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
+                  else if (onClose) setTimeout(onClose, 0);
                 }}
                 className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/20"
               >
@@ -463,7 +487,8 @@ export default function PagamentoPixContent({
               <Button
                 onClick={() => {
                   onIrParaInicio();
-                  if (onClose) onClose();
+                  if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
+                  else if (onClose) setTimeout(onClose, 0);
                 }}
                 variant="ghost"
                 className="w-full h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
@@ -472,9 +497,13 @@ export default function PagamentoPixContent({
               </Button>
             )}
 
-            {!onIrParaAssinatura && !onIrParaInicio && onClose && (
+            {/* Botão Fechar Simples */}
+            {!onIrParaAssinatura && !onIrParaInicio && (
               <Button
-                onClick={onClose}
+                onClick={() => {
+                  if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
+                  else if (onClose) setTimeout(onClose, 0);
+                }}
                 className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
               >
                 Fechar

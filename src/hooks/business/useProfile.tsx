@@ -1,8 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Usuario } from "@/types/usuario";
 import { getPlanoUsuario } from "@/utils/domain/plano/planoUtils";
-import { useMemo } from "react";
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo } from "react";
 
 async function fetchProfile(uid: string): Promise<Usuario | null> {
   const { data, error } = await supabase
@@ -26,18 +26,24 @@ async function fetchProfile(uid: string): Promise<Usuario | null> {
 
 
 export function useProfile(uid?: string) {
-  const { data, error, isLoading, mutate } = useSWR(
-    uid ? ["profile", uid] : null,
-    () => {
+  const { data, error, isLoading, refetch } = useQuery({
+    queryKey: uid ? ["profile", uid] : ["profile"],
+    queryFn: () => {
       if (!uid) return null;
       return fetchProfile(uid);
     },
-    {
-      revalidateOnFocus: false, // Desabilitar revalidação automática ao focar para evitar requisições duplicadas
-      shouldRetryOnError: false,
-      dedupingInterval: 2000, // Deduplicar requisições dentro de 2 segundos
+    enabled: !!uid,
+    staleTime: 5000, // 5s de "deduping" (semelhante ao SWR), depois revalida. Otimiza navegação com validação frequente.
+    refetchOnWindowFocus: true, // Revalida ao trocar de aba (essencial para segurança/logout)
+    retry: false, 
+  });
+
+  useEffect(() => {
+    if (error) {
+       // Se der erro ao buscar perfil (ex: usuário deletado, 401, etc), desloga
+       supabase.auth.signOut().catch(() => {});
     }
-  );
+  }, [error]);
 
   const plano = useMemo(() => {
     if (!data) return null;
@@ -49,6 +55,6 @@ export function useProfile(uid?: string) {
     plano,
     error,
     isLoading,
-    refreshProfile: mutate,
+    refreshProfile: refetch, // Mantém compatibilidade com assinatura anterior
   };
 }

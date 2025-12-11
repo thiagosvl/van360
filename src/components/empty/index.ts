@@ -1,2 +1,2 @@
-export { EmptyState } from "./EmptyState";
+export { UnifiedEmptyState } from "./UnifiedEmptyState";
 

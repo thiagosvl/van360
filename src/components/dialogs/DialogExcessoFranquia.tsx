@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -37,12 +38,18 @@ export function DialogExcessoFranquia({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="max-w-md"
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-500" />
             Sua van digital está cheia!
           </DialogTitle>
+          <DialogDescription className="text-sm text-gray-500 mt-1">
+            Gerencie o limite de passageiros do seu plano.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

@@ -37,7 +37,7 @@ interface PassageirosListProps {
   onToggleCobrancaAutomatica: (passageiro: Passageiro) => void;
   onToggleClick: (passageiro: Passageiro) => void;
   onSetDeleteDialog: (passageiroId: string) => void;
-  onOpenUpgradeDialog?: () => void;
+  onOpenUpgradeDialog?: (passageiroId?: string) => void;
 }
 
 export function PassageirosList({
@@ -58,7 +58,7 @@ export function PassageirosList({
       onToggleCobrancaAutomatica(passageiro);
     } else {
       // Usuário não tem permissão: abre dialog de upgrade
-      onOpenUpgradeDialog?.();
+      onOpenUpgradeDialog?.(passageiro.id);
     }
   };
   const getInitials = (name: string) => {
@@ -85,6 +85,18 @@ export function PassageirosList({
       >
         Inativo
       </Badge>
+    );
+  };
+
+  const renderAutoBillingIcon = (passageiro: Passageiro) => {
+    if (!passageiro.enviar_cobranca_automatica) return null;
+    return (
+      <div
+        className="h-6 w-6 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center"
+        title="Cobrança Automática Ativa"
+      >
+        <Bot className="h-3.5 w-3.5 text-indigo-600" />
+      </div>
     );
   };
 
@@ -236,7 +248,10 @@ export function PassageirosList({
                   </div>
                 </TableCell>
                 <TableCell className="py-4">
-                  {getStatusBadge(passageiro.ativo)}
+                  <div className="flex items-center gap-2">
+                    {getStatusBadge(passageiro.ativo)}
+                    {renderAutoBillingIcon(passageiro)}
+                  </div>
                 </TableCell>
                 <TableCell className="py-4">
                   <Badge
@@ -301,7 +316,10 @@ export function PassageirosList({
 
             {/* Linha 2: Detalhes Secundários + Status */}
             <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-              <div className="shrink-0">{getStatusBadge(passageiro.ativo)}</div>
+              <div className="shrink-0 flex items-center gap-2">
+                {getStatusBadge(passageiro.ativo)}
+                {renderAutoBillingIcon(passageiro)}
+              </div>
               <div className="flex flex-col items-end gap-0.5">
                 <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
                   Escola / Período

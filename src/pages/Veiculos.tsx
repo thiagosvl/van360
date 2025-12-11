@@ -11,7 +11,7 @@ import { VeiculosList } from "@/components/features/veiculo/VeiculosList";
 import { VeiculosToolbar } from "@/components/features/veiculo/VeiculosToolbar";
 
 // Components - Empty & Skeletons
-import { EmptyState } from "@/components/empty";
+import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { ListSkeleton } from "@/components/skeletons";
 
 // Components - Navigation
@@ -24,10 +24,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useDeleteVeiculo,
-  useFilters,
-  useToggleAtivoVeiculo,
-  useVeiculos,
+    useDeleteVeiculo,
+    useFilters,
+    useToggleAtivoVeiculo,
+    useVeiculos,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -218,12 +218,21 @@ export default function Veiculos() {
               {isVeiculosLoading ? (
                 <ListSkeleton />
               ) : veiculosFiltrados.length === 0 ? (
-                <EmptyState
+                <UnifiedEmptyState
                   icon={Car}
+                  title="Nenhum veículo encontrado"
                   description={
                     searchTerm
                       ? `Nenhum veículo encontrado para "${searchTerm}"`
-                      : "Nenhum veículo encontrado"
+                      : "Cadastre seus veículos para vincular aos passageiros."
+                  }
+                  action={
+                    !searchTerm
+                      ? {
+                          label: "Novo Veículo",
+                          onClick: () => setIsDialogOpen(true),
+                        }
+                      : undefined
                   }
                 />
               ) : (

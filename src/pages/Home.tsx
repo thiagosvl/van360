@@ -38,6 +38,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
+import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 import {
   PASSAGEIRO_COBRANCA_STATUS_PAGO,
   PLANO_COMPLETO,
@@ -392,6 +393,15 @@ const Home = () => {
   const [isCreatingEscola, setIsCreatingEscola] = useState(false);
   const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
   const [isGastoDialogOpen, setIsGastoDialogOpen] = useState(false);
+  const [upgradeDialog, setUpgradeDialog] = useState<{
+    open: boolean;
+    featureName: string;
+    description: string;
+  }>({
+    open: false,
+    featureName: "",
+    description: "",
+  });
 
   const mesAtual = new Date().getMonth() + 1;
   const anoAtual = new Date().getFullYear();
@@ -461,6 +471,7 @@ const Home = () => {
   const veiculosCount =
     (veiculosData as { total?: number } | undefined)?.total ?? 0;
   const passageirosCount = passageirosList.length;
+  const passageirosAtivosCount = passageirosList.filter((p) => p.ativo).length;
 
   // Passenger Limit Logic
   const limitePassageiros =
@@ -586,13 +597,36 @@ const Home = () => {
 
   // Passageiro Dialog Handlers
   const handleOpenPassageiroDialog = useCallback(() => {
+    // Validação de limite para plano gratuito
+    if (plano?.isFreePlan) {
+      const limite = Number(limitePassageiros || 0);
+      if (passageirosCount >= limite) {
+        setUpgradeDialog({
+          open: true,
+          featureName: "Limite de Passageiros Atingido",
+          description: `Você atingiu o limite de ${limite} passageiros do plano gratuito. Faça um upgrade para cadastrar mais passageiros.`,
+        });
+        return;
+      }
+    }
+
     setEditingPassageiro(null);
     setIsPassageiroDialogOpen(true);
-  }, []);
+  }, [plano, limitePassageiros, passageirosCount]);
 
   const handleOpenGastoDialog = useCallback(() => {
+    // Validação de acesso para plano gratuito
+    if (plano?.isFreePlan) {
+      setUpgradeDialog({
+        open: true,
+        featureName: "Controle Financeiro",
+        description: "O registro de gastos é exclusivo dos planos Essencial e Completo. Faça um upgrade para controlar suas finanças.",
+      });
+      return;
+    }
+
     setIsGastoDialogOpen(true);
-  }, []);
+  }, [plano]);
 
   const handleClosePassageiroDialog = useCallback(() => {
     safeCloseDialog(() => {
@@ -787,8 +821,8 @@ const Home = () => {
             ) : (
               <MiniKPI
                 className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative"
-                label="Passageiros"
-                value={passageirosCount}
+                label="Passageiros Ativos"
+                value={passageirosAtivosCount}
                 showPassageirosLimitSubtext={true}
                 icon={Users}
                 colorClass="text-blue-600"
@@ -965,6 +999,13 @@ const Home = () => {
         onSuccess={() => {
           toast.success("Gasto registrado com sucesso!");
         }}
+      />
+
+      <UpgradePlanDialog
+        open={upgradeDialog.open}
+        onOpenChange={(open) => setUpgradeDialog((prev) => ({ ...prev, open }))}
+        featureName={upgradeDialog.featureName}
+        description={upgradeDialog.description}
       />
     </>
   );

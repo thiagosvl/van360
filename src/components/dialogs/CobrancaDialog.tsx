@@ -6,6 +6,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogTitle
 } from "@/components/ui/dialog";
 import {
@@ -227,8 +228,7 @@ export default function CobrancaDialog({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        aria-describedby="dialog-description"
+      onOpenAutoFocus={(e) => e.preventDefault()}
         className="w-[90vw] sm:w-full max-w-md max-h-[95vh] gap-0 flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
         hideCloseButton
       >
@@ -244,6 +244,9 @@ export default function CobrancaDialog({
           <DialogTitle className="text-xl font-bold text-white">
             Registrar Cobrança
           </DialogTitle>
+          <DialogDescription className="text-blue-100/80 text-sm mt-1">
+             Preencha os dados da cobrança.
+          </DialogDescription>
         </div>
 
         <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">

@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -24,6 +25,7 @@ interface PagamentoAssinaturaDialogProps {
   quantidadeAlunos?: number;
   onIrParaInicio?: () => void;
   onIrParaAssinatura?: () => void;
+  onPaymentVerified?: () => void; // Novo callback
   context?: "register" | "upgrade";
 }
 
@@ -39,6 +41,7 @@ export default function PagamentoAssinaturaDialog({
   quantidadeAlunos,
   onIrParaInicio,
   onIrParaAssinatura,
+  onPaymentVerified,
   context,
 }: PagamentoAssinaturaDialogProps) {
   // We need to handle close logic here to ensure cleanup if needed,
@@ -49,8 +52,8 @@ export default function PagamentoAssinaturaDialog({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-white p-0 gap-0 rounded-3xl"
-        onOpenAutoFocus={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
+        onOpenAutoFocus={(e) => e.preventDefault()}
         hideCloseButton
       >
         {/* Header Minimalista */}
@@ -59,6 +62,9 @@ export default function PagamentoAssinaturaDialog({
           <DialogTitle className="text-base font-semibold text-gray-900 uppercase tracking-wide">
             ASSINATURA
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Selecione a forma de pagamento e finalize sua assinatura.
+          </DialogDescription>
           <DialogClose className="text-gray-500 font-medium text-sm hover:text-gray-700 transition-colors">
             <X className="h-5 w-5" />
             <span className="sr-only">Close</span>
@@ -76,6 +82,7 @@ export default function PagamentoAssinaturaDialog({
             quantidadeAlunos={quantidadeAlunos}
             onIrParaInicio={onIrParaInicio}
             onIrParaAssinatura={onIrParaAssinatura}
+            onPaymentVerified={onPaymentVerified}
             context={context}
           />
         </div>

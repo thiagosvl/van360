@@ -1,18 +1,19 @@
 import { PhoneInput } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -131,8 +132,8 @@ export default function EditarCadastroDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="w-[90vw] sm:w-full sm:max-w-md max-h-[95vh] flex flex-col overflow-hidden bg-white rounded-3xl border-0 shadow-2xl p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
+        className="w-[90vw] sm:w-full sm:max-w-md max-h-[95vh] flex flex-col overflow-hidden bg-white rounded-3xl border-0 shadow-2xl p-0"
         hideCloseButton
       >
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
@@ -147,6 +148,9 @@ export default function EditarCadastroDialog({
           <DialogTitle className="text-xl font-bold text-white">
             Editar Perfil
           </DialogTitle>
+          <DialogDescription className="text-blue-100/80 text-sm mt-1">
+             Atualize suas informações de perfil.
+          </DialogDescription>
         </div>
 
         {isLoading ? (
