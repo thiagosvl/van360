@@ -42,14 +42,13 @@ import {
 import { mockGenerator } from "@/utils/mockDataGenerator";
 import { toast } from "@/utils/notifications/toast";
 import {
-  ArrowRight,
   Clock,
   Copy,
   Eye,
   MoreVertical,
   Search,
   Trash2,
-  Users2,
+  Users2
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -259,6 +258,53 @@ export default function PrePassageiros({
       .toUpperCase();
   };
 
+  const ActionsMenu = ({
+    prePassageiro,
+    showReviewOption,
+  }: {
+    prePassageiro: PrePassageiro;
+    showReviewOption: boolean;
+  }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {showReviewOption && (
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+              handleFinalizeClick(prePassageiro);
+            }}
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            Revisar
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem
+          className="text-red-600 focus:text-red-600"
+          onClick={(e) => {
+            e.stopPropagation();
+            setDeleteDialog({
+              open: true,
+              prePassageiroId: prePassageiro.id,
+            });
+          }}
+        >
+          <Trash2 className="w-4 h-4 mr-2" />
+          Excluir
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
     <>
       <div className="space-y-6">
@@ -402,42 +448,10 @@ export default function PrePassageiros({
                               <Eye className="w-4 h-4 mr-2" />
                               Revisar
                             </Button>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-gray-400 hover:text-gray-600"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleFinalizeClick(prePassageiro);
-                                  }}
-                                >
-                                  <Eye className="w-4 h-4 mr-2" />
-                                  Revisar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="text-red-600 focus:text-red-600"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDeleteDialog({
-                                      open: true,
-                                      prePassageiroId: prePassageiro.id,
-                                    });
-                                  }}
-                                >
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  Excluir
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            <ActionsMenu
+                              prePassageiro={prePassageiro}
+                              showReviewOption={false}
+                            />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -472,17 +486,10 @@ export default function PrePassageiros({
 
                       {/* Botão de Ação no Topo Direito */}
                       <div className="-mt-1 -mr-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 p-0 rounded-full text-blue-600 hover:bg-blue-50"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleFinalizeClick(prePassageiro);
-                          }}
-                        >
-                          <ArrowRight className="w-5 h-5" />
-                        </Button>
+                        <ActionsMenu
+                          prePassageiro={prePassageiro}
+                          showReviewOption={true}
+                        />
                       </div>
                     </div>
 
