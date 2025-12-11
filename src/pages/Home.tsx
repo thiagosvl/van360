@@ -350,7 +350,7 @@ const StatusCard = ({
                         <Button
                           size="sm"
                           onClick={step.onAction}
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white h-8 px-3 rounded-lg text-xs font-bold shadow-indigo-200/50 shadow-lg animate-in fade-in slide-in-from-right-4 duration-300"
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white h-8 px-3 rounded-lg text-xs font-bold shadow-indigo-200/50 shadow-lg"
                         >
                           {step.buttonText}
                           <ArrowRight className="ml-1" />
