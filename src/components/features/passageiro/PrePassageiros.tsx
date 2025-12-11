@@ -40,7 +40,7 @@ import {
   formatRelativeTime,
   periodos,
 } from "@/utils/formatters";
-import { mockGenerator } from "@/utils/mockDataGenerator";
+import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import {
   Clock,

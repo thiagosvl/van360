@@ -21,6 +21,12 @@ interface RelatoriosOperacionalProps {
       passageiros: number;
       percentual: number;
     }[];
+    periodos: {
+      nome: string;
+      passageiros: number;
+      valor: number;
+      percentual: number;
+    }[];
   };
   automacao: {
     envios: number;
@@ -191,6 +197,60 @@ export const RelatoriosOperacional = ({
             {dados.escolas.length === 0 && (
               <p className="text-center text-gray-400 text-xs py-4">
                 Nenhuma escola vinculada.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Períodos */}
+        <Card className="border-none shadow-sm rounded-2xl bg-white">
+          <CardHeader className="pb-2 pt-5 px-6">
+            <CardTitle className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              Por Período
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-8 pt-4 space-y-4">
+            {dados.periodos.map((periodo, index) => (
+              <div key={index} className="space-y-2">
+                <div className="flex justify-between items-end text-sm">
+                  <span className="font-medium text-gray-700">
+                    {periodo.nome}
+                  </span>
+                  <div className="text-right">
+                    <div className="text-xs text-gray-500">
+                      <BlurredValue
+                        value={periodo.valor}
+                        visible={hasAccess}
+                        type="currency"
+                      />
+                    </div>
+                    <div className="font-semibold text-gray-900">
+                      <BlurredValue
+                        value={periodo.passageiros}
+                        visible={hasAccess}
+                        type="number"
+                      />{" "}
+                      <span
+                        className={cn(
+                          "text-xs text-gray-400 mt-1",
+                          !hasAccess && "blur-sm select-none"
+                        )}
+                      >
+                        {periodo.passageiros === 1 ? "pass." : "pass."}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <Progress
+                  value={periodo.percentual}
+                  className="h-1.5 bg-gray-100 rounded-full"
+                  indicatorClassName="bg-amber-500 rounded-full"
+                />
+              </div>
+            ))}
+            {dados.periodos.length === 0 && (
+              <p className="text-center text-gray-400 text-xs py-4">
+                Nenhum dado por período.
               </p>
             )}
           </CardContent>

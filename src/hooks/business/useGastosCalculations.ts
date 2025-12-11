@@ -1,62 +1,8 @@
 import { Gasto } from "@/types/gasto";
+import { MOCK_DATA_NO_ACCESS_GASTOS } from "@/utils/mocks/restrictedData";
 import { useMemo } from "react";
 
-export const MOCK_DATA_NO_ACCESS_GASTOS = {
-  totalGasto: 12500.5,
-  principalCategoriaData: {
-    name: "Combustível",
-    value: 4500.0,
-    percentage: 36,
-  },
-  mediaDiaria: 416.68,
-  gastos: [
-    {
-      id: "1",
-      categoria: "Combustível",
-      descricao: "Abastecimento Semanal",
-      valor: 450.0,
-      data: null,
-      created_at: "2024-03-10T10:00:00.000Z",
-      usuario_id: "mock",
-    },
-    {
-      id: "2",
-      categoria: "Manutenção",
-      descricao: "Troca de Óleo",
-      valor: 250.0,
-      data: null,
-      created_at: "2024-03-12T14:30:00.000Z",
-      usuario_id: "mock",
-    },
-    {
-      id: "3",
-      categoria: "Salário",
-      descricao: "Adiantamento Motorista",
-      valor: 1200.0,
-      data: null,
-      created_at: "2024-03-15T09:00:00.000Z",
-      usuario_id: "mock",
-    },
-    {
-      id: "4",
-      categoria: "Vistorias",
-      descricao: "Vistoria Semestral",
-      valor: 150.0,
-      data: null,
-      created_at: "2024-03-18T11:00:00.000Z",
-      usuario_id: "mock",
-    },
-    {
-      id: "5",
-      categoria: "Documentação",
-      descricao: "Licenciamento Anual",
-      valor: 350.0,
-      data: null,
-      created_at: "2024-03-20T16:00:00.000Z",
-      usuario_id: "mock",
-    },
-  ] as Gasto[],
-};
+
 
 interface UseGastosCalculationsProps {
   gastos: Gasto[];
@@ -176,7 +122,7 @@ export const useGastosCalculations = ({
       principalCategoriaData:
         MOCK_DATA_NO_ACCESS_GASTOS.principalCategoriaData,
       mediaDiaria: MOCK_DATA_NO_ACCESS_GASTOS.mediaDiaria,
-      gastosFiltrados: MOCK_DATA_NO_ACCESS_GASTOS.gastos,
+      gastosFiltrados: MOCK_DATA_NO_ACCESS_GASTOS.gastos as Gasto[],
     };
   }, [
     enabledPageActions,

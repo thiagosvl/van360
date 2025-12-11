@@ -42,7 +42,7 @@ import { Veiculo } from "@/types/veiculo";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
-import { mockGenerator } from "@/utils/mockDataGenerator";
+import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { Users2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
