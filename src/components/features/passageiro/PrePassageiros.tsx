@@ -30,8 +30,8 @@ import {
   usePassageiros,
   usePrePassageiros,
 } from "@/hooks";
+import { usePassengerLimits } from "@/hooks/business/usePassengerLimits";
 import { PrePassageiro } from "@/types/prePassageiro";
-import { Usuario } from "@/types/usuario";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import {
@@ -51,7 +51,6 @@ import {
   Users2
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 type PlanoUsuario = {
   slug: string;
@@ -68,20 +67,12 @@ type PlanoUsuario = {
   isEssentialPlan: boolean;
 } | null;
 
-interface PrePassageirosProps {
-  onFinalizeNewPrePassageiro: () => void;
-  refreshKey?: number;
-  profile: Usuario | null | undefined;
-  plano: PlanoUsuario;
-}
-
 export default function PrePassageiros({
   onFinalizeNewPrePassageiro,
   refreshKey,
   profile,
   plano,
-}: PrePassageirosProps) {
-  const navigate = useNavigate();
+}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
@@ -135,17 +126,13 @@ export default function PrePassageiros({
   const loading = isPrePassageirosLoading || isPrePassageirosFetching;
 
   // --- Lógica de Limite (replicada de Passageiros.tsx) ---
-  const limitePassageiros =
-    profile?.assinaturas_usuarios?.[0]?.planos?.limite_passageiros ?? null;
-  const restantePassageiros =
-    countPassageiros == null
-      ? null
-      : limitePassageiros == null
-      ? null
-      : Number(limitePassageiros) - countPassageiros;
-  const isLimitedUser = !!plano && plano.isFreePlan;
-  const isLimitReached =
-    typeof restantePassageiros === "number" && restantePassageiros <= 0;
+  // --- Lógica de Limite (centralizada no hook) ---
+  const { isLimitedUser, isLimitReached } = usePassengerLimits({
+    plano,
+    profile,
+    currentCount: countPassageiros,
+  });
+  // -------------------------------------------------------
   // -------------------------------------------------------
 
   useEffect(() => {

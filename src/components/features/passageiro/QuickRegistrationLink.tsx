@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
+import { usePassengerLimits } from "@/hooks/business/usePassengerLimits";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { toast } from "@/utils/notifications/toast";
 import { ArrowRight, CheckCircle, ChevronDown, ChevronUp, Copy, LinkIcon, Lock, MessageCircle } from "lucide-react";
@@ -40,6 +41,13 @@ export function QuickRegistrationLink({
     if (!plano) return false;
     return plano.isValidPlan;
   }, [plano]);
+
+  // Use the centralized hook for limits
+  const { isLimitReached, limitePassageiros } = usePassengerLimits({
+    plano,
+    profile,
+    currentCount: countPassageiros,
+  });
 
   const handleCopyLink = () => {
     if (!profile?.id) {

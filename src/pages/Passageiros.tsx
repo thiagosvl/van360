@@ -29,8 +29,9 @@ import {
   useToggleAtivoPassageiro,
   useUpdatePassageiro,
   useValidarFranquia,
-  useVeiculos,
+  useVeiculos
 } from "@/hooks";
+import { usePassengerLimits } from "@/hooks/business/usePassengerLimits";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Escola } from "@/types/escola";
@@ -273,17 +274,12 @@ export default function Passageiros() {
     [veiculosData]
   );
 
-  const limitePassageiros =
-    profile?.assinaturas_usuarios?.[0]?.planos?.limite_passageiros ?? null;
-  const restantePassageiros =
-    isActionLoading || isPassageirosLoading || countPassageiros == null
-      ? null
-      : limitePassageiros == null
-      ? null
-      : Number(limitePassageiros) - countPassageiros;
-  const isLimitedUser = !!plano && plano.isFreePlan;
-  const isLimitReached =
-    typeof restantePassageiros === "number" && restantePassageiros <= 0;
+  const { limitePassageiros, isLimitedUser, isLimitReached } =
+    usePassengerLimits({
+      plano,
+      profile,
+      currentCount: countPassageiros,
+    });
 
   useEffect(() => {
     const handler = setTimeout(() => {
