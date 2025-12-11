@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
-import { hasPassageirosLimit } from "@/utils/domain/plano/accessRules";
 import { toast } from "@/utils/notifications/toast";
 import { ArrowRight, CheckCircle, ChevronDown, ChevronUp, Copy, LinkIcon, Lock, MessageCircle } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -39,18 +38,8 @@ export function QuickRegistrationLink({
 
   const allowAccess = useMemo(() => {
     if (!plano) return false;
-    // Liberado para todos os planos ativos (incluindo Gratuito)
     return plano.isValidPlan;
   }, [plano]);
-
-  const limitePassageiros = plano?.planoCompleto?.limite_passageiros ?? 0;
-  const ativos = Number(countPassageiros) || 0;
-
-  // Aplicar limite apenas para plano Gratuito
-  // Plano Essencial (trial) não tem limite para maximizar lock-in
-  const shouldApplyLimit = hasPassageirosLimit(plano);
-
-  const isLimitReached = shouldApplyLimit && limitePassageiros > 0 && ativos >= limitePassageiros;
 
   const handleCopyLink = () => {
     if (!profile?.id) {
@@ -191,11 +180,6 @@ export function QuickRegistrationLink({
                       </>
                     )}
                   </Button>
-                  {isLimitReached && (
-                    <p className="text-xs text-orange-600 font-medium bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-lg">
-                      Limite de {limitePassageiros} passageiros atingido
-                    </p>
-                  )}
                 </>
               ) : (
                 <Button

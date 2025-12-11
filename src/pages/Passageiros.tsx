@@ -4,6 +4,7 @@ import { DialogExcessoFranquia } from "@/components/dialogs/DialogExcessoFranqui
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
+import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PassageirosList } from "@/components/features/passageiro/PassageirosList";
@@ -138,6 +139,7 @@ export default function Passageiros() {
     passageiro: null as Passageiro | null,
     action: "" as "ativar" | "desativar" | "",
   });
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
   const [limiteFranquiaDialog, setLimiteFranquiaDialog] = useState<{
     open: boolean;
     franquiaContratada: number;
@@ -270,6 +272,18 @@ export default function Passageiros() {
       )?.list ?? ([] as (Veiculo & { passageiros_ativos_count?: number })[]),
     [veiculosData]
   );
+
+  const limitePassageiros =
+    profile?.assinaturas_usuarios?.[0]?.planos?.limite_passageiros ?? null;
+  const restantePassageiros =
+    isActionLoading || isPassageirosLoading || countPassageiros == null
+      ? null
+      : limitePassageiros == null
+      ? null
+      : Number(limitePassageiros) - countPassageiros;
+  const isLimitedUser = !!plano && plano.isFreePlan;
+  const isLimitReached =
+    typeof restantePassageiros === "number" && restantePassageiros <= 0;
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -440,12 +454,17 @@ export default function Passageiros() {
   }, []);
 
   const handleOpenNewDialog = useCallback(() => {
+    if (isLimitedUser && isLimitReached) {
+      setIsUpgradeDialogOpen(true);
+      return;
+    }
+
     safeCloseDialog(() => {
       setEditingPassageiro(null);
       setModePassageiroFormDialog("create");
       setIsDialogOpen(true);
     });
-  }, []);
+  }, [isLimitedUser, isLimitReached]);
 
   const handleCadastrarRapido = useCallback(async () => {
     if (!profile?.id) return;
@@ -535,17 +554,6 @@ export default function Passageiros() {
     refetchPrePassageiros,
   ]);
 
-  const limitePassageiros =
-    profile?.assinaturas_usuarios?.[0]?.planos?.limite_passageiros ?? null;
-  const restantePassageiros =
-    isActionLoading || isPassageirosLoading || countPassageiros == null
-      ? null
-      : limitePassageiros == null
-      ? null
-      : Number(limitePassageiros) - countPassageiros;
-  const isLimitedUser = !!plano && plano.isFreePlan;
-  const isLimitReached =
-    typeof restantePassageiros === "number" && restantePassageiros <= 0;
 
   if (isProfileLoading || !profile) {
     return (
@@ -648,7 +656,6 @@ export default function Passageiros() {
                       hasActiveFilters={hasActiveFilters}
                       onApplyFilters={setFilters}
                       onRegister={handleOpenNewDialog}
-                      isRegisterDisabled={isLimitedUser && isLimitReached}
                     />
                   </div>
 
@@ -793,6 +800,14 @@ export default function Passageiros() {
             title={limiteFranquiaDialog.title}
             description={limiteFranquiaDialog.description}
             hideLimitInfo={limiteFranquiaDialog.hideLimitInfo}
+          />
+
+          <UpgradePlanDialog
+            open={isUpgradeDialogOpen}
+            onOpenChange={setIsUpgradeDialogOpen}
+            featureName="Limite de Passageiros"
+            description="Você atingiu o limite de passageiros do seu Plano Gratuito. Adquira mais passageiros ou mude de plano para continuar crescendo."
+            redirectTo="/planos"
           />
 
           <DialogExcessoFranquia
