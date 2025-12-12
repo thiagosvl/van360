@@ -2,6 +2,7 @@ import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 
 
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
+import { NotificationTimeline } from "@/components/features/cobranca/NotificationTimeline";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,14 +14,10 @@ import { useLayout } from "@/contexts/LayoutContext";
 import {
   useCobranca,
   useCobrancaNotificacoes,
-  useDeleteCobranca,
-  useDesfazerPagamento,
-  useEnviarNotificacaoCobranca,
-  useToggleNotificacoesCobranca,
-  useValidarFranquia,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
@@ -32,7 +29,6 @@ import {
   disableRegistrarPagamento,
   seForPago,
 } from "@/utils/domain/cobranca/disableActions";
-import { canUseNotificacoes } from "@/utils/domain/plano/accessRules";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
   formatCobrancaOrigem,
@@ -52,14 +48,11 @@ import {
   BadgeCheck,
   Bell,
   BellOff,
-  Bot,
   Calendar,
   CalendarDays,
   Car,
   CheckCircle,
   CheckCircle2,
-  ChevronDown,
-  ChevronUp,
   Copy,
   CreditCard,
   History,
@@ -72,7 +65,7 @@ import {
   Trash2,
   User,
   Wallet,
-  XCircle,
+  XCircle
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -131,112 +124,7 @@ const CobrancaSkeleton = () => (
   </div>
 );
 
-const NotificationTimeline = ({ items }: { items: CobrancaNotificacao[] }) => {
-  const [expanded, setExpanded] = useState(false);
-  const displayedItems = expanded ? items : items.slice(0, 3);
-  const hasMore = items.length > 3;
 
-  const getIcon = (type: string) => {
-    switch (type) {
-      case "auto":
-        return (
-          <div className="h-8 w-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 z-10">
-            <Bot className="h-4 w-4" />
-          </div>
-        );
-      case "manual":
-        return (
-          <div className="h-8 w-8 rounded-full bg-green-50 border border-green-100 flex items-center justify-center text-green-600 z-10">
-            <User className="h-4 w-4" />
-          </div>
-        );
-      default:
-        return (
-          <div className="h-8 w-8 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-500 z-10">
-            <Bot className="h-4 w-4" />
-          </div>
-        );
-    }
-  };
-
-  const getEventDescription = (tipoEvento: string): string => {
-    if (tipoEvento === "REENVIO_MANUAL") {
-      return "Você enviou lembrete";
-    }
-    const atrasoMatch = tipoEvento.match(/^LEMBRETE_ATRASO_(\d+)$/);
-    if (atrasoMatch) {
-      return `${atrasoMatch[1]}º lembrete de atraso`;
-    }
-    switch (tipoEvento) {
-      case "AVISO_VENCIMENTO":
-        return "Lembrete de vencimento";
-      case "AVISO_ANTECIPADO":
-        return "Lembrete antecipado";
-      default:
-        return tipoEvento;
-    }
-  };
-
-  return (
-    <div className="relative pl-2">
-      <div className="absolute left-[24px] top-4 bottom-4 w-px bg-gray-100" />
-      <div className="space-y-4">
-        <AnimatePresence initial={false}>
-          {displayedItems.map((item, index) => (
-            <motion.div
-              key={item.id || index}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="relative flex gap-4 items-start"
-            >
-              <div className="flex-shrink-0 mt-1">
-                {getIcon(item.tipo_origem)}
-              </div>
-              <div className="flex-1 pt-1">
-                <div className="flex flex-col gap-1">
-                  <p className="font-medium text-gray-900 text-sm">
-                    {getEventDescription(item.tipo_evento)}
-                  </p>
-                  <span className="text-xs text-gray-400 font-medium whitespace-nowrap">
-                    {new Date(item.data_envio).toLocaleString("pt-BR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {hasMore && (
-        <div className="mt-4 pl-12">
-          <Button
-            variant="link"
-            size="sm"
-            onClick={() => setExpanded(!expanded)}
-            className="text-gray-500 hover:text-gray-900 p-0 h-auto font-semibold text-xs"
-          >
-            {expanded ? (
-              <>
-                <ChevronUp className="w-3 h-3 mr-1" /> Ver menos
-              </>
-            ) : (
-              <>
-                <ChevronDown className="w-3 h-3 mr-1" /> Ver histórico completo
-                ({items.length - 3})
-              </>
-            )}
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-};
 
 export default function PassageiroCobranca() {
   const navigate = useNavigate();
@@ -253,31 +141,13 @@ export default function PassageiroCobranca() {
 
   const { user } = useSession();
   const { plano, profile } = useProfile(user?.id);
-  const deleteCobrancaMutation = useDeleteCobranca();
-  const enviarNotificacaoMutation = useEnviarNotificacaoCobranca();
-  const toggleNotificacoesMutation = useToggleNotificacoesCobranca();
-  const desfazerPagamentoMutation = useDesfazerPagamento();
+
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
   
 
 
-  const { validacao: validacaoFranquiaGeral } = useValidarFranquia(
-    user?.id,
-    passageiro_id,
-    profile
-  );
 
-  const handleUpgrade = (featureName: string, description: string) => {
-    openLimiteFranquiaDialog({
-      title: featureName,
-      description: description,
-      hideLimitInfo: true,
-      onUpgradeSuccess: () => {
-         refetchCobranca();
-      }
-    });
-  };
 
   // Buscar cobrança usando React Query
   const {
@@ -359,97 +229,22 @@ export default function PassageiroCobranca() {
     return cobranca;
   }, [cobranca]);
 
-  const handleEnviarNotificacao = async () => {
-    enviarNotificacaoMutation.mutate(cobranca_id, {
-      onSuccess: async () => {
-        // Refetch explícito para garantir que a cobrança e notificações sejam atualizadas
-        // Aguarda ambas as queries serem refetchadas
-        await Promise.all([refetchCobranca(), refetchNotificacoes()]);
-      },
-    });
-  };
+  const { 
+    handleToggleLembretes, 
+    handleEnviarNotificacao, 
+    handleDesfazerPagamento,
+    handleDeleteCobranca,
+    handleUpgrade,
+    isActionLoading
+  } = useCobrancaActions({
+     plano: plano,
+     onActionSuccess: () => {
+         refetchCobranca();
+         refetchNotificacoes();
+     }
+  });
 
-  const hasNotificacoesAccess = canUseNotificacoes(plano as any);
 
-  const handleToggleLembretes = async () => {
-    if (!cobranca) return;
-    toggleNotificacoesMutation.mutate(
-      {
-        cobrancaId: cobranca_id,
-        desativar: !cobranca.desativar_lembretes,
-      },
-      {
-        onSuccess: () => {
-          // Refetch explícito para garantir que a cobrança seja atualizada
-          refetchCobranca();
-        },
-      }
-    );
-  };
-
-  const handleToggleNotificacoesClick = () => {
-    if (hasNotificacoesAccess) {
-      // Usuário tem permissão: executa a ação normal
-      handleToggleLembretes();
-    } else {
-      // Usuário não tem permissão: abre dialog de upgrade
-      handleUpgrade(
-        "Notificações Automáticas",
-        "Automatize o envio de lembretes e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
-      );
-    }
-  };
-
-  const handleEnviarLembreteClick = () => {
-    if (!cobranca) return;
-
-    if (hasNotificacoesAccess) {
-      // Usuário tem permissão: abre dialog de confirmação
-      openConfirmationDialog({
-          title: "Enviar Cobrança",
-          description: "Ao confirmar, esta cobrança será enviada para o responsável. Deseja continuar?",
-          confirmText: "Enviar",
-          onConfirm: async () => {
-            if (!cobranca) return;
-             try {
-                // Assuming handleEnviarNotificacao logic needs to be called here or duplicated
-                // But handleEnviarNotificacao uses mutate (not async/await in existing code).
-                // Let's refactor handleEnviarNotificacao too if needed, or just call mutation here.
-                await enviarNotificacaoMutation.mutateAsync(cobranca_id);
-                // onSuccess logic from handleEnviarNotificacao?
-                await Promise.all([refetchCobranca(), refetchNotificacoes()]);
-                closeConfirmationDialog();
-             } catch(error) {
-                closeConfirmationDialog();
-             }
-          }
-      });
-    } else {
-      // Usuário não tem permissão: abre dialog de upgrade
-       handleUpgrade(
-        "Envio de Cobranças",
-        "Automatize o envio de cobranças e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
-      );
-    }
-  };
-
-  const handleDesfazerPagamento = async () => {
-      openConfirmationDialog({
-          title: "Desfazer Pagamento",
-          description: "Tem certeza que deseja desfazer este pagamento? A cobrança voltará para o status pendente.",
-          variant: "destructive",
-          confirmText: "Desfazer",
-          onConfirm: async () => {
-             try {
-               await desfazerPagamentoMutation.mutateAsync(cobranca_id);
-               closeConfirmationDialog();
-               refetchCobranca();
-             } catch (error) {
-               closeConfirmationDialog();
-             }
-          }
-      });
-  };
 
   const handleCopyEndereco = async () => {
     if (!cobrancaTyped?.passageiros) return;
@@ -514,27 +309,8 @@ export default function PassageiroCobranca() {
   }
 
   if (!cobranca || !cobrancaTyped) return null;
+  if (!cobranca || !cobrancaTyped) return null;
   const passageiroCompleto = cobrancaTyped.passageiros as Passageiro;
-
-  const handleDeleteCobranca = async () => {
-    if (!cobranca) return;
-
-    openConfirmationDialog({
-      title: "Excluir Cobrança",
-      description: "Ao confirmar, esta cobrança será excluída permanentemente. Deseja continuar?",
-      confirmText: "Confirmar",
-      variant: "destructive",
-      onConfirm: async () => {
-         try {
-           await deleteCobrancaMutation.mutateAsync(cobranca.id);
-           closeConfirmationDialog();
-           navigate(`/passageiros/${cobranca.passageiro_id}`);
-         } catch (error) {
-           closeConfirmationDialog();
-         }
-      }
-    });
-  };
 
   const pullToRefreshReload = async () => {
     await refetchCobranca();
@@ -842,7 +618,7 @@ export default function PassageiroCobranca() {
                             size="lg"
                             variant="outline"
                             className="h-12 px-8 rounded-xl border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 w-full sm:w-auto min-w-[200px]"
-                            onClick={handleDesfazerPagamento}
+                            onClick={() => handleDesfazerPagamento(cobrancaTyped)}
                           >
                             <History className="w-4 h-4 mr-2" />
                             Desfazer Pagamento
@@ -882,8 +658,8 @@ export default function PassageiroCobranca() {
                             variant="ghost"
                             size="sm"
                             className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
-                            disabled={hasNotificacoesAccess || seForPago(cobrancaTyped)}
-                            onClick={handleEnviarLembreteClick}
+                            disabled={seForPago(cobrancaTyped)}
+                            onClick={() => handleEnviarNotificacao(cobrancaTyped)}
                           >
                             <Send className="w-3.5 h-3.5 mr-2" /> Enviar
                             Cobrança
@@ -892,8 +668,8 @@ export default function PassageiroCobranca() {
                             variant="ghost"
                             size="sm"
                             className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
-                            disabled={hasNotificacoesAccess || seForPago(cobrancaTyped)}
-                            onClick={handleToggleNotificacoesClick}
+                            disabled={seForPago(cobrancaTyped)}
+                            onClick={() => handleToggleLembretes(cobrancaTyped)}
                           >
                             {cobrancaTyped.desativar_lembretes ? (
                               <>
@@ -915,7 +691,7 @@ export default function PassageiroCobranca() {
                         variant="ghost"
                         className="text-red-400 hover:text-red-600 hover:bg-red-50 font-medium text-xs h-8 px-3 rounded-md transition-colors"
                         disabled={disableExcluirCobranca(cobrancaTyped)}
-                        onClick={handleDeleteCobranca}
+                        onClick={() => handleDeleteCobranca(cobrancaTyped, { redirectAfter: true })}
                       >
                         <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir cobrança
                       </Button>
@@ -1020,12 +796,7 @@ export default function PassageiroCobranca() {
 
 
           <LoadingOverlay
-            active={
-              deleteCobrancaMutation.isPending ||
-              enviarNotificacaoMutation.isPending ||
-              toggleNotificacoesMutation.isPending ||
-              desfazerPagamentoMutation.isPending
-            }
+            active={isActionLoading}
           />
           
 
