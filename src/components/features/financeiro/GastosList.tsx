@@ -3,29 +3,29 @@ import { MobileAction, MobileActionItem } from "@/components/common/MobileAction
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { Button } from "@/components/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { formatDateToBR } from "@/utils/formatters";
 import {
-    Bus,
-    Calendar,
-    ClipboardCheck,
-    Cog,
-    Edit,
-    Ellipsis,
-    FileText,
-    Fuel,
-    HelpCircle,
-    MoreVertical,
-    Trash2,
-    Wallet,
-    Wrench,
+  Bus,
+  Calendar,
+  ClipboardCheck,
+  Cog,
+  Edit,
+  Ellipsis,
+  FileText,
+  Fuel,
+  HelpCircle,
+  MoreVertical,
+  Trash2,
+  Wallet,
+  Wrench,
 } from "lucide-react";
 
 interface GastosListProps {
@@ -156,7 +156,7 @@ export function GastosList({
   return (
     <ResponsiveDataList
       data={gastos}
-      mobileItemRenderer={(gasto) => {
+      mobileItemRenderer={(gasto, index) => {
         const { icon: Icon, color, bg } = getCategoryConfig(gasto.categoria);
         const placa = getVeiculoPlaca(gasto.veiculo_id);
 
@@ -179,6 +179,7 @@ export function GastosList({
           <MobileActionItem
             key={gasto.id}
             actions={actions}
+            showHint={index === 0}
           >
             <div
               onClick={() => !isRestricted && onEdit(gasto)}

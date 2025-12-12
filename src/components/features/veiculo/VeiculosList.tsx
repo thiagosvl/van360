@@ -127,7 +127,7 @@ export function VeiculosList({
     <ResponsiveDataList
       data={veiculos}
       mobileContainerClassName="space-y-3"
-      mobileItemRenderer={(veiculo) => {
+      mobileItemRenderer={(veiculo, index) => {
         const actions: MobileAction[] = [
           {
             label: "Editar",
@@ -160,6 +160,7 @@ export function VeiculosList({
           <MobileActionItem
             key={veiculo.id}
             actions={actions}
+            showHint={index === 0}
           >
             <div
               onClick={() => onEdit(veiculo)}

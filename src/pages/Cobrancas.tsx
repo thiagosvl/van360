@@ -23,7 +23,7 @@ import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import { CobrancasFilters } from "@/components/features/cobranca/CobrancasFilters";
 import { ListSkeleton } from "@/components/skeletons";
 import {
-    useCobrancas
+  useCobrancas
 } from "@/hooks";
 import { useCobrancaActions } from "@/hooks/business/useCobrancaActions";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -32,10 +32,10 @@ import { useSession } from "@/hooks/business/useSession";
 // Utils
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
-    formatDateToBR,
-    formatPaymentType,
-    getStatusColor,
-    meses
+  formatDateToBR,
+  formatPaymentType,
+  getStatusColor,
+  meses
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 
@@ -50,7 +50,7 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
-    PASSAGEIRO_COBRANCA_STATUS_PAGO
+  PASSAGEIRO_COBRANCA_STATUS_PAGO
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -388,7 +388,7 @@ const Cobrancas = () => {
 
                       return (
                       <Fragment key={cobranca.id}>
-                      <MobileActionItem actions={actions}>
+                      <MobileActionItem actions={actions} showHint={index === 0}>
                       <div
                         onClick={() => navigateToDetails(cobranca)}
                         className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
@@ -588,7 +588,7 @@ const Cobrancas = () => {
                            }
                         />
                      }
-                      mobileItemRenderer={(cobranca) => {
+                      mobileItemRenderer={(cobranca, index) => {
                         const actions = getCobrancaMobileActions({
                           cobranca,
                           plano,
@@ -604,7 +604,7 @@ const Cobrancas = () => {
                         });
 
                         return (
-                        <MobileActionItem key={cobranca.id} actions={actions}>
+                        <MobileActionItem key={cobranca.id} actions={actions} showHint={index === 0}>
                         <div
                           onClick={() => navigateToDetails(cobranca)}
                           className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
