@@ -140,6 +140,7 @@ export default function Gastos() {
   }, []);
 
   const pullToRefreshReload = async () => {
+    if (!enabledPageActions) return;
     await refetchGastos();
   };
 

@@ -6,6 +6,7 @@ import { RelatoriosEntradas } from "@/components/features/relatorios/RelatoriosE
 import { RelatoriosOperacional } from "@/components/features/relatorios/RelatoriosOperacional";
 import { RelatoriosSaidas } from "@/components/features/relatorios/RelatoriosSaidas";
 import { RelatoriosVisaoGeral } from "@/components/features/relatorios/RelatoriosVisaoGeral";
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PLANO_ESSENCIAL } from "@/constants";
@@ -56,7 +57,7 @@ export default function Relatorios() {
   // Passageiros sempre busca para exibir o health bar corretamente
   const shouldFetchPassageiros = !!profile?.id;
 
-  const { data: cobrancasData } = useCobrancas(
+  const { data: cobrancasData, refetch: refetchCobrancas } = useCobrancas(
     {
       usuarioId: profile?.id,
       mes,
@@ -65,7 +66,7 @@ export default function Relatorios() {
     { enabled: shouldFetchData }
   );
 
-  const { data: gastosData = [] } = useGastos(
+  const { data: gastosData = [], refetch: refetchGastos } = useGastos(
     {
       usuarioId: profile?.id,
       mes,
@@ -74,16 +75,16 @@ export default function Relatorios() {
     { enabled: shouldFetchData }
   );
 
-  const { data: passageirosData } = usePassageiros(
+  const { data: passageirosData, refetch: refetchPassageiros } = usePassageiros(
     { usuarioId: profile?.id },
     { enabled: shouldFetchPassageiros }
   );
 
-  const { data: escolasData } = useEscolas(profile?.id, {
+  const { data: escolasData, refetch: refetchEscolas } = useEscolas(profile?.id, {
     enabled: shouldFetchData,
   });
 
-  const { data: veiculosData } = useVeiculos(profile?.id, {
+  const { data: veiculosData, refetch: refetchVeiculos } = useVeiculos(profile?.id, {
     enabled: shouldFetchData,
   });
 
@@ -108,12 +109,24 @@ export default function Relatorios() {
     setAno(newAno);
   };
 
+  const pullToRefreshReload = async () => {
+    if (!hasAccess) return;
+    await Promise.all([
+      refetchCobrancas(),
+      refetchGastos(),
+      refetchPassageiros(),
+      refetchEscolas(),
+      refetchVeiculos(),
+    ]);
+  };
+
   if (!profilePlano) {
     return <div>Carregando...</div>;
   }
 
   return (
     <div className="relative min-h-screen pb-20 space-y-6 bg-gray-50/50">
+      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
       {/* Premium Banner (Top of Page) */}
 
 
@@ -224,6 +237,7 @@ export default function Relatorios() {
           />
         </TabsContent>
       </Tabs>
+      </PullToRefreshWrapper>
       {/* Mobile Sticky Footer for No Access */}
       <UpgradeStickyFooter
         visible={!hasAccess}
