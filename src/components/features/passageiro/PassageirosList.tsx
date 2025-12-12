@@ -1,3 +1,4 @@
+import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -182,7 +183,63 @@ export function PassageirosList({
   );
 
   return (
-    <>
+    <ResponsiveDataList
+      data={passageiros}
+
+      mobileContainerClassName="space-y-3"
+      mobileItemRenderer={(passageiro) => (
+        <div
+          key={passageiro.id}
+          className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
+          onClick={() => onHistorico(passageiro)}
+        >
+          {/* Linha 1: Avatar + Nome + Ações */}
+          <div className="flex justify-between items-start mb-1 relative">
+            <div className="flex items-center gap-3">
+              <div
+                className={`h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm ${
+                  passageiro.ativo
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-gray-100 text-slate-600"
+                }`}
+              >
+                {getInitials(passageiro.nome)}
+              </div>
+              <div className="pr-6">
+                <p className="font-bold text-gray-900 text-sm">
+                  {passageiro.nome}
+                </p>
+                <p className="text-xs font-semibold text-gray-900">
+                  {passageiro.nome_responsavel}
+                </p>
+              </div>
+            </div>
+
+            {/* Botão de Ações no Topo Direito */}
+            <div className="-mt-1 -mr-2" onClick={(e) => e.stopPropagation()}>
+              <ActionsDropdown passageiro={passageiro} />
+            </div>
+          </div>
+
+          {/* Linha 2: Detalhes Secundários + Status */}
+          <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+            <div className="shrink-0 flex items-center gap-2">
+              {getStatusBadge(passageiro.ativo)}
+              {renderAutoBillingIcon(passageiro)}
+            </div>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                Escola / Período
+              </span>
+              <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
+                {passageiro.escolas?.nome} •{" "}
+                {formatPeriodo(passageiro.periodo)}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    >
       {/* Desktop Table */}
       <div className="hidden md:block rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
         <Table>
@@ -231,7 +288,7 @@ export function PassageirosList({
                       <p className="font-bold text-gray-900 text-sm">
                         {passageiro.nome}
                       </p>
-                      <p className="text-xs font-semibold text-gray-500">
+                      <p className="text-xs font-semibold text-gray-900">
                         {passageiro.nome_responsavel}
                       </p>
                     </div>
@@ -277,62 +334,5 @@ export function PassageirosList({
           </TableBody>
         </Table>
       </div>
-
-      {/* Mobile Cards */}
-      <div className="md:hidden space-y-3">
-        {passageiros.map((passageiro) => (
-          <div
-            key={passageiro.id}
-            className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
-            onClick={() => onHistorico(passageiro)}
-          >
-            {/* Linha 1: Avatar + Nome + Ações */}
-            <div className="flex justify-between items-start mb-1 relative">
-              <div className="flex items-center gap-3">
-                <div
-                  className={`h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm ${
-                    passageiro.ativo
-                      ? "bg-emerald-50 text-emerald-700"
-                      : "bg-gray-100 text-slate-600"
-                  }`}
-                >
-                  {getInitials(passageiro.nome)}
-                </div>
-                <div className="pr-6">
-                  <p className="font-bold text-gray-900 text-sm">
-                    {passageiro.nome}
-                  </p>
-                  <p className="text-xs font-semibold text-gray-900">
-                    {passageiro.nome_responsavel}
-                  </p>
-                </div>
-              </div>
-
-              {/* Botão de Ações no Topo Direito */}
-              <div className="-mt-1 -mr-2" onClick={(e) => e.stopPropagation()}>
-                <ActionsDropdown passageiro={passageiro} />
-              </div>
-            </div>
-
-            {/* Linha 2: Detalhes Secundários + Status */}
-            <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-              <div className="shrink-0 flex items-center gap-2">
-                {getStatusBadge(passageiro.ativo)}
-                {renderAutoBillingIcon(passageiro)}
-              </div>
-              <div className="flex flex-col items-end gap-0.5">
-                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-                  Escola / Período
-                </span>
-                <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
-                  {passageiro.escolas?.nome} •{" "}
-                  {formatPeriodo(passageiro.periodo)}
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </>
-  );
+    </ResponsiveDataList>  );
 }

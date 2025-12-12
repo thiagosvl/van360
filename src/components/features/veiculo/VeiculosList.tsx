@@ -1,3 +1,4 @@
+import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -140,9 +141,53 @@ export function VeiculosList({
   };
 
   return (
-    <>
-      {/* Desktop Table */}
-      <div className="hidden md:block rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
+    <ResponsiveDataList
+      data={veiculos}
+      mobileContainerClassName="space-y-3"
+      mobileItemRenderer={(veiculo) => (
+        <div
+          key={veiculo.id}
+          onClick={() => onEdit(veiculo)}
+          className="bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 active:scale-[0.99] transition-transform"
+        >
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="min-w-0">
+              <p className="font-bold text-gray-900 text-sm">
+                {formatarPlacaExibicao(veiculo.placa)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {veiculo.marca} {veiculo.modelo}
+                {veiculo.ano_modelo ? ` • ${veiculo.ano_modelo}` : ""}
+              </p>
+            </div>
+            <div className="-mr-2 -mt-2">
+              <VeiculoActionsDropdown
+                veiculo={veiculo}
+                navigate={navigate}
+                onEdit={onEdit}
+                onToggleAtivo={onToggleAtivo}
+                onDelete={onDelete}
+                triggerSize="icon"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+            <div className="shrink-0">{getStatusBadge(veiculo.ativo)}</div>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                Passageiros
+              </span>
+              <p className="text-xs text-gray-600 font-medium flex gap-1">
+                <Users className="w-4 h-4" />
+                {veiculo.passageiros_ativos_count ?? 0} ativos
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    >
+      <div className="rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
         <table className="w-full">
           <thead className="bg-gray-50/50">
             <tr className="border-b border-gray-100">
@@ -210,52 +255,6 @@ export function VeiculosList({
           </tbody>
         </table>
       </div>
-
-      {/* Mobile Cards */}
-      <div className="md:hidden space-y-3">
-        {veiculos.map((veiculo) => (
-          <div
-            key={veiculo.id}
-            onClick={() => onEdit(veiculo)}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 active:scale-[0.99] transition-transform"
-          >
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="min-w-0">
-                <p className="font-bold text-gray-900 text-sm">
-                  {formatarPlacaExibicao(veiculo.placa)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {veiculo.marca} {veiculo.modelo}
-                  {veiculo.ano_modelo ? ` • ${veiculo.ano_modelo}` : ""}
-                </p>
-              </div>
-              <div className="-mr-2 -mt-2">
-                <VeiculoActionsDropdown
-                  veiculo={veiculo}
-                  navigate={navigate}
-                  onEdit={onEdit}
-                  onToggleAtivo={onToggleAtivo}
-                  onDelete={onDelete}
-                  triggerSize="icon"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-              <div className="shrink-0">{getStatusBadge(veiculo.ativo)}</div>
-              <div className="flex flex-col items-end gap-0.5">
-                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-                  Passageiros
-                </span>
-                <p className="text-xs text-gray-600 font-medium flex gap-1">
-                  <Users className="w-4 h-4" />
-                  {veiculo.passageiros_ativos_count ?? 0} ativos
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </>
+    </ResponsiveDataList>
   );
 }

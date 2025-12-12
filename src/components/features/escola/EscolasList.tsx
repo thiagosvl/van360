@@ -1,3 +1,4 @@
+import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -138,9 +139,45 @@ export function EscolasList({
     );
   };
   return (
-    <>
-      {/* Desktop Table */}
-      <div className="hidden md:block rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
+    <ResponsiveDataList
+      data={escolas}
+      mobileContainerClassName="space-y-3"
+      mobileItemRenderer={(escola) => (
+        <div
+          key={escola.id}
+          onClick={() => onEdit(escola)}
+          className="bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 active:scale-[0.99] transition-transform"
+        >
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <p className="font-bold text-gray-900 text-sm">{escola.nome}</p>
+            <div className="-mr-2 -mt-2">
+              <EscolaActionsDropdown
+                escola={escola}
+                navigate={navigate}
+                onEdit={onEdit}
+                onToggleAtivo={onToggleAtivo}
+                onDelete={onDelete}
+                triggerSize="icon"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+            <div className="shrink-0">{getStatusBadge(escola.ativo)}</div>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                Passageiros
+              </span>
+              <p className="text-xs text-gray-600 font-medium flex gap-1">
+                <Users className="w-4 h-4" />
+                {escola.passageiros_ativos_count ?? 0} ativos
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    >
+      <div className="rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
         <table className="w-full">
           <thead className="bg-gray-50/50">
             <tr className="border-b border-gray-100">
@@ -193,44 +230,6 @@ export function EscolasList({
           </tbody>
         </table>
       </div>
-
-      {/* Mobile Cards */}
-      <div className="md:hidden space-y-3">
-        {escolas.map((escola) => (
-          <div
-            key={escola.id}
-            onClick={() => onEdit(escola)}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 active:scale-[0.99] transition-transform"
-          >
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <p className="font-bold text-gray-900 text-sm">{escola.nome}</p>
-              <div className="-mr-2 -mt-2">
-                <EscolaActionsDropdown
-                  escola={escola}
-                  navigate={navigate}
-                  onEdit={onEdit}
-                  onToggleAtivo={onToggleAtivo}
-                  onDelete={onDelete}
-                  triggerSize="icon"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-              <div className="shrink-0">{getStatusBadge(escola.ativo)}</div>
-              <div className="flex flex-col items-end gap-0.5">
-                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-                  Passageiros
-                </span>
-                <p className="text-xs text-gray-600 font-medium flex gap-1">
-                  <Users className="w-4 h-4" />
-                  {escola.passageiros_ativos_count ?? 0} ativos
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </>
+    </ResponsiveDataList>
   );
 }
