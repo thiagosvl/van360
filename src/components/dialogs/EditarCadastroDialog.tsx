@@ -1,28 +1,28 @@
 import { PhoneInput } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { supabase } from "@/integrations/supabase/client";
+import { cpfSchema, emailSchema, phoneSchema } from "@/schemas/common";
 import { cpfMask, phoneMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { cleanString } from "@/utils/string";
-import { isValidCPF } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Mail, User, X } from "lucide-react";
 import React from "react";
@@ -37,18 +37,9 @@ interface EditarCadastroDialogProps {
 const schema = z.object({
   nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
   apelido: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
-  cpfcnpj: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .refine((val) => isValidCPF(val), "CPF inválido"),
-  telefone: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .refine((val) => {
-      const cleaned = val.replace(/\D/g, "");
-      return cleaned.length === 11;
-    }, "O formato aceito é (00) 00000-0000"),
-  email: z.string().min(1, "Campo obrigatório").email("E-mail inválido"),
+  cpfcnpj: cpfSchema,
+  telefone: phoneSchema,
+  email: emailSchema,
 });
 
 type FormData = z.infer<typeof schema>;

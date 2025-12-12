@@ -46,11 +46,18 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function Passageiros() {
   const {
-      passageiroForm,
-      excessoFranquia,
-      actions: dialogActions,
+    passageiroForm,
+    excessoFranquia,
+    actions: dialogActions,
   } = usePassageiroDialogs();
-  const { setPageTitle, openPlanosDialog, openContextualUpsellDialog, openLimiteFranquiaDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const {
+    setPageTitle,
+    openPlanosDialog,
+    openContextualUpsellDialog,
+    openLimiteFranquiaDialog,
+    openConfirmationDialog,
+    closeConfirmationDialog,
+  } = useLayout();
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -83,7 +90,6 @@ export default function Passageiros() {
     [searchParams, setSearchParams]
   );
 
-
   const {
     searchTerm,
     setSearchTerm,
@@ -103,7 +109,6 @@ export default function Passageiros() {
     periodoParam: "periodo",
   });
 
-
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
@@ -121,16 +126,6 @@ export default function Passageiros() {
     deletePassageiro.isPending ||
     deletePassageiro.isPending ||
     toggleAtivoPassageiro.isPending;
-
-
-
-
-
-
-
-
-
-
 
   const passageiroFilters = {
     usuarioId: profile?.id,
@@ -226,13 +221,13 @@ export default function Passageiros() {
     userUid: user?.id,
     profile,
     plano,
-    currentPassengerCount: countPassageiros ?? 0
+    currentPassengerCount: countPassageiros ?? 0,
   });
 
   const validacaoFranquiaGeral = {
     franquiaContratada: limits.franchise.limit,
     cobrancasEmUso: limits.franchise.used,
-    podeAtivar: limits.franchise.canEnable
+    podeAtivar: limits.franchise.canEnable,
   };
 
   const handleOpenUpgradeDialog = useCallback(() => {
@@ -261,84 +256,95 @@ export default function Passageiros() {
 
   // Check for openModal param on mount
   useEffect(() => {
-     const openModal = searchParams.get("openModal");
-     if (openModal === "true") {
-         dialogActions.openNewPassageiro();
-     }
+    const openModal = searchParams.get("openModal");
+    if (openModal === "true") {
+      dialogActions.openNewPassageiro();
+    }
   }, [searchParams, dialogActions]);
 
+  const handleDeleteClick = useCallback(
+    (passageiro: Passageiro) => {
+      openConfirmationDialog({
+        title: "Excluir Passageiro",
+        description:
+          "Deseja excluir permanentemente este passageiro? Essa ação não pode ser desfeita.",
+        confirmText: "Excluir Passageiro",
+        variant: "destructive",
+        onConfirm: async () => {
+          try {
+            await deletePassageiro.mutateAsync(passageiro.id);
+            closeConfirmationDialog();
+          } catch (error) {
+            closeConfirmationDialog();
+          }
+        },
+      });
+    },
+    [deletePassageiro, closeConfirmationDialog, openConfirmationDialog]
+  );
 
+  const handleToggleClick = useCallback(
+    (passageiro: Passageiro) => {
+      const action = passageiro.ativo ? "desativar" : "ativar";
 
-  const handleDeleteClick = useCallback((passageiro: Passageiro) => {
-    openConfirmationDialog({
-      title: "Excluir Passageiro",
-      description: "Deseja excluir permanentemente este passageiro? Essa ação não pode ser desfeita.",
-      confirmText: "Excluir Passageiro",
-      variant: "destructive",
-      onConfirm: async () => {
-         try {
-           await deletePassageiro.mutateAsync(passageiro.id);
-           closeConfirmationDialog();
-         } catch (error) {
-           closeConfirmationDialog();
-         }
-      }
-    });
-  }, [deletePassageiro, closeConfirmationDialog, openConfirmationDialog]);
-
-  const handleToggleClick = useCallback((passageiro: Passageiro) => {
-    const action = passageiro.ativo ? "desativar" : "ativar";
-    
-    openConfirmationDialog({
-       title: action === "ativar" ? "Reativar Passageiro" : "Desativar Passageiro",
-       description: action === "ativar" 
-          ? "Deseja realmente reativar este passageiro? Esta ação pode afetar a geração de cobranças." 
-          : "Deseja realmente desativar este passageiro? Esta ação pode afetar a geração de cobranças.",
-       confirmText: "Confirmar",
-       variant: action === "ativar" ? "default" : "destructive",
-       onConfirm: async () => {
+      openConfirmationDialog({
+        title:
+          action === "ativar" ? "Reativar Passageiro" : "Desativar Passageiro",
+        description:
+          action === "ativar"
+            ? "Deseja realmente reativar este passageiro? Esta ação pode afetar a geração de cobranças."
+            : "Deseja realmente desativar este passageiro? Esta ação pode afetar a geração de cobranças.",
+        confirmText: "Confirmar",
+        variant: action === "ativar" ? "default" : "destructive",
+        onConfirm: async () => {
           // Logic from handleToggleConfirm
           const p = passageiro;
           if (!p) return;
-      
+
           const novoStatus = !p.ativo;
-      
+
           if (
             novoStatus &&
             canUseCobrancaAutomatica(plano) &&
             p.enviar_cobranca_automatica
           ) {
-            const franquiaContratada = validacaoFranquiaGeral.franquiaContratada;
+            const franquiaContratada =
+              validacaoFranquiaGeral.franquiaContratada;
             const cobrancasEmUso = validacaoFranquiaGeral.cobrancasEmUso;
-      
+
             const limiteApos = cobrancasEmUso + 1;
-      
+
             if (limiteApos > franquiaContratada) {
               // Set pending action for resume after upgrade
 
-              
               dialogActions.openExcessoFranquia(
-                  franquiaContratada,
-                  limiteApos,
-                  p
+                franquiaContratada,
+                limiteApos,
+                p
               );
               closeConfirmationDialog();
               return;
             }
           }
-      
+
           try {
-             await toggleAtivoPassageiro.mutateAsync({ id: p.id, novoStatus });
-             closeConfirmationDialog();
-          } catch(error) {
-             console.error(error);
-             closeConfirmationDialog();
+            await toggleAtivoPassageiro.mutateAsync({ id: p.id, novoStatus });
+            closeConfirmationDialog();
+          } catch (error) {
+            console.error(error);
+            closeConfirmationDialog();
           }
-       }
-    });
-  }, [openConfirmationDialog, closeConfirmationDialog, plano, validacaoFranquiaGeral, toggleAtivoPassageiro]);
-
-
+        },
+      });
+    },
+    [
+      openConfirmationDialog,
+      closeConfirmationDialog,
+      plano,
+      validacaoFranquiaGeral,
+      toggleAtivoPassageiro,
+    ]
+  );
 
   const handleToggleCobrancaAutomatica = useCallback(
     async (passageiro: Passageiro) => {
@@ -367,13 +373,13 @@ export default function Passageiros() {
               hideLimitInfo: true,
               targetPassengerId: passageiro.id,
               onUpgradeSuccess: () => {
-                 // Resume action: Enable auto-billing
-                 updatePassageiro.mutate({
-                    id: passageiro.id,
-                    data: { enviar_cobranca_automatica: true }
-                 });
-                 refetchPassageiros();
-              }
+                // Resume action: Enable auto-billing
+                updatePassageiro.mutate({
+                  id: passageiro.id,
+                  data: { enviar_cobranca_automatica: true },
+                });
+                refetchPassageiros();
+              },
             });
           } else {
             // Caso contrário, usa a lógica padrão de limite atingido
@@ -381,13 +387,13 @@ export default function Passageiros() {
               hideLimitInfo: false,
               targetPassengerId: passageiro.id,
               onUpgradeSuccess: () => {
-                 // Resume action: Enable auto-billing
-                 updatePassageiro.mutate({
-                    id: passageiro.id,
-                    data: { enviar_cobranca_automatica: true }
-                 });
-                 refetchPassageiros();
-              }
+                // Resume action: Enable auto-billing
+                updatePassageiro.mutate({
+                  id: passageiro.id,
+                  data: { enviar_cobranca_automatica: true },
+                });
+                refetchPassageiros();
+              },
             });
           }
           return;
@@ -402,26 +408,32 @@ export default function Passageiros() {
     [profile?.id, plano, updatePassageiro, validacaoFranquiaGeral]
   );
 
-
-
-  const handleEdit = useCallback((passageiro: Passageiro) => {
-    // We can rely on the hook logic
-    dialogActions.openEditPassageiro(passageiro);
-  }, [dialogActions]);
+  const handleEdit = useCallback(
+    (passageiro: Passageiro) => {
+      // We can rely on the hook logic
+      dialogActions.openEditPassageiro(passageiro);
+    },
+    [dialogActions]
+  );
 
   const handleOpenNewDialog = useCallback(() => {
     if (isLimitedUser && isLimitReached) {
       openContextualUpsellDialog({
         feature: "passageiros",
-        onSuccess: refetchPassageiros
+        onSuccess: refetchPassageiros,
       });
       return;
     }
 
     // Use dialogActions
     dialogActions.openNewPassageiro();
-  }, [isLimitedUser, isLimitReached, dialogActions, openContextualUpsellDialog, refetchPassageiros]);
-
+  }, [
+    isLimitedUser,
+    isLimitReached,
+    dialogActions,
+    openContextualUpsellDialog,
+    refetchPassageiros,
+  ]);
 
   const handleCadastrarRapido = useCallback(async () => {
     if (!profile?.id) return;
@@ -570,7 +582,12 @@ export default function Passageiros() {
                 <PassengerLimitHealthBar
                   current={countPassageiros || 0}
                   max={limitePassageiros}
-                  onIncreaseLimit={() => openContextualUpsellDialog({ feature: "passageiros", targetPlan: PLANO_ESSENCIAL })}
+                  onIncreaseLimit={() =>
+                    openContextualUpsellDialog({
+                      feature: "passageiros",
+                      targetPlan: PLANO_ESSENCIAL,
+                    })
+                  }
                 />
               )}
 
@@ -678,12 +695,6 @@ export default function Passageiros() {
             plano={plano}
           />
 
-
-
-
-
-
-
           <DialogExcessoFranquia
             isOpen={excessoFranquia.isOpen}
             onClose={excessoFranquia.onClose}
@@ -697,23 +708,26 @@ export default function Passageiros() {
               // Open LimiteFranquiaDialog directly
               openLimiteFranquiaDialog({
                 title: "Aumentar Limite de Cobranças",
-                description: "Você atingiu o limite do seu plano. Aumente sua franquia para continuar automatizando.",
+                description:
+                  "Você atingiu o limite do seu plano. Aumente sua franquia para continuar automatizando.",
                 hideLimitInfo: false,
                 targetPassengerId: excessoFranquia.passageiro?.id,
                 onUpgradeSuccess: () => {
-                    // Resume action: Reactivate passenger
-                     if (excessoFranquia.passageiro) {
-                        toggleAtivoPassageiro.mutate(
-                          { id: excessoFranquia.passageiro.id, novoStatus: true },
-                          {
-                            onSuccess: () => {
-                              toast.success("Passageiro reativado com sucesso com cobrança automática!");
-                              refetchPassageiros();
-                            }
-                          }
-                        );
-                     }
-                }
+                  // Resume action: Reactivate passenger
+                  if (excessoFranquia.passageiro) {
+                    toggleAtivoPassageiro.mutate(
+                      { id: excessoFranquia.passageiro.id, novoStatus: true },
+                      {
+                        onSuccess: () => {
+                          toast.success(
+                            "Passageiro reativado com sucesso com cobrança automática!"
+                          );
+                          refetchPassageiros();
+                        },
+                      }
+                    );
+                  }
+                },
               });
             }}
             onContinuarSemAtivar={() => {
@@ -737,10 +751,12 @@ export default function Passageiros() {
         title="Quer cadastrar todos seus passageiros?"
         description="Remova os limites do plano gratuito."
         buttonText="Ver Planos"
-        onAction={() => openContextualUpsellDialog({
-          feature: "passageiros",
-          onSuccess: refetchPassageiros
-        })}
+        onAction={() =>
+          openContextualUpsellDialog({
+            feature: "passageiros",
+            onSuccess: refetchPassageiros,
+          })
+        }
       />
 
       <LoadingOverlay active={isActionLoading} text="Processando..." />

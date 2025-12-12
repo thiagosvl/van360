@@ -14,11 +14,18 @@ export const FEATURE_PRE_PASSAGEIRO = "pre_passageiro";
 
 export const PASSAGEIRO_COBRANCA_STATUS_PAGO = "pago";
 export const PASSAGEIRO_COBRANCA_STATUS_PENDENTE = "pendente";
-export const PASSAGEIRO_COBRANCA_STATUS_VENCIDO = "vencido";
-export const PASSAGEIRO_COBRANCA_STATUS_CANCELADO = "cancelado";
+export const PASSAGEIRO_COBRANCA_STATUS_ATRASADO = "atrasado";
 
-export const ASSINATURA_USUARIO_STATUS_ATIVA = "active";
-export const ASSINATURA_USUARIO_STATUS_TRIAL = "trialing";
+export const ASSINATURA_USUARIO_STATUS_ATIVA = "ativa";
 export const ASSINATURA_USUARIO_STATUS_PENDENTE_PAGAMENTO = "pendente_pagamento";
-export const ASSINATURA_COBRANCA_STATUS_CANCELADA = "canceled";
+export const ASSINATURA_USUARIO_STATUS_CANCELADA = "cancelada";
+export const ASSINATURA_USUARIO_STATUS_SUSPENSA = "suspensa";
+export const ASSINATURA_USUARIO_STATUS_TRIAL = "trial";
+
+export const ASSINATURA_COBRANCA_STATUS_PAGO = "pago";
 export const ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO = "pendente_pagamento";
+export const ASSINATURA_COBRANCA_STATUS_CANCELADA = "cancelada";
+
+export const STORAGE_KEY_QUICKSTART_STATUS = "van360:quickstart_status";
+export const QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO = 50; // Valor padrão seguro
+export const BASE_DOMAIN = typeof window !== "undefined" ? window.location.origin : ""; // Domínio base da aplicação

@@ -1,4 +1,4 @@
-import { isValidCPF } from "@/utils/validators";
+import { cpfSchema, emailSchema, phoneSchema } from "@/schemas/common";
 import { z } from "zod";
 
 export const registerSchema = z.object({
@@ -7,15 +7,9 @@ export const registerSchema = z.object({
   quantidade_personalizada: z.number().optional(),
   nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
   apelido: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
-  cpfcnpj: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .refine((val) => isValidCPF(val), "CPF inválido"),
-  email: z.string().min(1, "Campo obrigatório").email("E-mail inválido"),
-  telefone: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .refine((val) => val.replace(/\D/g, "").length === 11, "Telefone inválido"),
+  cpfcnpj: cpfSchema,
+  email: emailSchema.min(1, "Campo obrigatório"),
+  telefone: phoneSchema,
   senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
 });
 

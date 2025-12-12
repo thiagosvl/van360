@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 // Third-party
+import { cpfSchema, emailSchema } from "@/schemas/common";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock, Mail, User } from "lucide-react";
 import { z } from "zod";
@@ -15,12 +16,12 @@ import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
@@ -34,7 +35,6 @@ import { clearLoginStorageMotorista } from "@/utils/domain/motorista/motoristaUt
 import { clearLoginStorageResponsavel } from "@/utils/domain/responsavel/responsavelUtils";
 import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
-import { isValidCPF } from "@/utils/validators";
 
 export default function Login() {
   // Permitir indexação da página de login
@@ -52,22 +52,13 @@ export default function Login() {
   const appDomain = import.meta.env.VITE_PUBLIC_APP_DOMAIN;
 
   const formMotoristaSchema = z.object({
-    cpfcnpj: z
-      .string()
-      .min(1, "Campo obrigatório")
-      .refine((val) => isValidCPF(val), "CPF inválido"),
+    cpfcnpj: cpfSchema,
     senha: z.string().min(1, "Senha obrigatória"),
   });
 
   const formResponsavelSchema = z.object({
-    cpf_responsavel: z
-      .string()
-      .min(1, "Campo obrigatório")
-      .refine((val) => isValidCPF(val), "CPF inválido"),
-    email_responsavel: z
-      .string()
-      .min(1, "Campo obrigatório")
-      .email("E-mail inválido"),
+    cpf_responsavel: cpfSchema,
+    email_responsavel: emailSchema.min(1, "Campo obrigatório"),
   });
 
   const formMotorista = useForm<z.infer<typeof formMotoristaSchema>>({

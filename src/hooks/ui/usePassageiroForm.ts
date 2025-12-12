@@ -1,13 +1,13 @@
+import {
+  cepSchema,
+  cpfSchema,
+  phoneSchema,
+} from "@/schemas/common";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { cepMask, cpfMask, moneyMask, phoneMask } from "@/utils/masks";
-import {
-    cepSchema,
-    cpfSchema,
-    phoneSchema,
-    validateEnderecoFields,
-} from "@/utils/validators";
+import { validateEnderecoFields } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useState } from "react";
 import { flushSync } from "react-dom";
@@ -27,7 +27,7 @@ export const passageiroSchema = z
     bairro: z.string().optional(),
     cidade: z.string().optional(),
     estado: z.string().optional(),
-    cep: cepSchema(false),
+    cep: cepSchema.or(z.literal("")).optional(),
     referencia: z.string().optional(),
 
     observacoes: z.string().optional(),
@@ -37,8 +37,8 @@ export const passageiroSchema = z
       .string()
       .min(1, "Campo obrigatório")
       .email("E-mail inválido"),
-    cpf_responsavel: cpfSchema(true),
-    telefone_responsavel: phoneSchema(true),
+    cpf_responsavel: cpfSchema,
+    telefone_responsavel: phoneSchema,
 
     valor_cobranca: z.string().min(1, "Campo obrigatório"),
     dia_vencimento: z.string().min(1, "Campo obrigatório"),

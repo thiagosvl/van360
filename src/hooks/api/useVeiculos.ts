@@ -23,12 +23,6 @@ export function useVeiculos(
     queryKey: ["veiculos", usuarioId],
     enabled: (options?.enabled ?? true) && Boolean(usuarioId),
     placeholderData: (previousData) => previousData,
-    // Considera os dados stale imediatamente para garantir refetch quando necessário
-    staleTime: 0,
-    // Sempre refetch quando o componente montar para garantir dados atualizados
-    refetchOnMount: "always",
-    // Refetch quando a janela ganhar foco para garantir dados atualizados
-    refetchOnWindowFocus: true,
     queryFn: async () => {
       if (!usuarioId) return [];
 

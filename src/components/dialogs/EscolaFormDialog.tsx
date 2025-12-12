@@ -35,10 +35,13 @@ import { useCreateEscola, useUpdateEscola } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { cn } from "@/lib/utils";
+import { cepSchema } from "@/schemas/common"; // Oops, don't import random things.
 import { Escola } from "@/types/escola";
 import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
 import { toast } from "@/utils/notifications/toast";
-import { cepSchema, validateEnderecoFields } from "@/utils/validators";
+import { validateEnderecoFields } from "@/utils/validators";
+// Just import cepSchema.
+// And remove cepSchema from validators import.
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, Loader2, MapPin, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -53,13 +56,13 @@ const escolaSchema = z
     bairro: z.string().optional(),
     cidade: z.string().optional(),
     estado: z.string().optional(),
-  cep: cepSchema(false),
+    cep: cepSchema.or(z.literal("")).optional(),
     referencia: z.string().optional(),
     ativo: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
     const validation = validateEnderecoFields(
-      data.cep,
+      data.cep || "",
       data.logradouro,
       data.numero
     );

@@ -1,12 +1,13 @@
 import { AppGate } from "@/components/auth/AppGate";
+import { AppErrorBoundary } from "@/components/common/AppErrorBoundary";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -179,7 +180,8 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Sonner />
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <AppErrorBoundary>
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <BackButtonController />
           <ScrollToTop />
           <Suspense fallback={<LoadingFallback />}>
@@ -272,7 +274,8 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
-        </BrowserRouter>
+          </BrowserRouter>
+        </AppErrorBoundary>
 
         {/* 🔹 Dialog de confirmação de atualização */}
         <AlertDialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>

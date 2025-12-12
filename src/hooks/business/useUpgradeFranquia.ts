@@ -1,5 +1,5 @@
+import { usePlanos } from "@/hooks/api/usePlanos";
 import { useMemo } from "react";
-import { usePlanos } from "./api/usePlanos";
 
 export interface UpgradeOption {
   id: string;

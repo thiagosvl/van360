@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import { escolaApi } from "@/services/api/escola.api";
 import { Escola } from "@/types/escola";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 export function useEscolas(
   usuarioId?: string,
@@ -9,16 +10,10 @@ export function useEscolas(
     onError?: (error: unknown) => void;
   }
 ) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["escolas", usuarioId],
     enabled: (options?.enabled ?? true) && Boolean(usuarioId),
-    keepPreviousData: true,
-    // Considera os dados stale imediatamente para garantir refetch quando necessário
-    staleTime: 0,
-    // Sempre refetch quando o componente montar para garantir dados atualizados
-    refetchOnMount: "always",
-    // Refetch quando a janela ganhar foco para garantir dados atualizados
-    refetchOnWindowFocus: true,
+    placeholderData: (previousData) => previousData,
     queryFn: async () => {
       if (!usuarioId) return [];
 
@@ -39,7 +34,14 @@ export function useEscolas(
         ativas,
       };
     },
-    onError: options?.onError,
   });
+
+  useEffect(() => {
+    if (query.error && options?.onError) {
+      options.onError(query.error);
+    }
+  }, [query.error, options]);
+
+  return query;
 }
 

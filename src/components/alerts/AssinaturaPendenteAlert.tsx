@@ -1,12 +1,12 @@
-import BaseAlert, { getAlertStyles, AlertVariant } from "@/components/alerts/BaseAlert";
+import BaseAlert, { AlertVariant, getAlertStyles } from "@/components/alerts/BaseAlert";
+import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaDialog";
 import { Button } from "@/components/ui/button";
 import { ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO } from "@/constants";
-import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaDialog";
 import { useAssinaturaCobrancas } from "@/hooks";
-import { toast } from "@/utils/notifications/toast";
 import { cn } from "@/lib/utils";
+import { toast } from "@/utils/notifications/toast";
+import { AlertTriangle, ArrowRight, Clock, Loader2, Receipt } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowRight, AlertTriangle, Clock, Loader2, Receipt } from "lucide-react";
 
 interface AssinaturaPendenteAlertProps {
   assinaturaId: string;
@@ -42,7 +42,7 @@ export default function AssinaturaPendenteAlert({
   const { data: cobrancas = [], isLoading: isLoadingCobranca, refetch: refetchCobrancas } = useAssinaturaCobrancas(
     shouldFetchCobrancas ? { usuarioId: userId, assinaturaUsuarioId: assinaturaId } : undefined,
     { enabled: shouldFetchCobrancas }
-  );
+  ) as { data: any[], isLoading: boolean, refetch: () => void };
 
   // Determinar o tipo de alerta e mensagens baseado no status
   const alertConfig = useMemo(() => {

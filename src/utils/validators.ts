@@ -76,6 +76,7 @@ export function isValidPhoneFormat(phone: string | undefined | null): boolean {
  * Schema Zod para validação de CEP (formato opcional ou obrigatório)
  * @param required - Se true, o campo é obrigatório. Se false, é opcional mas valida formato se preenchido
  */
+// Deprecated schemas - Use @/schemas/common instead
 export function cepSchema(required: boolean = false) {
   if (required) {
     return z

@@ -44,10 +44,10 @@ import { prePassageiroApi } from "@/services/api/pre-passageiro.api";
 // Utils
 import { useSEO } from "@/hooks/useSEO";
 import { cn } from "@/lib/utils";
+import { cepSchema, cpfSchema, phoneSchema } from "@/schemas/common";
 import { validatePrePassageiroAccess } from "@/utils/domain/motorista/accessValidation";
 import { moneyToNumber } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
-import { cepSchema, cpfSchema, phoneSchema } from "@/utils/validators";
 
 // Icons
 import { periodos } from "@/utils/formatters";
@@ -74,15 +74,15 @@ const prePassageiroSchema = z.object({
     .string()
     .min(1, "Campo obrigatório")
     .email("E-mail inválido"),
-  cpf_responsavel: cpfSchema(true),
-  telefone_responsavel: phoneSchema(true),
+  cpf_responsavel: cpfSchema,
+  telefone_responsavel: phoneSchema,
 
   logradouro: z.string().min(1, "Campo obrigatório"),
   numero: z.string().min(1, "Campo obrigatório"),
   bairro: z.string().min(1, "Campo obrigatório"),
   cidade: z.string().min(1, "Campo obrigatório"),
   estado: z.string().min(1, "Campo obrigatório"),
-  cep: cepSchema(true),
+  cep: cepSchema,
   referencia: z.string().optional(),
   observacoes: z.string().optional(),
 
