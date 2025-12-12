@@ -1,4 +1,5 @@
 import { BlurredValue } from "@/components/common/BlurredValue";
+import { KPICard } from "@/components/common/KPICard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -42,139 +43,93 @@ export const RelatoriosVisaoGeral = ({
     <div className="space-y-4 mt-0">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Lucro Estimado */}
-        <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
-          <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-              Lucro Estimado
-            </CardTitle>
-            <div
+        <KPICard
+          title="Lucro Estimado"
+          icon={Wallet}
+          bgClass={lucroPositivo ? "bg-emerald-50" : "bg-red-50"}
+          colorClass={lucroPositivo ? "text-emerald-600" : "text-red-600"}
+          value={
+            <BlurredValue
+              value={dados.lucroEstimado}
+              visible={hasAccess}
+              type="currency"
               className={cn(
-                "p-2 rounded-full",
-                lucroPositivo
-                  ? "bg-emerald-50 text-emerald-600"
-                  : "bg-red-50 text-red-600"
+                "font-bold tracking-tight", // KPICard handles size, but we can override
+                lucroPositivo ? "text-emerald-600" : "text-red-600"
               )}
-            >
-              <Wallet className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent className="px-6 pb-6">
-            <div className="flex items-baseline gap-2">
-              <BlurredValue
-                value={dados.lucroEstimado}
-                visible={hasAccess}
-                type="currency"
-                className={cn(
-                  "text-3xl md:text-4xl font-bold tracking-tight",
-                  lucroPositivo ? "text-emerald-600" : "text-red-600"
-                )}
-              />
-            </div>
-            <p
-              className={cn(
-                "text-xs mt-2 font-medium",
-                !hasAccess && "blur-sm select-none"
-              )}
-            >
-              Entradas - Saídas do mês
-            </p>
-          </CardContent>
-        </Card>
+            />
+          }
+          countText="Entradas - Saídas do mês"
+          countVisible={hasAccess}
+          className="md:col-span-1"
+        />
 
         {/* Atrasos */}
-        <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden">
-          <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-              Em Atraso
-            </CardTitle>
-            <div className="p-2 rounded-full bg-red-50 text-red-600">
-              <AlertTriangle className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent className="px-6 pb-6">
-            <div className="flex items-baseline gap-2">
-              <BlurredValue
-                value={dados.atrasos.valor}
-                visible={hasAccess}
-                type="currency"
-                className="text-3xl md:text-4xl font-bold tracking-tight text-red-600"
-              />
-            </div>
-            <div className="mt-2 inline-flex items-center gap-1.5 bg-red-50 px-2.5 py-1 rounded-md">
-              <span
-                className={cn(
-                  "text-xs font-medium text-red-700",
-                  !hasAccess && "blur-sm select-none"
-                )}
-              >
+        <KPICard
+          title="Em Atraso"
+          icon={AlertTriangle}
+          bgClass="bg-red-50"
+          colorClass="text-red-600"
+          value={
+            <BlurredValue
+              value={dados.atrasos.valor}
+              visible={hasAccess}
+              type="currency"
+              className="font-bold tracking-tight text-red-600"
+            />
+          }
+          countText={
+            <div className="inline-flex items-center gap-1.5 bg-red-50 px-2.5 py-1 rounded-md text-red-700">
                 <BlurredValue
                   value={dados.atrasos.passageiros}
                   visible={hasAccess}
                   type="number"
                 />{" "}
                 passageiros
-              </span>
             </div>
-          </CardContent>
-        </Card>
+          }
+          countVisible={hasAccess}
+          className="md:col-span-1"
+        />
       </div>
 
       {/* KPIs Secundários */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Custo por Passageiro */}
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
-          <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-              Custo por Passageiro
-            </CardTitle>
-            <Users className="h-4 w-4 text-orange-500" />
-          </CardHeader>
-          <CardContent className="px-6 pb-6">
-            <div className="text-2xl font-bold text-gray-900">
+        <KPICard
+          title="Custo por Passageiro"
+          icon={Users}
+          bgClass="bg-orange-50"
+          colorClass="text-orange-500"
+          value={
               <BlurredValue
                 value={dados.custoPorPassageiro}
                 visible={hasAccess}
                 type="currency"
               />
-            </div>
-            <p
-              className={cn(
-                "text-xs text-gray-400 mt-1",
-                !hasAccess && "blur-sm select-none"
-              )}
-            >
-              Média de custo por assento ocupado
-            </p>
-          </CardContent>
-        </Card>
+          }
+          countText="Média de custo por assento ocupado"
+          countVisible={hasAccess}
+        />
 
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
-          <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-              Taxa de Recebimento
-            </CardTitle>
-            <Percent className="h-4 w-4 text-emerald-500" />
-          </CardHeader>
-          <CardContent className="px-6 pb-6 flex items-baseline gap-2">
-            <div>
-              <span className="text-3xl font-bold text-emerald-600">
-                <BlurredValue
-                  value={dados.taxaRecebimento}
-                  visible={hasAccess}
-                  type="percent"
-                />
-              </span>
-              <span
-                className={cn(
-                  "text-sm text-gray-400 ml-2 font-medium",
-                  !hasAccess && "blur-sm select-none"
-                )}
-              >
-                do previsto
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Taxa de Recebimento */}
+        <KPICard
+            title="Taxa de Recebimento"
+            icon={Percent}
+            bgClass="bg-emerald-50"
+            colorClass="text-emerald-500"
+            value={
+                <span className="text-emerald-600">
+                    <BlurredValue
+                      value={dados.taxaRecebimento}
+                      visible={hasAccess}
+                      type="percent"
+                    />
+                </span>
+            }
+            countText="do previsto"
+            countVisible={hasAccess}
+        />
       </div>
 
       {/* Comparativo Barras */}

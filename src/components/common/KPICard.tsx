@@ -5,13 +5,14 @@ import React from "react";
 interface KPICardProps {
   title: string;
   value: any;
-  count: number;
+  count?: number; // Made optional
   icon: React.ElementType;
   colorClass: string;
   bgClass: string;
   className?: string;
   countLabel?: string;
   countVisible?: boolean;
+  countText?: React.ReactNode; // New prop for custom text instead of automatic "N Label"
 }
 
 export function KPICard({
@@ -24,6 +25,7 @@ export function KPICard({
   className,
   countLabel = "Passageiro",
   countVisible = true,
+  countText,
 }: KPICardProps) {
   // Verificar se value é um ReactNode (elemento React)
   const isReactNode = React.isValidElement(value);
@@ -32,7 +34,8 @@ export function KPICard({
   const animatedValue = !isReactNode && typeof value === "number" 
     ? useAnimatedNumber(value, 1000) 
     : null;
-  const animatedCount = useAnimatedNumber(count, 1000);
+    
+  const animatedCount = useAnimatedNumber(count ?? 0, 1000);
 
   // Função para formatar o valor
   const renderValue = () => {
@@ -79,13 +82,20 @@ export function KPICard({
         <p className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
           {renderValue()}
         </p>
-        <p className={cn(
-          "text-[10px] font-medium mt-0.5",
-          countVisible ? "text-gray-400" : "text-gray-400 blur-sm select-none opacity-60"
-        )}>
-          {Math.round(animatedCount)}{" "}
-          {Math.round(animatedCount) === 1 ? countLabel : `${countLabel}s`}
-        </p>
+        
+        {(count !== undefined || countText) && (
+             <p className={cn(
+               "text-[10px] font-medium mt-0.5",
+               countVisible ? "text-gray-400" : "text-gray-400 blur-sm select-none opacity-60"
+             )}>
+                {countText ? countText : (
+                    <>
+                        {Math.round(animatedCount)}{" "}
+                        {Math.round(animatedCount) === 1 ? countLabel : `${countLabel}s`}
+                    </>
+                )}
+             </p>
+        )}
       </div>
     </div>
   );

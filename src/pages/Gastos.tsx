@@ -182,67 +182,61 @@ export default function Gastos() {
                 countVisible={enabledPageActions}
               />
 
-              <div className="bg-white p-2 sm:p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3 sm:gap-4 flex-1 min-w-[140px]">
-                <div className="h-5 w-5 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center shrink-0 bg-orange-50">
-                  <TrendingUp className="h-3 w-3 sm:h-5 sm:w-5 text-orange-600" />
-                </div>
-                <div>
-                  <p className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Top Categoria
-                  </p>
-                  <p className="font-bold text-gray-900 leading-tight max-w-[140px]">
-                    <BlurredValue
-                      value={displayData.principalCategoriaData?.name}
-                      visible={enabledPageActions}
-                      type="text"
-                      className={cn(
-                        enabledPageActions
-                          ? displayData.principalCategoriaData?.name?.length >=
-                            12
-                            ? "text-xs sm:text-lg"
-                            : "text-base sm:text-lg"
-                          : "text-sm"
-                      )}
-                    />
-                  </p>
-                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">
-                    {displayData.principalCategoriaData ? (
-                      <BlurredValue
-                        value={displayData.principalCategoriaData.percentage}
-                        visible={enabledPageActions}
-                        type="percent"
-                      />
-                    ) : (
-                      "0% do total"
+              <KPICard
+                title="Top Categoria"
+                value={
+                  <BlurredValue
+                    value={displayData.principalCategoriaData?.name || "-"}
+                    visible={enabledPageActions}
+                    type="text"
+                    className={cn(
+                      enabledPageActions
+                        ? displayData.principalCategoriaData?.name?.length >= 12
+                          ? "text-xs sm:text-lg"
+                          : "text-base sm:text-lg"
+                        : "text-sm",
+                        "font-bold"
                     )}
-                  </p>
-                </div>
-              </div>
+                  />
+                }
+                icon={TrendingUp}
+                bgClass="bg-orange-50"
+                colorClass="text-orange-600"
+                countText={
+                  displayData.principalCategoriaData ? (
+                    <BlurredValue
+                      value={displayData.principalCategoriaData.percentage}
+                      visible={enabledPageActions}
+                      type="percent"
+                    />
+                  ) : (
+                    "0% do total"
+                  )
+                }
+                countVisible={enabledPageActions}
+              />
 
-              <div className="bg-white p-2 sm:p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3 sm:gap-4 flex-1 min-w-[140px]">
-                <div className="h-5 w-5 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center shrink-0 bg-blue-50">
-                  <CalendarIcon className="h-3 w-3 sm:h-5 sm:w-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Média Diária
-                  </p>
-                  <p className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
-                    <BlurredValue
-                      value={displayData.mediaDiaria}
-                      visible={enabledPageActions}
-                      type="currency"
-                    />
-                  </p>
-                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">
-                    <BlurredValue
-                      value="por dia"
-                      visible={enabledPageActions}
-                      type="text"
-                    />
-                  </p>
-                </div>
-              </div>
+              <KPICard
+                title="Média Diária"
+                value={
+                  <BlurredValue
+                    value={displayData.mediaDiaria}
+                    visible={enabledPageActions}
+                    type="currency"
+                  />
+                }
+                icon={CalendarIcon}
+                bgClass="bg-blue-50"
+                colorClass="text-blue-600"
+                countText={
+                  <BlurredValue
+                    value="por dia"
+                    visible={enabledPageActions}
+                    type="text"
+                  />
+                }
+                countVisible={enabledPageActions}
+              />
             </div>
 
             <Card className="border-none shadow-none bg-transparent">
