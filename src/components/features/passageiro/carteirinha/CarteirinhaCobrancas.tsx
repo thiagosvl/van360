@@ -1,37 +1,40 @@
+// rebuild
+import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActionsMenu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
+import { getCobrancaMobileActions } from "@/hooks/business/getCobrancaMobileActions";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
 import { canUsePremiumFeatures } from "@/utils/domain/plano/accessRules";
 import {
-    formatDateToBR,
-    getMesNome,
-    getStatusColor,
-    getStatusText,
+  formatDateToBR,
+  getMesNome,
+  getStatusColor,
+  getStatusText,
 } from "@/utils/formatters";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-    AlertTriangle,
-    BellOff,
-    Calendar,
-    Check,
-    ChevronDown,
-    ChevronUp,
-    Clock,
-    DollarSign,
-    Plus,
-    RotateCcw,
+  AlertTriangle,
+  BellOff,
+  Calendar,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  DollarSign,
+  Plus,
+  RotateCcw,
 } from "lucide-react";
 
 interface CarteirinhaCobrancasProps {
@@ -247,6 +250,19 @@ export const CarteirinhaCobrancas = ({
                         );
                       }
 
+                      const actions = getCobrancaMobileActions({
+                          cobranca,
+                          plano,
+                          onVerCobranca: () => onNavigateToCobranca(cobranca.id),
+                          onEditarCobranca: () => onEditCobranca(cobranca),
+                          onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
+                          onEnviarNotificacao: () => onEnviarNotificacao(cobranca.id),
+                          onToggleLembretes: () => onToggleLembretes(cobranca),
+                          onDesfazerPagamento: () => onDesfazerPagamento(cobranca.id),
+                          onExcluirCobranca: () => onExcluirCobranca(cobranca),
+                          onUpgrade: onUpgrade
+                      });
+
                       return (
                         <motion.div
                           key={cobranca.id}
@@ -266,94 +282,66 @@ export const CarteirinhaCobrancas = ({
                             {circleIcon}
                           </div>
 
-                          <div
-                            className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-4 cursor-pointer"
-                            onClick={() => onNavigateToCobranca(cobranca.id)}
-                          >
-                            {/* Cabeçalho: Mês e Data */}
-                            <div className="flex justify-between items-start mb-4">
-                              <div className="flex-1">
-                                <h4 className="text-base font-bold text-gray-900">
-                                  {getMesNome(cobranca.mes)}
-                                </h4>
-                                <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                                  <Calendar className="w-3 h-3" />
-                                  Vence em {formatDateToBR(cobranca.data_vencimento)}
-                                </p>
+                          <MobileActionItem actions={actions}>
+                            <div
+                              className="bg-white rounded-xl border border-gray-100 shadow-sm transition-all p-4 cursor-pointer"
+                              onClick={() => onNavigateToCobranca(cobranca.id)}
+                            >
+                              {/* Cabeçalho: Mês e Data */}
+                              <div className="flex justify-between items-start mb-4">
+                                <div className="flex-1">
+                                  <h4 className="text-base font-bold text-gray-900">
+                                    {getMesNome(cobranca.mes)}
+                                  </h4>
+                                  <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" />
+                                    Vence em {formatDateToBR(cobranca.data_vencimento)}
+                                  </p>
+                                </div>
+                                {/* Menu removed */}
                               </div>
 
-                              <div onClick={(e) => e.stopPropagation()}>
-                                <CobrancaActionsMenu
-                                  cobranca={cobranca}
-                                  passageiroId={passageiro.id}
-                                  plano={plano}
-                                  variant="mobile"
-                                  onVerCobranca={() =>
-                                    onNavigateToCobranca(cobranca.id)
-                                  }
-                                  onEditarCobranca={() =>
-                                    onEditCobranca(cobranca)
-                                  }
-                                  onRegistrarPagamento={() =>
-                                    onRegistrarPagamento(cobranca)
-                                  }
-                                  onEnviarNotificacao={() =>
-                                    onEnviarNotificacao(cobranca.id)
-                                  }
-                                  onToggleLembretes={() =>
-                                    onToggleLembretes(cobranca)
-                                  }
-                                  onDesfazerPagamento={() =>
-                                    onDesfazerPagamento(cobranca.id)
-                                  }
-                                  onExcluirCobranca={() =>
-                                    onExcluirCobranca(cobranca)
-                                  }
-                                  onUpgrade={onUpgrade}
-                                />
+                              {/* CORPO: Valor e Status lado a lado */}
+                              <div className="flex justify-between items-end mb-1">
+                                <div>
+                                  <span className="text-[11px] tracking-wider uppercase text-gray-500 font-medium">
+                                    Valor
+                                  </span>
+                                  <p className="font-semibold text-gray-900 leading-none mt-0.5 text-md">
+                                    {Number(cobranca.valor).toLocaleString(
+                                      "pt-BR",
+                                      {
+                                        style: "currency",
+                                        currency: "BRL",
+                                      }
+                                    )}
+                                  </p>
+                                </div>
+
+                                <div className="pb-0.5">
+                                  <Badge
+                                    variant="secondary"
+                                    className={cn(
+                                      "font-medium px-2.5 py-1 text-xs rounded-md whitespace-nowrap shadow-sm",
+                                      statusColor
+                                    )}
+                                  >
+                                    {statusText}
+                                  </Badge>
+                                </div>
                               </div>
+
+                              {/* Alerta de Lembretes (Estilo Full-width Warning) */}
+                              {cobranca.desativar_lembretes && !isPago && (
+                                <div className="mt-4 -mx-4 -mb-4 px-4 py-2.5 bg-orange-50 border-t border-orange-100 rounded-b-xl flex items-center gap-2">
+                                  <BellOff className="w-4 h-4 text-orange-700" />
+                                  <span className="text-xs font-medium text-orange-700">
+                                    Envio de notificações desativado
+                                  </span>
+                                </div>
+                              )}
                             </div>
-
-                            {/* CORPO: Valor e Status lado a lado */}
-                            <div className="flex justify-between items-end mb-1">
-                              <div>
-                                <span className="text-[11px] tracking-wider uppercase text-gray-500 font-medium">
-                                  Valor
-                                </span>
-                                <p className="font-semibold text-gray-900 leading-none mt-0.5 text-md">
-                                  {Number(cobranca.valor).toLocaleString(
-                                    "pt-BR",
-                                    {
-                                      style: "currency",
-                                      currency: "BRL",
-                                    }
-                                  )}
-                                </p>
-                              </div>
-
-                              <div className="pb-0.5">
-                                <Badge
-                                  variant="secondary"
-                                  className={cn(
-                                    "font-medium px-2.5 py-1 text-xs rounded-md whitespace-nowrap shadow-sm",
-                                    statusColor
-                                  )}
-                                >
-                                  {statusText}
-                                </Badge>
-                              </div>
-                            </div>
-
-                            {/* Alerta de Lembretes (Estilo Full-width Warning) */}
-                            {cobranca.desativar_lembretes && !isPago && (
-                              <div className="mt-4 -mx-4 -mb-4 px-4 py-2.5 bg-orange-50 border-t border-orange-100 rounded-b-xl flex items-center gap-2">
-                                <BellOff className="w-4 h-4 text-orange-700" />
-                                <span className="text-xs font-medium text-orange-700">
-                                  Envio de notificações desativado
-                                </span>
-                              </div>
-                            )}
-                          </div>
+                          </MobileActionItem>
                         </motion.div>
                       );
                     })}

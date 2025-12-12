@@ -1,4 +1,5 @@
 import { BlurredValue } from "@/components/common/BlurredValue";
+import { MobileAction, MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { Button } from "@/components/ui/button";
 import {
@@ -159,65 +160,75 @@ export function GastosList({
         const { icon: Icon, color, bg } = getCategoryConfig(gasto.categoria);
         const placa = getVeiculoPlaca(gasto.veiculo_id);
 
+        const actions: MobileAction[] = isRestricted ? [] : [
+          {
+            label: "Editar",
+            icon: <Edit className="h-4 w-4" />,
+            onClick: () => onEdit(gasto),
+            swipeColor: "bg-blue-600",
+          },
+          {
+            label: "Excluir",
+            icon: <Trash2 className="h-4 w-4" />,
+            onClick: () => onDelete(gasto.id),
+            isDestructive: true,
+          }
+        ];
+
         return (
-          <div
+          <MobileActionItem
             key={gasto.id}
-            onClick={() => !isRestricted && onEdit(gasto)}
-            className={cn(
-              "bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 transition-transform",
-              isRestricted ? "" : "active:scale-[0.99]"
-            )}
+            actions={actions}
           >
-            <div className="flex items-start justify-between gap-3 mb-2">
-              <div className="flex items-center gap-3">
-                <div
-                  className={`h-8 w-8 rounded-full flex items-center justify-center ${bg} ${color}`}
-                >
-                  <Icon className="h-4 w-4" />
-                </div>
-                <div className="flex flex-col">
-                  <p className="font-bold text-gray-900 text-sm leading-tight">
-                    {gasto.categoria}
-                  </p>
-                  {placa && (
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <Bus className="w-3 h-3 text-gray-400" />
-                      <span className="text-[10px] font-medium text-gray-500">
-                        {placa}
-                      </span>
-                    </div>
-                  )}
+            <div
+              onClick={() => !isRestricted && onEdit(gasto)}
+              className={cn(
+                "bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 transition-transform",
+                isRestricted ? "" : "active:scale-[0.99]"
+              )}
+            >
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`h-8 w-8 rounded-full flex items-center justify-center ${bg} ${color}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div className="flex flex-col">
+                    <p className="font-bold text-gray-900 text-sm leading-tight">
+                      {gasto.categoria}
+                    </p>
+                    {placa && (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Bus className="w-3 h-3 text-gray-400" />
+                        <span className="text-[10px] font-medium text-gray-500">
+                          {placa}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="-mr-2 -mt-2">
-                <GastoActionsDropdown
-                  gasto={gasto}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  triggerSize="icon"
-                  disabled={isRestricted}
-                />
+
+              <div className="flex justify-between items-end mb-3">
+                <p className="text-xs text-muted-foreground max-w-[60%] line-clamp-2">
+                  {gasto.descricao || "Sem descrição"}
+                </p>
+                <p className="font-bold text-gray-900 text-base">
+                  <BlurredValue
+                    value={gasto.valor}
+                    visible={!isRestricted}
+                    type="currency"
+                  />
+                </p>
+              </div>
+
+              <div className="flex items-center pt-2 border-t border-gray-50 text-xs text-gray-500">
+                <Calendar className="w-3 h-3 mr-1.5" />
+                {!isRestricted ? formatDateToBR(gasto.data) : "Dia, mês e ano"}
               </div>
             </div>
-
-            <div className="flex justify-between items-end mb-3">
-              <p className="text-xs text-muted-foreground max-w-[60%] line-clamp-2">
-                {gasto.descricao || "Sem descrição"}
-              </p>
-              <p className="font-bold text-gray-900 text-base">
-                <BlurredValue
-                  value={gasto.valor}
-                  visible={!isRestricted}
-                  type="currency"
-                />
-              </p>
-            </div>
-
-            <div className="flex items-center pt-2 border-t border-gray-50 text-xs text-gray-500">
-              <Calendar className="w-3 h-3 mr-1.5" />
-              {!isRestricted ? formatDateToBR(gasto.data) : "Dia, mês e ano"}
-            </div>
-          </div>
+          </MobileActionItem>
         );
       }}
     >

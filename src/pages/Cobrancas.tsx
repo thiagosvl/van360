@@ -58,6 +58,8 @@ import { cn } from "@/lib/utils";
 import { BellOff, CheckCircle2, DollarSign, TrendingUp, Wallet } from "lucide-react";
 
 // --- Internal Components ---
+import { MobileActionItem } from "@/components/common/MobileActionItem";
+import { getCobrancaMobileActions } from "@/hooks/business/getCobrancaMobileActions";
 
 
 
@@ -369,8 +371,24 @@ const Cobrancas = () => {
                           );
                         })()
                      }
-                     mobileItemRenderer={(cobranca, index) => (
+                     mobileItemRenderer={(cobranca, index) => {
+                      const actions = getCobrancaMobileActions({
+                        cobranca,
+                        plano,
+                        onVerCobranca: () => navigateToDetails(cobranca),
+                        onEditarCobranca: () => handleEditCobrancaClick(cobranca),
+                        onRegistrarPagamento: () => openPaymentDialog(cobranca),
+                        onEnviarNotificacao: () => handleEnviarNotificacao(cobranca),
+                        onToggleLembretes: () => handleToggleLembretes(cobranca),
+                        onDesfazerPagamento: () => handleDesfazerPagamento(cobranca),
+                        onExcluirCobranca: () => handleDeleteCobranca(cobranca),
+                        onVerCarteirinha: () => navigate(`/passageiros/${cobranca.passageiro_id}`),
+                        onUpgrade: handleUpgrade
+                      });
+
+                      return (
                       <Fragment key={cobranca.id}>
+                      <MobileActionItem actions={actions}>
                       <div
                         onClick={() => navigateToDetails(cobranca)}
                         className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
@@ -406,24 +424,7 @@ const Cobrancas = () => {
                               </p>
                             </div>
                           </div>
-                          <div onClick={(e) => e.stopPropagation()}>
-                            <CobrancaActionsMenu
-                              cobranca={cobranca}
-                              variant="mobile"
-                              plano={plano}
-                              onVerCarteirinha={() =>
-                                navigate(`/passageiros/${cobranca.passageiro_id}`)
-                              }
-                              onVerCobranca={() => navigateToDetails(cobranca)}
-                              onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
-                              onRegistrarPagamento={() => openPaymentDialog(cobranca)}
-                              onEnviarNotificacao={() => handleEnviarNotificacao(cobranca)}
-                              onToggleLembretes={() => handleToggleLembretes(cobranca)}
-                              onDesfazerPagamento={() => handleDesfazerPagamento(cobranca)}
-                              onExcluirCobranca={() => handleDeleteCobranca(cobranca)}
-                              onUpgrade={handleUpgrade}
-                            />
-                          </div>
+                          {/* Menu removed, handled by Swipe */}
                         </div>
 
                         {/* Linha 3: Data + Status (Rodapé) */}
@@ -451,6 +452,7 @@ const Cobrancas = () => {
                           </div>
                         </div>
                       </div>
+                      </MobileActionItem>
 
                       {/* Inline Prompt Mobile (Após o 3º item) */}
                       {index === 2 && !permissions.canUseAutomatedCharges && (
@@ -463,7 +465,8 @@ const Cobrancas = () => {
                         />
                       )}
                       </Fragment>
-                    )}
+                    );
+                  }}
                   >
                     <div className="rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
                       <table className="w-full">
@@ -585,91 +588,90 @@ const Cobrancas = () => {
                            }
                         />
                      }
-                     mobileItemRenderer={(cobranca) => (
-                      <div
-                        key={cobranca.id}
-                        onClick={() => navigateToDetails(cobranca)}
-                        className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
-                      >
-                        {/* Linha 1: Avatar + Informações Principais + Ações */}
-                        <div className="flex justify-between items-start mb-1 relative">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={cn(
-                                "h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm",
-                                getStatusColor(cobranca.status, cobranca.data_vencimento)
-                              )}
-                            >
-                              {cobranca.passageiros.nome.charAt(0)}
+                      mobileItemRenderer={(cobranca) => {
+                        const actions = getCobrancaMobileActions({
+                          cobranca,
+                          plano,
+                          onVerCobranca: () => navigateToDetails(cobranca),
+                          onEditarCobranca: () => handleEditCobrancaClick(cobranca),
+                          onRegistrarPagamento: () => openPaymentDialog(cobranca),
+                          onEnviarNotificacao: () => handleEnviarNotificacao(cobranca),
+                          onToggleLembretes: () => handleToggleLembretes(cobranca),
+                          onDesfazerPagamento: () => handleDesfazerPagamento(cobranca),
+                          onExcluirCobranca: () => handleDeleteCobranca(cobranca),
+                          onVerCarteirinha: () => navigate(`/passageiros/${cobranca.passageiro_id}`),
+                          onUpgrade: handleUpgrade
+                        });
+
+                        return (
+                        <MobileActionItem key={cobranca.id} actions={actions}>
+                        <div
+                          onClick={() => navigateToDetails(cobranca)}
+                          className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
+                        >
+                          {/* Linha 1: Avatar + Informações Principais + Ações */}
+                          <div className="flex justify-between items-start mb-1 relative">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={cn(
+                                  "h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm",
+                                  getStatusColor(cobranca.status, cobranca.data_vencimento)
+                                )}
+                              >
+                                {cobranca.passageiros.nome.charAt(0)}
+                              </div>
+                              <div>
+                                <p className="font-bold text-gray-900 text-sm">
+                                  {cobranca.passageiros.nome}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {cobranca.passageiros.nome_responsavel ||
+                                    "Não inf."}{" "}
+                                  •{" "}
+                                  <span className="text-sm font-bold text-gray-900 tracking-tight">
+                                    {Number(cobranca.valor).toLocaleString(
+                                      "pt-BR",
+                                      {
+                                        style: "currency",
+                                        currency: "BRL",
+                                      }
+                                    )}
+                                  </span>
+                                </p>
+                              </div>
                             </div>
+                            {/* Actions removed */}
+                          </div>
+
+                          {/* Linha 2: Rodapé com Metadados (Separador) */}
+
+                          <div className="flex justify-between items-center pt-2 border-t border-gray-50">
                             <div>
-                              <p className="font-bold text-gray-900 text-sm">
-                                {cobranca.passageiros.nome}
+                              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                                FORMA DE PAGAMENTO
+                              </span>
+                              {/* Esquerda: Forma de Pagamento (Badge Cinza Elegante) */}
+                              <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
+                                {formatPaymentType(cobranca.tipo_pagamento)}
                               </p>
-                              <p className="text-xs text-gray-500">
-                                {cobranca.passageiros.nome_responsavel ||
-                                  "Não inf."}{" "}
-                                •{" "}
-                                <span className="text-sm font-bold text-gray-900 tracking-tight">
-                                  {Number(cobranca.valor).toLocaleString(
-                                    "pt-BR",
-                                    {
-                                      style: "currency",
-                                      currency: "BRL",
-                                    }
-                                  )}
-                                </span>
+                            </div>
+
+                            {/* Direita: Data de Pagamento (Label + Data) */}
+                            <div className="flex flex-col items-end gap-0.5">
+                              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                                PAGO EM
+                              </span>
+                              <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
+                                {cobranca.data_pagamento
+                                  ? formatDateToBR(cobranca.data_pagamento)
+                                  : "-"}
                               </p>
                             </div>
                           </div>
-                          {/* Botão de Ações */}
-                          <div onClick={(e) => e.stopPropagation()}>
-                            <CobrancaActionsMenu
-                              cobranca={cobranca}
-                              variant="mobile"
-                              plano={plano}
-                              onVerCarteirinha={() =>
-                                navigate(`/passageiros/${cobranca.passageiro_id}`)
-                              }
-                              onVerCobranca={() => navigateToDetails(cobranca)}
-                              onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
-                              onRegistrarPagamento={() => openPaymentDialog(cobranca)}
-                              onEnviarNotificacao={() => handleEnviarNotificacao(cobranca)}
-                              onToggleLembretes={() => handleToggleLembretes(cobranca)}
-                              onDesfazerPagamento={() => handleDesfazerPagamento(cobranca)}
-                              onExcluirCobranca={() => handleDeleteCobranca(cobranca)}
-                              onUpgrade={handleUpgrade}
-                            />
-                          </div>
                         </div>
-
-                        {/* Linha 2: Rodapé com Metadados (Separador) */}
-
-                        <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-                          <div>
-                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-                              FORMA DE PAGAMENTO
-                            </span>
-                            {/* Esquerda: Forma de Pagamento (Badge Cinza Elegante) */}
-                            <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
-                              {formatPaymentType(cobranca.tipo_pagamento)}
-                            </p>
-                          </div>
-
-                          {/* Direita: Data de Pagamento (Label + Data) */}
-                          <div className="flex flex-col items-end gap-0.5">
-                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-                              PAGO EM
-                            </span>
-                            <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
-                              {cobranca.data_pagamento
-                                ? formatDateToBR(cobranca.data_pagamento)
-                                : "-"}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                        </MobileActionItem>
+                      );
+                    }}
                   >
                     <div className="rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
                       {/* Desktop Table */}

@@ -106,9 +106,12 @@ export function SwipeableItem({
   };
 
   return (
-    <div className={cn("relative overflow-hidden touch-pan-y", className)}>
+    <div 
+      className={cn("relative overflow-hidden touch-pan-y isolate", className)}
+      style={{ WebkitBackfaceVisibility: "hidden", backfaceVisibility: "hidden" }}
+    >
       {/* Background Actions Layer */}
-      <div className="absolute inset-0 flex">
+      <div className="absolute inset-0 flex z-0">
         {/* Left Actions (revealed when dragging right) */}
         <div
           className="flex mr-auto h-full"
@@ -167,6 +170,7 @@ export function SwipeableItem({
       {/* Foreground Content */}
       <motion.div
         drag="x"
+        dragDirectionLock
         dragConstraints={{
           left: -rightWidth,
           right: leftWidth,
@@ -175,8 +179,13 @@ export function SwipeableItem({
         onDragStart={onSwipeStart}
         onDragEnd={handleDragEnd}
         animate={controls}
-        style={{ x, background: "white" }}
-        className="relative z-10 bg-white"
+        style={{ 
+          x, 
+          background: "white",
+          WebkitBackfaceVisibility: "hidden",
+          backfaceVisibility: "hidden"
+        }}
+        className="relative z-10 bg-white transform-gpu will-change-transform"
         whileTap={{ cursor: "grabbing" }}
       >
         {children}

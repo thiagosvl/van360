@@ -79,6 +79,23 @@ export default function LimiteFranquiaDialog({
     }
   }, [open, options, selectedOptionId]);
 
+  // Fix for potential body lock issue when opened from Drawer
+  // Determines if we need to force cleanup pointer-events
+  useEffect(() => {
+    if (!open) {
+      // Aumentando o tempo para garantir que rode APÓS as animações do Radix (approx 300ms)
+      const timer = setTimeout(() => {
+        document.body.style.removeProperty("pointer-events");
+        document.body.style.removeProperty("overflow");
+        // Força remoção do atributo data-scroll-locked se persistir
+        if (document.body.hasAttribute("data-scroll-locked")) {
+            document.body.removeAttribute("data-scroll-locked");
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
   const selectedOption = options.find(o => o.id === selectedOptionId);
 
   // Busca preço do backend (ignorando minimo do plano para permitir upgrades pequenos se necessário)

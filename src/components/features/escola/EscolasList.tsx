@@ -1,21 +1,22 @@
+import { MobileAction, MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Escola } from "@/types/escola";
 import {
-  MoreVertical,
-  Pencil,
-  ToggleLeft,
-  ToggleRight,
-  Trash2,
-  Users,
-  Users2,
+    MoreVertical,
+    Pencil,
+    ToggleLeft,
+    ToggleRight,
+    Trash2,
+    Users,
+    Users2,
 } from "lucide-react";
 import { NavigateFunction } from "react-router-dom";
 
@@ -125,40 +126,65 @@ export function EscolasList({
     <ResponsiveDataList
       data={escolas}
       mobileContainerClassName="space-y-3"
-      mobileItemRenderer={(escola) => (
-        <div
-          key={escola.id}
-          onClick={() => onEdit(escola)}
-          className="bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 active:scale-[0.99] transition-transform"
-        >
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <p className="font-bold text-gray-900 text-sm">{escola.nome}</p>
-            <div className="-mr-2 -mt-2">
-              <EscolaActionsDropdown
-                escola={escola}
-                navigate={navigate}
-                onEdit={onEdit}
-                onToggleAtivo={onToggleAtivo}
-                onDelete={onDelete}
-                triggerSize="icon"
-              />
-            </div>
-          </div>
+      mobileItemRenderer={(escola) => {
+        const actions: MobileAction[] = [
+          {
+            label: "Editar",
+            icon: <Pencil className="h-4 w-4" />,
+            onClick: () => onEdit(escola),
+            swipeColor: "bg-blue-600",
+          },
+          {
+            label: escola.ativo ? "Desativar" : "Reativar",
+            icon: escola.ativo ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />,
+            onClick: () => onToggleAtivo(escola),
+            swipeColor: escola.ativo ? "bg-orange-500" : "bg-green-600",
+          },
+          {
+            label: "Ver Passageiros",
+            icon: <Users className="h-4 w-4" />,
+            onClick: () => navigate(`/passageiros?escola=${escola.id}`),
+            swipeColor: "bg-violet-600",
+            disabled: !escola.passageiros_ativos_count, // Disable if 0 or undefined
+          },
+          {
+            label: "Excluir",
+            icon: <Trash2 className="h-4 w-4" />,
+            onClick: () => onDelete(escola),
+            isDestructive: true,
+          }
+        ];
 
-          <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-            <div className="shrink-0"><StatusBadge status={escola.ativo} trueLabel="Ativa" falseLabel="Desativada" /></div>
-            <div className="flex flex-col items-end gap-0.5">
-              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-                Passageiros
-              </span>
-              <p className="text-xs text-gray-600 font-medium flex gap-1">
-                <Users className="w-4 h-4" />
-                {escola.passageiros_ativos_count ?? 0} ativos
-              </p>
+        return (
+          <MobileActionItem
+            key={escola.id}
+            actions={actions}
+          >
+            <div
+              onClick={() => onEdit(escola)}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 active:scale-[0.99] transition-transform"
+            >
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <p className="font-bold text-gray-900 text-sm">{escola.nome}</p>
+                {/* Visual hint for swipe is handled by MobileActionItem, no need for extra icons here */}
+              </div>
+
+              <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+                <div className="shrink-0"><StatusBadge status={escola.ativo} trueLabel="Ativa" falseLabel="Desativada" /></div>
+                <div className="flex flex-col items-end gap-0.5">
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                    Passageiros
+                  </span>
+                  <p className="text-xs text-gray-600 font-medium flex gap-1">
+                    <Users className="w-4 h-4" />
+                    {escola.passageiros_ativos_count ?? 0} ativos
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </MobileActionItem>
+        );
+      }}
     >
       <div className="rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
         <table className="w-full">
