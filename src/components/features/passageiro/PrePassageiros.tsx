@@ -1,8 +1,5 @@
-import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
-import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
+
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
-import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
-import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
 import { PrePassengerListSkeleton } from "@/components/skeletons";
@@ -24,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   useCreatePrePassageiro,
@@ -76,11 +74,7 @@ export default function PrePassageiros({
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
-  const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
-  const [isCreatingEscola, setIsCreatingEscola] = useState(false);
-  const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
-  const { openPlanosDialog } = useLayout();
+  const { openPlanosDialog, openLimiteFranquiaDialog, openContextualUpsellDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
 
   const createPrePassageiro = useCreatePrePassageiro();
   const deletePrePassageiro = useDeletePrePassageiro();
@@ -88,16 +82,11 @@ export default function PrePassageiros({
   const isActionLoading =
     createPrePassageiro.isPending || deletePrePassageiro.isPending;
 
-  const [deleteDialog, setDeleteDialog] = useState<{
-    open: boolean;
-    prePassageiroId: string;
-  }>({ open: false, prePassageiroId: "" });
+
 
   const [isFinalizeDialogOpen, setIsFinalizeDialogOpen] = useState(false);
   const [selectedPrePassageiro, setSelectedPrePassageiro] =
     useState<PrePassageiro | null>(null);
-
-  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
 
   const {
     data: prePassageirosData,
@@ -150,27 +139,7 @@ export default function PrePassageiros({
     }
   }, [refreshKey, refetchPrePassageiros]);
 
-  const handleCloseEscolaFormDialog = () => {
-    safeCloseDialog(() => setIsCreatingEscola(false));
-  };
 
-  const handleCloseVeiculoFormDialog = () => {
-    safeCloseDialog(() => setIsCreatingVeiculo(false));
-  };
-
-  const handleEscolaCreated = (novaEscola: any) => {
-    safeCloseDialog(() => {
-      setIsCreatingEscola(false);
-      setNovaEscolaId(novaEscola.id);
-    });
-  };
-
-  const handleVeiculoCreated = (novoVeiculo: any) => {
-    safeCloseDialog(() => {
-      setIsCreatingVeiculo(false);
-      setNovoVeiculoId(novoVeiculo.id);
-    });
-  };
 
   const handleCadastrarRapidoLink = async () => {
     if (!profile?.id) {
@@ -200,7 +169,7 @@ export default function PrePassageiros({
       logradouro: endereco.logradouro,
       numero: endereco.numero,
       periodo: periodos[0].value,
-      escola_id: novaEscolaId,
+      escola_id: null,
       bairro: endereco.bairro,
       cidade: endereco.cidade,
       estado: endereco.estado,
@@ -213,18 +182,22 @@ export default function PrePassageiros({
     createPrePassageiro.mutate(fakePayload);
   };
 
-  const handleDelete = async () => {
-    deletePrePassageiro.mutate(deleteDialog.prePassageiroId, {
-      onSuccess: () => {
-        setDeleteDialog({ open: false, prePassageiroId: "" });
-      },
-    });
-  };
+
 
   const handleFinalizeClick = (prePassageiro: PrePassageiro) => {
+    // Verificar se é plano gratuito E limite atingido
+    const isFreePlan = plano?.slug === "gratuito" || plano?.slug === "teste";
     if (isLimitedUser && isLimitReached) {
-      setIsUpgradeDialogOpen(true);
-      return;
+       if (isFreePlan) {
+         openContextualUpsellDialog({ feature: "passageiros", targetPlan: PLANO_ESSENCIAL });
+       } else {
+         // Se for plano pago, abre dialogo de aumentar franquia
+         openLimiteFranquiaDialog({
+            title: "Aumentar Limite",
+            description: "Você atingiu seu limite de passageiros contratado. Aumente sua franquia para continuar cadastrando."
+         });
+       }
+       return;
     }
 
     setSelectedPrePassageiro(prePassageiro);
@@ -232,8 +205,6 @@ export default function PrePassageiros({
   };
 
   const handleFinalizeSuccess = async () => {
-    setNovoVeiculoId(null);
-    setNovaEscolaId(null);
     setIsFinalizeDialogOpen(false);
     onFinalizeNewPrePassageiro();
   };
@@ -281,10 +252,24 @@ export default function PrePassageiros({
           className="text-red-600 focus:text-red-600"
           onClick={(e) => {
             e.stopPropagation();
-            setDeleteDialog({
-              open: true,
-              prePassageiroId: prePassageiro.id,
-            });
+                    openConfirmationDialog({
+                      title: "Excluir Pré-cadastro",
+                      description: "Tem certeza que deseja excluir este pré-cadastro? Esta ação não pode ser desfeita.",
+                      variant: "destructive",
+                      confirmText: "Excluir",
+                      cancelText: "Cancelar",
+                      onConfirm: async () => {
+                         if (prePassageiro.id) {
+                            try {
+                              await deletePrePassageiro.mutateAsync(prePassageiro.id);
+                              closeConfirmationDialog();
+                            } catch (error) {
+                              // Error handled by mutation hook or global handler
+                              console.error(error);
+                            }
+                         }
+                      },
+                    });
           }}
         >
           <Trash2 className="w-4 h-4 mr-2" />
@@ -509,60 +494,21 @@ export default function PrePassageiros({
             isOpen={isFinalizeDialogOpen}
             onClose={() =>
               safeCloseDialog(() => {
-                setNovoVeiculoId(null);
-                setNovaEscolaId(null);
                 setIsFinalizeDialogOpen(false);
               })
             }
             onSuccess={handleFinalizeSuccess}
             prePassageiro={selectedPrePassageiro}
             editingPassageiro={null}
-            onCreateEscola={() => setIsCreatingEscola(true)}
-            onCreateVeiculo={() => setIsCreatingVeiculo(true)}
             mode="finalize"
-            novaEscolaId={novaEscolaId}
-            novoVeiculoId={novoVeiculoId}
             profile={profile}
             plano={plano}
           />
         )}
 
-        <EscolaFormDialog
-          isOpen={isCreatingEscola}
-          onClose={handleCloseEscolaFormDialog}
-          onSuccess={handleEscolaCreated}
-        />
 
-        <VeiculoFormDialog
-          isOpen={isCreatingVeiculo}
-          onClose={handleCloseVeiculoFormDialog}
-          onSuccess={handleVeiculoCreated}
-          profile={profile}
-        />
-
-        <ConfirmationDialog
-          open={deleteDialog.open}
-          onOpenChange={(open) =>
-            setDeleteDialog({ open, prePassageiroId: "" })
-          }
-          title="Excluir Solicitação"
-          description="Deseja excluir permanentemente esta solicitação de cadastro? Essa ação não pode ser desfeita."
-          onConfirm={handleDelete}
-          confirmText="Excluir"
-          variant="destructive"
-          isLoading={deletePrePassageiro.isPending}
-        />
       </div>
-      <UpgradePlanDialog
-        open={isUpgradeDialogOpen}
-        onOpenChange={setIsUpgradeDialogOpen}
-        featureName="Limite de Passageiros"
-        description="Você atingiu o limite de passageiros do seu Plano Gratuito. Para aprovar novas solicitações, faça um upgrade."
-        onConfirm={() => {
-          setIsUpgradeDialogOpen(false);
-          openPlanosDialog();
-        }}
-      />
+
 
       <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>

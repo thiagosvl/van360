@@ -10,6 +10,8 @@ export { useIsMobile } from "./ui/use-mobile";
 export { safeCloseDialog, useDialogClose } from "./ui/useDialogClose";
 export { useFilters } from "./ui/useFilters";
 export { useLoadingState } from "./ui/useLoadingState";
+export { usePassageiroDialogs } from "./ui/usePassageiroDialogs";
+export { usePassageiroForm } from "./ui/usePassageiroForm";
 
 // Permission hooks
 export { usePageActions } from "./permissions/usePageActions";

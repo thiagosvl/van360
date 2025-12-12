@@ -8,7 +8,6 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { AlertTriangle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 interface DialogExcessoFranquiaProps {
   isOpen: boolean;
@@ -18,6 +17,8 @@ interface DialogExcessoFranquiaProps {
   limiteAtual: number;
   limiteApos: number;
   contexto: "reativacao" | "cadastro";
+  confirmText?: string;
+  cancelText?: string;
 }
 
 export function DialogExcessoFranquia({
@@ -28,12 +29,12 @@ export function DialogExcessoFranquia({
   limiteAtual,
   limiteApos,
   contexto,
+  confirmText,
+  cancelText,
 }: DialogExcessoFranquiaProps) {
-  const navigate = useNavigate();
-
+  // Logic completely delegated to parent
   const handleVerPlanos = () => {
     onVerPlanos();
-    navigate("/planos");
   };
 
   return (
@@ -91,16 +92,16 @@ export function DialogExcessoFranquia({
             onClick={handleVerPlanos}
             className="w-full sm:w-auto"
           >
-            Ver Planos
+            {confirmText || "Ver Planos"}
           </Button>
           <Button
             variant="outline"
             onClick={onContinuarSemAtivar}
             className="w-full sm:w-auto"
           >
-            {contexto === "reativacao"
+            {cancelText || (contexto === "reativacao"
               ? "Reativar Sem Cobranças"
-              : "Continuar Sem Ativar"}
+              : "Continuar Sem Ativar")}
           </Button>
           <Button
             variant="ghost"

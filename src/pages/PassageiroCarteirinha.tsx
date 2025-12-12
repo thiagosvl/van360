@@ -1,10 +1,10 @@
 import {
-    Suspense,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 
 // React Router
@@ -13,9 +13,9 @@ import { useNavigate, useParams } from "react-router-dom";
 // Components - Dialogs
 import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
-import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
+
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
-import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
+
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 
@@ -58,18 +58,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useAvailableYears,
-    useCobrancasByPassageiro,
-    useDeleteCobranca,
-    useDeletePassageiro,
-    useDesfazerPagamento,
-    useEnviarNotificacaoCobranca,
-    usePassageiro,
-    usePassageiros,
-    useToggleAtivoPassageiro,
-    useToggleNotificacoesCobranca,
-    useUpdateCobranca,
-    useUpdatePassageiro
+  useAvailableYears,
+  useCobrancasByPassageiro,
+  useDeleteCobranca,
+  useDeletePassageiro,
+  useDesfazerPagamento,
+  useEnviarNotificacaoCobranca,
+  usePassageiro,
+  usePassageiros,
+  useToggleAtivoPassageiro,
+  useToggleNotificacoesCobranca,
+  useUpdateCobranca,
+  useUpdatePassageiro
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -98,7 +98,9 @@ export default function PassageiroCarteirinha() {
   const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
-  const { setPageTitle } = useLayout();
+  const [cobrancaDialogOpen, setCobrancaDialogOpen] = useState(false);
+
+  const { setPageTitle, openLimiteFranquiaDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -126,39 +128,11 @@ export default function PassageiroCarteirinha() {
   const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
     null
   );
-  const [confirmToggleDialog, setConfirmToggleDialog] = useState({
-    open: false,
-    action: "" as "ativar" | "desativar" | "",
-  });
-  const [confirmDialog, setConfirmDialog] = useState({
-    open: false,
-    cobrancaId: "",
-    action: "enviar",
-  });
-  const [cobrancaDialogOpen, setCobrancaDialogOpen] = useState(false);
-  const [deleteCobrancaDialog, setDeleteCobrancaDialog] = useState({
-    open: false,
-    cobranca: null as Cobranca | null,
-  });
-  const [deletePassageiroDialog, setDeletePassageiroDialog] = useState({
-    open: false,
-  });
+
   // State for year filter
   const [yearFilter, setYearFilter] = useState(currentYear);
 
-  const [limiteFranquiaDialog, setLimiteFranquiaDialog] = useState<{
-    open: boolean;
-    franquiaContratada: number;
-    cobrancasEmUso: number;
-    title?: string;
-    description?: string;
-    hideLimitInfo?: boolean;
-    targetPassengerId?: string;
-  }>({
-    open: false,
-    franquiaContratada: 0,
-    cobrancasEmUso: 0,
-  });
+
   
 
 
@@ -190,16 +164,13 @@ export default function PassageiroCarteirinha() {
 
   const handleUpgrade = useCallback((featureName: string, description: string) => {
     safeCloseDialog(() => {
-      setLimiteFranquiaDialog({
-        open: true,
-        franquiaContratada: validacaoFranquiaGeral.franquiaContratada,
-        cobrancasEmUso: validacaoFranquiaGeral.cobrancasEmUso,
+      openLimiteFranquiaDialog({
         title: featureName,
         description: description,
         hideLimitInfo: true,
       });
     });
-  }, [validacaoFranquiaGeral]);
+  }, [openLimiteFranquiaDialog]);
   
   // ... (rest of code)
 
@@ -398,34 +369,41 @@ export default function PassageiroCarteirinha() {
   };
 
   const handleDeleteCobrancaClick = useCallback((cobranca: Cobranca) => {
-    setDeleteCobrancaDialog({ open: true, cobranca });
-  }, []);
-
-  const handleDelete = async () => {
-    if (!passageiro_id) return;
-    deletePassageiro.mutate(passageiro_id, {
-      onSuccess: () => {
-        navigate("/passageiros");
-      },
+    openConfirmationDialog({
+      title: "Excluir Cobrança",
+      description: "Ao confirmar, esta cobrança será excluída permanentemente. Deseja continuar?",
+      confirmText: "Confirmar",
+      variant: "destructive",
+      onConfirm: async () => {
+         try {
+           await deleteCobranca.mutateAsync(cobranca.id);
+           closeConfirmationDialog();
+         } catch (error) {
+           closeConfirmationDialog();
+         }
+      }
     });
-  };
+  }, [deleteCobranca, closeConfirmationDialog]);
+
+
 
   const handleToggleClick = (statusAtual: boolean) => {
     const action = statusAtual ? "desativar" : "ativar";
-    setConfirmToggleDialog({ open: true, action });
-  };
-
-  const handleToggleConfirm = async () => {
-    if (!passageiro || !passageiro_id) return;
-
-    toggleAtivoPassageiro.mutate(
-      { id: passageiro_id, novoStatus: !passageiro.ativo },
-      {
-        onSuccess: () => {
-          setConfirmToggleDialog({ open: false, action: "" });
-        },
-      }
-    );
+    openConfirmationDialog({
+       title: action === "ativar" ? "Reativar Passageiro" : "Desativar Passageiro",
+       description: `Deseja realmente ${action === 'ativar' ? "reativar" : "desativar"} este passageiro? Esta ação pode afetar a geração de cobranças.`,
+       confirmText: "Confirmar",
+       variant: action === "desativar" ? "destructive" : "default",
+       onConfirm: async () => {
+         if (!passageiro || !passageiro_id) return;
+         try {
+             await toggleAtivoPassageiro.mutateAsync({ id: passageiro_id, novoStatus: !passageiro.ativo });
+             closeConfirmationDialog();
+         } catch(error) {
+             closeConfirmationDialog();
+         }
+       }
+    });
   };
 
   const handleToggleLembretes = useCallback(
@@ -447,20 +425,14 @@ export default function PassageiroCarteirinha() {
       // Usar validação já calculada via hook
         if (!validacaoFranquiaGeral.podeAtivar) {
           if (validacaoFranquiaGeral.franquiaContratada === 0) {
-             setLimiteFranquiaDialog({
-              open: true,
-              franquiaContratada: validacaoFranquiaGeral.franquiaContratada,
-              cobrancasEmUso: validacaoFranquiaGeral.cobrancasEmUso,
+             openLimiteFranquiaDialog({
               targetPassengerId: passageiro_id,
               title: "Cobrança Automática",
               description: "A Cobrança Automática envia as faturas e lembretes sozinhas. Automatize sua rotina com o Plano Completo.",
               hideLimitInfo: true,
             });
           } else {
-            setLimiteFranquiaDialog({
-              open: true,
-              franquiaContratada: validacaoFranquiaGeral.franquiaContratada,
-              cobrancasEmUso: validacaoFranquiaGeral.cobrancasEmUso,
+            openLimiteFranquiaDialog({
               targetPassengerId: passageiro_id,
             });
           }
@@ -474,39 +446,40 @@ export default function PassageiroCarteirinha() {
     });
   };
 
-  const handleDeleteCobranca = async () => {
-    if (!deleteCobrancaDialog.cobranca) return;
 
-    deleteCobranca.mutate(deleteCobrancaDialog.cobranca.id, {
-      onSuccess: () => {
-        setDeleteCobrancaDialog({ open: false, cobranca: null });
-      },
-    });
-  };
 
   const handleEnviarNotificacaoClick = useCallback((cobrancaId: string) => {
-    setConfirmDialog({ open: true, cobrancaId, action: "enviar" });
-  }, []);
+    openConfirmationDialog({
+      title: "Enviar Cobrança",
+      description: "Ao confirmar, esta cobrança será enviada para o responsável. Deseja continuar?",
+      confirmText: "Confirmar",
+      onConfirm: async () => {
+         try {
+           await enviarNotificacao.mutateAsync(cobrancaId);
+           closeConfirmationDialog();
+         } catch (error) {
+            closeConfirmationDialog();
+         }
+      }
+    });
+  }, [enviarNotificacao, closeConfirmationDialog]);
 
   const handleDesfazerClick = useCallback((cobrancaId: string) => {
-    setConfirmDialog({ open: true, cobrancaId, action: "desfazer" });
-  }, []);
-
-  const handleConfirmAction = async () => {
-    if (confirmDialog.action === "enviar") {
-      enviarNotificacao.mutate(confirmDialog.cobrancaId, {
-        onSuccess: () => {
-          setConfirmDialog({ open: false, cobrancaId: "", action: "enviar" });
-        },
-      });
-    } else if (confirmDialog.action === "desfazer") {
-      desfazerPagamento.mutate(confirmDialog.cobrancaId, {
-        onSuccess: () => {
-          setConfirmDialog({ open: false, cobrancaId: "", action: "enviar" });
-        },
-      });
-    }
-  };
+    openConfirmationDialog({
+      title: "Desfazer Pagamento",
+      description: "Ao confirmar, o pagamento desta cobrança será desfeito. Deseja continuar?",
+      confirmText: "Confirmar",
+      variant: "destructive",
+      onConfirm: async () => {
+         try {
+           await desfazerPagamento.mutateAsync(cobrancaId);
+           closeConfirmationDialog();
+         } catch(error) {
+            closeConfirmationDialog();
+         }
+      }
+    });
+  }, [desfazerPagamento, closeConfirmationDialog]);
 
   const openPaymentDialog = useCallback((cobranca: Cobranca) => {
     setSelectedCobranca(cobranca);
@@ -614,7 +587,22 @@ export default function PassageiroCarteirinha() {
                       }
                       onToggleClick={handleToggleClick}
                       onDeleteClick={() =>
-                        setDeletePassageiroDialog({ open: true })
+                        openConfirmationDialog({
+                           title: "Excluir Passageiro",
+                           description: "Ao confirmar, este passageiro será excluído permanentemente. Deseja continuar?",
+                           confirmText: "Confirmar",
+                           variant: "destructive",
+                           onConfirm: async () => {
+                             if (!passageiro_id) return;
+                             try {
+                               await deletePassageiro.mutateAsync(passageiro_id);
+                               closeConfirmationDialog();
+                               navigate("/passageiros");
+                             } catch (error) {
+                               closeConfirmationDialog();
+                             }
+                           }
+                        })
                       }
                       onUpgrade={handleUpgrade}
                     />
@@ -679,26 +667,12 @@ export default function PassageiroCarteirinha() {
                         setSelectedCobranca(cobranca);
                         setPaymentDialogOpen(true);
                       }}
-                      onEnviarNotificacao={(id) => {
-                        setConfirmDialog({
-                          open: true,
-                          cobrancaId: id,
-                          action: "enviar",
-                        });
-                      }}
+                      onEnviarNotificacao={handleEnviarNotificacaoClick}
                       onToggleLembretes={(cobranca) =>
                         handleToggleLembretes(cobranca)
                       }
-                      onDesfazerPagamento={(id) => {
-                        setConfirmDialog({
-                          open: true,
-                          cobrancaId: id,
-                          action: "desfazer",
-                        });
-                      }}
-                      onExcluirCobranca={(cobranca) =>
-                        setDeleteCobrancaDialog({ open: true, cobranca })
-                      }
+                      onDesfazerPagamento={handleDesfazerClick}
+                      onExcluirCobranca={handleDeleteCobrancaClick}
                       onToggleMostrarTodas={() =>
                         setMostrarTodasCobrancas(!mostrarTodasCobrancas)
                       }
@@ -736,74 +710,7 @@ export default function PassageiroCarteirinha() {
             diaVencimento={passageiro.dia_vencimento}
             onCobrancaAdded={() => safeCloseDialog(() => handleCobrancaAdded())}
           />
-          <ConfirmationDialog
-            open={confirmToggleDialog.open}
-            onOpenChange={(open) =>
-              setConfirmToggleDialog({ open, action: "" })
-            }
-            title={
-              confirmToggleDialog.action === "ativar"
-                ? "Reativar Passageiro"
-                : "Desativar Passageiro"
-            }
-            description={`Deseja realmente ${confirmToggleDialog.action === 'ativar' ? "reativar" : "desativar"} este passageiro? Esta ação pode afetar a geração de cobranças.`}
-            onConfirm={handleToggleConfirm}
-            confirmText="Confirmar"
-            variant={
-              confirmToggleDialog.action === "desativar"
-                ? "destructive"
-                : "default"
-            }
-            isLoading={toggleAtivoPassageiro.isPending}
-          />
-          <ConfirmationDialog
-            open={confirmDialog.open}
-            onOpenChange={(open) =>
-              setConfirmDialog({ ...confirmDialog, open })
-            }
-            title={
-              confirmDialog.action === "enviar"
-                ? "Enviar Cobrança"
-                : "Desfazer Pagamento"
-            }
-            description={
-              confirmDialog.action === "enviar"
-                ? "Ao confirmar, esta cobrança será enviada para o responsável. Deseja continuar?"
-                : "Ao confirmar, o pagamento desta cobrança será desfeito. Deseja continuar?"
-            }
-            onConfirm={handleConfirmAction}
-            confirmText="Confirmar"
-            variant={
-              confirmDialog.action === "enviar" ? "default" : "destructive"
-            }
-            isLoading={
-              confirmDialog.action === "enviar"
-                ? enviarNotificacao.isPending
-                : desfazerPagamento.isPending
-            }
-          />
-          <ConfirmationDialog
-            open={deleteCobrancaDialog.open}
-            onOpenChange={(open) =>
-              setDeleteCobrancaDialog({ ...deleteCobrancaDialog, open })
-            }
-            title="Excluir Cobrança"
-            description="Ao confirmar, esta cobrança será excluída permanentemente. Deseja continuar?"
-            onConfirm={handleDeleteCobranca}
-            confirmText="Confirmar"
-            variant="destructive"
-            isLoading={deleteCobranca.isPending}
-          />
-          <ConfirmationDialog
-            open={deletePassageiroDialog.open}
-            onOpenChange={(open) => setDeletePassageiroDialog({ open })}
-            title="Excluir Passageiro"
-            description="Ao confirmar, este passageiro será excluído permanentemente. Deseja continuar?"
-            onConfirm={handleDelete}
-            confirmText="Confirmar"
-            variant="destructive"
-            isLoading={deletePassageiro.isPending}
-          />
+
           {isFormOpen && (
             <PassageiroFormDialog
               isOpen={isFormOpen}
@@ -816,11 +723,7 @@ export default function PassageiroCarteirinha() {
               }
               onSuccess={handlePassageiroFormSuccess}
               editingPassageiro={passageiro}
-              onCreateEscola={() => setIsCreatingEscola(true)}
-              onCreateVeiculo={() => setIsCreatingVeiculo(true)}
               mode="edit"
-              novaEscolaId={novaEscolaId}
-              novoVeiculoId={novoVeiculoId}
               profile={profile}
               plano={plano}
             />
@@ -848,29 +751,7 @@ export default function PassageiroCarteirinha() {
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Aguarde..." />
-      <LimiteFranquiaDialog
-        open={limiteFranquiaDialog.open}
-        onOpenChange={(open) =>
-          setLimiteFranquiaDialog((prev) => ({ ...prev, open }))
-        }
-        franquiaContratada={limiteFranquiaDialog.franquiaContratada}
-        cobrancasEmUso={limiteFranquiaDialog.cobrancasEmUso}
-        usuarioId={profile?.id}
-        totalPassageiros={totalPassageiros}
-        onUpgradeSuccess={handleUpgradeSuccess}
-        dataVencimento={
-          profile?.assinaturas_usuarios?.[0]?.vigencia_fim ??
-          profile?.assinaturas_usuarios?.[0]?.anchor_date
-        }
-        valorAtualMensal={
-          profile?.assinaturas_usuarios?.[0]?.preco_aplicado ??
-          profile?.assinaturas_usuarios?.[0]?.planos?.preco
-        }
-        targetPassengerId={limiteFranquiaDialog.targetPassengerId}
-        title={limiteFranquiaDialog.title}
-        description={limiteFranquiaDialog.description}
-        hideLimitInfo={limiteFranquiaDialog.hideLimitInfo}
-      />
+
 
     </>
   );

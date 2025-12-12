@@ -26,7 +26,7 @@ import { GastosList } from "@/components/features/financeiro/GastosList";
 import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
 
 // Components - Dialogs
-import { ContextualUpsellDialog } from "@/components/dialogs/ContextualUpsellDialog";
+
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 
 // Hooks
@@ -54,7 +54,7 @@ import {
 } from "lucide-react";
 
 export default function Gastos() {
-  const { setPageTitle, openPlanosDialog } = useLayout();
+  const { setPageTitle, openPlanosDialog, openContextualUpsellDialog } = useLayout();
   const deleteGasto = useDeleteGasto();
 
   const isActionLoading = deleteGasto.isPending;
@@ -80,7 +80,7 @@ export default function Gastos() {
   });
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
+
   const [editingGasto, setEditingGasto] = useState<Gasto | null>(null);
   
   // Authorization Hook
@@ -263,7 +263,11 @@ export default function Gastos() {
                   onRegistrarGasto={() =>
                     enabledPageActions
                       ? openDialog()
-                      : setIsUpgradeDialogOpen(true)
+                      : openContextualUpsellDialog({
+                          feature: "controle_gastos",
+                          targetPlan: PLANO_ESSENCIAL,
+                          onSuccess: () => window.location.reload()
+                        })
                   }
                   categorias={CATEGORIAS_GASTOS}
                   veiculos={veiculos.map((v) => ({ id: v.id, placa: v.placa }))}
@@ -314,9 +318,11 @@ export default function Gastos() {
                             lucro real.
                           </p>
                           <Button
-                            onClick={() =>
-                              (window.location.href = "/planos?plano=essencial")
-                            }
+                            onClick={() => openContextualUpsellDialog({
+                              feature: "controle_gastos",
+                              targetPlan: PLANO_ESSENCIAL,
+                              onSuccess: () => window.location.reload()
+                            })}
                             className="bg-orange-600 hover:bg-orange-700 text-white font-semibold h-12 px-8 rounded-xl shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all transform hover:-translate-y-0.5"
                           >
                             Quero controlar meus gastos
@@ -363,20 +369,7 @@ export default function Gastos() {
             }}
           />
 
-          <ContextualUpsellDialog
-            open={isUpgradeDialogOpen}
-            onOpenChange={setIsUpgradeDialogOpen}
-            feature="controle_gastos"
-            targetPlan={PLANO_ESSENCIAL}
-            onViewAllPlans={() => {
-              setIsUpgradeDialogOpen(false);
-              openPlanosDialog();
-            }}
-            onSuccess={() => {
-              // Ao confirmar pagamento, forçamos recarregamento de permissões
-              window.location.reload();
-            }}
-          />
+
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Aguarde..." />
@@ -387,7 +380,11 @@ export default function Gastos() {
         title="Visualize seus dados reais."
         description="Libere o acesso agora."
         buttonText="Ver Planos"
-        onAction={() => setIsUpgradeDialogOpen(true)}
+        onAction={() => openContextualUpsellDialog({
+          feature: "controle_gastos",
+          targetPlan: PLANO_ESSENCIAL,
+          onSuccess: () => window.location.reload()
+        })}
       />
     </>
   );

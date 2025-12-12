@@ -5,11 +5,13 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { PLANO_COMPLETO, PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
 import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 
+import { useLayout } from "@/contexts/LayoutContext";
+
 interface AssinaturaSideColumnProps {
   plano: any;
   assinatura: any;
   data: any;
-  navigate: (path: string) => void;
+  navigate: (path: string) => void; // Keeping prop to avoid breaking parent, but unused
   handleAbandonCancelSubscriptionClick: () => void;
   handleCancelSubscriptionClick: () => void;
 }
@@ -22,6 +24,7 @@ export function AssinaturaSideColumn({
   handleAbandonCancelSubscriptionClick,
   handleCancelSubscriptionClick,
 }: AssinaturaSideColumnProps) {
+  const { openPlanosDialog, openLimiteFranquiaDialog } = useLayout();
   const isFreePlan = plano?.slug === PLANO_GRATUITO;
   const isEssentialPlan = plano?.slug === PLANO_ESSENCIAL;
   const isCompletePlan = plano?.slug === PLANO_COMPLETO;
@@ -72,7 +75,10 @@ export function AssinaturaSideColumn({
             <Button
               variant="default"
               className="w-full bg-primary hover:bg-blue-700"
-              onClick={() => navigate(`/planos?slug=${PLANO_COMPLETO}`)}
+              onClick={() => openLimiteFranquiaDialog({
+                  title: "Aumentar Limite",
+                  description: "Aumente seu limite de cobranças automáticas com o Plano Completo.",
+              })}
               title="Planos"
             >
               Aumentar Meu Limite
@@ -89,7 +95,11 @@ export function AssinaturaSideColumn({
             <Button
               variant="default"
               className="w-full bg-primary hover:bg-blue-700"
-              onClick={() => navigate(`/planos?slug=${PLANO_COMPLETO}`)}
+              onClick={() => openLimiteFranquiaDialog({
+                  title: "Cobrança Automática",
+                  description: "Automatize o envio de cobranças e reduza a inadimplência com o Plano Completo.",
+                  hideLimitInfo: true,
+              })}
               title="Planos"
             >
               Quero Cobranças Automáticas
@@ -125,7 +135,7 @@ export function AssinaturaSideColumn({
               <Button
                 variant="default"
                 className="w-full bg-blue-600 hover:bg-blue-700"
-                onClick={() => navigate("/planos")}
+                onClick={() => openPlanosDialog()}
                 title="Planos"
               >
                 Quero Passageiros Ilimitados

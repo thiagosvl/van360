@@ -15,8 +15,8 @@ import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActi
 
 // Components - Dialogs
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
-import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
-import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
+
+
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 
 // Components - Empty & Skeletons
@@ -71,7 +71,8 @@ import { BellOff, Bot, CheckCircle2, DollarSign, Search, TrendingUp, Wallet } fr
 const Cobrancas = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
-  const { setPageTitle } = useLayout();
+
+  const { setPageTitle, openLimiteFranquiaDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Tab state from URL
@@ -113,32 +114,9 @@ const Cobrancas = () => {
   );
 
   // Dialog States
-  const [confirmDialogEnvioNotificacao, setConfirmDialogEnvioNotificacao] =
-    useState<{ open: boolean; cobranca: Cobranca | null }>({
-      open: false,
-      cobranca: null,
-    });
-  const [confirmDialogDesfazer, setConfirmDialogDesfazer] = useState({
-    open: false,
-    cobrancaId: "",
-  });
-  const [deleteCobrancaDialog, setDeleteCobrancaDialog] = useState({
-    open: false,
-    cobranca: null as Cobranca | null,
-  });
 
-  const [limiteFranquiaDialog, setLimiteFranquiaDialog] = useState<{
-    open: boolean;
-    franquiaContratada: number;
-    cobrancasEmUso: number;
-    title?: string;
-    description?: string;
-    hideLimitInfo?: boolean;
-  }>({
-    open: false,
-    franquiaContratada: 0,
-    cobrancasEmUso: 0,
-  });
+
+
   
   const { user, loading: isSessionLoading } = useSession();
   const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
@@ -151,16 +129,13 @@ const Cobrancas = () => {
 
   const handleUpgrade = useCallback((featureName: string, description: string) => {
     safeCloseDialog(() => {
-      setLimiteFranquiaDialog({
-        open: true,
-        franquiaContratada: validacaoFranquiaGeral.franquiaContratada,
-        cobrancasEmUso: validacaoFranquiaGeral.cobrancasEmUso,
+      openLimiteFranquiaDialog({
         title: featureName,
         description: description,
         hideLimitInfo: true,
       });
     });
-  }, [validacaoFranquiaGeral]);
+  }, [openLimiteFranquiaDialog]);
 
   const toggleNotificacoes = useToggleNotificacoesCobranca();
   const enviarNotificacao = useEnviarNotificacaoCobranca();
@@ -232,40 +207,38 @@ const Cobrancas = () => {
     [toggleNotificacoes]
   );
 
-  const enviarNotificacaoCobranca = useCallback(async () => {
-    if (!confirmDialogEnvioNotificacao.cobranca) return;
-    enviarNotificacao.mutate(confirmDialogEnvioNotificacao.cobranca.id, {
-      onSuccess: () => {
-        setConfirmDialogEnvioNotificacao({
-          open: false,
-          cobranca: null,
-        });
-        if (plano?.slug && [PLANO_GRATUITO, PLANO_ESSENCIAL].includes(plano.slug)) {
+  const enviarNotificacaoCobranca = useCallback(async (cobranca: Cobranca) => {
+    try {
+      await enviarNotificacao.mutateAsync(cobranca.id);
+      closeConfirmationDialog();
+      if (plano?.slug && [PLANO_GRATUITO, PLANO_ESSENCIAL].includes(plano.slug)) {
           handleUpgrade("Cobranças Automáticas", "Cobrança enviada! Automatize esse envio e ganhe tempo.");
-        }
-      },
-    });
-  }, [confirmDialogEnvioNotificacao.cobranca, enviarNotificacao, plano, handleUpgrade]);
+      }
+    } catch (error) {
+      closeConfirmationDialog();
+      console.error(error);
+    }
+  }, [enviarNotificacao, plano, handleUpgrade, closeConfirmationDialog]);
 
-  const handleDesfazerPagamento = useCallback(() => {
-    desfazerPagamento.mutate(confirmDialogDesfazer.cobrancaId, {
-      onSuccess: () => {
-        setConfirmDialogDesfazer({ open: false, cobrancaId: "" });
-        // React Query já faz refetch automático via invalidateQueries na mutation
-      },
-    });
-  }, [confirmDialogDesfazer.cobrancaId, desfazerPagamento]);
+  const handleDesfazerPagamento = useCallback(async (cobrancaId: string) => {
+    try {
+      await desfazerPagamento.mutateAsync(cobrancaId);
+      closeConfirmationDialog();
+    } catch (error) {
+      closeConfirmationDialog();
+      console.error(error);
+    }
+  }, [desfazerPagamento, closeConfirmationDialog]);
 
-  const handleDeleteCobranca = useCallback(() => {
-    if (!deleteCobrancaDialog.cobranca) return;
-
-    deleteCobranca.mutate(deleteCobrancaDialog.cobranca.id, {
-      onSuccess: () => {
-        setDeleteCobrancaDialog({ open: false, cobranca: null });
-        // React Query já faz refetch automático via invalidateQueries na mutation
-      },
-    });
-  }, [deleteCobrancaDialog.cobranca, deleteCobranca]);
+  const handleDeleteCobranca = useCallback(async (cobranca: Cobranca) => {
+    try {
+      await deleteCobranca.mutateAsync(cobranca.id);
+      closeConfirmationDialog();
+    } catch (error) {
+       closeConfirmationDialog();
+       console.error(error);
+    }
+  }, [deleteCobranca, closeConfirmationDialog]);
 
   const openPaymentDialog = useCallback((cobranca: Cobranca) => {
     setSelectedCobranca(cobranca);
@@ -574,22 +547,33 @@ const Cobrancas = () => {
                                   onVerCobranca={() => navigateToDetails(cobranca)}
                                   onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
                                   onRegistrarPagamento={() => openPaymentDialog(cobranca)}
-                                  onEnviarNotificacao={() =>
-                                    setConfirmDialogEnvioNotificacao({
-                                      open: true,
-                                      cobranca: cobranca,
-                                    })
-                                  }
+                                  onEnviarNotificacao={() => {
+                                      openConfirmationDialog({
+                                          title: "Enviar Notificação",
+                                          description: "Deseja enviar a notificação de cobrança para o responsável via WhatsApp?",
+                                          confirmText: "Enviar",
+                                          onConfirm: () => enviarNotificacaoCobranca(cobranca)
+                                      });
+                                  }}
                                   onToggleLembretes={() => handleToggleLembretes(cobranca)}
-                                  onDesfazerPagamento={() =>
-                                    setConfirmDialogDesfazer({
-                                      open: true,
-                                      cobrancaId: cobranca.id,
-                                    })
-                                  }
-                                  onExcluirCobranca={() =>
-                                    setDeleteCobrancaDialog({ open: true, cobranca })
-                                  }
+                                  onDesfazerPagamento={() => {
+                                      openConfirmationDialog({
+                                          title: "Desfazer Pagamento",
+                                          description: "Tem certeza que deseja desfazer este pagamento? A cobrança voltará para o status pendente.",
+                                          variant: "destructive",
+                                          confirmText: "Desfazer",
+                                          onConfirm: () => handleDesfazerPagamento(cobranca.id)
+                                      });
+                                  }}
+                                  onExcluirCobranca={() => {
+                                      openConfirmationDialog({
+                                          title: "Excluir Cobrança",
+                                          description: "Tem certeza que deseja excluir esta cobrança? Esta ação não pode ser desfeita.",
+                                          variant: "destructive",
+                                          confirmText: "Excluir",
+                                          onConfirm: () => handleDeleteCobranca(cobranca)
+                                      });
+                                  }}
                                   onUpgrade={handleUpgrade}
                                 />
                               </td>
@@ -650,22 +634,36 @@ const Cobrancas = () => {
                               onVerCobranca={() => navigateToDetails(cobranca)}
                               onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
                               onRegistrarPagamento={() => openPaymentDialog(cobranca)}
-                              onEnviarNotificacao={() =>
-                                setConfirmDialogEnvioNotificacao({
-                                  open: true,
-                                  cobranca: cobranca,
-                                })
-                              }
+                              onEnviarNotificacao={() => {
+                                  openConfirmationDialog({
+                                      title: "Enviar Notificação",
+                                      description: "Deseja enviar a notificação de cobrança para o responsável via WhatsApp?",
+                                      confirmText: "Enviar",
+                                      onConfirm: () => enviarNotificacaoCobranca(cobranca),
+                                      isLoading: enviarNotificacao.isPending
+                                  });
+                              }}
                               onToggleLembretes={() => handleToggleLembretes(cobranca)}
-                              onDesfazerPagamento={() =>
-                                setConfirmDialogDesfazer({
-                                  open: true,
-                                  cobrancaId: cobranca.id,
-                                })
-                              }
-                              onExcluirCobranca={() =>
-                                setDeleteCobrancaDialog({ open: true, cobranca })
-                              }
+                              onDesfazerPagamento={() => {
+                                  openConfirmationDialog({
+                                      title: "Desfazer Pagamento",
+                                      description: "Tem certeza que deseja desfazer este pagamento? A cobrança voltará para o status pendente.",
+                                      variant: "destructive",
+                                      confirmText: "Desfazer",
+                                      onConfirm: () => handleDesfazerPagamento(cobranca.id),
+                                      isLoading: desfazerPagamento.isPending
+                                  });
+                              }}
+                              onExcluirCobranca={() => {
+                                  openConfirmationDialog({
+                                      title: "Excluir Cobrança",
+                                      description: "Tem certeza que deseja excluir esta cobrança? Esta ação não pode ser desfeita.",
+                                      variant: "destructive",
+                                      confirmText: "Excluir",
+                                      onConfirm: () => handleDeleteCobranca(cobranca),
+                                      isLoading: deleteCobranca.isPending
+                                  });
+                              }}
                               onUpgrade={handleUpgrade}
                             />
                           </div>
@@ -830,22 +828,36 @@ const Cobrancas = () => {
                                   onVerCobranca={() => navigateToDetails(cobranca)}
                                   onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
                                   onRegistrarPagamento={() => openPaymentDialog(cobranca)}
-                                  onEnviarNotificacao={() =>
-                                    setConfirmDialogEnvioNotificacao({
-                                      open: true,
-                                      cobranca: cobranca,
-                                    })
-                                  }
+                                  onEnviarNotificacao={() => {
+                                      openConfirmationDialog({
+                                          title: "Enviar Notificação",
+                                          description: "Deseja enviar a notificação de cobrança para o responsável via WhatsApp?",
+                                          confirmText: "Enviar",
+                                          onConfirm: () => enviarNotificacaoCobranca(cobranca),
+                                          isLoading: enviarNotificacao.isPending
+                                      });
+                                  }}
                                   onToggleLembretes={() => handleToggleLembretes(cobranca)}
-                                  onDesfazerPagamento={() =>
-                                    setConfirmDialogDesfazer({
-                                      open: true,
-                                      cobrancaId: cobranca.id,
-                                    })
-                                  }
-                                  onExcluirCobranca={() =>
-                                    setDeleteCobrancaDialog({ open: true, cobranca })
-                                  }
+                                  onDesfazerPagamento={() => {
+                                      openConfirmationDialog({
+                                          title: "Desfazer Pagamento",
+                                          description: "Tem certeza que deseja desfazer este pagamento? A cobrança voltará para o status pendente.",
+                                          variant: "destructive",
+                                          confirmText: "Desfazer",
+                                          onConfirm: () => handleDesfazerPagamento(cobranca.id),
+                                          isLoading: desfazerPagamento.isPending
+                                      });
+                                  }}
+                                  onExcluirCobranca={() => {
+                                      openConfirmationDialog({
+                                          title: "Excluir Cobrança",
+                                          description: "Tem certeza que deseja excluir esta cobrança? Esta ação não pode ser desfeita.",
+                                          variant: "destructive",
+                                          confirmText: "Excluir",
+                                          onConfirm: () => handleDeleteCobranca(cobranca),
+                                          isLoading: deleteCobranca.isPending
+                                      });
+                                  }}
                                   onUpgrade={handleUpgrade}
                                 />
                               </td>
@@ -907,22 +919,36 @@ const Cobrancas = () => {
                               onVerCobranca={() => navigateToDetails(cobranca)}
                               onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
                               onRegistrarPagamento={() => openPaymentDialog(cobranca)}
-                              onEnviarNotificacao={() =>
-                                setConfirmDialogEnvioNotificacao({
-                                  open: true,
-                                  cobranca: cobranca,
-                                })
-                              }
+                              onEnviarNotificacao={() => {
+                                  openConfirmationDialog({
+                                      title: "Enviar Notificação",
+                                      description: "Deseja enviar a notificação de cobrança para o responsável via WhatsApp?",
+                                      confirmText: "Enviar",
+                                      onConfirm: () => enviarNotificacaoCobranca(cobranca),
+                                      isLoading: enviarNotificacao.isPending
+                                  });
+                              }}
                               onToggleLembretes={() => handleToggleLembretes(cobranca)}
-                              onDesfazerPagamento={() =>
-                                setConfirmDialogDesfazer({
-                                  open: true,
-                                  cobrancaId: cobranca.id,
-                                })
-                              }
-                              onExcluirCobranca={() =>
-                                setDeleteCobrancaDialog({ open: true, cobranca })
-                              }
+                              onDesfazerPagamento={() => {
+                                  openConfirmationDialog({
+                                      title: "Desfazer Pagamento",
+                                      description: "Tem certeza que deseja desfazer este pagamento? A cobrança voltará para o status pendente.",
+                                      variant: "destructive",
+                                      confirmText: "Desfazer",
+                                      onConfirm: () => handleDesfazerPagamento(cobranca.id),
+                                      isLoading: desfazerPagamento.isPending
+                                  });
+                              }}
+                              onExcluirCobranca={() => {
+                                  openConfirmationDialog({
+                                      title: "Excluir Cobrança",
+                                      description: "Tem certeza que deseja excluir esta cobrança? Esta ação não pode ser desfeita.",
+                                      variant: "destructive",
+                                      confirmText: "Excluir",
+                                      onConfirm: () => handleDeleteCobranca(cobranca),
+                                      isLoading: deleteCobranca.isPending
+                                  });
+                              }}
                               onUpgrade={handleUpgrade}
                             />
                           </div>
@@ -981,43 +1007,7 @@ const Cobrancas = () => {
             />
           )}
 
-          <ConfirmationDialog
-            open={confirmDialogEnvioNotificacao.open}
-            onOpenChange={(open) =>
-              setConfirmDialogEnvioNotificacao({
-                open,
-                cobranca: null,
-              })
-            }
-            title="Enviar Cobrança"
-            description="Ao confirmar, esta cobrança será enviada para o responsável. Deseja continuar?"
-            onConfirm={enviarNotificacaoCobranca}
-            isLoading={enviarNotificacao.isPending}
-          />
-          <ConfirmationDialog
-            open={confirmDialogDesfazer.open}
-            onOpenChange={(open) =>
-              setConfirmDialogDesfazer({ open, cobrancaId: "" })
-            }
-            title="Desfazer Pagamento"
-            description="Ao confirmar, o pagamento desta cobrança será desfeito. Deseja continuar?"
-            onConfirm={handleDesfazerPagamento}
-            variant="destructive"
-            confirmText="Confirmar"
-            isLoading={desfazerPagamento.isPending}
-          />
-          <ConfirmationDialog
-            open={deleteCobrancaDialog.open}
-            onOpenChange={(open) =>
-              setDeleteCobrancaDialog({ ...deleteCobrancaDialog, open })
-            }
-            title="Excluir"
-            description="Ao confirmar, esta cobrança será excluída permanentemente. Deseja continuar?"
-            onConfirm={handleDeleteCobranca}
-            confirmText="Confirmar"
-            variant="destructive"
-            isLoading={deleteCobranca.isPending}
-          />
+
 
           {cobrancaToEdit && (
             <CobrancaEditDialog
@@ -1028,19 +1018,7 @@ const Cobrancas = () => {
             />
           )}
 
-          {/* Dialog de Upgrade substituído por LimiteFranquiaDialog */}
-          <LimiteFranquiaDialog
-            open={limiteFranquiaDialog.open}
-            onOpenChange={(open) =>
-              setLimiteFranquiaDialog((prev) => ({ ...prev, open }))
-            }
-            franquiaContratada={limiteFranquiaDialog.franquiaContratada}
-            cobrancasEmUso={limiteFranquiaDialog.cobrancasEmUso}
-            usuarioId={profile?.id}
-            title={limiteFranquiaDialog.title}
-            description={limiteFranquiaDialog.description}
-            hideLimitInfo={limiteFranquiaDialog.hideLimitInfo}
-          />
+
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Aguarde..." />

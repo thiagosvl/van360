@@ -10,7 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { PLANO_COMPLETO } from "@/constants";
+import { useLayout } from "@/contexts/LayoutContext";
+import { useSession } from "@/hooks/business/useSession";
 import { Receipt } from "lucide-react";
 
 const AlertCard = ({ icone: Icon, titulo, descricao, cor, acao }) => {
@@ -42,7 +43,11 @@ const AlertCard = ({ icone: Icon, titulo, descricao, cor, acao }) => {
   );
 };
 
-const PlanoGratuito = ({ navigate, data }) => (
+const PlanoGratuito = ({ navigate, data }) => {
+  const { openLimiteFranquiaDialog, openContextualUpsellDialog } = useLayout();
+  const { user } = useSession();
+
+  return (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
     {/* Coluna Principal (Status e Faturamento) */}
     <div className="lg:col-span-2 space-y-4">
@@ -53,13 +58,15 @@ const PlanoGratuito = ({ navigate, data }) => (
         cor="primary"
         acao={{
           texto: "Quero mais funcionalidades",
-          onClick: () => navigate("/planos"),
+          onClick: () => openContextualUpsellDialog({ feature: "outros" }),
         }}
       />
       <FaturamentoCard
         plano={data.plano}
         cobrancas={data.cobrancas}
         navigate={navigate}
+        usuarioId={user?.id}
+        onPrecisaSelecaoManual={() => {}}
       />
       <DetalhesPlanoCard plano={data.plano} assinatura={data.assinatura} />
     </div>
@@ -79,7 +86,11 @@ const PlanoGratuito = ({ navigate, data }) => (
         <Button
           variant="default"
           className="w-full bg-primary hover:bg-blue-700"
-          onClick={() => navigate(`/planos?slug=${PLANO_COMPLETO}`)}
+          onClick={() => openLimiteFranquiaDialog({
+              title: "Cobranças Automáticas",
+              description: "Automatize suas cobranças com o Plano Completo.",
+              hideLimitInfo: true,
+          })}
           title="Planos"
         >
           Quero Cobranças Automáticas
@@ -106,7 +117,7 @@ const PlanoGratuito = ({ navigate, data }) => (
         <Button
           variant="default"
           className="w-full bg-blue-600 hover:bg-blue-700"
-          onClick={() => navigate("/planos")}
+          onClick={() => openContextualUpsellDialog({ feature: "passageiros" })}
           title="Planos"
         >
           Quero Passageiros Ilimitados
@@ -120,5 +131,6 @@ const PlanoGratuito = ({ navigate, data }) => (
       />
     </div>
   </div>
-);
+  );
+};
 export default PlanoGratuito;

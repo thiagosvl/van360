@@ -1,10 +1,10 @@
 // React
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 // Components - Dialogs
-import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
-import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
+
+
 
 // Components - Features
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
@@ -33,7 +33,6 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 // Utils
-import { safeCloseDialog } from "@/utils/dialogUtils";
 import { toast } from "@/utils/notifications/toast";
 
 // Types
@@ -43,7 +42,7 @@ import { Escola } from "@/types/escola";
 import { GraduationCap } from "lucide-react";
 
 export default function Escolas() {
-  const { setPageTitle } = useLayout();
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openEscolaFormDialog } = useLayout();
   const [searchParams] = useSearchParams();
 
   const deleteEscola = useDeleteEscola();
@@ -51,13 +50,7 @@ export default function Escolas() {
 
   const isActionLoading = deleteEscola.isPending || toggleAtivoEscola.isPending;
 
-  const [isDialogOpen, setIsDialogOpen] = useState(() => {
-    const openModal = searchParams.get("openModal");
-    return openModal && openModal === "true" ? true : false;
-  });
-  const [editingEscola, setEditingEscola] = useState<Escola | null>(null);
-  const [escolaToDelete, setEscolaToDelete] = useState<Escola | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
 
   const {
     searchTerm,
@@ -126,29 +119,23 @@ export default function Escolas() {
     return filtered;
   }, [escolas, selectedStatus, searchTerm]);
 
-  const handleSuccessSave = useCallback(
-    (escolaCriada: Escola, keepOpen: boolean = false) => {
-      if (keepOpen) {
-        return;
-      }
-      safeCloseDialog(() => {
-        if (searchParams.get("openModal")) {
-          navigate("/inicio", { replace: true });
-        }
-
-        setEditingEscola(null);
-        setIsDialogOpen(false);
-      });
-    },
-    [searchParams, navigate]
-  );
+  // Check for openModal param on mount
+  useEffect(() => {
+     const openModal = searchParams.get("openModal");
+     if (openModal === "true") {
+         openEscolaFormDialog({
+            onSuccess: (escola) => {
+                 navigate("/inicio", { replace: true });
+            }
+         });
+     }
+  }, [searchParams, openEscolaFormDialog, navigate]);
 
   const handleEdit = useCallback((escola: Escola) => {
-    safeCloseDialog(() => {
-      setEditingEscola(escola);
-      setIsDialogOpen(true);
+    openEscolaFormDialog({
+        editingEscola: escola
     });
-  }, []);
+  }, [openEscolaFormDialog]);
 
   const handleDeleteClick = useCallback((escola: Escola) => {
     if (escola.passageiros_ativos_count > 0) {
@@ -158,20 +145,22 @@ export default function Escolas() {
       return;
     }
 
-    setEscolaToDelete(escola);
-    setIsDeleteDialogOpen(true);
-  }, []);
-
-  const handleDelete = useCallback(async () => {
-    if (!escolaToDelete) return;
-
-    deleteEscola.mutate(escolaToDelete.id, {
-      onSuccess: () => {
-        setIsDeleteDialogOpen(false);
-        setEscolaToDelete(null);
-      },
+    openConfirmationDialog({
+      title: "Confirmar exclusão",
+      description: "Deseja excluir permanentemente esta escola?",
+      confirmText: "Confirmar",
+      variant: "destructive",
+      onConfirm: async () => {
+         try {
+           await deleteEscola.mutateAsync(escola.id);
+           closeConfirmationDialog();
+         } catch (error) {
+           console.error(error);
+           closeConfirmationDialog();
+         }
+      }
     });
-  }, [escolaToDelete, deleteEscola]);
+  }, [deleteEscola]);
 
   const handleToggleAtivo = useCallback(
     async (escola: Escola) => {
@@ -224,7 +213,7 @@ export default function Escolas() {
                   onClearFilters={clearFilters}
                   hasActiveFilters={hasActiveFilters}
                   onApplyFilters={setFilters}
-                  onRegister={() => setIsDialogOpen(true)}
+                  onRegister={() => openEscolaFormDialog()}
                 />
               </div>
 
@@ -243,7 +232,7 @@ export default function Escolas() {
                     !searchTerm
                       ? {
                           label: "Cadastrar Escola",
-                          onClick: () => setIsDialogOpen(true),
+                          onClick: () => openEscolaFormDialog(),
                         }
                       : undefined
                   }
@@ -259,31 +248,9 @@ export default function Escolas() {
               )}
             </CardContent>
           </Card>
-          <ConfirmationDialog
-            open={isDeleteDialogOpen}
-            onOpenChange={setIsDeleteDialogOpen}
-            title="Confirmar exclusão"
-            description="Deseja excluir permanentemente esta escola?"
-            onConfirm={handleDelete}
-            confirmText="Confirmar"
-            variant="destructive"
-            isLoading={deleteEscola.isPending}
-          />
 
-          {isDialogOpen && (
-            <EscolaFormDialog
-              isOpen={isDialogOpen}
-              onClose={() => {
-                safeCloseDialog(() => {
-                  setIsDialogOpen(false);
-                  setEditingEscola(null);
-                });
-              }}
-              editingEscola={editingEscola}
-              onSuccess={handleSuccessSave}
-              allowBatchCreation={!editingEscola}
-            />
-          )}
+
+
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Aguarde..." />

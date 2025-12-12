@@ -1,32 +1,32 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
 import { Passageiro } from "@/types/passageiro";
 import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { formatPeriodo } from "@/utils/formatters";
 import {
-  Bot,
-  BotOff,
-  CreditCard,
-  MoreVertical,
-  Pencil,
-  ToggleLeft,
-  ToggleRight,
-  Trash2
+    Bot,
+    BotOff,
+    CreditCard,
+    MoreVertical,
+    Pencil,
+    ToggleLeft,
+    ToggleRight,
+    Trash2
 } from "lucide-react";
 
 interface PassageirosListProps {
@@ -36,7 +36,7 @@ interface PassageirosListProps {
   onEdit: (passageiro: Passageiro) => void;
   onToggleCobrancaAutomatica: (passageiro: Passageiro) => void;
   onToggleClick: (passageiro: Passageiro) => void;
-  onSetDeleteDialog: (passageiroId: string) => void;
+  onDeleteClick: (passageiro: Passageiro) => void;
   onOpenUpgradeDialog?: (passageiroId?: string) => void;
 }
 
@@ -47,7 +47,7 @@ export function PassageirosList({
   onEdit,
   onToggleCobrancaAutomatica,
   onToggleClick,
-  onSetDeleteDialog,
+  onDeleteClick,
   onOpenUpgradeDialog,
 }: PassageirosListProps) {
   const hasCobrancaAutomaticaAccess = canUseCobrancaAutomatica(plano as any);
@@ -171,7 +171,7 @@ export function PassageirosList({
           className="text-red-600 focus:text-red-600"
           onClick={(e) => {
             e.stopPropagation();
-            onSetDeleteDialog(passageiro.id);
+            onDeleteClick(passageiro);
           }}
         >
           <Trash2 className="w-4 h-4 mr-2" />

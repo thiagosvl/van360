@@ -4,6 +4,8 @@ import { Separator } from "@/components/ui/separator";
 import { ASSINATURA_USUARIO_STATUS_TRIAL, PLANO_GRATUITO } from "@/constants";
 import { LucideChevronRight } from "lucide-react";
 
+import { useLayout } from "@/contexts/LayoutContext";
+
 const GerenciarOpcoesCard = ({
   navigate,
   plano,
@@ -11,6 +13,7 @@ const GerenciarOpcoesCard = ({
   handleCancelSubscriptionClick = () => {},
   handleAbandonCancelSubscriptionClick = () => {},
 }) => {
+  const { openContextualUpsellDialog } = useLayout();
 
   return (
     <>
@@ -24,7 +27,7 @@ const GerenciarOpcoesCard = ({
           <Button
             variant="ghost"
             className="w-full justify-between p-4 h-auto hover:bg-gray-50"
-            onClick={() => navigate("/planos")}
+            onClick={() => openContextualUpsellDialog({ feature: "outros" })}
             title="Planos"
           >
             <span className="font-medium text-gray-700">Trocar de Plano</span>

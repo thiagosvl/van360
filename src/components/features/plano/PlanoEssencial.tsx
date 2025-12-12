@@ -96,6 +96,9 @@ const formatDate = (dateString: string) => {
   });
 };
 
+import { useLayout } from "@/contexts/LayoutContext";
+import { useSession } from "@/hooks/business/useSession";
+
 const PlanoEssencial = ({
   navigate,
   data,
@@ -103,6 +106,8 @@ const PlanoEssencial = ({
   handleAbandonCancelSubscriptionClick,
   onPaymentSuccess,
 }) => {
+  const { openLimiteFranquiaDialog, openContextualUpsellDialog } = useLayout();
+  const { user } = useSession();
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedCobranca, setSelectedCobranca] = useState<any>(null);
 
@@ -169,7 +174,7 @@ const PlanoEssencial = ({
         onClick: handlePagarClick,
       },
       acaoTrocarPlano: {
-        onClick: () => navigate("/planos"),
+        onClick: () => openContextualUpsellDialog({ feature: "outros" }),
       },
     };
   } else if (isSolicitacaoCancelamento) {
@@ -201,7 +206,7 @@ const PlanoEssencial = ({
         onClick: handlePagarClick,
       },
       acaoTrocarPlano: {
-        onClick: () => navigate("/planos"),
+        onClick: () => openContextualUpsellDialog({ feature: "outros" }),
       },
     };
   } else if (isAtiva) {
@@ -214,7 +219,7 @@ const PlanoEssencial = ({
       cor: "blue",
       acao: null,
       acaoTrocarPlano: {
-        onClick: () => navigate("/planos"),
+        onClick: () => openContextualUpsellDialog({ feature: "outros" }),
       },
     };
   } else if (isSuspensa) {
@@ -228,7 +233,7 @@ const PlanoEssencial = ({
         onClick: handlePagarClick,
       },
       acaoTrocarPlano: {
-        onClick: () => navigate("/planos"),
+        onClick: () => openContextualUpsellDialog({ feature: "outros" }),
       },
     };
   } else {
@@ -251,6 +256,8 @@ const PlanoEssencial = ({
           cobrancas={data.cobrancas}
           navigate={navigate}
           onPaymentSuccess={onPaymentSuccess}
+          usuarioId={user?.id}
+          onPrecisaSelecaoManual={() => {}}
         />
         <DetalhesPlanoCard plano={data.plano} assinatura={data.assinatura} />
       </div>
@@ -269,7 +276,11 @@ const PlanoEssencial = ({
           <Button
             variant="default"
             className="w-full bg-primary hover:bg-blue-700"
-            onClick={() => navigate(`/planos?slug=${PLANO_COMPLETO}`)}
+            onClick={() => openLimiteFranquiaDialog({
+                title: "Cobranças Automáticas",
+                description: "Automatize suas cobranças com o Plano Completo.",
+                hideLimitInfo: true,
+            })}
             title="Planos"
           >
             Quero Cobranças Automáticas
@@ -301,7 +312,7 @@ const PlanoEssencial = ({
                 <Button
                   variant="default"
                   className="w-full bg-blue-600 hover:bg-blue-700"
-                  onClick={() => navigate("/planos")}
+                  onClick={() => openContextualUpsellDialog({ feature: "outros" })}
                   title="Planos"
                 >
                   Ativar Meu Plano

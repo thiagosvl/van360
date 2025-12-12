@@ -1,7 +1,7 @@
 
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { UpgradeStickyFooter } from "@/components/common/UpgradeStickyFooter";
-import { ContextualUpsellDialog } from "@/components/dialogs/ContextualUpsellDialog";
+
 import { RelatoriosEntradas } from "@/components/features/relatorios/RelatoriosEntradas";
 import { RelatoriosOperacional } from "@/components/features/relatorios/RelatoriosOperacional";
 import { RelatoriosSaidas } from "@/components/features/relatorios/RelatoriosSaidas";
@@ -26,7 +26,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Relatorios() {
   const navigate = useNavigate();
-  const { setPageTitle, openPlanosDialog } = useLayout();
+  const { setPageTitle, openPlanosDialog, openContextualUpsellDialog } = useLayout();
   const { user } = useSession();
   
   // Use Access Control Hook
@@ -34,7 +34,7 @@ export default function Relatorios() {
 
   const [mes, setMes] = useState(new Date().getMonth() + 1);
   const [ano, setAno] = useState(new Date().getFullYear());
-  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
+
 
   // Access Logic
   const hasAccess = permissions.canViewRelatorios;
@@ -134,7 +134,11 @@ export default function Relatorios() {
             </div>
           </div>
           <Button
-            onClick={() => setIsUpgradeDialogOpen(true)}
+            onClick={() => openContextualUpsellDialog({
+                feature: "relatorios",
+                targetPlan: PLANO_ESSENCIAL,
+                onSuccess: () => window.location.reload()
+            })}
             size="sm"
             className="bg-amber-600 hover:bg-amber-700 text-white border-none shadow-none"
           >
@@ -215,23 +219,14 @@ export default function Relatorios() {
         title="Você sabe o lucro exato da sua van?"
         description="Veja seus números reais."
         buttonText="Ver meu Lucro Real"
-        onAction={() => setIsUpgradeDialogOpen(true)}
+        onAction={() => openContextualUpsellDialog({
+           feature: "relatorios",
+           targetPlan: PLANO_ESSENCIAL,
+           onSuccess: () => window.location.reload()
+        })}
       />
       
-      <ContextualUpsellDialog
-        open={isUpgradeDialogOpen}
-        onOpenChange={setIsUpgradeDialogOpen}
-        feature="relatorios"
-        targetPlan={PLANO_ESSENCIAL}
-        onViewAllPlans={() => {
-            setIsUpgradeDialogOpen(false);
-            openPlanosDialog();
-        }}
-        onSuccess={() => {
-            // Recarregar permissões e dados
-            window.location.reload(); 
-        }}
-      />
+
     </div>
   );
 }

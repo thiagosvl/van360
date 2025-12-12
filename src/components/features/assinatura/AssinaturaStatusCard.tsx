@@ -1,26 +1,26 @@
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import {
-    ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO,
-    ASSINATURA_USUARIO_STATUS_ATIVA,
-    ASSINATURA_USUARIO_STATUS_PENDENTE_PAGAMENTO,
-    ASSINATURA_USUARIO_STATUS_SUSPENSA,
-    ASSINATURA_USUARIO_STATUS_TRIAL,
-    PLANO_COMPLETO,
-    PLANO_GRATUITO
+  ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO,
+  ASSINATURA_USUARIO_STATUS_ATIVA,
+  ASSINATURA_USUARIO_STATUS_PENDENTE_PAGAMENTO,
+  ASSINATURA_USUARIO_STATUS_SUSPENSA,
+  ASSINATURA_USUARIO_STATUS_TRIAL,
+  PLANO_COMPLETO,
+  PLANO_GRATUITO
 } from "@/constants";
 import {
-    Hourglass,
-    LucideAlertTriangle,
-    LucideCheckCircle,
-    LucideXCircle,
-    Receipt,
+  Hourglass,
+  LucideAlertTriangle,
+  LucideCheckCircle,
+  LucideXCircle,
+  Receipt,
 } from "lucide-react";
 
 interface AssinaturaStatusCardProps {
@@ -48,6 +48,8 @@ const formatDate = (dateString: string) => {
   });
 };
 
+import { useLayout } from "@/contexts/LayoutContext";
+
 export function AssinaturaStatusCard({
   plano,
   assinatura,
@@ -56,6 +58,7 @@ export function AssinaturaStatusCard({
   handleAbandonCancelSubscriptionClick,
   onPagarClick,
 }: AssinaturaStatusCardProps) {
+  const { openLimiteFranquiaDialog, openContextualUpsellDialog } = useLayout();
   // Determinar status e flags
   const isTrial = assinatura?.status === ASSINATURA_USUARIO_STATUS_TRIAL;
   const isAtiva = assinatura?.status === ASSINATURA_USUARIO_STATUS_ATIVA;
@@ -101,7 +104,7 @@ export function AssinaturaStatusCard({
       cor: "gray",
       acao: {
         texto: "Quero mais funcionalidades",
-        onClick: () => navigate("/planos"),
+        onClick: () => openContextualUpsellDialog({ feature: "outros" }),
       },
       acaoTrocarPlano: null,
     };
@@ -119,7 +122,7 @@ export function AssinaturaStatusCard({
         },
         acaoTrocarPlano: {
           texto: "Ver Planos",
-          onClick: () => navigate("/planos"),
+          onClick: () => openContextualUpsellDialog({ feature: "outros" }),
         },
       };
     } else {
@@ -136,7 +139,7 @@ export function AssinaturaStatusCard({
         },
         acaoTrocarPlano: {
           texto: "Ver Planos",
-          onClick: () => navigate("/planos"),
+          onClick: () => openContextualUpsellDialog({ feature: "outros" }),
         },
       };
     }
@@ -170,7 +173,7 @@ export function AssinaturaStatusCard({
       },
       acaoTrocarPlano: {
         texto: "Ver Planos",
-        onClick: () => navigate("/planos"),
+        onClick: () => openContextualUpsellDialog({ feature: "outros" }),
       },
     };
   } else if (isSuspensa) {
@@ -186,7 +189,7 @@ export function AssinaturaStatusCard({
       },
       acaoTrocarPlano: {
         texto: "Ver Planos",
-        onClick: () => navigate("/planos"),
+        onClick: () => openContextualUpsellDialog({ feature: "outros" }),
       },
     };
   } else if (isAtiva) {
@@ -200,7 +203,10 @@ export function AssinaturaStatusCard({
       acao: null,
       acaoTrocarPlano: {
         texto: "Aumentar Meu Limite",
-        onClick: () => navigate(`/planos?slug=${PLANO_COMPLETO}`),
+        onClick: () => openLimiteFranquiaDialog({
+             title: "Aumentar Limite",
+             description: "Aumente seu limite de cobranças automáticas."
+        }),
       },
     };
     
@@ -209,12 +215,15 @@ export function AssinaturaStatusCard({
     if (plano.slug === PLANO_COMPLETO) {
          statusProps.acaoTrocarPlano = {
             texto: "Aumentar Meu Limite", // Mantendo conforme o original, talvez para upsell de franquia extra futura?
-            onClick: () => navigate(`/planos?slug=${PLANO_COMPLETO}`),
+            onClick: () => openLimiteFranquiaDialog({
+                  title: "Aumentar Limite",
+                  description: "Aumente seu limite de cobranças automáticas."
+            }),
          }
     } else {
         statusProps.acaoTrocarPlano = {
             texto: "Ver Planos",
-            onClick: () => navigate("/planos"),
+            onClick: () => openContextualUpsellDialog({ feature: "outros" }),
         }
     }
   }

@@ -1,6 +1,6 @@
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
-import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
-import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
+
+
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Badge } from "@/components/ui/badge";
@@ -11,13 +11,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCobranca,
-    useCobrancaNotificacoes,
-    useDeleteCobranca,
-    useDesfazerPagamento,
-    useEnviarNotificacaoCobranca,
-    useToggleNotificacoesCobranca,
-    useValidarFranquia,
+  useCobranca,
+  useCobrancaNotificacoes,
+  useDeleteCobranca,
+  useDesfazerPagamento,
+  useEnviarNotificacaoCobranca,
+  useToggleNotificacoesCobranca,
+  useValidarFranquia,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -27,52 +27,52 @@ import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import { Passageiro } from "@/types/passageiro";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
-    disableEditarCobranca,
-    disableExcluirCobranca,
-    disableRegistrarPagamento,
-    seForPago,
+  disableEditarCobranca,
+  disableExcluirCobranca,
+  disableRegistrarPagamento,
+  seForPago,
 } from "@/utils/domain/cobranca/disableActions";
 import { canUseNotificacoes } from "@/utils/domain/plano/accessRules";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
-    formatCobrancaOrigem,
-    formatDateToBR,
-    formatPaymentType,
-    formatarEnderecoCompleto,
-    formatarTelefone,
-    getStatusColor,
-    getStatusText,
-    meses,
+  formatCobrancaOrigem,
+  formatDateToBR,
+  formatPaymentType,
+  formatarEnderecoCompleto,
+  formatarTelefone,
+  getStatusColor,
+  getStatusText,
+  meses,
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-    ArrowRight,
-    BadgeCheck,
-    Bell,
-    BellOff,
-    Bot,
-    Calendar,
-    CalendarDays,
-    Car,
-    CheckCircle,
-    CheckCircle2,
-    ChevronDown,
-    ChevronUp,
-    Copy,
-    CreditCard,
-    History,
-    IdCard,
-    MapPin,
-    Pencil,
-    Phone,
-    School,
-    Send,
-    Trash2,
-    User,
-    Wallet,
-    XCircle,
+  ArrowRight,
+  BadgeCheck,
+  Bell,
+  BellOff,
+  Bot,
+  Calendar,
+  CalendarDays,
+  Car,
+  CheckCircle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  CreditCard,
+  History,
+  IdCard,
+  MapPin,
+  Pencil,
+  Phone,
+  School,
+  Send,
+  Trash2,
+  User,
+  Wallet,
+  XCircle,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -248,17 +248,9 @@ export default function PassageiroCobranca() {
   };
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
-  const { setPageTitle } = useLayout();
-  const [confirmDialogDesfazer, setConfirmDialogDesfazer] = useState({
-    open: false,
-    cobrancaId: "",
-  });
+  const { setPageTitle, openLimiteFranquiaDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [deleteDialog, setDeleteDialog] = useState({
-    open: false,
-  });
-  const [confirmDialogEnvioNotificacao, setConfirmDialogEnvioNotificacao] =
-    useState({ open: false, cobranca: null });
+
   const { user } = useSession();
   const { plano, profile } = useProfile(user?.id);
   const deleteCobrancaMutation = useDeleteCobranca();
@@ -268,18 +260,7 @@ export default function PassageiroCobranca() {
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
   
-  const [limiteFranquiaDialog, setLimiteFranquiaDialog] = useState<{
-    open: boolean;
-    franquiaContratada: number;
-    cobrancasEmUso: number;
-    title?: string;
-    description?: string;
-    hideLimitInfo?: boolean;
-  }>({
-    open: false,
-    franquiaContratada: 0,
-    cobrancasEmUso: 0,
-  });
+
 
   const { validacao: validacaoFranquiaGeral } = useValidarFranquia(
     user?.id,
@@ -288,13 +269,13 @@ export default function PassageiroCobranca() {
   );
 
   const handleUpgrade = (featureName: string, description: string) => {
-    setLimiteFranquiaDialog({
-      open: true,
-      franquiaContratada: validacaoFranquiaGeral.franquiaContratada,
-      cobrancasEmUso: validacaoFranquiaGeral.cobrancasEmUso,
+    openLimiteFranquiaDialog({
       title: featureName,
       description: description,
       hideLimitInfo: true,
+      onUpgradeSuccess: () => {
+         refetchCobranca();
+      }
     });
   };
 
@@ -424,9 +405,24 @@ export default function PassageiroCobranca() {
 
     if (hasNotificacoesAccess) {
       // Usuário tem permissão: abre dialog de confirmação
-      setConfirmDialogEnvioNotificacao({
-        open: true,
-        cobranca: cobranca,
+      openConfirmationDialog({
+          title: "Enviar Cobrança",
+          description: "Ao confirmar, esta cobrança será enviada para o responsável. Deseja continuar?",
+          confirmText: "Enviar",
+          onConfirm: async () => {
+            if (!cobranca) return;
+             try {
+                // Assuming handleEnviarNotificacao logic needs to be called here or duplicated
+                // But handleEnviarNotificacao uses mutate (not async/await in existing code).
+                // Let's refactor handleEnviarNotificacao too if needed, or just call mutation here.
+                await enviarNotificacaoMutation.mutateAsync(cobranca_id);
+                // onSuccess logic from handleEnviarNotificacao?
+                await Promise.all([refetchCobranca(), refetchNotificacoes()]);
+                closeConfirmationDialog();
+             } catch(error) {
+                closeConfirmationDialog();
+             }
+          }
       });
     } else {
       // Usuário não tem permissão: abre dialog de upgrade
@@ -438,12 +434,21 @@ export default function PassageiroCobranca() {
   };
 
   const handleDesfazerPagamento = async () => {
-    desfazerPagamentoMutation.mutate(cobranca_id, {
-      onSuccess: () => {
-        setConfirmDialogDesfazer({ open: false, cobrancaId: "" });
-        refetchCobranca();
-      },
-    });
+      openConfirmationDialog({
+          title: "Desfazer Pagamento",
+          description: "Tem certeza que deseja desfazer este pagamento? A cobrança voltará para o status pendente.",
+          variant: "destructive",
+          confirmText: "Desfazer",
+          onConfirm: async () => {
+             try {
+               await desfazerPagamentoMutation.mutateAsync(cobranca_id);
+               closeConfirmationDialog();
+               refetchCobranca();
+             } catch (error) {
+               closeConfirmationDialog();
+             }
+          }
+      });
   };
 
   const handleCopyEndereco = async () => {
@@ -513,11 +518,21 @@ export default function PassageiroCobranca() {
 
   const handleDeleteCobranca = async () => {
     if (!cobranca) return;
-    deleteCobrancaMutation.mutate(cobranca.id, {
-      onSuccess: () => {
-        setDeleteDialog({ open: false });
-        navigate(`/passageiros/${cobranca.passageiro_id}`);
-      },
+
+    openConfirmationDialog({
+      title: "Excluir Cobrança",
+      description: "Ao confirmar, esta cobrança será excluída permanentemente. Deseja continuar?",
+      confirmText: "Confirmar",
+      variant: "destructive",
+      onConfirm: async () => {
+         try {
+           await deleteCobrancaMutation.mutateAsync(cobranca.id);
+           closeConfirmationDialog();
+           navigate(`/passageiros/${cobranca.passageiro_id}`);
+         } catch (error) {
+           closeConfirmationDialog();
+         }
+      }
     });
   };
 
@@ -827,12 +842,7 @@ export default function PassageiroCobranca() {
                             size="lg"
                             variant="outline"
                             className="h-12 px-8 rounded-xl border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 w-full sm:w-auto min-w-[200px]"
-                            onClick={() =>
-                              setConfirmDialogDesfazer({
-                                open: true,
-                                cobrancaId: cobranca_id,
-                              })
-                            }
+                            onClick={handleDesfazerPagamento}
                           >
                             <History className="w-4 h-4 mr-2" />
                             Desfazer Pagamento
@@ -905,7 +915,7 @@ export default function PassageiroCobranca() {
                         variant="ghost"
                         className="text-red-400 hover:text-red-600 hover:bg-red-50 font-medium text-xs h-8 px-3 rounded-md transition-colors"
                         disabled={disableExcluirCobranca(cobrancaTyped)}
-                        onClick={() => setDeleteDialog({ open: true })}
+                        onClick={handleDeleteCobranca}
                       >
                         <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir cobrança
                       </Button>
@@ -1007,43 +1017,7 @@ export default function PassageiroCobranca() {
             </div>
           </div>
 
-          <ConfirmationDialog
-            open={confirmDialogDesfazer.open}
-            onOpenChange={(open) =>
-              setConfirmDialogDesfazer((prev) => ({ ...prev, open }))
-            }
-            title="Desfazer Pagamento"
-            description="Tem certeza que deseja desfazer o pagamento desta cobrança? Ela voltará a ficar pendente."
-            onConfirm={handleDesfazerPagamento}
-            confirmText="Sim, desfazer"
-            variant="destructive"
-          />
 
-          <ConfirmationDialog
-            open={deleteDialog.open}
-            onOpenChange={(open) =>
-              setDeleteDialog((prev) => ({ ...prev, open }))
-            }
-            title="Excluir Cobrança"
-            description="Tem certeza que deseja excluir esta cobrança? Esta ação não pode ser desfeita."
-            onConfirm={handleDeleteCobranca}
-            confirmText="Sim, excluir"
-            variant="destructive"
-          />
-
-          <ConfirmationDialog
-            open={confirmDialogEnvioNotificacao.open}
-            onOpenChange={(open) =>
-              setConfirmDialogEnvioNotificacao((prev) => ({ ...prev, open }))
-            }
-            title="Enviar Cobrança"
-            description={`Deseja enviar a cobrança para o responsável de ${cobrancaTyped.passageiros.nome}?`}
-            onConfirm={() => {
-              handleEnviarNotificacao();
-              setConfirmDialogEnvioNotificacao({ open: false, cobranca: null });
-            }}
-            confirmText="Enviar"
-          />
 
           <LoadingOverlay
             active={
@@ -1054,18 +1028,7 @@ export default function PassageiroCobranca() {
             }
           />
           
-          <LimiteFranquiaDialog
-            open={limiteFranquiaDialog.open}
-            onOpenChange={(open) =>
-              setLimiteFranquiaDialog((prev) => ({ ...prev, open }))
-            }
-            franquiaContratada={limiteFranquiaDialog.franquiaContratada}
-            cobrancasEmUso={limiteFranquiaDialog.cobrancasEmUso}
-            usuarioId={user?.id}
-            title={limiteFranquiaDialog.title}
-            description={limiteFranquiaDialog.description}
-            hideLimitInfo={limiteFranquiaDialog.hideLimitInfo}
-          />
+
         </div>
       </PullToRefreshWrapper>
     </>

@@ -29,7 +29,6 @@ import { useAccessControl } from "@/hooks/business/useAccessControl";
 import { useSession } from "@/hooks/business/useSession";
 
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
-import UpgradePlanDialog from "@/components/dialogs/UpgradePlanDialog";
 import {
   PASSAGEIRO_COBRANCA_STATUS_PAGO,
   PLANO_COMPLETO,
@@ -51,7 +50,7 @@ import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard"
 // --- Main Component ---
 
 const Home = () => {
-  const { setPageTitle, openPlanosDialog } = useLayout();
+  const { setPageTitle, openPlanosDialog, openLimiteFranquiaDialog, openContextualUpsellDialog } = useLayout();
   const { user, loading: isSessionLoading } = useSession();
   
   // Use Access Control Hook
@@ -76,15 +75,6 @@ const Home = () => {
   const [isCreatingEscola, setIsCreatingEscola] = useState(false);
   const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
   const [isGastoDialogOpen, setIsGastoDialogOpen] = useState(false);
-  const [upgradeDialog, setUpgradeDialog] = useState<{
-    open: boolean;
-    featureName: string;
-    description: string;
-  }>({
-    open: false,
-    featureName: "",
-    description: "",
-  });
 
   const mesAtual = new Date().getMonth() + 1;
   const anoAtual = new Date().getFullYear();
@@ -260,11 +250,8 @@ const Home = () => {
     if (permissions.isFreePlan) {
       const limite = Number(limits.passageiros || 0);
       if (passageirosCount >= limite) {
-        setUpgradeDialog({
-          open: true,
-          featureName: "Limite de Passageiros Atingido",
-          description: `Você atingiu o limite de ${limite} passageiros do plano gratuito. Faça um upgrade para cadastrar mais passageiros.`,
-        });
+        // Para plano gratuito, o "upgrade" é trocar de plano (Contextual)
+        openContextualUpsellDialog({ feature: "passageiros", targetPlan: PLANO_ESSENCIAL });
         return;
       }
     }
@@ -274,17 +261,8 @@ const Home = () => {
   }, [permissions.isFreePlan, limits.passageiros, passageirosCount]);
 
   const handleOpenGastoDialog = useCallback(() => {
-    // Validação de acesso para plano gratuito
     if (!permissions.canViewGastos) {
-      // Note: Logic inverted or specific check? 
-      // Original was: if (plano?.isFreePlan) ...
-      // CanViewGastos is true for Essential/Complete. False for Free.
-      // So !canViewGastos is correct for Free plan (or unauthed).
-      setUpgradeDialog({
-        open: true,
-        featureName: "Controle Financeiro",
-        description: "O registro de gastos é exclusivo dos planos Essencial e Completo. Faça um upgrade para controlar suas finanças.",
-      });
+      openContextualUpsellDialog({ feature: "controle_gastos", targetPlan: PLANO_ESSENCIAL });
       return;
     }
 
@@ -475,11 +453,7 @@ const Home = () => {
                 <PassengerLimitHealthBar
                   current={passageirosCount}
                   max={Number(limitePassageiros)}
-                  onIncreaseLimit={() => setUpgradeDialog({
-                    open: true,
-                    featureName: "Limite de Passageiros",
-                    description: "Você atingiu o limite de passageiros do seu Plano Gratuito. Adquira mais passageiros ou mude de plano para continuar crescendo."
-                  })}
+                  onIncreaseLimit={() => openContextualUpsellDialog({ feature: "passageiros", targetPlan: PLANO_ESSENCIAL })}
                   label="Passageiros"
                   className="mb-0"
                 />
@@ -630,11 +604,7 @@ const Home = () => {
         onClose={handleClosePassageiroDialog}
         onSuccess={handleSuccessFormPassageiro}
         editingPassageiro={editingPassageiro}
-        onCreateEscola={() => setIsCreatingEscola(true)}
-        onCreateVeiculo={() => setIsCreatingVeiculo(true)}
         mode="create"
-        novaEscolaId={novaEscolaId}
-        novoVeiculoId={novoVeiculoId}
         profile={profile}
         plano={plano}
       />
@@ -663,16 +633,7 @@ const Home = () => {
         }}
       />
 
-      <UpgradePlanDialog
-        open={upgradeDialog.open}
-        onOpenChange={(open) => setUpgradeDialog((prev) => ({ ...prev, open }))}
-        featureName={upgradeDialog.featureName}
-        description={upgradeDialog.description}
-        onConfirm={() => {
-          setUpgradeDialog((prev) => ({ ...prev, open: false }));
-          openPlanosDialog();
-        }}
-      />
+
     </>
   );
 };

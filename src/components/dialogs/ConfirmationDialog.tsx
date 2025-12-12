@@ -9,13 +9,14 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
+import { useState } from "react";
 
 interface ConfirmationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
   description: string;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   confirmText?: string;
   cancelText?: string;
   variant?: "default" | "destructive";
@@ -33,6 +34,10 @@ export default function ConfirmationDialog({
   variant = "default",
   isLoading = false,
 }: ConfirmationDialogProps) {
+  const [internalLoading, setInternalLoading] = useState(false);
+  
+  const showLoading = isLoading || internalLoading;
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="w-[90vw] max-w-sm rounded-2xl border-0 shadow-lg p-6 bg-white gap-6">
@@ -47,24 +52,34 @@ export default function ConfirmationDialog({
 
         <AlertDialogFooter className="flex-row justify-end gap-2 space-x-0">
           <AlertDialogCancel
-            disabled={isLoading}
+            disabled={showLoading}
             className="mt-0 h-10 px-4 rounded-xl border-none bg-transparent hover:bg-gray-100 text-gray-700 font-medium transition-colors"
           >
             {cancelText}
           </AlertDialogCancel>
           <AlertDialogAction
-            onClick={(e) => {
+            onClick={async (e) => {
               e.preventDefault();
-              onConfirm();
+              if (onConfirm) {
+                  const result = onConfirm();
+                  if (result instanceof Promise) {
+                      setInternalLoading(true);
+                      try {
+                          await result;
+                      } finally {
+                          setInternalLoading(false);
+                      }
+                  }
+              }
             }}
-            disabled={isLoading}
+            disabled={showLoading}
             className={`h-10 px-6 rounded-xl font-semibold shadow-sm transition-all ${
               variant === "destructive"
                 ? "bg-red-600 hover:bg-red-700 text-white"
                 : "bg-blue-600 hover:bg-blue-700 text-white"
             }`}
           >
-            {isLoading ? (
+            {showLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Processando...

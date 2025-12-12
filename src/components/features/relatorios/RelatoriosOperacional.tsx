@@ -3,9 +3,10 @@ import { PassengerLimitHealthBar } from "@/components/features/passageiro/Passen
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { PLANO_ESSENCIAL } from "@/constants";
+import { useLayout } from "@/contexts/LayoutContext";
 import { cn } from "@/lib/utils";
 import { Bot, Users } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 interface RelatoriosOperacionalProps {
   dados: {
@@ -48,7 +49,7 @@ export const RelatoriosOperacional = ({
   limits,
   isCompletePlan,
 }: RelatoriosOperacionalProps) => {
-  const navigate = useNavigate();
+  const { openLimiteFranquiaDialog, openPlanosDialog, openContextualUpsellDialog } = useLayout();
 
   return (
     <div className="space-y-4 mt-0">
@@ -134,7 +135,7 @@ export const RelatoriosOperacional = ({
                   variant="secondary"
                   size="sm"
                   className="mt-4 px-5 rounded-full border-white/30 bg-white/20 text-white hover:bg-white/30 font-semibold"
-                  onClick={() => navigate("/planos?plano=completo")}
+                  onClick={() => openContextualUpsellDialog({ feature: "relatorios", targetPlan: PLANO_ESSENCIAL })}
                 >
                   Quero Automação Total →
                 </Button>

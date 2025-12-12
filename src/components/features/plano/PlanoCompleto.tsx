@@ -14,9 +14,9 @@ import {
 } from "@/components/ui/card";
 import {
   ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO,
-  ASSINATURA_USUARIO_STATUS_PENDENTE_PAGAMENTO,
-  PLANO_COMPLETO,
+  ASSINATURA_USUARIO_STATUS_PENDENTE_PAGAMENTO
 } from "@/constants";
+import { useLayout } from "@/contexts/LayoutContext";
 import { useGerarPixParaCobranca } from "@/hooks";
 import { usuarioApi } from "@/services";
 import { toast } from "@/utils/notifications/toast";
@@ -103,6 +103,7 @@ const PlanoCompleto = ({
   handleCancelSubscriptionClick,
   usuarioId,
 }) => {
+  const { openLimiteFranquiaDialog, openPlanosDialog, openContextualUpsellDialog } = useLayout();
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedCobranca, setSelectedCobranca] = useState<{
     id: string;
@@ -196,7 +197,10 @@ const PlanoCompleto = ({
         onClick: handlePagarClick,
       },
       acaoTrocarPlano: {
-        onClick: () => navigate(`/planos?slug=${PLANO_COMPLETO}`),
+        onClick: () => openLimiteFranquiaDialog({
+            title: "Aumentar Limite",
+            description: "Aumente seu limite de cobranças automáticas."
+        }),
       },
     };
   } else if (isAtiva) {
@@ -212,7 +216,10 @@ const PlanoCompleto = ({
       cor: "green",
       acao: null,
       acaoTrocarPlano: {
-        onClick: () => navigate(`/planos?slug=${PLANO_COMPLETO}`),
+        onClick: () => openLimiteFranquiaDialog({
+            title: "Aumentar Limite",
+            description: "Aumente seu limite de cobranças automáticas."
+        }),
       },
     };
   } else if (isSuspensa) {
@@ -223,7 +230,7 @@ const PlanoCompleto = ({
       cor: "red",
       acao: {
         texto: "Reativar meu plano",
-        onClick: () => navigate(`/planos?slug=${PLANO_COMPLETO}`),
+        onClick: () => openContextualUpsellDialog({ feature: "outros" }),
       },
     };
   } else {
@@ -276,7 +283,10 @@ const PlanoCompleto = ({
           <Button
             variant="default"
             className="w-full bg-primary hover:bg-blue-700"
-            onClick={() => navigate(`/planos?slug=${PLANO_COMPLETO}`)}
+            onClick={() => openLimiteFranquiaDialog({
+                title: "Aumentar Limite",
+                description: "Aumente seu limite de cobranças automáticas."
+            })}
             title="Planos"
           >
             Aumentar Meu Limite

@@ -1,10 +1,10 @@
 // React
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 // Components - Dialogs
-import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
-import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
+
+
 
 // Components - Features
 import { VeiculosList } from "@/components/features/veiculo/VeiculosList";
@@ -24,16 +24,15 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useDeleteVeiculo,
-    useFilters,
-    useToggleAtivoVeiculo,
-    useVeiculos,
+  useDeleteVeiculo,
+  useFilters,
+  useToggleAtivoVeiculo,
+  useVeiculos,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 // Utils
-import { safeCloseDialog } from "@/utils/dialogUtils";
 import { limparPlaca } from "@/utils/domain/veiculo/placaUtils";
 import { toast } from "@/utils/notifications/toast";
 
@@ -44,7 +43,7 @@ import { Veiculo } from "@/types/veiculo";
 import { Car } from "lucide-react";
 
 export default function Veiculos() {
-  const { setPageTitle } = useLayout();
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openVeiculoFormDialog } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const deleteVeiculo = useDeleteVeiculo();
@@ -53,14 +52,8 @@ export default function Veiculos() {
   const isActionLoading =
     deleteVeiculo.isPending || toggleAtivoVeiculo.isPending;
 
-  const [isDialogOpen, setIsDialogOpen] = useState(() => {
-    const openModal = searchParams.get("openModal");
-    return openModal && openModal === "true" ? true : false;
-  });
 
-  const [editingVeiculo, setEditingVeiculo] = useState<Veiculo | null>(null);
-  const [veiculoToDelete, setVeiculoToDelete] = useState<Veiculo | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
 
   const {
     searchTerm,
@@ -127,26 +120,23 @@ export default function Veiculos() {
     return filtered;
   }, [veiculos, selectedStatus, searchTerm]);
 
-  const handleSuccessSave = useCallback(
-    (veiculoCriado: Veiculo) => {
-      safeCloseDialog(() => {
-        if (searchParams.get("openModal")) {
-          navigate("/inicio", { replace: true });
-        }
-
-        setEditingVeiculo(null);
-        setIsDialogOpen(false);
-      });
-    },
-    [searchParams, navigate]
-  );
+  // Check for openModal param on mount
+  useEffect(() => {
+     const openModal = searchParams.get("openModal");
+     if (openModal === "true") {
+         openVeiculoFormDialog({
+            onSuccess: () => {
+                 navigate("/inicio", { replace: true });
+            }
+         });
+     }
+  }, [searchParams, openVeiculoFormDialog, navigate]);
 
   const handleEdit = useCallback((veiculo: Veiculo) => {
-    safeCloseDialog(() => {
-      setEditingVeiculo(veiculo);
-      setIsDialogOpen(true);
+    openVeiculoFormDialog({
+        editingVeiculo: veiculo
     });
-  }, []);
+  }, [openVeiculoFormDialog]);
 
   const handleDeleteClick = useCallback((veiculo: Veiculo) => {
     if (veiculo.passageiros_ativos_count > 0) {
@@ -155,20 +145,22 @@ export default function Veiculos() {
       });
       return;
     }
-    setVeiculoToDelete(veiculo);
-    setIsDeleteDialogOpen(true);
-  }, []);
-
-  const handleDelete = useCallback(async () => {
-    if (!veiculoToDelete) return;
-
-    deleteVeiculo.mutate(veiculoToDelete.id, {
-      onSuccess: () => {
-        setIsDeleteDialogOpen(false);
-        setVeiculoToDelete(null);
-      },
+    
+    openConfirmationDialog({
+      title: "Confirmar exclusão",
+      description: "Deseja excluir permanentemente este veiculo?",
+      confirmText: "Confirmar",
+      variant: "destructive",
+      onConfirm: async () => {
+         try {
+           await deleteVeiculo.mutateAsync(veiculo.id);
+           closeConfirmationDialog();
+         } catch (error) {
+           closeConfirmationDialog();
+         }
+      }
     });
-  }, [veiculoToDelete, deleteVeiculo]);
+  }, [deleteVeiculo, openConfirmationDialog, closeConfirmationDialog]);
 
   const handleToggleAtivo = useCallback(
     async (veiculo: Veiculo) => {
@@ -211,7 +203,7 @@ export default function Veiculos() {
                   onClearFilters={clearFilters}
                   hasActiveFilters={hasActiveFilters}
                   onApplyFilters={setFilters}
-                  onRegister={() => setIsDialogOpen(true)}
+                  onRegister={() => openVeiculoFormDialog()}
                 />
               </div>
 
@@ -230,7 +222,7 @@ export default function Veiculos() {
                     !searchTerm
                       ? {
                           label: "Novo Veículo",
-                          onClick: () => setIsDialogOpen(true),
+                          onClick: () => openVeiculoFormDialog(),
                         }
                       : undefined
                   }
@@ -247,30 +239,9 @@ export default function Veiculos() {
             </CardContent>
           </Card>
 
-          <ConfirmationDialog
-            open={isDeleteDialogOpen}
-            onOpenChange={setIsDeleteDialogOpen}
-            title="Confirmar exclusão"
-            description="Deseja excluir permanentemente este veiculo?"
-            onConfirm={handleDelete}
-            confirmText="Confirmar"
-            variant="destructive"
-            isLoading={deleteVeiculo.isPending}
-          />
 
-          {isDialogOpen && (
-            <VeiculoFormDialog
-              isOpen={isDialogOpen}
-              onClose={() => {
-                safeCloseDialog(() => {
-                  setIsDialogOpen(false);
-                  setEditingVeiculo(null);
-                });
-              }}
-              editingVeiculo={editingVeiculo}
-              onSuccess={handleSuccessSave}
-            />
-          )}
+
+
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Aguarde..." />
