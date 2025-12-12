@@ -7,7 +7,7 @@ export const cpfSchema = z.string().refine((val) => isValidCPF(val), {
 
 export const phoneSchema = z
   .string()
-  .min(10, "Telefone deve ter no mínimo 10 dígitos")
+  .min(15, "Telefone inválido")
   .max(15, "Telefone inválido")
   .transform((val) => val.replace(/\D/g, ""));
 

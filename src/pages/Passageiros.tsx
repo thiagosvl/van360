@@ -588,6 +588,7 @@ export default function Passageiros() {
                       targetPlan: PLANO_ESSENCIAL,
                     })
                   }
+                  hideBelowThreshold={75} // Só exibe se uso >= 75% para evitar ansiedade prematura
                 />
               )}
 

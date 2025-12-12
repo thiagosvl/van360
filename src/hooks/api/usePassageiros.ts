@@ -44,11 +44,11 @@ export function usePassageiros(
   return useQuery({
     queryKey: ["passageiros", filters.usuarioId, filterKey],
     enabled: (options?.enabled ?? true) && Boolean(filters.usuarioId),
-    // Considera os dados stale imediatamente para garantir refetch quando necessário
-    staleTime: 0,
-    // Sempre refetch quando o componente montar para garantir dados atualizados
-    refetchOnMount: "always",
-    // Refetch quando a janela ganhar foco para garantir dados atualizados
+    // Cache de 1 minuto para evitar requests duplicados em componentes simultâneos (Home + QuickStart)
+    staleTime: 1000 * 60,
+    // Refetch apenas se dados estiverem obsoletos
+    refetchOnMount: false,
+    // Refetch quando a janela ganhar foco para manter dados frescos
     refetchOnWindowFocus: true,
     queryFn: async () => {
       if (!filters.usuarioId) return [];

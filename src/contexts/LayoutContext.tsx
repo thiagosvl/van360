@@ -9,7 +9,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Escola } from "@/types/escola";
 import { Veiculo } from "@/types/veiculo";
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 interface OpenLimiteFranquiaDialogProps {
   title?: string;
@@ -66,6 +66,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [pageTitle, setPageTitle] = useState('Carregando...');
   const [pageSubtitle, setPageSubtitle] = useState('Por favor, aguarde.');
   const [isPlanosDialogOpen, setIsPlanosDialogOpen] = useState(false);
+  
+  // Sync document title with page title
+  useEffect(() => {
+    if (pageTitle && pageTitle !== 'Carregando...') {
+       document.title = `${pageTitle} | Van360`;
+    }
+  }, [pageTitle]);
   
   // Limite Franquia Dialog State
   const [limiteFranquiaDialogState, setLimiteFranquiaDialogState] = useState<{

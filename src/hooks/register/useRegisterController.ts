@@ -1,8 +1,8 @@
 import { isPlanoPagoNoAto } from "@/components/features/register";
 import {
-    PLANO_COMPLETO,
-    PLANO_ESSENCIAL,
-    PLANO_GRATUITO,
+  PLANO_COMPLETO,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
 } from "@/constants";
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks";
 import { supabase } from "@/integrations/supabase/client";
@@ -443,6 +443,8 @@ export function useRegisterController() {
           description: "Cadastro realizado, mas não foi possível fazer login automático.",
         });
       } else {
+        // Garantir propagação da sessão
+        await new Promise(resolve => setTimeout(resolve, 500));
         navigate("/inicio");
       }
     } catch (err: any) {
@@ -514,8 +516,16 @@ export function useRegisterController() {
         }
       }
 
-      await handleFinalRegister(form.getValues());
-      return true;
+      try {
+        setLoading(true);
+        await handleFinalRegister(form.getValues());
+        return true;
+      } catch (error) {
+        console.error(error);
+        return false;
+      } finally {
+        setLoading(false);
+      }
     }
     return true;
   };
@@ -534,8 +544,12 @@ export function useRegisterController() {
 
     if (error) {
       toast.info("cadastro.info.pagamentoConfirmado");
+      navigate("/login");
     } else {
-      const planoNome = selectedPlano?.nome || "seu plano";
+       // Aguardar propagação da sessão
+       await new Promise(resolve => setTimeout(resolve, 500));
+       
+       const planoNome = selectedPlano?.nome || "seu plano";
       const quantidadeInfo = selectedSubPlano
         ? selectedSubPlano.franquia_cobrancas_mes
         : form.getValues("quantidade_personalizada");

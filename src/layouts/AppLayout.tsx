@@ -6,8 +6,7 @@ import { useAssinaturaPendente } from "@/hooks/business/useAssinaturaPendente";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
 import { useSEO } from "@/hooks/useSEO";
-import { supabase } from "@/integrations/supabase/client";
-import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 export default function AppLayout() {
   const { user, loading: loadingSession } = useSession();
@@ -37,9 +36,38 @@ export default function AppLayout() {
   }
 
   if (!profile) {
-    supabase.auth.signOut();
-    localStorage.clear();
-    return <Navigate to="/login" replace />;
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
+          <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+            <span className="text-2xl">⚠️</span>
+          </div>
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">
+            Erro ao carregar perfil
+          </h1>
+          <p className="text-gray-500 mb-6">
+            Não foi possível encontrar seus dados de usuário. Isso pode acontecer se o cadastro não foi concluído corretamente.
+          </p>
+          <div className="flex flex-col gap-3">
+             <button
+              onClick={() => window.location.reload()}
+              className="w-full py-2.5 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Tentar Novamente
+            </button>
+            <button
+              onClick={async () => {
+                await supabase.auth.signOut();
+                window.location.href = "/login";
+              }}
+              className="w-full py-2.5 px-4 bg-white border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Sair e Tentar Login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const currentRole = (role || "motorista") as "motorista";

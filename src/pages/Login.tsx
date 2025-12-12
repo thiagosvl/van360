@@ -190,6 +190,16 @@ export default function Login() {
         localStorage.setItem("app_role", role);
       }
       clearLoginStorageResponsavel();
+      // Garantir que a sessão está ativa e propagada antes de navegar
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+         throw new Error("Sessão não foi estabelecida corretamente.");
+      }
+
+      // Pequeno delay para garantir que os listeners de auth (useSession nos Gates) capturem a mudança
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       if (role === "admin") {
         navigate("/admin/dashboard", { replace: true });
       } else {

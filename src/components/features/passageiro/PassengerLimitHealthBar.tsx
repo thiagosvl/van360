@@ -11,6 +11,7 @@ interface PassengerLimitHealthBarProps {
   variant?: "full" | "compact";
   className?: string;
   onIncreaseLimit?: () => void;
+  hideBelowThreshold?: number; // Porcentagem (0-100) para ocultar a barra se o uso estiver abaixo desse valor
 }
 
 export function PassengerLimitHealthBar({ 
@@ -21,9 +22,16 @@ export function PassengerLimitHealthBar({
   showIncreaseLimit = true,
   variant = "full",
   className,
-  onIncreaseLimit
+  onIncreaseLimit,
+  hideBelowThreshold = 0
 }: PassengerLimitHealthBarProps) {
   const percentage = Math.min((current / max) * 100, 100);
+
+  // Se o uso for menor que o limite configurado (ex: 75%), não exibe nada
+  // Ótimo para não causar ansiedade prematura no usuário
+  if (percentage < hideBelowThreshold) {
+    return null;
+  }
   
   let colorClass = "bg-green-500";
   if (current >= max) colorClass = "bg-red-500";

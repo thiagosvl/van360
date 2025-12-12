@@ -79,12 +79,12 @@ export function KPICard({
         <p className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
           {title}
         </p>
-        <p className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
+        <div className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
           {renderValue()}
-        </p>
+        </div>
         
         {(count !== undefined || countText) && (
-             <p className={cn(
+             <div className={cn(
                "text-[10px] font-medium mt-0.5",
                countVisible ? "text-gray-400" : "text-gray-400 blur-sm select-none opacity-60"
              )}>
@@ -94,7 +94,7 @@ export function KPICard({
                         {Math.round(animatedCount) === 1 ? countLabel : `${countLabel}s`}
                     </>
                 )}
-             </p>
+             </div>
         )}
       </div>
     </div>
