@@ -1,27 +1,27 @@
 
 import {
-  Accordion,
+    Accordion,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Form,
+    Form,
 } from "@/components/ui/form";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useBuscarResponsavel,
-  useCreatePassageiro,
-  useFinalizePreCadastro,
-  usePassageiroForm,
-  useUpdatePassageiro,
-  useValidarFranquia,
+    useBuscarResponsavel,
+    useCreatePassageiro,
+    useFinalizePreCadastro,
+    usePassageiroForm,
+    useUpdatePassageiro
 } from "@/hooks";
+import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
 import { PassageiroFormData } from "@/hooks/ui/usePassageiroForm";
 import { Passageiro } from "@/types/passageiro";
@@ -87,11 +87,23 @@ export default function PassengerFormDialog({
   const finalizePreCadastro = useFinalizePreCadastro();
 
   // Validação de Franquia (para upgrades)
-  const { validacao: validacaoFranquia } = useValidarFranquia(
-    user?.id,
-    editingPassageiro?.id,
-    profile
-  );
+  // Validação de Franquia (para upgrades)
+  const { limits } = usePlanLimits({ userUid: user?.id, profile });
+
+  // Custom logic to match legacy behavior: 
+  // If editing an enabled passenger, we exclude them from the count so "podeAtivar" remains true
+  let cobrancasEmUso = limits.franchise.used;
+  if (editingPassageiro?.enviar_cobranca_automatica) {
+      cobrancasEmUso = Math.max(0, cobrancasEmUso - 1);
+  }
+  const franquiaContratada = limits.franchise.limit;
+  const podeAtivar = (franquiaContratada - cobrancasEmUso) > 0;
+
+  const validacaoFranquia = {
+      franquiaContratada,
+      cobrancasEmUso,
+      podeAtivar
+  };
 
   const { form, refreshing, openAccordionItems, setOpenAccordionItems } =
     usePassageiroForm({

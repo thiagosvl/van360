@@ -32,8 +32,8 @@ import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import { useDeleteGasto, useFilters, useGastos, useVeiculos } from "@/hooks";
-import { useAccessControl } from "@/hooks/business/useAccessControl"; // NEW
 import { useGastosCalculations } from "@/hooks/business/useGastosCalculations"; // NEW
+import { usePermissions } from "@/hooks/business/usePermissions";
 
 // Utils
 import { PLANO_ESSENCIAL } from "@/constants";
@@ -46,11 +46,11 @@ import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 // Icons
 import { UpgradeStickyFooter } from "@/components/common/UpgradeStickyFooter";
 import {
-  CalendarIcon,
-  Lock,
-  TrendingDown,
-  TrendingUp,
-  Wallet,
+    CalendarIcon,
+    Lock,
+    TrendingDown,
+    TrendingUp,
+    Wallet,
 } from "lucide-react";
 
 export default function Gastos() {
@@ -84,8 +84,9 @@ export default function Gastos() {
   const [editingGasto, setEditingGasto] = useState<Gasto | null>(null);
   
   // Authorization Hook
-  const { profile, isLoading: isAuthLoading, permissions } = useAccessControl();
-  const enabledPageActions = permissions.canViewGastos;
+  // Authorization Hook
+  const { profile, isLoading: isAuthLoading, canViewModuleGastos } = usePermissions();
+  const enabledPageActions = canViewModuleGastos;
   const loadingActions = isAuthLoading;
 
   const {

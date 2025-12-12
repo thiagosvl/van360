@@ -1,33 +1,34 @@
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
+import { StatusBadge } from "@/components/common/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Passageiro } from "@/types/passageiro";
 import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { formatPeriodo } from "@/utils/formatters";
 import {
-    Bot,
-    BotOff,
-    CreditCard,
-    MoreVertical,
-    Pencil,
-    ToggleLeft,
-    ToggleRight,
-    Trash2
+  Bot,
+  BotOff,
+  CreditCard,
+  MoreVertical,
+  Pencil,
+  ToggleLeft,
+  ToggleRight,
+  Trash2
 } from "lucide-react";
 
 interface PassageirosListProps {
@@ -69,24 +70,6 @@ export function PassageirosList({
       .slice(0, 1)
       .join("")
       .toUpperCase();
-  };
-
-  const getStatusBadge = (ativo: boolean) => {
-    return ativo ? (
-      <Badge
-        variant="outline"
-        className="bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100 font-medium"
-      >
-        Ativo
-      </Badge>
-    ) : (
-      <Badge
-        variant="outline"
-        className="bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 font-medium"
-      >
-        Inativo
-      </Badge>
-    );
   };
 
   const renderAutoBillingIcon = (passageiro: Passageiro) => {
@@ -224,7 +207,7 @@ export function PassageirosList({
           {/* Linha 2: Detalhes Secundários + Status */}
           <div className="flex justify-between items-center pt-2 border-t border-gray-50">
             <div className="shrink-0 flex items-center gap-2">
-              {getStatusBadge(passageiro.ativo)}
+              <StatusBadge status={passageiro.ativo} />
               {renderAutoBillingIcon(passageiro)}
             </div>
             <div className="flex flex-col items-end gap-0.5">
@@ -306,7 +289,7 @@ export function PassageirosList({
                 </TableCell>
                 <TableCell className="py-4">
                   <div className="flex items-center gap-2">
-                    {getStatusBadge(passageiro.ativo)}
+                    <StatusBadge status={passageiro.ativo} />
                     {renderAutoBillingIcon(passageiro)}
                   </div>
                 </TableCell>

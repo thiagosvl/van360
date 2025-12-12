@@ -28,10 +28,9 @@ import {
   usePrePassageiros,
   useToggleAtivoPassageiro,
   useUpdatePassageiro,
-  useValidarFranquia,
   useVeiculos,
 } from "@/hooks";
-import { usePassengerLimits } from "@/hooks/business/usePassengerLimits";
+import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Escola } from "@/types/escola";
@@ -131,20 +130,7 @@ export default function Passageiros() {
 
 
 
-  const { validacao: validacaoFranquiaGeral } = useValidarFranquia(
-    user?.id,
-    undefined,
-    profile
-  );
 
-  const handleOpenUpgradeDialog = useCallback(() => {
-    openLimiteFranquiaDialog({
-      title: "Cobrança Automática",
-      description:
-        "A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Completo.",
-      hideLimitInfo: true,
-    });
-  }, [openLimiteFranquiaDialog]);
 
   const passageiroFilters = {
     usuarioId: profile?.id,
@@ -236,12 +222,31 @@ export default function Passageiros() {
     [veiculosData]
   );
 
-  const { limitePassageiros, isLimitedUser, isLimitReached } =
-    usePassengerLimits({
-      plano,
-      profile,
-      currentCount: countPassageiros,
+  const { limits } = usePlanLimits({
+    userUid: user?.id,
+    profile,
+    plano,
+    currentPassengerCount: countPassageiros ?? 0
+  });
+
+  const validacaoFranquiaGeral = {
+    franquiaContratada: limits.franchise.limit,
+    cobrancasEmUso: limits.franchise.used,
+    podeAtivar: limits.franchise.canEnable
+  };
+
+  const handleOpenUpgradeDialog = useCallback(() => {
+    openLimiteFranquiaDialog({
+      title: "Cobrança Automática",
+      description:
+        "A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Completo.",
+      hideLimitInfo: true,
     });
+  }, [openLimiteFranquiaDialog]);
+
+  const limitePassageiros = limits.passengers.limit;
+  const isLimitedUser = plano?.isFreePlan ?? false;
+  const isLimitReached = limits.passengers.isReached;
 
   useEffect(() => {
     const handler = setTimeout(() => {

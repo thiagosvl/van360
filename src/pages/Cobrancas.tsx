@@ -25,9 +25,9 @@ import { ListSkeleton } from "@/components/skeletons";
 import {
   useCobrancas
 } from "@/hooks";
+import { useCobrancaActions } from "@/hooks/business/useCobrancaActions";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 
 // Utils
 import { safeCloseDialog } from "@/utils/dialogUtils";
@@ -35,8 +35,7 @@ import {
   formatDateToBR,
   formatPaymentType,
   getStatusColor,
-  getStatusText,
-  meses,
+  meses
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 
@@ -45,17 +44,16 @@ import { Cobranca } from "@/types/cobranca";
 
 // Constants
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
+import { StatusBadge } from "@/components/common/StatusBadge";
 import { UnifiedEmptyState } from "@/components/empty";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { Badge } from "@/components/ui/badge";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
-  PASSAGEIRO_COBRANCA_STATUS_PAGO,
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
+  PASSAGEIRO_COBRANCA_STATUS_PAGO
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { cn } from "@/lib/utils";
 import { BellOff, CheckCircle2, DollarSign, TrendingUp, Wallet } from "lucide-react";
 
@@ -117,6 +115,7 @@ const Cobrancas = () => {
   
   const { user, loading: isSessionLoading } = useSession();
   const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
+  const permissions = usePermissions();
 
   const { 
     handleToggleLembretes, 
@@ -301,8 +300,7 @@ const Cobrancas = () => {
           </div>
 
           {/* Alerta Automático (Desktop Slim) */}
-          {plano?.slug &&
-            [PLANO_GRATUITO, PLANO_ESSENCIAL].includes(plano.slug) && (
+          {!permissions.canUseAutomatedCharges && (
               <div>
                 <AutomaticChargesPrompt 
                   variant="slim-desktop" 
@@ -356,10 +354,10 @@ const Cobrancas = () => {
                         <div className="flex justify-between items-start mb-1 relative">
                           <div className="flex items-center gap-3">
                             <div
-                              className={`h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm ${getStatusColor(
-                                cobranca.status,
-                                cobranca.data_vencimento
-                              )}`}
+                              className={cn(
+                                "h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm",
+                                getStatusColor(cobranca.status, cobranca.data_vencimento)
+                              )}
                             >
                               {cobranca.passageiros.nome.charAt(0)}
                             </div>
@@ -406,20 +404,11 @@ const Cobrancas = () => {
                         {/* Linha 3: Data + Status (Rodapé) */}
                         <div className="flex justify-between items-center pt-2 border-t border-gray-50">
                           <div className="flex items-center gap-2">
-                            <Badge
-                              className={cn(
-                                "shadow-none border font-semibold h-6",
-                                getStatusColor(
-                                  cobranca.status,
-                                  cobranca.data_vencimento
-                                )
-                              )}
-                            >
-                              {getStatusText(
-                                cobranca.status,
-                                cobranca.data_vencimento
-                              )}
-                            </Badge>
+                            <StatusBadge 
+                              status={cobranca.status} 
+                              dataVencimento={cobranca.data_vencimento} 
+                              className="font-semibold h-6 shadow-none"
+                            />
                             {cobranca.desativar_lembretes && (
                               <BellOff className="w-3 h-3 text-orange-700" />
                             )}
@@ -439,7 +428,7 @@ const Cobrancas = () => {
                       </div>
 
                       {/* Inline Prompt Mobile (Após o 3º item) */}
-                      {index === 2 && plano?.slug && [PLANO_GRATUITO, PLANO_ESSENCIAL].includes(plano.slug) && (
+                      {index === 2 && !permissions.canUseAutomatedCharges && (
                         <AutomaticChargesPrompt 
                           variant="inline-mobile"
                           onUpgrade={() => handleUpgrade(
@@ -515,20 +504,11 @@ const Cobrancas = () => {
                               </td>
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-2">
-                                  <Badge
-                                    className={cn(
-                                      "shadow-none border font-semibold",
-                                      getStatusColor(
-                                        cobranca.status,
-                                        cobranca.data_vencimento
-                                      )
-                                    )}
-                                  >
-                                    {getStatusText(
-                                      cobranca.status,
-                                      cobranca.data_vencimento
-                                    )}
-                                  </Badge>
+                                    <StatusBadge 
+                                      status={cobranca.status} 
+                                      dataVencimento={cobranca.data_vencimento} 
+                                      className="font-semibold shadow-none"
+                                    />
                                   {cobranca.desativar_lembretes &&
                                     cobranca.status !==
                                       PASSAGEIRO_COBRANCA_STATUS_PAGO && (
@@ -593,10 +573,10 @@ const Cobrancas = () => {
                         <div className="flex justify-between items-start mb-1 relative">
                           <div className="flex items-center gap-3">
                             <div
-                              className={`h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm ${getStatusColor(
-                                cobranca.status,
-                                cobranca.data_vencimento
-                              )}`}
+                              className={cn(
+                                "h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm",
+                                getStatusColor(cobranca.status, cobranca.data_vencimento)
+                              )}
                             >
                               {cobranca.passageiros.nome.charAt(0)}
                             </div>
@@ -702,10 +682,10 @@ const Cobrancas = () => {
                                 <td className="px-6 py-4">
                                   <div className="flex items-center gap-3">
                                     <div
-                                      className={`h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm ${getStatusColor(
-                                        cobranca.status,
-                                        cobranca.data_vencimento
-                                      )}`}
+                                      className={cn(
+                                        "h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm",
+                                        getStatusColor(cobranca.status, cobranca.data_vencimento)
+                                      )}
                                     >
                                       {cobranca.passageiros.nome.charAt(0)}
                                     </div>
@@ -787,7 +767,7 @@ const Cobrancas = () => {
               dataVencimento={selectedCobranca.data_vencimento}
               onPaymentRecorded={() => {
                 setPaymentDialogOpen(false);
-                if (plano?.slug && [PLANO_GRATUITO, PLANO_ESSENCIAL].includes(plano.slug)) {
+                if (!permissions.canUseAutomatedCharges) {
                   handleUpgrade("Cobranças Automáticas", "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?");
                 }
               }}

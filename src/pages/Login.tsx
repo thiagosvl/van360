@@ -15,12 +15,12 @@ import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
@@ -156,9 +156,8 @@ export default function Login() {
       const cpfcnpjDigits = data.cpfcnpj.replace(/\D/g, "");
       const { data: usuario, error: usuarioError } = await supabase
         .from("usuarios")
-        .select("email, role")
+        .select("email")
         .eq("cpfcnpj", cpfcnpjDigits)
-
         .single();
 
       if (usuarioError || !usuario) {
@@ -172,7 +171,7 @@ export default function Login() {
 
       const usuarioData = usuario;
 
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
         email: usuarioData.email,
         password: data.senha,
       });
@@ -193,7 +192,9 @@ export default function Login() {
         return;
       }
 
-      const role = (usuarioData.role as string | undefined) || undefined;
+      // Role extraction from Auth Metadata (Strict V3)
+      const role = authData.session?.user?.app_metadata?.role as string | undefined;
+      
       if (role) {
         localStorage.setItem("app_role", role);
       }

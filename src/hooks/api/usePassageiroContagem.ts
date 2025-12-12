@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import { passageiroApi } from "@/services/api/passageiro.api";
+import { useQuery } from "@tanstack/react-query";
 
 export function usePassageiroContagem(
   usuarioId?: string,
@@ -9,7 +9,7 @@ export function usePassageiroContagem(
     onError?: (error: unknown) => void;
   }
 ) {
-  return useQuery({
+  return useQuery<{ count: number }>({
     queryKey: ["passageiros-contagem", usuarioId, filtros],
     enabled: (options?.enabled ?? true) && Boolean(usuarioId),
     queryFn: async () => {
@@ -19,6 +19,7 @@ export function usePassageiroContagem(
         ? data 
         : { count: typeof data === 'number' ? data : 0 };
     },
+    //@ts-ignore
     onError: options?.onError,
   });
 }

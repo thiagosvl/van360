@@ -1,10 +1,10 @@
 import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+    Suspense,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
 } from "react";
 
 // React Router
@@ -58,25 +58,25 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useAvailableYears,
-  useCobrancasByPassageiro,
-  useDeleteCobranca,
-  useDeletePassageiro,
-  useDesfazerPagamento,
-  useEnviarNotificacaoCobranca,
-  usePassageiro,
-  usePassageiros,
-  useToggleAtivoPassageiro,
-  useToggleNotificacoesCobranca,
-  useUpdateCobranca,
-  useUpdatePassageiro
+    useAvailableYears,
+    useCobrancasByPassageiro,
+    useDeleteCobranca,
+    useDeletePassageiro,
+    useDesfazerPagamento,
+    useEnviarNotificacaoCobranca,
+    usePassageiro,
+    usePassageiros,
+    useToggleAtivoPassageiro,
+    useToggleNotificacoesCobranca,
+    useUpdateCobranca,
+    useUpdatePassageiro
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useQueryClient } from "@tanstack/react-query";
 
 // Utils
-import { useValidarFranquia } from "@/hooks";
+import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { toast } from "@/utils/notifications/toast";
@@ -146,11 +146,18 @@ export default function PassageiroCarteirinha() {
 
   // Hook para validar franquia (dados já carregados)
   // Passar user?.id (auth_uid) e profile para evitar chamadas duplicadas
-  const { validacao: validacaoFranquiaGeral } = useValidarFranquia(
-    user?.id,
-    passageiro_id,
+  // Hook para validar franquia (dados já carregados)
+  // Passar user?.id (auth_uid) e profile para evitar chamadas duplicadas
+  const { limits } = usePlanLimits({
+    userUid: user?.id,
     profile
-  );
+  });
+
+  const validacaoFranquiaGeral = {
+    franquiaContratada: limits.franchise.limit,
+    cobrancasEmUso: limits.franchise.used,
+    podeAtivar: limits.franchise.canEnable
+  };
 
   const { data: allPassageirosData } = usePassageiros(
     { usuarioId: profile?.id },

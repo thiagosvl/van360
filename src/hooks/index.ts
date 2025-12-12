@@ -1,9 +1,8 @@
 // Business hooks
 export { useAssinaturaPendente } from "./business/useAssinaturaPendente";
-export { useLimites } from "./business/useLimites";
+export { usePlanLimits } from "./business/usePlanLimits";
 export { useProfile } from "./business/useProfile";
 export { useSession } from "./business/useSession";
-export { useValidarFranquia } from "./business/useValidarFranquia";
 
 // UI hooks
 export { useIsMobile } from "./ui/use-mobile";

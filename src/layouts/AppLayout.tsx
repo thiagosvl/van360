@@ -3,15 +3,15 @@ import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { LayoutProvider } from "@/contexts/LayoutContext";
 import { useAssinaturaPendente } from "@/hooks/business/useAssinaturaPendente";
-import { useProfile } from "@/hooks/business/useProfile";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
+import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useSEO } from "@/hooks/useSEO";
 
 export default function AppLayout() {
   const { user, loading: loadingSession } = useSession();
-  const { profile, isLoading, plano } = useProfile(user?.id);
+  const { profile, isLoading, plano, role } = usePermissions();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -21,7 +21,8 @@ export default function AppLayout() {
   });
   
   // Verificar se assinatura está pendente de pagamento ou em trial
-  const assinaturaPendente = useAssinaturaPendente(user?.id);
+  // Otimização: Passar objeto profile diretamente para evitar fetch duplo
+  const assinaturaPendente = useAssinaturaPendente(profile);
   const { isPendente, assinaturaId } = assinaturaPendente;
   
   // Não exibir alerta na página /assinatura
@@ -41,12 +42,12 @@ export default function AppLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  const role = profile.role as "motorista";
+  const currentRole = (role || "motorista") as "motorista";
 
   return (
     <LayoutProvider>
       <div className="min-h-screen bg-gray-50">
-        <AppNavbar plano={plano} role={role} />
+        <AppNavbar plano={plano} role={currentRole} />
 
         <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-gray-100 bg-white">
           <div className="flex h-20 items-center gap-3 px-6">
@@ -65,7 +66,7 @@ export default function AppLayout() {
             </div>
           </div>
           <div className="flex-1 overflow-y-auto px-5 py-6">
-            <AppSidebar plano={plano} role={role} />
+            <AppSidebar plano={plano} role={currentRole} />
           </div>
         </aside>
 

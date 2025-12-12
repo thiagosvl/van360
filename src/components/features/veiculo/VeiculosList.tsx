@@ -1,5 +1,5 @@
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -122,24 +122,6 @@ export function VeiculosList({
   onToggleAtivo,
   onDelete,
 }: VeiculosListProps) {
-  const getStatusBadge = (ativo: boolean) => {
-    return ativo ? (
-      <Badge
-        variant="outline"
-        className="bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100 font-medium"
-      >
-        Ativo
-      </Badge>
-    ) : (
-      <Badge
-        variant="outline"
-        className="bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 font-medium"
-      >
-        Desativado
-      </Badge>
-    );
-  };
-
   return (
     <ResponsiveDataList
       data={veiculos}
@@ -173,7 +155,7 @@ export function VeiculosList({
           </div>
 
           <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-            <div className="shrink-0">{getStatusBadge(veiculo.ativo)}</div>
+            <div className="shrink-0"><StatusBadge status={veiculo.ativo} /></div>
             <div className="flex flex-col items-end gap-0.5">
               <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
                 Passageiros
@@ -239,7 +221,7 @@ export function VeiculosList({
                   </div>
                 </td>
                 <td className="px-6 py-4 align-middle">
-                  {getStatusBadge(veiculo.ativo)}
+                  <StatusBadge status={veiculo.ativo} />
                 </td>
                 <td className="px-6 py-4 text-right align-middle">
                   <VeiculoActionsDropdown

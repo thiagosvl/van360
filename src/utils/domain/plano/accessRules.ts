@@ -1,42 +1,87 @@
-import { PLANO_COMPLETO, PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
-import { extractPlanoData, getPlanoUsuario, hasPrePassageiroAccess, hasRelatoriosAccess } from "./planoUtils";
+import {
+  FEATURE_COBRANCA_AUTOMATICA,
+  FEATURE_GASTOS,
+  FEATURE_NOTIFICACOES,
+  FEATURE_PRE_PASSAGEIRO,
+  FEATURE_RELATORIOS,
+  PLANO_COMPLETO,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
+  ROLE_ADMIN,
+  ROLE_MOTORISTA
+} from "@/constants";
+import { extractPlanoData, getPlanoUsuario } from "./planoUtils";
 
 /**
  * Tipo para dados do plano retornado por extractPlanoData
  */
-export type PlanoData = ReturnType<typeof extractPlanoData>;
+export type PlanoData = ReturnType<typeof extractPlanoData> & { 
+  role?: string 
+};
 
 /**
  * Valida se o usuário tem acesso a uma página específica
  * 
- * @param href - Caminho da página (ex: "/gastos", "/relatorios")
- * @param planoData - Dados do plano do usuário
- * @returns true se tem acesso, false caso contrário
+ * Agora baseada em PERFIL (Role-Based), não apenas em Plano.
+ * Motoristas têm acesso a todas as páginas do app, as restrições são de Features.
+ * Admins têm acesso apenas a páginas de admin.
+ * 
+ * @param href - Caminho da página
+ * @param userRole - Role do usuário (opcional, pode vir no planoData ou separado)
+ * @returns true se tem acesso
  */
 export function hasPageAccess(
   href: string,
-  planoData: PlanoData | null
+  planoData: PlanoData | null,
+  userRole?: string
 ): boolean {
-  if (!planoData) return false;
+  // Se não tem role definida, assume motorista por compatibilidade ou bloqueia?
+  // Por enquanto, vamos extrair do userRole se passado, ou tentar inferir.
+  
+  const currentRole = userRole || ROLE_MOTORISTA; // Default para motorista no app atual
 
-  // Mapeamento de páginas e planos que têm acesso
-  const pageAccessMap: Record<string, string[]> = {
-    "/inicio": [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_COMPLETO],
-    "/cobrancas": [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_COMPLETO],
-    "/passageiros": [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_COMPLETO],
-    "/escolas": [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_COMPLETO],
-    "/veiculos": [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_COMPLETO],
-    "/gastos": [PLANO_ESSENCIAL, PLANO_COMPLETO],
-    "/relatorios": [PLANO_ESSENCIAL, PLANO_COMPLETO],
-    "/assinatura": [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_COMPLETO],
-  };
+  // Admin Access
+  if (currentRole === ROLE_ADMIN) {
+     return href.startsWith("/admin");
+  }
 
-  const allowedPlans = pageAccessMap[href];
-  if (!allowedPlans) return false;
+  // Motorista Access
+  if (currentRole === ROLE_MOTORISTA) {
+    // Bloquear acesso a páginas de admin
+    if (href.startsWith("/admin")) return false;
+    
+    // Liberar todas as rotas de motorista (Soft Gating)
+    return true; 
+  }
 
-  // Verificar se o plano está na lista de permitidos E se o plano é válido
-  const hasAllowedPlan = allowedPlans.includes(planoData.slug);
-  return hasAllowedPlan && planoData.isValidPlan;
+  return false;
+}
+
+/**
+ * Mapeamento centralizado de Features por Plano.
+ * Adicionar aqui novas features para facilitar manutenção.
+ */
+const PLAN_FEATURES: Record<string, string[]> = {
+  [PLANO_GRATUITO]: [FEATURE_PRE_PASSAGEIRO],
+  [PLANO_ESSENCIAL]: [FEATURE_PRE_PASSAGEIRO, FEATURE_GASTOS, FEATURE_RELATORIOS],
+  [PLANO_COMPLETO]: [
+    FEATURE_PRE_PASSAGEIRO, 
+    FEATURE_GASTOS, 
+    FEATURE_RELATORIOS, 
+    FEATURE_COBRANCA_AUTOMATICA, 
+    FEATURE_NOTIFICACOES
+  ]
+};
+
+/**
+ * Função genérica para verificar acesso a features.
+ * Substitui verificações manuais de plano.
+ */
+export function hasAccessToFeature(planoData: PlanoData | null, feature: string): boolean {
+  if (!planoData || !planoData.isValidPlan) return false;
+  
+  const features = PLAN_FEATURES[planoData.slug] || [];
+  return features.includes(feature) && planoData.isActive;
 }
 
 /**
@@ -46,9 +91,7 @@ export function hasPageAccess(
  * @returns true se tem acesso, false caso contrário
  */
 export function canUsePrePassageiro(planoData: PlanoData | null): boolean {
-  if (!planoData) return false;
-  const access = hasPrePassageiroAccess(planoData);
-  return access.hasAccess;
+  return hasAccessToFeature(planoData, FEATURE_PRE_PASSAGEIRO);
 }
 
 /**
@@ -61,8 +104,7 @@ export function canUsePrePassageiro(planoData: PlanoData | null): boolean {
  * @returns true se tem acesso, false caso contrário
  */
 export function canUseCobrancaAutomatica(planoData: PlanoData | null): boolean {
-  if (!planoData) return false;
-  return planoData.isCompletePlan && planoData.isActive;
+  return hasAccessToFeature(planoData, FEATURE_COBRANCA_AUTOMATICA);
 }
 
 /**
@@ -75,10 +117,7 @@ export function canUseCobrancaAutomatica(planoData: PlanoData | null): boolean {
  * @returns true se tem acesso, false caso contrário
  */
 export function canUseNotificacoes(planoData: PlanoData | null): boolean {
-  if (!planoData) return false;
-  return (
-    (planoData.isCompletePlan && planoData.isActive)
-  );
+  return hasAccessToFeature(planoData, FEATURE_NOTIFICACOES);
 }
 
 /**
@@ -88,7 +127,7 @@ export function canUseNotificacoes(planoData: PlanoData | null): boolean {
  * @returns true se tem acesso, false caso contrário
  */
 export function canViewRelatorios(planoData: PlanoData | null): boolean {
-  return hasRelatoriosAccess(planoData);
+  return hasAccessToFeature(planoData, FEATURE_RELATORIOS);
 }
 
 /**
@@ -101,11 +140,7 @@ export function canViewRelatorios(planoData: PlanoData | null): boolean {
  * @returns true se tem acesso, false caso contrário
  */
 export function canViewGastos(planoData: PlanoData | null): boolean {
-  if (!planoData) return false;
-  return (
-    (planoData.isEssentialPlan && planoData.isValidPlan) ||
-    (planoData.isCompletePlan && planoData.isValidPlan)
-  );
+  return hasAccessToFeature(planoData, FEATURE_GASTOS);
 }
 
 /**
@@ -141,7 +176,11 @@ export const accessRules = {
    */
   hasPageAccessFromUser: (href: string, usuario: any): boolean => {
     const planoData = getPlanoUsuario(usuario);
-    return hasPageAccess(href, planoData);
+    // usuario aqui pode ser tanto o User do Supabase quanto o da tabela usuarios
+    // Se for do Supabase, tem app_metadata. Se for da tabela, tinha role.
+    // Vamos tentar pegar do app_metadata se existir
+    const role = usuario?.app_metadata?.role;
+    return hasPageAccess(href, planoData, role);
   },
 
   /**

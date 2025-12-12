@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { useUpgradeFranquia } from "@/hooks/useUpgradeFranquia";
+import { useUpgradeFranquia } from "@/hooks/business/useUpgradeFranquia";
 import { planoApi } from "@/services/api/plano.api";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { toast } from "@/utils/notifications/toast";

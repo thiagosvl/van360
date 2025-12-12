@@ -1,10 +1,10 @@
 import {
-  ASSINATURA_COBRANCA_STATUS_CANCELADA,
-  ASSINATURA_USUARIO_STATUS_ATIVA,
-  ASSINATURA_USUARIO_STATUS_TRIAL,
-  PLANO_COMPLETO,
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
+    ASSINATURA_COBRANCA_STATUS_CANCELADA,
+    ASSINATURA_USUARIO_STATUS_ATIVA,
+    ASSINATURA_USUARIO_STATUS_TRIAL,
+    PLANO_COMPLETO,
+    PLANO_ESSENCIAL,
+    PLANO_GRATUITO,
 } from "@/constants";
 
 /**
@@ -149,4 +149,53 @@ export function hasRelatoriosAccess(planoData: ReturnType<typeof extractPlanoDat
     (planoData.isEssentialPlan && planoData.isActive) ||
     (planoData.isTrial && planoData.isValidTrial)
   );
+}
+
+/**
+ * Verifica se a assinatura está pendente de pagamento
+ */
+export function isSubscriptionPending(assinatura: any): boolean {
+  if (!assinatura) return false;
+  
+  const isPendentePagamento =
+    assinatura.status === "pendente_pagamento" &&
+    assinatura.ativo === true;
+
+  const isTrial =
+    assinatura.status === "trialing" &&
+    assinatura.ativo === true;
+
+  return isPendentePagamento || isTrial;
+}
+
+/**
+ * Calcula informações detalhadas sobre o trial
+ */
+export function calculateTrialInfo(assinatura: any) {
+  if (!assinatura) return { isValidTrial: false, isTrialExpirado: false, diasRestantes: null };
+
+  const isTrial = assinatura.status === "trialing" && assinatura.ativo === true;
+  
+  const agora = new Date();
+  const trialEndAt = assinatura.trial_end_at
+    ? new Date(assinatura.trial_end_at)
+    : null;
+
+  const isValidTrial = isTrial && trialEndAt && trialEndAt >= agora;
+  const isTrialExpirado = isTrial && trialEndAt && trialEndAt < agora;
+  
+  let diasRestantes: number | null = null;
+  if (isValidTrial && trialEndAt) {
+    const diffTime = trialEndAt.getTime() - agora.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    diasRestantes = Math.max(0, diffDays);
+  }
+
+  return {
+    isTrial,
+    isValidTrial: !!isValidTrial,
+    isTrialExpirado: !!isTrialExpirado,
+    diasRestantes,
+    trialEndAt
+  };
 }

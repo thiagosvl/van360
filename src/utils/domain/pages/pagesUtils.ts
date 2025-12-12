@@ -20,11 +20,11 @@ const checkPagesAvailability = (availablePlans: string[] | undefined, plano: any
  * @param plano - Dados do plano do usuário (retornado por useProfile)
  * @returns true se tem acesso, false caso contrário
  */
-const enablePageActions = (href: string, plano: any): boolean => {
+const enablePageActions = (href: string, plano: any, userRole?: string): boolean => {
     if (!plano) return false;
     
     // Usar a função centralizada de validação
-    return hasPageAccess(href, plano);
+    return hasPageAccess(href, plano, userRole);
 }
 
 const pagesItems = [

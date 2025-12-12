@@ -4,7 +4,7 @@ import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import PlanosDialog from "@/components/dialogs/PlanosDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
-import { useValidarFranquia } from "@/hooks";
+import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Escola } from "@/types/escola";
@@ -112,11 +112,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   
   // Carregar dados de franquia globalmente se o dialog estiver aberto
   // Isso garante que temos os números "Limite X de Y" atualizados
-  const { validacao: validacaoFranquia } = useValidarFranquia(
-    user?.id,
-    undefined,
-    profile
-  );
+  // Carregar dados de franquia globalmente se o dialog estiver aberto
+  // Isso garante que temos os números "Limite X de Y" atualizados
+  const { limits } = usePlanLimits({
+      userUid: user?.id,
+      profile
+  });
+
+  const validacaoFranquia = {
+      franquiaContratada: limits.franchise.limit,
+      cobrancasEmUso: limits.franchise.used
+  };
 
   const openPlanosDialog = () => setIsPlanosDialogOpen(true);
   

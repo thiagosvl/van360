@@ -17,7 +17,8 @@ import {
   usePassageiros,
   useVeiculos,
 } from "@/hooks";
-import { useAccessControl } from "@/hooks/business/useAccessControl";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useRelatoriosCalculations } from "@/hooks/business/useRelatoriosCalculations";
 import { useSession } from "@/hooks/business/useSession";
 import { Lock } from "lucide-react";
@@ -30,7 +31,18 @@ export default function Relatorios() {
   const { user } = useSession();
   
   // Use Access Control Hook
-  const { profile, plano: profilePlano, permissions, limits } = useAccessControl();
+  const { profile, plano: profilePlano, canViewModuleRelatorios, isFreePlan } = usePermissions();
+  const { limits: planLimits } = usePlanLimits({ profile, plano: profilePlano });
+
+  const permissions = {
+      canViewRelatorios: canViewModuleRelatorios,
+      isFreePlan
+  };
+    
+  const limits = {
+      passageiros: planLimits.passengers.limit,
+      hasPassengerLimit: planLimits.passengers.hasLimit
+  };
 
   const [mes, setMes] = useState(new Date().getMonth() + 1);
   const [ano, setAno] = useState(new Date().getFullYear());
@@ -38,7 +50,6 @@ export default function Relatorios() {
 
   // Access Logic
   const hasAccess = permissions.canViewRelatorios;
-  const isFreePlan = permissions.isFreePlan;
 
   // Buscar dados reais - APENAS se tiver acesso
   const shouldFetchData = hasAccess && !!profile?.id;

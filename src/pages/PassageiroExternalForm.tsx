@@ -14,27 +14,27 @@ import { MoneyInput } from "@/components/forms";
 
 // Components - UI
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 
 // Services
@@ -52,15 +52,15 @@ import { cepSchema, cpfSchema, phoneSchema } from "@/utils/validators";
 // Icons
 import { periodos } from "@/utils/formatters";
 import {
-  AlertTriangle,
-  CalendarDays,
-  Car,
-  CheckCircle2,
-  CreditCard,
-  Loader2,
-  School,
-  Sun,
-  User,
+    AlertTriangle,
+    CalendarDays,
+    Car,
+    CheckCircle2,
+    CreditCard,
+    Loader2,
+    School,
+    Sun,
+    User,
 } from "lucide-react";
 
 import { PassageiroFormEndereco } from "@/components/features/passageiro/form/PassageiroFormEndereco";
@@ -168,7 +168,6 @@ export default function PassageiroExternalForm() {
           id, 
           nome, 
           apelido, 
-          role,
           assinaturas_usuarios (
             *,
             planos (*, parent:parent_id (*))
@@ -178,7 +177,7 @@ export default function PassageiroExternalForm() {
         .eq("id", motoristaId)
         .single();
 
-      if (error || !data || (data as any).role !== "motorista") {
+      if (error || !data) {
         toast.error("sistema.erro.linkInvalido", {
           description: "sistema.erro.linkInvalidoDescricao",
         });

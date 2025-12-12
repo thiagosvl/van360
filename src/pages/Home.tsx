@@ -1,14 +1,14 @@
 import {
-  CreditCard,
-  DollarSign,
-  FileText,
-  Plus,
-  Receipt,
-  TrendingDown,
-  TrendingUp,
-  Users,
-  Wallet,
-  Zap
+    CreditCard,
+    DollarSign,
+    FileText,
+    Plus,
+    Receipt,
+    TrendingDown,
+    TrendingUp,
+    Users,
+    Wallet,
+    Zap
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -25,15 +25,16 @@ import { useCobrancas } from "@/hooks/api/useCobrancas";
 import { useEscolas } from "@/hooks/api/useEscolas";
 import { usePassageiros } from "@/hooks/api/usePassageiros";
 import { useVeiculos } from "@/hooks/api/useVeiculos";
-import { useAccessControl } from "@/hooks/business/useAccessControl";
+import { usePermissions } from "@/hooks/business/usePermissions";
+import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
 
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import {
-  PASSAGEIRO_COBRANCA_STATUS_PAGO,
-  PLANO_COMPLETO,
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
+    PASSAGEIRO_COBRANCA_STATUS_PAGO,
+    PLANO_COMPLETO,
+    PLANO_ESSENCIAL,
+    PLANO_GRATUITO,
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
@@ -54,14 +55,26 @@ const Home = () => {
   const { user, loading: isSessionLoading } = useSession();
   
   // Use Access Control Hook
+  // Use Access Control Hook
   const { 
     profile, 
     isLoading: isProfileLoading, 
     plano, 
-    limits, 
-    checks, 
-    permissions 
-  } = useAccessControl();
+    isFreePlan,
+    canViewModuleGastos 
+  } = usePermissions();
+
+  const { limits: planLimits } = usePlanLimits({ profile, plano });
+
+  const permissions = {
+      isFreePlan,
+      canViewGastos: canViewModuleGastos
+  };
+
+  const limits = {
+      passageiros: planLimits.passengers.limit,
+      hasPassengerLimit: planLimits.passengers.hasLimit
+  };
 
   const navigate = useNavigate();
 
