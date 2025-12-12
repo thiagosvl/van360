@@ -1,15 +1,15 @@
 import { CepInput } from "@/components/forms";
 import {
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -95,7 +95,7 @@ export function PassageiroFormEndereco() {
               control={form.control}
               name="bairro"
               render={({ field, fieldState }) => (
-                <FormItem className="md:col-span-2">
+                <FormItem className="md:col-span-4">
                   <FormLabel className="text-gray-700 font-medium ml-1">
                     Bairro
                   </FormLabel>
@@ -112,11 +112,12 @@ export function PassageiroFormEndereco() {
                 </FormItem>
               )}
             />
+            
             <FormField
               control={form.control}
               name="cidade"
               render={({ field, fieldState }) => (
-                <FormItem className="md:col-span-2">
+                <FormItem className="md:col-span-4">
                   <FormLabel className="text-gray-700 font-medium ml-1">
                     Cidade
                   </FormLabel>
@@ -133,6 +134,30 @@ export function PassageiroFormEndereco() {
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="estado"
+              render={({ field, fieldState }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel className="text-gray-700 font-medium ml-1">
+                    Estado
+                  </FormLabel>
+                  {/* Select for State */}
+                  {/* Assuming we might want to move Select to a reusable component later, but inline for now */}
+                   <div className="relative">
+                      <Input
+                        {...field}
+                        placeholder="UF"
+                        className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                         aria-invalid={!!fieldState.error}
+                      />
+                     </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="referencia"

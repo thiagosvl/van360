@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { escolaApi } from "@/services/api/escola.api";
 import { Escola } from "@/types/escola";
+import { useQuery } from "@tanstack/react-query";
 
 /**
  * Hook para buscar escolas com filtros customizados (usado em formulários)
