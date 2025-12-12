@@ -1,3 +1,4 @@
+import { MobileAction, MobileActionItem } from "@/components/common/MobileActionItem";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
@@ -441,52 +442,87 @@ export default function PrePassageiros({
 
               {/* Mobile Cards */}
               <div className="md:hidden space-y-3">
-                {prePassageiros.map((prePassageiro) => (
-                  <div
-                    key={prePassageiro.id}
-                    className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
-                    onClick={() => handleFinalizeClick(prePassageiro)}
-                  >
-                    {/* Linha 1: Avatar + Nome + Ações */}
-                    <div className="flex justify-between items-start mb-1 relative">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full flex items-center justify-center bg-gray-100 text-gray-500 font-bold text-sm">
-                          {getInitials(prePassageiro.nome)}
+                {prePassageiros.map((prePassageiro, index) => {
+                  const actions: MobileAction[] = [
+                    {
+                      label: "Revisar",
+                      icon: <Eye className="w-4 h-4" />,
+                      onClick: () => handleFinalizeClick(prePassageiro),
+                      swipeColor: "bg-blue-600",
+                    },
+                    {
+                      label: "Excluir",
+                      icon: <Trash2 className="w-4 h-4" />,
+                      onClick: () => {
+                        openConfirmationDialog({
+                          title: "Excluir Pré-cadastro",
+                          description:
+                            "Tem certeza que deseja excluir este pré-cadastro? Esta ação não pode ser desfeita.",
+                          variant: "destructive",
+                          confirmText: "Excluir",
+                          cancelText: "Cancelar",
+                          onConfirm: async () => {
+                            if (prePassageiro.id) {
+                              try {
+                                await deletePrePassageiro.mutateAsync(prePassageiro.id);
+                                closeConfirmationDialog();
+                              } catch (error) {
+                                console.error(error);
+                              }
+                            }
+                          },
+                        });
+                      },
+                      isDestructive: true,
+                    },
+                  ];
+
+                  return (
+                    <MobileActionItem
+                      key={prePassageiro.id}
+                      actions={actions}
+                      showHint={index === 0}
+                    >
+                      <div
+                        className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
+                        onClick={() => handleFinalizeClick(prePassageiro)}
+                      >
+                        {/* Linha 1: Avatar + Nome + Ações */}
+                        <div className="flex justify-between items-start mb-1 relative">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full flex items-center justify-center bg-gray-100 text-gray-500 font-bold text-sm">
+                              {getInitials(prePassageiro.nome)}
+                            </div>
+                            <div className="pr-6">
+                              <p className="font-bold text-gray-900 text-sm">
+                                {prePassageiro.nome}
+                              </p>
+                              <p className="text-xs font-semibold text-gray-900">
+                                {prePassageiro.nome_responsavel}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Botão de Ação no Topo Direito (Removido pois agora tem swipe) */}
                         </div>
-                        <div className="pr-6">
-                          <p className="font-bold text-gray-900 text-sm">
-                            {prePassageiro.nome}
-                          </p>
-                          <p className="text-xs font-semibold text-gray-900">
-                            {prePassageiro.nome_responsavel}
-                          </p>
+
+                        {/* Linha 2: Detalhes Secundários */}
+                        <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+                          <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
+                            <Clock className="w-3.5 h-3.5 text-gray-400" />
+                            <span>
+                              {formatRelativeTime(prePassageiro.created_at)}
+                            </span>
+                          </div>
+
+                          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-full">
+                            Pendente
+                          </span>
                         </div>
                       </div>
-
-                      {/* Botão de Ação no Topo Direito */}
-                      <div className="-mt-1 -mr-2">
-                        <ActionsMenu
-                          prePassageiro={prePassageiro}
-                          showReviewOption={true}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Linha 2: Detalhes Secundários */}
-                    <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-                      <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
-                        <Clock className="w-3.5 h-3.5 text-gray-400" />
-                        <span>
-                          {formatRelativeTime(prePassageiro.created_at)}
-                        </span>
-                      </div>
-
-                      <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-full">
-                        Pendente
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                    </MobileActionItem>
+                  );
+                })}
               </div>
             </>
           )}

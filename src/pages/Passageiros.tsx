@@ -681,7 +681,13 @@ export default function Passageiros() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="solicitacoes">
+            <TabsContent 
+              value="solicitacoes"
+              className={cn(
+                "mt-0",
+                isLimitedUser && "pb-20 md:pb-0"
+              )}
+            >
               <PrePassageiros
                 onFinalizeNewPrePassageiro={async () => Promise.resolve()}
                 refreshKey={refreshKey}
