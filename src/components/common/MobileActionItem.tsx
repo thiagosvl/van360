@@ -1,13 +1,11 @@
 import { Button } from "@/components/ui/button";
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { MoreVertical } from "lucide-react";
 import { ReactNode, useMemo, useState } from "react";
@@ -42,7 +40,7 @@ export function MobileActionItem({
   actions,
   showHint = false,
 }: MobileActionItemProps) {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // Filter actions that should be visible? Or keep all?
   // We keep disabled actions visible but non-interactive
@@ -77,7 +75,7 @@ export function MobileActionItem({
       label: "Mais...",
       icon: <MoreVertical className="h-5 w-5" />,
       color: "bg-gray-100 !text-gray-600",
-      onClick: () => setIsDrawerOpen(true),
+      onClick: () => setIsSheetOpen(true),
     };
 
     return {
@@ -99,48 +97,50 @@ export function MobileActionItem({
         {children}
       </SwipeableItem>
 
-      {/* Drawer for Secondary Actions */}
-      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <DrawerContent>
-          <DrawerHeader className="text-left pb-0">
-            <DrawerTitle className="text-lg font-bold text-gray-900">
+      {/* Sheet for Secondary Actions */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent
+          side="bottom"
+          className="h-auto max-h-[90vh] rounded-t-[20px] flex flex-col px-0 bg-gray-50 outline-none"
+        >
+          <SheetHeader className="text-left px-6">
+            <SheetTitle className="text-xl font-bold text-gray-900">
               Opções
-            </DrawerTitle>
-            <DrawerDescription>Selecione uma ação</DrawerDescription>
-          </DrawerHeader>
+            </SheetTitle>
+            <SheetDescription>Selecione uma ação</SheetDescription>
+          </SheetHeader>
 
-          <div className="p-4 flex flex-col gap-3">
+          <div className="px-6 pt-4 pb-8 flex flex-col gap-3 overflow-y-auto">
             {drawerActions.map((action, idx) => (
               <Button
                 key={idx}
-                variant={action.isDestructive ? 'destructive' : 'outline'}
+                variant={action.isDestructive ? 'ghost' : 'ghost'} // Usamos ghost para aplicar estilos customizados de "card"
                 disabled={action.disabled}
                 className={cn(
-                    "w-full justify-start h-14 text-base font-medium transition-transform active:scale-[0.98]",
+                    "w-full justify-start h-14 text-base font-medium transition-all active:scale-[0.98] rounded-xl shadow-sm border",
+                    // Estilo Base (Card Branco)
+                    "bg-white border-gray-200 hover:bg-gray-50",
+                    // Estilo Destrutivo override
+                    action.isDestructive && "border-red-100 bg-red-50/50 text-red-600 hover:bg-red-100/50 hover:border-red-200",
+                    // Estilo Customizado
                     action.drawerClass,
-                    !action.isDestructive && !action.disabled && "text-gray-700" 
+                    // Cor padrão se não for destrutivo/disabled
+                    !action.isDestructive && !action.disabled && "text-gray-700"
                 )}
                 onClick={() => {
-                  setIsDrawerOpen(false);
+                  setIsSheetOpen(false);
                   action.onClick();
                 }}
               >
-                 <span className="mr-3">{action.icon}</span>
+                 <span className={cn("mr-3", action.isDestructive ? "text-red-600" : "text-gray-500")}>
+                    {action.icon}
+                 </span>
                 {action.label}
               </Button>
             ))}
           </div>
-
-
-          <DrawerFooter className="pt-0">
-            <DrawerClose asChild>
-              <Button variant="ghost" className="h-12 text-gray-500 font-normal">
-                Cancelar
-              </Button>
-            </DrawerClose>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }
