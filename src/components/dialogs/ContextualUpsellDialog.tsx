@@ -7,7 +7,7 @@ import {
     DialogTitle
 } from "@/components/ui/dialog";
 import { PLANO_COMPLETO, PLANO_ESSENCIAL } from "@/constants";
-import { usePlanos } from "@/hooks";
+import { usePlanos } from "@/hooks/api/usePlanos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { cn } from "@/lib/utils";

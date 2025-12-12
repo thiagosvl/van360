@@ -13,20 +13,20 @@ import { PlanoCard } from "@/components/features/register/PlanoCard";
 
 // Components - UI
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 
 // Hooks
-import { useCalcularPrecoPreview, usePlanos } from "@/hooks";
+import { useCalcularPrecoPreview, usePlanos } from "@/hooks/api/usePlanos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 

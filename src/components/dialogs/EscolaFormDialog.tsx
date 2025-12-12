@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateEscola, useUpdateEscola } from "@/hooks";
+import { useCreateEscola, useUpdateEscola } from "@/hooks/api/useEscolaMutations";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { cn } from "@/lib/utils";
@@ -151,27 +151,40 @@ export default function EscolaFormDialog({
   }, [cep, logradouro, numero, isOpen, form]);
 
   useEffect(() => {
-    if (editingEscola) {
-      setOpenAccordionItems(["dados-escola", "endereco"]);
+    if (isOpen) {
+      if (editingEscola) {
+        form.reset({
+          nome: editingEscola.nome,
+          logradouro: editingEscola.logradouro || "",
+          numero: editingEscola.numero || "",
+          bairro: editingEscola.bairro || "",
+          cidade: editingEscola.cidade || "",
+          estado: editingEscola.estado || "",
+          cep: editingEscola.cep || "",
+          referencia: editingEscola.referencia || "",
+          ativo: editingEscola.ativo,
+        });
+        setOpenAccordionItems(["dados-escola", "endereco"]);
+      } else {
+         // Só limpa se não estiver mantendo aberto (modo batch)
+         if (!keepOpen) {
+            form.reset({
+              nome: "",
+              logradouro: "",
+              numero: "",
+              bairro: "",
+              cidade: "",
+              estado: "",
+              cep: "",
+              referencia: "",
+              ativo: true,
+            });
+         }
+      }
+    } else {
+        setKeepOpen(false);
     }
-  }, [editingEscola]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      form.reset({
-        nome: "",
-        logradouro: "",
-        numero: "",
-        bairro: "",
-        cidade: "",
-        estado: "",
-        cep: "",
-        referencia: "",
-        ativo: true,
-      });
-      setKeepOpen(false);
-    }
-  }, [isOpen, form]);
+  }, [isOpen, editingEscola, form]);
 
   const onFormError = (errors: any) => {
     toast.error("validacao.formularioComErros");
@@ -535,7 +548,7 @@ export default function EscolaFormDialog({
                 </Accordion>
                 
                 {!editingEscola && allowBatchCreation && (
-                  <div className="flex items-center gap-2 px-1">
+                  <div className="flex items-center gap-2 px-1 pt-4">
                     <Checkbox
                       id="keepOpen"
                       checked={keepOpen}

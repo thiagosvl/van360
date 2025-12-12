@@ -130,16 +130,16 @@ export function VeiculosList({
       mobileItemRenderer={(veiculo, index) => {
         const actions: MobileAction[] = [
           {
-            label: "Editar",
-            icon: <Pencil className="h-4 w-4" />,
-            onClick: () => onEdit(veiculo),
-            swipeColor: "bg-blue-600",
-          },
-          {
             label: veiculo.ativo ? "Desativar" : "Reativar",
             icon: veiculo.ativo ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />,
             onClick: () => onToggleAtivo(veiculo),
             swipeColor: veiculo.ativo ? "bg-red-200 text-red-700" : "bg-green-200 text-green-700",
+          },
+          {
+            label: "Editar",
+            icon: <Pencil className="h-4 w-4" />,
+            onClick: () => onEdit(veiculo),
+            swipeColor: "bg-blue-600",
           },
           {
             label: "Ver Passageiros",

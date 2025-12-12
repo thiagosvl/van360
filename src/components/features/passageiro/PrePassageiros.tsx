@@ -445,12 +445,6 @@ export default function PrePassageiros({
                 {prePassageiros.map((prePassageiro, index) => {
                   const actions: MobileAction[] = [
                     {
-                      label: "Revisar",
-                      icon: <Eye className="w-4 h-4" />,
-                      onClick: () => handleFinalizeClick(prePassageiro),
-                      swipeColor: "bg-blue-600",
-                    },
-                    {
                       label: "Excluir",
                       icon: <Trash2 className="w-4 h-4" />,
                       onClick: () => {
@@ -474,6 +468,12 @@ export default function PrePassageiros({
                         });
                       },
                       isDestructive: true,
+                    },
+                    {
+                      label: "Revisar",
+                      icon: <Eye className="w-4 h-4" />,
+                      onClick: () => handleFinalizeClick(prePassageiro),
+                      swipeColor: "bg-blue-600",
                     },
                   ];
 

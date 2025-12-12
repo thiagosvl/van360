@@ -36,7 +36,7 @@ interface OpenConfirmationDialogProps {
 }
 
 interface OpenEscolaFormProps {
-  onSuccess?: (escola: Escola) => void;
+  onSuccess?: (escola: Escola, keepOpen?: boolean) => void;
   editingEscola?: Escola | null;
 }
 
@@ -239,9 +239,11 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       <EscolaFormDialog
         isOpen={escolaFormDialogState.open}
         onClose={() => setEscolaFormDialogState(prev => ({ ...prev, open: false }))}
-        onSuccess={(escola) => {
-            setEscolaFormDialogState(prev => ({ ...prev, open: false }));
-            escolaFormDialogState.props?.onSuccess?.(escola);
+        onSuccess={(escola, keepOpen) => {
+            if (!keepOpen) {
+                setEscolaFormDialogState(prev => ({ ...prev, open: false }));
+            }
+            escolaFormDialogState.props?.onSuccess?.(escola, keepOpen);
         }}
         editingEscola={escolaFormDialogState.props?.editingEscola}
         profile={profile}

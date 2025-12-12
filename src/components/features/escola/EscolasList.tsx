@@ -129,16 +129,16 @@ export function EscolasList({
       mobileItemRenderer={(escola, index) => {
         const actions: MobileAction[] = [
           {
-            label: "Editar",
-            icon: <Pencil className="h-4 w-4" />,
-            onClick: () => onEdit(escola),
-            swipeColor: "bg-blue-600",
-          },
-          {
             label: escola.ativo ? "Desativar" : "Reativar",
             icon: escola.ativo ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />,
             onClick: () => onToggleAtivo(escola),
             swipeColor: escola.ativo ? "bg-red-200 text-red-700" : "bg-green-200 text-green-700",
+          },
+          {
+            label: "Editar",
+            icon: <Pencil className="h-4 w-4" />,
+            onClick: () => onEdit(escola),
+            swipeColor: "bg-blue-600",
           },
           {
             label: "Ver Passageiros",

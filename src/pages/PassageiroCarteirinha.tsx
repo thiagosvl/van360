@@ -1,10 +1,10 @@
 import {
-    Suspense,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 
 // React Router
@@ -58,18 +58,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useAvailableYears,
-    useCobrancasByPassageiro,
-    useDeleteCobranca,
-    useDeletePassageiro,
-    useDesfazerPagamento,
-    useEnviarNotificacaoCobranca,
-    usePassageiro,
-    usePassageiros,
-    useToggleAtivoPassageiro,
-    useToggleNotificacoesCobranca,
-    useUpdateCobranca,
-    useUpdatePassageiro
+  useAvailableYears,
+  useCobrancasByPassageiro,
+  useDeleteCobranca,
+  useDeletePassageiro,
+  useDesfazerPagamento,
+  useEnviarNotificacaoCobranca,
+  usePassageiro,
+  usePassageiros,
+  useToggleAtivoPassageiro,
+  useToggleNotificacoesCobranca,
+  useUpdateCobranca,
+  useUpdatePassageiro
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";

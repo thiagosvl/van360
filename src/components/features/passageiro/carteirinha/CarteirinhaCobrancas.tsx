@@ -5,11 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { getCobrancaMobileActions } from "@/hooks/business/getCobrancaMobileActions";
@@ -18,23 +18,23 @@ import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
 import { canUsePremiumFeatures } from "@/utils/domain/plano/accessRules";
 import {
-  formatDateToBR,
-  getMesNome,
-  getStatusColor,
-  getStatusText,
+    formatDateToBR,
+    getMesNome,
+    getStatusColor,
+    getStatusText,
 } from "@/utils/formatters";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  AlertTriangle,
-  BellOff,
-  Calendar,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  DollarSign,
-  Plus,
-  RotateCcw,
+    AlertTriangle,
+    BellOff,
+    Calendar,
+    Check,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    DollarSign,
+    Plus,
+    RotateCcw,
 } from "lucide-react";
 
 interface CarteirinhaCobrancasProps {
@@ -104,13 +104,19 @@ export const CarteirinhaCobrancas = ({
     >
       <Card className="h-full border-0 shadow-lg ring-1 ring-black/5 bg-white">
         <CardHeader className="border-b border-gray-100 pb-4">
-          <div className="flex items-center justify-between">
+          <div className={cn(
+            "flex justify-between",
+            availableYears.length > 1 ? "flex-col items-start gap-3 md:flex-row md:items-center" : "items-center"
+          )}>
             <div className="flex items-center gap-2">
               <CardTitle className="text-lg font-bold text-gray-900">
                 Cobranças
               </CardTitle>
             </div>
-            <div className="flex items-center gap-2">
+            <div className={cn(
+              "flex items-center gap-2",
+              availableYears.length > 1 ? "w-full md:w-auto" : ""
+            )}>
               <div
                 className={`${
                   availableYears.length <= 1 ? "hidden" : "inline"
@@ -131,7 +137,10 @@ export const CarteirinhaCobrancas = ({
               </div>
               <Button
                 size="sm"
-                className="h-9 bg-blue-600 hover:bg-blue-700 text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className={cn(
+                  "h-9 bg-blue-600 hover:bg-blue-700 text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed",
+                  availableYears.length > 1 ? "flex-1 md:flex-none" : ""
+                )}
                 onClick={onOpenCobrancaDialog}
                 disabled={!passageiro.ativo}
                 title={
