@@ -1,4 +1,3 @@
-
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
@@ -6,48 +5,48 @@ import { PrePassengerListSkeleton } from "@/components/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreatePrePassageiro,
-    useDeletePrePassageiro,
-    usePassageiros,
-    usePrePassageiros,
+  useCreatePrePassageiro,
+  useDeletePrePassageiro,
+  usePassageiros,
+  usePrePassageiros,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import {
-    formatarTelefone,
-    formatRelativeTime,
-    periodos,
+  formatarTelefone,
+  formatRelativeTime,
+  periodos,
 } from "@/utils/formatters";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import {
-    Clock,
-    Copy,
-    Eye,
-    MoreVertical,
-    Search,
-    Trash2,
-    Users2,
+  Clock,
+  Copy,
+  Eye,
+  MoreVertical,
+  Search,
+  Trash2,
+  Users2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -74,15 +73,19 @@ export default function PrePassageiros({
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const { openPlanosDialog, openLimiteFranquiaDialog, openContextualUpsellDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const {
+    openPlanosDialog,
+    openLimiteFranquiaDialog,
+    openContextualUpsellDialog,
+    openConfirmationDialog,
+    closeConfirmationDialog,
+  } = useLayout();
 
   const createPrePassageiro = useCreatePrePassageiro();
   const deletePrePassageiro = useDeletePrePassageiro();
 
   const isActionLoading =
     createPrePassageiro.isPending || deletePrePassageiro.isPending;
-
-
 
   const [isFinalizeDialogOpen, setIsFinalizeDialogOpen] = useState(false);
   const [selectedPrePassageiro, setSelectedPrePassageiro] =
@@ -122,7 +125,7 @@ export default function PrePassageiros({
     profile,
     currentPassengerCount: countPassageiros,
   });
-  
+
   const isLimitedUser = plano?.isFreePlan ?? false;
   const isLimitReached = limits.passengers.isReached;
   // -------------------------------------------------------
@@ -139,8 +142,6 @@ export default function PrePassageiros({
       refetchPrePassageiros();
     }
   }, [refreshKey, refetchPrePassageiros]);
-
-
 
   const handleCadastrarRapidoLink = async () => {
     if (!profile?.id) {
@@ -183,22 +184,24 @@ export default function PrePassageiros({
     createPrePassageiro.mutate(fakePayload);
   };
 
-
-
   const handleFinalizeClick = (prePassageiro: PrePassageiro) => {
     // Verificar se é plano gratuito E limite atingido
     const isFreePlan = plano?.slug === "gratuito" || plano?.slug === "teste";
     if (isLimitedUser && isLimitReached) {
-       if (isFreePlan) {
-         openContextualUpsellDialog({ feature: "passageiros", targetPlan: PLANO_ESSENCIAL });
-       } else {
-         // Se for plano pago, abre dialogo de aumentar franquia
-         openLimiteFranquiaDialog({
-            title: "Aumentar Limite",
-            description: "Você atingiu seu limite de passageiros contratado. Aumente sua franquia para continuar cadastrando."
-         });
-       }
-       return;
+      if (isFreePlan) {
+        openContextualUpsellDialog({
+          feature: "passageiros",
+          targetPlan: PLANO_ESSENCIAL,
+        });
+      } else {
+        // Se for plano pago, abre dialogo de aumentar franquia
+        openLimiteFranquiaDialog({
+          title: "Aumentar Limite",
+          description:
+            "Você atingiu seu limite de passageiros contratado. Aumente sua franquia para continuar cadastrando.",
+        });
+      }
+      return;
     }
 
     setSelectedPrePassageiro(prePassageiro);
@@ -253,24 +256,25 @@ export default function PrePassageiros({
           className="text-red-600 focus:text-red-600"
           onClick={(e) => {
             e.stopPropagation();
-                    openConfirmationDialog({
-                      title: "Excluir Pré-cadastro",
-                      description: "Tem certeza que deseja excluir este pré-cadastro? Esta ação não pode ser desfeita.",
-                      variant: "destructive",
-                      confirmText: "Excluir",
-                      cancelText: "Cancelar",
-                      onConfirm: async () => {
-                         if (prePassageiro.id) {
-                            try {
-                              await deletePrePassageiro.mutateAsync(prePassageiro.id);
-                              closeConfirmationDialog();
-                            } catch (error) {
-                              // Error handled by mutation hook or global handler
-                              console.error(error);
-                            }
-                         }
-                      },
-                    });
+            openConfirmationDialog({
+              title: "Excluir Pré-cadastro",
+              description:
+                "Tem certeza que deseja excluir este pré-cadastro? Esta ação não pode ser desfeita.",
+              variant: "destructive",
+              confirmText: "Excluir",
+              cancelText: "Cancelar",
+              onConfirm: async () => {
+                if (prePassageiro.id) {
+                  try {
+                    await deletePrePassageiro.mutateAsync(prePassageiro.id);
+                    closeConfirmationDialog();
+                  } catch (error) {
+                    // Error handled by mutation hook or global handler
+                    console.error(error);
+                  }
+                }
+              },
+            });
           }}
         >
           <Trash2 className="w-4 h-4 mr-2" />
@@ -283,15 +287,13 @@ export default function PrePassageiros({
   return (
     <>
       <div className="space-y-6">
-        {process.env.NODE_ENV === "development" && (
-          <Button
-            onClick={handleCadastrarRapidoLink}
-            variant="outline"
-            className="w-full md:w-auto gap-2 text-uppercase"
-          >
-            GERAR PRÉ-CADASTRO FAKE
-          </Button>
-        )}
+        <Button
+          onClick={handleCadastrarRapidoLink}
+          variant="outline"
+          className="w-full md:w-auto gap-2 text-uppercase"
+        >
+          GERAR PRÉ-CADASTRO FAKE
+        </Button>
 
         <QuickRegistrationLink
           blueTheme
@@ -506,10 +508,7 @@ export default function PrePassageiros({
             plano={plano}
           />
         )}
-
-
       </div>
-
 
       <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>

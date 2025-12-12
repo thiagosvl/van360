@@ -600,7 +600,6 @@ export default function Passageiros() {
               )}
 
               <Card className="border-none shadow-none bg-transparent">
-                {process.env.NODE_ENV === "development" && (
                   <CardHeader className="p-0">
                     <div className="flex justify-end mb-4 md:hidden">
                       <Button
@@ -621,7 +620,6 @@ export default function Passageiros() {
                       </Button>
                     </div>
                   </CardHeader>
-                )}
 
                 <CardContent className="px-0">
                   <div className="mb-6">
