@@ -2,40 +2,40 @@ import { MoneyInput } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useRegistrarPagamentoManual } from "@/hooks";
 import { cn } from "@/lib/utils";
 import {
-  getStatusColor,
-  getStatusText,
-  parseCurrencyToNumber,
-  toLocalDateString
+    getStatusColor,
+    getStatusText,
+    parseCurrencyToNumber,
+    toLocalDateString
 } from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -106,6 +106,18 @@ export default function ManualPaymentDialog({
       });
     }
   }, [isOpen, valorOriginal, form]);
+
+  // Cleanup effect to ensure body is unlocked when dialog closes
+  useEffect(() => {
+    if (!isOpen) {
+      const timer = setTimeout(() => {
+        document.body.style.pointerEvents = "";
+        document.body.style.removeProperty("overflow");
+        document.body.removeAttribute("data-scroll-locked");
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (data: PaymentFormData) => {
     const pagamentoData = {

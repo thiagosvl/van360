@@ -16,6 +16,7 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Pencil, User, X } from "lucide-react";
+import { useEffect } from "react";
 
 interface CobrancaEditDialogProps {
   isOpen: boolean;
@@ -30,6 +31,18 @@ export default function CobrancaEditDialog({
   cobranca,
   onCobrancaUpdated,
 }: CobrancaEditDialogProps) {
+
+  // Cleanup effect to ensure body is unlocked when dialog closes
+  useEffect(() => {
+    if (!isOpen) {
+      const timer = setTimeout(() => {
+        document.body.style.pointerEvents = "";
+        document.body.style.removeProperty("overflow");
+        document.body.removeAttribute("data-scroll-locked");
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

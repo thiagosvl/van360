@@ -3,21 +3,21 @@ import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Veiculo } from "@/types/veiculo";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
-    MoreVertical,
-    Pencil,
-    ToggleLeft,
-    ToggleRight,
-    Trash2,
-    Users,
-    Users2,
+  MoreVertical,
+  Pencil,
+  ToggleLeft,
+  ToggleRight,
+  Trash2,
+  Users,
+  Users2,
 } from "lucide-react";
 import { NavigateFunction } from "react-router-dom";
 
@@ -139,7 +139,7 @@ export function VeiculosList({
             label: veiculo.ativo ? "Desativar" : "Reativar",
             icon: veiculo.ativo ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />,
             onClick: () => onToggleAtivo(veiculo),
-            swipeColor: veiculo.ativo ? "bg-orange-500" : "bg-green-600",
+            swipeColor: veiculo.ativo ? "bg-red-200 text-red-700" : "bg-green-200 text-green-700",
           },
           {
             label: "Ver Passageiros",

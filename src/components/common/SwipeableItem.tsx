@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
 import {
-    motion,
-    PanInfo,
-    useAnimation,
-    useMotionValue,
-    useTransform,
+  motion,
+  PanInfo,
+  useAnimation,
+  useMotionValue,
+  useTransform,
 } from "framer-motion";
 import { ReactNode, useEffect, useState } from "react";
 
@@ -126,7 +126,7 @@ export function SwipeableItem({
                 close();
               }}
               className={cn(
-                "h-full flex flex-col items-center justify-center text-white px-2 transition-opacity",
+                "h-full flex flex-col items-center justify-center px-2 transition-opacity",
                 action.color
               )}
               style={{ width: ACTION_WIDTH }}
@@ -153,7 +153,7 @@ export function SwipeableItem({
                 close();
               }}
               className={cn(
-                "h-full flex flex-col items-center justify-center text-white px-2 transition-opacity active:opacity-80",
+                "h-full flex flex-col items-center justify-center px-2 transition-opacity active:opacity-80",
                 action.color
               )}
               style={{ width: ACTION_WIDTH }}

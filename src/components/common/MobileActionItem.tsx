@@ -55,8 +55,8 @@ export function MobileActionItem({
     const transformSwipeAction = (a: MobileAction) => ({
       ...a,
       color: a.disabled 
-        ? "bg-gray-300 cursor-not-allowed" 
-        : (a.swipeColor || "bg-gray-400"),
+        ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
+        : cn("text-white", a.swipeColor || "bg-gray-400"),
       onClick: () => {
          if (!a.disabled) a.onClick();
       },

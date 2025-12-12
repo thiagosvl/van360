@@ -179,15 +179,15 @@ export function PassageirosList({
         // Defines actions dynamically
         const actions: MobileAction[] = [
           {
-            label: "Status",
+            label: passageiro.ativo ? "Desativar" : "Reativar",
             icon: passageiro.ativo ? (
               <ToggleLeft className="h-5 w-5" />
             ) : (
               <ToggleRight className="h-5 w-5" />
             ),
-            swipeColor: passageiro.ativo ? "bg-stone-400" : "bg-emerald-500",
+            swipeColor: passageiro.ativo ? "bg-red-200 text-red-700" : "bg-green-200 text-green-700",
             onClick: () => onToggleClick(passageiro),
-            drawerClass: passageiro.ativo ? "text-gray-600" : "text-emerald-600",
+            drawerClass: passageiro.ativo ? "text-red-600 bg-red-50" : "text-green-600 bg-green-50",
           },
           {
             label: "Editar",

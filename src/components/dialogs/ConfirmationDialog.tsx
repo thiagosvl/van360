@@ -1,15 +1,15 @@
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ConfirmationDialogProps {
   open: boolean;
@@ -37,6 +37,19 @@ export default function ConfirmationDialog({
   const [internalLoading, setInternalLoading] = useState(false);
   
   const showLoading = isLoading || internalLoading;
+
+  // Cleanup effect to ensure body is unlocked when dialog closes
+  // This is a safeguard against race conditions with Drawers/other overlays
+  useEffect(() => {
+    if (!open) {
+      const timer = setTimeout(() => {
+        document.body.style.pointerEvents = "";
+        document.body.style.removeProperty("overflow");
+        document.body.removeAttribute("data-scroll-locked");
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
