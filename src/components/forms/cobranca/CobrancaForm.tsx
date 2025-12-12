@@ -3,41 +3,41 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import {
-    anos,
-    tiposPagamento,
+  anos,
+  tiposPagamento,
 } from "@/utils/formatters";
 import { endOfMonth, format, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-    AlertTriangle,
-    CalendarIcon,
-    CreditCard,
-    Loader2,
+  AlertTriangle,
+  CalendarIcon,
+  CreditCard,
+  Loader2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // --- Constants ---
 const meses = [
@@ -86,6 +86,19 @@ export function CobrancaForm({
 
   const [openCalendarPagamento, setOpenCalendarPagamento] = useState(false);
   const [openCalendarVencimento, setOpenCalendarVencimento] = useState(false);
+  const paymentDetailsRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to payment details when 'isPaga' is checked
+  useEffect(() => {
+    if (isPaga) {
+      setTimeout(() => {
+        paymentDetailsRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 100);
+    }
+  }, [isPaga]);
 
   // --- Logic for Create Mode (Mes/Ano Sync) ---
   const currentYear = new Date().getFullYear();
@@ -336,7 +349,10 @@ export function CobrancaForm({
 
         {/* --- Detalhes do Pagamento (Se pago) --- */}
         {isPaga && (
-            <div className="grid grid-cols-1 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div 
+              ref={paymentDetailsRef} 
+              className="grid grid-cols-1 gap-4 animate-in fade-in slide-in-from-top-2 duration-300"
+            >
                 <FormField
                 control={form.control}
                 name="data_pagamento"
