@@ -4,11 +4,11 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Cobranca } from "@/types/cobranca";
 import {
-  parseCurrencyToNumber
+    parseCurrencyToNumber
 } from "@/utils/formatters";
 import {
-  moneyMask,
-  moneyToNumber,
+    moneyMask,
+    moneyToNumber,
 } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -78,6 +78,7 @@ interface UseCobrancaFormProps {
   cobranca?: Cobranca; // Apenas para edit
   passageiroId?: string; // Apenas para create
   diaVencimento?: number; // Apenas para create
+  valor?: number; // Apenas para create (default value)
   onSuccess?: () => void;
 }
 
@@ -86,6 +87,7 @@ export function useCobrancaForm({
   cobranca,
   passageiroId,
   diaVencimento = 10,
+  valor,
   onSuccess,
 }: UseCobrancaFormProps) {
   const { user } = useSession();
@@ -127,7 +129,7 @@ export function useCobrancaForm({
     );
 
     return {
-      valor: "",
+      valor: valor ? moneyMask(String(Math.round(valor * 100))) : "",
       data_vencimento: vencimentoInicial,
       foi_pago: false,
       data_pagamento: undefined,
@@ -135,7 +137,7 @@ export function useCobrancaForm({
       mes: currentMonth,
       ano: currentYear,
     };
-  }, [mode, cobranca, diaVencimento]);
+  }, [mode, cobranca, diaVencimento, valor]);
 
   const form = useForm<CobrancaFormData>({
     resolver: zodResolver(cobrancaSchema),

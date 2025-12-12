@@ -60,6 +60,7 @@ interface CobrancaFormProps {
   cobranca?: Cobranca;
   passageiroId?: string;
   diaVencimento?: number; // Dia padrão de vencimento para Create
+  valor?: number; // Valor padrão
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -69,6 +70,7 @@ export function CobrancaForm({
   cobranca,
   passageiroId,
   diaVencimento = 10,
+  valor,
   onSuccess,
   onCancel,
 }: CobrancaFormProps) {
@@ -78,6 +80,7 @@ export function CobrancaForm({
       cobranca,
       passageiroId,
       diaVencimento,
+      valor,
       onSuccess,
     });
 

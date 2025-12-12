@@ -6,6 +6,7 @@ import { useAssinaturaPendente } from "@/hooks/business/useAssinaturaPendente";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
 import { useSEO } from "@/hooks/useSEO";
+import { supabase } from "@/integrations/supabase/client";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 export default function AppLayout() {

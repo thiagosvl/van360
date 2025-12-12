@@ -23,7 +23,7 @@ import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import { CobrancasFilters } from "@/components/features/cobranca/CobrancasFilters";
 import { ListSkeleton } from "@/components/skeletons";
 import {
-  useCobrancas
+    useCobrancas
 } from "@/hooks";
 import { useCobrancaActions } from "@/hooks/business/useCobrancaActions";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -32,10 +32,10 @@ import { useSession } from "@/hooks/business/useSession";
 // Utils
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
-  formatDateToBR,
-  formatPaymentType,
-  getStatusColor,
-  meses
+    formatDateToBR,
+    formatPaymentType,
+    getStatusColor,
+    meses
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 
@@ -50,7 +50,7 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
-  PASSAGEIRO_COBRANCA_STATUS_PAGO
+    PASSAGEIRO_COBRANCA_STATUS_PAGO
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -333,16 +333,41 @@ const Cobrancas = () => {
                      isLoading={isInitialLoading}
                      loadingSkeleton={<ListSkeleton />}
                      emptyState={
-                        <UnifiedEmptyState
-                           icon={Wallet}
-                           title="Tudo certo!"
-                           description={
-                             buscaAbertas === ""
-                               ? `Não há cobranças pendentes em ${meses[mesFilter - 1]}.`
-                               : "Nenhuma cobrança encontrada com este filtro."
-                           }
-                           action={undefined} 
-                        />
+                        (() => {
+                          const hasAnyCobrancaInMonth = (cobrancasAbertas.length + cobrancasPagas.length) > 0;
+                          
+                          if (buscaAbertas !== "") {
+                             // Caso de busca sem resultados
+                             return (
+                                <UnifiedEmptyState
+                                   icon={Wallet}
+                                   title="Nenhum resultado"
+                                   description="Nenhuma cobrança encontrada com este filtro de busca."
+                                />
+                             );
+                          }
+
+                          if (!hasAnyCobrancaInMonth) {
+                             // Caso 1: Mês vazio (sem pendentes e sem pagas)
+                             return (
+                                <UnifiedEmptyState
+                                   icon={Wallet}
+                                   title="Nenhuma cobrança"
+                                   description={`Ainda não há cobranças registradas em ${meses[mesFilter - 1]}.`}
+                                />
+                             );
+                          }
+
+                          // Caso 2: Tem items no mês, mas nada pendente (Tudo pago!)
+                          return (
+                             <UnifiedEmptyState
+                                icon={CheckCircle2}
+                                title="Tudo certo!"
+                                description={`Todas as cobranças de ${meses[mesFilter - 1]} já foram pagas!`}
+                                iconClassName="text-green-600"
+                             />
+                          );
+                        })()
                      }
                      mobileItemRenderer={(cobranca, index) => (
                       <Fragment key={cobranca.id}>
@@ -550,18 +575,15 @@ const Cobrancas = () => {
                      isLoading={isInitialLoading}
                      loadingSkeleton={<ListSkeleton />}
                      emptyState={
-                        <div className="flex flex-col items-center justify-center text-center py-20 bg-white rounded-[28px] border border-dashed border-gray-200">
-                          <div className="h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                            <DollarSign className="w-8 h-8 text-gray-300" />
-                          </div>
-                          <h3 className="text-lg font-bold text-gray-900 mb-1">
-                            Nenhum pagamento
-                          </h3>
-                          <p className="text-gray-500 max-w-xs mx-auto">
-                            Não há cobranças pagas registradas em {meses[mesFilter - 1]}
-                            .
-                          </p>
-                        </div>
+                        <UnifiedEmptyState
+                           icon={DollarSign}
+                           title="Nenhum pagamento"
+                           description={
+                             buscaPagas === "" 
+                             ? `Não há cobranças pagas registradas em ${meses[mesFilter - 1]}.`
+                             : "Nenhum pagamento encontrado com este filtro."
+                           }
+                        />
                      }
                      mobileItemRenderer={(cobranca) => (
                       <div

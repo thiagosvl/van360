@@ -46,11 +46,11 @@ import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 // Icons
 import { UpgradeStickyFooter } from "@/components/common/UpgradeStickyFooter";
 import {
-    CalendarIcon,
-    Lock,
-    TrendingDown,
-    TrendingUp,
-    Wallet,
+  CalendarIcon,
+  Lock,
+  TrendingDown,
+  TrendingUp,
+  Wallet,
 } from "lucide-react";
 
 export default function Gastos() {
@@ -274,12 +274,12 @@ export default function Gastos() {
                 {loading ? (
                   <Skeleton className="h-40 w-full" />
                 ) : (
-                  <div
-                    className={cn(
-                      "relative",
-                      !enabledPageActions && "pb-32 md:pb-0"
-                    )}
-                  >
+                    <div
+                      className={cn(
+                        "relative",
+                        !enabledPageActions && "pb-20 md:pb-0"
+                      )}
+                    >
                     {!enabledPageActions && !loading && (
                       <div className="mb-4 bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-center justify-center gap-2 text-xs text-orange-800 font-medium">
                         <Lock className="w-4 h-4" />

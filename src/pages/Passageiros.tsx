@@ -33,6 +33,7 @@ import {
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { cn } from "@/lib/utils";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { Veiculo } from "@/types/veiculo";
@@ -577,7 +578,13 @@ export default function Passageiros() {
               </TabsList>
             </div>
 
-            <TabsContent value="passageiros" className="space-y-6 mt-0">
+            <TabsContent 
+              value="passageiros" 
+              className={cn(
+                "space-y-6 mt-0",
+                isLimitedUser && "pb-20 md:pb-0" // Padding extra para Mobile quando houver sticky footer
+              )}
+            >
               {isLimitedUser && limitePassageiros != null && (
                 <PassengerLimitHealthBar
                   current={countPassageiros || 0}

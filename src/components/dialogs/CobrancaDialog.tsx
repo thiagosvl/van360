@@ -1,15 +1,15 @@
 import { CobrancaForm } from "@/components/forms/cobranca/CobrancaForm";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  PlusCircle,
-  User,
-  X
+    PlusCircle,
+    User,
+    X
 } from "lucide-react";
 
 interface CobrancaDialogProps {
@@ -77,6 +77,7 @@ export default function CobrancaDialog({
             mode="create"
             passageiroId={passageiroId}
             diaVencimento={diaVencimento}
+            valor={valorCobranca}
             onSuccess={() => {
                 onCobrancaAdded();
                 onClose();
