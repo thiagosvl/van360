@@ -1,19 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useCreateVeiculo, useUpdateVeiculo } from "@/hooks/api/useVeiculoMutations";
@@ -22,8 +22,8 @@ import { useSession } from "@/hooks/business/useSession";
 import { Veiculo } from "@/types/veiculo";
 import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
 import {
-    aplicarMascaraPlaca,
-    validarPlaca,
+  aplicarMascaraPlaca,
+  validarPlaca,
 } from "@/utils/domain/veiculo/placaUtils";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -324,7 +324,7 @@ export default function VeiculoFormDialog({
                       Salvando...
                     </>
                   ) : (
-                    "Salvar Veículo"
+                    "Salvar"
                   )}
                 </Button>
               </div>

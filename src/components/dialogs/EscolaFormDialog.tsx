@@ -585,9 +585,9 @@ export default function EscolaFormDialog({
                         Salvando...
                       </>
                     ) : editingEscola ? (
-                      "Atualizar Escola"
+                      "Atualizar"
                     ) : (
-                      "Salvar Escola"
+                      "Salvar"
                     )}
                   </Button>
                 </div>

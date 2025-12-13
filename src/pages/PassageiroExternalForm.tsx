@@ -14,27 +14,27 @@ import { MoneyInput } from "@/components/forms";
 
 // Components - UI
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 
 // Services
@@ -52,15 +52,15 @@ import { toast } from "@/utils/notifications/toast";
 // Icons
 import { periodos } from "@/utils/formatters";
 import {
-    AlertTriangle,
-    CalendarDays,
-    Car,
-    CheckCircle2,
-    CreditCard,
-    Loader2,
-    School,
-    Sun,
-    User,
+  AlertTriangle,
+  CalendarDays,
+  Car,
+  CheckCircle2,
+  CreditCard,
+  Loader2,
+  School,
+  Sun,
+  User,
 } from "lucide-react";
 
 import { PassageiroFormEndereco } from "@/components/features/passageiro/form/PassageiroFormEndereco";
@@ -310,7 +310,7 @@ export default function PassageiroExternalForm() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50/90 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white shadow-2xl rounded-3xl p-8 text-center border border-gray-100">
           <div className="mx-auto bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mb-6">
             <CheckCircle2 className="w-10 h-10 text-green-600" />
@@ -370,7 +370,7 @@ export default function PassageiroExternalForm() {
   return (
     <div className="min-h-screen bg-gray-50 py-4 px-3 sm:py-8 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        <div className="bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
+        <div className="shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
           {/* Header */}
           <div className="bg-blue-600 p-6 sm:p-8 text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('/assets/pattern.png')] opacity-10"></div>

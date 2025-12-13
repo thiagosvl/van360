@@ -1,19 +1,19 @@
 import { PhoneInput } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -269,7 +269,7 @@ export default function EditarCadastroDialog({
                       Salvando...
                     </>
                   ) : (
-                    "Salvar Alterações"
+                    "Salvar"
                   )}
                 </Button>
               </div>

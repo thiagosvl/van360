@@ -231,7 +231,7 @@ export default function AlterarSenhaDialog({
                     Salvando...
                   </>
                 ) : (
-                  "Salvar Nova Senha"
+                  "Salvar"
                 )}
               </Button>
             </div>

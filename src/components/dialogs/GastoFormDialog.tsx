@@ -364,7 +364,7 @@ export default function GastoFormDialog({
                       Salvando...
                     </>
                   ) : (
-                    "Salvar Gasto"
+                    "Salvar"
                   )}
                 </Button>
               </div>
