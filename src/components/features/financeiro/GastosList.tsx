@@ -7,16 +7,16 @@ import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
 import { formatDateToBR } from "@/utils/formatters";
 import {
-    Bus,
-    Calendar,
-    ClipboardCheck,
-    Cog,
-    Ellipsis,
-    FileText,
-    Fuel,
-    HelpCircle,
-    Wallet,
-    Wrench,
+  Bus,
+  Calendar,
+  ClipboardCheck,
+  Cog,
+  Ellipsis,
+  FileText,
+  Fuel,
+  HelpCircle,
+  Wallet,
+  Wrench,
 } from "lucide-react";
 import { memo } from "react";
 
@@ -117,9 +117,9 @@ const GastoMobileCard = memo(function GastoMobileCard({
                 {gasto.categoria}
               </p>
               {placa && (
-                <div className="flex items-center gap-1 mt-0.5">
-                  <Bus className="w-3 h-3 text-gray-400" />
-                  <span className="text-[10px] font-medium text-gray-500">
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="text-[10px] font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded-md border border-gray-200 inline-flex items-center gap-1">
+                    <Bus className="w-3 h-3 text-gray-500" />
                     {placa}
                   </span>
                 </div>
@@ -128,8 +128,8 @@ const GastoMobileCard = memo(function GastoMobileCard({
           </div>
         </div>
 
-        <div className="flex justify-between items-end mb-3">
-          <p className="text-xs text-muted-foreground max-w-[60%] line-clamp-2">
+        <div className="flex justify-between items-center py-2">
+          <p className="text-xs text-muted-foreground max-w-[60%] line-clamp-2 font-normal">
             {gasto.descricao || "Sem descrição"}
           </p>
           <p className="font-bold text-gray-900 text-base">

@@ -9,7 +9,7 @@ export const gastoApi = {
       usuario_id: usuarioId,
       valor: moneyToNumber(data.valor),
       data: toLocalDateString(data.data),
-      descricao: cleanString(data.descricao, true),
+      descricao: cleanString(data.descricao),
       categoria: data.categoria,
       veiculo_id: data.veiculo_id,
     }
@@ -34,10 +34,12 @@ export const gastoApi = {
       usuario_id: data.usuario_id,
       valor: moneyToNumber(data.valor),
       data: toLocalDateString(data.data),
-      descricao: cleanString(data.descricao, true),
+      descricao: cleanString(data.descricao),
       categoria: data.categoria,
       veiculo_id: data.veiculo_id,
     }
+
+    console.log('payload', payload);
 
     return apiClient
       .put(`/gastos/${gastoId}`, payload)

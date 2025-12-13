@@ -173,23 +173,70 @@ export const useRelatoriosCalculations = ({
       recebido > 0 ? ((recebido - gasto) / recebido) * 100 : 0;
 
     // Categorias de gastos - usar dados reais
+    // Primeiro, garantir o mapa de veiculos
+    const veiculosMap: Record<
+      string,
+      { nome: string; placa: string; marca: string; modelo: string }
+    > = {};
+    const veiculosListFull = (veiculosData as any)?.list || [];
+    veiculosListFull.forEach((v: any) => {
+      veiculosMap[v.id] = {
+        nome: `${v.marca} ${v.modelo}`,
+        placa: formatarPlacaExibicao(v.placa),
+        marca: v.marca,
+        modelo: v.modelo,
+      };
+    });
+
     const categoriasMap: Record<
       string,
-      { valor: number; count: number; nome: string }
+      { 
+          valor: number; 
+          count: number; 
+          nome: string; 
+          veiculos: Record<string, { valor: number; count: number }>;
+      }
     > = {};
+    
     gastosData.forEach((g: any) => {
       const cat = g.categoria || "Outros";
+      const veiculoId = g.veiculo_id || "outros";
+      const valor = Number(g.valor || 0);
+
       if (!categoriasMap[cat]) {
-        categoriasMap[cat] = { valor: 0, count: 0, nome: cat };
+        categoriasMap[cat] = { valor: 0, count: 0, nome: cat, veiculos: {} };
       }
-      categoriasMap[cat].valor += Number(g.valor || 0);
+      categoriasMap[cat].valor += valor;
       categoriasMap[cat].count += 1;
+
+      if (!categoriasMap[cat].veiculos[veiculoId]) {
+          categoriasMap[cat].veiculos[veiculoId] = { valor: 0, count: 0 };
+      }
+      categoriasMap[cat].veiculos[veiculoId].valor += valor;
+      categoriasMap[cat].veiculos[veiculoId].count += 1;
     });
 
     const topCategorias = Object.values(categoriasMap)
       .sort((a, b) => b.valor - a.valor)
       .map((cat) => {
         const iconData = CATEGORIA_ICONS[cat.nome] || CATEGORIA_ICONS.Outros;
+        
+        const veiculos = Object.entries(cat.veiculos).map(([vId, data]) => {
+             const info = veiculosMap[vId] || { nome: "Geral / Sem vínculo", placa: "-" };
+             return {
+                 id: vId,
+                 nome: info.nome,
+                 placa: info.placa,
+                 valor: data.valor,
+                 count: data.count
+             };
+        }).sort((a, b) => {
+             // Forçar "outros" ou itens sem placa para o final
+             if (a.id === "outros" || a.placa === "-") return 1;
+             if (b.id === "outros" || b.placa === "-") return -1;
+             return b.valor - a.valor;
+        });
+
         return {
           nome: cat.nome,
           valor: cat.valor,
@@ -197,8 +244,51 @@ export const useRelatoriosCalculations = ({
           icon: iconData.icon,
           color: iconData.color,
           bg: iconData.bg,
+          veiculos,
         };
       });
+
+
+
+    // Gastos por Veículo (Geral)
+    const gastosPorVeiculoMap: Record<
+      string,
+      { valor: number; count: number; veiculoId: string }
+    > = {};
+
+    gastosData.forEach((g: any) => {
+      const veiculoId = g.veiculo_id || "outros";
+      const valor = Number(g.valor || 0);
+
+      if (!gastosPorVeiculoMap[veiculoId]) {
+        gastosPorVeiculoMap[veiculoId] = { valor: 0, count: 0, veiculoId };
+      }
+      gastosPorVeiculoMap[veiculoId].valor += valor;
+      gastosPorVeiculoMap[veiculoId].count += 1;
+    });
+
+    const gastosPorVeiculo = Object.values(gastosPorVeiculoMap)
+      .map((item) => {
+        const info = veiculosMap[item.veiculoId] || {
+          nome: "Geral / Sem vínculo",
+          placa: "-",
+        };
+        return {
+          ...item,
+          nome: info.nome,
+          placa: info.placa,
+          percentual: gasto > 0 ? (item.valor / gasto) * 100 : 0,
+        };
+      })
+
+      .sort((a, b) => {
+          // Forçar "outros" ou itens sem placa para o final
+          if (a.veiculoId === "outros" || a.placa === "-") return 1;
+          if (b.veiculoId === "outros" || b.placa === "-") return -1;
+          return b.valor - a.valor;
+      });
+
+    // Removendo lógica antiga de gastos detalhados pois agora está embutido nas categorias
 
     // Operacional
     const escolasList = (escolasData as any)?.list || [];
@@ -330,6 +420,8 @@ export const useRelatoriosCalculations = ({
         diasContabilizados: diasComGastos,
         custoPorPassageiro,
         topCategorias,
+        gastosPorVeiculo,
+        veiculosCount: veiculosListFull.length,
       },
       operacional: {
         passageirosCount,

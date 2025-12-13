@@ -1,7 +1,8 @@
 import { BlurredValue } from "@/components/common/BlurredValue";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { BarChart3, TrendingDown } from "lucide-react";
+import { BarChart3, ChevronDown, ChevronRight, TrendingDown } from "lucide-react";
+import { useState } from "react";
 
 interface RelatoriosSaidasProps {
   dados: {
@@ -14,7 +15,22 @@ interface RelatoriosSaidasProps {
       icon: any;
       bg: string;
       color: string;
+      veiculos: {
+          id: string;
+          nome: string;
+          placa: string;
+          valor: number;
+          count: number;
+      }[];
     }[];
+    gastosPorVeiculo?: {
+      nome: string;
+      placa: string;
+      valor: number;
+      count: number;
+      percentual: number;
+    }[];
+    veiculosCount?: number;
   };
   hasAccess: boolean;
 }
@@ -23,6 +39,20 @@ export const RelatoriosSaidas = ({
   dados,
   hasAccess,
 }: RelatoriosSaidasProps) => {
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    new Set()
+  );
+
+  const toggleCategory = (catName: string) => {
+    const newSet = new Set(expandedCategories);
+    if (newSet.has(catName)) {
+      newSet.delete(catName);
+    } else {
+      newSet.add(catName);
+    }
+    setExpandedCategories(newSet);
+  };
+
   return (
     <div className="space-y-4 mt-0">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -114,52 +144,107 @@ export const RelatoriosSaidas = ({
           <div className="space-y-4">
             {dados.topCategorias.map((cat, index) => {
               const Icon = cat.icon;
+              const isExpanded = expandedCategories.has(cat.nome);
+              const hasVeiculos = cat.veiculos && cat.veiculos.length > 0;
+
               return (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100"
+                  className="rounded-xl bg-gray-50 border border-gray-100 overflow-hidden"
                 >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        "h-10 w-10 rounded-full flex items-center justify-center shrink-0",
-                        cat.bg,
-                        cat.color
-                      )}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-medium text-gray-900">
-                        {cat.nome}
-                      </span>
-                      <span className="text-xs text-gray-500 flex items-center gap-1">
-                        <span className="font-bold text-gray-900">
-                          <BlurredValue
-                            value={cat.valor}
-                            visible={hasAccess}
-                            type="currency"
-                          />
+                  <div 
+                    className={cn(
+                        "flex items-center justify-between p-3 cursor-pointer transition-colors hover:bg-gray-100",
+                        isExpanded ? "bg-gray-100" : ""
+                    )}
+                    onClick={() => toggleCategory(cat.nome)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={cn(
+                          "h-10 w-10 rounded-full flex items-center justify-center shrink-0",
+                          cat.bg,
+                          cat.color
+                        )}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-medium text-gray-900">
+                          {cat.nome}
                         </span>
-                        <span>•</span>
-                        <span>
-                          <BlurredValue
-                            value={cat.count}
-                            visible={hasAccess}
-                            type="number"
-                          />{" "}
-                          <span
-                            className={cn(
-                              "text-xs text-gray-400 mt-1",
-                              !hasAccess && "blur-sm select-none"
-                            )}
-                          >
-                            {cat.count === 1 ? "registro" : "registros"}
+                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                          <span className="font-bold text-gray-900">
+                            <BlurredValue
+                              value={cat.valor}
+                              visible={hasAccess}
+                              type="currency"
+                            />
+                          </span>
+                          <span>•</span>
+                          <span>
+                            <BlurredValue
+                              value={cat.count}
+                              visible={hasAccess}
+                              type="number"
+                            />{" "}
+                            <span
+                              className={cn(
+                                "text-xs text-gray-400 mt-1",
+                                !hasAccess && "blur-sm select-none"
+                              )}
+                            >
+                              {cat.count === 1 ? "registro" : "registros"}
+                            </span>
                           </span>
                         </span>
-                      </span>
+                      </div>
+                    </div>
+                    
+                    {/* Seta indicativa */}
+                    <div className="text-gray-400">
+                        {isExpanded ? (
+                            <ChevronDown className="h-5 w-5" />
+                        ) : (
+                            <ChevronRight className="h-5 w-5" />
+                        )}
                     </div>
                   </div>
+
+                  {/* Conteúdo Expandido (Detalhamento por Veículo) */}
+                  {isExpanded && hasVeiculos && (
+                      <div className="px-3 pb-3 pt-1 border-t border-gray-100 bg-white">
+                          <div className="space-y-2 mt-2">
+                             {cat.veiculos.map((v, vIndex) => (
+                                 <div key={vIndex} className="flex items-center justify-between py-1 px-2 rounded">
+                                     <div className="flex flex-col">
+                                         <span className="text-sm font-semibold text-gray-800">
+                                            {v.placa !== "-" ? v.placa : v.nome}
+                                         </span>
+                                         {v.placa !== "-" && (
+                                             <span className="text-[10px] text-gray-500">{v.nome}</span>
+                                         )}
+                                     </div>
+                                     <div className="text-right">
+                                         <div className="text-sm font-medium text-gray-900">
+                                            <BlurredValue
+                                                value={v.valor}
+                                                visible={hasAccess}
+                                                type="currency"
+                                            />
+                                         </div>
+                                         <div className={cn(
+                                            "text-[10px] text-gray-400",
+                                            !hasAccess && "blur-sm select-none"
+                                         )}>
+                                            {v.count} registro{v.count === 1 ? "" : "s"}
+                                         </div>
+                                     </div>
+                                 </div>
+                             ))}
+                          </div>
+                      </div>
+                  )}
                 </div>
               );
             })}
@@ -171,6 +256,65 @@ export const RelatoriosSaidas = ({
           </div>
         </CardContent>
       </Card>
+
+
+      {/* Gastos por Veículo - Visão Geral */}
+      {dados.gastosPorVeiculo && 
+       dados.gastosPorVeiculo.length > 0 && 
+       (dados.veiculosCount || 0) > 1 && (
+        <Card className="border-none shadow-sm rounded-2xl bg-white">
+          <CardHeader className="pt-6 px-6">
+            <CardTitle className="text-lg font-bold text-gray-900">
+              Gastos por Veículo
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-8">
+            <div className="space-y-4">
+              {dados.gastosPorVeiculo.map((v, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <div className="flex flex-col">
+                       <span className="font-bold text-gray-900">{v.placa !== "-" ? v.placa : v.nome}</span>
+                       {v.placa !== "-" && <span className="text-xs text-gray-500 font-normal">{v.nome}</span>}
+                    </div>
+                    <span className="font-bold text-gray-900">
+                      <BlurredValue
+                        value={v.valor}
+                        visible={hasAccess}
+                        type="currency"
+                      />
+                    </span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-blue-500 rounded-full"
+                      style={{ width: `${hasAccess ? v.percentual : 50}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>
+                      <BlurredValue
+                        value={v.count}
+                        visible={hasAccess}
+                        type="number"
+                      />{" "}
+                      registro{v.count === 1 ? "" : "s"}
+                    </span>
+                    <span>
+                      <BlurredValue
+                        value={v.percentual}
+                        visible={hasAccess}
+                        type="percent"
+                      />{" "}
+                      do total
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

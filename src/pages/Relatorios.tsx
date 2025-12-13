@@ -172,7 +172,7 @@ export default function Relatorios() {
       )}
 
       {/* Main Content */}
-      <Tabs defaultValue="visao-geral" className="w-full space-y-6">
+      <Tabs defaultValue="visao-geral" className="w-full space-y-6 pt-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="w-full overflow-x-auto pb-2 -mb-2 scrollbar-hide">
             <TabsList className="bg-slate-100/80 p-1 rounded-xl h-10 md:h-12 inline-flex w-auto min-w-full md:min-w-0">

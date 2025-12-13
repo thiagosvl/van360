@@ -43,6 +43,10 @@ export const MOCK_DATA_NO_ACCESS_RELATORIOS = {
         icon: Fuel,
         color: "text-orange-600",
         bg: "bg-orange-100",
+        veiculos: [
+             { id: "1", nome: "Mercedes Sprinter", placa: "ABC-1234", valor: 2500, count: 6 },
+             { id: "2", nome: "Renault Master", placa: "XYZ-5678", valor: 2000, count: 6 }
+        ]
       },
       {
         nome: "Manutenção",
@@ -51,6 +55,9 @@ export const MOCK_DATA_NO_ACCESS_RELATORIOS = {
         icon: Wrench,
         color: "text-blue-600",
         bg: "bg-blue-100",
+         veiculos: [
+             { id: "1", nome: "Mercedes Sprinter", placa: "ABC-1234", valor: 2500, count: 2 }
+        ]
       },
       {
         nome: "Outros",
@@ -59,8 +66,12 @@ export const MOCK_DATA_NO_ACCESS_RELATORIOS = {
         icon: HelpCircle,
         color: "text-gray-600",
         bg: "bg-gray-100",
+         veiculos: [
+             { id: "2", nome: "Renault Master", placa: "XYZ-5678", valor: 5500, count: 5 }
+        ]
       },
     ],
+    veiculosCount: 2,
   },
   operacional: {
     passageirosCount: 5,
