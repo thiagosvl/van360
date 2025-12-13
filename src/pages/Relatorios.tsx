@@ -23,11 +23,42 @@ import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useRelatoriosCalculations } from "@/hooks/business/useRelatoriosCalculations";
 import { useSession } from "@/hooks/business/useSession";
 import { Lock } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function Relatorios() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Tab state from URL
+  const activeTab = useMemo(() => {
+    const tabParam = searchParams.get("tab");
+    const validTabs = ["visao-geral", "entradas", "saidas", "operacional"];
+    if (tabParam && validTabs.includes(tabParam)) {
+      return tabParam;
+    }
+    return "visao-geral"; // Default
+  }, [searchParams]);
+
+  const handleTabChange = useCallback(
+    (value: string) => {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("tab", value);
+      setSearchParams(newParams);
+    },
+    [searchParams, setSearchParams]
+  );
+  
+  // Sync tab to URL on mount if not present
+  useEffect(() => {
+    const currentTab = searchParams.get("tab");
+    if (!currentTab || !["visao-geral", "entradas", "saidas", "operacional"].includes(currentTab)) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("tab", "visao-geral");
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const { setPageTitle, openPlanosDialog, openContextualUpsellDialog } = useLayout();
   const { user } = useSession();
   
@@ -172,7 +203,11 @@ export default function Relatorios() {
       )}
 
       {/* Main Content */}
-      <Tabs defaultValue="visao-geral" className="w-full space-y-6 pt-6">
+      <Tabs 
+        value={activeTab} 
+        onValueChange={handleTabChange}
+        className="w-full space-y-6 pt-6"
+      >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="w-full overflow-x-auto pb-2 -mb-2 scrollbar-hide">
             <TabsList className="bg-slate-100/80 p-1 rounded-xl h-10 md:h-12 inline-flex w-auto min-w-full md:min-w-0">
