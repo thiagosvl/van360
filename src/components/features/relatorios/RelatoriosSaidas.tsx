@@ -31,6 +31,7 @@ interface RelatoriosSaidasProps {
       percentual: number;
     }[];
     veiculosCount?: number;
+    temGastosVinculados?: boolean;
   };
   hasAccess: boolean;
 }
@@ -261,7 +262,8 @@ export const RelatoriosSaidas = ({
       {/* Gastos por Veículo - Visão Geral */}
       {dados.gastosPorVeiculo && 
        dados.gastosPorVeiculo.length > 0 && 
-       (dados.veiculosCount || 0) > 1 && (
+       (dados.veiculosCount || 0) > 1 && 
+       dados.temGastosVinculados && (
         <Card className="border-none shadow-sm rounded-2xl bg-white">
           <CardHeader className="pt-6 px-6">
             <CardTitle className="text-lg font-bold text-gray-900">

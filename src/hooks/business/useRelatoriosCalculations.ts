@@ -288,6 +288,12 @@ export const useRelatoriosCalculations = ({
           return b.valor - a.valor;
       });
 
+
+
+    const temGastosVinculados = gastosPorVeiculo.some(
+      (v) => v.veiculoId !== "outros" && v.placa !== "-"
+    );
+
     // Removendo lógica antiga de gastos detalhados pois agora está embutido nas categorias
 
     // Operacional
@@ -421,7 +427,9 @@ export const useRelatoriosCalculations = ({
         custoPorPassageiro,
         topCategorias,
         gastosPorVeiculo,
+
         veiculosCount: veiculosListFull.length,
+        temGastosVinculados,
       },
       operacional: {
         passageirosCount,
