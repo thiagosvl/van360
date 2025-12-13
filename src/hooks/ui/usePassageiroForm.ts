@@ -1,7 +1,7 @@
 import {
-  cepSchema,
-  cpfSchema,
-  phoneSchema,
+    cepSchema,
+    cpfSchema,
+    phoneSchema,
 } from "@/schemas/common";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
@@ -264,8 +264,14 @@ export function usePassageiroForm({
             canUseCobrancaAutomatica(plano) && podeAtivarCobrancaAutomatica,
         });
         
-        // Reset accordion default on create
-        setOpenAccordionItems(["passageiro", "responsavel"]);
+        // Reset accordion default on create (All open by default as requested)
+        setOpenAccordionItems([
+          "passageiro",
+          "responsavel",
+          "cobranca",
+          "endereco",
+          "observacoes",
+        ]);
       }
     } catch (error) {
       console.error(error);

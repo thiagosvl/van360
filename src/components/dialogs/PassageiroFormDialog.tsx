@@ -1,25 +1,26 @@
 
 import {
-    Accordion,
+  Accordion,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    Form,
+  Form,
 } from "@/components/ui/form";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useBuscarResponsavel,
-    useCreatePassageiro,
-    useFinalizePreCadastro,
-    usePassageiroForm,
-    useUpdatePassageiro
+  useBuscarResponsavel,
+  useCreatePassageiro,
+  useFinalizePreCadastro,
+  usePassageiroForm,
+  useUpdatePassageiro
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
@@ -30,13 +31,13 @@ import { Usuario } from "@/types/usuario";
 import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
 import { phoneMask } from "@/utils/masks";
-import { Loader2, X } from "lucide-react";
+import { toast } from "@/utils/notifications/toast";
+import { Loader2, User, X } from "lucide-react";
 import { useEffect } from "react";
 import { PassageiroFormDadosCadastrais } from "../features/passageiro/form/PassageiroFormDadosCadastrais";
 import { PassageiroFormEndereco } from "../features/passageiro/form/PassageiroFormEndereco";
 import { PassageiroFormFinanceiro } from "../features/passageiro/form/PassageiroFormFinanceiro";
 import { PassageiroFormResponsavel } from "../features/passageiro/form/PassageiroFormResponsavel";
-import { PassageiroFormTransporte } from "../features/passageiro/form/PassageiroFormTransporte";
 
 type PlanoUsuario = {
   slug: string;
@@ -114,6 +115,17 @@ export default function PassengerFormDialog({
       plano,
       podeAtivarCobrancaAutomatica: validacaoFranquia.podeAtivar,
     });
+
+  const onFormError = (errors: any) => {
+    toast.error("validacao.formularioComErros");
+    setOpenAccordionItems([
+      "passageiro",
+      "responsavel",
+      "cobranca",
+      "endereco",
+      "observacoes",
+    ]);
+  };
 
   const buscarResponsavel = useBuscarResponsavel();
 
@@ -247,30 +259,31 @@ export default function PassengerFormDialog({
           }
         }}
       >
-        <DialogContent className="max-w-4xl p-0 gap-0 bg-gray-50/50 max-h-[90vh] flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b bg-white shrink-0">
-            <div>
-              <DialogTitle className="text-xl font-bold text-gray-900">
-                {mode === "edit"
-                  ? "Editar Passageiro"
-                  : mode === "finalize"
-                  ? "Finalizar Cadastro"
-                  : "Novo Passageiro"}
-              </DialogTitle>
-              <DialogDescription className="text-gray-500 mt-1">
-                {mode === "edit"
-                  ? "Atualize as informações do passageiro."
-                  : "Preencha os dados abaixo para cadastrar."}
-              </DialogDescription>
+        <DialogContent
+          className="max-w-4xl p-0 gap-0 bg-gray-50 max-h-[90vh] flex flex-col overflow-hidden rounded-3xl border-0 shadow-2xl"
+          hideCloseButton
+        >
+          <div className="bg-blue-600 p-4 text-center relative shrink-0">
+            <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
+              <X className="h-6 w-6" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+
+            <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
+              <User className="w-5 h-5 text-white" />
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-gray-400 hover:text-gray-500"
-              onClick={onClose}
-            >
-              <X className="w-5 h-5" />
-            </Button>
+            <DialogTitle className="text-xl font-bold text-white">
+              {mode === "edit"
+                ? "Editar Passageiro"
+                : mode === "finalize"
+                ? "Finalizar Cadastro"
+                : "Novo Passageiro"}
+            </DialogTitle>
+            <DialogDescription className="text-blue-100/80 text-sm mt-1">
+              {mode === "edit"
+                ? "Atualize as informações do passageiro."
+                : "Preencha os dados abaixo para cadastrar."}
+            </DialogDescription>
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
@@ -281,7 +294,7 @@ export default function PassengerFormDialog({
             ) : (
               <Form {...form}>
                 <form
-                  onSubmit={form.handleSubmit(handleSubmit)}
+                  onSubmit={form.handleSubmit(handleSubmit, onFormError)}
                   className="space-y-6"
                 >
                   <Accordion
@@ -290,8 +303,7 @@ export default function PassengerFormDialog({
                     onValueChange={setOpenAccordionItems}
                     className="space-y-4"
                   >
-                    <PassageiroFormDadosCadastrais />
-                    <PassageiroFormTransporte profile={profile} />
+                    <PassageiroFormDadosCadastrais profile={profile} />
                     <PassageiroFormResponsavel />
                     <PassageiroFormFinanceiro
                       editingPassageiro={editingPassageiro}
@@ -316,7 +328,7 @@ export default function PassengerFormDialog({
             </Button>
             <Button
               type="submit"
-              onClick={form.handleSubmit(handleSubmit)}
+              onClick={form.handleSubmit(handleSubmit, onFormError)}
               disabled={isSubmitting}
               className="h-11 px-8 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
             >
@@ -326,7 +338,7 @@ export default function PassengerFormDialog({
                   Salvando...
                 </>
               ) : (
-                "Salvar Passageiro"
+                "Salvar"
               )}
             </Button>
           </div>

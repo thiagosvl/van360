@@ -24,10 +24,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useDeleteVeiculo,
-  useFilters,
-  useToggleAtivoVeiculo,
-  useVeiculos,
+    useDeleteVeiculo,
+    useFilters,
+    useToggleAtivoVeiculo,
+    useVeiculos,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -175,9 +175,28 @@ export default function Veiculos() {
         return;
       }
 
-      toggleAtivoVeiculo.mutate({ id: veiculo.id, novoStatus });
+      const action = novoStatus ? "Ativar" : "Desativar";
+      const description = novoStatus 
+        ? "Deseja realmente ativar este veículo?" 
+        : "Deseja realmente desativar este veículo?";
+
+      openConfirmationDialog({
+        title: `Confirmar ${action.toLowerCase()}`,
+        description: description,
+        confirmText: action,
+        variant: novoStatus ? "default" : "destructive",
+        onConfirm: async () => {
+          try {
+            await toggleAtivoVeiculo.mutateAsync({ id: veiculo.id, novoStatus });
+            closeConfirmationDialog();
+          } catch (error) {
+            console.error(error);
+            closeConfirmationDialog();
+          }
+        },
+      });
     },
-    [profile?.id, toggleAtivoVeiculo]
+    [profile?.id, toggleAtivoVeiculo, openConfirmationDialog, closeConfirmationDialog]
   );
 
   const pullToRefreshReload = useCallback(async () => {

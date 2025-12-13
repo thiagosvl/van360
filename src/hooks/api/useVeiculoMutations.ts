@@ -9,8 +9,28 @@ export function useCreateVeiculo() {
   return useMutation({
     mutationFn: ({ usuarioId, data }: { usuarioId: string; data: any }) =>
       veiculoApi.createVeiculo(usuarioId, data),
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      // Optimistic update for lists
+      queryClient.setQueriesData({ queryKey: ["veiculos"] }, (old: any) => {
+        if (!old) return old;
+        if (old.list) {
+          return {
+            ...old,
+            list: [data, ...old.list],
+            total: old.total + 1,
+            ativos: old.ativos + (data.ativo ? 1 : 0),
+          };
+        }
+        return old;
+      });
+      // Also update form-specific lists
+      queryClient.setQueriesData({ queryKey: ["veiculos-form"] }, (old: any) => {
+        if (!old || !Array.isArray(old)) return [data];
+        return [...old, data];
+      });
+
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["veiculos-form"] });
       toast.success("veiculo.sucesso.criado");
     },
     onError: (error: any) => {
@@ -60,6 +80,7 @@ export function useUpdateVeiculo() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["veiculos-form"] });
     },
   });
 }
@@ -104,6 +125,7 @@ export function useDeleteVeiculo() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["veiculos-form"] });
     },
   });
 }
@@ -155,6 +177,7 @@ export function useToggleAtivoVeiculo() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["veiculos-form"] });
     },
   });
 }

@@ -74,7 +74,7 @@ export function RegistrationFormStep({
                   Criando conta...
                 </>
               ) : (
-                "Finalizar Cadastro"
+                "Finalizar"
               )}
             </Button>
             <div className="mt-4">

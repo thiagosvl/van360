@@ -38,6 +38,7 @@ interface OpenConfirmationDialogProps {
 interface OpenEscolaFormProps {
   onSuccess?: (escola: Escola, keepOpen?: boolean) => void;
   editingEscola?: Escola | null;
+  allowBatchCreation?: boolean;
 }
 
 interface OpenVeiculoFormProps {
@@ -247,7 +248,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         }}
         editingEscola={escolaFormDialogState.props?.editingEscola}
         profile={profile}
-        allowBatchCreation={!escolaFormDialogState.props?.editingEscola}
+        allowBatchCreation={
+          escolaFormDialogState.props?.allowBatchCreation
+        }
       />
 
       <VeiculoFormDialog

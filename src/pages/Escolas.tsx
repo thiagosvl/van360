@@ -24,10 +24,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useDeleteEscola,
-  useEscolas,
-  useFilters,
-  useToggleAtivoEscola,
+    useDeleteEscola,
+    useEscolas,
+    useFilters,
+    useToggleAtivoEscola,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -175,9 +175,28 @@ export default function Escolas() {
         return;
       }
 
-      toggleAtivoEscola.mutate({ id: escola.id, novoStatus });
+      const action = novoStatus ? "Ativar" : "Desativar";
+      const description = novoStatus 
+        ? "Deseja realmente ativar esta escola?"
+        : "Deseja realmente desativar esta escola?";
+
+      openConfirmationDialog({
+        title: `Confirmar ${action.toLowerCase()}`,
+        description: description,
+        confirmText: action,
+        variant: novoStatus ? "default" : "destructive",
+        onConfirm: async () => {
+          try {
+            await toggleAtivoEscola.mutateAsync({ id: escola.id, novoStatus });
+            closeConfirmationDialog();
+          } catch (error) {
+            console.error(error);
+            closeConfirmationDialog();
+          }
+        },
+      });
     },
-    [profile?.id, toggleAtivoEscola]
+    [profile?.id, toggleAtivoEscola, openConfirmationDialog, closeConfirmationDialog]
   );
 
   const pullToRefreshReload = useCallback(async () => {

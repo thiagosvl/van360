@@ -9,8 +9,28 @@ export function useCreateEscola() {
   return useMutation({
     mutationFn: ({ usuarioId, data }: { usuarioId: string; data: any }) =>
       escolaApi.createEscola(usuarioId, data),
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+            // Optimistic update for lists
+      queryClient.setQueriesData({ queryKey: ["escolas"] }, (old: any) => {
+        if (!old) return old;
+        if (old.list) {
+          return {
+            ...old,
+            list: [data, ...old.list],
+            total: old.total + 1,
+            ativas: old.ativas + (data.ativo ? 1 : 0),
+          };
+        }
+        return old;
+      });
+      // Also update form-specific lists
+      queryClient.setQueriesData({ queryKey: ["escolas-form"] }, (old: any) => {
+        if (!old || !Array.isArray(old)) return [data];
+        return [...old, data];
+      });
+
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
+      queryClient.invalidateQueries({ queryKey: ["escolas-form"] });
       toast.success("escola.sucesso.criada");
     },
     // onError: (error: any) => {
@@ -60,6 +80,7 @@ export function useUpdateEscola() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
+      queryClient.invalidateQueries({ queryKey: ["escolas-form"] });
     },
   });
 }
@@ -104,6 +125,7 @@ export function useDeleteEscola() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
+      queryClient.invalidateQueries({ queryKey: ["escolas-form"] });
     },
   });
 }
@@ -155,6 +177,7 @@ export function useToggleAtivoEscola() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
+      queryClient.invalidateQueries({ queryKey: ["escolas-form"] });
     },
   });
 }

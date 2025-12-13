@@ -547,7 +547,7 @@ export default function EscolaFormDialog({
                   </AccordionItem>
                 </Accordion>
                 
-                {!editingEscola && allowBatchCreation && (
+                {allowBatchCreation && (
                   <div className="flex items-center gap-2 px-1 pt-4">
                     <Checkbox
                       id="keepOpen"
