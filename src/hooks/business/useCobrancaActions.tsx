@@ -1,36 +1,36 @@
 import {
-    PLANO_ESSENCIAL,
-    PLANO_GRATUITO,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useDeleteCobranca,
-    useDesfazerPagamento,
-    useEnviarNotificacaoCobranca,
-    useToggleNotificacoesCobranca,
+  useDeleteCobranca,
+  useDesfazerPagamento,
+  useEnviarNotificacaoCobranca,
+  useToggleNotificacoesCobranca,
 } from "@/hooks";
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
 import {
-    disableDesfazerPagamento,
-    disableEditarCobranca,
-    disableExcluirCobranca,
-    disableRegistrarPagamento,
-    seForPago,
+  disableDesfazerPagamento,
+  disableEditarCobranca,
+  disableExcluirCobranca,
+  disableRegistrarPagamento,
+  seForPago,
 } from "@/utils/domain/cobranca/disableActions";
 import {
-    canUseNotificacoes,
+  canUseNotificacoes,
 } from "@/utils/domain/plano/accessRules";
 import {
-    ArrowLeft,
-    Bell,
-    BellOff,
-    CheckCircle2,
-    DollarSign,
-    FilePen,
-    Send,
-    Trash2,
-    User,
+  ArrowLeft,
+  Bell,
+  BellOff,
+  CheckCircle2,
+  DollarSign,
+  FilePen,
+  Send,
+  Trash2,
+  User,
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
@@ -104,9 +104,9 @@ export function useCobrancaOperations({
       return;
     }
     openConfirmationDialog({
-      title: "Enviar Notificação",
+      title: "Enviar cobrança?",
       description:
-        "Deseja enviar a notificação de cobrança para o responsável via WhatsApp?",
+        "A cobrança será enviada para o responsável via WhatsApp. Confirmar?",
       confirmText: "Enviar",
       onConfirm: async () => {
         try {
@@ -140,10 +140,10 @@ export function useCobrancaOperations({
 
   const handleDesfazerPagamento = useCallback(async () => {
     openConfirmationDialog({
-      title: "Desfazer Pagamento",
+      title: "Desfazer pagamento?",
       description:
-        "Tem certeza que deseja desfazer este pagamento? A cobrança voltará para o status pendente.",
-      variant: "destructive",
+        "O pagamento será removido e a cobrança voltará a ficar pendente. Confirmar?",
+      variant: "warning",
       confirmText: "Desfazer",
       onConfirm: async () => {
         try {
@@ -166,9 +166,9 @@ export function useCobrancaOperations({
 
   const handleDeleteCobranca = useCallback(async () => {
     openConfirmationDialog({
-      title: "Excluir Cobrança",
+      title: "Excluir cobrança?",
       description:
-        "Tem certeza que deseja excluir esta cobrança? Esta ação não pode ser desfeita.",
+        "Tem certeza que deseja excluir esta cobrança? Essa ação não poderá ser desfeita.",
       variant: "destructive",
       confirmText: "Excluir",
       onConfirm: async () => {
@@ -241,7 +241,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         label: "Ver Carteirinha",
         icon: <User className="h-4 w-4" />,
         onClick: onVerCarteirinha,
-        swipeColor: "bg-blue-500",
+        swipeColor: "bg-indigo-600",
       });
     }
 
@@ -254,7 +254,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
           document.body.click(); // Close menus
           setTimeout(() => onRegistrarPagamento(), 10);
         },
-        swipeColor: "bg-green-600",
+        swipeColor: "bg-emerald-500",
       });
     }
 
@@ -264,7 +264,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         label: "Ver Detalhes",
         icon: <DollarSign className="h-4 w-4" />,
         onClick: onVerCobranca,
-        swipeColor: "bg-gray-500",
+        swipeColor: "bg-indigo-600",
       });
     }
 
@@ -275,7 +275,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         label: "Enviar Cobrança",
         icon: <Send className="h-4 w-4" />,
         onClick: handleEnviarNotificacao,
-        swipeColor: "bg-green-500",
+        swipeColor: "bg-emerald-500",
       });
     }
 
@@ -307,7 +307,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         label,
         icon,
         onClick: handleToggleLembretes,
-        swipeColor: "bg-orange-500",
+        swipeColor: !hasNotificacoesAccess || cobranca.desativar_lembretes ? "bg-emerald-500" : "bg-amber-500",
       });
     }
 

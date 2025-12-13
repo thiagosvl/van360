@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 // Third-party
 import { cpfSchema, emailSchema } from "@/schemas/common";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Lock, Mail, User } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import { z } from "zod";
 
 // Components - UI
@@ -45,6 +45,7 @@ export default function Login() {
   });
   const [tab, setTab] = useState("motorista");
   const [cpf, setCpf] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
@@ -329,11 +330,23 @@ export default function Login() {
                             <Lock className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
                             <Input
                               {...field}
-                              type="password"
+                              type={showPassword ? "text" : "password"}
                               placeholder="••••••••"
                               autoComplete="current-password"
-                              className="pl-12 h-11 sm:h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                              className="pl-12 pr-10 h-11 sm:h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
                             />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                              tabIndex={-1}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-5 w-5" />
+                              ) : (
+                                <Eye className="h-5 w-5" />
+                              )}
+                            </button>
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -370,13 +383,13 @@ export default function Login() {
                     <div className="w-full border-t border-gray-100 my-1 sm:my-2"></div>
 
                     <p className="text-[0.85rem] text-gray-600">
-                      Ainda não tem conta?{" "}
+                      Não tem uma conta?{" "}
                       <button
                         type="button"
                         onClick={() => navigate("/cadastro")}
                         className="text-blue-600 font-bold hover:text-blue-700 hover:underline transition-all"
                       >
-                        Criar conta grátis
+                        Cadastre-se
                       </button>
                     </p>
                   </div>

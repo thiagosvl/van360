@@ -19,16 +19,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreatePassageiro,
-  useDeletePassageiro,
-  useEscolas,
-  useFilters,
-  usePassageiroDialogs,
-  usePassageiros,
-  usePrePassageiros,
-  useToggleAtivoPassageiro,
-  useUpdatePassageiro,
-  useVeiculos,
+    useCreatePassageiro,
+    useDeletePassageiro,
+    useEscolas,
+    useFilters,
+    usePassageiroDialogs,
+    usePassageiros,
+    usePrePassageiros,
+    useToggleAtivoPassageiro,
+    useUpdatePassageiro,
+    useVeiculos,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -266,10 +266,10 @@ export default function Passageiros() {
   const handleDeleteClick = useCallback(
     (passageiro: Passageiro) => {
       openConfirmationDialog({
-        title: "Excluir Passageiro",
+        title: "Excluir passageiro?",
         description:
-          "Deseja excluir permanentemente este passageiro? Essa ação não pode ser desfeita.",
-        confirmText: "Excluir Passageiro",
+          "Tem certeza que deseja excluir este passageiro? Essa ação não poderá ser desfeita.",
+        confirmText: "Excluir",
         variant: "destructive",
         onConfirm: async () => {
           try {
@@ -290,13 +290,13 @@ export default function Passageiros() {
 
       openConfirmationDialog({
         title:
-          action === "ativar" ? "Reativar Passageiro" : "Desativar Passageiro",
+          action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
         description:
           action === "ativar"
-            ? "Deseja realmente reativar este passageiro? Esta ação pode afetar a geração de cobranças."
-            : "Deseja realmente desativar este passageiro? Esta ação pode afetar a geração de cobranças.",
-        confirmText: "Confirmar",
-        variant: action === "ativar" ? "default" : "destructive",
+            ? "O passageiro voltará a aparecer nas listagens ativas e a geração de cobranças será retomada."
+            : "O passageiro ficará inativo e a geração de cobranças será pausada. Você poderá reativá-lo depois.",
+        confirmText: action === "ativar" ? "Reativar" : "Desativar",
+        variant: action === "ativar" ? "success" : "warning",
         onConfirm: async () => {
           // Logic from handleToggleConfirm
           const p = passageiro;

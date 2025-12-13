@@ -1,23 +1,23 @@
 import {
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useEscolasWithFilters, useVeiculosWithFilters } from "@/hooks";
@@ -87,6 +87,13 @@ export function PassageiroFormDadosCadastrais({
        form.setValue("escola_id", newEscola.id, { shouldValidate: true });
     }
   }, [newEscola, form]);
+
+  // Auto-selecionar veículo único se nenhum estiver selecionado
+  useEffect(() => {
+    if (veiculos.length === 1 && !form.getValues("veiculo_id")) {
+      form.setValue("veiculo_id", veiculos[0].id, { shouldValidate: true });
+    }
+  }, [veiculos, form]);
 
   return (
     <AccordionItem

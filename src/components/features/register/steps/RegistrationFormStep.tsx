@@ -1,10 +1,11 @@
 import { TermosUsoDialog } from "@/components/features/register/TermosUsoDialog";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
 import { RegisterFormData } from "@/schemas/registerSchema";
 import { Plano } from "@/types/plano";
 import { lazyLoad } from "@/utils/lazyLoad";
-import { FileText, Loader2 } from "lucide-react";
+import { ArrowRight, Check, FileText, Loader2, Rocket } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 
 // Lazy load
@@ -18,6 +19,7 @@ interface RegistrationFormStepProps {
   form: UseFormReturn<RegisterFormData>;
   loading: boolean;
   selectedPlano?: Plano;
+  requiresPayment: boolean;
   onBack: () => void;
   onNext: () => void;
 }
@@ -26,9 +28,41 @@ export function RegistrationFormStep({
   form,
   loading,
   selectedPlano,
+  requiresPayment,
   onBack,
   onNext,
 }: RegistrationFormStepProps) {
+  
+  const getButtonConfig = () => {
+    if (requiresPayment) {
+      return {
+        text: "Ir para pagamento",
+        icon: <ArrowRight className="ml-2 h-5 w-5" />,
+      };
+    }
+
+    if (selectedPlano?.slug === PLANO_GRATUITO) {
+        return {
+            text: "Criar conta grátis",
+            icon: <Check className="ml-2 h-5 w-5" />
+        };
+    }
+
+    if (selectedPlano?.slug === PLANO_ESSENCIAL) {
+        return {
+            text: "Iniciar teste grátis",
+            icon: <Rocket className="ml-2 h-5 w-5" />
+        };
+    }
+
+    return {
+      text: "Finalizar",
+      icon: <Check className="ml-2 h-5 w-5" />,
+    };
+  };
+
+  const buttonConfig = getButtonConfig();
+  
   return (
     <section className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
       <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-0">
@@ -74,7 +108,10 @@ export function RegistrationFormStep({
                   Criando conta...
                 </>
               ) : (
-                "Finalizar"
+                <>
+                  {buttonConfig.text}
+                  {buttonConfig.icon}
+                </>
               )}
             </Button>
             <div className="mt-4">

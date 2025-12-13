@@ -31,7 +31,7 @@ interface OpenConfirmationDialogProps {
   onConfirm: () => void | Promise<void>;
   confirmText?: string;
   cancelText?: string;
-  variant?: "default" | "destructive";
+  variant?: "default" | "destructive" | "warning" | "success";
   isLoading?: boolean;
 }
 

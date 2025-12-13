@@ -377,9 +377,9 @@ export default function PassageiroCarteirinha() {
 
   const handleDeleteCobrancaClick = useCallback((cobranca: Cobranca) => {
     openConfirmationDialog({
-      title: "Excluir Cobrança",
-      description: "Ao confirmar, esta cobrança será excluída permanentemente. Deseja continuar?",
-      confirmText: "Confirmar",
+      title: "Excluir cobrança?",
+      description: "Tem certeza que deseja excluir esta cobrança? Essa ação não poderá ser desfeita.",
+      confirmText: "Excluir",
       variant: "destructive",
       onConfirm: async () => {
          try {
@@ -397,10 +397,12 @@ export default function PassageiroCarteirinha() {
   const handleToggleClick = (statusAtual: boolean) => {
     const action = statusAtual ? "desativar" : "ativar";
     openConfirmationDialog({
-       title: action === "ativar" ? "Reativar Passageiro" : "Desativar Passageiro",
-       description: `Deseja realmente ${action === 'ativar' ? "reativar" : "desativar"} este passageiro? Esta ação pode afetar a geração de cobranças.`,
-       confirmText: "Confirmar",
-       variant: action === "desativar" ? "destructive" : "default",
+       title: action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
+       description: action === "ativar" 
+         ? "O passageiro voltará a aparecer nas listagens ativas e a geração de cobranças será retomada."
+         : "O passageiro ficará inativo e a geração de cobranças será pausada. Você poderá reativá-lo depois.",
+       confirmText: action === "ativar" ? "Reativar" : "Desativar",
+       variant: action === "desativar" ? "warning" : "default",
        onConfirm: async () => {
          if (!passageiro || !passageiro_id) return;
          try {
@@ -457,9 +459,9 @@ export default function PassageiroCarteirinha() {
 
   const handleEnviarNotificacaoClick = useCallback((cobrancaId: string) => {
     openConfirmationDialog({
-      title: "Enviar Cobrança",
-      description: "Ao confirmar, esta cobrança será enviada para o responsável. Deseja continuar?",
-      confirmText: "Confirmar",
+      title: "Enviar cobrança?",
+      description: "A cobrança será enviada para o responsável (WhatsApp ou Email). Confirmar?",
+      confirmText: "Enviar",
       onConfirm: async () => {
          try {
            await enviarNotificacao.mutateAsync(cobrancaId);
@@ -473,10 +475,10 @@ export default function PassageiroCarteirinha() {
 
   const handleDesfazerClick = useCallback((cobrancaId: string) => {
     openConfirmationDialog({
-      title: "Desfazer Pagamento",
-      description: "Ao confirmar, o pagamento desta cobrança será desfeito. Deseja continuar?",
-      confirmText: "Confirmar",
-      variant: "destructive",
+      title: "Desfazer pagamento?",
+      description: "O pagamento será removido e a cobrança voltará a ficar pendente. Confirmar?",
+      confirmText: "Desfazer",
+      variant: "warning",
       onConfirm: async () => {
          try {
            await desfazerPagamento.mutateAsync(cobrancaId);
@@ -595,9 +597,9 @@ export default function PassageiroCarteirinha() {
                       onToggleClick={handleToggleClick}
                       onDeleteClick={() =>
                         openConfirmationDialog({
-                           title: "Excluir Passageiro",
-                           description: "Ao confirmar, este passageiro será excluído permanentemente. Deseja continuar?",
-                           confirmText: "Confirmar",
+                           title: "Excluir passageiro?",
+                           description: "Tem certeza que deseja excluir este passageiro? Essa ação não poderá ser desfeita.",
+                           confirmText: "Excluir",
                            variant: "destructive",
                            onConfirm: async () => {
                              if (!passageiro_id) return;

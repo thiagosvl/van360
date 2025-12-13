@@ -1,10 +1,10 @@
 import { PhoneInput } from "@/components/forms";
 import {
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cpfMask } from "@/utils/masks";
@@ -157,10 +157,10 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
         )}
       />
 
-      <div className="flex items-center justify-center gap-2 text-xs text-emerald-700 bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+      <div className="flex items-center justify-center gap-2 text-xs text-emerald-700 opacity-80">
         <Lock className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
         <span className="font-medium">
-          Seus dados estão protegidos com criptografia de ponta a ponta.
+          Dados protegidos com criptografia de ponta a ponta.
         </span>
       </div>
     </div>

@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -19,7 +20,7 @@ interface ConfirmationDialogProps {
   onConfirm: () => void | Promise<void>;
   confirmText?: string;
   cancelText?: string;
-  variant?: "default" | "destructive";
+   variant?: "default" | "destructive" | "warning" | "success";
   isLoading?: boolean;
 }
 
@@ -86,11 +87,13 @@ export default function ConfirmationDialog({
               }
             }}
             disabled={showLoading}
-            className={`h-10 px-6 rounded-xl font-semibold shadow-sm transition-all ${
-              variant === "destructive"
-                ? "bg-red-600 hover:bg-red-700 text-white"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-            }`}
+            className={cn(
+              "h-10 px-6 rounded-xl font-semibold shadow-sm transition-all text-white",
+              variant === "destructive" && "bg-red-600 hover:bg-red-700",
+              variant === "warning" && "bg-amber-600 hover:bg-amber-700",
+              variant === "success" && "bg-emerald-600 hover:bg-emerald-700",
+              variant === "default" && "bg-blue-600 hover:bg-blue-700"
+            )}
           >
             {showLoading ? (
               <>

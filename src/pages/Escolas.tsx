@@ -146,9 +146,9 @@ export default function Escolas() {
     }
 
     openConfirmationDialog({
-      title: "Confirmar exclusão",
-      description: "Deseja excluir permanentemente esta escola?",
-      confirmText: "Confirmar",
+      title: "Excluir escola?",
+      description: "Tem certeza que deseja excluir esta escola? Essa ação não poderá ser desfeita.",
+      confirmText: "Excluir",
       variant: "destructive",
       onConfirm: async () => {
          try {
@@ -176,15 +176,13 @@ export default function Escolas() {
       }
 
       const action = novoStatus ? "Ativar" : "Desativar";
-      const description = novoStatus 
-        ? "Deseja realmente ativar esta escola?"
-        : "Deseja realmente desativar esta escola?";
-
       openConfirmationDialog({
-        title: `Confirmar ${action.toLowerCase()}`,
-        description: description,
+        title: `${action} escola?`,
+        description: novoStatus 
+          ? "A escola voltará a aparecer nas listagens ativas."
+          : "A escola deixará de aparecer nas listagens ativas. Você poderá reativá-la depois.",
         confirmText: action,
-        variant: novoStatus ? "default" : "destructive",
+        variant: novoStatus ? "success" : "warning",
         onConfirm: async () => {
           try {
             await toggleAtivoEscola.mutateAsync({ id: escola.id, novoStatus });

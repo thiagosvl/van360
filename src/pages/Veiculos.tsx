@@ -24,10 +24,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useDeleteVeiculo,
-    useFilters,
-    useToggleAtivoVeiculo,
-    useVeiculos,
+  useDeleteVeiculo,
+  useFilters,
+  useToggleAtivoVeiculo,
+  useVeiculos,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -147,9 +147,9 @@ export default function Veiculos() {
     }
     
     openConfirmationDialog({
-      title: "Confirmar exclusão",
-      description: "Deseja excluir permanentemente este veiculo?",
-      confirmText: "Confirmar",
+      title: "Excluir veículo?",
+      description: "Tem certeza que deseja excluir este veículo? Essa ação não poderá ser desfeita.",
+      confirmText: "Excluir",
       variant: "destructive",
       onConfirm: async () => {
          try {
@@ -176,15 +176,13 @@ export default function Veiculos() {
       }
 
       const action = novoStatus ? "Ativar" : "Desativar";
-      const description = novoStatus 
-        ? "Deseja realmente ativar este veículo?" 
-        : "Deseja realmente desativar este veículo?";
-
       openConfirmationDialog({
-        title: `Confirmar ${action.toLowerCase()}`,
-        description: description,
+        title: `${action} veículo?`,
+        description: novoStatus 
+          ? "O veículo voltará a aparecer nas listagens ativas."
+          : "O veículo deixará de aparecer nas listagens ativas. Você poderá reativá-lo depois.",
         confirmText: action,
-        variant: novoStatus ? "default" : "destructive",
+        variant: novoStatus ? "success" : "warning",
         onConfirm: async () => {
           try {
             await toggleAtivoVeiculo.mutateAsync({ id: veiculo.id, novoStatus });

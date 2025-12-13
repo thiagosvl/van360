@@ -2,7 +2,6 @@ import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaD
 import { PagamentoSucessoDialog } from "@/components/dialogs/PagamentoSucessoDialog";
 import { PlanSelectionStep } from "@/components/features/register/steps/PlanSelectionStep";
 import { RegistrationFormStep } from "@/components/features/register/steps/RegistrationFormStep";
-import { TermosUsoDialog } from "@/components/features/register/TermosUsoDialog";
 import { useRegisterController } from "@/hooks/register/useRegisterController";
 import { useSEO } from "@/hooks/useSEO";
 import { Loader2 } from "lucide-react";
@@ -38,6 +37,7 @@ export default function Register() {
     handleQuantidadePersonalizadaConfirm,
     handlePaymentSuccess,
     getQuantidadeMinima,
+    requiresPayment,
   } = useRegisterController();
 
   const finalStep = 2;
@@ -69,6 +69,7 @@ export default function Register() {
             form={form}
             loading={loading}
             selectedPlano={selectedPlano}
+            requiresPayment={requiresPayment}
             onBack={() => {
                 setCurrentStep(1);
                 form.clearErrors();
@@ -139,7 +140,7 @@ export default function Register() {
         </div>
       
       {/* Dialogs */}
-      <TermosUsoDialog />
+
       
       {pagamentoDialog && pagamentoDialog.cobrancaId && (
         <PagamentoAssinaturaDialog

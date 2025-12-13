@@ -31,7 +31,7 @@ export function usePassageiroActions({
       label: passageiro.ativo ? "Desativar" : "Reativar",
       icon: passageiro.ativo ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />,
       onClick: () => onToggleStatus(passageiro),
-      color: passageiro.ativo ? "bg-amber-500" : "bg-green-500",
+      swipeColor: passageiro.ativo ? "bg-amber-500" : "bg-emerald-500",
     },
     {
       label: "Editar",
@@ -60,7 +60,7 @@ export function usePassageiroActions({
              onOpenUpgradeDialog?.(passageiro.id);
          }
       },
-      color: passageiro.enviar_cobranca_automatica ? "bg-slate-500" : "bg-indigo-600",
+      swipeColor: passageiro.enviar_cobranca_automatica ? "bg-slate-500" : "bg-indigo-600",
     },
     {
         label: "Ver Histórico",

@@ -258,9 +258,9 @@ export default function PrePassageiros({
           onClick={(e) => {
             e.stopPropagation();
             openConfirmationDialog({
-              title: "Excluir Pré-cadastro",
+              title: "Excluir solicitação?",
               description:
-                "Tem certeza que deseja excluir este pré-cadastro? Esta ação não pode ser desfeita.",
+                "Tem certeza que deseja excluir esta solicitação? Essa ação não poderá ser desfeita.",
               variant: "destructive",
               confirmText: "Excluir",
               cancelText: "Cancelar",
@@ -449,9 +449,9 @@ export default function PrePassageiros({
                       icon: <Trash2 className="w-4 h-4" />,
                       onClick: () => {
                         openConfirmationDialog({
-                          title: "Excluir Pré-cadastro",
+                          title: "Excluir solicitação?",
                           description:
-                            "Tem certeza que deseja excluir este pré-cadastro? Esta ação não pode ser desfeita.",
+                            "Tem certeza que deseja excluir esta solicitação? Essa ação não poderá ser desfeita.",
                           variant: "destructive",
                           confirmText: "Excluir",
                           cancelText: "Cancelar",

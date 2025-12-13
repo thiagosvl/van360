@@ -23,7 +23,7 @@ export function useEscolaActions({
       label: escola.ativo ? "Desativar" : "Reativar",
       icon: escola.ativo ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />,
       onClick: () => onToggleAtivo(escola),
-      swipeColor: escola.ativo ? "bg-amber-500" : "bg-green-500",
+      swipeColor: escola.ativo ? "bg-amber-500" : "bg-emerald-500",
     },
     {
       label: "Editar",

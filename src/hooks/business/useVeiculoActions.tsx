@@ -23,7 +23,7 @@ export function useVeiculoActions({
       label: veiculo.ativo ? "Desativar" : "Reativar",
       icon: veiculo.ativo ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />,
       onClick: () => onToggleAtivo(veiculo),
-      swipeColor: veiculo.ativo ? "bg-amber-500" : "bg-green-500",
+      swipeColor: veiculo.ativo ? "bg-amber-500" : "bg-emerald-500",
     },
     {
       label: "Editar",

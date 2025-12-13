@@ -76,12 +76,12 @@ export function useRegisterController() {
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      nome: "",
-      apelido: "",
-      cpfcnpj: "",
-      email: "",
-      telefone: "",
-      senha: "",
+      nome: "Thiago Barros",
+      apelido: "Tio Thiago",
+      cpfcnpj: "395.423.918-38",
+      email: "thiago-svl@hotmail.com",
+      telefone: "(11) 95118-6951",
+      senha: "Ogaiht+1",
       plano_id: "",
       sub_plano_id: undefined,
       quantidade_personalizada: undefined,
@@ -587,5 +587,6 @@ export function useRegisterController() {
     handleQuantidadePersonalizadaConfirm,
     handlePaymentSuccess,
     getQuantidadeMinima,
+    requiresPayment,
   };
 }

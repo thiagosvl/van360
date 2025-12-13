@@ -80,7 +80,7 @@ export default function PassengerFormDialog({
   profile,
   plano,
 }: PassengerFormDialogProps) {
-  const { openLimiteFranquiaDialog } = useLayout();
+  const { openLimiteFranquiaDialog, isLimiteFranquiaDialogOpen } = useLayout();
   const { user } = useSession();
 
   const createPassageiro = useCreatePassageiro();
@@ -262,6 +262,14 @@ export default function PassengerFormDialog({
         <DialogContent
           className="max-w-4xl p-0 gap-0 bg-gray-50 max-h-[90vh] flex flex-col overflow-hidden rounded-3xl border-0 shadow-2xl"
           hideCloseButton
+          // @ts-ignore
+          onPointerDownOutside={(e) => {
+             // Se o dialog de upgrade (franquia) estiver aberto, ignorar cliques fora
+             // Isso previne que o PassageiroFormDialog feche acidentalmente
+             if (isLimiteFranquiaDialogOpen) {
+                 e.preventDefault();
+             }
+          }}
         >
           <div className="bg-blue-600 p-4 text-center relative shrink-0">
             <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">

@@ -190,7 +190,11 @@ export default function LimiteFranquiaDialog({
   return (
     <>
       <AlertDialog open={open} onOpenChange={onOpenChange}>
-        <AlertDialogContent className="max-w-md p-0 overflow-hidden gap-0 border-0 rounded-3xl flex flex-col max-h-[90vh]">
+        <AlertDialogContent 
+            className="max-w-md p-0 overflow-hidden gap-0 border-0 rounded-3xl flex flex-col max-h-[90vh]"
+            // @ts-ignore
+            onPointerDownOutside={(e) => e.preventDefault()}
+        >
           <div className="bg-indigo-600 p-6 text-white shrink-0">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
@@ -318,7 +322,8 @@ export default function LimiteFranquiaDialog({
                   className="hover:bg-gray-50 text-gray-500 mt-0 h-auto py-2 font-normal"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onOpenChange(false);
+                    // Pequeno delay para evitar que o clique "vaze" e feche o dialog de baixo
+                    setTimeout(() => onOpenChange(false), 50);
                   }}
                 >
                   Agora não
