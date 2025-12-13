@@ -1,10 +1,10 @@
 import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+    Suspense,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
 } from "react";
 
 // React Router
@@ -58,18 +58,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useAvailableYears,
-  useCobrancasByPassageiro,
-  useDeleteCobranca,
-  useDeletePassageiro,
-  useDesfazerPagamento,
-  useEnviarNotificacaoCobranca,
-  usePassageiro,
-  usePassageiros,
-  useToggleAtivoPassageiro,
-  useToggleNotificacoesCobranca,
-  useUpdateCobranca,
-  useUpdatePassageiro
+    useAvailableYears,
+    useCobrancasByPassageiro,
+    useDeleteCobranca,
+    useDeletePassageiro,
+    useDesfazerPagamento,
+    useEnviarNotificacaoCobranca,
+    usePassageiro,
+    usePassageiros,
+    useToggleAtivoPassageiro,
+    useToggleNotificacoesCobranca,
+    useUpdateCobranca,
+    useUpdatePassageiro
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -432,7 +432,10 @@ export default function PassageiroCarteirinha() {
 
     if (novoValor && canUseCobrancaAutomatica(plano)) {
       // Usar validação já calculada via hook
-        if (!validacaoFranquiaGeral.podeAtivar) {
+      // Passamos false porque se estamos ativando, não está ativo, logo não descontamos.
+      const podeAtivar = limits.franchise.checkAvailability(false);
+
+        if (!podeAtivar) {
           if (validacaoFranquiaGeral.franquiaContratada === 0) {
              openLimiteFranquiaDialog({
               targetPassengerId: passageiro_id,

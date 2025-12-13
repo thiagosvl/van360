@@ -19,16 +19,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreatePassageiro,
-    useDeletePassageiro,
-    useEscolas,
-    useFilters,
-    usePassageiroDialogs,
-    usePassageiros,
-    usePrePassageiros,
-    useToggleAtivoPassageiro,
-    useUpdatePassageiro,
-    useVeiculos,
+  useCreatePassageiro,
+  useDeletePassageiro,
+  useEscolas,
+  useFilters,
+  usePassageiroDialogs,
+  usePassageiros,
+  usePrePassageiros,
+  useToggleAtivoPassageiro,
+  useUpdatePassageiro,
+  useVeiculos,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -354,19 +354,14 @@ export default function Passageiros() {
       const novoValor = !passageiro.enviar_cobranca_automatica;
 
       if (novoValor && canUseCobrancaAutomatica(plano)) {
-        const franquiaContratada = validacaoFranquiaGeral.franquiaContratada;
-        let cobrancasEmUso = validacaoFranquiaGeral.cobrancasEmUso;
-
-        if (passageiro.enviar_cobranca_automatica === true) {
-          cobrancasEmUso = Math.max(0, cobrancasEmUso - 1);
-        }
-
-        const restante = Math.max(0, franquiaContratada - cobrancasEmUso);
-        const podeAtivar = restante > 0;
+        // Use centralized logic from hook to check availability
+        // If enabling (novoValor === true), we check availability.
+        // We pass 'false' to checkAvailability because if we are enabling, it means it is NOT currently active (so we don't need to subtract from count).
+        const podeAtivar = limits.franchise.checkAvailability(false);
 
         if (!podeAtivar) {
           // Se franquia contratada for 0, usa a mensagem de upgrade/primeira ativação
-          if (franquiaContratada === 0) {
+          if (validacaoFranquiaGeral.franquiaContratada === 0) {
             openLimiteFranquiaDialog({
               title: "Cobrança Automática",
               description:

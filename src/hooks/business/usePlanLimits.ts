@@ -69,6 +69,14 @@ export function usePlanLimits({ userUid, profile: profileProp, plano: planoProp,
         used: usedFranchise,
         remaining: remainingFranchise,
         canEnable: canEnableAutomaticBilling,
+        /**
+         * Verifica se é possível ativar a cobrança para um passageiro específico.
+         * @param isAlreadyActive - Passar true se estiver editando um passageiro que JÁ tem cobrança ativa (para não contar 2x)
+         */
+        checkAvailability: (isAlreadyActive: boolean = false) => {
+          const adjustedUsed = isAlreadyActive ? Math.max(0, usedFranchise - 1) : usedFranchise;
+          return (franchiseLimit - adjustedUsed) > 0;
+        }
       }
     }
   };

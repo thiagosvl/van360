@@ -91,18 +91,13 @@ export default function PassengerFormDialog({
   // Validação de Franquia (para upgrades)
   const { limits } = usePlanLimits({ userUid: user?.id, profile });
 
-  // Custom logic to match legacy behavior: 
-  // If editing an enabled passenger, we exclude them from the count so "podeAtivar" remains true
-  let cobrancasEmUso = limits.franchise.used;
-  if (editingPassageiro?.enviar_cobranca_automatica) {
-      cobrancasEmUso = Math.max(0, cobrancasEmUso - 1);
-  }
-  const franquiaContratada = limits.franchise.limit;
-  const podeAtivar = (franquiaContratada - cobrancasEmUso) > 0;
+  // Use centralized logic from hook to check availability
+  // If editing an enabled passenger, we pass true to exclude them from the count check
+  const podeAtivar = limits.franchise.checkAvailability(!!editingPassageiro?.enviar_cobranca_automatica);
 
   const validacaoFranquia = {
-      franquiaContratada,
-      cobrancasEmUso,
+      franquiaContratada: limits.franchise.limit,
+      cobrancasEmUso: limits.franchise.used,
       podeAtivar
   };
 

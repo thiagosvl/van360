@@ -14,6 +14,7 @@ export function useCreatePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
       toast.success("passageiro.sucesso.criado");
     },
     onError: (error: any) => {
@@ -108,6 +109,7 @@ export function useUpdatePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobranca"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
 
       // Invalidar escolas/veículos apenas se houve mudança de escola/veículo
       // Isso evita requisições desnecessárias quando apenas outros campos são editados
@@ -192,6 +194,7 @@ export function useDeletePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }
@@ -261,6 +264,7 @@ export function useToggleAtivoPassageiro() {
       queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobranca"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
       
       // Quando toggle de ativo, a contagem de passageiros nas escolas/veículos muda
       // então precisamos invalidar essas queries
@@ -293,6 +297,7 @@ export function useFinalizePreCadastro() {
       queryClient.invalidateQueries({ queryKey: ["pre-passageiros"] });
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
       toast.success("passageiro.sucesso.criado");
     },
     onError: (error: any) => {
