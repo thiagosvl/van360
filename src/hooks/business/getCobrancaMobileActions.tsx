@@ -1,24 +1,24 @@
+import { MobileAction } from "@/components/common/MobileActionItem";
 import { Cobranca } from "@/types/cobranca";
 import {
-  ArrowLeft,
-  Bell,
-  BellOff,
-  CheckCircle2,
-  DollarSign,
-  FilePen,
-  Send,
-  Trash2,
-  User,
-} from "lucide-react";
-import { MobileAction } from "@/components/common/MobileActionItem";
-import {
-  disableDesfazerPagamento,
-  disableEditarCobranca,
-  disableExcluirCobranca,
-  disableRegistrarPagamento,
-  seForPago,
+    disableDesfazerPagamento,
+    disableEditarCobranca,
+    disableExcluirCobranca,
+    disableRegistrarPagamento,
+    seForPago,
 } from "@/utils/domain/cobranca/disableActions";
 import { canUseNotificacoes } from "@/utils/domain/plano/accessRules";
+import {
+    ArrowLeft,
+    Bell,
+    BellOff,
+    CheckCircle2,
+    DollarSign,
+    FilePen,
+    Send,
+    Trash2,
+    User,
+} from "lucide-react";
 
 interface GetCobrancaMobileActionsProps {
   cobranca: Cobranca;
@@ -113,10 +113,10 @@ export function getCobrancaMobileActions({
   // 6. Notificações (Toggle)
   if (!isPago) {
     actions.push({
-      label: cobranca.desativar_lembretes
+      label: !hasNotificacoesAccess || cobranca.desativar_lembretes
         ? "Ativar Notificações"
         : "Pausar Notificações",
-      icon: cobranca.desativar_lembretes ? (
+      icon: !hasNotificacoesAccess || cobranca.desativar_lembretes ? (
         <Bell className="h-4 w-4" />
       ) : (
         <BellOff className="h-4 w-4" />

@@ -153,7 +153,6 @@ export function CobrancaActionsMenu({
             <>
               <DropdownMenuItem
                 className="cursor-pointer"
-                disabled={!hasNotificacoesAccess || seForPago(cobranca)}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleEnviarNotificacao();
@@ -168,14 +167,13 @@ export function CobrancaActionsMenu({
                   e.stopPropagation();
                   handleToggleNotificacoes();
                 }}
-                disabled={!hasNotificacoesAccess || seForPago(cobranca)}
               >
-                {cobranca.desativar_lembretes ? (
+                {!hasNotificacoesAccess || cobranca.desativar_lembretes ? (
                   <Bell className="mr-2 h-4 w-4" />
                 ) : (
                   <BellOff className="mr-2 h-4 w-4" />
                 )}
-                {cobranca.desativar_lembretes
+                {!hasNotificacoesAccess || cobranca.desativar_lembretes
                   ? "Ativar Notificações"
                   : "Pausar Notificações"}
               </DropdownMenuItem>

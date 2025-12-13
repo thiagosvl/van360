@@ -118,10 +118,13 @@ export function MobileActionItem({
                 disabled={action.disabled}
                 className={cn(
                     "w-full justify-start h-14 text-base font-medium transition-all active:scale-[0.98] rounded-xl shadow-sm border",
+                    "disabled:!opacity-100", // FORCE override default opacity
                     // Estilo Base (Card Branco)
                     "bg-white border-gray-200 hover:bg-gray-50",
                     // Estilo Destrutivo override
                     action.isDestructive && "border-red-100 bg-red-50/50 text-red-600 hover:bg-red-100/50 hover:border-red-200",
+                    // Disabled style (mantendo fundo branco, apenas texto cinza)
+                    action.disabled && "text-gray-400 cursor-not-allowed hover:bg-white disabled:bg-white",
                     // Estilo Customizado
                     action.drawerClass,
                     // Cor padrão se não for destrutivo/disabled
