@@ -28,7 +28,10 @@ export function usePlanLimits({ userUid, profile: profileProp, plano: planoProp,
     return Math.max(0, Number(passengerLimit) - (currentPassengerCount || 0));
   }, [passengerLimit, currentPassengerCount]);
 
-  const hasPassengerLimit = passengerLimit !== null;
+  // Limit logic: Only Free Plan has strict passenger registration limits.
+  // Paid plans (Essential/Complete/Franchise) might have billing limits (Franchise), but not registration limits.
+  // We explicitly check isFreePlan to avoid cases where the DB might have "0" or incomplete data for paid plans.
+  const hasPassengerLimit = (plano?.isFreePlan ?? true) && passengerLimit !== null;
   const isPassengerLimitReached = hasPassengerLimit && (remainingPassengers !== null && remainingPassengers <= 0);
 
   // --- Franchise (Billing) Limits ---

@@ -164,7 +164,7 @@ export default function LimiteFranquiaDialog({
       // Atualização de cache delegada ao componente PagamentoPixContent para evitar duplicidade
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
     handlePaymentVerified(); 
     setShowPayment(false);
     onOpenChange(false);
@@ -172,6 +172,9 @@ export default function LimiteFranquiaDialog({
     toast.success("Upgrade realizado!", {
       description: `Sua franquia foi aumentada para ${paymentData?.franquia} passageiros.`,
     });
+
+    // Refresh profile/subscription data
+    await queryClient.invalidateQueries({ queryKey: ["profile"] });
 
     if (onUpgradeSuccess) {
       onUpgradeSuccess();
