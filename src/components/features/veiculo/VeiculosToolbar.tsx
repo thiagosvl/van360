@@ -195,16 +195,19 @@ export function VeiculosToolbar({
                 </div>
               </div>
 
-              <div className="pt-6 pb-6 flex flex-col gap-3">
-                <Button className="w-full h-12 rounded-xl" onClick={handleApplyFilters}>
-                  Aplicar Filtros
-                </Button>
+              <div className="pt-6 pb-6 flex gap-3">
                 <Button
                   variant="outline"
-                  className="w-full h-12 rounded-xl"
+                  className="flex-1 h-12 rounded-xl"
                   onClick={handleClearMobileFilters}
                 >
-                  Limpar Filtros
+                  Limpar
+                </Button>
+                <Button 
+                  className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700" 
+                  onClick={handleApplyFilters}
+                >
+                  Aplicar Filtros
                 </Button>
               </div>
             </div>
