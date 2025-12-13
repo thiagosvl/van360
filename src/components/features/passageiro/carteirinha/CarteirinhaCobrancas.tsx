@@ -12,7 +12,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
-import { getCobrancaMobileActions } from "@/hooks/business/getCobrancaMobileActions";
+import { useCobrancaActions } from "@/hooks/business/useCobrancaActions";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
@@ -36,6 +36,7 @@ import {
     Plus,
     RotateCcw,
 } from "lucide-react";
+import { memo, ReactNode } from "react";
 
 interface CarteirinhaCobrancasProps {
   cobrancas: Cobranca[];
@@ -65,6 +66,42 @@ interface CarteirinhaCobrancasProps {
 }
 
 const COBRANCAS_LIMIT_DEFAULT = 3;
+
+// Wrapper for Mobile Actions ensuring Hooks compliance
+const CobrancaMobileItemWrapper = memo(({ 
+  cobranca, 
+  children, 
+  plano, 
+  onUpgrade,
+  onVerCobranca,
+  onEditarCobranca,
+  onRegistrarPagamento,
+  showHint
+}: {
+  cobranca: Cobranca;
+  children: ReactNode;
+  plano: any;
+  onUpgrade?: (f: string, d: string) => void;
+  onVerCobranca: () => void;
+  onEditarCobranca: () => void;
+  onRegistrarPagamento: () => void;
+  showHint?: boolean;
+}) => {
+  const actions = useCobrancaActions({
+    cobranca,
+    plano,
+    onUpgrade,
+    onVerCobranca,
+    onEditarCobranca,
+    onRegistrarPagamento,
+  });
+  
+  return (
+    <MobileActionItem actions={actions} showHint={showHint}>
+      {children}
+    </MobileActionItem>
+  );
+});
 
 export const CarteirinhaCobrancas = ({
   cobrancas,
@@ -259,19 +296,6 @@ export const CarteirinhaCobrancas = ({
                         );
                       }
 
-                      const actions = getCobrancaMobileActions({
-                          cobranca,
-                          plano,
-                          onVerCobranca: () => onNavigateToCobranca(cobranca.id),
-                          onEditarCobranca: () => onEditCobranca(cobranca),
-                          onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
-                          onEnviarNotificacao: () => onEnviarNotificacao(cobranca.id),
-                          onToggleLembretes: () => onToggleLembretes(cobranca),
-                          onDesfazerPagamento: () => onDesfazerPagamento(cobranca.id),
-                          onExcluirCobranca: () => onExcluirCobranca(cobranca),
-                          onUpgrade: onUpgrade
-                      });
-
                       return (
                         <motion.div
                           key={cobranca.id}
@@ -291,7 +315,15 @@ export const CarteirinhaCobrancas = ({
                             {circleIcon}
                           </div>
 
-                          <MobileActionItem actions={actions} showHint={index === 0}>
+                          <CobrancaMobileItemWrapper
+                             cobranca={cobranca}
+                             plano={plano}
+                             onUpgrade={onUpgrade}
+                             onVerCobranca={() => onNavigateToCobranca(cobranca.id)}
+                             onEditarCobranca={() => onEditCobranca(cobranca)}
+                             onRegistrarPagamento={() => onRegistrarPagamento(cobranca)}
+                             showHint={index === 0}
+                          >
                             <div
                               className="bg-white rounded-xl border border-gray-100 shadow-sm transition-all p-4 cursor-pointer"
                               onClick={() => onNavigateToCobranca(cobranca.id)}
@@ -307,7 +339,6 @@ export const CarteirinhaCobrancas = ({
                                     Vence em {formatDateToBR(cobranca.data_vencimento)}
                                   </p>
                                 </div>
-                                {/* Menu removed */}
                               </div>
 
                               {/* CORPO: Valor e Status lado a lado */}
@@ -350,7 +381,7 @@ export const CarteirinhaCobrancas = ({
                                 </div>
                               )}
                             </div>
-                          </MobileActionItem>
+                          </CobrancaMobileItemWrapper>
                         </motion.div>
                       );
                     })}
@@ -458,18 +489,6 @@ export const CarteirinhaCobrancas = ({
                               onEditarCobranca={() => onEditCobranca(cobranca)}
                               onRegistrarPagamento={() =>
                                 onRegistrarPagamento(cobranca)
-                              }
-                              onEnviarNotificacao={() =>
-                                onEnviarNotificacao(cobranca.id)
-                              }
-                              onToggleLembretes={() =>
-                                onToggleLembretes(cobranca)
-                              }
-                              onDesfazerPagamento={() =>
-                                onDesfazerPagamento(cobranca.id)
-                              }
-                              onExcluirCobranca={() =>
-                                onExcluirCobranca(cobranca)
                               }
                               onUpgrade={onUpgrade}
                             />

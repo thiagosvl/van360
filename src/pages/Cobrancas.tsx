@@ -1,5 +1,5 @@
 // React
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, memo, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
 // React Router
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -23,7 +23,7 @@ import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import { CobrancasFilters } from "@/components/features/cobranca/CobrancasFilters";
 import { ListSkeleton } from "@/components/skeletons";
 import {
-  useCobrancas
+    useCobrancas
 } from "@/hooks";
 import { useCobrancaActions } from "@/hooks/business/useCobrancaActions";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -32,10 +32,10 @@ import { useSession } from "@/hooks/business/useSession";
 // Utils
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
-  formatDateToBR,
-  formatPaymentType,
-  getStatusColor,
-  meses
+    formatDateToBR,
+    formatPaymentType,
+    getStatusColor,
+    meses
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 
@@ -47,10 +47,9 @@ import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { UnifiedEmptyState } from "@/components/empty";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
-  PASSAGEIRO_COBRANCA_STATUS_PAGO
+    PASSAGEIRO_COBRANCA_STATUS_PAGO
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -59,9 +58,49 @@ import { BellOff, CheckCircle2, DollarSign, TrendingUp, Wallet } from "lucide-re
 
 // --- Internal Components ---
 import { MobileActionItem } from "@/components/common/MobileActionItem";
-import { getCobrancaMobileActions } from "@/hooks/business/getCobrancaMobileActions";
 
+interface CobrancaMobileItemWrapperProps {
+  cobranca: Cobranca;
+  children: ReactNode;
+  plano: any;
+  onUpgrade: (feature: string, description: string) => void;
+  onVerCobranca: () => void;
+  onVerCarteirinha: () => void;
+  onEditarCobranca: () => void;
+  onRegistrarPagamento: () => void;
+  onActionSuccess: () => void;
+  index: number;
+}
 
+const CobrancaMobileItemWrapper = memo(({ 
+  cobranca, 
+  children, 
+  plano, 
+  onUpgrade,
+  onVerCobranca,
+  onVerCarteirinha,
+  onEditarCobranca,
+  onRegistrarPagamento,
+  onActionSuccess,
+  index
+}: CobrancaMobileItemWrapperProps) => {
+  const actions = useCobrancaActions({
+    cobranca,
+    plano,
+    onUpgrade,
+    onVerCobranca,
+    onVerCarteirinha,
+    onEditarCobranca,
+    onRegistrarPagamento,
+    onActionSuccess
+  });
+  
+  return (
+    <MobileActionItem actions={actions} showHint={index === 0}>
+      {children}
+    </MobileActionItem>
+  );
+});
 
 // --- Main Component ---
 
@@ -112,28 +151,18 @@ const Cobrancas = () => {
 
   // Dialog States
 
-
-
   
   const { user, loading: isSessionLoading } = useSession();
   const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
   const permissions = usePermissions();
 
-  const { 
-    handleToggleLembretes, 
-    handleEnviarNotificacao, 
-    handleDesfazerPagamento,
-    handleDeleteCobranca,
-    handleUpgrade,
-    isActionLoading
-  } = useCobrancaActions({
-     plano: plano,
-     onActionSuccess: () => {
-         // Optionally refetch actions
-     }
-  });
-
-
+  const handleUpgrade = useCallback((featureName: string, description: string) => {
+    openLimiteFranquiaDialog({
+      title: featureName,
+      description: description,
+      hideLimitInfo: true,
+    });
+  }, [openLimiteFranquiaDialog]);
 
   const [buscaAbertas, setBuscaAbertas] = useState("");
   const [buscaPagas, setBuscaPagas] = useState("");
@@ -185,8 +214,6 @@ const Cobrancas = () => {
     setAnoFilter(newAno);
   }, []);
 
-
-
   const openPaymentDialog = useCallback((cobranca: Cobranca) => {
     setSelectedCobranca(cobranca);
     setPaymentDialogOpen(true);
@@ -203,8 +230,6 @@ const Cobrancas = () => {
   useEffect(() => {
     setPageTitle("Cobranças");
   }, [setPageTitle]);
-
-
 
   useEffect(() => {
     if (mesFilter || anoFilter) {
@@ -371,24 +396,19 @@ const Cobrancas = () => {
                           );
                         })()
                      }
-                     mobileItemRenderer={(cobranca, index) => {
-                      const actions = getCobrancaMobileActions({
-                        cobranca,
-                        plano,
-                        onVerCobranca: () => navigateToDetails(cobranca),
-                        onEditarCobranca: () => handleEditCobrancaClick(cobranca),
-                        onRegistrarPagamento: () => openPaymentDialog(cobranca),
-                        onEnviarNotificacao: () => handleEnviarNotificacao(cobranca),
-                        onToggleLembretes: () => handleToggleLembretes(cobranca),
-                        onDesfazerPagamento: () => handleDesfazerPagamento(cobranca),
-                        onExcluirCobranca: () => handleDeleteCobranca(cobranca),
-                        onVerCarteirinha: () => navigate(`/passageiros/${cobranca.passageiro_id}`),
-                        onUpgrade: handleUpgrade
-                      });
-
-                      return (
+                     mobileItemRenderer={(cobranca, index) => (
                       <Fragment key={cobranca.id}>
-                      <MobileActionItem actions={actions} showHint={index === 0}>
+                      <CobrancaMobileItemWrapper
+                         cobranca={cobranca}
+                         index={index}
+                         plano={plano}
+                         onUpgrade={handleUpgrade}
+                         onVerCobranca={() => navigateToDetails(cobranca)}
+                         onVerCarteirinha={() => navigate(`/passageiros/${cobranca.passageiro_id}`)}
+                         onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
+                         onRegistrarPagamento={() => openPaymentDialog(cobranca)}
+                         onActionSuccess={refetchCobrancas}
+                      >
                       <div
                         onClick={() => navigateToDetails(cobranca)}
                         className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
@@ -424,7 +444,6 @@ const Cobrancas = () => {
                               </p>
                             </div>
                           </div>
-                          {/* Menu removed, handled by Swipe */}
                         </div>
 
                         {/* Linha 3: Data + Status (Rodapé) */}
@@ -452,7 +471,7 @@ const Cobrancas = () => {
                           </div>
                         </div>
                       </div>
-                      </MobileActionItem>
+                      </CobrancaMobileItemWrapper>
 
                       {/* Inline Prompt Mobile (Após o 3º item) */}
                       {index === 2 && !permissions.canUseAutomatedCharges && (
@@ -465,8 +484,7 @@ const Cobrancas = () => {
                         />
                       )}
                       </Fragment>
-                    );
-                  }}
+                    )}
                   >
                     <div className="rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
                       <table className="w-full">
@@ -556,10 +574,7 @@ const Cobrancas = () => {
                                   onVerCobranca={() => navigateToDetails(cobranca)}
                                   onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
                                   onRegistrarPagamento={() => openPaymentDialog(cobranca)}
-                                  onEnviarNotificacao={() => handleEnviarNotificacao(cobranca)}
-                                  onToggleLembretes={() => handleToggleLembretes(cobranca)}
-                                  onDesfazerPagamento={() => handleDesfazerPagamento(cobranca)}
-                                  onExcluirCobranca={() => handleDeleteCobranca(cobranca)}
+                                  onActionSuccess={refetchCobrancas}
                                   onUpgrade={handleUpgrade}
                                 />
                               </td>
@@ -588,23 +603,19 @@ const Cobrancas = () => {
                            }
                         />
                      }
-                      mobileItemRenderer={(cobranca, index) => {
-                        const actions = getCobrancaMobileActions({
-                          cobranca,
-                          plano,
-                          onVerCobranca: () => navigateToDetails(cobranca),
-                          onEditarCobranca: () => handleEditCobrancaClick(cobranca),
-                          onRegistrarPagamento: () => openPaymentDialog(cobranca),
-                          onEnviarNotificacao: () => handleEnviarNotificacao(cobranca),
-                          onToggleLembretes: () => handleToggleLembretes(cobranca),
-                          onDesfazerPagamento: () => handleDesfazerPagamento(cobranca),
-                          onExcluirCobranca: () => handleDeleteCobranca(cobranca),
-                          onVerCarteirinha: () => navigate(`/passageiros/${cobranca.passageiro_id}`),
-                          onUpgrade: handleUpgrade
-                        });
-
-                        return (
-                        <MobileActionItem key={cobranca.id} actions={actions} showHint={index === 0}>
+                      mobileItemRenderer={(cobranca, index) => (
+                        <CobrancaMobileItemWrapper
+                         key={cobranca.id}
+                         cobranca={cobranca}
+                         index={index}
+                         plano={plano}
+                         onUpgrade={handleUpgrade}
+                         onVerCobranca={() => navigateToDetails(cobranca)}
+                         onVerCarteirinha={() => navigate(`/passageiros/${cobranca.passageiro_id}`)}
+                         onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
+                         onRegistrarPagamento={() => openPaymentDialog(cobranca)}
+                         onActionSuccess={refetchCobrancas}
+                        >
                         <div
                           onClick={() => navigateToDetails(cobranca)}
                           className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
@@ -640,7 +651,6 @@ const Cobrancas = () => {
                                 </p>
                               </div>
                             </div>
-                            {/* Actions removed */}
                           </div>
 
                           {/* Linha 2: Rodapé com Metadados (Separador) */}
@@ -669,9 +679,8 @@ const Cobrancas = () => {
                             </div>
                           </div>
                         </div>
-                        </MobileActionItem>
-                      );
-                    }}
+                        </CobrancaMobileItemWrapper>
+                      )}
                   >
                     <div className="rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
                       {/* Desktop Table */}
@@ -761,10 +770,7 @@ const Cobrancas = () => {
                                     onVerCobranca={() => navigateToDetails(cobranca)}
                                     onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
                                     onRegistrarPagamento={() => openPaymentDialog(cobranca)}
-                                    onEnviarNotificacao={() => handleEnviarNotificacao(cobranca)}
-                                    onToggleLembretes={() => handleToggleLembretes(cobranca)}
-                                    onDesfazerPagamento={() => handleDesfazerPagamento(cobranca)}
-                                    onExcluirCobranca={() => handleDeleteCobranca(cobranca)}
+                                    onActionSuccess={refetchCobrancas}
                                     onUpgrade={handleUpgrade}
                                   />
                                 </td>
@@ -791,6 +797,7 @@ const Cobrancas = () => {
               dataVencimento={selectedCobranca.data_vencimento}
               onPaymentRecorded={() => {
                 setPaymentDialogOpen(false);
+                refetchCobrancas();
                 if (!permissions.canUseAutomatedCharges) {
                   handleUpgrade("Cobranças Automáticas", "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?");
                 }
@@ -798,21 +805,16 @@ const Cobrancas = () => {
             />
           )}
 
-
-
-          {cobrancaToEdit && (
+          {editDialogOpen && cobrancaToEdit && (
             <CobrancaEditDialog
-              isOpen={editDialogOpen}
-              onClose={() => safeCloseDialog(() => setEditDialogOpen(false))}
+              open={editDialogOpen}
+              onOpenChange={setEditDialogOpen}
               cobranca={cobrancaToEdit}
-              onCobrancaUpdated={handleCobrancaUpdated}
+              refreshQueries={handleCobrancaUpdated}
             />
           )}
-
-
         </div>
       </PullToRefreshWrapper>
-      <LoadingOverlay active={isActionLoading} text="Aguarde..." />
     </>
   );
 };

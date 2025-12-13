@@ -1,32 +1,24 @@
+import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { BlurredValue } from "@/components/common/BlurredValue";
-import { MobileAction, MobileActionItem } from "@/components/common/MobileActionItem";
+import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useGastoActions } from "@/hooks/business/useGastoActions";
 import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
-import { safeCloseDialog } from "@/utils/dialogUtils";
 import { formatDateToBR } from "@/utils/formatters";
 import {
-  Bus,
-  Calendar,
-  ClipboardCheck,
-  Cog,
-  Edit,
-  Ellipsis,
-  FileText,
-  Fuel,
-  HelpCircle,
-  MoreVertical,
-  Trash2,
-  Wallet,
-  Wrench,
+    Bus,
+    Calendar,
+    ClipboardCheck,
+    Cog,
+    Ellipsis,
+    FileText,
+    Fuel,
+    HelpCircle,
+    Wallet,
+    Wrench,
 } from "lucide-react";
+import { memo } from "react";
 
 interface GastosListProps {
   gastos: Gasto[];
@@ -34,74 +26,6 @@ interface GastosListProps {
   onDelete: (id: string) => void;
   isRestricted?: boolean;
   veiculos?: { id: string; placa: string }[];
-}
-
-interface GastoActionsDropdownProps {
-  gasto: Gasto;
-  onEdit: (gasto: Gasto) => void;
-  onDelete: (id: string) => void;
-  triggerClassName?: string;
-  triggerSize?: "sm" | "icon";
-  disabled?: boolean;
-}
-
-function GastoActionsDropdown({
-  gasto,
-  onEdit,
-  onDelete,
-  triggerClassName = "h-8 w-8 p-0",
-  triggerSize = "sm",
-  disabled = false,
-}: GastoActionsDropdownProps) {
-  if (disabled) {
-    return (
-      <Button
-        variant="ghost"
-        size={triggerSize}
-        className={triggerClassName}
-        disabled
-      >
-        <MoreVertical className="h-8 w-8 text-gray-300" />
-      </Button>
-    );
-  }
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size={triggerSize}
-          className={triggerClassName}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MoreVertical className="h-8 w-8 text-gray-400 hover:text-gray-600" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            safeCloseDialog(() => onEdit(gasto));
-          }}
-        >
-          <Edit className="w-4 h-4 mr-2" />
-          Editar
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(gasto.id);
-          }}
-          className="text-red-600 cursor-pointer"
-        >
-          <Trash2 className="w-4 h-4 mr-2" />
-          Excluir
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
 }
 
 const getCategoryConfig = (categoria: string) => {
@@ -141,6 +65,91 @@ const getCategoryConfig = (categoria: string) => {
   }
 };
 
+const GastoActionsMenu = memo(function GastoActionsMenu({
+  gasto,
+  onEdit,
+  onDelete,
+  isRestricted,
+}: { gasto: Gasto } & Pick<
+  GastosListProps,
+  "onEdit" | "onDelete" | "isRestricted"
+>) {
+  const actions = useGastoActions({ gasto, onEdit, onDelete, isRestricted });
+  return <ActionsDropdown actions={actions} disabled={isRestricted} />;
+});
+
+const GastoMobileCard = memo(function GastoMobileCard({
+  gasto,
+  index,
+  onEdit,
+  onDelete,
+  isRestricted,
+  veiculos,
+}: { gasto: Gasto; index: number } & GastosListProps) {
+  const { icon: Icon, color, bg } = getCategoryConfig(gasto.categoria);
+
+  const getVeiculoPlaca = (veiculoId?: string | null) => {
+    if (!veiculoId) return null;
+    return veiculos?.find((v) => v.id === veiculoId)?.placa || null;
+  };
+  const placa = getVeiculoPlaca(gasto.veiculo_id);
+
+  const actions = useGastoActions({ gasto, onEdit, onDelete, isRestricted });
+
+  return (
+    <MobileActionItem actions={actions as any} showHint={index === 0}>
+      <div
+        onClick={() => !isRestricted && onEdit(gasto)}
+        className={cn(
+          "bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 transition-transform",
+          isRestricted ? "" : "active:scale-[0.99]"
+        )}
+      >
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <div className="flex items-center gap-3">
+            <div
+              className={`h-8 w-8 rounded-full flex items-center justify-center ${bg} ${color}`}
+            >
+              <Icon className="h-4 w-4" />
+            </div>
+            <div className="flex flex-col">
+              <p className="font-bold text-gray-900 text-sm leading-tight">
+                {gasto.categoria}
+              </p>
+              {placa && (
+                <div className="flex items-center gap-1 mt-0.5">
+                  <Bus className="w-3 h-3 text-gray-400" />
+                  <span className="text-[10px] font-medium text-gray-500">
+                    {placa}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-between items-end mb-3">
+          <p className="text-xs text-muted-foreground max-w-[60%] line-clamp-2">
+            {gasto.descricao || "Sem descrição"}
+          </p>
+          <p className="font-bold text-gray-900 text-base">
+            <BlurredValue
+              value={gasto.valor}
+              visible={!isRestricted}
+              type="currency"
+            />
+          </p>
+        </div>
+
+        <div className="flex items-center pt-2 border-t border-gray-50 text-xs text-gray-500">
+          <Calendar className="w-3 h-3 mr-1.5" />
+          {!isRestricted ? formatDateToBR(gasto.data) : "Dia, mês e ano"}
+        </div>
+      </div>
+    </MobileActionItem>
+  );
+});
+
 export function GastosList({
   gastos,
   onEdit,
@@ -156,82 +165,18 @@ export function GastosList({
   return (
     <ResponsiveDataList
       data={gastos}
-      mobileItemRenderer={(gasto, index) => {
-        const { icon: Icon, color, bg } = getCategoryConfig(gasto.categoria);
-        const placa = getVeiculoPlaca(gasto.veiculo_id);
-
-        const actions: MobileAction[] = isRestricted ? [] : [
-          {
-            label: "Editar",
-            icon: <Edit className="h-4 w-4" />,
-            onClick: () => onEdit(gasto),
-            swipeColor: "bg-blue-600",
-          },
-          {
-            label: "Excluir",
-            icon: <Trash2 className="h-4 w-4" />,
-            onClick: () => onDelete(gasto.id),
-            isDestructive: true,
-          }
-        ];
-
-        return (
-          <MobileActionItem
-            key={gasto.id}
-            actions={actions}
-            showHint={index === 0}
-          >
-            <div
-              onClick={() => !isRestricted && onEdit(gasto)}
-              className={cn(
-                "bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 transition-transform",
-                isRestricted ? "" : "active:scale-[0.99]"
-              )}
-            >
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`h-8 w-8 rounded-full flex items-center justify-center ${bg} ${color}`}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div className="flex flex-col">
-                    <p className="font-bold text-gray-900 text-sm leading-tight">
-                      {gasto.categoria}
-                    </p>
-                    {placa && (
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <Bus className="w-3 h-3 text-gray-400" />
-                        <span className="text-[10px] font-medium text-gray-500">
-                          {placa}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-between items-end mb-3">
-                <p className="text-xs text-muted-foreground max-w-[60%] line-clamp-2">
-                  {gasto.descricao || "Sem descrição"}
-                </p>
-                <p className="font-bold text-gray-900 text-base">
-                  <BlurredValue
-                    value={gasto.valor}
-                    visible={!isRestricted}
-                    type="currency"
-                  />
-                </p>
-              </div>
-
-              <div className="flex items-center pt-2 border-t border-gray-50 text-xs text-gray-500">
-                <Calendar className="w-3 h-3 mr-1.5" />
-                {!isRestricted ? formatDateToBR(gasto.data) : "Dia, mês e ano"}
-              </div>
-            </div>
-          </MobileActionItem>
-        );
-      }}
+      mobileItemRenderer={(gasto, index) => (
+        <GastoMobileCard
+          key={gasto.id}
+          gasto={gasto}
+          index={index}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isRestricted={isRestricted}
+          veiculos={veiculos}
+          gastos={gastos} // Props requirement satisfaction
+        />
+      )}
     >
       <div className="rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
         <table className="w-full">
@@ -320,11 +265,11 @@ export function GastosList({
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right align-middle">
-                    <GastoActionsDropdown
+                    <GastoActionsMenu
                       gasto={gasto}
                       onEdit={onEdit}
                       onDelete={onDelete}
-                      disabled={isRestricted}
+                      isRestricted={isRestricted}
                     />
                   </td>
                 </tr>

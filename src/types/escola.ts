@@ -12,4 +12,6 @@ export interface Escola {
   created_at: string;
   updated_at: string;
   passageiros_ativos_count?: number;
+  endereco?: string;
+  telefone?: string;
 }

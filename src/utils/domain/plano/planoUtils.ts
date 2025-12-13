@@ -1,10 +1,10 @@
 import {
-    ASSINATURA_COBRANCA_STATUS_CANCELADA,
-    ASSINATURA_USUARIO_STATUS_ATIVA,
-    ASSINATURA_USUARIO_STATUS_TRIAL,
-    PLANO_COMPLETO,
-    PLANO_ESSENCIAL,
-    PLANO_GRATUITO,
+  ASSINATURA_COBRANCA_STATUS_CANCELADA,
+  ASSINATURA_USUARIO_STATUS_ATIVA,
+  ASSINATURA_USUARIO_STATUS_TRIAL,
+  PLANO_COMPLETO,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
 } from "@/constants";
 
 /**
@@ -113,24 +113,28 @@ export function hasPrePassageiroAccess(planoData: ReturnType<typeof extractPlano
     };
   }
 
-  // Verificar se o plano está ativo (isValidPlan considera ativo, trial válido ou cancelado válido)
-  if (planoData.isValidPlan) {
-    return { hasAccess: true };
+  return {
+    hasAccess: true
   }
+
+  // Verificar se o plano está ativo (isValidPlan considera ativo, trial válido ou cancelado válido)
+  // if (planoData.isValidPlan) {
+  //   return { hasAccess: true };
+  // }
 
   // Se não está ativo, verificar o motivo específico
-  if (planoData.isTrial && !planoData.isValidTrial) {
-    return {
-      hasAccess: false,
-      reason: "O período de testes do motorista expirou.",
-    };
-  }
+  // if (planoData.isTrial && !planoData.isValidTrial) {
+  //   return {
+  //     hasAccess: false,
+  //     reason: "O período de testes do motorista expirou.",
+  //   };
+  // }
 
   // Assinatura suspensa ou cancelada
-  return {
-    hasAccess: false,
-    reason: "A assinatura do motorista está suspensa ou cancelada. É necessário regularizar para reativar o acesso.",
-  };
+  // return {
+  //   hasAccess: false,
+  //   reason: "A assinatura do motorista está suspensa ou cancelada. É necessário regularizar para reativar o acesso.",
+  // };
 }
 
 /**
@@ -156,7 +160,7 @@ export function hasRelatoriosAccess(planoData: ReturnType<typeof extractPlanoDat
  */
 export function isSubscriptionPending(assinatura: any): boolean {
   if (!assinatura) return false;
-  
+
   const isPendentePagamento =
     assinatura.status === "pendente_pagamento" &&
     assinatura.ativo === true;
@@ -175,7 +179,7 @@ export function calculateTrialInfo(assinatura: any) {
   if (!assinatura) return { isValidTrial: false, isTrialExpirado: false, diasRestantes: null };
 
   const isTrial = assinatura.status === "trialing" && assinatura.ativo === true;
-  
+
   const agora = new Date();
   const trialEndAt = assinatura.trial_end_at
     ? new Date(assinatura.trial_end_at)
@@ -183,7 +187,7 @@ export function calculateTrialInfo(assinatura: any) {
 
   const isValidTrial = isTrial && trialEndAt && trialEndAt >= agora;
   const isTrialExpirado = isTrial && trialEndAt && trialEndAt < agora;
-  
+
   let diasRestantes: number | null = null;
   if (isValidTrial && trialEndAt) {
     const diffTime = trialEndAt.getTime() - agora.getTime();

@@ -15,7 +15,7 @@ import {
     useCobranca,
     useCobrancaNotificacoes,
 } from "@/hooks";
-import { useCobrancaActions } from "@/hooks/business/useCobrancaActions";
+import { useCobrancaOperations } from "@/hooks/business/useCobrancaActions";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { cn } from "@/lib/utils";
@@ -236,7 +236,8 @@ export default function PassageiroCobranca() {
     handleDeleteCobranca,
     handleUpgrade,
     isActionLoading
-  } = useCobrancaActions({
+  } = useCobrancaOperations({
+     cobranca: cobranca!, // Asserting non-null because of checks above
      plano: plano,
      onActionSuccess: () => {
          refetchCobranca();
@@ -618,7 +619,7 @@ export default function PassageiroCobranca() {
                             size="lg"
                             variant="outline"
                             className="h-12 px-8 rounded-xl border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 w-full sm:w-auto min-w-[200px]"
-                            onClick={() => handleDesfazerPagamento(cobrancaTyped)}
+                            onClick={handleDesfazerPagamento}
                           >
                             <History className="w-4 h-4 mr-2" />
                             Desfazer Pagamento
@@ -659,7 +660,7 @@ export default function PassageiroCobranca() {
                             size="sm"
                             className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
                             disabled={seForPago(cobrancaTyped)}
-                            onClick={() => handleEnviarNotificacao(cobrancaTyped)}
+                            onClick={handleEnviarNotificacao}
                           >
                             <Send className="w-3.5 h-3.5 mr-2" /> Enviar
                             Cobrança
@@ -669,7 +670,7 @@ export default function PassageiroCobranca() {
                             size="sm"
                             className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
                             disabled={seForPago(cobrancaTyped)}
-                            onClick={() => handleToggleLembretes(cobrancaTyped)}
+                            onClick={handleToggleLembretes}
                           >
                             {cobrancaTyped.desativar_lembretes ? (
                               <>
@@ -691,7 +692,7 @@ export default function PassageiroCobranca() {
                         variant="ghost"
                         className="text-red-400 hover:text-red-600 hover:bg-red-50 font-medium text-xs h-8 px-3 rounded-md transition-colors"
                         disabled={disableExcluirCobranca(cobrancaTyped)}
-                        onClick={() => handleDeleteCobranca(cobrancaTyped, { redirectAfter: true })}
+                        onClick={handleDeleteCobranca}
                       >
                         <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir cobrança
                       </Button>
