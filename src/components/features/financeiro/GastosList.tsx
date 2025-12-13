@@ -112,19 +112,24 @@ const GastoMobileCard = memo(function GastoMobileCard({
             >
               <Icon className="h-4 w-4" />
             </div>
-            <div className="flex flex-col">
-              <p className="font-bold text-gray-900 text-sm leading-tight">
-                {gasto.categoria}
-              </p>
-              {placa && (
+              <div className="flex flex-col">
+                <p className="font-bold text-gray-900 text-sm leading-tight">
+                  {gasto.categoria}
+                </p>
                 <div className="flex items-center gap-1.5 mt-1">
-                  <span className="text-[10px] font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded-md border border-gray-200 inline-flex items-center gap-1">
-                    <Bus className="w-3 h-3 text-gray-500" />
-                    {placa}
-                  </span>
+                  {placa ? (
+                    <span className="text-[10px] font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded-md border border-gray-200 inline-flex items-center gap-1">
+                      <Bus className="w-3 h-3 text-gray-500" />
+                      {placa}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100 inline-flex items-center gap-1">
+                      <Bus className="w-3 h-3 text-gray-400" />
+                      Sem Veículo
+                    </span>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
           </div>
         </div>
 
@@ -235,15 +240,17 @@ export function GastosList({
                     </div>
                   </td>
                   <td className="px-6 py-4 align-middle">
-                    {placa ? (
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      {placa ? (
                         <span className="text-xs font-semibold text-gray-700 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
                           {placa}
                         </span>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-gray-400">-</span>
-                    )}
+                      ) : (
+                        <span className="text-xs font-semibold text-gray-400 bg-gray-50 px-2 py-1 rounded-md border border-gray-100 italic">
+                          Sem Veículo
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 align-middle">
                     <span className="text-sm text-gray-500 max-w-[200px] block truncate">
