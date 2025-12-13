@@ -13,6 +13,11 @@ export const formatDate = (date: string | Date) => {
     return date;
   }
 
+  // Check if string already contains time info (T) or is effectively ISO
+  if (date.includes("T")) {
+    return new Date(date);
+  }
+
   return new Date(`${date}T00:00:00`);
 };
 

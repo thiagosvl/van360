@@ -116,6 +116,18 @@ export const MOCK_DATA_NO_ACCESS_RELATORIOS = {
   },
 };
 
+const today = new Date();
+const daysAgo = (days: number) => {
+  const date = new Date(today);
+  date.setDate(date.getDate() - days);
+  return date.toISOString().split("T")[0];
+};
+
+export const MOCK_VEICULOS = [
+  { id: "mock-v1", placa: "ABC-1234", nome: "Van Escolar 1" },
+  { id: "mock-v2", placa: "EQB-4321", nome: "Van Executiva" },
+];
+
 export const MOCK_DATA_NO_ACCESS_GASTOS = {
   totalGasto: 12500.5,
   principalCategoriaData: {
@@ -130,45 +142,60 @@ export const MOCK_DATA_NO_ACCESS_GASTOS = {
       categoria: "Combustível",
       descricao: "Abastecimento Semanal",
       valor: 450.0,
-      data: null,
-      created_at: "2024-03-10T10:00:00.000Z",
+      data: daysAgo(2),
+      created_at: daysAgo(2),
       usuario_id: "mock",
+      veiculo_id: "mock-v1",
     },
     {
       id: "2",
       categoria: "Manutenção",
       descricao: "Troca de Óleo",
       valor: 250.0,
-      data: null,
-      created_at: "2024-03-12T14:30:00.000Z",
+      data: daysAgo(5),
+      created_at: daysAgo(5),
       usuario_id: "mock",
+      veiculo_id: "mock-v2",
     },
     {
       id: "3",
       categoria: "Salário",
-      descricao: "Adiantamento Motorista",
+      descricao: "Adiantamento Monitor",
       valor: 1200.0,
-      data: null,
-      created_at: "2024-03-15T09:00:00.000Z",
+      data: daysAgo(8),
+      created_at: daysAgo(8),
       usuario_id: "mock",
+      veiculo_id: null,
     },
     {
       id: "4",
       categoria: "Vistorias",
       descricao: "Vistoria Semestral",
       valor: 150.0,
-      data: null,
-      created_at: "2024-03-18T11:00:00.000Z",
+      data: daysAgo(12),
+      created_at: daysAgo(12),
       usuario_id: "mock",
+      veiculo_id: "mock-v1",
     },
     {
       id: "5",
       categoria: "Documentação",
       descricao: "Licenciamento Anual",
       valor: 350.0,
-      data: null,
-      created_at: "2024-03-20T16:00:00.000Z",
+      data: daysAgo(15),
+      created_at: daysAgo(15),
       usuario_id: "mock",
+      veiculo_id: null,
+    },
+    {
+      id: "6",
+      categoria: "Combustível",
+      descricao: "Abastecimento Extra",
+      valor: 300.0,
+      data: daysAgo(18),
+      created_at: daysAgo(18),
+      usuario_id: "mock",
+      veiculo_id: "mock-v2",
     },
   ],
 };

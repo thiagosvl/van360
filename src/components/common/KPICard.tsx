@@ -1,5 +1,7 @@
+
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { cn } from "@/lib/utils";
+import { Lock } from "lucide-react";
 import React from "react";
 
 interface KPICardProps {
@@ -12,7 +14,8 @@ interface KPICardProps {
   className?: string;
   countLabel?: string;
   countVisible?: boolean;
-  countText?: React.ReactNode; // New prop for custom text instead of automatic "N Label"
+  countText?: React.ReactNode;
+  restricted?: boolean;
 }
 
 export function KPICard({
@@ -26,6 +29,7 @@ export function KPICard({
   countLabel = "Passageiro",
   countVisible = true,
   countText,
+  restricted,
 }: KPICardProps) {
   // Verificar se value é um ReactNode (elemento React)
   const isReactNode = React.isValidElement(value);
@@ -63,7 +67,7 @@ export function KPICard({
   return (
     <div
       className={cn(
-        "bg-white p-2 sm:p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3 sm:gap-4 flex-1 min-w-[140px]",
+        "bg-white p-2 sm:p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3 sm:gap-4 flex-1 min-w-[140px] relative overflow-hidden",
         className
       )}
     >
@@ -75,7 +79,7 @@ export function KPICard({
       >
         <Icon className={cn("h-3 w-3 sm:h-5 sm:w-5", colorClass)} />
       </div>
-      <div>
+      <div className="relative z-10">
         <p className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
           {title}
         </p>
@@ -97,6 +101,12 @@ export function KPICard({
              </div>
         )}
       </div>
+      
+      {restricted && (
+        <div className="absolute right-2 bottom-2 h-6 w-6 bg-orange-100/50 rounded-full flex items-center justify-center z-0">
+             <Lock className="h-4 w-4 text-orange-400 ml-1 mt-1" />
+        </div>
+      )}
     </div>
   );
 }

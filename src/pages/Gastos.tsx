@@ -38,6 +38,7 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 // Utils
 import { PLANO_ESSENCIAL } from "@/constants";
 import { cn } from "@/lib/utils";
+import { MOCK_VEICULOS } from "@/utils/mocks/restrictedData";
 // import { enablePageActions } from "@/utils/domain/pages/pagesUtils"; // DEPRECATED
 
 // Types
@@ -85,7 +86,7 @@ export default function Gastos() {
   
   // Authorization Hook
   // Authorization Hook
-  const { profile, isLoading: isAuthLoading, canViewModuleGastos } = usePermissions();
+  const { profile, isLoading: isAuthLoading, canViewModuleGastos, refetchProfile } = usePermissions();
   const enabledPageActions = canViewModuleGastos;
   const loadingActions = isAuthLoading;
 
@@ -182,6 +183,7 @@ export default function Gastos() {
                 countLabel="Registro"
                 className="col-span-2 md:col-span-1"
                 countVisible={enabledPageActions}
+                restricted={!enabledPageActions}
               />
 
               <KPICard
@@ -216,6 +218,7 @@ export default function Gastos() {
                   )
                 }
                 countVisible={enabledPageActions}
+                restricted={!enabledPageActions}
               />
 
               <KPICard
@@ -238,6 +241,7 @@ export default function Gastos() {
                   />
                 }
                 countVisible={enabledPageActions}
+                restricted={!enabledPageActions}
               />
             </div>
 
@@ -262,11 +266,11 @@ export default function Gastos() {
                       : openContextualUpsellDialog({
                           feature: "controle_gastos",
                           targetPlan: PLANO_ESSENCIAL,
-                          onSuccess: () => window.location.reload()
+                          onSuccess: () => refetchProfile()
                         })
                   }
                   categorias={CATEGORIAS_GASTOS}
-                  veiculos={veiculos.map((v) => ({ id: v.id, placa: v.placa }))}
+                  veiculos={enabledPageActions ? veiculos.map((v) => ({ id: v.id, placa: v.placa })) : MOCK_VEICULOS}
                   disabled={loading || loadingActions}
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
@@ -282,9 +286,14 @@ export default function Gastos() {
                       )}
                     >
                     {!enabledPageActions && !loading && (
-                      <div className="mb-4 bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-center justify-center gap-2 text-xs text-orange-800 font-medium">
-                        <Lock className="w-4 h-4" />
-                        <span>Os registros abaixo são demonstrativos</span>
+                      <div className="mb-4 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-4 flex items-center justify-between shadow-sm">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-orange-200 p-1.5 rounded-full shrink-0">
+                                <Lock className="w-3.5 h-3.5 text-orange-700" />
+                            </div>
+                            <span className="text-sm text-orange-900 font-semibold leading-tight">Seus dados reais estão ocultos</span>
+                        </div>
+                        <span className="text-[10px] uppercase font-bold text-orange-600 tracking-wider shrink-0 whitespace-nowrap ml-4">Modo Demo</span>
                       </div>
                     )}
 
@@ -293,10 +302,10 @@ export default function Gastos() {
                       onEdit={openDialog}
                       onDelete={handleDelete}
                       isRestricted={!enabledPageActions}
-                      veiculos={veiculos.map((v) => ({
+                      veiculos={enabledPageActions ? veiculos.map((v) => ({
                         id: v.id,
                         placa: v.placa,
-                      }))}
+                      })) : MOCK_VEICULOS}
                     />
 
                     {!enabledPageActions && (
@@ -306,22 +315,20 @@ export default function Gastos() {
                             <Lock className="w-8 h-8 text-orange-600" />
                           </div>
                           <h3 className="text-xl font-bold text-gray-900 mb-2">
-                            Para onde está indo seu dinheiro?
+                            Quer ver seu lucro de verdade?
                           </h3>
                           <p className="text-sm text-gray-600 mb-6">
-                            Não deixe o lucro escapar pelo ralo. Controle
-                            combustível e manutenção com precisão para saber seu
-                            lucro real.
+                            Chega de adivinhar. Saiba exatamente quanto sua van gasta com combustível, manutenção e salários e descubra se está tendo lucro ou prejuízo.
                           </p>
                           <Button
                             onClick={() => openContextualUpsellDialog({
                               feature: "controle_gastos",
                               targetPlan: PLANO_ESSENCIAL,
-                              onSuccess: () => window.location.reload()
+                              onSuccess: () => refetchProfile()
                             })}
                             className="bg-orange-600 hover:bg-orange-700 text-white font-semibold h-12 px-8 rounded-xl shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all transform hover:-translate-y-0.5"
                           >
-                            Quero controlar meus gastos
+                            Liberar Acesso
                           </Button>
                         </div>
                       </div>
@@ -373,13 +380,13 @@ export default function Gastos() {
       {/* Mobile Sticky Footer for No Access */}
       <UpgradeStickyFooter
         visible={!enabledPageActions}
-        title="Visualize seus dados reais."
-        description="Libere o acesso agora."
-        buttonText="Ver Planos"
+        title="Quer ver seu lucro real?"
+        description="Chega de adivinhar. Libere seu acesso."
+        buttonText="Liberar Acesso"
         onAction={() => openContextualUpsellDialog({
           feature: "controle_gastos",
           targetPlan: PLANO_ESSENCIAL,
-          onSuccess: () => window.location.reload()
+          onSuccess: () => refetchProfile()
         })}
       />
     </>

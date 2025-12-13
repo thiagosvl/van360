@@ -123,7 +123,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
                       {placa}
                     </span>
                   ) : (
-                    <span className="text-[10px] font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100 inline-flex items-center gap-1">
+                    <span className="text-[10px] font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100 inline-flex items-center gap-1 whitespace-nowrap">
                       <Bus className="w-3 h-3 text-gray-400" />
                       Sem Veículo
                     </span>
@@ -148,7 +148,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
 
         <div className="flex items-center pt-2 border-t border-gray-50 text-xs text-gray-500">
           <Calendar className="w-3 h-3 mr-1.5" />
-          {!isRestricted ? formatDateToBR(gasto.data) : "Dia, mês e ano"}
+          {formatDateToBR(gasto.data)}
         </div>
       </div>
     </MobileActionItem>
@@ -246,7 +246,7 @@ export function GastosList({
                           {placa}
                         </span>
                       ) : (
-                        <span className="text-xs font-semibold text-gray-400 bg-gray-50 px-2 py-1 rounded-md border border-gray-100 italic">
+                        <span className="text-xs font-semibold text-gray-400 bg-gray-50 px-2 py-1 rounded-md border border-gray-100 italic whitespace-nowrap">
                           Sem Veículo
                         </span>
                       )}
