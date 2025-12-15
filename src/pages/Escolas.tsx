@@ -19,20 +19,23 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 
 // Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useDeleteEscola,
-    useEscolas,
-    useFilters,
-    useToggleAtivoEscola,
+  useCreateEscola,
+  useDeleteEscola,
+  useEscolas,
+  useFilters,
+  useToggleAtivoEscola,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 // Utils
+import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 
 // Types
@@ -65,6 +68,35 @@ export default function Escolas() {
   const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
 
   const navigate = useNavigate();
+  const createEscola = useCreateEscola();
+
+  const handleCadastrarRapido = useCallback(async () => {
+    if (!profile?.id) return;
+    
+    // Pick a random school from mockGenerator (now a function)
+    const fakeEscola = { ...mockGenerator.escola() };
+    // Mutate name slightly ONLY if you really want to avoid duplicates, 
+    // but user requested "real" mocks. However, we might need random name if we want multiple.
+    // Let's use it as is first. If backend errors, user will see.
+    // Actually, let's keep the random suffix for now BUT the user said "Use os registros mockados".
+    // I will try to respect the record.
+    // fakeEscola.nome = ... (removed mutation)
+
+    try {
+        await createEscola.mutateAsync({
+            usuarioId: profile.id,
+            data: {
+                ...fakeEscola,
+                ativo: true
+            }
+        });
+        toast.success("Escola fake criada com sucesso!");
+    } catch (error) {
+        // Error handling is already in the mutation hook usually, but good to have safety
+        console.error("Failed to create fake school", error);
+    }
+  }, [profile?.id, createEscola]);
+
 
   const {
     data: escolasData,
@@ -217,7 +249,24 @@ export default function Escolas() {
         <div className="space-y-6">
           <Card className="border-none shadow-none bg-transparent">
             <CardHeader className="p-0">
-              {/* Toolbar moved inside CardContent or kept here if needed, but we want to remove the separate button */}
+              <div className="flex justify-end mb-4 md:hidden">
+                  <Button
+                    onClick={handleCadastrarRapido}
+                    variant="outline"
+                    className="gap-2 text-uppercase w-full"
+                  >
+                    GERAR ESCOLA FAKE
+                  </Button>
+                </div>
+                <div className="hidden md:flex justify-end mb-4">
+                  <Button
+                    onClick={handleCadastrarRapido}
+                    variant="outline"
+                    className="gap-2 text-uppercase"
+                  >
+                    GERAR ESCOLA FAKE
+                  </Button>
+                </div>
             </CardHeader>
 
             <CardContent className="px-0">

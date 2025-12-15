@@ -19,11 +19,13 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 
 // Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
+  useCreateVeiculo,
   useDeleteVeiculo,
   useFilters,
   useToggleAtivoVeiculo,
@@ -34,6 +36,7 @@ import { useSession } from "@/hooks/business/useSession";
 
 // Utils
 import { limparPlaca } from "@/utils/domain/veiculo/placaUtils";
+import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 
 // Types
@@ -67,6 +70,35 @@ export default function Veiculos() {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   const navigate = useNavigate();
+  const createVeiculo = useCreateVeiculo();
+
+  const handleCadastrarRapido = useCallback(async () => {
+    if (!profile?.id) return;
+    
+    // Create new object to avoid reference issues
+    const fakeVeiculo = { ...mockGenerator.veiculo() };
+    // Mutate plate to be unique-ish ONLY if needed. 
+    // The user requested "Use mock records". 
+    // But Vehicles MUST have unique plates usually. 
+    // I will keep the mutation for plate because otherwise I can't create more than 2 vehicles total.
+    const oldPlate = fakeVeiculo.placa;
+    const suffix = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+    // Replace last 2 chars
+    fakeVeiculo.placa = oldPlate.substring(0, oldPlate.length - 2) + suffix;
+
+    try {
+        await createVeiculo.mutateAsync({
+            usuarioId: profile.id,
+            data: {
+                ...fakeVeiculo,
+                ativo: true
+            }
+        });
+        toast.success("Veículo fake criado com sucesso!");
+    } catch (error) {
+        console.error("Failed to create fake vehicle", error);
+    }
+  }, [profile?.id, createVeiculo]);
 
   const {
     data: veiculosData,
@@ -207,7 +239,24 @@ export default function Veiculos() {
         <div className="space-y-6">
           <Card className="border-none shadow-none bg-transparent">
             <CardHeader className="p-0">
-              {/* Toolbar moved inside CardContent or kept here if needed, but we want to remove the separate button */}
+                <div className="flex justify-end mb-4 md:hidden">
+                  <Button
+                    onClick={handleCadastrarRapido}
+                    variant="outline"
+                    className="gap-2 text-uppercase w-full"
+                  >
+                    GERAR VEÍCULO FAKE
+                  </Button>
+                </div>
+                <div className="hidden md:flex justify-end mb-4">
+                  <Button
+                    onClick={handleCadastrarRapido}
+                    variant="outline"
+                    className="gap-2 text-uppercase"
+                  >
+                    GERAR VEÍCULO FAKE
+                  </Button>
+                </div>
             </CardHeader>
 
             <CardContent className="px-0">

@@ -51,6 +51,7 @@ export function ContextualUpsellDialog({
     valor: number;
     nomePlano: string;
   } | null>(null);
+  const [isPaymentVerified, setIsPaymentVerified] = useState(false);
 
   // Find target plan data from API list
   const targetPlanData = planos.find(p => p.slug === targetPlan);
@@ -167,6 +168,14 @@ export function ContextualUpsellDialog({
       }
   };
 
+  const handleClosePayment = () => {
+      setPagamentoDialog(null);
+      if (isPaymentVerified) {
+          onOpenChange(false);
+          if (onSuccess) onSuccess();
+      }
+  };
+
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -272,31 +281,16 @@ export function ContextualUpsellDialog({
     {pagamentoDialog && (
         <PagamentoAssinaturaDialog
             isOpen={pagamentoDialog.isOpen}
-            onClose={() => setPagamentoDialog(null)}
             cobrancaId={pagamentoDialog.cobrancaId}
             valor={pagamentoDialog.valor}
             nomePlano={pagamentoDialog.nomePlano}
-            onPaymentVerified={async () => {
-                // 1. O toast de feedback imediato já é disparado pelo PagamentoPixContent
-                
-                // 2. Aguardar propagação no banco de dados com o dialog ABERTO
-                // Isso permite que o usuário veja a tela de sucesso do PIX enquanto aguarda
-                await new Promise(resolve => setTimeout(resolve, 2500));
-
-                // 3. Atualizar dados (uma única vez via invalidação)
-                // Removemos o refreshProfile() explicito pois o invalidateQueries("profile") já faz isso
-                // Removida invalidação de 'passageiros' aqui pois a responsabilidade é da tela pai via onSuccess
-                await Promise.all([
-                    queryClient.invalidateQueries({ queryKey: ["profile"] }),
-                    queryClient.invalidateQueries({ queryKey: ["plano"] })
-                ]);
-                
-                // 4. Só agora fechar os dialogs
-                setPagamentoDialog(null);
-                if (onSuccess) onSuccess();
-                onOpenChange(false);
+            usuarioId={user?.id}
+            onPaymentVerified={() => {
+                // Sincroniza estado local para permitir fechamento completo
+                setIsPaymentVerified(true);
             }}
-            onPaymentSuccess={() => {}}
+            onPaymentSuccess={handleClosePayment}
+            onClose={handleClosePayment}
         />
     )}
     </>

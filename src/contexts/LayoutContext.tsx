@@ -214,7 +214,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             feature={contextualUpsellDialogState.props.feature}
             targetPlan={contextualUpsellDialogState.props.targetPlan || "completo"} // Default to Completo
             onViewAllPlans={() => {
-                setContextualUpsellDialogState(prev => ({ ...prev, open: false }));
+                // setContextualUpsellDialogState(prev => ({ ...prev, open: false }));
                 setTimeout(() => setIsPlanosDialogOpen(true), 150);
             }}
             onSuccess={contextualUpsellDialogState.props.onSuccess}

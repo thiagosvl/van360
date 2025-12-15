@@ -4,7 +4,7 @@ import { getPlanoUsuario } from "@/utils/domain/plano/planoUtils";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 
-async function fetchProfile(uid: string): Promise<Usuario | null> {
+export async function fetchProfile(uid: string): Promise<Usuario | null> {
   const { data, error } = await supabase
     .from("usuarios")
     .select(

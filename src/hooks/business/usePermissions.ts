@@ -11,7 +11,7 @@ export function usePermissions() {
   // Role extraction from Auth (Strict source of truth per architecture V3)
   const role = user?.app_metadata?.role as string | undefined;
 
-  const { profile, plano, isLoading } = useProfile(user?.id);
+  const { profile, plano, isLoading, refreshProfile } = useProfile(user?.id);
 
   // Regras de Visualização (Páginas/Módulos)
   const canViewModuleGastos = canViewGastos(plano);
@@ -54,6 +54,7 @@ export function usePermissions() {
     // Raw Data (Use com cautela, prefira as flags acima)
     plano,
     role,
-    profile
+    profile,
+    refetchProfile: refreshProfile
   };
 }

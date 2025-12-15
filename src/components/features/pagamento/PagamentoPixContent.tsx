@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ASSINATURA_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useGerarPixParaCobranca } from "@/hooks";
+import { fetchProfile } from "@/hooks/business/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/utils/notifications/toast";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -166,8 +167,17 @@ export default function PagamentoPixContent({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cobrancaId]);
 
+  // State para controlar a tela intermediária de "Processando liberação"
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const hasFetchedRef = useRef(false);
+
   // handlePaymentSuccess
-  const handlePaymentSuccess = useCallback(() => {
+  const handlePaymentSuccess = useCallback(async () => {
+    // Prevent double execution
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+
     if (realtimeChannelRef.current) {
       supabase.removeChannel(realtimeChannelRef.current).catch(() => {});
       realtimeChannelRef.current = null;
@@ -180,22 +190,82 @@ export default function PagamentoPixContent({
 
     monitorandoRef.current = false;
 
-    // Exibir tela de sucesso dentro do mesmo dialog
-    setPaymentConfirmed(true);
-    toast.success("Pagamento confirmado! Finalizando liberação...");
+    // 3. Aguardar propagação inicial no banco (1500ms)
+    // Mantemos esse delay mínimo de segurança para todos os casos (propagação de transação)
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // Notificar pai imediatamente que o sucesso ocorreu (para impedir fechamento parcial)
+    // 4. "Polling Infinito Seguro" (Apenas para Upgrade Interno)
+    let sucesso = false;
+    
+    // No cadastro, o login subsequente fará o fetch limpo. No upgrade, precisamos garantir update local.
+    if (context !== "register") {
+        let tentativa = 0;
+        const MAX_TENTATIVAS = 60; 
+
+        while (tentativa < MAX_TENTATIVAS && !sucesso) {
+            try {
+                // Força busca dos dados frescos usando a query correta (com usuarioId se disponível)
+                // Se não tiver usuarioId (ex: registro), o fetchProfile falha, mas isso não deve acontecer no upgrade
+                
+                let profileData = null;
+                
+                if (usuarioId) {
+                    profileData = await queryClient.fetchQuery({ 
+                        queryKey: ["profile", usuarioId], 
+                        queryFn: () => fetchProfile(usuarioId),
+                        staleTime: 0 
+                    });
+                } else {
+                    // Fallback para profile da sessão atual (kev)
+                     profileData = await queryClient.fetchQuery({ 
+                        queryKey: ["profile"], 
+                        staleTime: 0 
+                    });
+                }
+
+                // Também invalida plano para garantir
+                await queryClient.invalidateQueries({ queryKey: ["plano"] });
+                
+                // Validação: Assinatura ativa encontrada
+                if (profileData) {
+                    sucesso = true;
+                    // Atualiza cache
+                    if (usuarioId) {
+                         queryClient.setQueryData(["profile", usuarioId], profileData);
+                    }
+                } else {
+                    // Polling Híbrido: 250ms na primeira falha, 1s nas seguintes
+                    const delay = tentativa === 0 ? 250 : 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            } catch (err) {
+                // Erro (ex: missing queryFn se não passar), espera 1s
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            tentativa++;
+        }
+    } else {
+        // No registro, assumimos sucesso imediatamente após o delay de segurança
+        sucesso = true;
+    }
+
+    // 5. Finalização: Sai do modo processando e mostra tela de Sucesso
+    setIsProcessing(false);
+    setPaymentConfirmed(true);
+    
+    // Feedback visual apropriado
+    if (!sucesso && context !== "register") {
+        toast.warning("Pagamento recebido, mas a liberação está demorando. Ela ocorrerá automaticamente em instantes.", { duration: 6000 });
+    } else {
+        // Sucesso "silencioso" no toast pois a tela já mudará para Sucesso
+    }
+
+    // Só avisa o pai (liberando clicks) quando tudo estiver pronto
     if (onPaymentVerified) {
         onPaymentVerified();
     }
 
-    // Invalidate queries removed from here to prevent race conditions.
-    // The parent component (ContextualUpsellDialog) handles the orchestration:
-    // 1. Wait for delay (DB propagation)
-    // 2. Invalidate queries once
-    // 3. Close dialogs
-
-    // Iniciar contagem regressiva antes de disparar o callback (login/redirect)
+    // Iniciar contagem regressiva para redirect (só agora que a tela de sucesso vai aparecer)
     if (!redirectSeconds) {
       setRedirectSeconds(10);
       const interval = setInterval(() => {
@@ -203,8 +273,8 @@ export default function PagamentoPixContent({
           if (prev === null) return prev;
           if (prev <= 1) {
             clearInterval(interval);
-            if (onPaymentSuccess) {
-              setTimeout(() => onPaymentSuccess(), 0);
+            if (onPaymentSuccessRef.current) {
+              setTimeout(() => onPaymentSuccessRef.current?.(), 0);
             }
             return 0;
           }
@@ -212,7 +282,13 @@ export default function PagamentoPixContent({
         });
       }, 1000);
     }
-  }, [onPaymentSuccess, redirectSeconds]);
+  }, [redirectSeconds, onPaymentVerified, queryClient, context]);
+
+  // Manter ref atualizada do callback de sucesso para evitar stale closure no timer
+  const onPaymentSuccessRef = useRef(onPaymentSuccess);
+  useEffect(() => {
+    onPaymentSuccessRef.current = onPaymentSuccess;
+  }, [onPaymentSuccess]);
 
   useEffect(() => {
     handlePaymentSuccessRef.current = handlePaymentSuccess;
@@ -231,6 +307,15 @@ export default function PagamentoPixContent({
       }
       monitorandoRef.current = false;
       return;
+    }
+    
+    // Safety check: if payment already confirmed, ensure we stop polling
+    if (paymentConfirmed || hasFetchedRef.current) {
+        if (pollerRef.current) {
+            clearInterval(pollerRef.current);
+            pollerRef.current = null;
+        }
+        return;
     }
 
     if (monitorandoRef.current) {
@@ -380,7 +465,22 @@ export default function PagamentoPixContent({
     }
   }, [dadosPagamento?.qrCodePayload]);
 
-  // Se pagamento confirmado, exibir tela de sucesso
+  // Se estiver processando (Pagamento OK, buscando dados), mostra tela de loading rica
+  if (isProcessing) {
+      return (
+        <div className="flex flex-col items-center w-full max-w-md mx-auto py-8">
+            <div className="bg-emerald-50 rounded-full p-4 mb-4 relative">
+                 <Loader2 className="w-10 h-10 text-emerald-600 animate-spin" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Validando Pagamento...</h2>
+            <p className="text-gray-500 text-center text-sm px-6">
+                Recebemos seu PIX! Estamos finalizando a configuração da sua assinatura. Isso leva apenas alguns segundos.
+            </p>
+        </div>
+      );
+  }
+
+  // Se pagamento confirmado e DADOS JÁ SINCRONIZADOS, exibir tela de sucesso
   if (paymentConfirmed) {
     return (
       <div className="flex flex-col items-center w-full max-w-md mx-auto">

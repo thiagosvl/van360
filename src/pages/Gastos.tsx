@@ -47,11 +47,11 @@ import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 // Icons
 import { UpgradeStickyFooter } from "@/components/common/UpgradeStickyFooter";
 import {
-  CalendarIcon,
-  Lock,
-  TrendingDown,
-  TrendingUp,
-  Wallet,
+    CalendarIcon,
+    Lock,
+    TrendingDown,
+    TrendingUp,
+    Wallet,
 } from "lucide-react";
 
 export default function Gastos() {
@@ -266,7 +266,6 @@ export default function Gastos() {
                       : openContextualUpsellDialog({
                           feature: "controle_gastos",
                           targetPlan: PLANO_ESSENCIAL,
-                          onSuccess: () => refetchProfile()
                         })
                   }
                   categorias={CATEGORIAS_GASTOS}
@@ -324,7 +323,6 @@ export default function Gastos() {
                             onClick={() => openContextualUpsellDialog({
                               feature: "controle_gastos",
                               targetPlan: PLANO_ESSENCIAL,
-                              onSuccess: () => refetchProfile()
                             })}
                             className="bg-orange-600 hover:bg-orange-700 text-white font-semibold h-12 px-8 rounded-xl shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all transform hover:-translate-y-0.5"
                           >
@@ -386,7 +384,6 @@ export default function Gastos() {
         onAction={() => openContextualUpsellDialog({
           feature: "controle_gastos",
           targetPlan: PLANO_ESSENCIAL,
-          onSuccess: () => refetchProfile()
         })}
       />
     </>

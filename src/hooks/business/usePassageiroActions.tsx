@@ -44,24 +44,28 @@ export function usePassageiroActions({
       icon: <CreditCard className="h-4 w-4" />,
       onClick: () => onHistorico(passageiro),
     },
-    {
-      label: passageiro.enviar_cobranca_automatica
-        ? "Pausar Cobrança"
-        : (!hasCobrancaAutomaticaAccess ? "Ativar Cobrança Automática" : "Ativar Cobrança"),
-      icon: passageiro.enviar_cobranca_automatica ? (
-        <BotOff className="h-4 w-4" />
-      ) : (
-        <Bot className="h-4 w-4" />
-      ),
-      onClick: () => {
-         if (hasCobrancaAutomaticaAccess) {
-             onToggleCobrancaAutomatica(passageiro);
-         } else {
-             onOpenUpgradeDialog?.(passageiro.id);
-         }
-      },
-      swipeColor: passageiro.enviar_cobranca_automatica ? "bg-slate-500" : "bg-indigo-600",
-    },
+    ...(passageiro.enviar_cobranca_automatica
+      ? (hasCobrancaAutomaticaAccess
+          ? [{
+              label: "Pausar Cobrança Automática",
+              icon: <BotOff className="h-4 w-4" />,
+              onClick: () => onToggleCobrancaAutomatica(passageiro),
+              swipeColor: "bg-slate-500",
+          }]
+          : [])
+      : [{
+          label: "Ativar Cobrança Automática",
+          icon: <Bot className="h-4 w-4" />,
+          onClick: () => {
+              if (hasCobrancaAutomaticaAccess) {
+                  onToggleCobrancaAutomatica(passageiro);
+              } else {
+                  onOpenUpgradeDialog?.(passageiro.id);
+              }
+          },
+          swipeColor: "bg-indigo-600",
+      }]
+    ),
     {
         label: "Ver Histórico",
         icon: <Eye className="h-4 w-4"/>,

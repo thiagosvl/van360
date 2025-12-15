@@ -19,7 +19,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
+  useCreateEscola,
   useCreatePassageiro,
+  useCreateVeiculo,
   useDeletePassageiro,
   useEscolas,
   useFilters,
@@ -28,7 +30,7 @@ import {
   usePrePassageiros,
   useToggleAtivoPassageiro,
   useUpdatePassageiro,
-  useVeiculos,
+  useVeiculos
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -53,7 +55,6 @@ export default function Passageiros() {
   } = usePassageiroDialogs();
   const {
     setPageTitle,
-    openPlanosDialog,
     openContextualUpsellDialog,
     openLimiteFranquiaDialog,
     openConfirmationDialog,
@@ -117,6 +118,8 @@ export default function Passageiros() {
   const { profile, isLoading: isProfileLoading, plano } = useProfile(user?.id);
 
   const createPassageiro = useCreatePassageiro();
+  const createEscola = useCreateEscola();
+  const createVeiculo = useCreateVeiculo();
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
   const toggleAtivoPassageiro = useToggleAtivoPassageiro();
@@ -434,17 +437,55 @@ export default function Passageiros() {
   const handleCadastrarRapido = useCallback(async () => {
     if (!profile?.id) return;
 
-    if (!escolas || escolas.length === 0) {
-      toast.error("erro.operacao", {
-        description: "passageiro.erro.escolaNecessaria",
-      });
-      return;
+    let escolaId = escolas?.[0]?.id;
+    let veiculoId = veiculos?.[0]?.id;
+
+    try {
+        if (!escolaId) {
+            const fakeEscola = { ...mockGenerator.escola() };
+            // fakeEscola.nome = ... (removed mutation)
+            
+            const novaEscola = await createEscola.mutateAsync({
+                usuarioId: profile.id,
+                data: { ...fakeEscola, ativo: true }
+            });
+            if (novaEscola && (novaEscola as any).id) {
+                escolaId = (novaEscola as any).id;
+            }
+        }
+
+        if (!veiculoId) {
+            const fakeVeiculo = { ...mockGenerator.veiculo() };
+            const oldPlate = fakeVeiculo.placa;
+            const suffix = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+            fakeVeiculo.placa = oldPlate.substring(0, oldPlate.length - 2) + suffix;
+
+            const novoVeiculo = await createVeiculo.mutateAsync({
+                usuarioId: profile.id,
+                data: { ...fakeVeiculo, ativo: true }
+            });
+             if (novoVeiculo && (novoVeiculo as any).id) {
+                veiculoId = (novoVeiculo as any).id;
+            }
+        }
+    } catch (e) {
+        console.error("Erro ao criar dependências fake", e);
+        toast.error("Erro ao gerar dependências automáticas.");
+        return;
     }
-    if (!veiculos || veiculos.length === 0) {
-      toast.error("erro.operacao", {
-        description: "passageiro.erro.veiculoNecessario",
-      });
-      return;
+
+    // Double check if we have IDs now
+    if (!escolaId || !veiculoId) {
+         // Optimization: If creates failed silently or didn't return ID, try to refetch or just stop.
+         // But let's assume if mutateAsync didn't throw, we are okay-ish, 
+         // but we really need IDs for the passenger.
+         if(!escolaId) {
+             // Try to use the first one from refetched list if possible? 
+             // Logic is complex without immediate ID.
+             // Let's assume we need them.
+             toast.error("Não foi possível obter escola/veículo para criação automática.");
+             return;
+         }
     }
 
     const hoje = new Date();
@@ -468,8 +509,8 @@ export default function Passageiros() {
       observacoes: `Cadastro rápido gerado automaticamente`,
       valor_cobranca: valorInString,
       dia_vencimento: hoje.getDate(),
-      escola_id: escolas[0].id,
-      veiculo_id: veiculos[0].id,
+      escola_id: escolaId,
+      veiculo_id: veiculoId,
       ativo: true,
       logradouro: endereco.logradouro,
       numero: endereco.numero,
@@ -493,7 +534,7 @@ export default function Passageiros() {
         },
       }
     );
-  }, [profile?.id, escolas, veiculos, createPassageiro]);
+  }, [profile?.id, escolas, veiculos, createPassageiro, createEscola, createVeiculo]);
 
   const handleHistorico = useCallback(
     (passageiro: Passageiro) => {

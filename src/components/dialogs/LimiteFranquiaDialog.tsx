@@ -161,20 +161,19 @@ export default function LimiteFranquiaDialog({
 
   const handlePaymentVerified = () => {
       setPaymentSuccess(true);
-      // Atualização de cache delegada ao componente PagamentoPixContent para evitar duplicidade
+      // Atualização de cache já foi realizada pelo filho
+      console.log("Pagamento verificado no dialog de franquia");
   };
 
   const handlePaymentSuccess = async () => {
-    handlePaymentVerified(); 
+    // handlePaymentVerified já cuidou do estado e cache
+    // Aqui apenas fechamos e chamamos o callback final
     setShowPayment(false);
     onOpenChange(false);
 
     toast.success("Upgrade realizado!", {
       description: `Sua franquia foi aumentada para ${paymentData?.franquia} passageiros.`,
     });
-
-    // Refresh profile/subscription data
-    await queryClient.invalidateQueries({ queryKey: ["profile"] });
 
     if (onUpgradeSuccess) {
       onUpgradeSuccess();

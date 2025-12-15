@@ -30,6 +30,42 @@ const cidades = [
   { nome: "Porto Alegre", estado: "RS" }
 ];
 
+const escolas = [
+  {
+    nome: "Ibrahim Nobre",
+    cep: "04410-080",
+    logradouro: "Rua das Flores",
+    numero: "123",
+    bairro: "Centro",
+    cidade: "São Paulo",
+    estado: "SP",
+    referencia: "",
+  },
+  {
+    nome: "Joanna Abraão",
+    cep: "01310-100",
+    logradouro: "Avenida Paulista",
+    numero: "1578",
+    bairro: "Bela Vista",
+    cidade: "São Paulo",
+    estado: "SP",
+    referencia: "Próximo ao MASP",
+  },
+];
+
+const veiculos = [
+  {
+    placa: "ABC-1234",
+    modelo: "Chevrolet Onix",
+    marca: "Chevrolet",
+  },
+  {
+    placa: "DEF-5678",
+    modelo: "Volkswagen Gol",
+    marca: "Volkswagen",
+  },
+];
+
 /**
  * Gera um número aleatório entre min e max (inclusivo)
  */
@@ -141,5 +177,7 @@ export const mockGenerator = {
   email: generateEmail,
   phone: generatePhone,
   cep: generateCEP,
-  address: generateAddress
+  address: generateAddress,
+  escola: () => escolas[randomNumber(0, escolas.length - 1)],
+  veiculo: () => veiculos[randomNumber(0, veiculos.length - 1)],
 };

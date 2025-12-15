@@ -12,11 +12,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCobrancas,
-  useEscolas,
-  useGastos,
-  usePassageiros,
-  useVeiculos,
+    useCobrancas,
+    useEscolas,
+    useGastos,
+    usePassageiros,
+    useVeiculos,
 } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
@@ -192,7 +192,6 @@ export default function Relatorios() {
             onClick={() => openContextualUpsellDialog({
                 feature: "relatorios",
                 targetPlan: PLANO_ESSENCIAL,
-                onSuccess: () => window.location.reload()
             })}
             size="sm"
             className="bg-amber-600 hover:bg-amber-700 text-white border-none shadow-none"
@@ -282,7 +281,6 @@ export default function Relatorios() {
         onAction={() => openContextualUpsellDialog({
            feature: "relatorios",
            targetPlan: PLANO_ESSENCIAL,
-           onSuccess: () => window.location.reload()
         })}
       />
       

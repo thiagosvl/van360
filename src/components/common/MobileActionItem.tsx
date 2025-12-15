@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { MoreVertical } from "lucide-react";
@@ -118,13 +118,12 @@ export function MobileActionItem({
                 disabled={action.disabled}
                 className={cn(
                     "w-full justify-start h-14 text-base font-medium transition-all active:scale-[0.98] rounded-xl shadow-sm border",
-                    "disabled:!opacity-100", // FORCE override default opacity
                     // Estilo Base (Card Branco)
                     "bg-white border-gray-200 hover:bg-gray-50",
                     // Estilo Destrutivo override
                     action.isDestructive && "border-red-100 bg-red-50/50 text-red-600 hover:bg-red-100/50 hover:border-red-200",
-                    // Disabled style (mantendo fundo branco, apenas texto cinza)
-                    action.disabled && "text-gray-400 cursor-not-allowed hover:bg-white disabled:bg-white",
+                    // Disabled style (Enhanced for visibility)
+                    action.disabled && "text-gray-400 cursor-not-allowed hover:bg-gray-50 disabled:bg-gray-50 disabled:opacity-60 disabled:grayscale border-gray-100",
                     // Estilo Customizado
                     action.drawerClass,
                     // Cor padrão se não for destrutivo/disabled
@@ -135,7 +134,7 @@ export function MobileActionItem({
                   action.onClick();
                 }}
               >
-                 <span className={cn("mr-3", action.isDestructive ? "text-red-600" : "text-gray-500")}>
+                 <span className={cn("mr-3", action.isDestructive ? "text-red-600" : (action.disabled ? "text-gray-300" : "text-gray-500"))}>
                     {action.icon}
                  </span>
                 {action.label}
