@@ -1,4 +1,5 @@
 import { BlurredValue } from "@/components/common/BlurredValue";
+import { LockOverlay } from "@/components/common/LockOverlay";
 import { PassengerLimitHealthBar } from "@/components/features/passageiro/PassengerLimitHealthBar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,7 +63,7 @@ export const RelatoriosOperacional = ({
             className="mb-0"
           />
         ) : (
-          <Card className="border-none shadow-sm rounded-2xl bg-white">
+          <Card className="border-none shadow-sm rounded-2xl bg-white relative overflow-hidden">
             <CardHeader className="pb-0 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Passageiros Ativos
@@ -75,7 +76,7 @@ export const RelatoriosOperacional = ({
               <h3 className="text-xl md:text-2xl font-bold text-gray-900 leading-none">
                 <BlurredValue
                   value={dados.passageirosAtivosCount}
-                  visible={true}
+                  visible={true} // Always visible count, or should check hasAccess? User said "Exibir alguns dados reais".
                   type="number"
                 />
                 <span className="text-xs text-gray-400 font-normal ml-1">
@@ -83,6 +84,10 @@ export const RelatoriosOperacional = ({
                 </span>
               </h3>
             </CardContent>
+            {/* Lock Overlay */}
+            {!hasAccess && (
+                 <LockOverlay />
+            )}
           </Card>
         )}
 
@@ -147,7 +152,7 @@ export const RelatoriosOperacional = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Escolas */}
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
+        <Card className="border-none shadow-sm rounded-2xl bg-white relative">
           <CardHeader className="pb-2 pt-5 px-6">
             <CardTitle className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
               Por Escola
@@ -200,11 +205,14 @@ export const RelatoriosOperacional = ({
                 Nenhuma escola vinculada.
               </p>
             )}
+            {!hasAccess && (
+                <LockOverlay className="top-0 right-7" />
+            )}
           </CardContent>
         </Card>
 
         {/* Períodos */}
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
+        <Card className="border-none shadow-sm rounded-2xl bg-white relative">
           <CardHeader className="pb-2 pt-5 px-6">
             <CardTitle className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
               Por Período
@@ -254,11 +262,14 @@ export const RelatoriosOperacional = ({
                 Nenhum dado por período.
               </p>
             )}
+            {!hasAccess && (
+                <LockOverlay className="top-0 right-7" />
+            )}
           </CardContent>
         </Card>
 
         {/* Veículos */}
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
+        <Card className="border-none shadow-sm rounded-2xl bg-white relative">
           <CardHeader className="pb-2 pt-5 px-6">
             <CardTitle className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
               Por Veículo
@@ -298,6 +309,9 @@ export const RelatoriosOperacional = ({
               <p className="text-center text-gray-400 text-xs py-4">
                 Nenhum veículo cadastrado.
               </p>
+            )}
+             {!hasAccess && (
+                <LockOverlay className="top-0 right-7" />
             )}
           </CardContent>
         </Card>

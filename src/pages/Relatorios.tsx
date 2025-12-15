@@ -12,11 +12,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCobrancas,
-    useEscolas,
-    useGastos,
-    usePassageiros,
-    useVeiculos,
+  useCobrancas,
+  useEscolas,
+  useGastos,
+  usePassageiros,
+  useVeiculos,
 } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
@@ -83,10 +83,10 @@ export default function Relatorios() {
   // Access Logic
   const hasAccess = permissions.canViewRelatorios;
 
-  // Buscar dados reais - APENAS se tiver acesso
-  const shouldFetchData = hasAccess && !!profile?.id;
-  // Passageiros sempre busca para exibir o health bar corretamente
-  const shouldFetchPassageiros = !!profile?.id;
+  // Buscar dados reais - SEMPRE (para instant unlock e background blur)
+  const shouldFetchFinancials = !!profile?.id;
+  // Metadados (escolas, veículos, passageiros) busca sempre para exibir listas
+  const shouldFetchMetadata = !!profile?.id;
 
   const { data: cobrancasData, refetch: refetchCobrancas } = useCobrancas(
     {
@@ -94,7 +94,7 @@ export default function Relatorios() {
       mes,
       ano,
     },
-    { enabled: shouldFetchData }
+    { enabled: shouldFetchFinancials }
   );
 
   const { data: gastosData = [], refetch: refetchGastos } = useGastos(
@@ -103,20 +103,20 @@ export default function Relatorios() {
       mes,
       ano,
     },
-    { enabled: shouldFetchData }
+    { enabled: shouldFetchFinancials }
   );
 
   const { data: passageirosData, refetch: refetchPassageiros } = usePassageiros(
     { usuarioId: profile?.id },
-    { enabled: shouldFetchPassageiros }
+    { enabled: shouldFetchMetadata }
   );
 
   const { data: escolasData, refetch: refetchEscolas } = useEscolas(profile?.id, {
-    enabled: shouldFetchData,
+    enabled: shouldFetchMetadata,
   });
 
   const { data: veiculosData, refetch: refetchVeiculos } = useVeiculos(profile?.id, {
-    enabled: shouldFetchData,
+    enabled: shouldFetchMetadata,
   });
 
   // Calcular dados reais

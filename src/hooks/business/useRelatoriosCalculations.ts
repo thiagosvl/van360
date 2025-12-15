@@ -1,14 +1,13 @@
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { periodos as periodosConstants } from "@/utils/formatters/constants";
-import { MOCK_DATA_NO_ACCESS_RELATORIOS } from "@/utils/mocks/restrictedData";
 import {
-  ClipboardCheck,
-  Cog,
-  FileText,
-  Fuel,
-  HelpCircle,
-  Wallet,
-  Wrench,
+    ClipboardCheck,
+    Cog,
+    FileText,
+    Fuel,
+    HelpCircle,
+    Wallet,
+    Wrench,
 } from "lucide-react";
 import { useMemo } from "react";
 
@@ -67,7 +66,7 @@ interface UseRelatoriosCalculationsProps {
   profile: any;
 }
 
-export const useRelatoriosCalculations = ({
+  export const useRelatoriosCalculations = ({
   hasAccess,
   cobrancasData,
   gastosData,
@@ -77,28 +76,27 @@ export const useRelatoriosCalculations = ({
   profilePlano,
   profile,
 }: UseRelatoriosCalculationsProps) => {
-  const dadosReais = useMemo(() => {
-    if (!hasAccess || !cobrancasData || !gastosData || !passageirosData) {
-      return null;
-    }
+  const dados = useMemo(() => {
+    // 1. Safe guards for optional data
+    const cobrancas = cobrancasData?.all || [];
+    const cobrancasPagas = cobrancasData?.pagas || [];
+    const cobrancasAbertas = cobrancasData?.abertas || [];
+    const gastos = gastosData || [];
+    const passageirosList = passageirosData?.list || [];
+    const escolasList = (escolasData as any)?.list || [];
+    const veiculosListFull = (veiculosData as any)?.list || [];
 
-    if (escolasData === undefined || veiculosData === undefined) {
-      return null;
-    }
-
-    const cobrancas = cobrancasData.all || [];
-    const cobrancasPagas = cobrancasData.pagas || [];
-    const cobrancasAbertas = cobrancasData.abertas || [];
+    // --- FINANCIAL CALCULATIONS (Depend on hasAccess implicitly via empty arrays above) ---
 
     // Visão Geral
     const recebido = cobrancasPagas.reduce(
       (acc: number, c: any) => acc + Number(c.valor || 0),
       0
     );
-    const gasto = gastosData.reduce((acc: number, g: any) => acc + Number(g.valor || 0), 0);
+    const gasto = gastos.reduce((acc: number, g: any) => acc + Number(g.valor || 0), 0);
     const lucroEstimado = recebido - gasto;
 
-    // Atrasos (cobranças vencidas não pagas)
+    // Atrasos
     const hoje = new Date();
     const atrasos = cobrancasAbertas.filter((c: any) => {
       const vencimento = new Date(c.data_vencimento);
@@ -118,7 +116,6 @@ export const useRelatoriosCalculations = ({
       totalPrevisto > 0 ? (recebido / totalPrevisto) * 100 : 0;
 
     // Passageiros
-    const passageirosList = passageirosData?.list || [];
     const passageirosCount = passageirosList.length;
     const passageirosAtivosCount = passageirosList.filter((p: any) => p.ativo).length;
 
@@ -133,12 +130,10 @@ export const useRelatoriosCalculations = ({
       .size;
     const ticketMedio = passageirosPagos > 0 ? recebido / passageirosPagos : 0;
 
-    // Formas de pagamento - usar apenas os tipos do constants.ts
-    const formasPagamentoMap: Record<string, { valor: number; count: number }> =
-      {};
+    // Formas de pagamento
+    const formasPagamentoMap: Record<string, { valor: number; count: number }> = {};
     cobrancasPagas.forEach((c: any) => {
       const tipo = c.tipo_pagamento?.toLowerCase() || "";
-      // Validar se é um tipo válido do constants.ts
       if (tipo) {
         if (!formasPagamentoMap[tipo]) {
           formasPagamentoMap[tipo] = { valor: 0, count: 0 };
@@ -166,19 +161,18 @@ export const useRelatoriosCalculations = ({
 
     // Saídas
     const diasComGastos = new Set(
-      gastosData.map((g: any) => new Date(g.data).getDate())
+      gastos.map((g: any) => new Date(g.data).getDate())
     ).size;
     const mediaDiaria = diasComGastos > 0 ? gasto / diasComGastos : 0;
     const margemOperacional =
       recebido > 0 ? ((recebido - gasto) / recebido) * 100 : 0;
 
-    // Categorias de gastos - usar dados reais
-    // Primeiro, garantir o mapa de veiculos
+    // Categorias de gastos
     const veiculosMap: Record<
       string,
       { nome: string; placa: string; marca: string; modelo: string }
     > = {};
-    const veiculosListFull = (veiculosData as any)?.list || [];
+    
     veiculosListFull.forEach((v: any) => {
       veiculosMap[v.id] = {
         nome: `${v.marca} ${v.modelo}`,
@@ -198,7 +192,7 @@ export const useRelatoriosCalculations = ({
       }
     > = {};
     
-    gastosData.forEach((g: any) => {
+    gastos.forEach((g: any) => {
       const cat = g.categoria || "Outros";
       const veiculoId = g.veiculo_id || "outros";
       const valor = Number(g.valor || 0);
@@ -220,7 +214,6 @@ export const useRelatoriosCalculations = ({
       .sort((a, b) => b.valor - a.valor)
       .map((cat) => {
         const iconData = CATEGORIA_ICONS[cat.nome] || CATEGORIA_ICONS.Outros;
-        
         const veiculos = Object.entries(cat.veiculos).map(([vId, data]) => {
              const info = veiculosMap[vId] || { nome: "Geral / Sem vínculo", placa: "-" };
              return {
@@ -231,7 +224,6 @@ export const useRelatoriosCalculations = ({
                  count: data.count
              };
         }).sort((a, b) => {
-             // Forçar "outros" ou itens sem placa para o final
              if (a.id === "outros" || a.placa === "-") return 1;
              if (b.id === "outros" || b.placa === "-") return -1;
              return b.valor - a.valor;
@@ -248,15 +240,13 @@ export const useRelatoriosCalculations = ({
         };
       });
 
-
-
-    // Gastos por Veículo (Geral)
+    // Gastos por Veículo
     const gastosPorVeiculoMap: Record<
       string,
       { valor: number; count: number; veiculoId: string }
     > = {};
 
-    gastosData.forEach((g: any) => {
+    gastos.forEach((g: any) => {
       const veiculoId = g.veiculo_id || "outros";
       const valor = Number(g.valor || 0);
 
@@ -280,25 +270,19 @@ export const useRelatoriosCalculations = ({
           percentual: gasto > 0 ? (item.valor / gasto) * 100 : 0,
         };
       })
-
       .sort((a, b) => {
-          // Forçar "outros" ou itens sem placa para o final
           if (a.veiculoId === "outros" || a.placa === "-") return 1;
           if (b.veiculoId === "outros" || b.placa === "-") return -1;
           return b.valor - a.valor;
       });
 
-
-
     const temGastosVinculados = gastosPorVeiculo.some(
       (v) => v.veiculoId !== "outros" && v.placa !== "-"
     );
 
-    // Removendo lógica antiga de gastos detalhados pois agora está embutido nas categorias
+    // --- OPERATIONAL DATA (METADATA - Visible even if restricted) ---
 
-    // Operacional
-    const escolasList = (escolasData as any)?.list || [];
-
+    // Escolas
     const totalPassageirosPorEscola = escolasList.reduce(
       (acc: number, e: any) => acc + (e.passageiros_ativos_count || 0),
       0
@@ -307,7 +291,6 @@ export const useRelatoriosCalculations = ({
     const escolas = escolasList
       .filter((e: any) => (e.passageiros_ativos_count || 0) > 0)
       .map((e: any) => {
-        // Calcular valor financeiro da escola
         const valor = passageirosList
           .filter((p: any) => p.ativo && String(p.escola_id) === String(e.id))
           .reduce((acc: number, p: any) => acc + Number(p.valor_cobranca || 0), 0);
@@ -315,7 +298,7 @@ export const useRelatoriosCalculations = ({
         return {
           nome: e.nome,
           passageiros: e.passageiros_ativos_count || 0,
-          valor,
+          valor: valor,
           percentual:
             totalPassageirosPorEscola > 0
               ? ((e.passageiros_ativos_count || 0) /
@@ -327,17 +310,15 @@ export const useRelatoriosCalculations = ({
       .sort((a: any, b: any) => b.passageiros - a.passageiros)
       .slice(0, 5);
 
-    const veiculosList = (veiculosData as any)?.list || [];
-
-    const totalPassageirosPorVeiculo = veiculosList.reduce(
+    // Veículos (Lista Operacional)
+    const totalPassageirosPorVeiculo = veiculosListFull.reduce(
       (acc: number, v: any) => acc + (v.passageiros_ativos_count || 0),
       0
     );
 
-    const veiculos = veiculosList
+    const veiculos = veiculosListFull
       .filter((v: any) => (v.passageiros_ativos_count || 0) > 0)
       .map((v: any) => {
-        // Calcular valor financeiro do veículo
         const valor = passageirosList
           .filter((p: any) => p.ativo && String(p.veiculo_id) === String(v.id))
           .reduce((acc: number, p: any) => acc + Number(p.valor_cobranca || 0), 0);
@@ -345,7 +326,7 @@ export const useRelatoriosCalculations = ({
         return {
           placa: formatarPlacaExibicao(v.placa),
           passageiros: v.passageiros_ativos_count || 0,
-          valor,
+          valor: valor,
           marca: v.marca,
           modelo: v.modelo,
           percentual:
@@ -359,6 +340,7 @@ export const useRelatoriosCalculations = ({
       .sort((a: any, b: any) => b.passageiros - a.passageiros)
       .slice(0, 5);
 
+    // Períodos
     const periodosMap: Record<string, { count: number; valor: number }> = {};
     passageirosList
       .filter((p: any) => p.ativo)
@@ -389,7 +371,7 @@ export const useRelatoriosCalculations = ({
       })
       .sort((a, b) => b.passageiros - a.passageiros);
 
-    // Automação (cobranças automáticas)
+    // Automação
     const passageirosComAutomatica = passageirosList.filter(
       (p: any) => p.enviar_cobranca_automatica && p.ativo
     ).length;
@@ -427,7 +409,6 @@ export const useRelatoriosCalculations = ({
         custoPorPassageiro,
         topCategorias,
         gastosPorVeiculo,
-
         veiculosCount: veiculosListFull.length,
         temGastosVinculados,
       },
@@ -452,22 +433,8 @@ export const useRelatoriosCalculations = ({
     escolasData,
     veiculosData,
     profilePlano,
-    profile, // Added profile for assinatura access
+    profile,
   ]);
-
-  const realPassageirosCount = passageirosData?.list?.length || 0;
-
-  const dados = useMemo(() => {
-    if (hasAccess && dadosReais) return dadosReais;
-
-    return {
-      ...MOCK_DATA_NO_ACCESS_RELATORIOS,
-      operacional: {
-        ...MOCK_DATA_NO_ACCESS_RELATORIOS.operacional,
-        passageirosCount: realPassageirosCount,
-      },
-    };
-  }, [hasAccess, dadosReais, realPassageirosCount]);
 
   return dados;
 };

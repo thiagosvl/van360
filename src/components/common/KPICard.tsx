@@ -1,7 +1,7 @@
 
+import { LockOverlay } from "@/components/common/LockOverlay";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { cn } from "@/lib/utils";
-import { Lock } from "lucide-react";
 import React from "react";
 
 interface KPICardProps {
@@ -103,9 +103,7 @@ export function KPICard({
       </div>
       
       {restricted && (
-        <div className="absolute right-2 bottom-2 h-6 w-6 bg-orange-100/50 rounded-full flex items-center justify-center z-0">
-             <Lock className="h-4 w-4 text-orange-400 ml-1 mt-1" />
-        </div>
+        <LockOverlay className="bottom-2 right-4" />
       )}
     </div>
   );

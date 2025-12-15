@@ -129,13 +129,13 @@ export const MOCK_VEICULOS = [
 ];
 
 export const MOCK_DATA_NO_ACCESS_GASTOS = {
-  totalGasto: 12500.5,
+  totalGasto: 2700.0,
   principalCategoriaData: {
-    name: "Combustível",
-    value: 4500.0,
-    percentage: 36,
+    name: "Salário",
+    value: 1200.0,
+    percentage: 44,
   },
-  mediaDiaria: 416.68,
+  mediaDiaria: 90.0,
   gastos: [
     {
       id: "1",

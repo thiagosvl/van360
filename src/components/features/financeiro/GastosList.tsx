@@ -7,16 +7,16 @@ import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
 import { formatDateToBR } from "@/utils/formatters";
 import {
-  Bus,
-  Calendar,
-  ClipboardCheck,
-  Cog,
-  Ellipsis,
-  FileText,
-  Fuel,
-  HelpCircle,
-  Wallet,
-  Wrench,
+    Bus,
+    Calendar,
+    ClipboardCheck,
+    Cog,
+    Ellipsis,
+    FileText,
+    Fuel,
+    HelpCircle,
+    Wallet,
+    Wrench,
 } from "lucide-react";
 import { memo } from "react";
 
@@ -25,6 +25,7 @@ interface GastosListProps {
   onEdit: (gasto: Gasto) => void;
   onDelete: (id: string) => void;
   isRestricted?: boolean;
+  showVisibleValues?: boolean;
   veiculos?: { id: string; placa: string }[];
 }
 
@@ -85,6 +86,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
   onDelete,
   isRestricted,
   veiculos,
+  showVisibleValues,
 }: { gasto: Gasto; index: number } & GastosListProps) {
   const { icon: Icon, color, bg } = getCategoryConfig(gasto.categoria);
 
@@ -140,7 +142,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
           <p className="font-bold text-gray-900 text-base">
             <BlurredValue
               value={gasto.valor}
-              visible={!isRestricted}
+              visible={!isRestricted || showVisibleValues}
               type="currency"
             />
           </p>
@@ -160,6 +162,7 @@ export function GastosList({
   onEdit,
   onDelete,
   isRestricted = false,
+  showVisibleValues = false,
   veiculos = [],
 }: GastosListProps) {
   const getVeiculoPlaca = (veiculoId?: string | null) => {
@@ -178,6 +181,7 @@ export function GastosList({
           onEdit={onEdit}
           onDelete={onDelete}
           isRestricted={isRestricted}
+          showVisibleValues={true} // Força mostrar valores no mobile também se passado
           veiculos={veiculos}
           gastos={gastos} // Props requirement satisfaction
         />
@@ -266,7 +270,7 @@ export function GastosList({
                     <span className="font-bold text-gray-900 text-sm">
                       <BlurredValue
                         value={gasto.valor}
-                        visible={!isRestricted}
+                        visible={!isRestricted || showVisibleValues}
                         type="currency"
                       />
                     </span>

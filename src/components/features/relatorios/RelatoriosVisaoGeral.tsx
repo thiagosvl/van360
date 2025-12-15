@@ -1,15 +1,16 @@
 import { BlurredValue } from "@/components/common/BlurredValue";
 import { KPICard } from "@/components/common/KPICard";
+import { LockOverlay } from "@/components/common/LockOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import {
-    AlertTriangle,
-    ArrowDownCircle,
-    ArrowUpCircle,
-    Percent,
-    Users,
-    Wallet
+  AlertTriangle,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Percent,
+  Users,
+  Wallet
 } from "lucide-react";
 
 interface RelatoriosVisaoGeralProps {
@@ -62,6 +63,7 @@ export const RelatoriosVisaoGeral = ({
           countText="Entradas - Saídas do mês"
           countVisible={hasAccess}
           className="md:col-span-1"
+          restricted={!hasAccess}
         />
 
         {/* Atrasos */}
@@ -90,6 +92,7 @@ export const RelatoriosVisaoGeral = ({
           }
           countVisible={hasAccess}
           className="md:col-span-1"
+          restricted={!hasAccess}
         />
       </div>
 
@@ -110,6 +113,7 @@ export const RelatoriosVisaoGeral = ({
           }
           countText="Média de custo por assento ocupado"
           countVisible={hasAccess}
+          restricted={!hasAccess}
         />
 
         {/* Taxa de Recebimento */}
@@ -129,6 +133,7 @@ export const RelatoriosVisaoGeral = ({
             }
             countText="do previsto"
             countVisible={hasAccess}
+            restricted={!hasAccess}
         />
       </div>
 
@@ -139,7 +144,7 @@ export const RelatoriosVisaoGeral = ({
             Fluxo do Mês
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-8 px-6 pb-8">
+        <CardContent className="space-y-8 px-6 pb-8 relative">
           {(() => {
             // Calcular o valor máximo entre recebido e gasto para usar como base (100%)
             const maxValor = Math.max(dados.recebido, dados.gasto);
@@ -193,6 +198,9 @@ export const RelatoriosVisaoGeral = ({
               </>
             );
           })()}
+          {!hasAccess && (
+            <LockOverlay className="bottom-1.5 right-4" />
+          )}
         </CardContent>
       </Card>
     </div>

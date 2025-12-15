@@ -1,4 +1,5 @@
 import { BlurredValue } from "@/components/common/BlurredValue";
+import { LockOverlay } from "@/components/common/LockOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -40,7 +41,7 @@ export const RelatoriosEntradas = ({
               <TrendingUp className="h-4 w-4" />
             </div>
           </CardHeader>
-          <CardContent className="px-6 pb-6">
+          <CardContent className="px-6 pb-6 relative">
             <div className="text-3xl font-bold text-gray-900">
               <BlurredValue
                 value={dados.realizado}
@@ -56,6 +57,9 @@ export const RelatoriosEntradas = ({
             >
               Total recebido no mês
             </p>
+            {!hasAccess && (
+                <LockOverlay className="bottom-4 right-7" />
+            )}
           </CardContent>
         </Card>
 
@@ -68,7 +72,7 @@ export const RelatoriosEntradas = ({
               <Coins className="h-4 w-4" />
             </div>
           </CardHeader>
-          <CardContent className="px-6 pb-6">
+          <CardContent className="px-6 pb-6 relative">
             <div className="text-3xl font-bold text-gray-900">
               <BlurredValue
                 value={dados.ticketMedio}
@@ -84,6 +88,9 @@ export const RelatoriosEntradas = ({
             >
               Valor médio por passageiro
             </p>
+             {!hasAccess && (
+                <LockOverlay className="bottom-4 right-7" />
+            )}
           </CardContent>
         </Card>
       </div>
@@ -95,7 +102,7 @@ export const RelatoriosEntradas = ({
             Formas de Pagamento
           </CardTitle>
         </CardHeader>
-        <CardContent className="px-6 pb-8">
+        <CardContent className="px-6 pb-8 relative">
           <div className="space-y-4">
             {dados.formasPagamento.map((forma, index) => (
               <div key={index} className="space-y-2">
@@ -127,11 +134,34 @@ export const RelatoriosEntradas = ({
                 />
               </div>
             ))}
-            {dados.formasPagamento.length === 0 && (
+            
+            {/* Restricted Empty State: Show Dummy Data to tempt user */}
+            {dados.formasPagamento.length === 0 && !hasAccess && (
+               <div className="space-y-4 opacity-50 blur-[2px] select-none pointer-events-none" aria-hidden="true">
+                  {[1, 2, 3].map((i) => (
+                      <div key={i} className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                            <span className="font-medium text-gray-700">Pagamento {i}</span>
+                            <div className="flex items-center gap-2">
+                                <span className="font-bold text-gray-900">R$ 150,00</span>
+                                <span className="text-gray-400 text-xs w-10 text-right">33%</span>
+                            </div>
+                        </div>
+                        <Progress value={40} className="h-2 bg-gray-100 rounded-full" indicatorClassName="bg-gray-400 rounded-full" />
+                      </div>
+                  ))}
+               </div>
+            )}
+
+            {dados.formasPagamento.length === 0 && hasAccess && (
               <div className="text-center py-8 text-gray-400 text-sm">
                 Nenhum pagamento registrado neste mês.
               </div>
             )}
+            
+     {!hasAccess && (
+        <LockOverlay className="bottom-2 right-7" />
+     )}
           </div>
         </CardContent>
       </Card>

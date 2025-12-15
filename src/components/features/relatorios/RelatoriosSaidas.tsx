@@ -1,4 +1,5 @@
 import { BlurredValue } from "@/components/common/BlurredValue";
+import { LockOverlay } from "@/components/common/LockOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { BarChart3, ChevronDown, ChevronRight, TrendingDown } from "lucide-react";
@@ -66,7 +67,7 @@ export const RelatoriosSaidas = ({
               <TrendingDown className="h-4 w-4" />
             </div>
           </CardHeader>
-          <CardContent className="px-6 pb-6">
+          <CardContent className="px-6 pb-6 relative">
             <div className="text-3xl font-bold text-gray-900">
               <BlurredValue
                 value={dados.total}
@@ -82,6 +83,9 @@ export const RelatoriosSaidas = ({
             >
               Acumulado no mês
             </p>
+            {!hasAccess && (
+                <LockOverlay className="bottom-4 right-7" />
+            )}
           </CardContent>
         </Card>
 
@@ -94,7 +98,7 @@ export const RelatoriosSaidas = ({
               <BarChart3 className="h-4 w-4" />
             </div>
           </CardHeader>
-          <CardContent className="px-6 pb-6">
+          <CardContent className="px-6 pb-6 relative">
             <div className="flex items-center gap-2">
               <div className="text-3xl font-bold text-gray-900">
                 <BlurredValue
@@ -130,6 +134,9 @@ export const RelatoriosSaidas = ({
             >
               Quanto sobra de cada real
             </p>
+            {!hasAccess && (
+                <LockOverlay className="bottom-4 right-7" />
+            )}
           </CardContent>
         </Card>
       </div>
@@ -141,7 +148,7 @@ export const RelatoriosSaidas = ({
             Onde gastei mais?
           </CardTitle>
         </CardHeader>
-        <CardContent className="px-6 pb-8">
+        <CardContent className="px-6 pb-8 relative">
           <div className="space-y-4">
             {dados.topCategorias.map((cat, index) => {
               const Icon = cat.icon;
@@ -249,10 +256,47 @@ export const RelatoriosSaidas = ({
                 </div>
               );
             })}
-            {dados.topCategorias.length === 0 && (
+            
+            {/* Restricted Empty State: Dummy List */}
+            {dados.topCategorias.length === 0 && !hasAccess && (
+               <div className="space-y-4 opacity-50 blur-[2px] select-none pointer-events-none" aria-hidden="true">
+                   {[
+                       { name: "Combustível", val: "R$ 1.250,00", count: "8 registros", bg: "bg-orange-100", text: "text-orange-600", Icon: TrendingDown },
+                       { name: "Manutenção", val: "R$ 450,00", count: "2 registros", bg: "bg-blue-100", text: "text-blue-600", Icon: BarChart3 },
+                       { name: "Alimentação", val: "R$ 120,00", count: "4 registros", bg: "bg-purple-100", text: "text-purple-600", Icon: TrendingDown }
+                   ].map((item, i) => (
+                       <div key={i} className="rounded-xl bg-gray-50 border border-gray-100 overflow-hidden">
+                           <div className="flex items-center justify-between p-3">
+                                <div className="flex items-center gap-3">
+                                  <div className={cn("h-10 w-10 rounded-full flex items-center justify-center shrink-0", item.bg, item.text)}>
+                                    <item.Icon className="h-5 w-5" />
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <span className="font-medium text-gray-900">{item.name}</span>
+                                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                                      <span className="font-bold text-gray-900">{item.val}</span>
+                                      <span>•</span>
+                                      <span>{item.count}</span>
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="text-gray-400">
+                                    <ChevronRight className="h-5 w-5" />
+                                </div>
+                           </div>
+                       </div>
+                   ))}
+               </div>
+            )}
+
+            {dados.topCategorias.length === 0 && hasAccess && (
               <div className="text-center py-8 text-gray-400 text-sm">
                 Nenhuma despesa registrada neste mês.
               </div>
+            )}
+
+            {!hasAccess && (
+                <LockOverlay className="bottom-4 right-7" />
             )}
           </div>
         </CardContent>
