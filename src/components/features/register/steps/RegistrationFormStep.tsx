@@ -56,7 +56,7 @@ export function RegistrationFormStep({
     }
 
     return {
-      text: "Finalizar",
+      text: "Confirmar",
       icon: <Check className="ml-2 h-5 w-5" />,
     };
   };

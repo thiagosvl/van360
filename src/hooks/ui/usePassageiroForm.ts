@@ -107,6 +107,7 @@ export function usePassageiroForm({
   ]);
 
   const form = useForm<PassageiroFormData>({
+    mode: "onChange",
     resolver: zodResolver(passageiroSchema),
     defaultValues: {
       escola_id: "",

@@ -66,7 +66,7 @@ export const messages = {
       atualizarDetalhe: "Não foi possível atualizar o passageiro.",
       excluirDetalhe: "Não foi possível excluir o passageiro.",
       statusDetalhe: "Não foi possível alterar o status.",
-      finalizarDetalhe: "Não foi possível finalizar o cadastro.",
+      confirmarDetalhe: "Não foi possível confirmar o cadastro.",
       carregarDetalhe: "Não foi possível obter os dados no momento.",
       escolaNecessaria: "Cadastre pelo menos uma escola ativa antes de continuar.",
       veiculoNecessario: "Cadastre pelo menos um veículo ativo antes de continuar.",

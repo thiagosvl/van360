@@ -302,7 +302,7 @@ export function useFinalizePreCadastro() {
     },
     onError: (error: any) => {
       toast.error("passageiro.erro.criar", {
-        description: error.message || "passageiro.erro.finalizarDetalhe",
+        description: error.message || "passageiro.erro.confirmarDetalhe",
       });
     },
   });

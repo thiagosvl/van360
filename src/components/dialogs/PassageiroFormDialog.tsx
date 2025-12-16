@@ -1,7 +1,4 @@
-
-import {
-  Accordion,
-} from "@/components/ui/accordion";
+import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,9 +7,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Form,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
@@ -20,7 +15,7 @@ import {
   useCreatePassageiro,
   useFinalizePreCadastro,
   usePassageiroForm,
-  useUpdatePassageiro
+  useUpdatePassageiro,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
@@ -93,12 +88,14 @@ export default function PassengerFormDialog({
 
   // Use centralized logic from hook to check availability
   // If editing an enabled passenger, we pass true to exclude them from the count check
-  const podeAtivar = limits.franchise.checkAvailability(!!editingPassageiro?.enviar_cobranca_automatica);
+  const podeAtivar = limits.franchise.checkAvailability(
+    !!editingPassageiro?.enviar_cobranca_automatica
+  );
 
   const validacaoFranquia = {
-      franquiaContratada: limits.franchise.limit,
-      cobrancasEmUso: limits.franchise.used,
-      podeAtivar
+    franquiaContratada: limits.franchise.limit,
+    cobrancasEmUso: limits.franchise.used,
+    podeAtivar,
   };
 
   const { form, refreshing, openAccordionItems, setOpenAccordionItems } =
@@ -259,11 +256,11 @@ export default function PassengerFormDialog({
           hideCloseButton
           // @ts-ignore
           onPointerDownOutside={(e) => {
-             // Se o dialog de upgrade (franquia) estiver aberto, ignorar cliques fora
-             // Isso previne que o PassageiroFormDialog feche acidentalmente
-             if (isLimiteFranquiaDialogOpen) {
-                 e.preventDefault();
-             }
+            // Se o dialog de upgrade (franquia) estiver aberto, ignorar cliques fora
+            // Isso previne que o PassageiroFormDialog feche acidentalmente
+            if (isLimiteFranquiaDialogOpen) {
+              e.preventDefault();
+            }
           }}
         >
           <div className="bg-blue-600 p-4 text-center relative shrink-0">
@@ -279,13 +276,13 @@ export default function PassengerFormDialog({
               {mode === "edit"
                 ? "Editar Passageiro"
                 : mode === "finalize"
-                ? "Finalizar Cadastro"
+                ? "Confirmar Cadastro"
                 : "Novo Passageiro"}
             </DialogTitle>
             <DialogDescription className="text-blue-100/80 text-sm mt-1">
               {mode === "edit"
                 ? "Atualize as informações do passageiro."
-                : "Preencha os dados abaixo para cadastrar."}
+                : "Revise os dados abaixo e confirme o cadastro."}
             </DialogDescription>
           </div>
 
@@ -340,6 +337,8 @@ export default function PassengerFormDialog({
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Salvando...
                 </>
+              ) : mode === "finalize" ? (
+                "Confirmar"
               ) : (
                 "Salvar"
               )}
