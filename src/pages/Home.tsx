@@ -1,14 +1,15 @@
 import {
-  CreditCard,
-  DollarSign,
-  FileText,
-  Plus,
-  Receipt,
-  TrendingDown,
-  TrendingUp,
-  Users,
-  Wallet,
-  Zap
+    Check,
+    CreditCard,
+    DollarSign,
+    FileText,
+    Plus,
+    Receipt,
+    TrendingDown,
+    TrendingUp,
+    Users,
+    Wallet,
+    Zap
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -31,10 +32,10 @@ import { useSession } from "@/hooks/business/useSession";
 
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import {
-  PASSAGEIRO_COBRANCA_STATUS_PAGO,
-  PLANO_COMPLETO,
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
+    PASSAGEIRO_COBRANCA_STATUS_PAGO,
+    PLANO_COMPLETO,
+    PLANO_ESSENCIAL,
+    PLANO_GRATUITO,
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
@@ -239,21 +240,18 @@ const Home = () => {
     ]);
   };
 
+  // Copy Link Logic
+  const [isCopied, setIsCopied] = useState(false);
+
   const handleCopyLink = () => {
-    if (!profile?.id) {
-      toast.error("Erro ao copiar link", {
-        description: "ID do usuário não encontrado.",
-      });
-      return;
-    }
+    if (!profile?.id) return;
 
     try {
       navigator.clipboard.writeText(buildPrepassageiroLink(profile?.id));
-      toast.success("Link de cadastro copiado!", {
-        description: "Envie para os pais/responsáveis.",
-      });
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
     } catch (error) {
-      toast.error("Erro ao copiar link");
+      console.error("Erro ao copiar link:", error);
     }
   };
 
@@ -534,13 +532,22 @@ const Home = () => {
               />
               <div
                 onClick={handleCopyLink}
-                className="cursor-pointer group flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all duration-200 hover:border-blue-200 hover:shadow-md h-24 w-full"
+                className={cn(
+                  "cursor-pointer group flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all duration-200 hover:border-blue-200 hover:shadow-md h-24 w-full",
+                  isCopied && "border-green-200 bg-green-50"
+                )}
               >
-                <div className="h-10 w-10 rounded-xl flex items-center justify-center mb-2 bg-blue-50 text-blue-600 transition-transform group-hover:scale-110">
-                  <Zap className="h-5 w-5" />
+                <div className={cn(
+                  "h-10 w-10 rounded-xl flex items-center justify-center mb-2 transition-all duration-300",
+                  isCopied ? "bg-green-100 text-green-600 scale-110" : "bg-blue-50 text-blue-600 group-hover:scale-110"
+                )}>
+                  {isCopied ? <Check className="h-5 w-5" /> : <Zap className="h-5 w-5" />}
                 </div>
-                <span className="text-xs font-semibold text-gray-700 text-center leading-tight group-hover:text-blue-700">
-                  Link de Cadastro
+                <span className={cn(
+                  "text-xs font-semibold text-center leading-tight transition-colors duration-200",
+                  isCopied ? "text-green-700" : "text-gray-700 group-hover:text-blue-700"
+                )}>
+                  {isCopied ? "Copiado!" : "Link de Cadastro"}
                 </span>
               </div>
               <ShortcutCard
