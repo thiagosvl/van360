@@ -16,6 +16,8 @@ interface KPICardProps {
   countVisible?: boolean;
   countText?: React.ReactNode;
   restricted?: boolean;
+  onClick?: () => void;
+  format?: "currency" | "number";
 }
 
 export function KPICard({
@@ -30,6 +32,8 @@ export function KPICard({
   countVisible = true,
   countText,
   restricted,
+  onClick,
+  format = "currency",
 }: KPICardProps) {
   // Verificar se value é um ReactNode (elemento React)
   const isReactNode = React.isValidElement(value);
@@ -48,6 +52,11 @@ export function KPICard({
     }
     if (animatedValue !== null && typeof animatedValue === "number") {
       const numValue = isNaN(animatedValue) || !isFinite(animatedValue) ? 0 : animatedValue;
+      
+      if (format === "number") {
+         return Math.round(numValue); // Or specific number formatting if needed
+      }
+
       return numValue.toLocaleString("pt-BR", {
         style: "currency",
         currency: "BRL",
@@ -56,6 +65,11 @@ export function KPICard({
     // Fallback para outros tipos
     if (typeof value === "number") {
       const numValue = isNaN(value) || !isFinite(value) ? 0 : value;
+      
+      if (format === "number") {
+         return numValue;
+      }
+
       return numValue.toLocaleString("pt-BR", {
         style: "currency",
         currency: "BRL",
@@ -66,8 +80,10 @@ export function KPICard({
 
   return (
     <div
+      onClick={onClick}
       className={cn(
         "bg-white p-2 sm:p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3 sm:gap-4 flex-1 min-w-[140px] relative overflow-hidden",
+        onClick && "cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] hover:shadow-md",
         className
       )}
     >

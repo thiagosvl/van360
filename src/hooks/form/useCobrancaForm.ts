@@ -4,11 +4,11 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Cobranca } from "@/types/cobranca";
 import {
-    parseCurrencyToNumber
+  parseCurrencyToNumber
 } from "@/utils/formatters";
 import {
-    moneyMask,
-    moneyToNumber,
+  moneyMask,
+  moneyToNumber,
 } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -46,14 +46,14 @@ const cobrancaSchema = z
   .refine(
     (data) => !data.foi_pago || (data.foi_pago && data.data_pagamento),
     {
-      message: "Data do pagamento é obrigatória para cobranças pagas",
+      message: "Campo obrigatório",
       path: ["data_pagamento"],
     }
   )
   .refine(
     (data) => !data.foi_pago || (data.foi_pago && data.tipo_pagamento),
     {
-      message: "Forma de pagamento é obrigatória para cobranças pagas",
+      message: "Campo obrigatório",
       path: ["tipo_pagamento"],
     }
   )
@@ -68,6 +68,19 @@ const cobrancaSchema = z
     {
       message: "A data de pagamento não pode ser futura.",
       path: ["data_pagamento"],
+    }
+  )
+  .refine(
+    (data) => {
+      // Validação: Mês Futuro exige pagamento (checkbox marcado)
+      if (data.is_future) {
+        return data.foi_pago === true;
+      }
+      return true;
+    },
+    {
+      message: "Para meses futuros, é obrigatório indicar o pagamento.",
+      path: ["foi_pago"],
     }
   );
 

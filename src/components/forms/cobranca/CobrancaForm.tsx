@@ -325,24 +325,24 @@ export function CobrancaForm({
             name="foi_pago"
             render={({ field }) => (
             <FormItem className={cn(
-                "flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0",
-                mode === "edit" && "hidden" // Hide in edit used only for status display? No, let's see. 
-                // In EditDialog, we see `is_paga` in defaultValues but NO Checkbox in JSX!
-                // EditDialog only allows editing details, NOT changing status (Status change = Register Payment Action).
-                // So in Edit Mode, we HIDE this checkbox.
+                "flex flex-col p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0",
+                mode === "edit" && "hidden"
             )}>
-                <FormControl>
-                <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                <FormLabel className="flex-1 cursor-pointer font-medium text-gray-700 m-0 mt-0">
-                    Esta cobrança já foi paga?
-                </FormLabel>
+                <div className="flex items-center gap-3">
+                    <FormControl>
+                    <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    </FormControl>
+                    <div className="flex-1 space-y-1 leading-none">
+                    <FormLabel className="cursor-pointer font-medium text-gray-700 m-0 mt-0 w-full block">
+                        Esta cobrança já foi paga?
+                    </FormLabel>
+                    </div>
                 </div>
+                <FormMessage className="pt-2" />
             </FormItem>
             )}
         />

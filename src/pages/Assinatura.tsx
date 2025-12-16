@@ -6,10 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 // Components - Features
 import { SelecaoPassageirosDialog } from "@/components/dialogs/SelecaoPassageirosDialog";
-import { AssinaturaSideColumn } from "@/components/features/assinatura/AssinaturaSideColumn";
-import { AssinaturaStatusCard } from "@/components/features/assinatura/AssinaturaStatusCard";
-import DetalhesPlanoCard from "@/components/features/plano/DetalhesPlanoCard";
-import FaturamentoCard from "@/components/features/plano/FaturamentoCard";
+import { AssinaturaDashboard } from "@/components/features/assinatura/dashboard/AssinaturaDashboard";
 
 // Components - Navigation
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
@@ -234,38 +231,22 @@ export default function Assinatura() {
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6 md:p-6 ">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Coluna Principal */}
-                <div className="lg:col-span-2 space-y-6">
-                    <AssinaturaStatusCard
-                        plano={plano}
-                        assinatura={dataWithCounts.assinatura}
-                        cobrancas={dataWithCounts.cobrancas}
-                        navigate={navigate}
-                        handleAbandonCancelSubscriptionClick={handleAbandonCancelSubscriptionClick}
-                        onPagarClick={handlePagarClick}
-                    />
-                    <FaturamentoCard
-                        plano={dataWithCounts.plano}
-                        cobrancas={dataWithCounts.cobrancas}
-                        navigate={navigate}
-                        onPaymentSuccess={handlePaymentSuccess}
-                        usuarioId={profile?.id}
-                        onPrecisaSelecaoManual={handlePrecisaSelecaoManual}
-                    />
-                    <DetalhesPlanoCard plano={dataWithCounts.plano} assinatura={dataWithCounts.assinatura} />
-                </div>
-
-                {/* Coluna Lateral */}
-                <AssinaturaSideColumn
+            {/* Dashboard Unificado */}
+            {dataWithCounts && (
+                <AssinaturaDashboard 
                     plano={plano}
                     assinatura={dataWithCounts.assinatura}
-                    data={dataWithCounts}
-                    navigate={navigate}
-                    handleAbandonCancelSubscriptionClick={handleAbandonCancelSubscriptionClick}
-                    handleCancelSubscriptionClick={handleCancelSubscriptionClick}
+                    metricas={{
+                        passageirosAtivos: dataWithCounts.passageirosAtivos,
+                        limitePassageiros: dataWithCounts.limitePassageiros,
+                        cobrancasEmUso: dataWithCounts.cobrancasEmUso,
+                        franquiaContratada: dataWithCounts.franquiaContratada
+                    }}
+                    cobrancas={dataWithCounts.cobrancas}
+                    onPagarClick={handlePagarClick}
+                    onCancelClick={handleCancelSubscriptionClick}
                 />
-            </div>
+            )}
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={refreshing} text="Carregando..." />
