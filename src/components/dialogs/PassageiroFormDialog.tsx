@@ -254,6 +254,7 @@ export default function PassengerFormDialog({
         <DialogContent
           className="w-full max-w-4xl p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
           hideCloseButton
+          onOpenAutoFocus={(e) => e.preventDefault()}
           // @ts-ignore
           onPointerDownOutside={(e) => {
             // Se o dialog de upgrade (franquia) estiver aberto, ignorar cliques fora
