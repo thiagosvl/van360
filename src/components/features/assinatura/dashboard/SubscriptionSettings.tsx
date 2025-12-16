@@ -34,7 +34,7 @@ export function SubscriptionSettings({ onCancelClick, plano }: SubscriptionSetti
                 
                 <Button 
                     variant="ghost" 
-                    className="w-full justify-between items-center h-auto py-3 px-2 hover:bg-gray-50 rounded-lg group"
+                    className="w-full justify-between items-center h-auto py-3 px-2 hover:bg-gray-50 rounded-lg group whitespace-normal"
                     onClick={() => isComplete 
                         ? openLimiteFranquiaDialog({ title: "Aumentar Limite", description: "Gerencie seus limites." })
                         : openContextualUpsellDialog({ feature: "outros" })
@@ -66,7 +66,7 @@ export function SubscriptionSettings({ onCancelClick, plano }: SubscriptionSetti
 
                 <Button 
                     variant="ghost" 
-                    className="w-full justify-between items-center h-auto py-3 px-2 hover:bg-red-50 rounded-lg group"
+                    className="w-full justify-between items-center h-auto py-3 px-2 hover:bg-red-50 rounded-lg group whitespace-normal"
                     onClick={onCancelClick}
                 >
                     <div className="flex items-start gap-3 text-left">

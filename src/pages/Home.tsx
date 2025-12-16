@@ -1,15 +1,15 @@
 import {
-    Check,
-    CreditCard,
-    DollarSign,
-    FileText,
-    Plus,
-    Receipt,
-    TrendingDown,
-    TrendingUp,
-    Users,
-    Wallet,
-    Zap
+  Check,
+  CreditCard,
+  DollarSign,
+  FileText,
+  Plus,
+  Receipt,
+  TrendingDown,
+  TrendingUp,
+  Users,
+  Wallet,
+  Zap
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -32,10 +32,10 @@ import { useSession } from "@/hooks/business/useSession";
 
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import {
-    PASSAGEIRO_COBRANCA_STATUS_PAGO,
-    PLANO_COMPLETO,
-    PLANO_ESSENCIAL,
-    PLANO_GRATUITO,
+  PASSAGEIRO_COBRANCA_STATUS_PAGO,
+  PLANO_COMPLETO,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
