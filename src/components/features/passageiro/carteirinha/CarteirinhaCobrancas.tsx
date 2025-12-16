@@ -5,11 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useCobrancaActions } from "@/hooks/business/useCobrancaActions";
@@ -18,23 +18,23 @@ import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
 import { canUsePremiumFeatures } from "@/utils/domain/plano/accessRules";
 import {
-    formatDateToBR,
-    getMesNome,
-    getStatusColor,
-    getStatusText,
+  formatDateToBR,
+  getMesNome,
+  getStatusColor,
+  getStatusText,
 } from "@/utils/formatters";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-    AlertTriangle,
-    BellOff,
-    Calendar,
-    Check,
-    ChevronDown,
-    ChevronUp,
-    Clock,
-    DollarSign,
-    Plus,
-    RotateCcw,
+  AlertTriangle,
+  BellOff,
+  Calendar,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  DollarSign,
+  Plus,
+  RotateCcw,
 } from "lucide-react";
 import { memo, ReactNode } from "react";
 
@@ -107,7 +107,6 @@ export const CarteirinhaCobrancas = ({
   cobrancas,
   passageiro,
   plano,
-  planoCompletoAtivo,
   yearFilter,
   availableYears,
   mostrarTodasCobrancas,
@@ -116,10 +115,6 @@ export const CarteirinhaCobrancas = ({
   onNavigateToCobranca,
   onEditCobranca,
   onRegistrarPagamento,
-  onEnviarNotificacao,
-  onToggleLembretes,
-  onDesfazerPagamento,
-  onExcluirCobranca,
   onToggleMostrarTodas,
   onToggleClick,
   limiteCobrancasMobile = COBRANCAS_LIMIT_DEFAULT,
@@ -179,12 +174,7 @@ export const CarteirinhaCobrancas = ({
                   availableYears.length > 1 ? "flex-1 md:flex-none" : ""
                 )}
                 onClick={onOpenCobrancaDialog}
-                disabled={!passageiro.ativo}
-                title={
-                  !passageiro.ativo
-                    ? "Não é possível registrar cobranças para passageiros desativados"
-                    : "Registrar cobrança manualmente"
-                }
+                title={"Registrar cobrança manualmente"}
               >
                 <Plus className="w-4 h-4" />
                 <span>Registrar</span>

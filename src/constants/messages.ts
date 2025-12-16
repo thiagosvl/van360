@@ -139,7 +139,7 @@ export const messages = {
       listarAno: "Erro ao listar cobranças para o ano selecionado.",
       processarAcao: "Erro ao processar a ação.",
       linkPagamentoIndisponivel: "Link de pagamento indisponível.",
-      jaExiste: "Já existe uma cobrança para o mês e ano selecionado.",
+      jaExiste: "Já existe uma cobrança registrada para o mês e ano selecionado.",
       criarDetalhe: "Não foi possível criar a cobrança.",
       atualizarDetalhe: "Não foi possível atualizar a cobrança.",
       excluirDetalhe: "Não foi possível excluir a cobrança.",
