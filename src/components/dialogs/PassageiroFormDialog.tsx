@@ -252,7 +252,7 @@ export default function PassengerFormDialog({
         }}
       >
         <DialogContent
-          className="max-w-4xl p-0 gap-0 bg-gray-50 max-h-[90vh] flex flex-col overflow-hidden rounded-3xl border-0 shadow-2xl"
+          className="w-full max-w-4xl p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
           hideCloseButton
           // @ts-ignore
           onPointerDownOutside={(e) => {
@@ -316,13 +316,13 @@ export default function PassengerFormDialog({
             )}
           </div>
 
-          <div className="p-6 border-t bg-white shrink-0 flex justify-end gap-3">
+          <div className="p-4 border-t bg-white shrink-0 grid grid-cols-2 gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
-              className="h-11 px-6 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
+              className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
             >
               Cancelar
             </Button>
@@ -330,7 +330,7 @@ export default function PassengerFormDialog({
               type="submit"
               onClick={form.handleSubmit(handleSubmit, onFormError)}
               disabled={isSubmitting}
-              className="h-11 px-8 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
+              className="w-full h-11 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
             >
               {isSubmitting ? (
                 <>
