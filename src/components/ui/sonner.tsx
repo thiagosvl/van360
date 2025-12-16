@@ -31,7 +31,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
   const toastStyles = {
     classNames: {
       toast:
-        "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+        "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg pointer-events-auto",
       description: "group-[.toast]:text-muted-foreground",
       actionButton:
         "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
@@ -44,7 +44,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       key={isMobile ? "mobile" : "desktop"}
       theme={theme as ToasterProps["theme"]}
-      className="toaster group"
+      className="toaster group !z-[99999]"
       position={isMobile ? "bottom-center" : "top-right"}
       toastOptions={toastStyles}
       // Permitir arrastar para os lados para fechar, além de baixo/cima
