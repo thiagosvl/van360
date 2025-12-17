@@ -21,7 +21,7 @@ export const usuarioApi = {
     ).then(res => res.data)
   },
 
-  upgradePlano: (payload: { usuario_id: string; plano_id: string }) =>
+  upgradePlano: (payload: { usuario_id: string; plano_id: string; quantidade_personalizada?: number }) =>
     apiClient.post(`/usuarios/upgrade-plano`, payload).then(res => res.data),
 
   downgradePlano: (payload: { usuario_id: string; plano_id: string }) =>

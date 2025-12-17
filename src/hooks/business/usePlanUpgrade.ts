@@ -22,6 +22,12 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
     nomePlano: string;
     franquia?: number;
     context?: "register" | "upgrade";
+    initialData?: {
+        qrCodePayload: string;
+        location: string;
+        inter_txid: string;
+        cobrancaId: string;
+    };
   } | null>(null);
 
 
@@ -35,8 +41,6 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
     try {
       setLoading(true);
 
-      // Backend refatorado para lidar com user sem assinatura (Free/Inativo)
-      // Endpoint unificado de upgrade para todos os casos
       const result = await usuarioApi.upgradePlano({
         usuario_id: profile.id,
         plano_id: planoEssencialId,
@@ -49,6 +53,12 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
           valor: Number(result.preco_aplicado || result.valor || 0),
           nomePlano: "Plano Essencial",
           context: "upgrade",
+          initialData: {
+             qrCodePayload: result.qrCodePayload,
+             location: result.location,
+             inter_txid: result.inter_txid,
+             cobrancaId: String(result.cobrancaId)
+          }
         });
       } else {
         await refreshProfile();
@@ -87,6 +97,7 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
       const result = await usuarioApi.upgradePlano({
         usuario_id: profile.id,
         plano_id: targetId,
+        quantidade_personalizada: targetPlan?.isCustom ? targetPlan.quantidade : undefined
       });
 
       if (result.qrCodePayload && result.cobrancaId) {
@@ -97,6 +108,12 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
           nomePlano: "Plano Profissional",
           franquia: targetPlan?.quantidade,
           context: "upgrade",
+          initialData: {
+             qrCodePayload: result.qrCodePayload,
+             location: result.location,
+             inter_txid: result.inter_txid,
+             cobrancaId: String(result.cobrancaId)
+          }
         });
       } else {
         await refreshProfile();
@@ -118,6 +135,10 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
     setPagamentoDialog(null);
     // Fecha nível 2 SOMENTE se houve sucesso explícito OU verificado anteriormente
     if (success === true || isPaymentVerified) {
+      toast.success("Parabéns! Você alterou de plano.", {
+        description: "Aproveite todos os novos recursos exclusivos.",
+        duration: 4000
+      });
       onOpenChange?.(false);
       onSuccess?.();
     }

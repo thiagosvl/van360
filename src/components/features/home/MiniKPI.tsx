@@ -10,7 +10,6 @@ interface MiniKPIProps {
   colorClass?: string;
   bgClass?: string;
   loading?: boolean;
-  showPassageirosLimitSubtext?: boolean;
   className?: string;
 }
 
@@ -22,7 +21,6 @@ export const MiniKPI = ({
   colorClass = "text-gray-600",
   bgClass = "bg-gray-50",
   loading = false,
-  showPassageirosLimitSubtext = false,
   className = "",
 }: MiniKPIProps) => (
   <Card
@@ -41,9 +39,6 @@ export const MiniKPI = ({
         ) : (
           <h3 className="text-xl md:text-2xl font-bold text-gray-900 leading-none">
             {value}
-            <span className="text-xs text-gray-400 font-normal ml-1">
-              {showPassageirosLimitSubtext ? "/ Ilimitado" : ""}
-            </span>
           </h3>
         )}
         {subtext && <p className="text-xs text-gray-400 mt-1">{subtext}</p>}

@@ -1,11 +1,11 @@
 import PagamentoPixContent from "@/components/features/pagamento/PagamentoPixContent";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 
@@ -27,6 +27,12 @@ interface PagamentoAssinaturaDialogProps {
   onIrParaAssinatura?: () => void;
   onPaymentVerified?: () => void; // Novo callback
   context?: "register" | "upgrade";
+  initialData?: {
+    qrCodePayload: string;
+    location: string;
+    inter_txid: string;
+    cobrancaId: string;
+  };
 }
 
 export default function PagamentoAssinaturaDialog({
@@ -43,6 +49,7 @@ export default function PagamentoAssinaturaDialog({
   onIrParaAssinatura,
   onPaymentVerified,
   context,
+  initialData,
 }: PagamentoAssinaturaDialogProps) {
   // We need to handle close logic here to ensure cleanup if needed,
   // but PagamentoPixContent handles its own cleanup on unmount/prop change.
@@ -84,7 +91,9 @@ export default function PagamentoAssinaturaDialog({
             onIrParaAssinatura={onIrParaAssinatura}
             onPaymentVerified={onPaymentVerified}
             context={context}
+            initialData={initialData}
           />
+
         </div>
       </DialogContent>
     </Dialog>

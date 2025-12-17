@@ -84,7 +84,6 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
              icon={Users}
              colorClass="text-green-600"
              bgClass="bg-green-50"
-             countText="Ilimitado"
              countVisible={true}
         />
 
@@ -135,7 +134,6 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
             icon={Users}
             colorClass="text-blue-600"
             bgClass="bg-blue-50"
-            countText="Ilimitado"
             countVisible={true}
             format="number"
         />

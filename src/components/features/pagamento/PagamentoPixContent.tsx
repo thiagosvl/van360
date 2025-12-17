@@ -28,6 +28,12 @@ interface PagamentoPixContentProps {
   onIrParaAssinatura?: () => void; // Callback para ir para assinatura
   onPaymentVerified?: () => void; // Novo: Callback imediato quando pagamento é confirmado
   context?: "register" | "upgrade"; // Para adaptar textos ao cenário
+  initialData?: {
+    qrCodePayload: string;
+    location: string;
+    inter_txid: string;
+    cobrancaId: string;
+  };
 }
 
 export default function PagamentoPixContent({
@@ -42,6 +48,7 @@ export default function PagamentoPixContent({
   onIrParaAssinatura,
   onPaymentVerified,
   context,
+  initialData,
 }: PagamentoPixContentProps) {
   const queryClient = useQueryClient();
   const gerarPix = useGerarPixParaCobranca();
@@ -126,6 +133,19 @@ export default function PagamentoPixContent({
     }
 
     const gerarPixAction = () => {
+      // Se já temos dados iniciais (ex: vindos de upgradePlano), usamos direto
+      if (initialData && initialData.cobrancaId === cobrancaId) {
+          setDadosPagamento(initialData);
+          pixGeradoRef.current = cobrancaId;
+          
+          if (initialData.qrCodePayload) {
+             QRCode.toDataURL(initialData.qrCodePayload)
+              .then(setQrCodeImage)
+              .catch(() => setQrCodeImage(null));
+          }
+          return;
+      }
+
       setDadosPagamento(null);
       setQrCodeImage(null);
 
@@ -164,7 +184,7 @@ export default function PagamentoPixContent({
 
     gerarPixAction();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cobrancaId]);
+  }, [cobrancaId, initialData]);
 
   // State para controlar a tela intermediária de "Processando liberação"
   const [isProcessing, setIsProcessing] = useState(false);
@@ -362,18 +382,29 @@ export default function PagamentoPixContent({
     };
 
     const setupRealtime = async () => {
-      // Polling Agressivo: 3 segundos (fixo) em paralelo ao Realtime
+      // Polling de Backup: "Plano B"
+      // 1. Só começa após 10 segundos (dá tempo do usuário abrir o app do banco)
+      // 2. Roda a cada 6 segundos (não precisa ser agressivo, o Realtime é o principal)
       if (!pollerRef.current && monitorandoRef.current) {
-        pollerRef.current = setInterval(() => {
-          if (!mountedRef.current || !monitorandoRef.current) {
-            if (pollerRef.current) {
-              clearInterval(pollerRef.current);
-              pollerRef.current = null;
-            }
-            return;
-          }
-          checkPaymentStatus();
-        }, 3000);
+        setTimeout(() => {
+            // Verifica se ainda precisa (pode ter pago nesse meio tempo)
+            if (!mountedRef.current || !monitorandoRef.current || paymentConfirmed) return;
+            
+            // Execução imediata pós-delay (no segundo 10)
+            checkPaymentStatus();
+            
+            pollerRef.current = setInterval(() => {
+              // Safety Checks rigorosos
+              if (!mountedRef.current || !monitorandoRef.current || paymentConfirmed || hasFetchedRef.current) {
+                if (pollerRef.current) {
+                  clearInterval(pollerRef.current);
+                  pollerRef.current = null;
+                }
+                return;
+              }
+              checkPaymentStatus();
+            }, 6000); // 6 segundos (Backup)
+        }, 10000); // 10 segundos de delay inicial
       }
 
       try {
@@ -390,6 +421,12 @@ export default function PagamentoPixContent({
             (payload: any) => {
               try {
                 if (payload?.new?.status === ASSINATURA_COBRANCA_STATUS_PAGO) {
+                  // Se pagou via Realtime, paramos tudo
+                  if (pollerRef.current) {
+                    clearInterval(pollerRef.current);
+                    pollerRef.current = null;
+                  }
+                  
                   if (
                     mountedRef.current &&
                     monitorandoRef.current &&
@@ -409,14 +446,12 @@ export default function PagamentoPixContent({
 
         if (status === "SUBSCRIBED" || status === "ok" || status === "OK") {
           realtimeChannelRef.current = channel;
-          // Não limpamos ou alteramos o poller aqui. Mantemos ambos (Realtime + Polling 3s).
         }
       } catch (err) {
-        // Falha no realtime, mas o poller de 3s continua ativo.
+        // Falha no realtime, o poller assumirá após o delay.
       }
     };
 
-    checkPaymentStatus();
     setupRealtime();
 
     return () => {

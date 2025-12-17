@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_GASTOS, FEATURE_LIMITE_FRANQUIA, FEATURE_LIMITE_PASSAGEIROS, FEATURE_NOTIFICACOES, FEATURE_RELATORIOS, PLANO_COMPLETO, PLANO_ESSENCIAL } from "@/constants";
-import { usePlanos } from "@/hooks/api/usePlanos";
+import { useCalcularPrecoPreview, usePlanos } from "@/hooks/api/usePlanos";
 import { usePlanUpgrade } from "@/hooks/business/usePlanUpgrade";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -116,6 +116,40 @@ export function PlanUpgradeDialog({
         
         return { recommended, secondary };
     }, [franchiseOptions, passageirosAtivos]);
+
+    // --- State Local de Seleção de Tier ---
+    const [selectedTierId, setSelectedTierId] = useState<number | string | null>(null);
+
+    // Initializer: Sempre que abrir ou mudar as opções, reseta para o recomendado
+    useEffect(() => {
+        if (open && smartOptions?.recommended) {
+            setSelectedTierId(smartOptions.recommended.id);
+        }
+    }, [open, smartOptions]);
+
+    // Computar a opção visualizada no momento
+    const currentTierOption = useMemo(() => {
+        if (!smartOptions) return null;
+        if (selectedTierId && smartOptions.secondary?.id === selectedTierId) return smartOptions.secondary;
+        // Default fallback to recommended
+        return smartOptions.recommended;
+    }, [selectedTierId, smartOptions]);
+    
+    // --- Lógica de Preço Sob Medida ---
+    const [customPrice, setCustomPrice] = useState<number | null>(null);
+    const calcularPrecoPreview = useCalcularPrecoPreview();
+
+    useEffect(() => {
+        if (currentTierOption?.isCustom && currentTierOption.quantidade) {
+            calcularPrecoPreview.mutate(currentTierOption.quantidade, {
+                onSuccess: (res) => {
+                     if (res) setCustomPrice(res.preco);
+                }
+            });
+        } else {
+            setCustomPrice(null);
+        }
+    }, [currentTierOption]);
     
     // --- Lógica de Texto Dinâmico (Alta Conversão) ---
     // Mapeia qual plano resolve cada dor específica
@@ -123,10 +157,10 @@ export function PlanUpgradeDialog({
         switch (feature) {
              case FEATURE_GASTOS:
              case FEATURE_LIMITE_PASSAGEIROS:
+             case FEATURE_RELATORIOS:
                  return "essencial";
              case FEATURE_COBRANCA_AUTOMATICA:
              case FEATURE_NOTIFICACOES:
-             case FEATURE_RELATORIOS:
              case FEATURE_LIMITE_FRANQUIA:
                  return "profissional";
              default:
@@ -161,8 +195,8 @@ export function PlanUpgradeDialog({
             desc: "Cadastros ilimitados e controle de gastos básico."
         },
         profissional: {
-            title: "Automatize Tudo",
-            desc: "Cobrança automática, gestão financeira e mais liberdade."
+            title: "Você só dirige",
+            desc: "Cobranças e recibos automáticos, zero dor de cabeça."
         }
     };
 
@@ -171,40 +205,47 @@ export function PlanUpgradeDialog({
         if (specificContent && activeTab === featureTargetPlan) {
             return {
                 title: specificContent.title,
-                description: specificContent.desc
+                desc: specificContent.desc
             };
         }
         return activeTab === "essencial" ? genericContent.essencial : genericContent.profissional;
     }, [activeTab, featureTargetPlan, specificContent]);
+
+    console.log(displayContent);
 
     // Cores Dinâmicas do Header
     const requestHeaderStyle = activeTab === "essencial" 
         ? "bg-blue-600" 
         : "bg-gradient-to-r from-purple-700 to-indigo-700";
 
-    // --- Handlers de Upgrade (Wrappers) ---
+    // --- Handlers de Up grade (Wrappers) ---
 
     const onUpgradeEssencial = () => {
         handleUpgradeEssencial(planoEssencialData?.id);
     };
 
     const onUpgradeProfissional = () => {
-        const targetPlan = smartOptions?.recommended;
-        const targetId = targetPlan?.id || planoCompletoData?.id;
-        handleUpgradeProfissional(targetId, targetPlan);
+        // Usa a opção selecionada visualmente
+        const targetPlan = currentTierOption;
+        // Se for custom, o ID injeatado é fictício ("custom_enterprise"), então usamos o ID do plano base
+        const targetId = targetPlan?.isCustom ? planoCompletoData?.id : (targetPlan?.id || planoCompletoData?.id);
+        
+        if (targetId) {
+             handleUpgradeProfissional(targetId, targetPlan);
+        }
     };
 
     return (
         <>
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent 
-                    className="sm:max-w-[440px] p-0 overflow-hidden bg-white gap-0 rounded-3xl border-none shadow-2xl" 
+                    className="w-full max-w-[440px] p-0 gap-0 bg-white h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-none shadow-2xl" 
                     onOpenAutoFocus={(e) => e.preventDefault()}
                     hideCloseButton
                 >
                     
-                    {/* Header Dinâmico */}
-                    <div className={cn("px-6 py-6 text-center relative overflow-hidden transition-colors duration-300", requestHeaderStyle)}>
+                    {/* Header Dinâmico (Fixed) */}
+                    <div className={cn("px-6 py-6 text-center relative overflow-hidden transition-colors duration-300 shrink-0", requestHeaderStyle)}>
                         {/* Botão Fechar Padronizado */}
                         <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors z-50">
                             <X className="h-6 w-6" />
@@ -219,183 +260,214 @@ export function PlanUpgradeDialog({
                         </DialogTitle>
                         {/* Subtitulo opcional, mais sutil */}
                         <p className="text-blue-50/80 text-xs mt-1.5 relative z-10 font-medium leading-relaxed max-w-[80%] mx-auto">
-                             {displayContent.description}
+                             {displayContent.desc}
                         </p>
                     </div>
 
-                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col overflow-hidden">
                         {!hideTabs && (
-                            <TabsList className="w-full grid grid-cols-2 rounded-none h-14 bg-gray-50 border-b border-gray-100 p-0">
+                            <TabsList className="w-full grid grid-cols-2 rounded-none h-14 bg-gray-50 border-b border-gray-100 p-0 shrink-0">
                                 <TabsTrigger 
                                     value="essencial" 
                                     className="h-full rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 text-gray-500 font-semibold transition-all shadow-none"
                                 >
-                                    Essencial
+                                    Plano Essencial
                                 </TabsTrigger>
                                 <TabsTrigger 
                                     value="profissional"
                                     className="h-full rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-700 text-gray-500 font-semibold transition-all shadow-none"
                                 >
-                                    Profissional
+                                    Plano Profissional
                                 </TabsTrigger>
                             </TabsList>
                         )}
 
+                        {/* Scrollable Content Wrapper */}
+                        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
                             {/* Conteúdo Essencial */}
-                        <TabsContent value="essencial" className="p-6 space-y-5 focus-visible:ring-0 outline-none animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
-                            <div className="text-center space-y-2">
-                                <div className="inline-flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full text-blue-700 text-xs font-bold uppercase tracking-wider mb-2">
-                                    <Sparkles className="w-3 h-3" />
-                                    Básico
-                                </div>
-                                <h3 className="text-3xl font-bold text-gray-900 tracking-tight flex flex-col items-center">
-                                    <div className="flex items-baseline gap-1">
-                                        {planoEssencialData ? formatCurrency(Number(planoEssencialData.promocao_ativa ? planoEssencialData.preco_promocional : planoEssencialData.preco)) : "R$ --"}
-                                        <span className="text-sm font-medium text-gray-500">/mês</span>
+                            <TabsContent value="essencial" className="p-6 space-y-5 m-0 focus-visible:ring-0 outline-none animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+                                <div className="text-center space-y-2">
+                                    <div className="inline-flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full text-blue-700 text-xs font-bold uppercase tracking-wider mb-2">
+                                        <Sparkles className="w-3 h-3" />
+                                        Básico
                                     </div>
-                                    {planoEssencialData?.promocao_ativa && planoEssencialData?.preco_promocional && (
-                                        <div className="text-xs text-gray-400 line-through font-medium">
-                                            {formatCurrency(Number(planoEssencialData.preco))}
+                                    <h3 className="text-3xl font-bold text-gray-900 tracking-tight flex flex-col items-center">
+                                        <div className="flex items-baseline gap-1">
+                                            {planoEssencialData ? formatCurrency(Number(planoEssencialData.promocao_ativa ? planoEssencialData.preco_promocional : planoEssencialData.preco)) : "R$ --"}
+                                            <span className="text-sm font-medium text-gray-500">/mês</span>
+                                        </div>
+                                        {planoEssencialData?.promocao_ativa && planoEssencialData?.preco_promocional && (
+                                            <div className="text-xs text-gray-400 line-through font-medium">
+                                                {formatCurrency(Number(planoEssencialData.preco))}
+                                            </div>
+                                        )}
+                                    </h3>
+                                </div>
+
+                                <div className="space-y-3 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+                                    <BenefitItem text="Passageiros Ilimitados" highlighted />
+                                    <BenefitItem text="Organização Básica" />
+                                    <BenefitItem text="Suporte Prioritário" />
+                                </div>
+                                
+                                 {/* Upsell para Profissional */}
+                                 <div className="flex items-center justify-between px-2 py-1">
+                                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                        <Zap className="w-3 h-3 text-amber-500/70" />
+                                        <span>Cobrança Manual</span>
+                                    </div>
+                                    <button 
+                                        onClick={() => setActiveTab("profissional")}
+                                        className="text-xs font-bold text-purple-600 hover:text-purple-700 hover:underline flex items-center gap-1"
+                                    >
+                                        Quero 100% Automático
+                                        <ChevronRight className="w-3 h-3" />
+                                    </button>
+                                </div>
+                                
+                                {/* Espaçador para garantir scroll se necessário */}
+                                <div className="h-4 sm:h-0" />
+                            </TabsContent>
+
+                            {/* Conteúdo Profissional */}
+                            <TabsContent value="profissional" className="p-6 space-y-5 m-0 focus-visible:ring-0 outline-none animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+                                 <div className="text-center space-y-1 mb-4">
+                                    <div className="inline-flex items-center gap-2 bg-purple-50 px-3 py-1 rounded-full text-purple-700 text-[10px] font-bold uppercase tracking-wider mb-2">
+                                        <TrendingUp className="w-3 h-3" />
+                                        {smartOptions?.recommended?.tipo === "tier" ? "Recomendado" : "Recomendado"}
+                                    </div>
+                                    
+                                    {smartOptions?.recommended ? (
+                                        <>
+                                            <h3 className="text-3xl font-bold text-gray-900 tracking-tight flex flex-col items-center leading-none">
+                                                {(() => {
+                                                    // Usa o currentTierOption para pegar preço correto
+                                                    // 1. Se for Custom (Sob Medida) e tiver preço calculado
+                                                    if (currentTierOption?.isCustom && customPrice) {
+                                                        return (
+                                                            <div className="flex items-baseline gap-1">
+                                                                {formatCurrency(customPrice)}
+                                                                <span className="text-sm font-medium text-gray-500">/mês</span>
+                                                            </div>
+                                                        );
+                                                    }
+
+                                                    // 2. Se for plano normal
+                                                    const p = planos.find((x: any) => x.id === currentTierOption?.id);
+                                                    
+                                                    if (p) {
+                                                        const shouldUsePromo = p.promocao_ativa && p.preco_promocional;
+                                                        return (
+                                                            <div className="flex items-baseline gap-1">
+                                                                {formatCurrency(Number(shouldUsePromo ? p.preco_promocional : p.preco))}
+                                                                <span className="text-sm font-medium text-gray-500">/mês</span>
+                                                            </div>
+                                                        );
+                                                    }
+                                                    
+                                                    // 3. Fallback loading ou Sob Medida sem preço
+                                                    if (currentTierOption?.isCustom && calcularPrecoPreview.isPending) {
+                                                        return <Loader2 className="w-6 h-6 animate-spin text-gray-300" />;
+                                                    }
+
+                                                    return "Sob Medida";
+                                                })()}
+                                            </h3>
+                                            {/* Tier Selector Moved Here */}
+                                            {smartOptions && (smartOptions.secondary || smartOptions.recommended) && (
+                                                <div className="flex justify-center gap-2 mt-3 mb-1">
+                                                    {[smartOptions.secondary, smartOptions.recommended].filter(Boolean).sort((a,b) => (a?.quantidade||0) - (b?.quantidade||0)).map((opt) => (
+                                                        <button
+                                                            key={opt?.id}
+                                                            onClick={() => {
+                                                                if (opt?.id) setSelectedTierId(opt.id);
+                                                            }}
+                                                            className={cn(
+                                                                "px-3 py-1 rounded-full text-[10px] font-bold border transition-all",
+                                                                opt?.id === currentTierOption?.id
+                                                                    ? "bg-purple-600 border-purple-600 text-white shadow-sm"
+                                                                    : "bg-white border-gray-200 text-gray-400 hover:border-gray-300"
+                                                            )}
+                                                        >
+                                                            {opt?.quantidade} Vagas
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {!((smartOptions.secondary || smartOptions.recommended)) && (
+                                                 <p className="text-sm text-purple-600 font-medium mt-1">
+                                                    {currentTierOption?.quantidade} Vagas de Automação
+                                                </p>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="h-20 flex items-center justify-center">
+                                            <Loader2 className="animate-spin text-gray-300" />
                                         </div>
                                     )}
-                                </h3>
-                                <p className="text-sm text-gray-500 max-w-[280px] mx-auto">
-                                    Destrave cadastro ilimitado e organize sua operação básica.
-                                </p>
-                            </div>
+                                </div>
 
-                            <div className="space-y-3 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-                                <BenefitItem text="Passageiros Ilimitados" highlighted />
-                                <BenefitItem text="Organização Básica" />
-                                <BenefitItem text="Suporte Prioritário" />
-                                <div className="pt-2 border-t border-gray-200/60 mt-2">
-                                    <div className="flex items-start gap-2 text-xs text-gray-500">
-                                        <div className="mt-0.5"><Zap className="w-3 h-3 text-amber-500" /></div>
-                                        <span>Cobrança Manual (Você envia o PIX)</span>
+                                {/* Card de Destaque */}
+                                <div className="bg-gradient-to-br from-purple-50 to-white border border-purple-100 p-4 rounded-xl shadow-sm relative overflow-hidden group hover:border-purple-200 transition-colors cursor-default">
+                                    <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
+                                    
+                                    <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                                        <Zap className="w-4 h-4 text-purple-600 fill-current" />
+                                        Piloto Automático
+                                    </h4>
+                                    
+                                    <div className="space-y-2.5">
+                                        <BenefitItem text="Tudo do Plano Essencial" highlighted />
+                                        <div className="h-px bg-purple-100 my-1"/>
+                                        <BenefitItem 
+                                            text={`Até ${currentTierOption?.quantidade || 'X'} Alunos no Automático`} 
+                                            highlighted 
+                                        />
+                                        <BenefitItem text="Cobrança Automática (Zap)" />
+                                        <BenefitItem text="Baixas e Notificações Auto." />
+                                        <BenefitItem text="Envio de Recibos no Pix" />
                                     </div>
                                 </div>
-                            </div>
+                                
+                                {/* Espaçador para garantir scroll se necessário */}
+                                <div className="h-4 sm:h-0" />
+                            </TabsContent>
+                        </div>
+                    </Tabs>
 
+                    {/* Footer Fixo (Actions) */}
+                    <div className="bg-white p-4 border-t border-gray-100 shrink-0 shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.05)] z-20">
+                         {activeTab === "essencial" ? (
                             <Button 
-                                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all text-base"
+                                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all text-base mb-3"
                                 onClick={onUpgradeEssencial}
                                 disabled={loading || !planoEssencialData}
                             >
                                 {loading ? <Loader2 className="animate-spin w-5 h-5"/> : "Ativar Essencial"}
                             </Button>
-                        </TabsContent>
-
-                        {/* Conteúdo Profissional */}
-                        <TabsContent value="profissional" className="p-6 space-y-5 focus-visible:ring-0 outline-none animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
-                            {/* Seletor de Tiers (Se houver opções) */}
-                            {smartOptions && (smartOptions.secondary || smartOptions.recommended) && (
-                                <div className="flex justify-center gap-2 mb-2">
-                                    {[smartOptions.secondary, smartOptions.recommended].filter(Boolean).sort((a,b) => (a?.quantidade||0) - (b?.quantidade||0)).map((opt) => (
-                                        <button
-                                            key={opt?.id}
-                                            onClick={() => {
-                                                // Lógica simples de toggle visual
-                                            }}
-                                            className={cn(
-                                                "px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
-                                                opt?.recomendado 
-                                                    ? "bg-purple-100 border-purple-200 text-purple-700 ring-2 ring-purple-500/20" 
-                                                    : "bg-white border-gray-200 text-gray-600 hover:border-purple-200"
-                                            )}
-                                        >
-                                            {opt?.quantidade} Vagas
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-
-                             <div className="text-center space-y-2">
-                                <div className="inline-flex items-center gap-2 bg-purple-50 px-3 py-1 rounded-full text-purple-700 text-xs font-bold uppercase tracking-wider mb-2">
-                                    <TrendingUp className="w-3 h-3" />
-                                    {smartOptions?.recommended?.tipo === "tier" ? "Pacote Recomendado" : "Recomendado"}
-                                </div>
-                                
-                                {smartOptions?.recommended ? (
-                                    <>
-                                        <h3 className="text-3xl font-bold text-gray-900 tracking-tight flex flex-col items-center">
-                                            {(() => {
-                                                const p = planos.find((x: any) => x.id === smartOptions.recommended?.id);
-                                                
-                                                if (p) {
-                                                    const shouldUsePromo = p.promocao_ativa && p.preco_promocional;
-                                                    return (
-                                                        <>
-                                                            <div className="flex items-baseline gap-1">
-                                                                {formatCurrency(Number(shouldUsePromo ? p.preco_promocional : p.preco))}
-                                                                <span className="text-sm font-medium text-gray-500">/mês</span>
-                                                            </div>
-                                                            {shouldUsePromo && (
-                                                                <div className="text-xs text-gray-400 line-through font-medium">
-                                                                    {formatCurrency(Number(p.preco))}
-                                                                </div>
-                                                            )}
-                                                        </>
-                                                    );
-                                                }
-                                                return "Sob Medida";
-                                            })()}
-                                        </h3>
-                                        <p className="text-sm text-purple-600 font-medium">
-                                            {smartOptions.recommended.quantidade} Vagas de Automação
-                                        </p>
-                                    </>
-                                ) : (
-                                    <div className="h-20 flex items-center justify-center">
-                                        <Loader2 className="animate-spin text-gray-300" />
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Card de Destaque */}
-                            <div className="bg-gradient-to-br from-purple-50 to-white border border-purple-100 p-4 rounded-xl shadow-sm relative overflow-hidden group hover:border-purple-200 transition-colors cursor-default">
-                                <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
-                                
-                                <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                                    <Zap className="w-4 h-4 text-purple-600 fill-current" />
-                                    Piloto Automático
-                                </h4>
-                                
-                                <div className="space-y-2.5">
-                                    <BenefitItem text="Tudo do Plano Essencial" highlighted />
-                                    <div className="h-px bg-purple-100 my-1"/>
-                                    <BenefitItem 
-                                        text={`Até ${smartOptions?.recommended?.quantidade || 'X'} Alunos no Automático`} 
-                                        highlighted 
-                                    />
-                                    <BenefitItem text="Cobrança Automática (Zap)" />
-                                    <BenefitItem text="Baixas e Notificações Auto." />
-                                    <BenefitItem text="Envio de Recibos no Pix" />
-                                </div>
-                            </div>
-
+                         ) : (
                             <Button 
-                                className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-lg shadow-purple-100 transition-all text-base"
+                                className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-lg shadow-purple-100 transition-all text-base mb-3"
                                 onClick={onUpgradeProfissional}
-                                disabled={loading || !smartOptions?.recommended}
+                                disabled={loading || !currentTierOption}
                             >
                                 {loading ? <Loader2 className="animate-spin w-5 h-5"/> : "Ativar Profissional"}
                             </Button>
-                        </TabsContent>
-                    </Tabs>
+                         )}
 
-                    {/* Footer Comum */}
-                    <div className="bg-gray-50 px-6 py-3 flex justify-between items-center border-t border-gray-100">
-                        <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
-                            <ShieldCheck className="w-3 h-3" />
-                            Pagamento Seguro
+                        <div className="flex justify-between items-center px-1">
+                            <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
+                                <ShieldCheck className="w-3 h-3" />
+                                Pagamento Seguro
+                            </div>
+                            <button 
+                                onClick={() => setIsBenefitsOpen(true)}
+                                className="text-xs font-semibold text-gray-500 hover:text-gray-900 flex items-center gap-1 group"
+                            >
+                                Ver todos benefícios
+                                <ChevronRight className="w-3 h-3 text-gray-300 group-hover:text-gray-500 transition-colors" />
+                            </button>
                         </div>
-                        <button 
-                            onClick={() => setIsBenefitsOpen(true)}
-                            className="text-xs font-semibold text-gray-500 hover:text-gray-900 flex items-center gap-1 group"
-                        >
-                            Ver todos benefícios
-                            <ChevronRight className="w-3 h-3 text-gray-300 group-hover:text-gray-500 transition-colors" />
-                        </button>
                     </div>
 
                 </DialogContent>
@@ -423,6 +495,7 @@ export function PlanUpgradeDialog({
                     context={activeTab === "profissional" ? "upgrade" : undefined}
                     onPaymentVerified={() => setIsPaymentVerified(true)}
                     onPaymentSuccess={handleClosePayment}
+                    initialData={pagamentoDialog.initialData}
                 />
             )}
         </>

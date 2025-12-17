@@ -79,9 +79,6 @@ export const RelatoriosOperacional = ({
                   visible={true} // Always visible count, or should check hasAccess? User said "Exibir alguns dados reais".
                   type="number"
                 />
-                <span className="text-xs text-gray-400 font-normal ml-1">
-                  / Ilimitado
-                </span>
               </h3>
             </CardContent>
             {/* Lock Overlay */}

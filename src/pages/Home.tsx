@@ -259,7 +259,12 @@ const Home = () => {
       const limite = Number(limits.passageiros || 0);
       if (passageirosCount >= limite) {
         // Para plano gratuito, o "upgrade" é trocar de plano (Contextual)
-        openPlanUpgradeDialog({ feature: FEATURE_LIMITE_PASSAGEIROS, defaultTab: PLANO_ESSENCIAL });
+        // Callback: Ao sucesso, abrir o dialog de passageiro diretamente (bypass check)
+        openPlanUpgradeDialog({ 
+          feature: FEATURE_LIMITE_PASSAGEIROS, 
+          defaultTab: PLANO_ESSENCIAL,
+          onSuccess: () => setIsPassageiroDialogOpen(true)
+        });
         return;
       }
     }
@@ -270,7 +275,12 @@ const Home = () => {
 
   const handleOpenGastoDialog = useCallback(() => {
     if (!permissions.canViewGastos) {
-      openPlanUpgradeDialog({ feature: FEATURE_GASTOS, defaultTab: PLANO_ESSENCIAL });
+      // Callback: Ao sucesso, abrir o dialog de gastos diretamente
+      openPlanUpgradeDialog({ 
+        feature: FEATURE_GASTOS, 
+        defaultTab: PLANO_ESSENCIAL,
+        onSuccess: () => setIsGastoDialogOpen(true)
+      });
       return;
     }
 
@@ -461,7 +471,11 @@ const Home = () => {
                 <PassengerLimitHealthBar
                   current={passageirosCount}
                   max={Number(limitePassageiros)}
-                  onIncreaseLimit={() => openPlanUpgradeDialog({ feature: FEATURE_LIMITE_PASSAGEIROS, defaultTab: PLANO_ESSENCIAL })}
+                  onIncreaseLimit={() => openPlanUpgradeDialog({ 
+                    feature: FEATURE_LIMITE_PASSAGEIROS, 
+                    defaultTab: PLANO_ESSENCIAL,
+                    onSuccess: () => setIsPassageiroDialogOpen(true) // Retornar ao fluxo de cadastro
+                  })}
                   label="Passageiros"
                   className="mb-0"
                 />
