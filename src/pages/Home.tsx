@@ -32,10 +32,12 @@ import { useSession } from "@/hooks/business/useSession";
 
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import {
+  FEATURE_GASTOS,
+  FEATURE_LIMITE_PASSAGEIROS,
   PASSAGEIRO_COBRANCA_STATUS_PAGO,
   PLANO_COMPLETO,
   PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
+  PLANO_GRATUITO
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
@@ -257,7 +259,7 @@ const Home = () => {
       const limite = Number(limits.passageiros || 0);
       if (passageirosCount >= limite) {
         // Para plano gratuito, o "upgrade" é trocar de plano (Contextual)
-        openPlanUpgradeDialog({ feature: "limite_passageiros", defaultTab: "essencial" });
+        openPlanUpgradeDialog({ feature: FEATURE_LIMITE_PASSAGEIROS, defaultTab: PLANO_ESSENCIAL });
         return;
       }
     }
@@ -268,7 +270,7 @@ const Home = () => {
 
   const handleOpenGastoDialog = useCallback(() => {
     if (!permissions.canViewGastos) {
-      openPlanUpgradeDialog({ feature: "controle_gastos", defaultTab: "essencial" });
+      openPlanUpgradeDialog({ feature: FEATURE_GASTOS, defaultTab: PLANO_ESSENCIAL });
       return;
     }
 
@@ -459,7 +461,7 @@ const Home = () => {
                 <PassengerLimitHealthBar
                   current={passageirosCount}
                   max={Number(limitePassageiros)}
-                  onIncreaseLimit={() => openPlanUpgradeDialog({ feature: "limite_passageiros", defaultTab: "essencial" })}
+                  onIncreaseLimit={() => openPlanUpgradeDialog({ feature: FEATURE_LIMITE_PASSAGEIROS, defaultTab: PLANO_ESSENCIAL })}
                   label="Passageiros"
                   className="mb-0"
                 />

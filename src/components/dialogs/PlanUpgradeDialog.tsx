@@ -7,7 +7,7 @@ import {
     DialogTitle
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PLANO_COMPLETO, PLANO_ESSENCIAL } from "@/constants";
+import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_GASTOS, FEATURE_LIMITE_FRANQUIA, FEATURE_LIMITE_PASSAGEIROS, FEATURE_NOTIFICACOES, FEATURE_RELATORIOS, PLANO_COMPLETO, PLANO_ESSENCIAL } from "@/constants";
 import { usePlanos } from "@/hooks/api/usePlanos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -39,7 +39,7 @@ export function PlanUpgradeDialog({
     feature
 }: PlanUpgradeDialogProps) {
     const { user } = useSession();
-    const { profile, refreshProfile } = useProfile(user?.id);
+    const { profile, plano, refreshProfile } = useProfile(user?.id);
     
     // API Data
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -62,9 +62,9 @@ export function PlanUpgradeDialog({
     const [isPaymentVerified, setIsPaymentVerified] = useState(false);
 
     // Dados do Usuário
-    const planoAtualSlug = profile?.plano?.slug;
+    const planoAtualSlug = plano?.slug;
     const isEssencial = planoAtualSlug === PLANO_ESSENCIAL;
-    const isProfissional = planoAtualSlug === PLANO_COMPLETO || profile?.plano?.parent?.slug === PLANO_COMPLETO;
+    const isProfissional = planoAtualSlug === PLANO_COMPLETO || plano?.planoCompleto?.parent?.slug === PLANO_COMPLETO;
     
     // Se o usuário já é Essencial ou Profissional, escondemos a navegação de tabs e forçamos Profissional
     const hideTabs = isEssencial || isProfissional;
@@ -117,32 +117,32 @@ export function PlanUpgradeDialog({
     // Feature Context Content
     const featureContent = useMemo(() => {
         switch (feature) {
-            case "controle_gastos":
+            case FEATURE_GASTOS:
                 return {
                     title: "Assuma o Controle",
                     description: "Gerencie abastecimentos e manutenções tudo em um só lugar com o Plano Essencial."
                 };
-            case "limite_passageiros":
+            case FEATURE_LIMITE_PASSAGEIROS:
                 return {
                     title: "Sua Frota Cresceu?",
                     description: "Libere cadastros ilimitados de passageiros migrando para o Plano Essencial."
                 };
-            case "cobranca_automatica":
+            case FEATURE_COBRANCA_AUTOMATICA:
                 return {
                     title: "Pare de Cobrar Manualmente",
                     description: "Delegue a cobrança chata para nós e receba em dia com o Plano Profissional."
                 };
-            case "notificacoes_whatsapp":
+            case FEATURE_NOTIFICACOES:
                 return {
                     title: "Notificações Inteligentes",
                     description: "Envie lembretes e comprovantes automáticos via WhatsApp e reduza a inadimplência."
                 };
-            case "relatorios_avancados":
+            case FEATURE_RELATORIOS:
                 return {
                     title: "Visão de Dono",
                     description: "Tenha relatórios financeiros e operacionais detalhados para tomar melhores decisões."
                 };
-            case "limite_franquia":
+            case FEATURE_LIMITE_FRANQUIA:
                  return {
                     title: "Aumente sua Capacidade",
                     description: "Sua operação cresceu. Ajuste sua franquia para continuar automatizando suas cobranças."

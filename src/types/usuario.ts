@@ -10,4 +10,11 @@ export interface Usuario {
   created_at: string;
   updated_at: string;
   assinaturas_usuarios?: any;
+  // Computed/Joined fields
+  estatisticas?: {
+    total_passageiros: number;
+    [key: string]: any;
+  };
+  plano?: any;
+  assinatura?: any;
 }
