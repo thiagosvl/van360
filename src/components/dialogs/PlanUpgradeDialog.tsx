@@ -9,13 +9,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_GASTOS, FEATURE_LIMITE_FRANQUIA, FEATURE_LIMITE_PASSAGEIROS, FEATURE_NOTIFICACOES, FEATURE_RELATORIOS, PLANO_COMPLETO, PLANO_ESSENCIAL } from "@/constants";
 import { usePlanos } from "@/hooks/api/usePlanos";
+import { usePlanUpgrade } from "@/hooks/business/usePlanUpgrade";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useUpgradeFranquia } from "@/hooks/business/useUpgradeFranquia";
 import { cn } from "@/lib/utils";
-import { usuarioApi } from "@/services/api/usuario.api";
 import { formatCurrency } from "@/utils/formatters/currency";
-import { toast } from "@/utils/notifications/toast";
 import { Check, ChevronRight, Loader2, ShieldCheck, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import PagamentoAssinaturaDialog from "./PagamentoAssinaturaDialog";
@@ -50,16 +49,19 @@ export function PlanUpgradeDialog({
     const [activeTab, setActiveTab] = useState<string>(defaultTab);
     const [isBenefitsOpen, setIsBenefitsOpen] = useState(false);
     
-    // Estado de Pagamento
-    const [pagamentoDialog, setPagamentoDialog] = useState<{
-        isOpen: boolean;
-        cobrancaId: string;
-        valor: number;
-        nomePlano: string;
-        franquia?: number;
-    } | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [isPaymentVerified, setIsPaymentVerified] = useState(false);
+    // Hook de Upgrade Unificado
+    const { 
+        loading, 
+        pagamentoDialog, 
+        isPaymentVerified, 
+        setIsPaymentVerified,
+        handleUpgradeEssencial, 
+        handleUpgradeProfissional, 
+        handleClosePayment 
+    } = usePlanUpgrade({
+        onSuccess,
+        onOpenChange
+    });
 
     // Dados do Usuário
     const planoAtualSlug = plano?.slug;
@@ -155,88 +157,16 @@ export function PlanUpgradeDialog({
         }
     }, [feature]);
 
-    // --- Handlers de Upgrade ---
+    // --- Handlers de Upgrade (Wrappers) ---
 
-    const handleUpgradeEssencial = async () => {
-        if (!planoEssencialData) return;
-
-        try {
-            setLoading(true);
-            const result = await usuarioApi.upgradePlano({
-                usuario_id: profile?.id || user?.id,
-                plano_id: planoEssencialData.id
-            });
-
-            if (result.qrCodePayload && result.cobrancaId) {
-                setPagamentoDialog({
-                    isOpen: true,
-                    cobrancaId: String(result.cobrancaId),
-                    valor: Number(result.preco_aplicado || result.valor || 0),
-                    nomePlano: "Plano Essencial"
-                });
-            } else {
-                await refreshProfile();
-                toast.success("Plano atualizado com sucesso!");
-                if (onSuccess) onSuccess();
-                onOpenChange(false);
-            }
-        } catch (error: any) {
-            console.error("Erro upgrade essencial:", error);
-            toast.error("Erro ao atualizar plano", {
-                description: error.response?.data?.error || "Tente novamente mais tarde."
-            });
-        } finally {
-            setLoading(false);
-        }
+    const onUpgradeEssencial = () => {
+        handleUpgradeEssencial(planoEssencialData?.id);
     };
 
-    const handleUpgradeProfissional = async () => {
+    const onUpgradeProfissional = () => {
         const targetPlan = smartOptions?.recommended;
-        // Fallback para o plano completo base se não houver um tier específico recomendado (ex: erro de carregamento)
         const targetId = targetPlan?.id || planoCompletoData?.id;
-
-        if (!targetId) {
-            toast.error("Erro de configuração", { description: "Plano não disponível no momento." });
-            return;
-        }
-
-        try {
-            setLoading(true);
-            const result = await usuarioApi.upgradePlano({
-                usuario_id: profile?.id || user?.id,
-                plano_id: targetId
-            });
-
-            if (result.qrCodePayload && result.cobrancaId) {
-                setPagamentoDialog({
-                    isOpen: true,
-                    cobrancaId: String(result.cobrancaId),
-                    valor: Number(result.preco_aplicado || result.valor || 0),
-                    nomePlano: "Plano Profissional",
-                    franquia: targetPlan?.quantidade
-                });
-            } else {
-                await refreshProfile();
-                toast.success("Plano atualizado com sucesso!");
-                if (onSuccess) onSuccess();
-                onOpenChange(false);
-            }
-        } catch (error: any) {
-             console.error("Erro upgrade profissional:", error);
-             toast.error("Erro ao atualizar plano", {
-                description: error.response?.data?.error || "Tente novamente mais tarde."
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleClosePayment = () => {
-        setPagamentoDialog(null);
-        if (isPaymentVerified) {
-            onOpenChange(false);
-            if (onSuccess) onSuccess();
-        }
+        handleUpgradeProfissional(targetId, targetPlan);
     };
 
     return (
@@ -303,7 +233,7 @@ export function PlanUpgradeDialog({
 
                             <Button 
                                 className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all text-base"
-                                onClick={handleUpgradeEssencial}
+                                onClick={onUpgradeEssencial}
                                 disabled={loading || !planoEssencialData}
                             >
                                 {loading ? <Loader2 className="animate-spin w-5 h-5"/> : "Ativar Essencial"}
@@ -358,7 +288,7 @@ export function PlanUpgradeDialog({
 
                             <Button 
                                 className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-lg shadow-purple-100 transition-all text-base"
-                                onClick={handleUpgradeProfissional}
+                                onClick={onUpgradeProfissional}
                                 disabled={loading || !smartOptions?.recommended}
                             >
                                 {loading ? <Loader2 className="animate-spin w-5 h-5"/> : `Ativar Profissional ${smartOptions?.recommended?.quantidade || ''}`}
