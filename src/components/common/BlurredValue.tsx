@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/utils/formatters/currency";
 
 interface BlurredValueProps {
   value: number | string;
@@ -21,10 +22,7 @@ export function BlurredValue({
       const numValue = isNaN(value) || !isFinite(value) ? 0 : value;
       return (
         <span className={className}>
-          {numValue.toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          })}
+          {formatCurrency(numValue)}
         </span>
       );
     }

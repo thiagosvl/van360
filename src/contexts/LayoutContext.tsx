@@ -3,6 +3,7 @@ import { ContextualUpsellDialog } from "@/components/dialogs/ContextualUpsellDia
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import PlanosDialog from "@/components/dialogs/PlanosDialog";
+import { PlanUpgradeDialog, PlanUpgradeDialogProps } from "@/components/dialogs/PlanUpgradeDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -24,6 +25,8 @@ interface OpenContextualUpsellDialogProps {
   targetPlan?: "essencial" | "completo"; // Optional, defaults to Completo if not specified
   onSuccess?: () => void;
 }
+
+type OpenPlanUpgradeDialogProps = Omit<PlanUpgradeDialogProps, "open" | "onOpenChange">;
 
 interface OpenConfirmationDialogProps {
   title: string;
@@ -55,6 +58,8 @@ interface LayoutContextType {
   openLimiteFranquiaDialog: (props?: OpenLimiteFranquiaDialogProps) => void;
   isLimiteFranquiaDialogOpen: boolean;
   openContextualUpsellDialog: (props: OpenContextualUpsellDialogProps) => void;
+  openPlanUpgradeDialog: (props?: OpenPlanUpgradeDialogProps) => void;
+  isPlanUpgradeDialogOpen: boolean;
   openConfirmationDialog: (props: OpenConfirmationDialogProps) => void;
   closeConfirmationDialog: () => void;
   openEscolaFormDialog: (props?: OpenEscolaFormProps) => void;
@@ -87,6 +92,15 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [contextualUpsellDialogState, setContextualUpsellDialogState] = useState<{
       open: boolean;
       props?: OpenContextualUpsellDialogProps;
+
+  }>({
+      open: false
+  });
+
+  // Novo Plan Upgrade Dialog State (Unificado)
+  const [planUpgradeDialogState, setPlanUpgradeDialogState] = useState<{
+      open: boolean;
+      props?: OpenPlanUpgradeDialogProps;
   }>({
       open: false
   });
@@ -148,6 +162,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       });
   };
 
+  const openPlanUpgradeDialog = (props?: OpenPlanUpgradeDialogProps) => {
+      setPlanUpgradeDialogState({
+          open: true,
+          props
+      });
+  };
+
   const openConfirmationDialog = (props: OpenConfirmationDialogProps) => {
     setConfirmationDialogState({
       open: true,
@@ -182,7 +203,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openPlanosDialog,
       openLimiteFranquiaDialog,
       isLimiteFranquiaDialogOpen: limiteFranquiaDialogState.open,
+
       openContextualUpsellDialog,
+      openPlanUpgradeDialog,
+      isPlanUpgradeDialogOpen: planUpgradeDialogState.open,
       openConfirmationDialog,
       closeConfirmationDialog,
       openEscolaFormDialog,
@@ -219,6 +243,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             }}
             onSuccess={contextualUpsellDialogState.props.onSuccess}
         />
+      )}
+
+      {planUpgradeDialogState.open && (
+         <PlanUpgradeDialog
+            open={planUpgradeDialogState.open}
+            onOpenChange={(open) => setPlanUpgradeDialogState(prev => ({ ...prev, open }))}
+            defaultTab={planUpgradeDialogState.props?.defaultTab}
+            feature={planUpgradeDialogState.props?.feature}
+            targetPassengerCount={planUpgradeDialogState.props?.targetPassengerCount}
+            onSuccess={planUpgradeDialogState.props?.onSuccess}
+         />
       )}
 
       {confirmationDialogState.props && (

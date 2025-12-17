@@ -41,6 +41,7 @@ import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
+import { formatCurrency } from "@/utils/formatters/currency";
 import { toast } from "@/utils/notifications/toast";
 
 // New Component Imports
@@ -52,7 +53,7 @@ import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard"
 // --- Main Component ---
 
 const Home = () => {
-  const { setPageTitle, openPlanosDialog, openLimiteFranquiaDialog, openContextualUpsellDialog } = useLayout();
+  const { setPageTitle, openPlanosDialog, openPlanUpgradeDialog } = useLayout();
   const { user, loading: isSessionLoading } = useSession();
   
   // Use Access Control Hook
@@ -214,13 +215,7 @@ const Home = () => {
     return now.toLocaleDateString("pt-BR", options);
   }, []);
 
-  // Formatter Helper
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  };
+
 
   // Effects
   useEffect(() => {
@@ -262,7 +257,7 @@ const Home = () => {
       const limite = Number(limits.passageiros || 0);
       if (passageirosCount >= limite) {
         // Para plano gratuito, o "upgrade" é trocar de plano (Contextual)
-        openContextualUpsellDialog({ feature: "passageiros", targetPlan: PLANO_ESSENCIAL });
+        openPlanUpgradeDialog({ feature: "limite_passageiros", defaultTab: "essencial" });
         return;
       }
     }
@@ -273,7 +268,7 @@ const Home = () => {
 
   const handleOpenGastoDialog = useCallback(() => {
     if (!permissions.canViewGastos) {
-      openContextualUpsellDialog({ feature: "controle_gastos", targetPlan: PLANO_ESSENCIAL });
+      openPlanUpgradeDialog({ feature: "controle_gastos", defaultTab: "essencial" });
       return;
     }
 
@@ -464,7 +459,7 @@ const Home = () => {
                 <PassengerLimitHealthBar
                   current={passageirosCount}
                   max={Number(limitePassageiros)}
-                  onIncreaseLimit={() => openContextualUpsellDialog({ feature: "passageiros", targetPlan: PLANO_ESSENCIAL })}
+                  onIncreaseLimit={() => openPlanUpgradeDialog({ feature: "limite_passageiros", defaultTab: "essencial" })}
                   label="Passageiros"
                   className="mb-0"
                 />

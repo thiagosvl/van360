@@ -63,6 +63,11 @@ export function usePlanLimits({ userUid, profile: profileProp, plano: planoProp,
         remaining: remainingPassengers,
         hasLimit: hasPassengerLimit,
         isReached: isPassengerLimitReached,
+        checkAvailability: (simulateAddition = false) => {
+            if (!hasPassengerLimit) return true;
+            const current = remainingPassengers ?? 0;
+            return simulateAddition ? current > 0 : current >= 0;
+        }
       },
       franchise: {
         limit: franchiseLimit,

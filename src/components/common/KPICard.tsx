@@ -2,6 +2,7 @@
 import { LockOverlay } from "@/components/common/LockOverlay";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/utils/formatters/currency";
 import React from "react";
 
 interface KPICardProps {
@@ -57,10 +58,7 @@ export function KPICard({
          return Math.round(numValue); // Or specific number formatting if needed
       }
 
-      return numValue.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      });
+      return formatCurrency(numValue);
     }
     // Fallback para outros tipos
     if (typeof value === "number") {
@@ -70,10 +68,7 @@ export function KPICard({
          return numValue;
       }
 
-      return numValue.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      });
+      return formatCurrency(numValue);
     }
     return String(value ?? "R$ 0,00");
   };
