@@ -5,6 +5,7 @@ import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import PlanosDialog from "@/components/dialogs/PlanosDialog";
 import { PlanUpgradeDialog, PlanUpgradeDialogProps } from "@/components/dialogs/PlanUpgradeDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
+import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_GASTOS, FEATURE_LIMITE_PASSAGEIROS, FEATURE_NOTIFICACOES, FEATURE_RELATORIOS } from "@/constants";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -163,9 +164,29 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const openPlanUpgradeDialog = (props?: OpenPlanUpgradeDialogProps) => {
+      let defaultTab = props?.defaultTab;
+      
+      // Inferência inteligente de aba baseada na feature/dor
+      if (!defaultTab && props?.feature) {
+          switch (props.feature) {
+              case FEATURE_COBRANCA_AUTOMATICA:
+              case FEATURE_RELATORIOS:
+              case FEATURE_NOTIFICACOES:
+                  defaultTab = "profissional";
+                  break;
+              case FEATURE_LIMITE_PASSAGEIROS:
+              case FEATURE_GASTOS:
+                  defaultTab = "essencial";
+                  break;
+          }
+      }
+
       setPlanUpgradeDialogState({
           open: true,
-          props
+          props: {
+              ...props,
+              defaultTab
+          }
       });
   };
 

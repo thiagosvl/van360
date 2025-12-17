@@ -21,15 +21,24 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
     valor: number;
     nomePlano: string;
     franquia?: number;
+    context?: "register" | "upgrade";
   } | null>(null);
 
+
   const handleUpgradeEssencial = async (planoEssencialId?: string) => {
+    if (!profile?.id) {
+        toast.error("Erro de perfil", { description: "Usuário não identificado." });
+        return;
+    }
     if (!planoEssencialId) return;
 
     try {
       setLoading(true);
+
+      // Backend refatorado para lidar com user sem assinatura (Free/Inativo)
+      // Endpoint unificado de upgrade para todos os casos
       const result = await usuarioApi.upgradePlano({
-        usuario_id: profile?.id || user?.id,
+        usuario_id: profile.id,
         plano_id: planoEssencialId,
       });
 
@@ -39,6 +48,7 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
           cobrancaId: String(result.cobrancaId),
           valor: Number(result.preco_aplicado || result.valor || 0),
           nomePlano: "Plano Essencial",
+          context: "upgrade",
         });
       } else {
         await refreshProfile();
@@ -57,6 +67,11 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
   };
 
   const handleUpgradeProfissional = async (targetId?: string, targetPlan?: any) => {
+    if (!profile?.id) {
+      toast.error("Erro de perfil", { description: "Usuário não identificado." });
+      return;
+    }
+
     if (!targetId) {
       toast.error("Erro de configuração", {
         description: "Plano não disponível no momento.",
@@ -66,8 +81,11 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
 
     try {
       setLoading(true);
+
+      // Backend refatorado para lidar com user sem assinatura (Free/Inativo)
+      // Endpoint unificado de upgrade para todos os casos
       const result = await usuarioApi.upgradePlano({
-        usuario_id: profile?.id || user?.id,
+        usuario_id: profile.id,
         plano_id: targetId,
       });
 
@@ -78,6 +96,7 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
           valor: Number(result.preco_aplicado || result.valor || 0),
           nomePlano: "Plano Profissional",
           franquia: targetPlan?.quantidade,
+          context: "upgrade",
         });
       } else {
         await refreshProfile();
@@ -95,9 +114,10 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
     }
   };
 
-  const handleClosePayment = () => {
+  const handleClosePayment = (success?: boolean) => {
     setPagamentoDialog(null);
-    if (isPaymentVerified) {
+    // Fecha nível 2 SOMENTE se houve sucesso explícito OU verificado anteriormente
+    if (success === true || isPaymentVerified) {
       onOpenChange?.(false);
       onSuccess?.();
     }

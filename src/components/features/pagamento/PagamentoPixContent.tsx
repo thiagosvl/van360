@@ -14,14 +14,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 interface PagamentoPixContentProps {
   cobrancaId: string;
-  onPaymentSuccess?: () => void;
+  onPaymentSuccess?: (success?: boolean) => void;
   usuarioId?: string;
   onPrecisaSelecaoManual?: (data: {
     tipo: "upgrade" | "downgrade";
     franquia: number;
     cobrancaId: string;
   }) => void;
-  onClose?: () => void; // Opcional, para quando usado em modal
+  onClose?: (success?: boolean) => void; // Opcional, para quando usado em modal
   nomePlano?: string; // Para exibir no sucesso
   quantidadeAlunos?: number; // Para exibir no sucesso
   onIrParaInicio?: () => void; // Callback para ir para início
@@ -108,9 +108,8 @@ export default function PagamentoPixContent({
     if (!dadosPagamento) return;
 
     if (timeLeft === 0 && !paymentConfirmed) {
-      // Fix: Wrap onClose in setTimeout to avoid "Cannot update a component while rendering a different component"
       setTimeout(() => {
-        onClose();
+        if (onClose) onClose(false);
       }, 0);
     }
   }, [timeLeft, paymentConfirmed, onClose, dadosPagamento]);
@@ -234,9 +233,9 @@ export default function PagamentoPixContent({
                          queryClient.setQueryData(["profile", usuarioId], profileData);
                     }
                 } else {
-                    // Polling Híbrido: 250ms na primeira falha, 1s nas seguintes
-                    const delay = tentativa === 0 ? 250 : 1000;
-                    await new Promise(resolve => setTimeout(resolve, delay));
+                // Polling Híbrido: A primeira já esperou 1.5s. Se falhar, tenta repetidamente rápido (200ms).
+                const delay = 200;
+                await new Promise(resolve => setTimeout(resolve, delay));
                 }
             } catch (err) {
                 // Erro (ex: missing queryFn se não passar), espera 1s
@@ -274,7 +273,7 @@ export default function PagamentoPixContent({
           if (prev <= 1) {
             clearInterval(interval);
             if (onPaymentSuccessRef.current) {
-              setTimeout(() => onPaymentSuccessRef.current?.(), 0);
+              setTimeout(() => onPaymentSuccessRef.current?.(true), 0);
             }
             return 0;
           }
@@ -363,6 +362,7 @@ export default function PagamentoPixContent({
     };
 
     const setupRealtime = async () => {
+      // Polling Agressivo: 3 segundos (fixo) em paralelo ao Realtime
       if (!pollerRef.current && monitorandoRef.current) {
         pollerRef.current = setInterval(() => {
           if (!mountedRef.current || !monitorandoRef.current) {
@@ -373,7 +373,7 @@ export default function PagamentoPixContent({
             return;
           }
           checkPaymentStatus();
-        }, 5000);
+        }, 3000);
       }
 
       try {
@@ -409,25 +409,10 @@ export default function PagamentoPixContent({
 
         if (status === "SUBSCRIBED" || status === "ok" || status === "OK") {
           realtimeChannelRef.current = channel;
-          if (pollerRef.current) {
-            clearInterval(pollerRef.current);
-            pollerRef.current = null;
-          }
-          if (monitorandoRef.current) {
-            pollerRef.current = setInterval(() => {
-              if (!mountedRef.current || !monitorandoRef.current) {
-                if (pollerRef.current) {
-                  clearInterval(pollerRef.current);
-                  pollerRef.current = null;
-                }
-                return;
-              }
-              checkPaymentStatus();
-            }, 30000);
-          }
+          // Não limpamos ou alteramos o poller aqui. Mantemos ambos (Realtime + Polling 3s).
         }
       } catch (err) {
-        // Falha no realtime
+        // Falha no realtime, mas o poller de 3s continua ativo.
       }
     };
 
@@ -601,8 +586,8 @@ export default function PagamentoPixContent({
             {!onIrParaAssinatura && !onIrParaInicio && (
               <Button
                 onClick={() => {
-                  if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
-                  else if (onClose) setTimeout(onClose, 0);
+                  if (onPaymentSuccess) setTimeout(() => onPaymentSuccess(true), 0);
+                  else if (onClose) setTimeout(() => onClose(paymentConfirmed), 0);
                 }}
                 className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
               >

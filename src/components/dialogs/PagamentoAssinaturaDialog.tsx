@@ -1,20 +1,20 @@
 import PagamentoPixContent from "@/components/features/pagamento/PagamentoPixContent";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 
 interface PagamentoAssinaturaDialogProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (success?: boolean) => void;
   cobrancaId: string;
   valor: number;
-  onPaymentSuccess?: () => void;
+  onPaymentSuccess?: (success?: boolean) => void;
   usuarioId?: string;
   onPrecisaSelecaoManual?: (data: {
     tipo: "upgrade" | "downgrade";
@@ -49,7 +49,7 @@ export default function PagamentoAssinaturaDialog({
   // However, the Dialog's onOpenChange triggers onClose, which should be sufficient.
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose(false)}>
       <DialogContent
         className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-white p-0 gap-0 rounded-3xl"
         onInteractOutside={(e) => e.preventDefault()}
@@ -77,7 +77,7 @@ export default function PagamentoAssinaturaDialog({
             onPaymentSuccess={onPaymentSuccess}
             usuarioId={usuarioId}
             onPrecisaSelecaoManual={onPrecisaSelecaoManual}
-            onClose={onClose}
+            onClose={(success) => onClose(success)}
             nomePlano={nomePlano}
             quantidadeAlunos={quantidadeAlunos}
             onIrParaInicio={onIrParaInicio}
