@@ -21,7 +21,7 @@ import PagamentoAssinaturaDialog from "./PagamentoAssinaturaDialog";
 interface ContextualUpsellDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  feature: "passageiros" | "controle_gastos" | "relatorios" | "outros";
+  feature: "passageiros" | "controle_gastos" | "relatorios" | "automacao" | "outros";
   targetPlan: typeof PLANO_ESSENCIAL | typeof PLANO_COMPLETO;
   onConfirm?: () => void; 
   onViewAllPlans: () => void;

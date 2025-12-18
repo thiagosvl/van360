@@ -2,12 +2,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    ASSINATURA_USUARIO_STATUS_ATIVA,
-    ASSINATURA_USUARIO_STATUS_PENDENTE_PAGAMENTO,
-    ASSINATURA_USUARIO_STATUS_SUSPENSA,
-    ASSINATURA_USUARIO_STATUS_TRIAL,
-    PLANO_COMPLETO,
-    PLANO_GRATUITO
+  ASSINATURA_USUARIO_STATUS_ATIVA,
+  ASSINATURA_USUARIO_STATUS_PENDENTE_PAGAMENTO,
+  ASSINATURA_USUARIO_STATUS_SUSPENSA,
+  ASSINATURA_USUARIO_STATUS_TRIAL,
+  PLANO_COMPLETO,
+  PLANO_GRATUITO
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { cn } from "@/lib/utils";
@@ -20,7 +20,7 @@ interface SubscriptionHeaderProps {
 }
 
 export function SubscriptionHeader({ plano, assinatura, onPagarClick }: SubscriptionHeaderProps) {
-  const { openContextualUpsellDialog, openLimiteFranquiaDialog } = useLayout();
+  const { openPlanUpgradeDialog, openLimiteFranquiaDialog } = useLayout();
 
   const isFree = plano?.slug === PLANO_GRATUITO;
   const isComplete = plano?.slug === PLANO_COMPLETO || plano?.parent?.slug === PLANO_COMPLETO;
@@ -67,14 +67,14 @@ export function SubscriptionHeader({ plano, assinatura, onPagarClick }: Subscrip
         return;
     }
     if (isFree) {
-        openContextualUpsellDialog({ feature: "outros" }); // Upgrade
+        openPlanUpgradeDialog({ feature: "outros" }); // Upgrade
         return;
     }
     // Is Active and not Free
     if (isComplete) {
        openLimiteFranquiaDialog({ title: "Aumentar Limite", description: "Gerencie seus limites." });
     } else {
-       openContextualUpsellDialog({ feature: "outros" }); // Upgrade from Essential
+       openPlanUpgradeDialog({ feature: "outros" }); // Upgrade from Essential
     }
   };
 

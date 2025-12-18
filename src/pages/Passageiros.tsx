@@ -3,11 +3,11 @@ import { UpgradeStickyFooter } from "@/components/common/UpgradeStickyFooter";
 
 import { DialogExcessoFranquia } from "@/components/dialogs/DialogExcessoFranquia";
 
+import { LimitHealthBar } from "@/components/common/LimitHealthBar";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PassageirosList } from "@/components/features/passageiro/PassageirosList";
 import { PassageirosToolbar } from "@/components/features/passageiro/PassageirosToolbar";
-import { PassengerLimitHealthBar } from "@/components/features/passageiro/PassengerLimitHealthBar";
 import PrePassageiros from "@/components/features/passageiro/PrePassageiros";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
@@ -30,7 +30,7 @@ import {
   usePrePassageiros,
   useToggleAtivoPassageiro,
   useUpdatePassageiro,
-  useVeiculos
+  useVeiculos,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -57,6 +57,7 @@ export default function Passageiros() {
     setPageTitle,
     openContextualUpsellDialog,
     openLimiteFranquiaDialog,
+    openPlanUpgradeDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
   } = useLayout();
@@ -293,7 +294,9 @@ export default function Passageiros() {
 
       openConfirmationDialog({
         title:
-          action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
+          action === "ativar"
+            ? "Reativar passageiro?"
+            : "Desativar passageiro?",
         description:
           action === "ativar"
             ? "O passageiro voltará a aparecer nas listagens ativas e a geração de cobranças será retomada."
@@ -441,51 +444,55 @@ export default function Passageiros() {
     let veiculoId = veiculos?.[0]?.id;
 
     try {
-        if (!escolaId) {
-            const fakeEscola = { ...mockGenerator.escola() };
-            // fakeEscola.nome = ... (removed mutation)
-            
-            const novaEscola = await createEscola.mutateAsync({
-                usuarioId: profile.id,
-                data: { ...fakeEscola, ativo: true }
-            });
-            if (novaEscola && (novaEscola as any).id) {
-                escolaId = (novaEscola as any).id;
-            }
-        }
+      if (!escolaId) {
+        const fakeEscola = { ...mockGenerator.escola() };
+        // fakeEscola.nome = ... (removed mutation)
 
-        if (!veiculoId) {
-            const fakeVeiculo = { ...mockGenerator.veiculo() };
-            const oldPlate = fakeVeiculo.placa;
-            const suffix = Math.floor(Math.random() * 100).toString().padStart(2, '0');
-            fakeVeiculo.placa = oldPlate.substring(0, oldPlate.length - 2) + suffix;
-
-            const novoVeiculo = await createVeiculo.mutateAsync({
-                usuarioId: profile.id,
-                data: { ...fakeVeiculo, ativo: true }
-            });
-             if (novoVeiculo && (novoVeiculo as any).id) {
-                veiculoId = (novoVeiculo as any).id;
-            }
+        const novaEscola = await createEscola.mutateAsync({
+          usuarioId: profile.id,
+          data: { ...fakeEscola, ativo: true },
+        });
+        if (novaEscola && (novaEscola as any).id) {
+          escolaId = (novaEscola as any).id;
         }
+      }
+
+      if (!veiculoId) {
+        const fakeVeiculo = { ...mockGenerator.veiculo() };
+        const oldPlate = fakeVeiculo.placa;
+        const suffix = Math.floor(Math.random() * 100)
+          .toString()
+          .padStart(2, "0");
+        fakeVeiculo.placa = oldPlate.substring(0, oldPlate.length - 2) + suffix;
+
+        const novoVeiculo = await createVeiculo.mutateAsync({
+          usuarioId: profile.id,
+          data: { ...fakeVeiculo, ativo: true },
+        });
+        if (novoVeiculo && (novoVeiculo as any).id) {
+          veiculoId = (novoVeiculo as any).id;
+        }
+      }
     } catch (e) {
-        console.error("Erro ao criar dependências fake", e);
-        toast.error("Erro ao gerar dependências automáticas.");
-        return;
+      console.error("Erro ao criar dependências fake", e);
+      toast.error("Erro ao gerar dependências automáticas.");
+      return;
     }
 
     // Double check if we have IDs now
     if (!escolaId || !veiculoId) {
-         // Optimization: If creates failed silently or didn't return ID, try to refetch or just stop.
-         // But let's assume if mutateAsync didn't throw, we are okay-ish, 
-         // but we really need IDs for the passenger.
-         if(!escolaId) {
-             // Try to use the first one from refetched list if possible? 
-             // Logic is complex without immediate ID.
-             // Let's assume we need them.
-             toast.error("Não foi possível obter escola/veículo para criação automática.");
-             return;
-         }
+      // Optimization: If creates failed silently or didn't return ID, try to refetch or just stop.
+      // But let's assume if mutateAsync didn't throw, we are okay-ish,
+      // but we really need IDs for the passenger.
+      if (!escolaId) {
+        // Try to use the first one from refetched list if possible?
+        // Logic is complex without immediate ID.
+        // Let's assume we need them.
+        toast.error(
+          "Não foi possível obter escola/veículo para criação automática."
+        );
+        return;
+      }
     }
 
     const hoje = new Date();
@@ -534,7 +541,14 @@ export default function Passageiros() {
         },
       }
     );
-  }, [profile?.id, escolas, veiculos, createPassageiro, createEscola, createVeiculo]);
+  }, [
+    profile?.id,
+    escolas,
+    veiculos,
+    createPassageiro,
+    createEscola,
+    createVeiculo,
+  ]);
 
   const handleHistorico = useCallback(
     (passageiro: Passageiro) => {
@@ -614,21 +628,32 @@ export default function Passageiros() {
               </TabsList>
             </div>
 
-            <TabsContent 
-              value="passageiros" 
+            <TabsContent
+              value="passageiros"
               className={cn(
                 "space-y-6 mt-0",
                 isLimitedUser && "pb-20 md:pb-0" // Padding extra para Mobile quando houver sticky footer
               )}
             >
               {isLimitedUser && limitePassageiros != null && (
-                <PassengerLimitHealthBar
+                <LimitHealthBar
                   current={countPassageiros || 0}
                   max={limitePassageiros}
+                  label="Passageiros Ativos"
+                  description={
+                    countPassageiros >= limitePassageiros
+                      ? "Limite atingido."
+                      : `${limitePassageiros - countPassageiros} ${
+                          limitePassageiros - countPassageiros === 1
+                            ? "vaga restante"
+                            : "vagas restantes"
+                        }.`
+                  }
                   onIncreaseLimit={() =>
-                    openContextualUpsellDialog({
-                      feature: "passageiros",
-                      targetPlan: PLANO_ESSENCIAL,
+                    openPlanUpgradeDialog({
+                      feature: "passageiros", // Or constant
+                      defaultTab: PLANO_ESSENCIAL,
+                      targetPassengerCount: countPassageiros || 0,
                     })
                   }
                   hideBelowThreshold={75} // Só exibe se uso >= 75% para evitar ansiedade prematura
@@ -636,26 +661,26 @@ export default function Passageiros() {
               )}
 
               <Card className="border-none shadow-none bg-transparent">
-                  <CardHeader className="p-0">
-                    <div className="flex justify-end mb-4 md:hidden">
-                      <Button
-                        onClick={handleCadastrarRapido}
-                        variant="outline"
-                        className="gap-2 text-uppercase w-full"
-                      >
-                        GERAR PASSAGEIRO FAKE
-                      </Button>
-                    </div>
-                    <div className="hidden md:flex justify-end mb-4">
-                      <Button
-                        onClick={handleCadastrarRapido}
-                        variant="outline"
-                        className="gap-2 text-uppercase"
-                      >
-                        GERAR PASSAGEIRO FAKE
-                      </Button>
-                    </div>
-                  </CardHeader>
+                <CardHeader className="p-0">
+                  <div className="flex justify-end mb-4 md:hidden">
+                    <Button
+                      onClick={handleCadastrarRapido}
+                      variant="outline"
+                      className="gap-2 text-uppercase w-full"
+                    >
+                      GERAR PASSAGEIRO FAKE
+                    </Button>
+                  </div>
+                  <div className="hidden md:flex justify-end mb-4">
+                    <Button
+                      onClick={handleCadastrarRapido}
+                      variant="outline"
+                      className="gap-2 text-uppercase"
+                    >
+                      GERAR PASSAGEIRO FAKE
+                    </Button>
+                  </div>
+                </CardHeader>
 
                 <CardContent className="px-0">
                   <div className="mb-6">
@@ -717,12 +742,9 @@ export default function Passageiros() {
               </Card>
             </TabsContent>
 
-            <TabsContent 
+            <TabsContent
               value="solicitacoes"
-              className={cn(
-                "mt-0",
-                isLimitedUser && "pb-20 md:pb-0"
-              )}
+              className={cn("mt-0", isLimitedUser && "pb-20 md:pb-0")}
             >
               <PrePassageiros
                 onFinalizeNewPrePassageiro={async () => Promise.resolve()}

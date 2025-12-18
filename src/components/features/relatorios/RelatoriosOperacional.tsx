@@ -1,10 +1,10 @@
 import { BlurredValue } from "@/components/common/BlurredValue";
+import { LimitHealthBar } from "@/components/common/LimitHealthBar";
 import { LockOverlay } from "@/components/common/LockOverlay";
-import { PassengerLimitHealthBar } from "@/components/features/passageiro/PassengerLimitHealthBar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { PLANO_ESSENCIAL } from "@/constants";
+import { FEATURE_LIMITE_PASSAGEIROS, PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { cn } from "@/lib/utils";
 import { Bot, Users } from "lucide-react";
@@ -50,16 +50,32 @@ export const RelatoriosOperacional = ({
   limits,
   isCompletePlan,
 }: RelatoriosOperacionalProps) => {
-  const { openLimiteFranquiaDialog, openPlanosDialog, openContextualUpsellDialog } = useLayout();
+  const { openPlanUpgradeDialog, openContextualUpsellDialog } = useLayout();
 
   return (
     <div className="space-y-4 mt-0">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {isFreePlan ? (
-          <PassengerLimitHealthBar
+          <LimitHealthBar
             current={dados.passageirosCount}
-            max={limits.passageiros}
+            max={limits.passageiros || 0}
             label="Passageiros"
+            description={
+              limits.passageiros - dados.passageirosAtivosCount <= 0
+                ? "Limite atingido."
+                : `${limits.passageiros - dados.passageirosAtivosCount} ${
+                    limits.passageiros - dados.passageirosAtivosCount === 1
+                      ? "vaga restante"
+                      : "vagas restantes"
+                  }.`
+            }
+            onIncreaseLimit={() =>
+              openPlanUpgradeDialog({
+                feature: FEATURE_LIMITE_PASSAGEIROS,
+                defaultTab: PLANO_ESSENCIAL,
+                targetPassengerCount: dados.passageirosAtivosCount,
+              })
+            }
             className="mb-0"
           />
         ) : (
@@ -82,9 +98,7 @@ export const RelatoriosOperacional = ({
               </h3>
             </CardContent>
             {/* Lock Overlay */}
-            {!hasAccess && (
-                 <LockOverlay />
-            )}
+            {!hasAccess && <LockOverlay />}
           </Card>
         )}
 
@@ -137,7 +151,12 @@ export const RelatoriosOperacional = ({
                   variant="secondary"
                   size="sm"
                   className="mt-4 px-5 rounded-full border-white/30 bg-white/20 text-white hover:bg-white/30 font-semibold"
-                  onClick={() => openContextualUpsellDialog({ feature: "relatorios", targetPlan: PLANO_ESSENCIAL })}
+                  onClick={() =>
+                    openContextualUpsellDialog({
+                      feature: "relatorios",
+                      targetPlan: PLANO_ESSENCIAL,
+                    })
+                  }
                 >
                   Quero Automação Total →
                 </Button>
@@ -191,7 +210,9 @@ export const RelatoriosOperacional = ({
                   <div
                     className="h-full bg-indigo-500 rounded-full"
                     style={{
-                      width: `${(escola.passageiros / dados.passageirosCount) * 100}%`,
+                      width: `${
+                        (escola.passageiros / dados.passageirosCount) * 100
+                      }%`,
                     }}
                   />
                 </div>
@@ -202,9 +223,7 @@ export const RelatoriosOperacional = ({
                 Nenhuma escola vinculada.
               </p>
             )}
-            {!hasAccess && (
-                <LockOverlay className="top-0 right-7" />
-            )}
+            {!hasAccess && <LockOverlay className="top-0 right-7" />}
           </CardContent>
         </Card>
 
@@ -259,9 +278,7 @@ export const RelatoriosOperacional = ({
                 Nenhum dado por período.
               </p>
             )}
-            {!hasAccess && (
-                <LockOverlay className="top-0 right-7" />
-            )}
+            {!hasAccess && <LockOverlay className="top-0 right-7" />}
           </CardContent>
         </Card>
 
@@ -307,9 +324,7 @@ export const RelatoriosOperacional = ({
                 Nenhum veículo cadastrado.
               </p>
             )}
-             {!hasAccess && (
-                <LockOverlay className="top-0 right-7" />
-            )}
+            {!hasAccess && <LockOverlay className="top-0 right-7" />}
           </CardContent>
         </Card>
       </div>

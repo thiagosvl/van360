@@ -9,7 +9,7 @@ import {
   TrendingUp,
   Users,
   Wallet,
-  Zap
+  Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +17,6 @@ import { useNavigate } from "react-router-dom";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
-import { PassengerLimitHealthBar } from "@/components/features/passageiro/PassengerLimitHealthBar";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Button } from "@/components/ui/button";
 
@@ -37,7 +36,7 @@ import {
   PASSAGEIRO_COBRANCA_STATUS_PAGO,
   PLANO_COMPLETO,
   PLANO_ESSENCIAL,
-  PLANO_GRATUITO
+  PLANO_GRATUITO,
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
@@ -47,6 +46,7 @@ import { formatCurrency } from "@/utils/formatters/currency";
 import { toast } from "@/utils/notifications/toast";
 
 // New Component Imports
+import { LimitHealthBar } from "@/components/common/LimitHealthBar";
 import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
 import { MiniKPI } from "@/components/features/home/MiniKPI";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
@@ -57,27 +57,27 @@ import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard"
 const Home = () => {
   const { setPageTitle, openPlanosDialog, openPlanUpgradeDialog } = useLayout();
   const { user, loading: isSessionLoading } = useSession();
-  
+
   // Use Access Control Hook
   // Use Access Control Hook
-  const { 
-    profile, 
-    isLoading: isProfileLoading, 
-    plano, 
+  const {
+    profile,
+    isLoading: isProfileLoading,
+    plano,
     isFreePlan,
-    canViewModuleGastos 
+    canViewModuleGastos,
   } = usePermissions();
 
   const { limits: planLimits } = usePlanLimits({ profile, plano });
 
   const permissions = {
-      isFreePlan,
-      canViewGastos: canViewModuleGastos
+    isFreePlan,
+    canViewGastos: canViewModuleGastos,
   };
 
   const limits = {
-      passageiros: planLimits.passengers.limit,
-      hasPassengerLimit: planLimits.passengers.hasLimit
+    passageiros: planLimits.passengers.limit,
+    hasPassengerLimit: planLimits.passengers.hasLimit,
   };
 
   const navigate = useNavigate();
@@ -202,7 +202,7 @@ const Home = () => {
   const completedSteps = [
     veiculosCount > 0,
     escolasCount > 0,
-    passageirosCount > 0
+    passageirosCount > 0,
   ].filter(Boolean).length;
   const showOnboarding = completedSteps < 3;
 
@@ -216,8 +216,6 @@ const Home = () => {
     };
     return now.toLocaleDateString("pt-BR", options);
   }, []);
-
-
 
   // Effects
   useEffect(() => {
@@ -260,10 +258,10 @@ const Home = () => {
       if (passageirosCount >= limite) {
         // Para plano gratuito, o "upgrade" é trocar de plano (Contextual)
         // Callback: Ao sucesso, abrir o dialog de passageiro diretamente (bypass check)
-        openPlanUpgradeDialog({ 
-          feature: FEATURE_LIMITE_PASSAGEIROS, 
+        openPlanUpgradeDialog({
+          feature: FEATURE_LIMITE_PASSAGEIROS,
           defaultTab: PLANO_ESSENCIAL,
-          onSuccess: () => setIsPassageiroDialogOpen(true)
+          onSuccess: () => setIsPassageiroDialogOpen(true),
         });
         return;
       }
@@ -276,10 +274,10 @@ const Home = () => {
   const handleOpenGastoDialog = useCallback(() => {
     if (!permissions.canViewGastos) {
       // Callback: Ao sucesso, abrir o dialog de gastos diretamente
-      openPlanUpgradeDialog({ 
-        feature: FEATURE_GASTOS, 
+      openPlanUpgradeDialog({
+        feature: FEATURE_GASTOS,
         defaultTab: PLANO_ESSENCIAL,
-        onSuccess: () => setIsGastoDialogOpen(true)
+        onSuccess: () => setIsGastoDialogOpen(true),
       });
       return;
     }
@@ -468,15 +466,27 @@ const Home = () => {
             )}
             {hasPassengerLimit ? (
               <div className="sm:col-span-1">
-                <PassengerLimitHealthBar
+                <LimitHealthBar
                   current={passageirosCount}
                   max={Number(limitePassageiros)}
-                  onIncreaseLimit={() => openPlanUpgradeDialog({ 
-                    feature: FEATURE_LIMITE_PASSAGEIROS, 
-                    defaultTab: PLANO_ESSENCIAL,
-                    onSuccess: () => setIsPassageiroDialogOpen(true) // Retornar ao fluxo de cadastro
-                  })}
-                  label="Passageiros"
+                  description={
+                    Number(limitePassageiros) - passageirosCount <= 0
+                      ? "Limite atingido."
+                      : `${Number(limitePassageiros) - passageirosCount} ${
+                          Number(limitePassageiros) - passageirosCount === 1
+                            ? "vaga restante"
+                            : "vagas restantes"
+                        }.`
+                  }
+                  onIncreaseLimit={() =>
+                    openPlanUpgradeDialog({
+                      feature: FEATURE_LIMITE_PASSAGEIROS,
+                      defaultTab: PLANO_ESSENCIAL,
+                      targetPassengerCount: passageirosAtivosCount,
+                      onSuccess: () => setIsPassageiroDialogOpen(true), // Retornar ao fluxo de cadastro
+                    })
+                  }
+                  label="Passageiros Ativos"
                   className="mb-0"
                 />
               </div>
@@ -485,7 +495,6 @@ const Home = () => {
                 className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative"
                 label="Passageiros Ativos"
                 value={passageirosAtivosCount}
-                showPassageirosLimitSubtext={true}
                 icon={Users}
                 colorClass="text-blue-600"
                 bgClass="bg-blue-50"
@@ -548,16 +557,28 @@ const Home = () => {
                   isCopied && "border-green-200 bg-green-50"
                 )}
               >
-                <div className={cn(
-                  "h-10 w-10 rounded-xl flex items-center justify-center mb-2 transition-all duration-300",
-                  isCopied ? "bg-green-100 text-green-600 scale-110" : "bg-blue-50 text-blue-600 group-hover:scale-110"
-                )}>
-                  {isCopied ? <Check className="h-5 w-5" /> : <Zap className="h-5 w-5" />}
+                <div
+                  className={cn(
+                    "h-10 w-10 rounded-xl flex items-center justify-center mb-2 transition-all duration-300",
+                    isCopied
+                      ? "bg-green-100 text-green-600 scale-110"
+                      : "bg-blue-50 text-blue-600 group-hover:scale-110"
+                  )}
+                >
+                  {isCopied ? (
+                    <Check className="h-5 w-5" />
+                  ) : (
+                    <Zap className="h-5 w-5" />
+                  )}
                 </div>
-                <span className={cn(
-                  "text-xs font-semibold text-center leading-tight transition-colors duration-200",
-                  isCopied ? "text-green-700" : "text-gray-700 group-hover:text-blue-700"
-                )}>
+                <span
+                  className={cn(
+                    "text-xs font-semibold text-center leading-tight transition-colors duration-200",
+                    isCopied
+                      ? "text-green-700"
+                      : "text-gray-700 group-hover:text-blue-700"
+                  )}
+                >
                   {isCopied ? "Copiado!" : "Link de Cadastro"}
                 </span>
               </div>
@@ -663,8 +684,6 @@ const Home = () => {
           toast.success("Gasto registrado com sucesso!");
         }}
       />
-
-
     </>
   );
 };

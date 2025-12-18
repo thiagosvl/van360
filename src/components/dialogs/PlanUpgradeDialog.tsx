@@ -23,7 +23,7 @@ import PagamentoAssinaturaDialog from "./PagamentoAssinaturaDialog";
 export interface PlanUpgradeDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    defaultTab?: "essencial" | "profissional";
+    defaultTab?: "essencial" | "completo";
     targetPassengerCount?: number; 
     onSuccess?: () => void;
     // Context Feature Flag
@@ -99,37 +99,46 @@ export function PlanUpgradeDialog({
             setIsPaymentVerified(false);
             
             if (isEssencial || isProfissional) {
-                setActiveTab("profissional");
+                setActiveTab("completo");
             } else {
                 setActiveTab(defaultTab);
             }
         }
     }, [open, isEssencial, isProfissional, defaultTab]);
 
+    // Filtrar opções que sejam menores que a quantidade atual de passageiros
+    const availableFranchiseOptions = useMemo(() => {
+        if (!franchiseOptions) return [];
+        return franchiseOptions.filter(opt => (opt.quantidade || 0) >= passageirosAtivos);
+    }, [franchiseOptions, passageirosAtivos]);
+
+
+
     // --- State Local de Seleção de Tier ---
     const [selectedTierId, setSelectedTierId] = useState<number | string | null>(null);
     
     // Initializer: Sempre que abrir ou mudar as opções, seleciona o recomendado
     useEffect(() => {
-        if (open && franchiseOptions?.length > 0) {
-            const recommended = franchiseOptions.find(o => o.recomendado) || franchiseOptions[0];
+        if (open && availableFranchiseOptions.length > 0) {
+            // Tenta achar um recomendado VÁLIDO (dentro dos filtrados)
+            const recommended = availableFranchiseOptions.find(o => o.recomendado) || availableFranchiseOptions[0];
             if (recommended) setSelectedTierId(recommended.id);
         }
-    }, [open, franchiseOptions]);
+    }, [open, availableFranchiseOptions]);
 
     // Computar a opção visualizada no momento
     const currentTierOption = useMemo(() => {
-        if (!franchiseOptions || franchiseOptions.length === 0) return null;
+        if (!availableFranchiseOptions || availableFranchiseOptions.length === 0) return null;
         
         // Tenta encontrar o selecionado
         if (selectedTierId) {
-            const selected = franchiseOptions.find(o => o.id === selectedTierId);
+            const selected = availableFranchiseOptions.find(o => o.id === selectedTierId);
             if (selected) return selected;
         }
 
-        // Fallback para o recomendado ou o primeiro
-        return franchiseOptions.find(o => o.recomendado) || franchiseOptions[0];
-    }, [selectedTierId, franchiseOptions]);
+        // Fallback para o recomendado ou o primeiro da lista FILTRADA
+        return availableFranchiseOptions.find(o => o.recomendado) || availableFranchiseOptions[0];
+    }, [selectedTierId, availableFranchiseOptions]);
     
     // --- Lógica de Preço Sob Medida (Robustez) ---
     const [customPrice, setCustomPrice] = useState<number | null>(null);
@@ -165,7 +174,7 @@ export function PlanUpgradeDialog({
              case FEATURE_COBRANCA_AUTOMATICA:
              case FEATURE_NOTIFICACOES:
              case FEATURE_LIMITE_FRANQUIA:
-                 return "profissional";
+                 return "completo";
              default:
                  return defaultTab;
         }
@@ -275,10 +284,10 @@ export function PlanUpgradeDialog({
                                     Plano Essencial
                                 </TabsTrigger>
                                 <TabsTrigger 
-                                    value="profissional"
+                                    value="completo"
                                     className="h-full rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-700 text-gray-500 font-semibold transition-all shadow-none"
                                 >
-                                    Plano Profissional
+                                    Plano Completo
                                 </TabsTrigger>
                             </TabsList>
                         )}
@@ -327,7 +336,7 @@ export function PlanUpgradeDialog({
                                         <span>Cobrança Manual</span>
                                     </div>
                                     <button 
-                                        onClick={() => setActiveTab("profissional")}
+                                        onClick={() => setActiveTab("completo")}
                                         className="text-xs font-bold text-purple-600 hover:text-purple-700 hover:underline flex items-center gap-1"
                                     >
                                         Quero 100% Automático
@@ -340,14 +349,14 @@ export function PlanUpgradeDialog({
                             </TabsContent>
 
                             {/* Conteúdo Profissional */}
-                            <TabsContent value="profissional" className="p-6 space-y-5 m-0 focus-visible:ring-0 outline-none animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+                            <TabsContent value="completo" className="p-6 space-y-5 m-0 focus-visible:ring-0 outline-none animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
                                  <div className="text-center space-y-1 mb-4">
                                     <div className="inline-flex items-center gap-2 bg-purple-50 px-3 py-1 rounded-full text-purple-700 text-[10px] font-bold uppercase tracking-wider mb-2">
                                         <TrendingUp className="w-3 h-3" />
                                         {currentTierOption?.recomendado ? "Recomendado" : "Mais Espaço"}
                                     </div>
                                     
-                                    {franchiseOptions && franchiseOptions.length > 0 ? (
+                                    {availableFranchiseOptions && availableFranchiseOptions.length > 0 ? (
                                         <>
                                             <h3 className="text-3xl font-bold text-gray-900 tracking-tight flex flex-col items-center leading-none">
                                                 {(() => {
@@ -396,9 +405,9 @@ export function PlanUpgradeDialog({
                                                 })()}
                                             </h3>
                                             {/* Tier Selector Moved Here */}
-                                            {franchiseOptions && franchiseOptions.length > 0 && (
+                                            {availableFranchiseOptions && availableFranchiseOptions.length > 0 && (
                                                 <div className="flex flex-wrap justify-center gap-2 mt-3 mb-1">
-                                                    {franchiseOptions.sort((a,b) => (a?.quantidade||0) - (b?.quantidade||0)).map((opt) => (
+                                                    {availableFranchiseOptions.sort((a,b) => (a?.quantidade||0) - (b?.quantidade||0)).map((opt) => (
                                                         <button
                                                             key={opt?.id}
                                                             onClick={() => {
@@ -416,7 +425,7 @@ export function PlanUpgradeDialog({
                                                     ))}
                                                 </div>
                                             )}
-                                            {(!franchiseOptions || franchiseOptions.length === 0) && (
+                                            {(!availableFranchiseOptions || availableFranchiseOptions.length === 0) && (
                                                  <p className="text-sm text-purple-600 font-medium mt-1">
                                                     {currentTierOption?.quantidade} Vagas de Automação
                                                 </p>
@@ -509,7 +518,7 @@ export function PlanUpgradeDialog({
                     nomePlano={pagamentoDialog.nomePlano}
                     quantidadeAlunos={pagamentoDialog.franquia}
                     usuarioId={user?.id}
-                    context={activeTab === "profissional" ? "upgrade" : undefined}
+                    context={activeTab === "completo" ? "upgrade" : undefined}
                     onPaymentVerified={() => setIsPaymentVerified(true)}
                     onPaymentSuccess={handleClosePayment}
                     initialData={pagamentoDialog.initialData}

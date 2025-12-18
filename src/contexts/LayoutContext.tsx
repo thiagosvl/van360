@@ -22,7 +22,7 @@ interface OpenLimiteFranquiaDialogProps {
 }
 
 interface OpenContextualUpsellDialogProps {
-  feature: "passageiros" | "controle_gastos" | "relatorios" | "outros";
+  feature: "passageiros" | "controle_gastos" | "relatorios" | "automacao" | "outros";
   targetPlan?: "essencial" | "completo"; // Optional, defaults to Completo if not specified
   onSuccess?: () => void;
 }
@@ -172,7 +172,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
               case FEATURE_COBRANCA_AUTOMATICA:
               case FEATURE_RELATORIOS:
               case FEATURE_NOTIFICACOES:
-                  defaultTab = "profissional";
+                  defaultTab = "completo";
                   break;
               case FEATURE_LIMITE_PASSAGEIROS:
               case FEATURE_GASTOS:

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
-interface PassengerLimitHealthBarProps {
+interface LimitHealthBarProps {
   current: number;
   max: number;
   label?: string;
@@ -11,62 +11,67 @@ interface PassengerLimitHealthBarProps {
   variant?: "full" | "compact";
   className?: string;
   onIncreaseLimit?: () => void;
-  hideBelowThreshold?: number; // Porcentagem (0-100) para ocultar a barra se o uso estiver abaixo desse valor
+  hideBelowThreshold?: number; // Porcentagem (0-100)
 }
 
-export function PassengerLimitHealthBar({ 
-  current, 
+export function LimitHealthBar({
+  current,
   max,
-  label = "Limite de Passageiros",
+  label = "Limite",
   description,
   showIncreaseLimit = true,
   variant = "full",
   className,
   onIncreaseLimit,
-  hideBelowThreshold = 0
-}: PassengerLimitHealthBarProps) {
+  hideBelowThreshold = 0,
+}: LimitHealthBarProps) {
   const percentage = Math.min((current / max) * 100, 100);
 
   // Se o uso for menor que o limite configurado (ex: 75%), não exibe nada
-  // Ótimo para não causar ansiedade prematura no usuário
   if (percentage < hideBelowThreshold) {
     return null;
   }
-  
+
   let colorClass = "bg-green-500";
+  // Lógica de cores baseada em proximidade do limite
   if (current >= max) colorClass = "bg-red-500";
-  else if (current >= max - 1) colorClass = "bg-yellow-500";
+  else if (current >= max * 0.7) colorClass = "bg-yellow-500";
 
-  const defaultDescription = current >= max 
-    ? "Você atingiu o limite." 
-    : `Você ainda pode cadastrar ${max - current} ${max - current === 1 ? "passageiro" : "passageiros"}.`;
+  const finalDescription = description;
 
-  const finalDescription = description ?? defaultDescription;
-
+  // Render Compact Variant
   if (variant === "compact") {
     return (
-      <div className={cn("bg-white rounded-xl border border-gray-200 p-4 shadow-sm", className)}>
+      <div
+        className={cn(
+          "bg-white rounded-xl border border-gray-200 p-4 shadow-sm",
+          className
+        )}
+      >
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-700">
+          <p className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
             {label}
-          </span>
-          <span className={cn("text-sm font-bold", 
-            current >= max ? "text-red-600" : "text-gray-900"
-          )}>
+          </p>
+          <span
+            className={cn(
+              "text-sm font-bold",
+              current >= max ? "text-red-600" : "text-gray-900"
+            )}
+          >
             {current} de {max}
           </span>
         </div>
-        
-        <Progress 
-          value={percentage} 
-          className="h-2 bg-gray-100" 
+
+        <Progress
+          value={percentage}
+          className="h-2 bg-gray-100"
           indicatorClassName={colorClass}
         />
-        
+
         {showIncreaseLimit && onIncreaseLimit && (
           <div className="mt-2 flex justify-end">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={onIncreaseLimit}
               className="h-auto p-0 text-primary bg-transparent hover:text-blue-800 border-0 hover:bg-transparent font-semibold text-xs"
             >
@@ -78,32 +83,39 @@ export function PassengerLimitHealthBar({
     );
   }
 
+  // Render Full Variant
   return (
-    <div className={cn("bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm", className)}>
+    <div
+      className={cn(
+        "bg-white rounded-xl border border-gray-200 p-4 shadow-sm",
+        className
+      )}
+    >
       <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-medium text-gray-700">
+        <p className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
           {label}
-        </span>
-        <span className={cn("text-sm font-bold", 
-          current >= max ? "text-red-600" : "text-gray-900"
-        )}>
+        </p>
+        <span
+          className={cn(
+            "text-sm font-bold",
+            current >= max ? "text-red-600" : "text-gray-900"
+          )}
+        >
           {current} de {max}
         </span>
       </div>
-      
-      <Progress 
-        value={percentage} 
-        className="h-3 bg-gray-100" 
+
+      <Progress
+        value={percentage}
+        className="h-3 bg-gray-100"
         indicatorClassName={colorClass}
       />
-      
+
       <div className="mt-2 flex flex-col md:flex-row md:justify-between items-center gap-2 md:gap-0 text-center md:text-left">
-        <p className="text-xs text-gray-400 mt-1">
-          {finalDescription}
-        </p>
+        <p className="text-xs text-gray-400 mt-1">{finalDescription}</p>
         {showIncreaseLimit && onIncreaseLimit && (
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={onIncreaseLimit}
             className="h-auto p-0 text-primary bg-transparent hover:text-blue-800 border-0 hover:bg-transparent font-semibold text-xs"
           >

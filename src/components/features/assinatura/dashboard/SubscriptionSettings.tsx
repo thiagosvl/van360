@@ -1,13 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { PLANO_COMPLETO } from "@/constants";
+import { FEATURE_LIMITE_PASSAGEIROS, PLANO_COMPLETO, PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    ChevronRight,
-    RefreshCw,
-    Settings,
-    ShieldAlert,
-    Zap,
+  ChevronRight,
+  RefreshCw,
+  ShieldAlert,
+  Zap
 } from "lucide-react";
 
 interface SubscriptionSettingsProps {
@@ -19,17 +18,15 @@ export function SubscriptionSettings({
   onCancelClick,
   plano,
 }: SubscriptionSettingsProps) {
-  const { openContextualUpsellDialog, openLimiteFranquiaDialog } = useLayout();
+  const { openPlanUpgradeDialog } = useLayout();
 
   const isComplete =
     plano?.slug === PLANO_COMPLETO || plano?.parent?.slug === PLANO_COMPLETO;
 
   return (
     <>
-      <div className="flex items-center gap-2">
-        <Settings className="w-4 h-4" />
-
-        <h3 className="text-sm font-semibold text-gray-900 mb-4">
+      <div className="flex items-center gap-2 mb-4">
+        <h3 className="text-sm font-semibold text-gray-900">
           Configurações da Assinatura
         </h3>
       </div>
@@ -39,11 +36,15 @@ export function SubscriptionSettings({
           className="w-full justify-between items-center h-auto py-3 px-2 hover:bg-gray-50 rounded-lg group whitespace-normal"
           onClick={() =>
             isComplete
-              ? openLimiteFranquiaDialog({
-                  title: "Aumentar Limite",
-                  description: "Gerencie seus limites.",
+              ? openPlanUpgradeDialog({
+                  feature: "automacao",
+                  defaultTab: PLANO_COMPLETO,
                 })
-              : openContextualUpsellDialog({ feature: "outros" })
+              : openPlanUpgradeDialog({
+                        feature: FEATURE_LIMITE_PASSAGEIROS,
+                        defaultTab: PLANO_ESSENCIAL,
+                        onSuccess: () => {},
+                      })
           }
         >
           <div className="flex items-start gap-3 text-left">
