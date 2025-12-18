@@ -2,40 +2,40 @@ import { MoneyInput } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useRegistrarPagamentoManual } from "@/hooks";
 import { cn } from "@/lib/utils";
 import {
-    getStatusColor,
-    getStatusText,
-    parseCurrencyToNumber,
-    toLocalDateString
+  getStatusColor,
+  getStatusText,
+  parseCurrencyToNumber,
+  toLocalDateString
 } from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -141,7 +141,7 @@ export default function ManualPaymentDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className="w-[90vw] sm:w-full max-w-md max-h-[95vh] gap-0 flex flex-col overflow-hidden bg-white rounded-3xl border-0 shadow-2xl p-0"
+        className="w-full max-w-md p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
@@ -161,7 +161,7 @@ export default function ManualPaymentDialog({
           </DialogDescription>
         </div>
 
-        <div className="p-4 sm:p-6 pt-2 flex-1 overflow-y-auto">
+        <div className="p-4 sm:p-6 pt-2 overflow-y-auto flex-1 bg-white">
           <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-6">
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -313,34 +313,35 @@ export default function ManualPaymentDialog({
                   </FormItem>
                 )}
               />
-
-              <div className="flex gap-4 pt-4">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={onClose}
-                  disabled={registrarPagamento.isPending}
-                  className="flex-1 h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={registrarPagamento.isPending}
-                  className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all"
-                >
-                  {registrarPagamento.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
-                      Registrando...
-                    </>
-                  ) : (
-                    "Registrar Pagamento"
-                  )}
-                </Button>
-              </div>
             </form>
           </Form>
+        </div>
+        
+        <div className="p-4 border-t bg-white shrink-0 grid grid-cols-2 gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={registrarPagamento.isPending}
+            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            onClick={form.handleSubmit(handleSubmit)}
+            disabled={registrarPagamento.isPending}
+            className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:-translate-y-0.5"
+          >
+            {registrarPagamento.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Registrando...
+              </>
+            ) : (
+              "Registrar"
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

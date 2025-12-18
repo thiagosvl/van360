@@ -1,4 +1,5 @@
-import { CobrancaForm } from "@/components/forms/cobranca/CobrancaForm";
+import { CobrancaFormContent } from "@/components/forms/cobranca/CobrancaForm";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogClose,
@@ -6,7 +7,9 @@ import {
     DialogDescription,
     DialogTitle
 } from "@/components/ui/dialog";
+import { Form } from "@/components/ui/form";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
+import { useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import {
@@ -15,7 +18,7 @@ import {
 } from "@/utils/formatters";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Pencil, User, X } from "lucide-react";
+import { Loader2, Pencil, User, X } from "lucide-react";
 import { useEffect } from "react";
 
 interface CobrancaEditDialogProps {
@@ -44,11 +47,20 @@ export default function CobrancaEditDialog({
     }
   }, [isOpen]);
 
+  const { form, onSubmit, isSubmitting } = useCobrancaForm({
+    mode: "edit",
+    cobranca,
+    onSuccess: () => {
+        onCobrancaUpdated();
+        onClose();
+    },
+  });
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className="w-[90vw] sm:w-full max-w-md max-h-[95vh] gap-0 flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
+        className="w-full max-w-md p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
@@ -68,7 +80,7 @@ export default function CobrancaEditDialog({
           </DialogDescription>
         </div>
 
-        <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
+        <div className="p-4 sm:p-6 pt-2 overflow-y-auto flex-1 bg-white">
           <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-6">
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -108,20 +120,42 @@ export default function CobrancaEditDialog({
             </div>
           </div>
 
-          <CobrancaForm
-            mode="edit"
-            cobranca={cobranca}
-            onSuccess={() => {
-                onCobrancaUpdated();
-                // onClose is handled by parent usually but calling here is safe via wrapper logic if needed
-                // But onCobrancaUpdated in the original code called onClose too?
-                // In original: onSuccess called local_onCobrancaUpdated() then onClose().
-                // Here, I call onCobrancaUpdated. The parent implementation of onCobrancaUpdated should handle closing or refetching.
-                // Let's check usage in cobrancas.tsx -> handleCobrancaUpdated calls refetch() and setEditOpen(false).
-                // So calling onCobrancaUpdated is enough.
-            }}
-            onCancel={onClose}
-          />
+          <Form {...form}>
+             <CobrancaFormContent
+                form={form}
+                mode="edit"
+                cobranca={cobranca}
+                onCancel={onClose}
+                hideButtons={true} 
+             />
+          </Form>
+        </div>
+
+        <div className="p-4 border-t bg-white shrink-0 grid grid-cols-2 gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            onClick={onSubmit}
+            disabled={isSubmitting}
+            className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:-translate-y-0.5"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Salvando...
+              </>
+            ) : (
+                "Salvar Alterações"
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

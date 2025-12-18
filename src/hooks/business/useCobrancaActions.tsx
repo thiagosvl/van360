@@ -264,7 +264,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         label: "Ver Detalhes",
         icon: <DollarSign className="h-4 w-4" />,
         onClick: onVerCobranca,
-        swipeColor: "bg-indigo-600",
+        swipeColor: "bg-slate-600",
       });
     }
 
@@ -284,7 +284,10 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       actions.push({
         label: "Editar",
         icon: <FilePen className="h-4 w-4" />,
-        onClick: onEditarCobranca,
+        onClick: () => {
+          document.body.click(); // Close menus/swipes
+          setTimeout(() => onEditarCobranca(), 10);
+        },
         disabled: disableEditarCobranca(cobranca),
         swipeColor: "bg-blue-600",
       });
@@ -294,8 +297,8 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     if (!isPago) {
       const label =
         !hasNotificacoesAccess || cobranca.desativar_lembretes
-          ? "Ativar Notificações"
-          : "Pausar Notificações";
+          ? "Ativar Lembretes"
+          : "Pausar Lembretes";
       const icon =
         !hasNotificacoesAccess || cobranca.desativar_lembretes ? (
           <Bell className="h-4 w-4" />

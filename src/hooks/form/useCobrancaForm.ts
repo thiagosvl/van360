@@ -4,11 +4,11 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Cobranca } from "@/types/cobranca";
 import {
-  parseCurrencyToNumber
+    parseCurrencyToNumber
 } from "@/utils/formatters";
 import {
-  moneyMask,
-  moneyToNumber,
+    moneyMask,
+    moneyToNumber,
 } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,7 +18,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 // --- Schema Unificado ---
-const cobrancaSchema = z
+export const cobrancaSchema = z
   .object({
     // Campos comuns
     valor: z

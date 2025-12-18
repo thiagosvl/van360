@@ -124,7 +124,7 @@ export default function EditarCadastroDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className="w-[90vw] sm:w-full sm:max-w-md max-h-[95vh] flex flex-col overflow-hidden bg-white rounded-3xl border-0 shadow-2xl p-0"
+        className="w-full max-w-md p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
@@ -144,7 +144,8 @@ export default function EditarCadastroDialog({
           </DialogDescription>
         </div>
 
-        {isLoading ? (
+        <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
+          {isLoading ? (
           <div className="flex items-center justify-center py-6">
             <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
           </div>
@@ -248,34 +249,37 @@ export default function EditarCadastroDialog({
                 )}
               />
 
-              <div className="flex gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={onClose}
-                  disabled={form.formState.isSubmitting}
-                  className="flex-1 h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={form.formState.isSubmitting}
-                  className="flex-1 h-12 rounded-xl shadow-lg shadow-blue-500/20 font-semibold text-base"
-                >
-                  {form.formState.isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Salvando...
-                    </>
-                  ) : (
-                    "Salvar"
-                  )}
-                </Button>
-              </div>
             </form>
           </Form>
-        )}
+          )} 
+        </div>
+
+        <div className="p-4 border-t bg-white shrink-0 grid grid-cols-2 gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={form.formState.isSubmitting}
+            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Cancelar
+          </Button>
+          <Button 
+            type="submit" 
+            onClick={form.handleSubmit(handleSubmit)}
+            disabled={form.formState.isSubmitting}
+            className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:-translate-y-0.5"
+          >
+            {form.formState.isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Salvando...
+              </>
+            ) : (
+              "Salvar"
+            )}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

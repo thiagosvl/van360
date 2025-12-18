@@ -148,7 +148,7 @@ export default function GastoFormDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className="w-[90vw] sm:w-full sm:max-w-md max-h-[95vh] gap-0 flex flex-col overflow-hidden bg-blue-600 rounded-3xl border-0 shadow-2xl p-0"
+        className="w-full max-w-md p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
@@ -342,34 +342,35 @@ export default function GastoFormDialog({
                 )}
               />
 
-              <div className="flex gap-3 pt-4">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() =>
-                    safeCloseDialog(() => onOpenChange(false))
-                  }
-                  className="flex-1 h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all"
-                  disabled={isActionLoading}
-                >
-                  {isActionLoading ? (
-                    <>
-                      <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                      Salvando...
-                    </>
-                  ) : (
-                    "Salvar"
-                  )}
-                </Button>
-              </div>
             </form>
           </Form>
+        </div>
+
+        <div className="p-4 border-t bg-white shrink-0 grid grid-cols-2 gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => safeCloseDialog(() => onOpenChange(false))}
+            disabled={isActionLoading}
+            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            onClick={form.handleSubmit(handleSubmit)}
+            disabled={isActionLoading}
+            className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:-translate-y-0.5"
+          >
+            {isActionLoading ? (
+              <>
+                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                Salvando...
+              </>
+            ) : (
+              "Salvar"
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -807,10 +807,10 @@ const Cobrancas = () => {
 
           {editDialogOpen && cobrancaToEdit && (
             <CobrancaEditDialog
-              open={editDialogOpen}
-              onOpenChange={setEditDialogOpen}
+              isOpen={editDialogOpen}
+              onClose={() => setEditDialogOpen(false)}
               cobranca={cobrancaToEdit}
-              refreshQueries={handleCobrancaUpdated}
+              onCobrancaUpdated={handleCobrancaUpdated}
             />
           )}
         </div>
