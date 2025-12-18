@@ -8,7 +8,6 @@ interface LimitHealthBarProps {
   label?: string;
   description?: string;
   showIncreaseLimit?: boolean;
-  variant?: "full" | "compact";
   className?: string;
   onIncreaseLimit?: () => void;
   hideBelowThreshold?: number; // Porcentagem (0-100)
@@ -20,7 +19,6 @@ export function LimitHealthBar({
   label = "Limite",
   description,
   showIncreaseLimit = true,
-  variant = "full",
   className,
   onIncreaseLimit,
   hideBelowThreshold = 0,
@@ -39,50 +37,6 @@ export function LimitHealthBar({
 
   const finalDescription = description;
 
-  // Render Compact Variant
-  if (variant === "compact") {
-    return (
-      <div
-        className={cn(
-          "bg-white rounded-xl border border-gray-200 p-4 shadow-sm",
-          className
-        )}
-      >
-        <div className="flex justify-between items-center mb-2">
-          <p className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
-            {label}
-          </p>
-          <span
-            className={cn(
-              "text-sm font-bold",
-              current >= max ? "text-red-600" : "text-gray-900"
-            )}
-          >
-            {current} de {max}
-          </span>
-        </div>
-
-        <Progress
-          value={percentage}
-          className="h-2 bg-gray-100"
-          indicatorClassName={colorClass}
-        />
-
-        {showIncreaseLimit && onIncreaseLimit && (
-          <div className="mt-2 flex justify-end">
-            <Button
-              variant="outline"
-              onClick={onIncreaseLimit}
-              className="h-auto p-0 text-primary bg-transparent hover:text-blue-800 border-0 hover:bg-transparent font-semibold text-xs"
-            >
-              Aumentar limite
-            </Button>
-          </div>
-        )}
-      </div>
-    );
-  }
-
   // Render Full Variant
   return (
     <div
@@ -92,7 +46,7 @@ export function LimitHealthBar({
       )}
     >
       <div className="flex justify-between items-center mb-2">
-        <p className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
           {label}
         </p>
         <span
@@ -111,7 +65,7 @@ export function LimitHealthBar({
         indicatorClassName={colorClass}
       />
 
-      <div className="mt-2 flex flex-col md:flex-row md:justify-between items-center gap-2 md:gap-0 text-center md:text-left">
+      <div className="mt-2 flex flex-row justify-between items-center gap-0 text-left">
         <p className="text-xs text-gray-400 mt-1">{finalDescription}</p>
         {showIncreaseLimit && onIncreaseLimit && (
           <Button

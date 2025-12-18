@@ -24,16 +24,16 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
     slug === PLANO_COMPLETO || plano?.parent?.slug === PLANO_COMPLETO;
 
   // Renderiza componente de passageiros ativos (Reutilizado no Essencial e Completo)
-  const renderPassengerCard = (variant: 'success' | 'info') => (
-      <KPICard
-        title="Passageiros Ativos"
-        value={metricas.passageirosAtivos}
-        icon={Users}
-        colorClass={variant === 'success' ? "text-green-600" : "text-blue-600"}
-        bgClass={variant === 'success' ? "bg-green-50" : "bg-blue-50"}
-        countVisible={true}
-        format="number"
-      />
+  const renderPassengerCard = (variant: "success" | "info") => (
+    <KPICard
+      title="Passageiros Ativos"
+      value={metricas.passageirosAtivos}
+      icon={Users}
+      colorClass={variant === "success" ? "text-green-600" : "text-blue-600"}
+      bgClass={variant === "success" ? "bg-green-50" : "bg-blue-50"}
+      countVisible={true}
+      format="number"
+    />
   );
 
   // Helper para renderizar o card de Tempo Economizado (Reutilizado no Grátis e Completo)
@@ -69,6 +69,7 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
           openPlanUpgradeDialog({
             feature: "automacao",
             defaultTab: PLANO_COMPLETO,
+            targetPassengerCount: metricas.passageirosAtivos,
           })
         }
       />
@@ -106,7 +107,6 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
               })
             }
             className="h-full mb-0 bg-white shadow-sm border-red-100 flex flex-col justify-center"
-            variant="full"
           />
         </div>
 
@@ -128,6 +128,7 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
             openPlanUpgradeDialog({
               feature: "automacao",
               defaultTab: PLANO_COMPLETO,
+              targetPassengerCount: metricas.passageirosAtivos,
             })
           }
         />
@@ -147,7 +148,7 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* KPI 1: Sucesso (Passageiros) */}
-        {renderPassengerCard('success')}
+        {renderPassengerCard("success")}
 
         {/* KPI 2: Dor (Tempo Gasto) */}
         <KPICard
@@ -163,7 +164,12 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
         {/* KPI 3: Solução (Automação) */}
         <div
           className="bg-gradient-to-br from-blue-600 to-blue-700 p-4 rounded-2xl text-white shadow-lg cursor-pointer transform transition-transform hover:-translate-y-1 relative overflow-hidden"
-          onClick={() => openPlanUpgradeDialog({ feature: "automacao" })}
+          onClick={() =>
+            openPlanUpgradeDialog({
+              feature: "automacao",
+              targetPassengerCount: metricas.passageirosAtivos,
+            })
+          }
         >
           <div className="absolute top-0 right-0 p-3 opacity-20">
             <TrendingUp className="w-16 h-16 text-white" />
@@ -188,7 +194,7 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* 1. Passageiros Ativos */}
-        {renderPassengerCard('info')}
+        {renderPassengerCard("info")}
 
         {/* 2. Uso da Franquia (Health Bar) */}
         {/* Usamos o componente genérico LimitHealthBar para manter consistência visual */}
@@ -196,16 +202,24 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
           <LimitHealthBar
             current={metricas.cobrancasEmUso}
             max={metricas.franquiaContratada}
-            label="Cobrança Automática"
-            description={`Você ainda tem ${Math.max(
-              0,
-              metricas.franquiaContratada - metricas.cobrancasEmUso
-            )} automações disponíveis.`}
+            label="Passageiros no Automático"
+            description={
+              metricas.cobrancasEmUso >= metricas.franquiaContratada
+                ? "Limite de automação de passageiros atingido."
+                : `Você ainda pode automatizar ${
+                    metricas.franquiaContratada - metricas.cobrancasEmUso
+                  } ${
+                    metricas.franquiaContratada - metricas.cobrancasEmUso === 1
+                      ? "passageiro"
+                      : "passageiros"
+                  }.`
+            }
             className="h-full mb-0 border-0 shadow-md bg-white border-purple-100" // Ajuste de estilo para combinar com os cards
             onIncreaseLimit={() =>
               openPlanUpgradeDialog({
                 feature: "automacao",
                 defaultTab: PLANO_COMPLETO,
+                targetPassengerCount: metricas.passageirosAtivos,
               })
             }
           />

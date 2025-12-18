@@ -386,16 +386,16 @@ export function PlanUpgradeDialog({
                                                         const finalPrice = hasPromo ? Number(officialPlan.preco_promocional) : Number(officialPlan.preco);
 
                                                         return (
-                                                            <div className="flex flex-col items-start">
+                                                            <div className="flex flex-col items-center">
+                                                                {hasPromo && (
+                                                                    <div className="self-center text-xs text-gray-400 line-through font-normal mb-[-2px]">
+                                                                        De {formatCurrency(Number(officialPlan.preco))}
+                                                                    </div>
+                                                                )}
                                                                 <div className="flex items-baseline gap-1">
                                                                     {formatCurrency(finalPrice)}
                                                                     <span className="text-sm font-medium text-gray-500">/mês</span>
                                                                 </div>
-                                                                {hasPromo && (
-                                                                    <span className="text-xs text-gray-400 line-through font-normal">
-                                                                        De {formatCurrency(Number(officialPlan.preco))}
-                                                                    </span>
-                                                                )}
                                                             </div>
                                                         );
                                                     }

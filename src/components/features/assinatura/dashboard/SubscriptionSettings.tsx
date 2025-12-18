@@ -12,11 +12,13 @@ import {
 interface SubscriptionSettingsProps {
   onCancelClick: () => void;
   plano?: any;
+  passageirosAtivos?: number;
 }
 
 export function SubscriptionSettings({
   onCancelClick,
   plano,
+  passageirosAtivos = 0,
 }: SubscriptionSettingsProps) {
   const { openPlanUpgradeDialog } = useLayout();
 
@@ -39,10 +41,12 @@ export function SubscriptionSettings({
               ? openPlanUpgradeDialog({
                   feature: "automacao",
                   defaultTab: PLANO_COMPLETO,
+                  targetPassengerCount: passageirosAtivos,
                 })
               : openPlanUpgradeDialog({
                         feature: FEATURE_LIMITE_PASSAGEIROS,
                         defaultTab: PLANO_ESSENCIAL,
+                        targetPassengerCount: passageirosAtivos,
                         onSuccess: () => {},
                       })
           }

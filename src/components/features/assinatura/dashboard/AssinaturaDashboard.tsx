@@ -31,6 +31,7 @@ export function AssinaturaDashboard({
       <SubscriptionHeader
         plano={plano}
         assinatura={assinatura}
+        passageirosAtivos={metricas.passageirosAtivos}
         onPagarClick={() => {
           // Find pending or open modal
           const pendente = cobrancas.find(
@@ -85,7 +86,11 @@ export function AssinaturaDashboard({
                 </div>
               )}
             </div>
-            <SubscriptionSettings onCancelClick={onCancelClick} plano={plano} />
+                <SubscriptionSettings 
+                  onCancelClick={onCancelClick} 
+                  plano={plano} 
+                  passageirosAtivos={metricas.passageirosAtivos} 
+                />
           </div>
         </div>
       </div>

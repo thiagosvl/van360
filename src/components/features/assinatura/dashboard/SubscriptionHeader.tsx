@@ -6,6 +6,7 @@ import {
   ASSINATURA_USUARIO_STATUS_PENDENTE_PAGAMENTO,
   ASSINATURA_USUARIO_STATUS_SUSPENSA,
   ASSINATURA_USUARIO_STATUS_TRIAL,
+  FEATURE_LIMITE_FRANQUIA,
   PLANO_COMPLETO,
   PLANO_GRATUITO
 } from "@/constants";
@@ -17,10 +18,11 @@ interface SubscriptionHeaderProps {
   plano: any;
   assinatura: any;
   onPagarClick: () => void;
+  passageirosAtivos?: number;
 }
 
-export function SubscriptionHeader({ plano, assinatura, onPagarClick }: SubscriptionHeaderProps) {
-  const { openPlanUpgradeDialog, openLimiteFranquiaDialog } = useLayout();
+export function SubscriptionHeader({ plano, assinatura, onPagarClick, passageirosAtivos = 0 }: SubscriptionHeaderProps) {
+  const { openPlanUpgradeDialog } = useLayout();
 
   const isFree = plano?.slug === PLANO_GRATUITO;
   const isComplete = plano?.slug === PLANO_COMPLETO || plano?.parent?.slug === PLANO_COMPLETO;
@@ -72,9 +74,9 @@ export function SubscriptionHeader({ plano, assinatura, onPagarClick }: Subscrip
     }
     // Is Active and not Free
     if (isComplete) {
-       openLimiteFranquiaDialog({ title: "Aumentar Limite", description: "Gerencie seus limites." });
+       openPlanUpgradeDialog({ feature: FEATURE_LIMITE_FRANQUIA, targetPassengerCount: passageirosAtivos });
     } else {
-       openPlanUpgradeDialog({ feature: "outros" }); // Upgrade from Essential
+       openPlanUpgradeDialog({ feature: "outros", targetPassengerCount: passageirosAtivos }); // Upgrade from Essential
     }
   };
 
@@ -101,10 +103,12 @@ export function SubscriptionHeader({ plano, assinatura, onPagarClick }: Subscrip
                     <h2 className="text-2xl font-bold text-gray-900 leading-none">
                         {plano?.nome || "Plano"}
                     </h2>
-                    <Badge variant="outline" className={cn("border-0 font-medium", statusConfig.color)}>
-                        <StatusIcon className="w-3 h-3 mr-1.5" />
-                        {statusConfig.text}
-                    </Badge>
+                    {(!isFree || isSuspensa || isPendente || isTrial) && (
+                        <Badge variant="outline" className={cn("border-0 font-medium", statusConfig.color)}>
+                            <StatusIcon className="w-3 h-3 mr-1.5" />
+                            {statusConfig.text}
+                        </Badge>
+                    )}
                 </div>
                 <p className="text-sm text-gray-500 max-w-md">
                     {statusConfig.description}

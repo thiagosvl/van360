@@ -91,7 +91,7 @@ export function KPICard({
         <Icon className={cn("h-3 w-3 sm:h-5 sm:w-5", colorClass)} />
       </div>
       <div className="relative z-10">
-        <p className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
           {title}
         </p>
         <div className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
