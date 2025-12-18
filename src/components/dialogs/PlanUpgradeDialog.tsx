@@ -295,7 +295,7 @@ export function PlanUpgradeDialog({
                         {/* Scrollable Content Wrapper */}
                         <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
                             {/* Conteúdo Essencial */}
-                            <TabsContent value="essencial" className="p-6 space-y-5 m-0 focus-visible:ring-0 outline-none animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+                            <TabsContent value="essencial" className="p-6 space-y-5 m-0 focus-visible:ring-0 outline-none">
                                 <div className="text-center space-y-2">
                                     <div className="inline-flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full text-blue-700 text-xs font-bold uppercase tracking-wider mb-2">
                                         <Sparkles className="w-3 h-3" />
@@ -349,7 +349,7 @@ export function PlanUpgradeDialog({
                             </TabsContent>
 
                             {/* Conteúdo Profissional */}
-                            <TabsContent value="completo" className="p-6 space-y-5 m-0 focus-visible:ring-0 outline-none animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+                            <TabsContent value="completo" className="p-6 space-y-5 m-0 focus-visible:ring-0 outline-none">
                                  <div className="text-center space-y-1 mb-4">
                                     <div className="inline-flex items-center gap-2 bg-purple-50 px-3 py-1 rounded-full text-purple-700 text-[10px] font-bold uppercase tracking-wider mb-2">
                                         <TrendingUp className="w-3 h-3" />
