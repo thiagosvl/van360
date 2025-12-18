@@ -2,16 +2,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  ASSINATURA_USUARIO_STATUS_ATIVA,
-  ASSINATURA_USUARIO_STATUS_PENDENTE_PAGAMENTO,
-  ASSINATURA_USUARIO_STATUS_SUSPENSA,
-  ASSINATURA_USUARIO_STATUS_TRIAL,
-  PLANO_GRATUITO,
-  PLANO_COMPLETO
+    ASSINATURA_USUARIO_STATUS_ATIVA,
+    ASSINATURA_USUARIO_STATUS_PENDENTE_PAGAMENTO,
+    ASSINATURA_USUARIO_STATUS_SUSPENSA,
+    ASSINATURA_USUARIO_STATUS_TRIAL,
+    PLANO_COMPLETO,
+    PLANO_GRATUITO
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { cn } from "@/lib/utils";
-import { CheckCircle, AlertTriangle, XCircle, CreditCard, Crown, ArrowUpCircle } from "lucide-react";
+import { AlertTriangle, ArrowUpCircle, CheckCircle, CreditCard, Crown, XCircle } from "lucide-react";
 
 interface SubscriptionHeaderProps {
   plano: any;
@@ -108,11 +108,7 @@ export function SubscriptionHeader({ plano, assinatura, onPagarClick }: Subscrip
                 </div>
                 <p className="text-sm text-gray-500 max-w-md">
                     {statusConfig.description}
-                    {!isFree && assinatura?.vigencia_fim && !isPendente && !isSuspensa && (
-                        <span className="ml-1">
-                            Renova em {new Date(assinatura.vigencia_fim).toLocaleDateString('pt-BR')}.
-                        </span>
-                    )}
+                    {/* Data de renovação removida conforme solicitado */}
                 </p>
             </div>
         </div>

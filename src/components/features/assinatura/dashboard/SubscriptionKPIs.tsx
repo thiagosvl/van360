@@ -128,6 +128,7 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* 1. Passageiros Ativos */}
         <KPICard 
             title="Passageiros Ativos"
             value={metricas.passageirosAtivos}
@@ -138,6 +139,18 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
             format="number"
         />
 
+        {/* 2. Uso da Franquia (Replaces Receita Automática) */}
+        <KPICard 
+             title="Cobrança Automática"
+             value={`${metricas.cobrancasEmUso}/${metricas.franquiaContratada}`}
+             icon={TrendingUp}
+             colorClass="text-purple-600"
+             bgClass="bg-purple-50"
+             countText={`Restam ${Math.max(0, metricas.franquiaContratada - metricas.cobrancasEmUso)}`}
+             countVisible={true}
+        />
+
+        {/* 3. Tempo Economizado */}
         <KPICard 
              title="Tempo Economizado"
              value={`${tempoEconomizadoHoras}h`}
@@ -145,16 +158,6 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
              colorClass="text-green-600"
              bgClass="bg-green-50"
              countText="Com automação este mês"
-             countVisible={true}
-        />
-
-        <KPICard 
-             title="Receita Automática"
-             value={receitaGerida}
-             icon={TrendingUp}
-             colorClass="text-purple-600"
-             bgClass="bg-purple-50"
-             countText="Gerida no piloto automático"
              countVisible={true}
         />
       </div>
