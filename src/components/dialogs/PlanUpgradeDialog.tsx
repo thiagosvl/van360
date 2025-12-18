@@ -16,7 +16,7 @@ import { useSession } from "@/hooks/business/useSession";
 import { useUpgradeFranquia } from "@/hooks/business/useUpgradeFranquia";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
-import { Check, ChevronRight, Loader2, ShieldCheck, Sparkles, TrendingUp, X, Zap } from "lucide-react";
+import { Check, ChevronRight, Loader2, Sparkles, TrendingUp, X, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import PagamentoAssinaturaDialog from "./PagamentoAssinaturaDialog";
 
@@ -44,7 +44,10 @@ export function PlanUpgradeDialog({
     // API Data
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     const { data: planosData } = usePlanos({ ativo: "true" }) as any;
-    const planos = planosData?.bases || [];
+    // Combine bases and subs to ensure we can find all plans by ID
+    const planos = useMemo(() => {
+        return [...(planosData?.bases || []), ...(planosData?.sub || [])];
+    }, [planosData]);
 
     // Estados visuais
     const [activeTab, setActiveTab] = useState<string>(defaultTab);
@@ -103,44 +106,44 @@ export function PlanUpgradeDialog({
         }
     }, [open, isEssencial, isProfissional, defaultTab]);
 
-    // --- Lógica do Smart Tier ---
-    const smartOptions = useMemo(() => {
-        if (!franchiseOptions || franchiseOptions.length === 0) return null;
-
-        const recommended = franchiseOptions.find(o => o.recomendado) || franchiseOptions[0];
-        const secondary = franchiseOptions.find(o => 
-            !o.recomendado && 
-            o.id !== recommended?.id && 
-            o.quantidade === passageirosAtivos
-        );
-        
-        return { recommended, secondary };
-    }, [franchiseOptions, passageirosAtivos]);
-
     // --- State Local de Seleção de Tier ---
     const [selectedTierId, setSelectedTierId] = useState<number | string | null>(null);
-
-    // Initializer: Sempre que abrir ou mudar as opções, reseta para o recomendado
+    
+    // Initializer: Sempre que abrir ou mudar as opções, seleciona o recomendado
     useEffect(() => {
-        if (open && smartOptions?.recommended) {
-            setSelectedTierId(smartOptions.recommended.id);
+        if (open && franchiseOptions?.length > 0) {
+            const recommended = franchiseOptions.find(o => o.recomendado) || franchiseOptions[0];
+            if (recommended) setSelectedTierId(recommended.id);
         }
-    }, [open, smartOptions]);
+    }, [open, franchiseOptions]);
 
     // Computar a opção visualizada no momento
     const currentTierOption = useMemo(() => {
-        if (!smartOptions) return null;
-        if (selectedTierId && smartOptions.secondary?.id === selectedTierId) return smartOptions.secondary;
-        // Default fallback to recommended
-        return smartOptions.recommended;
-    }, [selectedTierId, smartOptions]);
+        if (!franchiseOptions || franchiseOptions.length === 0) return null;
+        
+        // Tenta encontrar o selecionado
+        if (selectedTierId) {
+            const selected = franchiseOptions.find(o => o.id === selectedTierId);
+            if (selected) return selected;
+        }
+
+        // Fallback para o recomendado ou o primeiro
+        return franchiseOptions.find(o => o.recomendado) || franchiseOptions[0];
+    }, [selectedTierId, franchiseOptions]);
     
-    // --- Lógica de Preço Sob Medida ---
+    // --- Lógica de Preço Sob Medida (Robustez) ---
     const [customPrice, setCustomPrice] = useState<number | null>(null);
     const calcularPrecoPreview = useCalcularPrecoPreview();
 
     useEffect(() => {
-        if (currentTierOption?.isCustom && currentTierOption.quantidade) {
+        if (!currentTierOption) return;
+
+        // Verifica se é um plano oficial (existe na lista de bases ou subs)
+        const isOfficialPlan = planos.some((p: any) => p.id === currentTierOption.id);
+        
+        // Se for marcado como custom OU se não for um plano oficial (fallback), calculamos o preço
+        // Isso resolve o caso "6 Vagas" que aparece como opção mas não tem ID correspondente na lista de planos
+        if ((currentTierOption.isCustom || !isOfficialPlan) && currentTierOption.quantidade) {
             calcularPrecoPreview.mutate(currentTierOption.quantidade, {
                 onSuccess: (res) => {
                      if (res) setCustomPrice(res.preco);
@@ -149,7 +152,7 @@ export function PlanUpgradeDialog({
         } else {
             setCustomPrice(null);
         }
-    }, [currentTierOption]);
+    }, [currentTierOption, planos]);
     
     // --- Lógica de Texto Dinâmico (Alta Conversão) ---
     // Mapeia qual plano resolve cada dor específica
@@ -210,8 +213,6 @@ export function PlanUpgradeDialog({
         }
         return activeTab === "essencial" ? genericContent.essencial : genericContent.profissional;
     }, [activeTab, featureTargetPlan, specificContent]);
-
-    console.log(displayContent);
 
     // Cores Dinâmicas do Header
     const requestHeaderStyle = activeTab === "essencial" 
@@ -309,6 +310,15 @@ export function PlanUpgradeDialog({
                                     <BenefitItem text="Organização Básica" />
                                     <BenefitItem text="Suporte Prioritário" />
                                 </div>
+
+                                {/* Botão Ver Benefícios */}
+                                <button 
+                                    onClick={() => setIsBenefitsOpen(true)}
+                                    className="w-full text-center text-xs font-semibold text-gray-400 hover:text-blue-600 transition-colors flex items-center justify-center gap-1 py-1"
+                                >
+                                    Ver todos benefícios
+                                    <ChevronRight className="w-3 h-3" />
+                                </button>
                                 
                                  {/* Upsell para Profissional */}
                                  <div className="flex items-center justify-between px-2 py-1">
@@ -334,49 +344,61 @@ export function PlanUpgradeDialog({
                                  <div className="text-center space-y-1 mb-4">
                                     <div className="inline-flex items-center gap-2 bg-purple-50 px-3 py-1 rounded-full text-purple-700 text-[10px] font-bold uppercase tracking-wider mb-2">
                                         <TrendingUp className="w-3 h-3" />
-                                        {smartOptions?.recommended?.tipo === "tier" ? "Recomendado" : "Recomendado"}
+                                        {currentTierOption?.recomendado ? "Recomendado" : "Mais Espaço"}
                                     </div>
                                     
-                                    {smartOptions?.recommended ? (
+                                    {franchiseOptions && franchiseOptions.length > 0 ? (
                                         <>
                                             <h3 className="text-3xl font-bold text-gray-900 tracking-tight flex flex-col items-center leading-none">
                                                 {(() => {
-                                                    // Usa o currentTierOption para pegar preço correto
-                                                    // 1. Se for Custom (Sob Medida) e tiver preço calculado
-                                                    if (currentTierOption?.isCustom && customPrice) {
-                                                        return (
-                                                            <div className="flex items-baseline gap-1">
-                                                                {formatCurrency(customPrice)}
-                                                                <span className="text-sm font-medium text-gray-500">/mês</span>
-                                                            </div>
-                                                        );
-                                                    }
+                                                    // Usa o currentTierOption para pegar preço correto.
+                                                    // A lógica aqui é visual: Mostramos o preço que será cobrado.
 
-                                                    // 2. Se for plano normal
-                                                    const p = planos.find((x: any) => x.id === currentTierOption?.id);
-                                                    
-                                                    if (p) {
-                                                        const shouldUsePromo = p.promocao_ativa && p.preco_promocional;
-                                                        return (
-                                                            <div className="flex items-baseline gap-1">
-                                                                {formatCurrency(Number(shouldUsePromo ? p.preco_promocional : p.preco))}
-                                                                <span className="text-sm font-medium text-gray-500">/mês</span>
-                                                            </div>
-                                                        );
-                                                    }
-                                                    
-                                                    // 3. Fallback loading ou Sob Medida sem preço
-                                                    if (currentTierOption?.isCustom && calcularPrecoPreview.isPending) {
+                                                    // 1. Se for Custom (Sob Medida)
+                                                    if (currentTierOption?.isCustom) {
+                                                        if (customPrice) {
+                                                            return (
+                                                                <div className="flex items-baseline gap-1">
+                                                                    {formatCurrency(customPrice)}
+                                                                    <span className="text-sm font-medium text-gray-500">/mês</span>
+                                                                </div>
+                                                            );
+                                                        }
+                                                        // Loading state for custom price
                                                         return <Loader2 className="w-6 h-6 animate-spin text-gray-300" />;
                                                     }
 
-                                                    return "Sob Medida";
+                                                    // 2. Se for Plano Oficial (Tier de Prateleira)
+                                                    // Buscamos o plano original nos dados para checar promoções e valores
+                                                    const officialPlan = planos?.find((p: any) => p.id === currentTierOption?.id);
+                                                    
+                                                    if (officialPlan) {
+                                                        const hasPromo = officialPlan.promocao_ativa && officialPlan.preco_promocional;
+                                                        const finalPrice = hasPromo ? Number(officialPlan.preco_promocional) : Number(officialPlan.preco);
+
+                                                        return (
+                                                            <div className="flex flex-col items-start">
+                                                                <div className="flex items-baseline gap-1">
+                                                                    {formatCurrency(finalPrice)}
+                                                                    <span className="text-sm font-medium text-gray-500">/mês</span>
+                                                                </div>
+                                                                {hasPromo && (
+                                                                    <span className="text-xs text-gray-400 line-through font-normal">
+                                                                        De {formatCurrency(Number(officialPlan.preco))}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    }
+                                                    
+                                                    // Fallback (não deveria acontecer com a nova lógica)
+                                                    return <span className="text-gray-400 text-lg">--</span>;
                                                 })()}
                                             </h3>
                                             {/* Tier Selector Moved Here */}
-                                            {smartOptions && (smartOptions.secondary || smartOptions.recommended) && (
-                                                <div className="flex justify-center gap-2 mt-3 mb-1">
-                                                    {[smartOptions.secondary, smartOptions.recommended].filter(Boolean).sort((a,b) => (a?.quantidade||0) - (b?.quantidade||0)).map((opt) => (
+                                            {franchiseOptions && franchiseOptions.length > 0 && (
+                                                <div className="flex flex-wrap justify-center gap-2 mt-3 mb-1">
+                                                    {franchiseOptions.sort((a,b) => (a?.quantidade||0) - (b?.quantidade||0)).map((opt) => (
                                                         <button
                                                             key={opt?.id}
                                                             onClick={() => {
@@ -394,7 +416,7 @@ export function PlanUpgradeDialog({
                                                     ))}
                                                 </div>
                                             )}
-                                            {!((smartOptions.secondary || smartOptions.recommended)) && (
+                                            {(!franchiseOptions || franchiseOptions.length === 0) && (
                                                  <p className="text-sm text-purple-600 font-medium mt-1">
                                                     {currentTierOption?.quantidade} Vagas de Automação
                                                 </p>
@@ -428,6 +450,15 @@ export function PlanUpgradeDialog({
                                         <BenefitItem text="Envio de Recibos no Pix" />
                                     </div>
                                 </div>
+
+                                {/* Botão Ver Benefícios (Movido para cá) */}
+                                <button 
+                                    onClick={() => setIsBenefitsOpen(true)}
+                                    className="w-full text-center text-xs font-semibold text-gray-400 hover:text-purple-600 transition-colors flex items-center justify-center gap-1 py-1"
+                                >
+                                    Ver todos benefícios
+                                    <ChevronRight className="w-3 h-3" />
+                                </button>
                                 
                                 {/* Espaçador para garantir scroll se necessário */}
                                 <div className="h-4 sm:h-0" />
@@ -439,7 +470,7 @@ export function PlanUpgradeDialog({
                     <div className="bg-white p-4 border-t border-gray-100 shrink-0 shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.05)] z-20">
                          {activeTab === "essencial" ? (
                             <Button 
-                                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all text-base mb-3"
+                                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all text-base mb-0"
                                 onClick={onUpgradeEssencial}
                                 disabled={loading || !planoEssencialData}
                             >
@@ -447,27 +478,13 @@ export function PlanUpgradeDialog({
                             </Button>
                          ) : (
                             <Button 
-                                className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-lg shadow-purple-100 transition-all text-base mb-3"
+                                className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-lg shadow-purple-100 transition-all text-base mb-0"
                                 onClick={onUpgradeProfissional}
                                 disabled={loading || !currentTierOption}
                             >
                                 {loading ? <Loader2 className="animate-spin w-5 h-5"/> : "Ativar Profissional"}
                             </Button>
                          )}
-
-                        <div className="flex justify-between items-center px-1">
-                            <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
-                                <ShieldCheck className="w-3 h-3" />
-                                Pagamento Seguro
-                            </div>
-                            <button 
-                                onClick={() => setIsBenefitsOpen(true)}
-                                className="text-xs font-semibold text-gray-500 hover:text-gray-900 flex items-center gap-1 group"
-                            >
-                                Ver todos benefícios
-                                <ChevronRight className="w-3 h-3 text-gray-300 group-hover:text-gray-500 transition-colors" />
-                            </button>
-                        </div>
                     </div>
 
                 </DialogContent>

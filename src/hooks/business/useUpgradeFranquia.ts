@@ -44,76 +44,53 @@ export function useUpgradeFranquia({
     // Se não há tiers carregados, retornar vazio por enquanto
     if (sortedTiers.length === 0) return [];
 
-    const minTier = sortedTiers[0].franquia_cobrancas_mes;
-    /**
-     * ESTRATÉGIA DE TIERS (RÍGIDA)
-     * Para planos Profissionais (Automação), não vendemos "vagas soltas". 
-     * Vendemos pacotes: 15, 30, 45, etc.
-     */
+    // --- Lógica Simplificada "Upsell-Oriented" ---
     
-    // 1. Identificar o "Próximo Degrau" (Tier imediatamente superior à franquia atual)
-    // Se franquia atual é 0 (Free), próximo é 15. Se é 15, próximo é 30.
-    const nextTier = sortedTiers.find(t => t.franquia_cobrancas_mes > franquiaContratada);
-    
-    // 2. Identificar o "Tier Ideal" (Que cobre o TOTAL de passageiros do usuário)
-    // Se o usuário tem 28 alunos, o ideal é 30.
-    const fittingTier = sortedTiers.find(t => t.franquia_cobrancas_mes >= totalPassageiros);
+    // 1. Filtra opções oficiais de prateleira (Só mostra se atender a necessidade ATUAL do usuário)
+    // Ex: Se tem 40 alunos, não mostramos o plano de 25. Mostramos 50, 90...
+    const validTiers = sortedTiers.filter(t => t.franquia_cobrancas_mes >= totalPassageiros);
 
-    // --- Montagem das Opções ---
-
-    // Opção 1: O Recomendado (Ideal)
-    // Se o fittingTier existe, ele é a melhor oferta.
-    if (fittingTier) {
-        // Se o tier ideal for o mesmo que o contratado (ex: tem 15, usa 12, mas quer ver opções),
-        // ou se for igual ao próximo (ex: tem 0, usa 6, ideal é 15), ok.
-        
-        opts.push({
-            id: fittingTier.id,
-            label: `Pacote ${fittingTier.franquia_cobrancas_mes} Vagas`,
-            quantidade: fittingTier.franquia_cobrancas_mes,
-            tipo: "tier",
-            recomendado: true,
-            descricao: totalPassageiros <= fittingTier.franquia_cobrancas_mes 
-                ? "Atende perfeitamente sua frota atual"
-                : "Melhor opção para seu tamanho"
-        });
-    }
-
-    // Opção 2: O Próximo Degrau (Se for diferente do Ideal)
-    // Ex: Usuário tem 0 contratados, mas 40 alunos.
-    // Ideal: 45. Próximo: 15.
-    // As vezes o usuário não quer pular direto pro 45 ($$$), quer ir pro 15 e testar.
-    if (nextTier && (!fittingTier || nextTier.id !== fittingTier.id)) {
-        opts.push({
-            id: nextTier.id,
-            label: `Pacote ${nextTier.franquia_cobrancas_mes} Vagas`,
-            quantidade: nextTier.franquia_cobrancas_mes,
-            tipo: "tier",
-            recomendado: false,
-            descricao: "Comece com este pacote"
-        });
-    }
-
-    // Caso Especial: Usuário Gigante (Maior que o maior tier)
-    // Se não achou fittingTier (porque total > maxTier), oferecemos "Sob Medida"
-    // Mas SÓ se tivermos tiers carregados (evitar mostrar Sob Medida porque loading falhou)
-    if (!fittingTier && totalPassageiros > 0 && sortedTiers.length > 0) {
-        const maxTier = sortedTiers[sortedTiers.length - 1]; // Maior de todos
-        
-        // Se já está no máximo, ou se precisa de mais
-        // Check safety: Se totalPassageiros realmente é maior que o maxTier
-        if (maxTier && totalPassageiros > maxTier.franquia_cobrancas_mes) { 
+    // 2. Se existirem opções válidas (Upsell)
+    if (validTiers.length > 0) {
+        // Mapeia todas as opções superiores (Upsell)
+        validTiers.forEach((tier, index) => {
+             // A primeira opção válida é a Recomendada (Menor impacto financeiro que resolve o problema)
+             const isRecommended = index === 0; 
+             
              opts.push({
-                id: "custom_enterprise",
-                label: "Plano Sob Medida",
-                quantidade: totalPassageiros, // Ou maxTier + X
-                tipo: "cover_all",
-                descricao: "Fale com nosso time",
-                isCustom: true,
-                recomendado: true
+                id: tier.id,
+                label: `Pacote ${tier.franquia_cobrancas_mes} Vagas`,
+                quantidade: tier.franquia_cobrancas_mes,
+                tipo: "tier",
+                recomendado: isRecommended,
+                descricao: isRecommended 
+                    ? (tier.franquia_cobrancas_mes === totalPassageiros ? "Atende exatamente" : "Ideal para sua frota (com folga)")
+                    : "Mais espaço para crescer"
             });
-        }
+        });
+    } else {
+        // 3. Se NÃO existirem opções de prateleira (Usuário gigante > MaxTier)
+        // Só ai mostramos a opção "Sob Medida"
+        const maxTier = sortedTiers[sortedTiers.length - 1]; // Maior de todos (apenas referência)
+        
+        opts.push({
+            id: "custom_enterprise",
+            label: "Plano Sob Medida",
+            quantidade: totalPassageiros, // Usa a quantidade exata
+            tipo: "cover_all",
+            descricao: "Fale com nosso time",
+            isCustom: true,
+            recomendado: true
+        });
     }
+    
+    // Safety: Garantir flag isCustom se id não for oficial (só pra garantir o preço dinâmico se algo vazar)
+    opts.forEach(opt => {
+         const isOficial = subPlanos.some(sp => sp.id === opt.id);
+         if (!isOficial) {
+             opt.isCustom = true;
+         }
+    });
 
     // Ordenar: Menor -> Maior
     return opts.sort((a, b) => a.quantidade - b.quantidade);
