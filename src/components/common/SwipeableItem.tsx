@@ -88,7 +88,10 @@ export function SwipeableItem({
     // Swipe Left (Show Right Actions)
     if (rightActions.length > 0) {
       if (offset < -threshold || velocity < -500) {
-        await controls.start({ x: -rightWidth });
+        await controls.start({ 
+          x: -rightWidth,
+          transition: { duration: 0.2, ease: "easeOut" } 
+        });
         setIsOpen(true);
         return;
       }
@@ -97,19 +100,28 @@ export function SwipeableItem({
     // Swipe Right (Show Left Actions)
     if (leftActions.length > 0) {
       if (offset > threshold || velocity > 500) {
-        await controls.start({ x: leftWidth });
+        await controls.start({ 
+          x: leftWidth,
+          transition: { duration: 0.2, ease: "easeOut" } 
+        });
         setIsOpen(true);
         return;
       }
     }
 
     // Reset
-    await controls.start({ x: 0 });
+    await controls.start({ 
+      x: 0,
+      transition: { duration: 0.2, ease: "easeOut" }
+    });
     setIsOpen(false);
   };
 
   const close = async () => {
-    await controls.start({ x: 0 });
+    await controls.start({ 
+      x: 0,
+      transition: { duration: 0.2, ease: "easeOut" }
+    });
     setIsOpen(false);
   };
 
@@ -128,7 +140,8 @@ export function SwipeableItem({
           {leftActions.map((action, idx) => (
             <button
               key={idx}
-              onClick={(e) => {
+              onPointerUp={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 action.onClick();
                 close();
@@ -158,7 +171,8 @@ export function SwipeableItem({
           {rightActions.map((action, idx) => (
             <button
               key={idx}
-              onClick={(e) => {
+              onPointerUp={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 action.onClick();
                 close();
@@ -193,6 +207,7 @@ export function SwipeableItem({
           right: leftWidth,
         }}
         dragElastic={0.1} // Resistance when pulling past limits
+        dragMomentum={false} // Disable physics to allow immediate clicks after release
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         animate={controls}
