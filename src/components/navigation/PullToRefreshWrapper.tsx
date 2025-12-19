@@ -51,6 +51,13 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
       let isPulling = false;
 
       const handleTouchMove = (e: TouchEvent) => {
+        // Re-check lock status inside move to handle race conditions (e.g. swipe starting after touch)
+        if (document.body.hasAttribute("data-scroll-locked")) {
+           isPulling = false;
+           y.set(0); // Reset visual position if locked mid-gesture
+           return;
+        }
+
         const currentY = e.touches[0].clientY;
         const diff = currentY - startY;
 

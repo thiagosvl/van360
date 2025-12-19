@@ -68,10 +68,18 @@ export function SwipeableItem({
     }
   }, [showHint, controls]);
 
+  const handleDragStart = () => {
+    document.body.style.overflow = "hidden";
+    document.body.setAttribute("data-scroll-locked", "true"); // Signal to PullToRefresh
+    onSwipeStart?.();
+  };
+
   const handleDragEnd = async (
     _: any,
     info: PanInfo
   ) => {
+    document.body.style.overflow = ""; // Restore scroll
+    document.body.removeAttribute("data-scroll-locked"); // Restore PullToRefresh
     const offset = info.offset.x;
     const velocity = info.velocity.x;
 
@@ -176,7 +184,7 @@ export function SwipeableItem({
           right: leftWidth,
         }}
         dragElastic={0.1} // Resistance when pulling past limits
-        onDragStart={onSwipeStart}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         animate={controls}
         style={{ 
