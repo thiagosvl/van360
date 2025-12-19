@@ -102,6 +102,7 @@ export function MobileActionItem({
         <SheetContent
           side="bottom"
           className="h-auto max-h-[90vh] rounded-t-[20px] flex flex-col px-0 bg-gray-50 outline-none"
+          onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <SheetHeader className="text-left px-6">
             <SheetTitle className="text-xl font-bold text-gray-900">
@@ -114,7 +115,7 @@ export function MobileActionItem({
             {drawerActions.map((action, idx) => (
               <Button
                 key={idx}
-                variant={action.isDestructive ? 'ghost' : 'ghost'} // Usamos ghost para aplicar estilos customizados de "card"
+                variant="ghost" // Usamos ghost para aplicar estilos customizados de "card"
                 disabled={action.disabled}
                 className={cn(
                     "w-full justify-start h-14 text-base font-medium transition-all active:scale-[0.98] rounded-xl shadow-sm border",

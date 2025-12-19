@@ -43,7 +43,7 @@ export function useEscolaActions({
       icon: <Trash2 className="h-4 w-4" />,
       onClick: () => onDelete(escola),
       isDestructive: true,
-      swipeColor: "bg-red-600",
+      swipeColor: "bg-red-500",
     },
   ];
 }

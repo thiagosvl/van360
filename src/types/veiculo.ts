@@ -8,5 +8,4 @@ export interface Veiculo {
     created_at?: string;
     updated_at?: string;
     passageiros_ativos_count?: number;
-    ano_modelo?: string;
 }

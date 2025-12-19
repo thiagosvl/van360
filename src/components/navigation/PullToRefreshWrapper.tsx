@@ -39,13 +39,14 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
   useEffect(() => {
     if (!isMobile) return;
 
-    const handleTouchStart = (e: TouchEvent) => {
+      const handleTouchStart = (e: TouchEvent) => {
       // Verifica se há algum dialog aberto (Radix UI adiciona data-scroll-locked ao body)
       const isScrollLocked = document.body.hasAttribute("data-scroll-locked");
+      const isSwipeActive = document.body.hasAttribute("data-swipe-active");
       // Verifica se o toque foi dentro de um dialog
       const isInsideDialog = (e.target as Element)?.closest?.('[role="dialog"]');
       
-      if (window.scrollY > 0 || isRefreshing || isScrollLocked || isInsideDialog) return;
+      if (window.scrollY > 0 || isRefreshing || isScrollLocked || isSwipeActive || isInsideDialog) return;
       
       
       const startY = e.touches[0].clientY;
@@ -57,7 +58,7 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
 
       const handleTouchMove = (e: TouchEvent) => {
         // Re-check lock status inside move to handle race conditions (e.g. swipe starting after touch)
-        if (document.body.hasAttribute("data-scroll-locked")) {
+        if (document.body.hasAttribute("data-scroll-locked") || document.body.hasAttribute("data-swipe-active")) {
            isPulling = false;
            y.set(0); // Reset visual position if locked mid-gesture
            return;
@@ -82,9 +83,7 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
 
       const handleTouchEnd = async () => {
         const currentY = y.get();
-        
-        document.removeEventListener("touchmove", handleTouchMove);
-        document.removeEventListener("touchend", handleTouchEnd);
+        cleanupListeners();
 
         if (currentY >= PULL_THRESHOLD) {
           setIsRefreshing(true);
@@ -102,8 +101,15 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
         }
       };
 
+      const cleanupListeners = () => {
+        document.removeEventListener("touchmove", handleTouchMove);
+        document.removeEventListener("touchend", handleTouchEnd);
+        document.removeEventListener("touchcancel", handleTouchEnd);
+      };
+
       document.addEventListener("touchmove", handleTouchMove, { passive: false });
       document.addEventListener("touchend", handleTouchEnd);
+      document.addEventListener("touchcancel", handleTouchEnd);
     };
 
     document.addEventListener("touchstart", handleTouchStart, { passive: true });

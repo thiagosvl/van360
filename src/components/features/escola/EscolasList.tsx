@@ -4,7 +4,7 @@ import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { useEscolaActions } from "@/hooks/business/useEscolaActions";
 import { Escola } from "@/types/escola";
-import { Users2 } from "lucide-react";
+import { Eye, Users2 } from "lucide-react";
 import { NavigateFunction } from "react-router-dom";
 
 interface EscolasListProps {
@@ -42,30 +42,30 @@ export function EscolasList({
             showHint={index === 0}
           >
             <div
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:scale-[0.99] transition-transform"
               onClick={() => onEdit(escola)}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 active:scale-[0.99] transition-transform"
             >
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <h3 className="font-bold text-gray-900 text-base mb-1">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="min-w-0">
+                  <p className="font-bold text-gray-900 text-sm">
                     {escola.nome}
-                  </h3>
-                  <div className="flex flex-col gap-1">
-                    <p className="text-sm text-gray-500">{escola.endereco}</p>
-                    {escola.telefone && (
-                      <p className="text-sm text-gray-400">{escola.telefone}</p>
-                    )}
-                  </div>
+                  </p>
                 </div>
-                <StatusBadge status={escola.ativo} />
+                <Eye className="h-4 w-4 text-gray-300 absolute right-4 top-3" />
               </div>
 
-              <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-50">
-                <div className="flex items-center gap-1.5 text-gray-600 bg-gray-50 px-2 py-1 rounded-md">
-                  <Users2 className="w-3.5 h-3.5" />
-                  <span className="text-xs font-semibold">
-                    {escola.passageiros_ativos_count || 0} {escola.passageiros_ativos_count === 1 ? "passageiro" : "passageiros"}
+              <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+                <div className="shrink-0">
+                  <StatusBadge status={escola.ativo} />
+                </div>
+                <div className="flex flex-col items-end gap-0.5">
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                    Passageiros
                   </span>
+                  <p className="text-xs text-gray-600 font-medium flex gap-1">
+                    <Users2 className="w-4 h-4" />
+                    {escola.passageiros_ativos_count ?? 0} ativos
+                  </p>
                 </div>
               </div>
             </div>

@@ -1,36 +1,36 @@
 import {
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
+    PLANO_ESSENCIAL,
+    PLANO_GRATUITO,
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useDeleteCobranca,
-  useDesfazerPagamento,
-  useEnviarNotificacaoCobranca,
-  useToggleNotificacoesCobranca,
+    useDeleteCobranca,
+    useDesfazerPagamento,
+    useEnviarNotificacaoCobranca,
+    useToggleNotificacoesCobranca,
 } from "@/hooks";
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
 import {
-  disableDesfazerPagamento,
-  disableEditarCobranca,
-  disableExcluirCobranca,
-  disableRegistrarPagamento,
-  seForPago,
+    disableDesfazerPagamento,
+    disableEditarCobranca,
+    disableExcluirCobranca,
+    disableRegistrarPagamento,
+    seForPago,
 } from "@/utils/domain/cobranca/disableActions";
 import {
-  canUseNotificacoes,
+    canUseNotificacoes,
 } from "@/utils/domain/plano/accessRules";
 import {
-  ArrowLeft,
-  Bell,
-  BellOff,
-  CheckCircle2,
-  DollarSign,
-  FilePen,
-  Send,
-  Trash2,
-  User,
+    ArrowLeft,
+    Bell,
+    BellOff,
+    CheckCircle2,
+    DollarSign,
+    FilePen,
+    Send,
+    Trash2,
+    User,
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
@@ -331,7 +331,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       onClick: handleDeleteCobranca,
       isDestructive: true,
       disabled: disableExcluirCobranca(cobranca),
-      swipeColor: "bg-red-600",
+      swipeColor: "bg-red-500",
     });
 
     return actions;

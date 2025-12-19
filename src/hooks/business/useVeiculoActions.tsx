@@ -43,7 +43,7 @@ export function useVeiculoActions({
       icon: <Trash2 className="h-4 w-4" />,
       onClick: () => onDelete(veiculo),
       isDestructive: true,
-      swipeColor: "bg-red-600",
+      swipeColor: "bg-red-500",
     },
   ];
 }

@@ -7,16 +7,17 @@ import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
 import { formatDateToBR } from "@/utils/formatters";
 import {
-    Bus,
-    Calendar,
-    ClipboardCheck,
-    Cog,
-    Ellipsis,
-    FileText,
-    Fuel,
-    HelpCircle,
-    Wallet,
-    Wrench,
+  Bus,
+  Calendar,
+  ClipboardCheck,
+  Cog,
+  Ellipsis,
+  Eye,
+  FileText,
+  Fuel,
+  HelpCircle,
+  Wallet,
+  Wrench,
 } from "lucide-react";
 import { memo } from "react";
 
@@ -114,24 +115,31 @@ const GastoMobileCard = memo(function GastoMobileCard({
             >
               <Icon className="h-4 w-4" />
             </div>
-              <div className="flex flex-col">
-                <p className="font-bold text-gray-900 text-sm leading-tight">
-                  {gasto.categoria}
-                </p>
-                <div className="flex items-center gap-1.5 mt-1">
-                  {placa ? (
-                    <span className="text-[10px] font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded-md border border-gray-200 inline-flex items-center gap-1">
-                      <Bus className="w-3 h-3 text-gray-500" />
-                      {placa}
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100 inline-flex items-center gap-1 whitespace-nowrap">
-                      <Bus className="w-3 h-3 text-gray-400" />
-                      Sem Veículo
-                    </span>
-                  )}
-                </div>
+            <div className="flex flex-col">
+              <p className="font-bold text-gray-900 text-sm leading-tight">
+                {gasto.categoria}
+              </p>
+              <div className="flex items-center gap-1.5 mt-1">
+                {placa ? (
+                  <span className="text-[10px] font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded-md border border-gray-200 inline-flex items-center gap-1">
+                    <Bus className="w-3 h-3 text-gray-500" />
+                    {placa}
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100 inline-flex items-center gap-1 whitespace-nowrap">
+                    <Bus className="w-3 h-3 text-gray-400" />
+                    Sem Veículo
+                  </span>
+                )}
               </div>
+            </div>
+            {gasto.usuario_id !== "mock" ? (
+              <Eye className="h-4 w-4 text-gray-300 absolute right-4 top-4" />
+            ) : (
+              <span className="absolute right-4 py-1 px-3 rounded-xl top-4 bg-orange-400 text-[10px] text-white">
+                Demonstração
+              </span>
+            )}
           </div>
         </div>
 

@@ -5,7 +5,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { useVeiculoActions } from "@/hooks/business/useVeiculoActions";
 import { Veiculo } from "@/types/veiculo";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
-import { Users2 } from "lucide-react";
+import { Eye, Users2 } from "lucide-react";
 import { NavigateFunction } from "react-router-dom";
 
 interface VeiculosListProps {
@@ -53,9 +53,9 @@ export function VeiculosList({
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {veiculo.marca} {veiculo.modelo}
-                    {veiculo.ano_modelo ? ` • ${veiculo.ano_modelo}` : ""}
                   </p>
                 </div>
+                <Eye className="h-4 w-4 text-gray-300 absolute right-4 top-3" />
               </div>
 
               <div className="flex justify-between items-center pt-2 border-t border-gray-50">
@@ -125,11 +125,6 @@ export function VeiculosList({
                       <span className="font-medium text-sm text-gray-900">
                         {veiculo.marca} {veiculo.modelo}
                       </span>
-                      {veiculo.ano_modelo && (
-                        <span className="text-xs text-gray-500">
-                          {veiculo.ano_modelo}
-                        </span>
-                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 align-middle">

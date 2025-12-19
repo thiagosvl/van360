@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
 import {
-  motion,
-  PanInfo,
-  useAnimation,
-  useMotionValue,
-  useTransform,
+    motion,
+    PanInfo,
+    useAnimation,
+    useMotionValue,
+    useTransform,
 } from "framer-motion";
 import { ReactNode, useEffect, useState } from "react";
 
@@ -68,9 +68,19 @@ export function SwipeableItem({
     }
   }, [showHint, controls]);
 
+  // Ensure cleanup happens on unmount or if component is destroyed while dragging
+  useEffect(() => {
+    return () => {
+      document.body.removeAttribute("data-swipe-active");
+    };
+  }, []);
+
+  const cleanupSwipeLock = () => {
+    document.body.removeAttribute("data-swipe-active");
+  };
+
   const handleDragStart = () => {
-    document.body.style.overflow = "hidden";
-    document.body.setAttribute("data-scroll-locked", "true"); // Signal to PullToRefresh
+    document.body.setAttribute("data-swipe-active", "true"); 
     onSwipeStart?.();
   };
 
@@ -78,8 +88,7 @@ export function SwipeableItem({
     _: any,
     info: PanInfo
   ) => {
-    document.body.style.overflow = ""; // Restore scroll
-    document.body.removeAttribute("data-scroll-locked"); // Restore PullToRefresh
+    cleanupSwipeLock();
     const offset = info.offset.x;
     const velocity = info.velocity.x;
 
@@ -128,7 +137,11 @@ export function SwipeableItem({
   return (
     <div 
       className={cn("relative overflow-hidden touch-pan-y isolate", className)}
-      style={{ WebkitBackfaceVisibility: "hidden", backfaceVisibility: "hidden" }}
+      style={{ 
+        WebkitBackfaceVisibility: "hidden", 
+        backfaceVisibility: "hidden",
+        touchAction: "pan-y" 
+      }}
     >
       {/* Background Actions Layer */}
       <div className="absolute inset-0 flex z-0">
@@ -210,14 +223,18 @@ export function SwipeableItem({
         dragMomentum={false} // Disable physics to allow immediate clicks after release
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        onPointerUp={cleanupSwipeLock} // Safety: Ensure lock is removed on release
+        onPointerCancel={cleanupSwipeLock} // Safety: Ensure lock is removed on cancel
         animate={controls}
         style={{ 
           x, 
           WebkitBackfaceVisibility: "hidden",
-          backfaceVisibility: "hidden"
+          backfaceVisibility: "hidden",
+          touchAction: "pan-y",
+          cursor: "grab"
         }}
-        className="relative z-10 transform-gpu will-change-transform"
-        whileTap={{ cursor: "grabbing" }}
+        className="relative z-10 transform-gpu will-change-transform active:cursor-grabbing"
+        // Removed whileTap to avoiding conflict with click bubbling
       >
         {children}
       </motion.div>

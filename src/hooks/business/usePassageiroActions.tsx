@@ -76,7 +76,7 @@ export function usePassageiroActions({
       icon: <Trash2 className="h-4 w-4" />,
       onClick: () => onDelete(passageiro),
       isDestructive: true,
-      swipeColor: "bg-red-600",
+      swipeColor: "bg-red-500",
     },
   // Deduping: "Carteirinha" and "Ver Histórico" map to same callback in List. Kept both as per original list structure if exists, or merging.
   // Viewing PassageirosList original code: It has "Ver Carteirinha" (CreditCard) and "Excluir".

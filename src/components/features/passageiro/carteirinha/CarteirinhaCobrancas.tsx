@@ -33,6 +33,7 @@ import {
   ChevronUp,
   Clock,
   DollarSign,
+  Eye,
   Plus,
   RotateCcw,
 } from "lucide-react";
@@ -68,40 +69,42 @@ interface CarteirinhaCobrancasProps {
 const COBRANCAS_LIMIT_DEFAULT = 3;
 
 // Wrapper for Mobile Actions ensuring Hooks compliance
-const CobrancaMobileItemWrapper = memo(({ 
-  cobranca, 
-  children, 
-  plano, 
-  onUpgrade,
-  onVerCobranca,
-  onEditarCobranca,
-  onRegistrarPagamento,
-  showHint
-}: {
-  cobranca: Cobranca;
-  children: ReactNode;
-  plano: any;
-  onUpgrade?: (f: string, d: string) => void;
-  onVerCobranca: () => void;
-  onEditarCobranca: () => void;
-  onRegistrarPagamento: () => void;
-  showHint?: boolean;
-}) => {
-  const actions = useCobrancaActions({
+const CobrancaMobileItemWrapper = memo(
+  ({
     cobranca,
+    children,
     plano,
     onUpgrade,
     onVerCobranca,
     onEditarCobranca,
     onRegistrarPagamento,
-  });
-  
-  return (
-    <MobileActionItem actions={actions} showHint={showHint}>
-      {children}
-    </MobileActionItem>
-  );
-});
+    showHint,
+  }: {
+    cobranca: Cobranca;
+    children: ReactNode;
+    plano: any;
+    onUpgrade?: (f: string, d: string) => void;
+    onVerCobranca: () => void;
+    onEditarCobranca: () => void;
+    onRegistrarPagamento: () => void;
+    showHint?: boolean;
+  }) => {
+    const actions = useCobrancaActions({
+      cobranca,
+      plano,
+      onUpgrade,
+      onVerCobranca,
+      onEditarCobranca,
+      onRegistrarPagamento,
+    });
+
+    return (
+      <MobileActionItem actions={actions} showHint={showHint}>
+        {children}
+      </MobileActionItem>
+    );
+  }
+);
 
 export const CarteirinhaCobrancas = ({
   cobrancas,
@@ -136,19 +139,25 @@ export const CarteirinhaCobrancas = ({
     >
       <Card className="h-full border-0 shadow-lg ring-1 ring-black/5 bg-white">
         <CardHeader className="border-b border-gray-100 pb-4">
-          <div className={cn(
-            "flex justify-between",
-            availableYears.length > 1 ? "flex-col items-start gap-3 md:flex-row md:items-center" : "items-center"
-          )}>
+          <div
+            className={cn(
+              "flex justify-between",
+              availableYears.length > 1
+                ? "flex-col items-start gap-3 md:flex-row md:items-center"
+                : "items-center"
+            )}
+          >
             <div className="flex items-center gap-2">
               <CardTitle className="text-lg font-bold text-gray-900">
                 Cobranças
               </CardTitle>
             </div>
-            <div className={cn(
-              "flex items-center gap-2",
-              availableYears.length > 1 ? "w-full md:w-auto" : ""
-            )}>
+            <div
+              className={cn(
+                "flex items-center gap-2",
+                availableYears.length > 1 ? "w-full md:w-auto" : ""
+              )}
+            >
               <div
                 className={`${
                   availableYears.length <= 1 ? "hidden" : "inline"
@@ -306,13 +315,17 @@ export const CarteirinhaCobrancas = ({
                           </div>
 
                           <CobrancaMobileItemWrapper
-                             cobranca={cobranca}
-                             plano={plano}
-                             onUpgrade={onUpgrade}
-                             onVerCobranca={() => onNavigateToCobranca(cobranca.id)}
-                             onEditarCobranca={() => onEditCobranca(cobranca)}
-                             onRegistrarPagamento={() => onRegistrarPagamento(cobranca)}
-                             showHint={index === 0}
+                            cobranca={cobranca}
+                            plano={plano}
+                            onUpgrade={onUpgrade}
+                            onVerCobranca={() =>
+                              onNavigateToCobranca(cobranca.id)
+                            }
+                            onEditarCobranca={() => onEditCobranca(cobranca)}
+                            onRegistrarPagamento={() =>
+                              onRegistrarPagamento(cobranca)
+                            }
+                            showHint={index === 0}
                           >
                             <div
                               className="bg-white rounded-xl border border-gray-100 shadow-sm transition-all p-4 cursor-pointer"
@@ -326,9 +339,11 @@ export const CarteirinhaCobrancas = ({
                                   </h4>
                                   <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                                     <Calendar className="w-3 h-3" />
-                                    Vence em {formatDateToBR(cobranca.data_vencimento)}
+                                    Vence em{" "}
+                                    {formatDateToBR(cobranca.data_vencimento)}
                                   </p>
                                 </div>
+                                <Eye className="h-4 w-4 text-gray-300 absolute right-4 top-3" />
                               </div>
 
                               {/* CORPO: Valor e Status lado a lado */}
@@ -437,7 +452,8 @@ export const CarteirinhaCobrancas = ({
                               </span>
                               <span className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                                 <Calendar className="w-3 h-3" />
-                                Vence em {formatDateToBR(cobranca.data_vencimento)}
+                                Vence em{" "}
+                                {formatDateToBR(cobranca.data_vencimento)}
                               </span>
                             </div>
                           </td>
