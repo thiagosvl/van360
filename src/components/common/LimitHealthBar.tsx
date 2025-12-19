@@ -65,7 +65,7 @@ export function LimitHealthBar({
         indicatorClassName={colorClass}
       />
 
-      <div className="mt-2 flex flex-row justify-between items-center gap-0 text-left">
+      <div className="mt-4 flex flex-row justify-between items-center gap-0 text-left">
         <p className="text-xs text-gray-400 mt-1">{finalDescription}</p>
         {showIncreaseLimit && onIncreaseLimit && (
           <Button

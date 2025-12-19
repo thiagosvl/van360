@@ -47,7 +47,7 @@ export function useUpgradeFranquia({
     // --- Lógica Simplificada "Upsell-Oriented" ---
     
     // 1. Filtra opções oficiais de prateleira (Só mostra se atender a necessidade ATUAL do usuário)
-    // Ex: Se tem 40 alunos, não mostramos o plano de 25. Mostramos 50, 90...
+    // Ex: Se tem 40 passageiros, não mostramos o plano de 25. Mostramos 50, 90...
     const validTiers = sortedTiers.filter(t => t.franquia_cobrancas_mes >= totalPassageiros);
 
     // 2. Se existirem opções válidas (Upsell)

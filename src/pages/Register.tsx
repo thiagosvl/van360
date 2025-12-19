@@ -151,7 +151,7 @@ export default function Register() {
           onPaymentSuccess={handlePaymentSuccess}
           usuarioId={undefined}
           nomePlano={selectedPlano?.nome}
-          quantidadeAlunos={
+          quantidadePassageiros={
             selectedSubPlano
               ? selectedSubPlano.franquia_cobrancas_mes
               : form.getValues("quantidade_personalizada")
@@ -177,7 +177,7 @@ export default function Register() {
           isOpen={pagamentoSucessoDialog.isOpen}
           onClose={() => setPagamentoSucessoDialog({ isOpen: false })}
           nomePlano={pagamentoSucessoDialog.nomePlano || ""}
-          quantidadeAlunos={pagamentoSucessoDialog.quantidadeAlunos || 0}
+          quantidadePassageiros={pagamentoSucessoDialog.quantidadePassageiros || 0}
         />
       )}
 

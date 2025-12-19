@@ -22,7 +22,7 @@ interface PagamentoAssinaturaDialogProps {
     cobrancaId: string;
   }) => void;
   nomePlano?: string;
-  quantidadeAlunos?: number;
+  quantidadePassageiros?: number;
   onIrParaInicio?: () => void;
   onIrParaAssinatura?: () => void;
   onPaymentVerified?: () => void; // Novo callback
@@ -44,7 +44,7 @@ export default function PagamentoAssinaturaDialog({
   usuarioId,
   onPrecisaSelecaoManual,
   nomePlano,
-  quantidadeAlunos,
+  quantidadePassageiros,
   onIrParaInicio,
   onIrParaAssinatura,
   onPaymentVerified,
@@ -86,7 +86,7 @@ export default function PagamentoAssinaturaDialog({
             onPrecisaSelecaoManual={onPrecisaSelecaoManual}
             onClose={(success) => onClose(success)}
             nomePlano={nomePlano}
-            quantidadeAlunos={quantidadeAlunos}
+            quantidadePassageiros={quantidadePassageiros}
             onIrParaInicio={onIrParaInicio}
             onIrParaAssinatura={onIrParaAssinatura}
             onPaymentVerified={onPaymentVerified}

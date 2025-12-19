@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import { CheckCircle2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +13,7 @@ interface PagamentoSucessoDialogProps {
   isOpen: boolean;
   onClose: () => void;
   nomePlano?: string;
-  quantidadeAlunos?: number;
+  quantidadePassageiros?: number;
   onIrParaInicio?: () => void;
   onIrParaAssinatura?: () => void;
 }
@@ -22,7 +22,7 @@ export function PagamentoSucessoDialog({
   isOpen,
   onClose,
   nomePlano,
-  quantidadeAlunos,
+  quantidadePassageiros,
   onIrParaInicio,
   onIrParaAssinatura,
 }: PagamentoSucessoDialogProps) {
@@ -73,11 +73,11 @@ export function PagamentoSucessoDialog({
         </div>
 
         <div className="p-6 pt-4 bg-white flex-1 overflow-y-auto">
-          {quantidadeAlunos !== undefined && quantidadeAlunos > 0 && (
+          {quantidadePassageiros !== undefined && quantidadePassageiros > 0 && (
             <div className="mb-6 p-4 bg-emerald-50 rounded-xl border border-emerald-100">
               <p className="text-sm font-medium text-emerald-900">
-                {quantidadeAlunos}{" "}
-                {quantidadeAlunos === 1
+                {quantidadePassageiros}{" "}
+                {quantidadePassageiros === 1
                   ? "passageiro agora tem"
                   : "passageiros agora têm"}{" "}
                 cobrança automática.

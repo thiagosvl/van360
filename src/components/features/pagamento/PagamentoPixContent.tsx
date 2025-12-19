@@ -23,7 +23,7 @@ interface PagamentoPixContentProps {
   }) => void;
   onClose?: (success?: boolean) => void; // Opcional, para quando usado em modal
   nomePlano?: string; // Para exibir no sucesso
-  quantidadeAlunos?: number; // Para exibir no sucesso
+  quantidadePassageiros?: number; // Para exibir no sucesso
   onIrParaInicio?: () => void; // Callback para ir para início
   onIrParaAssinatura?: () => void; // Callback para ir para assinatura
   onPaymentVerified?: () => void; // Novo: Callback imediato quando pagamento é confirmado
@@ -43,7 +43,7 @@ export default function PagamentoPixContent({
   onPrecisaSelecaoManual,
   onClose,
   nomePlano,
-  quantidadeAlunos,
+  quantidadePassageiros,
   onIrParaInicio,
   onIrParaAssinatura,
   onPaymentVerified,
@@ -523,11 +523,11 @@ export default function PagamentoPixContent({
             </p>
           )}
 
-          {quantidadeAlunos !== undefined && quantidadeAlunos > 0 && (
+          {quantidadePassageiros !== undefined && quantidadePassageiros > 0 && (
             <div className="mb-6 p-4 bg-white rounded-xl border border-emerald-200">
               <p className="text-sm font-medium text-emerald-900">
-                {quantidadeAlunos}{" "}
-                {quantidadeAlunos === 1
+                {quantidadePassageiros}{" "}
+                {quantidadePassageiros === 1
                   ? "Passageiro agora tem"
                   : "Passageiros agora têm"}{" "}
                 Cobrança Automática.

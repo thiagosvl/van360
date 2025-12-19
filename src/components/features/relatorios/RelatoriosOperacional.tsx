@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { FEATURE_LIMITE_PASSAGEIROS, PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { cn } from "@/lib/utils";
-import { Bot, Users } from "lucide-react";
+import { Users } from "lucide-react";
 
 interface RelatoriosOperacionalProps {
   dados: {
@@ -104,36 +104,39 @@ export const RelatoriosOperacional = ({
 
         {/* Automação (Cobranças Automáticas) */}
         {isCompletePlan ? (
-          <Card className="border-none shadow-sm rounded-2xl overflow-hidden relative">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                    Passageiros no Automático
-                  </p>
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 leading-none">
-                    <BlurredValue
-                      value={automacao.envios}
-                      visible={hasAccess}
-                      type="number"
-                    />
-                    <span className="text-gray-400 font-normal ml-1">
-                      / {automacao.limite}
-                    </span>
-                  </h3>
-                </div>
-                <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-amber-50 text-amber-600">
-                  <Bot className="h-5 w-5" />
-                </div>
-              </div>
-              <Progress
-                value={(automacao.envios / automacao.limite) * 100}
-                className="h-2 bg-gray-100 rounded-full"
-                indicatorClassName="bg-amber-500 rounded-full"
+           <Card className="border-none shadow-sm rounded-2xl overflow-hidden relative p-0">
+             <CardContent className="p-0 h-full"> 
+              <LimitHealthBar
+                current={automacao.envios}
+                max={automacao.limite}
+                label="Passageiros no Automático"
+                description={
+                  automacao.envios >= automacao.limite
+                    ? "Limite de automação de passageiros atingido."
+                    : `Você ainda pode automatizar ${
+                        automacao.limite - automacao.envios
+                      } ${
+                        automacao.limite - automacao.envios === 1
+                          ? "passageiro"
+                          : "passageiros"
+                      }.`
+                }
+                className="h-full mb-0 border-0 shadow-none bg-white" 
+                onIncreaseLimit={() =>
+                  openPlanUpgradeDialog({
+                    feature: "automacao",
+                    defaultTab: "completo", // Using string literal as imported constant PLANO_COMPLETO might not serve as tab value directly if type differs, but usually it matches. Checked SubscriptionKPIs uses PLANO_COMPLETO variable which holds 'completo'.
+                    // Wait, SubscriptionKPIs uses PLANO_COMPLETO which is 'profissional' or 'completo'? 
+                    // In SubscriptionKPIs: defaultTab: PLANO_COMPLETO. 
+                    // Let's use PLANO_ESSENCIAL/PLANO_COMPLETO constants if available or string 'completo'/'essencial' matching PlanUpgradeDialogProps.
+                    // Assinatura uses "completo".
+                    // Let's check imports. RelatoriosOperacional imports PLANO_ESSENCIAL. I should add PLANO_COMPLETO import or use string "completo".
+                    // Looking at SubscriptionKPIs line 222: defaultTab: PLANO_COMPLETO.
+                    // I'll stick to string "completo" since PlanUpgradeDialog accepts "essencial" | "completo".
+                    targetPassengerCount: dados.passageirosAtivosCount,
+                  })
+                }
               />
-              <p className="text-xs text-gray-400 mt-2">
-                Vagas de automação utilizadas
-              </p>
             </CardContent>
           </Card>
         ) : (
@@ -201,7 +204,7 @@ export const RelatoriosOperacional = ({
                           !hasAccess && "blur-sm select-none"
                         )}
                       >
-                        {escola.passageiros === 1 ? "aluno" : "alunos"}
+                        {escola.passageiros === 1 ? "passageiro" : "passageiros"}
                       </span>
                     </div>
                   </div>
@@ -261,7 +264,7 @@ export const RelatoriosOperacional = ({
                           !hasAccess && "blur-sm select-none"
                         )}
                       >
-                        {periodo.passageiros === 1 ? "pass." : "pass."}
+                        {periodo.passageiros === 1 ? "passageiro" : "passageiros"}
                       </span>
                     </div>
                   </div>
@@ -308,7 +311,7 @@ export const RelatoriosOperacional = ({
                         !hasAccess && "blur-sm select-none"
                       )}
                     >
-                      {veiculo.passageiros === 1 ? "pass." : "pass."}
+                      {veiculo.passageiros === 1 ? "passageiro" : "passageiros"}
                     </span>
                   </div>
                 </div>

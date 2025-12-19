@@ -14,14 +14,14 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 // Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
 // Hooks
@@ -67,7 +67,7 @@ export default function Assinatura() {
 
   const { data: countPassageirosAtivos = { count: 0 }, refetch: refetchPassageirosContagem } = usePassageiroContagem(
     profile?.id,
-    undefined,
+    { ativo: "true" },
     { enabled: !!profile?.id }
   );
 

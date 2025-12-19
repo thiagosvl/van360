@@ -64,7 +64,7 @@ export function EscolasList({
                 <div className="flex items-center gap-1.5 text-gray-600 bg-gray-50 px-2 py-1 rounded-md">
                   <Users2 className="w-3.5 h-3.5" />
                   <span className="text-xs font-semibold">
-                    {escola.passageiros_ativos_count || 0} alunos
+                    {escola.passageiros_ativos_count || 0} {escola.passageiros_ativos_count === 1 ? "passageiro" : "passageiros"}
                   </span>
                 </div>
               </div>
@@ -84,7 +84,7 @@ export function EscolasList({
                 Endereço
               </th>
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Alunos
+                Passageiros
               </th>
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Status

@@ -1,9 +1,9 @@
 import {
-    AlertDialog,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogTitle,
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -346,7 +346,7 @@ export default function LimiteFranquiaDialog({
           usuarioId={usuarioId}
           context="upgrade"
           nomePlano="Plano Completo Personalizado"
-          quantidadeAlunos={paymentData.franquia}
+          quantidadePassageiros={paymentData.franquia}
           onIrParaAssinatura={handleClosePayment}
           onPaymentVerified={handlePaymentVerified}
         />

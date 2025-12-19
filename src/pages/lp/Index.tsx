@@ -68,7 +68,7 @@ const Index = () => {
   useEffect(() => {
     const faturamentoMensal = roiPassageiros[0] * roiMensalidade;
     const perdaInadimplencia = faturamentoMensal * 0.05; // 5% inadimplência
-    const perdaTempo = roiPassageiros[0] * 10; // R$ 10 de tempo/stress por aluno
+    const perdaTempo = roiPassageiros[0] * 10; // R$ 10 de tempo/stress por passageiro
     const perdaTotalMensal = perdaInadimplencia + perdaTempo;
     setRoiPerdaAnual(perdaTotalMensal * 12);
   }, [roiPassageiros, roiMensalidade]);

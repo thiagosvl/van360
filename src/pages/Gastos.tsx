@@ -172,7 +172,7 @@ export default function Gastos() {
                     <div className="bg-orange-200 p-1.5 rounded-full shrink-0">
                         <Lock className="w-3.5 h-3.5 text-orange-700" />
                     </div>
-                    <span className="text-sm text-orange-900 font-semibold leading-tight">Estes são dados de exemplo para demonstração</span>
+                    <span className="text-sm text-orange-900 font-semibold leading-tight">Dados de exemplo para demonstração</span>
                 </div>
                 <span className="text-[10px] uppercase font-bold text-orange-600 tracking-wider shrink-0 whitespace-nowrap ml-4">MODO DEMO</span>
               </div>

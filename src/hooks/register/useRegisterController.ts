@@ -32,7 +32,7 @@ export function useRegisterController() {
   const [pagamentoSucessoDialog, setPagamentoSucessoDialog] = useState<{
     isOpen: boolean;
     nomePlano?: string;
-    quantidadeAlunos?: number;
+    quantidadePassageiros?: number;
   }>({ isOpen: false });
 
   // Refs de controle
@@ -557,7 +557,7 @@ export function useRegisterController() {
       setPagamentoSucessoDialog({
         isOpen: true,
         nomePlano: planoNome,
-        quantidadeAlunos: Number(quantidadeInfo) || 0,
+        quantidadePassageiros: Number(quantidadeInfo) || 0,
       });
       delete (window as any).__registerSession;
     }

@@ -108,7 +108,7 @@ export const QuickStartCard = ({
                 Primeiros Passos
               </h3>
               <p className="text-sm mt-1 mb-3 text-gray-500">
-                Complete as etapas para configurar sua van.
+                Complete as etapas para configurar o seu acesso.
               </p>
             </div>
           </div>

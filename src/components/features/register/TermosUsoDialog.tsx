@@ -150,7 +150,7 @@ export function TermosUsoDialog() {
                   <p className="text-sm text-gray-600">Dados cadastrais e financeiros para faturamento e emissão de notas.</p>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                  <h4 className="font-bold text-gray-900 mb-2">Alunos/Responsáveis</h4>
+                  <h4 className="font-bold text-gray-900 mb-2">Passageiros/Responsáveis</h4>
                   <p className="text-sm text-gray-600">Nome, endereço e telefone estritamente para gestão de passageiros e rotas.</p>
                 </div>
               </div>
