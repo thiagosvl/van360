@@ -17,8 +17,8 @@ export function useCreateCobranca() {
     },
     onError: (error: any) => {
       const isDuplicate =
-        error?.response?.data?.message?.includes('cobrancas_aluno_id_mes_ano_key') ||
-        error?.response?.data?.error?.includes('cobrancas_aluno_id_mes_ano_key');
+        error?.response?.data?.message?.includes('cobrancas_passageiro_id_mes_ano_key') ||
+        error?.response?.data?.error?.includes('cobrancas_passageiro_id_mes_ano_key');
     
       if (isDuplicate) {
         toast.error("cobranca.erro.criar", {
