@@ -60,9 +60,7 @@ export function AssinaturaDashboard({
 
         {/* Sidebar: Settings/Cancel */}
         <div className="lg:col-span-1 space-y-4">
-          <h3 className="text-sm font-semibold text-gray-900">
-            Sua Assinatura
-          </h3>
+        <h3 className="text-lg font-bold text-gray-900 px-1">Sua Assinatura</h3>
           <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
             <div className="space-y-4 text-sm mb-6">
               <div className="flex justify-between items-center group">

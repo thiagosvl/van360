@@ -101,8 +101,8 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
     // Premium & "Chamativo" Polish
     
     // Cálculo de estimativa de economia (simulado base 5min/passageiro)
-    const passageiros = metricas.passageirosAtivos || 0;
-    const horasEstimadas = Math.max(1, Math.round((passageiros * 5) / 60)); 
+    const passageiros = Math.max(0, metricas.passageirosAtivos || 0);
+    const horasEstimadas = Math.max(1, Math.ceil((passageiros * 5) / 60)); 
 
     return (
         <div 
@@ -171,12 +171,12 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
     let isSimulated = !isProfissional;
 
     if (isProfissional) {
-      const envios = metricas.cobrancasEmUso || 0;
+      const envios = Math.max(0, metricas.cobrancasEmUso || 0);
       const horas = Math.ceil((envios * 5) / 60); // Arredondar para cima
       valor = `${horas}h`;
     } else {
       // Simulação
-      const passageiros = metricas.passageirosAtivos || 0;
+      const passageiros = Math.max(0, metricas.passageirosAtivos || 0);
       const horas = Math.ceil(((passageiros * 5) / 60)); // Arredondar para cima, remover decimais
       // Garantir pelo menos 1h se houver passageiros para não ficar "0h"
       const horasFinal = passageiros > 0 && horas === 0 ? 1 : horas;

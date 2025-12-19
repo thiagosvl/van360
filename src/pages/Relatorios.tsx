@@ -286,7 +286,7 @@ export default function Relatorios() {
             hasAccess={hasAccess}
             isFreePlan={isFreePlan}
             limits={limits}
-            IsProfissionalPlan={!!planoUsuario?.isProfissionalPlan}
+            IsProfissionalPlan={!!profilePlano?.isProfissionalPlan}
           />
         </TabsContent>
       </Tabs>
