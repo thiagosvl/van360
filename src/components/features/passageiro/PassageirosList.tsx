@@ -4,12 +4,12 @@ import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { usePassageiroActions } from "@/hooks/business/usePassageiroActions";
 import { Passageiro } from "@/types/passageiro";
@@ -105,7 +105,7 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
     <MobileActionItem actions={actions as any} showHint={index === 0}>
       <div
         onClick={() => onHistorico(passageiro)}
-        className="bg-white p-4 rounded-none border-b border-gray-100 flex flex-col gap-3 active:bg-gray-50 transition-colors duration-200 cursor-pointer"
+        className="bg-white p-4 rounded-xl border-b border-gray-100 flex flex-col gap-3 active:bg-gray-50 transition-colors duration-200 cursor-pointer"
       >
         <div className="flex justify-between items-start mb-1 relative">
           <div className="flex items-center gap-3">

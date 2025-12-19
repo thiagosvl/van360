@@ -135,6 +135,9 @@ export function SwipeableItem({
               }}
               className={cn(
                 "h-full flex flex-col items-center justify-center px-2 transition-opacity",
+                // Left Actions logic (same concept)
+                idx === 0 && "rounded-l-xl",
+                idx === leftActions.length - 1 && "rounded-r-xl",
                 action.color
               )}
               style={{ width: ACTION_WIDTH }}
@@ -162,6 +165,12 @@ export function SwipeableItem({
               }}
               className={cn(
                 "h-full flex flex-col items-center justify-center px-2 transition-opacity active:opacity-80",
+                // Logic for rounded corners:
+                // First item (leftmost): Rounded Left
+                // Last item (rightmost): Rounded Right
+                // Middle items: No rounded
+                idx === 0 && "rounded-l-xl",
+                idx === rightActions.length - 1 && "rounded-r-xl",
                 action.color
               )}
               style={{ width: ACTION_WIDTH }}
@@ -189,11 +198,10 @@ export function SwipeableItem({
         animate={controls}
         style={{ 
           x, 
-          background: "white",
           WebkitBackfaceVisibility: "hidden",
           backfaceVisibility: "hidden"
         }}
-        className="relative z-10 bg-white transform-gpu will-change-transform"
+        className="relative z-10 transform-gpu will-change-transform"
         whileTap={{ cursor: "grabbing" }}
       >
         {children}
