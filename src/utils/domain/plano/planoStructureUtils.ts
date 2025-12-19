@@ -1,4 +1,4 @@
-import { PLANO_COMPLETO } from "@/constants";
+import { PLANO_PROFISSIONAL } from "@/constants";
 import { Plano, SubPlano } from "@/types/plano";
 
 /**
@@ -7,30 +7,30 @@ import { Plano, SubPlano } from "@/types/plano";
  */
 
 /**
- * Obtém o maior sub-plano do plano Completo
+ * Obtém o maior sub-plano do plano Profissional
  * @param planos - Array de planos base
  * @param subPlanos - Array de sub-planos
  * @returns O maior sub-plano ou null se não encontrado
  */
-export function getMaiorSubplanoCompleto(
+export function getMaiorSubplanoProfissional(
   planos: Plano[],
   subPlanos: SubPlano[]
 ): SubPlano | null {
-  const planoCompletoBase = planos.find((p) => p.slug === PLANO_COMPLETO);
-  if (!planoCompletoBase) return null;
+  const planoProfissionalBase = planos.find((p) => p.slug === PLANO_PROFISSIONAL);
+  if (!planoProfissionalBase) return null;
 
-  const subplanosCompleto = subPlanos.filter(
-    (s) => s.parent_id === planoCompletoBase.id
+  const subplanosProfissional = subPlanos.filter(
+    (s) => s.parent_id === planoProfissionalBase.id
   );
-  if (subplanosCompleto.length === 0) return null;
+  if (subplanosProfissional.length === 0) return null;
 
-  return subplanosCompleto.sort(
+  return subplanosProfissional.sort(
     (a, b) => b.franquia_cobrancas_mes - a.franquia_cobrancas_mes
   )[0];
 }
 
 /**
- * Calcula a quantidade mínima para personalização do plano Completo
+ * Calcula a quantidade mínima para personalização do plano Profissional
  * A quantidade mínima é o maior sub-plano + 1
  * @param planos - Array de planos base
  * @param subPlanos - Array de sub-planos
@@ -40,7 +40,7 @@ export function getQuantidadeMinimaPersonalizada(
   planos: Plano[],
   subPlanos: SubPlano[]
 ): number | null {
-  const maiorSubplano = getMaiorSubplanoCompleto(planos, subPlanos);
+  const maiorSubplano = getMaiorSubplanoProfissional(planos, subPlanos);
   if (!maiorSubplano) return null;
   return maiorSubplano.franquia_cobrancas_mes + 1;
 }

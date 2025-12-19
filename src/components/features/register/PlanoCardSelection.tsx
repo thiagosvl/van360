@@ -4,14 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import {
-  PLANO_COMPLETO,
   PLANO_ESSENCIAL,
   PLANO_GRATUITO,
+  PLANO_PROFISSIONAL,
   QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO,
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Plano, SubPlano } from "@/types/plano";
-import { getMaiorSubplanoCompleto } from "@/utils/domain/plano/planoStructureUtils";
+import { getMaiorSubplanoProfissional } from "@/utils/domain/plano/planoStructureUtils";
 import { toast } from "@/utils/notifications/toast";
 import { Check, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -21,7 +21,7 @@ interface PlanoCardSelectionProps {
   subPlanos: SubPlano[];
   isSelected: boolean;
   onSelect: (planoId: string) => void;
-  // Props para o plano Completo
+  // Props para o plano Profissional
   selectedSubPlanoId?: string | null;
   quantidadePersonalizada?: string;
   onSubPlanoSelect?: (subPlanoId: string | undefined) => void;
@@ -52,7 +52,7 @@ export const PlanoCardSelection = ({
   onAvancarStep,
   cardClassName,
 }: PlanoCardSelectionProps) => {
-  const isCompleto = plano.slug === PLANO_COMPLETO;
+  const isProfissional = plano.slug === PLANO_PROFISSIONAL;
   const isGratuito = plano.slug === PLANO_GRATUITO;
   const isEssencial = plano.slug === PLANO_ESSENCIAL;
 
@@ -62,19 +62,19 @@ export const PlanoCardSelection = ({
   const [inputValue, setInputValue] = useState(quantidadePersonalizada);
   const [isTyping, setIsTyping] = useState(false);
 
-  // Sub-planos do Completo
-  const subPlanosCompleto = isCompleto
+  // Sub-planos do Profissional
+  const subPlanosProfissional = isProfissional
     ? subPlanos.filter((s) => s.parent_id === plano.id)
     : [];
 
   // Ordenar sub-planos por franquia (menor para maior)
-  const subPlanosOrdenados = [...subPlanosCompleto].sort(
+  const subPlanosOrdenados = [...subPlanosProfissional].sort(
     (a, b) => a.franquia_cobrancas_mes - b.franquia_cobrancas_mes
   );
 
   // Obter maior sub-plano para calcular mínimo do slider
-  const maiorSubplano = isCompleto
-    ? getMaiorSubplanoCompleto([plano], subPlanosCompleto)
+  const maiorSubplano = isProfissional
+    ? getMaiorSubplanoProfissional([plano], subPlanosProfissional)
     : null;
   const quantidadeMinimaSlider = maiorSubplano
     ? maiorSubplano.franquia_cobrancas_mes + 1
@@ -170,7 +170,7 @@ export const PlanoCardSelection = ({
   const quantidadeMinima = getQuantidadeMinima?.() ?? null;
   // Usar quantidadeMinimaSlider se disponível (maior sub-plano + 1), senão usar quantidadeMinima
   const quantidadeMinimaParaValidacao =
-    isCompleto && quantidadeMinimaSlider > 0
+    isProfissional && quantidadeMinimaSlider > 0
       ? quantidadeMinimaSlider
       : quantidadeMinima;
 
@@ -208,11 +208,11 @@ export const PlanoCardSelection = ({
 
   // Auto-expandir slider se já vier com quantidade personalizada (ex: persistência ou URL)
   useEffect(() => {
-    if (isSelected && isCompleto && quantidadePersonalizada && !sliderExpandido) {
+    if (isSelected && isProfissional && quantidadePersonalizada && !sliderExpandido) {
       setSliderExpandido(true);
       setPersonalizadoClicado(true);
     }
-  }, [isSelected, isCompleto, quantidadePersonalizada, sliderExpandido]);
+  }, [isSelected, isProfissional, quantidadePersonalizada, sliderExpandido]);
 
   // Handler para seleção de personalizado
   const handlePersonalizadoSelect = () => {
@@ -276,11 +276,11 @@ export const PlanoCardSelection = ({
 
   // Calcular preço dinâmico baseado na seleção
   const precoExibido = useMemo(() => {
-    if (isCompleto) {
+    if (isProfissional) {
       // Se não estiver selecionado, mostrar sempre o menor preço ("A partir de")
       if (!isSelected) {
         return Math.min(
-          ...(subPlanosCompleto.map((s) =>
+          ...(subPlanosProfissional.map((s) =>
             Number(s.promocao_ativa ? s.preco_promocional : s.preco)
           ) || [0])
         );
@@ -292,7 +292,7 @@ export const PlanoCardSelection = ({
         return null;
       }
       if (selectedSubPlanoId) {
-        const subPlano = subPlanosCompleto.find(
+        const subPlano = subPlanosProfissional.find(
           (s) => s.id === selectedSubPlanoId
         );
         if (subPlano) {
@@ -302,7 +302,7 @@ export const PlanoCardSelection = ({
         }
       }
       return Math.min(
-        ...(subPlanosCompleto.map((s) =>
+        ...(subPlanosProfissional.map((s) =>
           Number(s.promocao_ativa ? s.preco_promocional : s.preco)
         ) || [0])
       );
@@ -312,10 +312,10 @@ export const PlanoCardSelection = ({
       ? plano.preco_promocional
       : plano.preco;
   }, [
-    isCompleto,
+    isProfissional,
     isSelected,
     selectedSubPlanoId,
-    subPlanosCompleto,
+    subPlanosProfissional,
     precoCalculadoPreview,
     quantidadePersonalizada,
     isQuantidadeValida,
@@ -323,8 +323,8 @@ export const PlanoCardSelection = ({
   ]);
 
   // Preço original (sem promoção)
-  const precoOriginal = isCompleto
-    ? Math.min(...(subPlanosCompleto.map((s) => Number(s.preco)) || [0]))
+  const precoOriginal = isProfissional
+    ? Math.min(...(subPlanosProfissional.map((s) => Number(s.preco)) || [0]))
     : plano.preco;
 
   // Função para substituir placeholders nos benefícios
@@ -343,13 +343,13 @@ export const PlanoCardSelection = ({
     const baseStyles = "cursor-pointer transition-all duration-300 relative";
 
     if (isSelected) {
-      if (isCompleto) {
+      if (isProfissional) {
         return cn(baseStyles, "border-2 border-yellow-400 bg-yellow-50/30 shadow-lg ring-1 ring-yellow-400/50 z-10");
       }
       return cn(baseStyles, "border-2 border-blue-600 bg-blue-50/30 shadow-md ring-1 ring-blue-600/20 z-10");
     }
 
-    if (isCompleto) {
+    if (isProfissional) {
       return cn(baseStyles, "border-2 border-yellow-200 hover:border-yellow-400 hover:shadow-md");
     }
     
@@ -357,7 +357,7 @@ export const PlanoCardSelection = ({
   };
 
   const getButtonStyles = () => {
-    if (isCompleto) {
+    if (isProfissional) {
       return "bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold shadow-sm hover:shadow-md transform active:scale-95 transition-all";
     }
     if (isEssencial) {
@@ -370,7 +370,7 @@ export const PlanoCardSelection = ({
     if (isSelected) return "Confirmar e Avançar";
     if (isGratuito) return "Selecionar Grátis";
     if (isEssencial) return "Selecionar Essencial";
-    if (isCompleto) return "Selecionar Completo";
+    if (isProfissional) return "Selecionar Profissional";
     return "Selecionar";
   };
 
@@ -386,16 +386,16 @@ export const PlanoCardSelection = ({
       {/* Indicador de Seleção (Radio Check) */}
       <div className={cn(
         "absolute right-4 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all z-20",
-        isCompleto ? "top-12" : "top-4",
+        isProfissional ? "top-12" : "top-4",
         isSelected 
-          ? (isCompleto ? "bg-yellow-400 border-yellow-400" : "bg-blue-600 border-blue-600") 
+          ? (isProfissional ? "bg-yellow-400 border-yellow-400" : "bg-blue-600 border-blue-600") 
           : "border-gray-300 bg-white"
       )}>
-        {isSelected && <Check className={cn("h-3.5 w-3.5", isCompleto ? "text-gray-900" : "text-white")} strokeWidth={3} />}
+        {isSelected && <Check className={cn("h-3.5 w-3.5", isProfissional ? "text-gray-900" : "text-white")} strokeWidth={3} />}
       </div>
 
-      {/* Badge Recomendado para Completo */}
-      {isCompleto && (
+      {/* Badge Recomendado para Profissional */}
+      {isProfissional && (
         <div className="bg-yellow-400 text-gray-900 text-[10px] font-bold text-center py-1 uppercase tracking-widest">
           Mais Escolhido
         </div>
@@ -423,7 +423,7 @@ export const PlanoCardSelection = ({
                 <span className="text-xs text-gray-500 mr-1">R$</span>
                 {/* Loader aparece se estiver calculando OU se for personalizado e não tiver preço ainda */}
                 {isSelected && (isCalculandoPreco || 
-                (isCompleto && quantidadePersonalizada && isQuantidadeValida && !precoCalculadoPreview)) ? (
+                (isProfissional && quantidadePersonalizada && isQuantidadeValida && !precoCalculadoPreview)) ? (
                   <Skeleton className="h-9 w-24 mx-1" />
                 ) : (
                   <span className="text-3xl font-extrabold text-gray-900">
@@ -448,8 +448,8 @@ export const PlanoCardSelection = ({
           )}
         </div>
 
-        {/* Seletor de Quantidade (Apenas Completo e Selecionado) */}
-        {isCompleto && isSelected && (
+        {/* Seletor de Quantidade (Apenas Profissional e Selecionado) */}
+        {isProfissional && isSelected && (
           <div 
             onClick={(e) => e.stopPropagation()} 
             className="mb-5 space-y-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm animate-in fade-in slide-in-from-top-2"
@@ -579,7 +579,7 @@ export const PlanoCardSelection = ({
             <Button
             onClick={(e) => {
                 e.stopPropagation();
-                if (isCompleto) {
+                if (isProfissional) {
                     if (!opcaoSelecionada) {
                         toast.error("Selecione a quantidade de passageiros");
                         return;

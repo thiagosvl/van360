@@ -250,11 +250,11 @@ export const messages = {
         selecionarQuantidade: "É necessário escolher a quantidade de cobranças automáticas que deseja.",
         informarQuantidadePersonalizada: "Informe a quantidade de cobranças automáticas que deseja.",
         quantidadeAbaixoMinimo: "A quantidade informada está abaixo do mínimo permitido.",
-        cobrancaAutomaticaApenasCompleto: "Cobranças automáticas estão disponíveis apenas no plano Completo.",
+        cobrancaAutomaticaApenasProfissional: "Cobranças automáticas estão disponíveis apenas no plano Profissional.",
       },
     info: {
       limiteAtingido: "Você atingiu o limite do seu plano.",
-      upgradeParaCobrancasAutomaticas: "Faça upgrade para o plano Completo para ativar cobranças automáticas.",
+      upgradeParaCobrancasAutomaticas: "Faça upgrade para o plano Profissional para ativar cobranças automáticas.",
     },
   },
 

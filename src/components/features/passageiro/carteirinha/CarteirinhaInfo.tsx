@@ -1,3 +1,13 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,7 +47,7 @@ import { InfoItem } from "./InfoItem";
 
 interface CarteirinhaInfoProps {
   passageiro: Passageiro;
-  plano?: { isCompletePlan?: boolean } | null;
+  plano?: { IsProfissionalPlan?: boolean } | null;
   temCobrancasVencidas?: boolean;
   isCopiedEndereco: boolean;
   isCopiedTelefone: boolean;
@@ -47,6 +57,7 @@ interface CarteirinhaInfoProps {
   onToggleClick: (statusAtual: boolean) => void;
   onDeleteClick: () => void;
   onUpgrade: (featureName: string, description: string) => void;
+  onReactivateWithoutAutomation: () => void;
 }
 
 export const CarteirinhaInfo = ({
@@ -61,9 +72,25 @@ export const CarteirinhaInfo = ({
   onToggleClick,
   onDeleteClick,
   onUpgrade,
+  onReactivateWithoutAutomation,
 }: CarteirinhaInfoProps) => {
   const [mostrarMaisInfo, setMostrarMaisInfo] = useState(false);
+  const [showLimitDialog, setShowLimitDialog] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  
+  const handleToggleClickInternal = async () => {
+      try {
+          await onToggleClick(passageiro.ativo);
+      } catch (error: any) {
+          // Captura o erro específico de limite vindo do backend ou do wrapper
+          if (error.message?.includes("LIMIT_EXCEEDED_AUTOMATION") || 
+              error.response?.data?.error?.includes("LIMIT_EXCEEDED_AUTOMATION")) {
+              setShowLimitDialog(true);
+          } else {
+              throw error; // Re-throw para o tratamento padrão (toast de erro genérico)
+          }
+      }
+  };
 
   const hasCobrancaAutomaticaAccess = canUseCobrancaAutomatica(plano as any);
 
@@ -75,7 +102,7 @@ export const CarteirinhaInfo = ({
       // Usuário não tem permissão: chama função de upgrade do pai
       onUpgrade(
         "Cobrança Automática",
-        "A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Completo."
+        "A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Profissional."
       );
     }
   };
@@ -371,11 +398,11 @@ export const CarteirinhaInfo = ({
               </Button>
             )}
 
-            {passageiro.ativo ? (
+          {passageiro.ativo ? (
               <Button
                 variant="ghost"
                 className="w-full pl-0 text-muted-foreground hover:bg-transparent hover:text-primary justify-start"
-                onClick={() => onToggleClick(passageiro.ativo)}
+                onClick={handleToggleClickInternal}
               >
                 <Lock className="h-4 w-4 mr-2" />
                 Desativar Passageiro
@@ -384,7 +411,7 @@ export const CarteirinhaInfo = ({
               <Button
                 variant="ghost"
                 className="w-full pl-0 text-muted-foreground hover:bg-transparent hover:text-primary justify-start"
-                onClick={() => onToggleClick(passageiro.ativo)}
+                onClick={handleToggleClickInternal}
               >
                 <UserCheck className="h-4 w-4 mr-2" />
                 Reativar Passageiro
@@ -440,6 +467,40 @@ export const CarteirinhaInfo = ({
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={showLimitDialog} onOpenChange={setShowLimitDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Limite de Automação Atingido</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você atingiu o limite de cobranças automáticas do seu plano.
+              <br /><br />
+              Para reativar este passageiro, você pode:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-col gap-2">
+            <AlertDialogAction
+                className="w-full bg-indigo-600 hover:bg-indigo-700"
+                onClick={() => {
+                    onUpgrade("Limite de Automação", "Aumente seu limite para continuar usando a automação.");
+                    setShowLimitDialog(false);
+                }}
+            >
+              Aumentar Limites (Upgrade)
+            </AlertDialogAction>
+            <AlertDialogAction 
+                className="w-full bg-white text-gray-900 border border-gray-200 hover:bg-gray-50 mt-2 sm:mt-0"
+                onClick={async () => {
+                    await onReactivateWithoutAutomation();
+                    setShowLimitDialog(false);
+                }}
+            >
+              Reativar sem Automação
+            </AlertDialogAction>
+            <AlertDialogCancel className="w-full mt-2 sm:mt-0">Cancelar</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 };

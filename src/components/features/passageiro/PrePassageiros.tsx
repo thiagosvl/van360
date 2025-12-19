@@ -56,13 +56,13 @@ type PlanoUsuario = {
   status: string;
   trial_end_at: string | null;
   ativo: boolean;
-  planoCompleto: any;
+  planoProfissional: any;
   isTrial: boolean;
   isValidTrial: boolean;
   isActive: boolean;
   isValidPlan: boolean;
   isFreePlan: boolean;
-  isCompletePlan: boolean;
+  IsProfissionalPlan: boolean;
   isEssentialPlan: boolean;
 } | null;
 

@@ -1,8 +1,8 @@
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,14 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import {
-    PLANO_COMPLETO,
-    PLANO_ESSENCIAL,
-    PLANO_GRATUITO,
-    QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
+  PLANO_PROFISSIONAL,
+  QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO,
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Plano, SubPlano } from "@/types/plano";
-import { getMaiorSubplanoCompleto } from "@/utils/domain/plano/planoStructureUtils";
+import { getMaiorSubplanoProfissional } from "@/utils/domain/plano/planoStructureUtils";
 import { toast } from "@/utils/notifications/toast";
 import { Check, Loader2 } from "lucide-react";
 import type { MouseEvent } from "react";
@@ -28,7 +28,7 @@ interface PlanoCardProps {
   subPlanos: SubPlano[];
   isSelected: boolean;
   onSelect: (planoId: string) => void;
-  // Props para o plano Completo
+  // Props para o plano Profissional
   selectedSubPlanoId?: string | null;
   quantidadePersonalizada?: string;
   onSubPlanoSelect?: (subPlanoId: string | undefined) => void;
@@ -75,7 +75,7 @@ export const PlanoCard = ({
   hideActionButton = false,
   autoAdvanceOnSubPlanoSelect = true,
 }: PlanoCardProps) => {
-  const isCompleto = plano.slug === PLANO_COMPLETO;
+  const isProfissional = plano.slug === PLANO_PROFISSIONAL;
   const isGratuito = plano.slug === PLANO_GRATUITO;
   const isEssencial = plano.slug === PLANO_ESSENCIAL;
 
@@ -83,13 +83,13 @@ export const PlanoCard = ({
   const [personalizadoClicado, setPersonalizadoClicado] = useState(false);
   const [sliderExpandido, setSliderExpandido] = useState(false);
 
-  // Sub-planos do Completo
-  const subPlanosCompleto = isCompleto
+  // Sub-planos do Profissional
+  const subPlanosProfissional = isProfissional
     ? subPlanos.filter((s) => s.parent_id === plano.id)
     : [];
 
   // Ordenar sub-planos por franquia (menor para maior)
-  const subPlanosOrdenados = [...subPlanosCompleto].sort(
+  const subPlanosOrdenados = [...subPlanosProfissional].sort(
     (a, b) => a.franquia_cobrancas_mes - b.franquia_cobrancas_mes
   );
 
@@ -97,8 +97,8 @@ export const PlanoCard = ({
   const menorSubplano = subPlanosOrdenados[0] || null;
 
   // Obter maior sub-plano para calcular mínimo do slider
-  const maiorSubplano = isCompleto
-    ? getMaiorSubplanoCompleto([plano], subPlanosCompleto)
+  const maiorSubplano = isProfissional
+    ? getMaiorSubplanoProfissional([plano], subPlanosProfissional)
     : null;
   const quantidadeMinimaSlider = maiorSubplano
     ? maiorSubplano.franquia_cobrancas_mes + 1
@@ -115,7 +115,7 @@ export const PlanoCard = ({
   const quantidadeMinima = getQuantidadeMinima?.() ?? null;
   // Usar quantidadeMinimaSlider se disponível (maior sub-plano + 1), senão usar quantidadeMinima
   const quantidadeMinimaParaValidacao =
-    isCompleto && quantidadeMinimaSlider > 0
+    isProfissional && quantidadeMinimaSlider > 0
       ? quantidadeMinimaSlider
       : quantidadeMinima;
 
@@ -249,7 +249,7 @@ export const PlanoCard = ({
     switch (slug) {
       case PLANO_ESSENCIAL:
         return null;
-      case PLANO_COMPLETO:
+      case PLANO_PROFISSIONAL:
         return { text: "Mais Popular" };
       case PLANO_GRATUITO:
         return null;
@@ -262,7 +262,7 @@ export const PlanoCard = ({
 
   // Calcular preço dinâmico baseado na seleção (usando useMemo para evitar re-renders desnecessários)
   const precoExibido = useMemo(() => {
-    if (isCompleto) {
+    if (isProfissional) {
       // Se tem quantidade personalizada, só mostrar preço se for válida
       if (quantidadePersonalizada) {
         // Se a quantidade não é válida, retornar null para mostrar loader
@@ -278,7 +278,7 @@ export const PlanoCard = ({
       }
       // Se tem sub-plano selecionado, usar o preço dele
       if (selectedSubPlanoId) {
-        const subPlano = subPlanosCompleto.find(
+        const subPlano = subPlanosProfissional.find(
           (s) => s.id === selectedSubPlanoId
         );
         if (subPlano) {
@@ -289,7 +289,7 @@ export const PlanoCard = ({
       }
       // Caso contrário, mostrar o menor preço (a partir de)
       return Math.min(
-        ...(subPlanosCompleto.map((s) =>
+        ...(subPlanosProfissional.map((s) =>
           Number(s.promocao_ativa ? s.preco_promocional : s.preco)
         ) || [0])
       );
@@ -300,9 +300,9 @@ export const PlanoCard = ({
       ? plano.preco_promocional
       : plano.preco;
   }, [
-    isCompleto,
+    isProfissional,
     selectedSubPlanoId,
-    subPlanosCompleto,
+    subPlanosProfissional,
     precoCalculadoPreview,
     quantidadePersonalizada,
     isQuantidadeValida,
@@ -310,8 +310,8 @@ export const PlanoCard = ({
   ]);
 
   // Preço original (sem promoção) para exibir riscado quando houver promoção
-  const precoOriginal = isCompleto
-    ? Math.min(...(subPlanosCompleto.map((s) => Number(s.preco)) || [0]))
+  const precoOriginal = isProfissional
+    ? Math.min(...(subPlanosProfissional.map((s) => Number(s.preco)) || [0]))
     : plano.preco;
 
   // Função para obter o prefixo das features
@@ -322,7 +322,7 @@ export const PlanoCard = ({
     if (isEssencial) {
       return "Tudo do Gratuito, mais:";
     }
-    if (isCompleto) {
+    if (isProfissional) {
       return "Tudo do Essencial, mais:";
     }
     return "";
@@ -356,7 +356,7 @@ export const PlanoCard = ({
     if (isEssencial) {
       return "Testar 7 dias grátis";
     }
-    if (isCompleto) {
+    if (isProfissional) {
       return "Quero Automatizar";
     }
     return "Escolher Plano";
@@ -366,7 +366,7 @@ export const PlanoCard = ({
     <Card
       className={cn(
         "relative p-5 flex flex-col transition-all duration-300 h-full border-2 shadow-md hover:shadow-lg overflow-hidden",
-        isCompleto ? "border-blue-600" : "border-gray-200",
+        isProfissional ? "border-blue-600" : "border-gray-200",
         cardClassName
       )}
     >
@@ -413,7 +413,7 @@ export const PlanoCard = ({
             </>
           )}
 
-          {!isGratuito && !isCompleto && (
+          {!isGratuito && !isProfissional && (
             <>
               {plano.promocao_ativa && plano.preco_promocional ? (
                 <>
@@ -453,7 +453,7 @@ export const PlanoCard = ({
             </>
           )}
 
-          {isCompleto && (
+          {isProfissional && (
             <>
               {isCalculandoPreco ||
               (quantidadePersonalizada && precoExibido === null) ? (
@@ -497,8 +497,8 @@ export const PlanoCard = ({
           )}
         </div>
 
-        {/* 5. Seletor de Quantidade - Apenas para Plano Completo (ACIMA do botão) */}
-        {isCompleto && (
+        {/* 5. Seletor de Quantidade - Apenas para Plano Profissional (ACIMA do botão) */}
+        {isProfissional && (
           <div className="mb-4 space-y-2">
             {/* Pills para sub-planos pré-definidos - Lado a lado */}
             <div className="grid grid-cols-3 gap-2">
@@ -673,7 +673,7 @@ export const PlanoCard = ({
         )}
 
         {/* 4. Botão CTA */}
-        {isCompleto ? (
+        {isProfissional ? (
           <Button
             type="button"
             onClick={(e) => {
@@ -832,7 +832,7 @@ export const PlanoCard = ({
               ))}
             </ul>
 
-            {isCompleto && maiorSubplano && (
+            {isProfissional && maiorSubplano && (
               <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
                 <p className="text-xs text-gray-700 leading-relaxed">
                   <strong className="text-gray-900 font-semibold block mb-1">
@@ -843,7 +843,7 @@ export const PlanoCard = ({
                   <span className="font-bold text-blue-600">
                     até{" "}
                     {selectedSubPlanoId
-                      ? subPlanosCompleto.find(
+                      ? subPlanosProfissional.find(
                           (s) => s.id === selectedSubPlanoId
                         )?.franquia_cobrancas_mes
                       : quantidadePersonalizada && isQuantidadeValida

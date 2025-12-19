@@ -15,6 +15,7 @@ interface AssinaturaDashboardProps {
   cobrancas: any[];
   onPagarClick: (cobranca: any) => void;
   onCancelClick: () => void;
+  onRefresh?: () => void;
 }
 
 export function AssinaturaDashboard({
@@ -24,6 +25,7 @@ export function AssinaturaDashboard({
   cobrancas,
   onPagarClick,
   onCancelClick,
+  onRefresh,
 }: AssinaturaDashboardProps) {
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
@@ -32,6 +34,7 @@ export function AssinaturaDashboard({
         plano={plano}
         assinatura={assinatura}
         passageirosAtivos={metricas.passageirosAtivos}
+        onRefresh={onRefresh}
         onPagarClick={() => {
           // Find pending or open modal
           const pendente = cobrancas.find(
@@ -56,11 +59,11 @@ export function AssinaturaDashboard({
         </div>
 
         {/* Sidebar: Settings/Cancel */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className="lg:col-span-1 space-y-4">
+          <h3 className="text-sm font-semibold text-gray-900">
+            Sua Assinatura
+          </h3>
           <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">
-              Sua Assinatura
-            </h3>
             <div className="space-y-4 text-sm mb-6">
               <div className="flex justify-between items-center group">
                 <span className="text-gray-500 group-hover:text-gray-700 transition-colors">

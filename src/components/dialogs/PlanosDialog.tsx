@@ -13,13 +13,13 @@ import { PlanoCard } from "@/components/features/register/PlanoCard";
 
 // Components - UI
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -34,14 +34,14 @@ import { useSession } from "@/hooks/business/useSession";
 import { usuarioApi } from "@/services";
 
 // Utils
-import { PLANO_COMPLETO, PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
+import { PLANO_ESSENCIAL, PLANO_GRATUITO, PLANO_PROFISSIONAL } from "@/constants";
 import { getQuantidadeMinimaPersonalizada } from "@/utils/domain/plano/planoStructureUtils";
 import { getAssinaturaAtiva } from "@/utils/domain/plano/planoUtils";
 import { toast } from "@/utils/notifications/toast";
 
 // Mensagens de downgrade (Mantidas do original)
 const MENSAGENS_DOWNGRADE = {
-  [`${PLANO_COMPLETO}-${PLANO_ESSENCIAL}`]: {
+  [`${PLANO_PROFISSIONAL}-${PLANO_ESSENCIAL}`]: {
     titulo: "Confirmar mudança de plano?",
     mensagem:
       "Ao mudar para o Plano Essencial, você poderá ter Cobrança Automática para até um número ilimitado de passageiros. Atualmente você tem X Passageiros com Cobrança Automática. A mudança será feita agora e não há cobrança adicional.",
@@ -140,7 +140,7 @@ export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps
     const ordem = {
       [PLANO_GRATUITO]: 1,
       [PLANO_ESSENCIAL]: 2,
-      [PLANO_COMPLETO]: 3,
+      [PLANO_PROFISSIONAL]: 3,
     };
     const ordemAtual = ordem[planoAtualSlug] || 0;
     const ordemNova = ordem[novoPlanoSlug] || 0;
@@ -160,8 +160,8 @@ export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps
     if (!planoAtual) return false;
 
     if (planoAtual.parent_id) {
-      const planoCompletoBase = planos.find((p) => p.slug === PLANO_COMPLETO);
-      return planoCompletoBase?.id === planoId;
+      const planoProfissionalBase = planos.find((p) => p.slug === PLANO_PROFISSIONAL);
+      return planoProfissionalBase?.id === planoId;
     }
 
     return planoAtual.id === planoId;
@@ -178,7 +178,7 @@ export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps
     if (!planoAtual) return false;
 
     const slugPlanoAtual = planoAtual.parent?.slug || planoAtual.slug;
-    if (slugPlanoAtual === PLANO_COMPLETO && !planoAtual.parent_id) {
+    if (slugPlanoAtual === PLANO_PROFISSIONAL && !planoAtual.parent_id) {
       return false;
     }
 
@@ -195,7 +195,7 @@ export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps
     if (!planoAtual) return false;
 
     const slugPlanoAtual = planoAtual.parent?.slug || planoAtual.slug;
-    return slugPlanoAtual === PLANO_COMPLETO && !planoAtual.parent_id;
+    return slugPlanoAtual === PLANO_PROFISSIONAL && !planoAtual.parent_id;
   };
 
   // Handlers (Copy-paste adaptado)
@@ -258,17 +258,17 @@ export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps
     const planoAtualDoUsuario = assinaturaAtiva.planos;
     const slugPlanoAtual =
       planoAtualDoUsuario?.parent?.slug || planoAtualDoUsuario?.slug;
-    const estaNoCompleto = slugPlanoAtual === PLANO_COMPLETO;
+    const estaNoProfissional = slugPlanoAtual === PLANO_PROFISSIONAL;
 
-    const planoCompletoBase = planos.find((p) => p.slug === PLANO_COMPLETO);
-    if (planoCompletoBase) {
-      setSelectedPlanoId(planoCompletoBase.id);
+    const planoProfissionalBase = planos.find((p) => p.slug === PLANO_PROFISSIONAL);
+    if (planoProfissionalBase) {
+      setSelectedPlanoId(planoProfissionalBase.id);
     }
 
     const subPlanoNovo = subPlanos.find((s) => s.id === subPlanoId);
     if (!subPlanoNovo) return;
 
-    if (!estaNoCompleto) {
+    if (!estaNoProfissional) {
       handleTrocaSubplano(subPlanoId);
       return;
     }
@@ -276,7 +276,7 @@ export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps
     const planoAtualDoUsuarioParaSub = assinaturaAtiva.planos;
     const estaEmQuantidadePersonalizada =
       (planoAtualDoUsuarioParaSub?.parent?.slug ||
-        planoAtualDoUsuarioParaSub?.slug) === PLANO_COMPLETO &&
+        planoAtualDoUsuarioParaSub?.slug) === PLANO_PROFISSIONAL &&
       !planoAtualDoUsuarioParaSub?.parent_id;
 
     const precoAtual = Number(assinaturaAtiva.preco_aplicado || 0);
@@ -370,14 +370,14 @@ export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps
       const planoAtualDoUsuario = assinaturaAtiva?.planos;
       const slugPlanoAtual =
         planoAtualDoUsuario?.parent?.slug || planoAtualDoUsuario?.slug;
-      const estaNoCompleto = slugPlanoAtual === PLANO_COMPLETO;
+      const estaNoProfissional = slugPlanoAtual === PLANO_PROFISSIONAL;
 
       const isSubplano = subPlanos.some((s) => s.id === downgradeInfo.planoId);
       const planoAtual = assinaturaAtiva?.planos;
       const estaEmQuantidadePersonalizada =
-        estaNoCompleto &&
+        estaNoProfissional &&
         planoAtual &&
-        (planoAtual.parent?.slug || planoAtual.slug) === PLANO_COMPLETO &&
+        (planoAtual.parent?.slug || planoAtual.slug) === PLANO_PROFISSIONAL &&
         !planoAtual.parent_id;
 
       if (estaEmQuantidadePersonalizada && quantidadePersonalizada) {
@@ -391,7 +391,7 @@ export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps
             return;
           }
           
-          const result = await usuarioApi.criarAssinaturaCompletoPersonalizado({
+          const result = await usuarioApi.criarAssinaturaProfissionalPersonalizado({
             usuario_id: profile.id,
             quantidade,
           });
@@ -423,7 +423,7 @@ export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps
         }
       }
 
-      if (estaNoCompleto && isSubplano) {
+      if (estaNoProfissional && isSubplano) {
         const result = await usuarioApi.trocarSubplano({
           usuario_id: profile.id,
           subplano_id: downgradeInfo.planoId,
@@ -448,7 +448,7 @@ export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps
             valor: Number((result as any).preco_aplicado || (result as any).valor || 0),
           });
           setSelectedPlanoId(
-            planos.find((p) => p.slug === PLANO_COMPLETO)?.id || null
+            planos.find((p) => p.slug === PLANO_PROFISSIONAL)?.id || null
           );
         } else {
           await refreshProfile();
@@ -599,19 +599,19 @@ export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps
     const assinaturaAtiva = profile.assinaturas_usuarios.find(
       (a: any) => a.ativo === true
     );
-    const estaNoCompleto = assinaturaAtiva
+    const estaNoProfissional = assinaturaAtiva
       ? (() => {
           const planoAtualDoUsuario = assinaturaAtiva.planos;
           const slugPlanoAtual =
             planoAtualDoUsuario?.parent?.slug || planoAtualDoUsuario?.slug;
-          return slugPlanoAtual === PLANO_COMPLETO;
+          return slugPlanoAtual === PLANO_PROFISSIONAL;
         })()
       : false;
 
-    if (estaNoCompleto && assinaturaAtiva) {
+    if (estaNoProfissional && assinaturaAtiva) {
       const planoAtual = assinaturaAtiva.planos;
       const estaEmQuantidadePersonalizada =
-        (planoAtual?.parent?.slug || planoAtual?.slug) === PLANO_COMPLETO &&
+        (planoAtual?.parent?.slug || planoAtual?.slug) === PLANO_PROFISSIONAL &&
         !planoAtual?.parent_id;
 
       const quantidadeAtual = assinaturaAtiva.franquia_contratada_cobrancas || 0;
@@ -627,7 +627,7 @@ export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps
         if (quantidade < quantidadeAtual) {
           const mensagemDowngrade = MENSAGENS_DOWNGRADE["personalizado-reducao"];
           setDowngradeInfo({
-            planoId: planos.find((p) => p.slug === PLANO_COMPLETO)?.id || "",
+            planoId: planos.find((p) => p.slug === PLANO_PROFISSIONAL)?.id || "",
             titulo: mensagemDowngrade.titulo,
             mensagem: mensagemDowngrade.mensagem,
           });
@@ -640,7 +640,7 @@ export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps
     try {
       setLoading(true);
       setSelectedSubPlanoId(null);
-      const result = await usuarioApi.criarAssinaturaCompletoPersonalizado({
+      const result = await usuarioApi.criarAssinaturaProfissionalPersonalizado({
         usuario_id: profile.id,
         quantidade,
       });
@@ -664,7 +664,7 @@ export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps
             valor: Number((result as any).preco_aplicado || (result as any).valor || 0),
           });
           setSelectedPlanoId(
-            planos.find((p) => p.slug === PLANO_COMPLETO)?.id || null
+            planos.find((p) => p.slug === PLANO_PROFISSIONAL)?.id || null
           );
       } else {
         await refreshProfile();
@@ -703,7 +703,7 @@ export default function PlanosDialog({ isOpen, onOpenChange }: PlanosDialogProps
                   subPlanos={subPlanos}
                   isSelected={selectedPlanoId === plano.id}
                   onSelect={() => handlePlanoSelect(plano.id)}
-                  // Props específicas para Plano Completo (Customizável)
+                  // Props específicas para Plano Profissional (Customizável)
                   isSubPlanoAtivo={isSubPlanoAtivo}
                   onSubPlanoSelect={(id) => id ? handleSubPlanoSelect(id) : setSelectedSubPlanoId(null)}
                   selectedSubPlanoId={selectedSubPlanoId}

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { FEATURE_LIMITE_PASSAGEIROS, PLANO_COMPLETO, PLANO_ESSENCIAL } from "@/constants";
+import { FEATURE_LIMITE_PASSAGEIROS, PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   ChevronRight,
@@ -22,8 +22,8 @@ export function SubscriptionSettings({
 }: SubscriptionSettingsProps) {
   const { openPlanUpgradeDialog } = useLayout();
 
-  const isComplete =
-    plano?.slug === PLANO_COMPLETO || plano?.parent?.slug === PLANO_COMPLETO;
+  const isProfissional =
+    plano?.slug === PLANO_PROFISSIONAL || plano?.parent?.slug === PLANO_PROFISSIONAL;
 
   return (
     <>
@@ -37,10 +37,10 @@ export function SubscriptionSettings({
           variant="ghost"
           className="w-full justify-between items-center h-auto py-3 px-2 hover:bg-gray-50 rounded-lg group whitespace-normal"
           onClick={() =>
-            isComplete
+            isProfissional
               ? openPlanUpgradeDialog({
                   feature: "automacao",
-                  defaultTab: PLANO_COMPLETO,
+                  defaultTab: PLANO_PROFISSIONAL,
                   targetPassengerCount: passageirosAtivos,
                 })
               : openPlanUpgradeDialog({
@@ -53,7 +53,7 @@ export function SubscriptionSettings({
         >
           <div className="flex items-start gap-3 text-left">
             <div className="mt-0.5">
-              {isComplete ? (
+              {isProfissional ? (
                 <Zap className="w-5 h-5 text-amber-500" />
               ) : (
                 <RefreshCw className="w-5 h-5 text-blue-500" />
@@ -61,10 +61,10 @@ export function SubscriptionSettings({
             </div>
             <div className="flex flex-col gap-0.5">
               <span className="text-sm font-medium text-gray-900 leading-none">
-                {isComplete ? "Aumentar Limites" : "Alterar Plano"}
+                {isProfissional ? "Aumentar Limite" : "Alterar Plano"}
               </span>
               <span className="text-xs text-gray-500 font-normal">
-                {isComplete
+                {isProfissional
                   ? "Aumente sua franquia de cobranças"
                   : "Faça upgrade para acessar mais recursos"}
               </span>

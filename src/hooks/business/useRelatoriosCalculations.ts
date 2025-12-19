@@ -378,7 +378,7 @@ interface UseRelatoriosCalculationsProps {
     const assinatura = profile?.assinaturas_usuarios?.[0];
     const limiteAutomatica =
       assinatura?.franquia_contratada_cobrancas ||
-      profilePlano?.planoCompleto?.franquia_contratada_cobrancas ||
+      profilePlano?.planoProfissional?.franquia_contratada_cobrancas ||
       50;
 
     return {

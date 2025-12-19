@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { PLANO_COMPLETO, PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
+import { PLANO_ESSENCIAL, PLANO_GRATUITO, PLANO_PROFISSIONAL } from "@/constants";
 import { cn } from "@/lib/utils";
 import { pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -31,7 +31,7 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
       return "Automatize sua rotina ⚡";
     }
     
-    if (slug === PLANO_COMPLETO) {
+    if (slug === PLANO_PROFISSIONAL) {
       return "Máxima eficiência 🎯";
     }
     
@@ -49,7 +49,7 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
       return "Deixe a cobrança com a gente! Recebimento automático e baixa instantânea.";
     }
     
-    if (slug === PLANO_COMPLETO) {
+    if (slug === PLANO_PROFISSIONAL) {
       return "Automação total: cobranças, notificações e muito mais tempo livre para você.";
     }
     
@@ -67,7 +67,7 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
       return "Quero automação total →";
     }
     
-    if (slug === PLANO_COMPLETO) {
+    if (slug === PLANO_PROFISSIONAL) {
       return "Ver todos benefícios";
     }
     

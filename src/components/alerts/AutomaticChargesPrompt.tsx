@@ -33,7 +33,7 @@ export function AutomaticChargesPrompt({
       openLimiteFranquiaDialog({
         title: "Cobrança Automática",
         description:
-          "Automatize o envio de cobranças e reduza a inadimplência com o Plano Completo.",
+          "Automatize o envio de cobranças e reduza a inadimplência com o Plano Profissional.",
         hideLimitInfo: true,
       });
     }
@@ -61,7 +61,7 @@ export function AutomaticChargesPrompt({
             openLimiteFranquiaDialog({
               title: "Cobrança Automática",
               description:
-                "Automatize o envio de cobranças e reduza a inadimplência com o Plano Completo.",
+                "Automatize o envio de cobranças e reduza a inadimplência com o Plano Profissional.",
               hideLimitInfo: true,
             })
           }

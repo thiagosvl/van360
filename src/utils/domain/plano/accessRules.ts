@@ -1,14 +1,14 @@
 import {
-  FEATURE_COBRANCA_AUTOMATICA,
-  FEATURE_GASTOS,
-  FEATURE_NOTIFICACOES,
-  FEATURE_PRE_PASSAGEIRO,
-  FEATURE_RELATORIOS,
-  PLANO_COMPLETO,
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
-  ROLE_ADMIN,
-  ROLE_MOTORISTA
+    FEATURE_COBRANCA_AUTOMATICA,
+    FEATURE_GASTOS,
+    FEATURE_NOTIFICACOES,
+    FEATURE_PRE_PASSAGEIRO,
+    FEATURE_RELATORIOS,
+    PLANO_ESSENCIAL,
+    PLANO_GRATUITO,
+    PLANO_PROFISSIONAL,
+    ROLE_ADMIN,
+    ROLE_MOTORISTA
 } from "@/constants";
 import { extractPlanoData, getPlanoUsuario } from "./planoUtils";
 
@@ -64,7 +64,7 @@ export function hasPageAccess(
 const PLAN_FEATURES: Record<string, string[]> = {
   [PLANO_GRATUITO]: [FEATURE_PRE_PASSAGEIRO],
   [PLANO_ESSENCIAL]: [FEATURE_PRE_PASSAGEIRO, FEATURE_GASTOS, FEATURE_RELATORIOS],
-  [PLANO_COMPLETO]: [
+  [PLANO_PROFISSIONAL]: [
     FEATURE_PRE_PASSAGEIRO, 
     FEATURE_GASTOS, 
     FEATURE_RELATORIOS, 
@@ -98,7 +98,7 @@ export function canUsePrePassageiro(planoData: PlanoData | null): boolean {
  * Valida se o usuário tem acesso à funcionalidade de cobrança automática
  * 
  * Regras:
- * - Plano Completo ativo
+ * - Plano Profissional ativo
  * 
  * @param planoData - Dados do plano do usuário
  * @returns true se tem acesso, false caso contrário
@@ -111,7 +111,7 @@ export function canUseCobrancaAutomatica(planoData: PlanoData | null): boolean {
  * Valida se o usuário tem acesso à funcionalidade de notificações automáticas
  * 
  * Regras:
- * - Plano Completo ativo OU Plano Essencial ativo/trial válido
+ * - Plano Profissional ativo OU Plano Essencial ativo/trial válido
  * 
  * @param planoData - Dados do plano do usuário
  * @returns true se tem acesso, false caso contrário
@@ -134,7 +134,7 @@ export function canViewRelatorios(planoData: PlanoData | null): boolean {
  * Valida se o usuário tem acesso à funcionalidade de gastos
  * 
  * Regras:
- * - Plano Essencial válido OU Plano Completo válido
+ * - Plano Essencial válido OU Plano Profissional válido
  * 
  * @param planoData - Dados do plano do usuário
  * @returns true se tem acesso, false caso contrário

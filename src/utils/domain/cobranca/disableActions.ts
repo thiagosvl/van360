@@ -24,7 +24,7 @@ export const disableRegistrarPagamento = (cobranca: Cobranca): boolean => {
  * @returns true se o plano permite enviar notificações
  */
 export const planoPermiteEnviarNotificacao = (
-  plano?: { isCompletePlan?: boolean; isValidPlan?: boolean; isActive?: boolean; isEssentialPlan?: boolean; isValidTrial?: boolean; isTrial?: boolean } | null
+  plano?: { IsProfissionalPlan?: boolean; isValidPlan?: boolean; isActive?: boolean; isEssentialPlan?: boolean; isValidTrial?: boolean; isTrial?: boolean } | null
 ): boolean => {
   return canUseNotificacoes(plano as any);
 };

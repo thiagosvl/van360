@@ -19,7 +19,7 @@ export function usePlanLimits({ userUid, profile: profileProp, plano: planoProp,
   // --- Passenger Limits ---
   const passengerLimit = useMemo(() => {
     return profile?.assinaturas_usuarios?.[0]?.planos?.limite_passageiros ?? 
-           plano?.planoCompleto?.limite_passageiros ?? 
+           plano?.planoProfissional?.limite_passageiros ?? 
            null;
   }, [profile, plano]);
 
@@ -28,20 +28,11 @@ export function usePlanLimits({ userUid, profile: profileProp, plano: planoProp,
     return Math.max(0, Number(passengerLimit) - (currentPassengerCount || 0));
   }, [passengerLimit, currentPassengerCount]);
 
-  // Limit logic: Only Free Plan has strict passenger registration limits.
-  // Paid plans (Essential/Complete/Franchise) might have billing limits (Franchise), but not registration limits.
-  // We explicitly check isFreePlan to avoid cases where the DB might have "0" or incomplete data for paid plans.
   const hasPassengerLimit = (plano?.isFreePlan ?? true) && passengerLimit !== null;
   const isPassengerLimitReached = hasPassengerLimit && (remainingPassengers !== null && remainingPassengers <= 0);
 
-  // --- Franchise (Billing) Limits ---
-  // We need to fetch count if not provided, but usually this is used in specific contexts.
-  // For now, we will include the logic from useValidarFranquia which fetches its own count 
-  // ONLY if we need to check franchise.
-  
   const usuarioId = profile?.id;
   
-  // Always fetch automated billing count if we have a user ID, to provide this data readily
   const { data: billingCountData } = usePassageiroContagem(
     usuarioId,
     { enviar_cobranca_automatica: "true" },

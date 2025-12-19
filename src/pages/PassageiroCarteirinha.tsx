@@ -142,7 +142,7 @@ export default function PassageiroCarteirinha() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { user, loading: isSessionLoading } = useSession();
   const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
-  const planoCompletoAtivo = canUseCobrancaAutomatica(plano);
+  const planoProfissionalAtivo = canUseCobrancaAutomatica(plano);
 
   // Hook para validar franquia (dados já carregados)
   // Passar user?.id (auth_uid) e profile para evitar chamadas duplicadas
@@ -410,9 +410,26 @@ export default function PassageiroCarteirinha() {
              closeConfirmationDialog();
          } catch(error) {
              closeConfirmationDialog();
+             // Rethrow para ser capturado pelo CarteirinhaInfo se for erro de limite
+             throw error; 
          }
        }
     });
+  };
+
+  const handleReactivateWithoutAutomation = async () => {
+    if (!passageiro || !passageiro_id) return;
+    try {
+        await updatePassageiro.mutateAsync({
+            id: passageiro_id,
+            data: { ativo: true, enviar_cobranca_automatica: false }
+        });
+        toast.success("passageiro.reativado_sem_automacao", {
+             description: "Passageiro reativado com sucesso. A cobrança automática foi desligada para respeitar o limite do plano." 
+        });
+    } catch (error) {
+        toast.error("Erro ao reativar passageiro.");
+    }
   };
 
   const handleToggleLembretes = useCallback(
@@ -440,7 +457,7 @@ export default function PassageiroCarteirinha() {
              openLimiteFranquiaDialog({
               targetPassengerId: passageiro_id,
               title: "Cobrança Automática",
-              description: "A Cobrança Automática envia as faturas e lembretes sozinhas. Automatize sua rotina com o Plano Completo.",
+              description: "A Cobrança Automática envia as faturas e lembretes sozinhas. Automatize sua rotina com o Plano Profissional.",
               hideLimitInfo: true,
             });
           } else {
@@ -661,7 +678,7 @@ export default function PassageiroCarteirinha() {
                       cobrancas={cobrancas}
                       passageiro={passageiro}
                       plano={plano}
-                      planoCompletoAtivo={!!planoCompletoAtivo}
+                      planoProfissionalAtivo={!!planoProfissionalAtivo}
                       yearFilter={yearFilter}
                       availableYears={availableYears}
                       mostrarTodasCobrancas={mostrarTodasCobrancas}

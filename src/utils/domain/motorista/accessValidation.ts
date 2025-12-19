@@ -5,7 +5,7 @@ import { getPlanoUsuario, hasPrePassageiroAccess } from "@/utils/domain/plano/pl
  * baseado no plano e status da assinatura.
  * 
  * Regras:
- * - Pode usar: Qualquer plano ativo (Gratuito, Essencial trial/ativo, Completo ativo)
+ * - Pode usar: Qualquer plano ativo (Gratuito, Essencial trial/ativo, Profissional ativo)
  * - Não pode usar: Apenas se a assinatura não estiver ativa (suspensa ou cancelada)
  * 
  * Nota: A funcionalidade está disponível para todos os planos ativos para maximizar o uso

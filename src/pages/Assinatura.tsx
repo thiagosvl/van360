@@ -80,11 +80,11 @@ export default function Assinatura() {
     // Calcular limitePassageiros usando informações do hook useProfile:
     // - Gratuito: sempre tem limite
     // - Essencial: sempre ilimitado (trial e ativo) - estratégia de lock-in
-    // - Completo: sempre ilimitado
+    // - Profissional: sempre ilimitado
     let limitePassageiros = planoData.limite_passageiros;
     
-    if (plano.isCompletePlan) {
-      // Completo sempre tem passageiros ilimitados
+    if (plano.IsProfissionalPlan) {
+      // Profissional sempre tem passageiros ilimitados
       limitePassageiros = null;
     } else if (plano.isEssentialPlan) {
       // Essencial sempre tem passageiros ilimitados (trial e ativo)
@@ -95,7 +95,7 @@ export default function Assinatura() {
     return {
       assinatura: assinatura,
       plano: planoData,
-      cobrancas: cobrancasData,
+      cobrancas: cobrancasData as any[], // Explicit cast to any[] to fix 'find' and 'map' errors downstream
       passageirosAtivos: 0, // Será atualizado abaixo
       limitePassageiros,
       franquiaContratada: assinatura.franquia_contratada_cobrancas,
@@ -103,7 +103,7 @@ export default function Assinatura() {
     };
   }, [profile, plano, cobrancasData]);
 
-  // Só buscar contagem de cobranças automáticas se for plano Completo
+  // Só buscar contagem de cobranças automáticas se for plano Profissional
   const { data: countPassageirosEnviarCobrancaAutomatica = { count: 0 }, refetch: refetchCobrancasAutomaticas } = usePassageiroContagem(
     profile?.id,
     { enviar_cobranca_automatica: "true" },
@@ -179,7 +179,7 @@ export default function Assinatura() {
     const planoAtual = dataWithCounts.plano as any;
     const planoNome = planoAtual.parent?.nome ?? planoAtual.nome;
 
-    if (plano.isCompletePlan) {
+    if (plano.IsProfissionalPlan) {
       return "Ao cancelar, você perderá funcionaliades avançadas, cobranças automáticas e acesso a relatórios detalhados. Você será migrado para o Plano Gratuito ao final do período contratado.";
     } else if (plano.isEssentialPlan) {
       return "Ao cancelar, você perderá passageiros ilimitados, envio de lembretes de cobrança e suporte via WhatsApp. Você será migrado para o Plano Gratuito ao final do período contratado.";
@@ -245,6 +245,7 @@ export default function Assinatura() {
                     cobrancas={dataWithCounts.cobrancas}
                     onPagarClick={handlePagarClick}
                     onCancelClick={handleCancelSubscriptionClick}
+                    onRefresh={pullToRefreshReload}
                 />
             )}
         </div>

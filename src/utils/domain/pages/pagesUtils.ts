@@ -1,4 +1,4 @@
-import { PLANO_COMPLETO, PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
+import { PLANO_ESSENCIAL, PLANO_GRATUITO, PLANO_PROFISSIONAL } from "@/constants";
 import { hasPageAccess } from "@/utils/domain/plano/accessRules";
 import { Car, ChartArea, CreditCard, GraduationCap, LayoutDashboard, Receipt, Users, Wallet } from "lucide-react";
 
@@ -32,49 +32,49 @@ const pagesItems = [
         title: "Início",
         href: "/inicio",
         icon: LayoutDashboard,
-        availablePlans: [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_COMPLETO]
+        availablePlans: [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_PROFISSIONAL]
     },
     {
         title: "Cobranças",
         href: "/cobrancas",
         icon: CreditCard,
-        availablePlans: [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_COMPLETO],
+        availablePlans: [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_PROFISSIONAL],
     },
     {
         title: "Passageiros",
         href: "/passageiros",
         icon: Users,
-        availablePlans: [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_COMPLETO],
+        availablePlans: [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_PROFISSIONAL],
     },
     {
         title: "Escolas",
         href: "/escolas",
         icon: GraduationCap,
-        availablePlans: [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_COMPLETO],
+        availablePlans: [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_PROFISSIONAL],
     },
     {
         title: "Veículos",
         href: "/veiculos",
         icon: Car,
-        availablePlans: [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_COMPLETO],
+        availablePlans: [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_PROFISSIONAL],
     },
     {
         title: "Gastos",
         href: "/gastos",
         icon: Wallet,
-        availablePlans: [PLANO_ESSENCIAL, PLANO_COMPLETO],
+        availablePlans: [PLANO_ESSENCIAL, PLANO_PROFISSIONAL],
     },
     {
         title: "Relatórios",
         href: "/relatorios",
         icon: ChartArea,
-        availablePlans: [PLANO_ESSENCIAL, PLANO_COMPLETO],
+        availablePlans: [PLANO_ESSENCIAL, PLANO_PROFISSIONAL],
     },
     {
         title: "Minha Assinatura",
         href: "/assinatura",
         icon: Receipt,
-        availablePlans: [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_COMPLETO],
+        availablePlans: [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_PROFISSIONAL],
     },
 ];
 

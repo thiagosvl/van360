@@ -8,7 +8,7 @@ import {
     DialogTitle
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_GASTOS, FEATURE_LIMITE_FRANQUIA, FEATURE_LIMITE_PASSAGEIROS, FEATURE_NOTIFICACOES, FEATURE_RELATORIOS, PLANO_COMPLETO, PLANO_ESSENCIAL } from "@/constants";
+import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_GASTOS, FEATURE_LIMITE_FRANQUIA, FEATURE_LIMITE_PASSAGEIROS, FEATURE_NOTIFICACOES, FEATURE_RELATORIOS, PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks/api/usePlanos";
 import { usePlanUpgrade } from "@/hooks/business/usePlanUpgrade";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -23,7 +23,7 @@ import PagamentoAssinaturaDialog from "./PagamentoAssinaturaDialog";
 export interface PlanUpgradeDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    defaultTab?: "essencial" | "completo";
+    defaultTab?: "essencial" | "profissional";
     targetPassengerCount?: number; 
     onSuccess?: () => void;
     // Context Feature Flag
@@ -70,18 +70,30 @@ export function PlanUpgradeDialog({
     // Dados do Usuário
     const planoAtualSlug = plano?.slug;
     const isEssencial = planoAtualSlug === PLANO_ESSENCIAL;
-    const isProfissional = planoAtualSlug === PLANO_COMPLETO || plano?.planoCompleto?.parent?.slug === PLANO_COMPLETO;
+    const isProfissional = planoAtualSlug === PLANO_PROFISSIONAL || plano?.planoProfissional?.parent?.slug === PLANO_PROFISSIONAL;
     
     // Se o usuário já é Essencial ou Profissional, escondemos a navegação de tabs e forçamos Profissional
     const hideTabs = isEssencial || isProfissional;
 
-    // Definição de passageiros ativos
-    const passageirosAtivos = targetPassengerCount ?? (profile?.estatisticas?.total_passageiros || 0);
+    // Extrair franquia atual para base da lógica de target
+    const assinatura = profile?.assinaturas_usuarios?.[0];
+    const franquiaAtual = assinatura?.franquia_cobrancas_mes || assinatura?.franquia_contratada_cobrancas || 0;
+
+    // Definição de passageiros ativos e alvo
+    const passageirosAtivos = profile?.estatisticas?.total_passageiros || 0;
+    
+    // Safety: Garante que sempre buscaremos uma opção MAIOR que a atual se for Profissional
+    // Se target não for passado, ou for menor/igual ao limite, forçamos o próximo degrau
+    let effectiveTarget = targetPassengerCount ?? (passageirosAtivos > franquiaAtual ? passageirosAtivos : franquiaAtual + 1);
+    
+    if (isProfissional && effectiveTarget <= franquiaAtual) {
+        effectiveTarget = franquiaAtual + 1;
+    }
 
     // Hook de Franquia
     const { options: franchiseOptions, calculateProrata } = useUpgradeFranquia({
-        franquiaContratada: profile?.assinatura?.franquia_cobrancas_mes || 0,
-        totalPassageiros: passageirosAtivos,
+        franquiaContratada: franquiaAtual,
+        totalPassageiros: effectiveTarget,
         valorAtualMensal: 0, // Placeholder
         dataVencimento: profile?.assinatura?.data_vencimento
     });
@@ -90,7 +102,7 @@ export function PlanUpgradeDialog({
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     const planoEssencialData = planos.find((p: any) => p.slug === PLANO_ESSENCIAL);
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    const planoCompletoData = planos.find((p: any) => p.slug === PLANO_COMPLETO);
+    const planoProfissionalData = planos.find((p: any) => p.slug === PLANO_PROFISSIONAL);
 
     // Sincronizar Tab padrão
     useEffect(() => {
@@ -99,7 +111,7 @@ export function PlanUpgradeDialog({
             setIsPaymentVerified(false);
             
             if (isEssencial || isProfissional) {
-                setActiveTab("completo");
+                setActiveTab("profissional");
             } else {
                 setActiveTab(defaultTab);
             }
@@ -110,40 +122,24 @@ export function PlanUpgradeDialog({
     // Filtrar opções que sejam menores que a quantidade atual de passageiros
     const availableFranchiseOptions = useMemo(() => {
         if (!franchiseOptions) return [];
-        // Fix: Access the subscription from the array, as 'assinatura' property does not exist on the raw profile object from useProfile
-        const assinatura = profile?.assinaturas_usuarios?.[0];
-        const franquiaAtual = assinatura?.franquia_cobrancas_mes || assinatura?.franquia_contratada_cobrancas || 0;
-
-        console.log("DEBUG: PlanUpgradeDialog Filter", {
-            isProfissional,
-            planoAtualSlug,
-            franquiaAtual,
-            franquia_mes: assinatura?.franquia_cobrancas_mes,
-            franquia_contratada: assinatura?.franquia_contratada_cobrancas,
-            passageirosAtivos,
-            franchiseOptionsLength: franchiseOptions.length
-        });
 
         return franchiseOptions.filter(opt => {
             const quantidade = opt.quantidade || 0;
             
             // 1. Deve suportar os passageiros ativos atuais (Requisito Básico)
             if (quantidade < passageirosAtivos) {
-                console.log(`DEBUG: Filtered OUT (Active Users) - Opt: ${quantidade}, Active: ${passageirosAtivos}`);
                 return false;
             }
 
             // 2. Se já for Profissional, só mostrar opções MAIORES que a franquia atual (Upgrade)
             // Isso evita erro no backend "Esta operação não é um upgrade" e oculta a opção atual
             if (isProfissional && quantidade <= franquiaAtual) {
-                console.log(`DEBUG: Filtered OUT (Not Upgrade) - Opt: ${quantidade}, Current: ${franquiaAtual}`);
                 return false;
             }
 
-            console.log(`DEBUG: Kept Option - Opt: ${quantidade}`);
             return true;
         });
-    }, [franchiseOptions, passageirosAtivos, isProfissional, profile?.assinatura?.franquia_cobrancas_mes, planoAtualSlug]);
+    }, [franchiseOptions, passageirosAtivos, isProfissional, franquiaAtual]);
 
 
 
@@ -178,6 +174,7 @@ export function PlanUpgradeDialog({
     const calcularPrecoPreview = useCalcularPrecoPreview();
 
     useEffect(() => {
+        if (!open) return;
         if (!currentTierOption) return;
 
         // Verifica se é um plano oficial (existe na lista de bases ou subs)
@@ -194,7 +191,7 @@ export function PlanUpgradeDialog({
         } else {
             setCustomPrice(null);
         }
-    }, [currentTierOption, planos]);
+    }, [currentTierOption, planos, open]);
     
     // --- Lógica de Texto Dinâmico (Alta Conversão) ---
     // Mapeia qual plano resolve cada dor específica
@@ -207,7 +204,7 @@ export function PlanUpgradeDialog({
              case FEATURE_COBRANCA_AUTOMATICA:
              case FEATURE_NOTIFICACOES:
              case FEATURE_LIMITE_FRANQUIA:
-                 return "completo";
+                 return "profissional";
              default:
                  return defaultTab;
         }
@@ -240,8 +237,8 @@ export function PlanUpgradeDialog({
             desc: "Cadastros ilimitados e controle de gastos básico."
         },
         profissional: {
-            title: "Você só dirige",
-            desc: "Cobranças e recibos automáticos, zero dor de cabeça."
+            title: isProfissional ? "Aumente sua Capacidade" : "Você só dirige",
+            desc: isProfissional ? "Expanda sua franquia para automatizar mais passageiros." : "Cobranças e recibos automáticos, zero dor de cabeça."
         }
     };
 
@@ -254,7 +251,7 @@ export function PlanUpgradeDialog({
             };
         }
         return activeTab === "essencial" ? genericContent.essencial : genericContent.profissional;
-    }, [activeTab, featureTargetPlan, specificContent]);
+    }, [activeTab, featureTargetPlan, specificContent, genericContent]);
 
     // Cores Dinâmicas do Header
     const requestHeaderStyle = activeTab === "essencial" 
@@ -271,7 +268,7 @@ export function PlanUpgradeDialog({
         // Usa a opção selecionada visualmente
         const targetPlan = currentTierOption;
         // Se for custom, o ID injeatado é fictício ("custom_enterprise"), então usamos o ID do plano base
-        const targetId = targetPlan?.isCustom ? planoCompletoData?.id : (targetPlan?.id || planoCompletoData?.id);
+        const targetId = targetPlan?.isCustom ? planoProfissionalData?.id : (targetPlan?.id || planoProfissionalData?.id);
         
         if (targetId) {
              handleUpgradeProfissional(targetId, targetPlan);
@@ -317,10 +314,10 @@ export function PlanUpgradeDialog({
                                     Plano Essencial
                                 </TabsTrigger>
                                 <TabsTrigger 
-                                    value="completo"
+                                    value="profissional"
                                     className="h-full rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-700 text-gray-500 font-semibold transition-all shadow-none"
                                 >
-                                    Plano Completo
+                                    Plano Profissional
                                 </TabsTrigger>
                             </TabsList>
                         )}
@@ -369,7 +366,7 @@ export function PlanUpgradeDialog({
                                         <span>Cobrança Manual</span>
                                     </div>
                                     <button 
-                                        onClick={() => setActiveTab("completo")}
+                                        onClick={() => setActiveTab("profissional")}
                                         className="text-xs font-bold text-purple-600 hover:text-purple-700 hover:underline flex items-center gap-1"
                                     >
                                         Quero 100% Automático
@@ -382,7 +379,7 @@ export function PlanUpgradeDialog({
                             </TabsContent>
 
                             {/* Conteúdo Profissional */}
-                            <TabsContent value="completo" className="p-6 space-y-5 m-0 focus-visible:ring-0 outline-none">
+                            <TabsContent value="profissional" className="p-6 space-y-5 m-0 focus-visible:ring-0 outline-none">
                                  <div className="text-center space-y-1 mb-4">
                                     <div className="inline-flex items-center gap-2 bg-purple-50 px-3 py-1 rounded-full text-purple-700 text-[10px] font-bold uppercase tracking-wider mb-2">
                                         <TrendingUp className="w-3 h-3" />
@@ -421,7 +418,7 @@ export function PlanUpgradeDialog({
                                                         return (
                                                             <div className="flex flex-col items-center">
                                                                 {hasPromo && (
-                                                                    <div className="self-center text-xs text-gray-400 line-through font-normal mb-[-2px]">
+                                                                    <div className="self-center pb-1 text-xs text-gray-400 line-through font-normal mb-[-2px]">
                                                                         De {formatCurrency(Number(officialPlan.preco))}
                                                                     </div>
                                                                 )}
@@ -439,28 +436,33 @@ export function PlanUpgradeDialog({
                                             </h3>
                                             {/* Tier Selector Moved Here */}
                                             {availableFranchiseOptions && availableFranchiseOptions.length > 0 && (
-                                                <div className="flex flex-wrap justify-center gap-2 mt-3 mb-1">
-                                                    {availableFranchiseOptions.sort((a,b) => (a?.quantidade||0) - (b?.quantidade||0)).map((opt) => (
-                                                        <button
-                                                            key={opt?.id}
-                                                            onClick={() => {
-                                                                if (opt?.id) setSelectedTierId(opt.id);
-                                                            }}
-                                                            className={cn(
-                                                                "px-3 py-1 rounded-full text-[10px] font-bold border transition-all",
-                                                                opt?.id === currentTierOption?.id
-                                                                    ? "bg-purple-600 border-purple-600 text-white shadow-sm"
-                                                                    : "bg-white border-gray-200 text-gray-400 hover:border-gray-300"
-                                                            )}
-                                                        >
-                                                            {opt?.quantidade} Vagas
-                                                        </button>
-                                                    ))}
+                                                <div className="flex flex-col items-center mt-4 mb-2">
+                                                    <p className="text-xs mt-3 font-semibold text-gray-500 tracking-wide mb-2.5">
+                                                        Quantos passageiros no automático?
+                                                    </p>
+                                                    <div className="flex flex-wrap justify-center gap-2">
+                                                        {availableFranchiseOptions.sort((a,b) => (a?.quantidade||0) - (b?.quantidade||0)).map((opt) => (
+                                                            <button
+                                                                key={opt?.id}
+                                                                onClick={() => {
+                                                                    if (opt?.id) setSelectedTierId(opt.id);
+                                                                }}
+                                                                className={cn(
+                                                                    "px-3 py-2 rounded-lg text-xs font-bold border transition-all min-w-[60px]",
+                                                                    opt?.id === currentTierOption?.id
+                                                                        ? "bg-purple-600 border-purple-600 text-white shadow-md scale-105"
+                                                                        : "bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                                                                )}
+                                                            >
+                                                                {opt?.quantidade} Passageiros
+                                                            </button>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             )}
                                             {(!availableFranchiseOptions || availableFranchiseOptions.length === 0) && (
-                                                 <p className="text-sm text-purple-600 font-medium mt-1">
-                                                    {currentTierOption?.quantidade} Vagas de Automação
+                                                <p className="text-sm text-purple-600 font-medium mt-1">
+                                                    {currentTierOption?.quantidade} Passageiros no Automático
                                                 </p>
                                             )}
                                         </>
@@ -481,12 +483,13 @@ export function PlanUpgradeDialog({
                                     </h4>
                                     
                                     <div className="space-y-2.5">
-                                        <BenefitItem text="Tudo do Plano Essencial" highlighted />
+                                        <BenefitItem text="Passageiros ILIMITADOS (Cadastro)" highlighted />
                                         <div className="h-px bg-purple-100 my-1"/>
                                         <BenefitItem 
                                             text={`Até ${currentTierOption?.quantidade || 'X'} Passageiros no Automático`} 
                                             highlighted 
                                         />
+                                        <BenefitItem text="Tudo do Plano Essencial" />
                                         <BenefitItem text="Cobrança Automática (Zap)" />
                                         <BenefitItem text="Baixas e Notificações Auto." />
                                         <BenefitItem text="Envio de Recibos no Pix" />
@@ -539,7 +542,7 @@ export function PlanUpgradeDialog({
                 planName={activeTab === "essencial" ? "Plano Essencial" : "Plano Profissional"}
                 benefits={activeTab === "essencial" 
                     ? (planoEssencialData?.beneficios || ["Passageiros Ilimitados", "Suporte WhatsApp"]) 
-                    : (planoCompletoData?.beneficios || ["Cobrança Automática", "Relatórios Financeiros", "Gestão de Gastos"])}
+                    : (planoProfissionalData?.beneficios || ["Cobrança Automática", "Relatórios Financeiros", "Gestão de Gastos"])}
             />
 
             {pagamentoDialog && (
@@ -551,7 +554,7 @@ export function PlanUpgradeDialog({
                     nomePlano={pagamentoDialog.nomePlano}
                     quantidadePassageiros={pagamentoDialog.franquia}
                     usuarioId={user?.id}
-                    context={activeTab === "completo" ? "upgrade" : undefined}
+                    context={activeTab === "profissional" ? "upgrade" : undefined}
                     onPaymentVerified={() => setIsPaymentVerified(true)}
                     onPaymentSuccess={handleClosePayment}
                     initialData={pagamentoDialog.initialData}

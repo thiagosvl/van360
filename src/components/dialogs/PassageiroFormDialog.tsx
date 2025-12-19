@@ -1,3 +1,4 @@
+import { PlanUpgradeDialog } from "@/components/dialogs/PlanUpgradeDialog";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
-import { useLayout } from "@/contexts/LayoutContext";
+import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_LIMITE_FRANQUIA } from "@/constants";
 import {
   useBuscarResponsavel,
   useCreatePassageiro,
@@ -28,7 +29,7 @@ import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quic
 import { phoneMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { Loader2, User, X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { PassageiroFormDadosCadastrais } from "../features/passageiro/form/PassageiroFormDadosCadastrais";
 import { PassageiroFormEndereco } from "../features/passageiro/form/PassageiroFormEndereco";
 import { PassageiroFormFinanceiro } from "../features/passageiro/form/PassageiroFormFinanceiro";
@@ -39,13 +40,13 @@ type PlanoUsuario = {
   status: string;
   trial_end_at: string | null;
   ativo: boolean;
-  planoCompleto: any;
+  planoProfissional: any;
   isTrial: boolean;
   isValidTrial: boolean;
   isActive: boolean;
   isValidPlan: boolean;
   isFreePlan: boolean;
-  isCompletePlan: boolean;
+  IsProfissionalPlan: boolean;
   isEssentialPlan: boolean;
 } | null;
 
@@ -75,19 +76,18 @@ export default function PassengerFormDialog({
   profile,
   plano,
 }: PassengerFormDialogProps) {
-  const { openLimiteFranquiaDialog, isLimiteFranquiaDialogOpen } = useLayout();
   const { user } = useSession();
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
+  const [upgradeFeature, setUpgradeFeature] = useState(FEATURE_LIMITE_FRANQUIA);
 
   const createPassageiro = useCreatePassageiro();
   const updatePassageiro = useUpdatePassageiro();
   const finalizePreCadastro = useFinalizePreCadastro();
 
   // Validação de Franquia (para upgrades)
-  // Validação de Franquia (para upgrades)
   const { limits } = usePlanLimits({ userUid: user?.id, profile });
 
   // Use centralized logic from hook to check availability
-  // If editing an enabled passenger, we pass true to exclude them from the count check
   const podeAtivar = limits.franchise.checkAvailability(
     !!editingPassageiro?.enviar_cobranca_automatica
   );
@@ -155,6 +155,29 @@ export default function PassengerFormDialog({
     }
   }, [cpfResponsavelValue]);
 
+  const handleUpgradeSuccess = () => {
+    // Resume action: re-enable check
+    form.setValue("enviar_cobranca_automatica", true);
+    toast.success("Limite expandido! Agora você pode ativar a cobrança automática.");
+  };
+
+  const handleRequestUpgrade = () => {
+    // Determina o contexto do upgrade baseado no limite atual
+    const targetCount = limits.franchise.used + 1;
+    console.log("DEBUG: Requesting Upgrade", { 
+        limit: limits.franchise.limit, 
+        used: limits.franchise.used, 
+        targetCount 
+    });
+
+    if (limits.franchise.limit === 0) {
+      setUpgradeFeature(FEATURE_COBRANCA_AUTOMATICA);
+    } else {
+      setUpgradeFeature(FEATURE_LIMITE_FRANQUIA);
+    }
+    setIsUpgradeDialogOpen(true);
+  };
+
   const handleSubmit = async (data: PassageiroFormData) => {
     if (!profile?.id) return;
 
@@ -169,14 +192,8 @@ export default function PassengerFormDialog({
     ) {
       // Usar validação já calculada via hook
       if (!validacaoFranquia.podeAtivar) {
-        openLimiteFranquiaDialog({
-          targetPassengerId: editingPassageiro?.id,
-          onUpgradeSuccess: () => {
-            // Resume action: re-enable check
-            form.setValue("enviar_cobranca_automatica", true);
-          },
-        });
-        // Reverter o valor do campo para false
+        handleRequestUpgrade();
+        // Reverter o valor do campo para false enquanto o upgrade não é feito
         form.setValue("enviar_cobranca_automatica", false);
         return;
       }
@@ -257,9 +274,8 @@ export default function PassengerFormDialog({
           onOpenAutoFocus={(e) => e.preventDefault()}
           // @ts-ignore
           onPointerDownOutside={(e) => {
-            // Se o dialog de upgrade (franquia) estiver aberto, ignorar cliques fora
-            // Isso previne que o PassageiroFormDialog feche acidentalmente
-            if (isLimiteFranquiaDialogOpen) {
+            // Se o dialog de upgrade estiver aberto, ignorar cliques fora
+            if (isUpgradeDialogOpen) {
               e.preventDefault();
             }
           }}
@@ -309,6 +325,7 @@ export default function PassengerFormDialog({
                     <PassageiroFormFinanceiro
                       editingPassageiro={editingPassageiro}
                       validacaoFranquia={validacaoFranquia}
+                      onRequestUpgrade={handleRequestUpgrade}
                     />
                     <PassageiroFormEndereco />
                   </Accordion>
@@ -348,6 +365,14 @@ export default function PassengerFormDialog({
         </DialogContent>
       </Dialog>
       <LoadingOverlay active={isSubmitting} text="Salvando..." />
+      
+      <PlanUpgradeDialog 
+        open={isUpgradeDialogOpen} 
+        onOpenChange={setIsUpgradeDialogOpen} 
+        onSuccess={handleUpgradeSuccess}
+        feature={upgradeFeature}
+        targetPassengerCount={limits.franchise.used + 1}
+      />
     </>
   );
 }

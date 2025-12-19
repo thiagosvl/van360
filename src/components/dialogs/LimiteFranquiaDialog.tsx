@@ -121,7 +121,7 @@ export default function LimiteFranquiaDialog({
       if (!usuarioId) throw new Error("Usuário não identificado");
       if (!selectedOption) throw new Error("Opção inválida");
       
-        return usuarioApi.criarAssinaturaCompletoPersonalizado({
+        return usuarioApi.criarAssinaturaProfissionalPersonalizado({
         usuario_id: usuarioId,
         quantidade: selectedOption.quantidade,
         targetPassengerId,
@@ -345,7 +345,7 @@ export default function LimiteFranquiaDialog({
           onPaymentSuccess={handlePaymentSuccess}
           usuarioId={usuarioId}
           context="upgrade"
-          nomePlano="Plano Completo Personalizado"
+          nomePlano="Plano Profissional Personalizado"
           quantidadePassageiros={paymentData.franquia}
           onIrParaAssinatura={handleClosePayment}
           onPaymentVerified={handlePaymentVerified}

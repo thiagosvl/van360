@@ -1,15 +1,15 @@
 import {
-  Check,
-  CreditCard,
-  DollarSign,
-  FileText,
-  Plus,
-  Receipt,
-  TrendingDown,
-  TrendingUp,
-  Users,
-  Wallet,
-  Zap,
+    Check,
+    CreditCard,
+    DollarSign,
+    FileText,
+    Plus,
+    Receipt,
+    TrendingDown,
+    TrendingUp,
+    Users,
+    Wallet,
+    Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -31,12 +31,12 @@ import { useSession } from "@/hooks/business/useSession";
 
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import {
-  FEATURE_GASTOS,
-  FEATURE_LIMITE_PASSAGEIROS,
-  PASSAGEIRO_COBRANCA_STATUS_PAGO,
-  PLANO_COMPLETO,
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
+    FEATURE_GASTOS,
+    FEATURE_LIMITE_PASSAGEIROS,
+    PASSAGEIRO_COBRANCA_STATUS_PAGO,
+    PLANO_ESSENCIAL,
+    PLANO_GRATUITO,
+    PLANO_PROFISSIONAL,
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
@@ -327,10 +327,10 @@ const Home = () => {
 
   // Obter slug principal do plano (usa parent se existir)
   const getMainPlanSlug = () => {
-    if (!plano?.planoCompleto) return null;
+    if (!plano?.planoProfissional) return null;
     return (
-      plano.planoCompleto.parent?.slug ??
-      plano.planoCompleto.slug ??
+      plano.planoProfissional.parent?.slug ??
+      plano.planoProfissional.slug ??
       plano?.slug ??
       null
     );
@@ -347,7 +347,7 @@ const Home = () => {
       return "Deixe a cobrança com a gente! Recebimento automático e baixa instantânea.";
     }
 
-    if (slug === PLANO_COMPLETO) {
+    if (slug === PLANO_PROFISSIONAL) {
       return "Automação total: cobranças, notificações e muito mais tempo livre para você.";
     }
 
@@ -365,7 +365,7 @@ const Home = () => {
       return "Quero automação total →";
     }
 
-    if (slug === PLANO_COMPLETO) {
+    if (slug === PLANO_PROFISSIONAL) {
       return "Ver todos benefícios";
     }
 
@@ -383,7 +383,7 @@ const Home = () => {
       return "Automatize sua rotina ⚡";
     }
 
-    if (slug === PLANO_COMPLETO) {
+    if (slug === PLANO_PROFISSIONAL) {
       return "Máxima eficiência 🎯";
     }
 

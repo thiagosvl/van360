@@ -7,8 +7,8 @@ export const usuarioApi = {
   registrarPlanoEssencial: (payload: any) =>
     apiClient.post(`/usuarios/registrar-plano-essencial`, payload).then(res => res.data),
 
-  registrarPlanoCompleto: (payload: any) =>
-    apiClient.post(`/usuarios/registrar-plano-completo`, payload).then(res => res.data),
+  registrarPlanoProfissional: (payload: any) =>
+    apiClient.post(`/usuarios/registrar-plano-profissional`, payload).then(res => res.data),
 
   cancelarAssinatura: (payload: { usuarioId: string }) =>
     apiClient.delete(
@@ -30,8 +30,8 @@ export const usuarioApi = {
   trocarSubplano: (payload: { usuario_id: string; subplano_id: string }) =>
     apiClient.post(`/usuarios/trocar-subplano`, payload).then(res => res.data),
 
-  criarAssinaturaCompletoPersonalizado: (payload: { usuario_id: string; quantidade: number; targetPassengerId?: string }) =>
-    apiClient.post(`/usuarios/criar-assinatura-completo-personalizado`, payload).then(res => res.data),
+  criarAssinaturaProfissionalPersonalizado: (payload: { usuario_id: string; quantidade: number; targetPassengerId?: string }) =>
+    apiClient.post(`/usuarios/criar-assinatura-profissional-personalizado`, payload).then(res => res.data),
 
   listarPassageirosParaSelecao: (usuarioId: string, tipo: "upgrade" | "downgrade", franquia: number) =>
     apiClient.get(`/usuarios/${usuarioId}/passageiros-para-selecao`, {

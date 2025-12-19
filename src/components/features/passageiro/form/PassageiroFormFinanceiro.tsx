@@ -1,27 +1,26 @@
 import { MoneyInput } from "@/components/forms";
 import {
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { useLayout } from "@/contexts/LayoutContext";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
 import { currentMonthInText } from "@/utils/formatters";
@@ -35,14 +34,15 @@ interface PassageiroFormFinanceiroProps {
     franquiaContratada: number;
     // Add other properties if needed
   };
+  onRequestUpgrade: () => void;
 }
 
 export function PassageiroFormFinanceiro({
   editingPassageiro,
   validacaoFranquia,
+  onRequestUpgrade,
 }: PassageiroFormFinanceiroProps) {
   const form = useFormContext();
-  const { openLimiteFranquiaDialog } = useLayout();
 
   const diaVencimento = form.watch("dia_vencimento");
   const emitirCobranca = form.watch("emitir_cobranca_mes_atual");
@@ -123,38 +123,7 @@ export function PassageiroFormFinanceiro({
                       checked={field.value}
                       onCheckedChange={(checked) => {
                         if (checked && !validacaoFranquia.podeAtivar) {
-                          // Wraps in setTimeout to avoid flushSync error with Radix Checkbox
-                          setTimeout(() => {
-                            if (validacaoFranquia.franquiaContratada === 0) {
-                              openLimiteFranquiaDialog({
-                                targetPassengerId: editingPassageiro?.id,
-                                title: "Cobrança Automática",
-                                description:
-                                  "A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Completo.",
-                                hideLimitInfo: true,
-                                onUpgradeSuccess: () => {
-                                  setTimeout(() => {
-                                    form.setValue(
-                                      "enviar_cobranca_automatica",
-                                      true
-                                    );
-                                  }, 100);
-                                },
-                              });
-                            } else {
-                              openLimiteFranquiaDialog({
-                                targetPassengerId: editingPassageiro?.id,
-                                onUpgradeSuccess: () => {
-                                  setTimeout(() => {
-                                    form.setValue(
-                                      "enviar_cobranca_automatica",
-                                      true
-                                    );
-                                  }, 100);
-                                },
-                              });
-                            }
-                          }, 100);
+                          onRequestUpgrade();
                           return;
                         }
                         field.onChange(checked);

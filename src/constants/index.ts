@@ -4,7 +4,7 @@ export const ROLE_RESPONSAVEL = "responsavel";
 
 export const PLANO_GRATUITO = "gratuito";
 export const PLANO_ESSENCIAL = "essencial";
-export const PLANO_COMPLETO = "completo";
+export const PLANO_PROFISSIONAL = "profissional";
 
 // Feature Flags for Upsell Context
 export const FEATURE_GASTOS = "controle_gastos";

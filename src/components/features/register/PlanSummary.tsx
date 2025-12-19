@@ -1,4 +1,4 @@
-import { PLANO_COMPLETO, PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
+import { PLANO_ESSENCIAL, PLANO_GRATUITO, PLANO_PROFISSIONAL } from "@/constants";
 import { Plano, SubPlano } from "@/types/plano";
 import { CheckCircle2 } from "lucide-react";
 
@@ -27,8 +27,8 @@ export const PlanSummary = ({
 
   // Texto auxiliar curto e direto para o resumo
   const getShortDescription = () => {
-    // Plano Completo: Removemos "por mês" para não quebrar linha no mobile
-    if (plano.slug === PLANO_COMPLETO) {
+    // Plano Profissional: Removemos "por mês" para não quebrar linha no mobile
+    if (plano.slug === PLANO_PROFISSIONAL) {
       const qtd = quantidadePersonalizada || subPlano?.franquia_cobrancas_mes;
       return `Cobrança automática para até ${qtd} passageiros`;
     }

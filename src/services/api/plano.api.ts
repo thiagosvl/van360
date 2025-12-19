@@ -12,7 +12,7 @@ export const planoApi = {
             .then(res => res.data),
 
     /**
-     * Calcula o preço preview para quantidade personalizada do Plano Completo
+     * Calcula o preço preview para quantidade personalizada do Plano Profissional
      * @param quantidade - Quantidade de cobranças desejada
      * @param ignorarMinimo - Se true, ignora o mínimo do plano e calcula proporcional
      * @returns Objeto com preco, valorPorCobranca ou null se a quantidade for inválida

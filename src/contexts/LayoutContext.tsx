@@ -5,7 +5,7 @@ import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import PlanosDialog from "@/components/dialogs/PlanosDialog";
 import { PlanUpgradeDialog, PlanUpgradeDialogProps } from "@/components/dialogs/PlanUpgradeDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
-import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_GASTOS, FEATURE_LIMITE_PASSAGEIROS, FEATURE_NOTIFICACOES, FEATURE_RELATORIOS } from "@/constants";
+import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_GASTOS, FEATURE_LIMITE_PASSAGEIROS, FEATURE_NOTIFICACOES, FEATURE_RELATORIOS, PLANO_PROFISSIONAL } from "@/constants";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -23,11 +23,11 @@ interface OpenLimiteFranquiaDialogProps {
 
 interface OpenContextualUpsellDialogProps {
   feature: "passageiros" | "controle_gastos" | "relatorios" | "automacao" | "outros";
-  targetPlan?: "essencial" | "completo"; // Optional, defaults to Completo if not specified
+  targetPlan?: "essencial" | "profissional";
   onSuccess?: () => void;
 }
 
-type OpenPlanUpgradeDialogProps = Omit<PlanUpgradeDialogProps, "open" | "onOpenChange">;
+type OpenPlanUpgradeDialogProps = Omit<PlanUpgradeDialogProps, "open" | "onOpenChange"> & { onClose?: () => void };
 
 interface OpenConfirmationDialogProps {
   title: string;
@@ -172,7 +172,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
               case FEATURE_COBRANCA_AUTOMATICA:
               case FEATURE_RELATORIOS:
               case FEATURE_NOTIFICACOES:
-                  defaultTab = "completo";
+                  defaultTab = PLANO_PROFISSIONAL;
                   break;
               case FEATURE_LIMITE_PASSAGEIROS:
               case FEATURE_GASTOS:
@@ -257,7 +257,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             open={contextualUpsellDialogState.open}
             onOpenChange={(open) => setContextualUpsellDialogState(prev => ({ ...prev, open }))}
             feature={contextualUpsellDialogState.props.feature}
-            targetPlan={contextualUpsellDialogState.props.targetPlan || "completo"} // Default to Completo
+            targetPlan={contextualUpsellDialogState.props.targetPlan || PLANO_PROFISSIONAL}
             onViewAllPlans={() => {
                 // setContextualUpsellDialogState(prev => ({ ...prev, open: false }));
                 setTimeout(() => setIsPlanosDialogOpen(true), 150);
@@ -269,7 +269,12 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {planUpgradeDialogState.open && (
          <PlanUpgradeDialog
             open={planUpgradeDialogState.open}
-            onOpenChange={(open) => setPlanUpgradeDialogState(prev => ({ ...prev, open }))}
+            onOpenChange={(open) => {
+                setPlanUpgradeDialogState(prev => ({ ...prev, open }));
+                if (!open) {
+                    planUpgradeDialogState.props?.onClose?.();
+                }
+            }}
             defaultTab={planUpgradeDialogState.props?.defaultTab}
             feature={planUpgradeDialogState.props?.feature}
             targetPassengerCount={planUpgradeDialogState.props?.targetPassengerCount}

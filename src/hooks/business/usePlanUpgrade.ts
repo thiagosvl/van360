@@ -11,7 +11,8 @@ interface UsePlanUpgradeProps {
 
 export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps = {}) {
   const { user } = useSession();
-  const { profile, refreshProfile } = useProfile(user?.id);
+  // Destructure plano as well to get computed status (IsProfissionalPlan, etc)
+  const { profile, plano, refreshProfile } = useProfile(user?.id);
   const [loading, setLoading] = useState(false);
   const [isPaymentVerified, setIsPaymentVerified] = useState(false);
   
@@ -21,7 +22,7 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
     valor: number;
     nomePlano: string;
     franquia?: number;
-    context?: "register" | "upgrade";
+    context?: "register" | "upgrade" | "franchise_upgrade" | "plan_upgrade";
     initialData?: {
         qrCodePayload: string;
         location: string;
@@ -41,10 +42,23 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
     try {
       setLoading(true);
 
-      const result = await usuarioApi.upgradePlano({
-        usuario_id: profile.id,
-        plano_id: planoEssencialId,
-      });
+      // Use the computed plano object
+      const isProfissional = plano?.isProfissionalPlan;
+
+      let result;
+      // Se estiver no profissional e quiser ir para essencial -> Downgrade
+      if (isProfissional) {
+         result = await usuarioApi.downgradePlano({
+            usuario_id: profile.id,
+            plano_id: planoEssencialId
+         });
+      } else {
+         // Se estiver no gratuito -> Upgrade
+         result = await usuarioApi.upgradePlano({
+            usuario_id: profile.id,
+            plano_id: planoEssencialId,
+          });
+      }
 
       if (result.qrCodePayload && result.cobrancaId) {
         setPagamentoDialog({
@@ -67,8 +81,8 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
         onOpenChange?.(false);
       }
     } catch (error: any) {
-      console.error("Erro upgrade essencial:", error);
-      toast.error("Erro ao atualizar plano", {
+      console.error("Erro upgrade/downgrade essencial:", error);
+      toast.error("Erro ao alterar de plano", {
         description: error.response?.data?.error || "Tente novamente mais tarde.",
       });
     } finally {
@@ -82,7 +96,7 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
       return;
     }
 
-    if (!targetId) {
+    if (!targetId && !targetPlan?.isCustom) {
       toast.error("Erro de configuração", {
         description: "Plano não disponível no momento.",
       });
@@ -92,13 +106,41 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
     try {
       setLoading(true);
 
-      // Backend refatorado para lidar com user sem assinatura (Free/Inativo)
-      // Endpoint unificado de upgrade para todos os casos
-      const result = await usuarioApi.upgradePlano({
-        usuario_id: profile.id,
-        plano_id: targetId,
-        quantidade_personalizada: targetPlan?.isCustom ? targetPlan.quantidade : undefined
-      });
+      // Use the computed plano object for reliable detection
+      const isAlreadyProfissional = plano?.isProfissionalPlan;
+      
+      let result;
+
+      if (isAlreadyProfissional) {
+        // --- Fluxo de Troca de Capacidade (Subplano) ---
+        
+        // Cenario 1: Customizado (Quantidade > tiers padrão)
+        if (targetPlan?.isCustom) {
+            console.log("Fluxo: Custom (Ja no Profissional)");
+             result = await usuarioApi.criarAssinaturaProfissionalPersonalizado({
+                usuario_id: profile.id,
+                quantidade: targetPlan.quantidade
+             });
+        } 
+        // Cenario 2: Subplano Padrão (6, 8, 10 vagas...)
+        else if (targetId) {
+            console.log("Fluxo: Trocar Subplano (Ja no Profissional)");
+             result = await usuarioApi.trocarSubplano({
+                usuario_id: profile.id,
+                subplano_id: targetId
+            });
+        }
+      } else {
+        // --- Fluxo de Upgrade de Tier (Ex: Essencial -> Profissional) ---
+        console.log("Fluxo: Upgrade de Tier (Novo no Profissional)");
+        
+        // Aqui usamos upgradePlano, mas ele suporta quantidade personalizada tb
+        result = await usuarioApi.upgradePlano({
+            usuario_id: profile.id,
+            plano_id: targetId || "", 
+            quantidade_personalizada: targetPlan?.isCustom ? targetPlan.quantidade : undefined
+        });
+      }
 
       if (result.qrCodePayload && result.cobrancaId) {
         setPagamentoDialog({
@@ -107,7 +149,7 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
           valor: Number(result.preco_aplicado || result.valor || 0),
           nomePlano: "Plano Profissional",
           franquia: targetPlan?.quantidade,
-          context: "upgrade",
+          context: isAlreadyProfissional ? "franchise_upgrade" : "plan_upgrade",
           initialData: {
              qrCodePayload: result.qrCodePayload,
              location: result.location,
@@ -117,7 +159,14 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
         });
       } else {
         await refreshProfile();
-        toast.success("Plano atualizado com sucesso!");
+        
+        // Mensagem direta sem pagamento (ex: valor zero ou fatura futura)
+        const title = isAlreadyProfissional ? "Limite aumentado!" : "Plano atualizado!";
+        const desc = isAlreadyProfissional 
+            ? "Sua franquia de automação foi expandida." 
+            : "Bem-vindo ao Plano Profissional.";
+
+        toast.success(title, { description: desc });
         onSuccess?.();
         onOpenChange?.(false);
       }
@@ -131,14 +180,37 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
     }
   };
 
-  const handleClosePayment = (success?: boolean) => {
+  const handleClosePayment = (success?: boolean, customMessage?: { title: string, description: string }) => {
+    // Captura o contexto antes de limpar o estado
+    const context = pagamentoDialog?.context; 
     setPagamentoDialog(null);
+
     // Fecha nível 2 SOMENTE se houve sucesso explícito OU verificado anteriormente
     if (success === true || isPaymentVerified) {
-      toast.success("Parabéns! Você alterou de plano.", {
-        description: "Aproveite todos os novos recursos exclusivos.",
-        duration: 4000
-      });
+        if (customMessage) {
+            toast.success(customMessage.title, {
+                description: customMessage.description,
+                duration: 4000
+            });
+        } else {
+            // Mensagens contextuais baseadas no tipo de operação
+            if (context === "franchise_upgrade") {
+                toast.success("Capacidade Aumentada!", {
+                    description: "Seu limite de passageiros no automático foi atualizado.",
+                    duration: 4000
+                });
+            } else if (context === "plan_upgrade") {
+                toast.success("Bem-vindo ao Profissional!", {
+                    description: "Agora você tem cobrança automática e todos os recursos.",
+                    duration: 4000
+                });
+            } else {
+                toast.success("Sucesso!", {
+                    description: "Operação realizada com sucesso.",
+                    duration: 4000
+                });
+            }
+        }
       onOpenChange?.(false);
       onSuccess?.();
     }
@@ -152,6 +224,6 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
     handleUpgradeEssencial,
     handleUpgradeProfissional,
     handleClosePayment,
-    setPagamentoDialog // Exporting setter in case we need manual control, though ideally not
+    setPagamentoDialog
   };
 }

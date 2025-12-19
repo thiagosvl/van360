@@ -1,7 +1,10 @@
-import { BlurredValue } from "@/components/common/BlurredValue";
 import { KPICard } from "@/components/common/KPICard";
 import { LimitHealthBar } from "@/components/common/LimitHealthBar";
-import { PLANO_COMPLETO, PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
+import {
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
+  PLANO_PROFISSIONAL,
+} from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { Bot, Timer, TrendingUp, Users } from "lucide-react";
 
@@ -20,84 +23,25 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
   const slug = plano?.slug;
   const isFree = slug === PLANO_GRATUITO;
   const isEssential = slug === PLANO_ESSENCIAL;
-  const isComplete =
-    slug === PLANO_COMPLETO || plano?.parent?.slug === PLANO_COMPLETO;
+  const isProfissional =
+    slug === PLANO_PROFISSIONAL || plano?.parent?.slug === PLANO_PROFISSIONAL;
 
-  // Renderiza componente de passageiros ativos (Reutilizado no Essencial e Completo)
-  const renderPassengerCard = (variant: "success" | "info") => (
-    <KPICard
-      title="Passageiros Ativos"
-      value={metricas.passageirosAtivos}
-      icon={Users}
-      colorClass={variant === "success" ? "text-green-600" : "text-blue-600"}
-      bgClass={variant === "success" ? "bg-green-50" : "bg-blue-50"}
-      countVisible={true}
-      format="number"
-    />
-  );
-
-  // Helper para renderizar o card de Tempo Economizado (Reutilizado no Grátis e Completo)
-  const renderTimeSavedCard = (restricted: boolean) => {
-    // Simulação de ROI para o completo (ou valor fixo para blur no free)
-    const envios = metricas.cobrancasEmUso || 0;
-    const tempoEconomizadoHoras = Math.round((envios * 5) / 60);
-
-    return (
-      <KPICard
-        title="Tempo Economizado"
-        value={
-          restricted ? (
-            <BlurredValue value={12} visible={false} type="number" />
-          ) : (
-            `${tempoEconomizadoHoras}h`
-          )
-        }
-        icon={Timer}
-        colorClass="text-green-600"
-        bgClass="bg-green-50"
-        countText={
-          restricted ? (
-            <span className="text-primary font-medium text-xs"></span>
-          ) : (
-            "Com automação este mês"
-          )
-        }
-        countVisible={true}
-        restricted={restricted}
-        onClick={() =>
-          restricted &&
-          openPlanUpgradeDialog({
-            feature: "automacao",
-            defaultTab: PLANO_COMPLETO,
-            targetPassengerCount: metricas.passageirosAtivos,
-          })
-        }
-      />
-    );
-  };
-
-  // KPIs para Plano Gratuito (Foco em FOMO/Limite)
-  if (isFree) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* KPI 1: Limite de Passageiros (Componente Reutilizado) */}
+  // Renderiza componente de passageiros ativos (Reutilizado EM TODOS)
+  const renderPassengerCard = (variant: "success" | "info" | "default") => {
+    // Para plano gratuito, usar LimitHealthBar mas sem a estilização exagerada
+    if (isFree && metricas.limitePassageiros !== null) {
+      return (
         <div className="h-full">
           <LimitHealthBar
             label="Passageiros Ativos"
             current={metricas.passageirosAtivos}
-            max={metricas.limitePassageiros || 5} // Fallback seguro
+            max={metricas.limitePassageiros}
             description={
               metricas.passageirosAtivos >= metricas.limitePassageiros
                 ? "Limite atingido."
-                : `${Math.max(
-                    0,
+                : `${
                     metricas.limitePassageiros - metricas.passageirosAtivos
-                  )} ${
-                    metricas.limitePassageiros - metricas.passageirosAtivos ===
-                    1
-                      ? "vaga restante"
-                      : "vagas restantes"
-                  }.`
+                  } vagas restantes.`
             }
             onIncreaseLimit={() =>
               openPlanUpgradeDialog({
@@ -106,130 +50,177 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
                 targetPassengerCount: metricas.passageirosAtivos,
               })
             }
-            className="h-full mb-0 bg-white shadow-sm border-red-100 flex flex-col justify-center"
+            className="h-full mb-0 bg-white shadow-sm border-gray-100 flex flex-col justify-center"
+            // Remover estilos de borda colorida/opacidade se houver
           />
         </div>
-
-        {/* KPI 2: Passageiros no Automático (Blocked) */}
-        <KPICard
-          title="Passageiros no Automático"
-          value={<BlurredValue value={15} visible={false} type="number" />}
-          icon={Bot}
-          colorClass="text-purple-600"
-          bgClass="bg-purple-50"
-          countLabel="ativos"
-          countVisible={true}
-          countText={
-            <span className="text-primary font-medium text-xs"></span>
-          }
-          className="border-purple-100 opacity-90 cursor-pointer hover:opacity-100 transition-opacity"
-          restricted={true}
-          onClick={() =>
-            openPlanUpgradeDialog({
-              feature: "automacao",
-              defaultTab: PLANO_COMPLETO,
-              targetPassengerCount: metricas.passageirosAtivos,
-            })
-          }
-        />
-
-        {/* KPI 3: Tempo Economizado (Blocked/Reutilizado) */}
-        {renderTimeSavedCard(true)}
-      </div>
-    );
-  }
-
-  // KPIs para Plano Essencial (Foco em Dor Manual vs Automação)
-  if (isEssential) {
-    // Simulação: Se ele tem X passageiros, cobrando manual gasta ~5min por passageiro.
-    const tempoGastoMinutos = metricas.passageirosAtivos * 5;
-    const tempoGastoHoras = Math.round((tempoGastoMinutos / 60) * 10) / 10;
+      );
+    }
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* KPI 1: Sucesso (Passageiros) */}
-        {renderPassengerCard("success")}
+      <KPICard
+        title="Passageiros Ativos"
+        value={metricas.passageirosAtivos}
+        icon={Users}
+        colorClass={variant === "success" ? "text-green-600" : "text-blue-600"}
+        bgClass={variant === "success" ? "bg-green-50" : "bg-blue-50"}
+        countVisible={true}
+        format="number"
+      />
+    );
+  };
 
-        {/* KPI 2: Dor (Tempo Gasto) */}
-        <KPICard
-          title="Tempo Gasto (Cobrança)"
-          value={`${tempoGastoHoras}h`}
-          icon={Timer}
-          colorClass="text-orange-600"
-          bgClass="bg-orange-50"
-          countText="Manual este mês"
-          countVisible={true}
-        />
+  // 3. Card de Automação (Unificado: Sales vs Real)
+  const renderAutomationCard = () => {
+    if (isProfissional) {
+        return (
+          <div className="h-full">
+            <LimitHealthBar
+              current={metricas.cobrancasEmUso}
+              max={metricas.franquiaContratada}
+              label="Passageiros no Automático"
+              description={
+                metricas.cobrancasEmUso >= metricas.franquiaContratada
+                  ? "Limite atingido."
+                  : `${metricas.franquiaContratada - metricas.cobrancasEmUso} vagas restantes.`
+              }
+              className="h-full mb-0 border-0 shadow-md bg-white border-purple-100"
+              onIncreaseLimit={() =>
+                openPlanUpgradeDialog({
+                  feature: "automacao",
+                  defaultTab: PLANO_PROFISSIONAL,
+                  targetPassengerCount: metricas.franquiaContratada + 1,
+                })
+              }
+            />
+          </div>
+        );
+    }
 
-        {/* KPI 3: Solução (Automação) */}
-        <div
-          className="bg-gradient-to-br from-blue-600 to-blue-700 p-4 rounded-2xl text-white shadow-lg cursor-pointer transform transition-transform hover:-translate-y-1 relative overflow-hidden"
+    // Para Gratuito e Essencial: Card de Venda "Cobranças Automáticas"
+    // Premium & "Chamativo" Polish
+    
+    // Cálculo de estimativa de economia (simulado base 5min/passageiro)
+    const passageiros = metricas.passageirosAtivos || 0;
+    const horasEstimadas = Math.max(1, Math.round((passageiros * 5) / 60)); 
+
+    return (
+        <div 
+          className="group bg-white rounded-xl border border-gray-200 p-4 shadow-sm h-full flex flex-col justify-between cursor-pointer hover:border-blue-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden"
           onClick={() =>
             openPlanUpgradeDialog({
               feature: "automacao",
+              defaultTab: PLANO_PROFISSIONAL,
               targetPassengerCount: metricas.passageirosAtivos,
             })
           }
         >
-          <div className="absolute top-0 right-0 p-3 opacity-20">
-            <TrendingUp className="w-16 h-16 text-white" />
-          </div>
-          <h3 className="text-xs font-bold text-blue-100 uppercase tracking-wide mb-1">
-            Potencial com Automação
-          </h3>
-          <div className="text-2xl font-bold mb-1">0 min</div>
-          <p className="text-blue-100 text-xs text-opacity-90">
-            Seria seu tempo gasto com o Plano Completo.
-          </p>
-          <div className="mt-3 inline-block bg-white/20 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
-            Fazer Upgrade
-          </div>
-        </div>
-      </div>
-    );
-  }
+            {/* Background Decorativo Sutil (Optional, good for 'chamativo') */}
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity" />
 
-  // KPIs para Plano Completo (Foco em Sucesso/ROI)
-  if (isComplete) {
+            {/* Header */}
+            <div className="flex justify-between items-center mb-3 relative z-10">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest group-hover:text-blue-600 transition-colors">
+                    Cobranças Automáticas
+                </p>
+                <div className="p-2 rounded-lg bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                     <Bot className="w-4 h-4" />
+                </div>
+            </div>
+
+            {/* Conteúdo Central */}
+            <div className="flex-1 flex flex-col justify-center mb-2 relative z-10">
+                 <h4 className="text-sm font-bold text-gray-900 leading-tight mb-1">
+                    Ativar Piloto Automático
+                 </h4>
+                 <p className="text-xs text-gray-500 leading-relaxed">
+                    Deixe o sistema cobrar e enviar avisos por você.
+                 </p>
+            </div>
+
+            {/* Footer */}
+            <div className="flex flex-row justify-between items-end gap-0 text-left border-t border-gray-100 pt-3 mt-auto relative z-10">
+                <div className="flex flex-col">
+                    <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wide">
+                        Economia Estimada
+                    </span>
+                    <span className="text-sm font-bold text-green-600 flex items-center gap-1">
+                        {horasEstimadas}h/mês <TrendingUp className="w-3 h-3" />
+                    </span>
+                </div>
+                
+                <button
+                    className="flex items-center gap-1 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition-colors shadow-sm group-hover:shadow-blue-200"
+                >
+                    Ativar 
+                </button>
+            </div>
+        </div>
+    );
+  };
+
+  // 4. Card de Tempo (Unificado: Real ou Simulado/Venda)
+  const renderTimeCard = () => {
+    // Cálculo: Baseado em 5 min por passageiro (manual) vs 0 (automático)
+    // Se plano profissional: Mostra tempo economizado real (baseado em envios de cobrança)
+    // Se outros planos: Mostra tempo que SERIA economizado (baseado em passageiros ativos)
+
+    let titulo = "Tempo Economizado";
+    let valor = "0h";
+    let descricao = "Com automação este mês";
+    let isSimulated = !isProfissional;
+
+    if (isProfissional) {
+      const envios = metricas.cobrancasEmUso || 0;
+      const horas = Math.ceil((envios * 5) / 60); // Arredondar para cima
+      valor = `${horas}h`;
+    } else {
+      // Simulação
+      const passageiros = metricas.passageirosAtivos || 0;
+      const horas = Math.ceil(((passageiros * 5) / 60)); // Arredondar para cima, remover decimais
+      // Garantir pelo menos 1h se houver passageiros para não ficar "0h"
+      const horasFinal = passageiros > 0 && horas === 0 ? 1 : horas;
+      
+      valor = `~${horasFinal}h`;
+      descricao = "Quanto tempo gastou cobrando os pais somente este mês";
+      titulo = "Tempo Gasto com cobranças";
+    }
+
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* 1. Passageiros Ativos */}
-        {renderPassengerCard("info")}
-
-        {/* 2. Uso da Franquia (Health Bar) */}
-        {/* Usamos o componente genérico LimitHealthBar para manter consistência visual */}
-        <div className="h-full">
-          <LimitHealthBar
-            current={metricas.cobrancasEmUso}
-            max={metricas.franquiaContratada}
-            label="Passageiros no Automático"
-            description={
-              metricas.cobrancasEmUso >= metricas.franquiaContratada
-                ? "Limite de automação de passageiros atingido."
-                : `Você ainda pode automatizar ${
-                    metricas.franquiaContratada - metricas.cobrancasEmUso
-                  } ${
-                    metricas.franquiaContratada - metricas.cobrancasEmUso === 1
-                      ? "passageiro"
-                      : "passageiros"
-                  }.`
-            }
-            className="h-full mb-0 border-0 shadow-md bg-white border-purple-100" // Ajuste de estilo para combinar com os cards
-            onIncreaseLimit={() =>
-              openPlanUpgradeDialog({
-                feature: "automacao",
-                defaultTab: PLANO_COMPLETO,
-                targetPassengerCount: metricas.passageirosAtivos,
-              })
-            }
-          />
-        </div>
-
-        {/* 3. Tempo Economizado (Reutilizado) */}
-        {renderTimeSavedCard(false)}
-      </div>
+      <KPICard
+        title={titulo}
+        value={valor}
+        icon={Timer}
+        colorClass={isSimulated ? "text-orange-600" : "text-green-600"}
+        bgClass={isSimulated ? "bg-orange-50" : "bg-green-50"}
+        countText={descricao}
+        countVisible={true}
+        onClick={() =>
+          isSimulated &&
+          openPlanUpgradeDialog({
+            feature: "automacao",
+            defaultTab: PLANO_PROFISSIONAL,
+          })
+        }
+        className={
+          isSimulated
+            ? "cursor-pointer hover:border-blue-200 transition-colors"
+            : ""
+        }
+      />
     );
-  }
+  };
 
-  return null;
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* 1. Passageiros */}
+      {renderPassengerCard(isEssential ? "success" : "info")}
+
+      {/* 2. Automação (Sales ou Real) */}
+      {renderAutomationCard()}
+
+      {/* 3. Tempo */}
+      {renderTimeCard()}
+    </div>
+  );
 }

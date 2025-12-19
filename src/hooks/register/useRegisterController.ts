@@ -1,8 +1,8 @@
 import { isPlanoPagoNoAto } from "@/components/features/register";
 import {
-  PLANO_COMPLETO,
   PLANO_ESSENCIAL,
   PLANO_GRATUITO,
+  PLANO_PROFISSIONAL,
 } from "@/constants";
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,7 +40,7 @@ export function useRegisterController() {
   const quantidadeCalculandoRef = useRef<number | null>(null);
   const planoIdCalculandoRef = useRef<string | null>(null);
   
-  const lastCompletoStateRef = useRef<{
+  const lastProfissionalStateRef = useRef<{
     subPlanoId?: string;
     quantidadePersonalizada?: string;
     precoPreview?: { preco: number; valorPorCobranca: number } | null;
@@ -100,9 +100,9 @@ export function useRegisterController() {
 
   // Computed Check
   const requiresPayment = selectedPlano
-    ? selectedPlano.slug === PLANO_COMPLETO && selectedSubPlano
+    ? selectedPlano.slug === PLANO_PROFISSIONAL && selectedSubPlano
       ? isPlanoPagoNoAto(selectedPlano, selectedSubPlano)
-      : selectedPlano.slug === PLANO_COMPLETO &&
+      : selectedPlano.slug === PLANO_PROFISSIONAL &&
         form.getValues("quantidade_personalizada")
       ? isPlanoPagoNoAto(selectedPlano)
       : isPlanoPagoNoAto(selectedPlano)
@@ -142,7 +142,7 @@ export function useRegisterController() {
     }
   }, [loadingPlanos, planosDataTyped.bases, searchParams, selectedPlanoId, form]);
 
-  // Auto-select Completo logic
+  // Auto-select Profissional logic
   useEffect(() => {
     if (
       !loadingPlanos &&
@@ -151,22 +151,22 @@ export function useRegisterController() {
       currentStep === 1 &&
       !searchParams.get("plano")
     ) {
-      const planoCompleto = planosDataTyped.bases.find(
-        (p) => p.slug === PLANO_COMPLETO
+      const planoProfissional = planosDataTyped.bases.find(
+        (p) => p.slug === PLANO_PROFISSIONAL
       );
-      if (planoCompleto) {
-        form.setValue("plano_id", planoCompleto.id, { shouldValidate: false });
+      if (planoProfissional) {
+        form.setValue("plano_id", planoProfissional.id, { shouldValidate: false });
       }
     }
 
     if (
-      selectedPlano?.slug === PLANO_COMPLETO &&
+      selectedPlano?.slug === PLANO_PROFISSIONAL &&
       planosDataTyped.sub.length > 0 &&
       currentStep === 1
     ) {
       // 1. Restore state
-      if (lastCompletoStateRef.current) {
-        const { subPlanoId, quantidadePersonalizada: qtdPers, precoPreview } = lastCompletoStateRef.current;
+      if (lastProfissionalStateRef.current) {
+        const { subPlanoId, quantidadePersonalizada: qtdPers, precoPreview } = lastProfissionalStateRef.current;
         if (!selectedSubPlanoId && !form.getValues("quantidade_personalizada") && !quantidadePersonalizada) {
           if (subPlanoId) {
             form.setValue("sub_plano_id", subPlanoId, { shouldValidate: false });
@@ -187,12 +187,12 @@ export function useRegisterController() {
         !form.getValues("quantidade_personalizada") &&
         !quantidadePersonalizada
       ) {
-        const subPlanosCompleto = planosDataTyped.sub.filter(
+        const subPlanosProfissional = planosDataTyped.sub.filter(
           (s) => String(s.parent_id) === String(selectedPlano.id)
         );
 
-        if (subPlanosCompleto.length > 0) {
-          const menorSubPlano = subPlanosCompleto.reduce((menor, atual) => {
+        if (subPlanosProfissional.length > 0) {
+          const menorSubPlano = subPlanosProfissional.reduce((menor, atual) => {
             return atual.franquia_cobrancas_mes < menor.franquia_cobrancas_mes
               ? atual
               : menor;
@@ -203,7 +203,7 @@ export function useRegisterController() {
               form.setValue("sub_plano_id", menorSubPlano.id, {
                 shouldValidate: false,
               });
-              lastCompletoStateRef.current = { subPlanoId: menorSubPlano.id };
+              lastProfissionalStateRef.current = { subPlanoId: menorSubPlano.id };
             }, 0);
           }
         }
@@ -233,7 +233,7 @@ export function useRegisterController() {
   useEffect(() => {
     if (
       !quantidadePersonalizada ||
-      selectedPlano?.slug !== PLANO_COMPLETO ||
+      selectedPlano?.slug !== PLANO_PROFISSIONAL ||
       planosDataTyped.sub.length === 0
     ) {
       setPrecoCalculadoPreview(null);
@@ -266,11 +266,11 @@ export function useRegisterController() {
 
     // Optimization: check cache ref
     if (
-      lastCompletoStateRef.current &&
-      lastCompletoStateRef.current.quantidadePersonalizada === String(quantidade) &&
-      lastCompletoStateRef.current.precoPreview !== undefined
+      lastProfissionalStateRef.current &&
+      lastProfissionalStateRef.current.quantidadePersonalizada === String(quantidade) &&
+      lastProfissionalStateRef.current.precoPreview !== undefined
     ) {
-      setPrecoCalculadoPreview(lastCompletoStateRef.current.precoPreview);
+      setPrecoCalculadoPreview(lastProfissionalStateRef.current.precoPreview);
       setIsCalculandoPreco(false);
       quantidadeCalculandoRef.current = quantidade;
       planoIdCalculandoRef.current = selectedPlano.id;
@@ -314,8 +314,8 @@ export function useRegisterController() {
             form.setValue("quantidade_personalizada", quantidadeAtual);
             form.setValue("sub_plano_id", undefined);
             
-            if (selectedPlano?.slug === PLANO_COMPLETO) {
-              lastCompletoStateRef.current = {
+            if (selectedPlano?.slug === PLANO_PROFISSIONAL) {
+              lastProfissionalStateRef.current = {
                 quantidadePersonalizada: String(quantidadeAtual),
                 precoPreview: {
                   preco: resultado.preco,
@@ -363,18 +363,18 @@ export function useRegisterController() {
 
   const handleSelectSubPlano = (subPlanoId: string | undefined) => {
     if (subPlanoId) {
-      const planoCompleto = planosDataTyped.bases.find(
-        (p) => p.slug === PLANO_COMPLETO
+      const planoProfissional = planosDataTyped.bases.find(
+        (p) => p.slug === PLANO_PROFISSIONAL
       );
-      if (planoCompleto) {
-        form.setValue("plano_id", planoCompleto.id, { shouldValidate: true });
+      if (planoProfissional) {
+        form.setValue("plano_id", planoProfissional.id, { shouldValidate: true });
         form.setValue("sub_plano_id", subPlanoId, { shouldValidate: true });
         form.setValue("quantidade_personalizada", undefined);
         setQuantidadePersonalizada("");
         setPrecoCalculadoPreview(null);
         quantidadeCalculandoRef.current = null;
         planoIdCalculandoRef.current = null;
-        lastCompletoStateRef.current = { subPlanoId };
+        lastProfissionalStateRef.current = { subPlanoId };
       }
     } else {
       form.setValue("sub_plano_id", undefined);
@@ -404,9 +404,9 @@ export function useRegisterController() {
     form.setValue("quantidade_personalizada", quantidade, { shouldValidate: true });
     form.setValue("sub_plano_id", undefined);
     
-    if (selectedPlano?.slug === PLANO_COMPLETO) {
+    if (selectedPlano?.slug === PLANO_PROFISSIONAL) {
       form.setValue("plano_id", selectedPlano.id, { shouldValidate: true });
-      lastCompletoStateRef.current = { 
+      lastProfissionalStateRef.current = { 
         quantidadePersonalizada,
         precoPreview: precoCalculadoPreview
       };
@@ -459,7 +459,7 @@ export function useRegisterController() {
       const ok = await form.trigger("plano_id");
       if (!ok) return false;
 
-      if (selectedPlano?.slug === PLANO_COMPLETO) {
+      if (selectedPlano?.slug === PLANO_PROFISSIONAL) {
         const temSubPlano = !!selectedSubPlanoId;
         const temQuantidadePersonalizada =
           !!form.getValues("quantidade_personalizada") &&
@@ -480,11 +480,11 @@ export function useRegisterController() {
       const ok = await form.trigger(fields as any);
       if (!ok) return false;
 
-      if (selectedPlano?.slug === PLANO_COMPLETO && requiresPayment) {
+      if (selectedPlano?.slug === PLANO_PROFISSIONAL && requiresPayment) {
         try {
           setLoading(true);
           const formValues = form.getValues();
-          const result = await usuarioApi.registrarPlanoCompleto({
+          const result = await usuarioApi.registrarPlanoProfissional({
             ...formValues,
             plano_id: selectedPlano.id,
             sub_plano_id: formValues.quantidade_personalizada ? undefined : selectedSubPlanoId,

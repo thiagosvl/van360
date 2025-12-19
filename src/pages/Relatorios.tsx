@@ -15,8 +15,9 @@ import {
   useCobrancas,
   useEscolas,
   useGastos,
+  usePassageiroContagem,
   usePassageiros,
-  useVeiculos,
+  useVeiculos
 } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
@@ -140,6 +141,13 @@ export default function Relatorios() {
     setAno(newAno);
   };
 
+  // Buscar contagem precisa de automação (mesma lógica da Assinatura)
+  const { data: countAutomacao = { count: 0 }, refetch: refetchAutomacao } = usePassageiroContagem(
+    profile?.id,
+    { enviar_cobranca_automatica: "true" },
+    { enabled: !!profile?.id }
+  );
+
   const pullToRefreshReload = async () => {
     if (!hasAccess) return;
     await Promise.all([
@@ -148,12 +156,23 @@ export default function Relatorios() {
       refetchPassageiros(),
       refetchEscolas(),
       refetchVeiculos(),
+      refetchAutomacao(),
     ]);
   };
 
   if (!profilePlano) {
     return <div>Carregando...</div>;
   }
+
+  // Override dos dados de automação com a contagem precisa
+  const dadosOperacional = {
+      ...dados,
+      automacao: {
+          ...dados.automacao,
+          envios: countAutomacao.count,
+          tempoEconomizado: `${Math.round(countAutomacao.count * 0.08)}h` // Recalcular tempo com base na contagem correta
+      }
+  };
 
   return (
     <div className="relative min-h-screen pb-20 space-y-6 bg-gray-50/50">
@@ -262,12 +281,12 @@ export default function Relatorios() {
         {/* Aba 4: Operacional */}
         <TabsContent value="operacional">
           <RelatoriosOperacional
-            dados={dados.operacional}
-            automacao={dados.automacao}
+            dados={dadosOperacional.operacional}
+            automacao={dadosOperacional.automacao}
             hasAccess={hasAccess}
             isFreePlan={isFreePlan}
             limits={limits}
-            isCompletePlan={!!profilePlano?.isCompletePlan}
+            IsProfissionalPlan={!!planoUsuario?.isProfissionalPlan}
           />
         </TabsContent>
       </Tabs>

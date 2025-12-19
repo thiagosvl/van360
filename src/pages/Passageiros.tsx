@@ -19,18 +19,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreateEscola,
-  useCreatePassageiro,
-  useCreateVeiculo,
-  useDeletePassageiro,
-  useEscolas,
-  useFilters,
-  usePassageiroDialogs,
-  usePassageiros,
-  usePrePassageiros,
-  useToggleAtivoPassageiro,
-  useUpdatePassageiro,
-  useVeiculos,
+    useCreateEscola,
+    useCreatePassageiro,
+    useCreateVeiculo,
+    useDeletePassageiro,
+    useEscolas,
+    useFilters,
+    usePassageiroDialogs,
+    usePassageiros,
+    usePrePassageiros,
+    useToggleAtivoPassageiro,
+    useUpdatePassageiro,
+    useVeiculos,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -239,7 +239,7 @@ export default function Passageiros() {
     openLimiteFranquiaDialog({
       title: "Cobrança Automática",
       description:
-        "A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Completo.",
+        "A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Profissional.",
       hideLimitInfo: true,
     });
   }, [openLimiteFranquiaDialog]);
@@ -371,7 +371,7 @@ export default function Passageiros() {
             openLimiteFranquiaDialog({
               title: "Cobrança Automática",
               description:
-                "A Cobrança Automática envia as faturas e lembretes sozinhas. Automatize sua rotina com o Plano Completo.",
+                "A Cobrança Automática envia as faturas e lembretes sozinhas. Automatize sua rotina com o Plano Profissional.",
               hideLimitInfo: true,
               targetPassengerId: passageiro.id,
               onUpgradeSuccess: () => {
@@ -529,11 +529,19 @@ export default function Passageiros() {
 
     const { restore } = updateQuickStartStepWithRollback("step_passageiros");
 
+    // Verificar se pode ligar cobrança automática
+    let enviarCobrancaAutomatica = false;
+    if (canUseCobrancaAutomatica(plano)) {
+        // Passa false pois estamos criando um novo, logo "não está habilitado" ainda na contagem
+        enviarCobrancaAutomatica = limits.franchise.checkAvailability(false);
+    }
+
     createPassageiro.mutate(
       {
         ...fakeData,
         usuario_id: profile.id,
         emitir_cobranca_mes_atual: false,
+        enviar_cobranca_automatica: enviarCobrancaAutomatica,
       },
       {
         onError: () => {

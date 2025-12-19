@@ -6,7 +6,7 @@ import {
     DialogDescription, // eslint-disable-line @typescript-eslint/no-unused-vars
     DialogTitle
 } from "@/components/ui/dialog";
-import { PLANO_COMPLETO, PLANO_ESSENCIAL } from "@/constants";
+import { PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
 import { usePlanos } from "@/hooks/api/usePlanos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -22,7 +22,7 @@ interface ContextualUpsellDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   feature: "passageiros" | "controle_gastos" | "relatorios" | "automacao" | "outros";
-  targetPlan: typeof PLANO_ESSENCIAL | typeof PLANO_COMPLETO;
+  targetPlan: typeof PLANO_ESSENCIAL | typeof PLANO_PROFISSIONAL;
   onConfirm?: () => void; 
   onViewAllPlans: () => void;
   onSuccess?: () => void;
@@ -117,7 +117,7 @@ export function ContextualUpsellDialog({
       lightColor: "bg-blue-50",
       textColor: "text-blue-700"
   } : {
-      name: "Plano Completo",
+      name: "Plano Profissional",
       price: formattedPrice || "R$ --,--",
       period: "/mês",
       color: "bg-purple-600",

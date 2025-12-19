@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { PLANO_COMPLETO, PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
+import { PLANO_ESSENCIAL, PLANO_GRATUITO, PLANO_PROFISSIONAL } from "@/constants";
 import { usePlanos } from "@/hooks";
 import { useSEO } from "@/hooks/useSEO";
 import { cn } from "@/lib/utils";
@@ -83,7 +83,7 @@ const Index = () => {
     | undefined) ?? { bases: [], sub: [] };
 
   const planosOrdenados = planosDataTyped.bases.sort((a, b) => {
-    const order = [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_COMPLETO];
+    const order = [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_PROFISSIONAL];
     return order.indexOf(a.slug) - order.indexOf(b.slug);
   });
 
@@ -103,7 +103,7 @@ const Index = () => {
           highlight: false,
           badge: null,
         };
-      case PLANO_COMPLETO:
+      case PLANO_PROFISSIONAL:
         return {
           buttonText: "Quero Automatizar",
           buttonVariant: "default" as const,
@@ -938,7 +938,7 @@ const Index = () => {
             <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto items-start">
               {planosOrdenados.map((plano) => {
                 const config = getPlanoConfig(plano.slug);
-                const isCompleto = plano.slug === PLANO_COMPLETO;
+                const isProfissional = plano.slug === PLANO_PROFISSIONAL;
                 const isGratuito = plano.slug === PLANO_GRATUITO;
                 const isEssencial = plano.slug === PLANO_ESSENCIAL;
 
@@ -947,7 +947,7 @@ const Index = () => {
                     ? plano.preco_promocional
                     : plano.preco;
 
-                if (isCompleto) {
+                if (isProfissional) {
                   const subPlanos = planosDataTyped.sub.filter(
                     (sub) => sub.parent_id === plano.id
                   );
@@ -1003,7 +1003,7 @@ const Index = () => {
                             </>
                           ) : (
                             <>
-                              {isCompleto && (
+                              {isProfissional && (
                                 <span className="text-xs text-slate-500 block font-medium mb-1">
                                   A partir de
                                 </span>
@@ -1080,7 +1080,7 @@ const Index = () => {
               </div>
               <div>
                 <p className="font-bold text-slate-900 text-sm md:text-base">
-                  O Plano Completo te economiza{" "}
+                  O Plano Profissional te economiza{" "}
                   <span className="text-blue-700">15+ horas</span> por mês.
                 </p>
                 <p className="text-xs md:text-sm text-slate-600">
@@ -1107,7 +1107,7 @@ const Index = () => {
                       </div>
                       <div className="text-center">Grátis</div>
                       <div className="text-center">Essencial</div>
-                      <div className="text-center text-blue-700">Completo</div>
+                      <div className="text-center text-blue-700">Profissional</div>
                     </div>
 
                     {[
@@ -1221,7 +1221,7 @@ const Index = () => {
                           )}
                         </div>
 
-                        {/* Coluna Completo com destaque sutil */}
+                        {/* Coluna Profissional com destaque sutil */}
                         <div className="text-center flex justify-center bg-blue-50/30 -my-2 py-2 sm:-my-4 sm:py-4">
                           {typeof row.comp === "boolean" ? (
                             row.comp ? (
@@ -1286,7 +1286,7 @@ const Index = () => {
               <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
                 O <strong>Gratuito</strong> é para testar. O{" "}
                 <strong>Essencial</strong> organiza sua gestão. O{" "}
-                <strong>Completo</strong> automatiza tudo (cobrança e baixa de
+                <strong>Profissional</strong> automatiza tudo (cobrança e baixa de
                 PIX) e te dá folga.
               </AccordionContent>
             </AccordionItem>

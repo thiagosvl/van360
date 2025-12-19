@@ -1,10 +1,12 @@
 import {
   ASSINATURA_COBRANCA_STATUS_CANCELADA,
   ASSINATURA_USUARIO_STATUS_ATIVA,
+  ASSINATURA_USUARIO_STATUS_PENDENTE_PAGAMENTO,
+  ASSINATURA_USUARIO_STATUS_SUSPENSA,
   ASSINATURA_USUARIO_STATUS_TRIAL,
-  PLANO_COMPLETO,
   PLANO_ESSENCIAL,
   PLANO_GRATUITO,
+  PLANO_PROFISSIONAL,
 } from "@/constants";
 
 /**
@@ -19,7 +21,7 @@ export function extractPlanoData(assinatura: any) {
   const agora = new Date();
 
   const isFreePlan = slugBase === PLANO_GRATUITO;
-  const isCompletePlan = slugBase === PLANO_COMPLETO;
+  const isProfissionalPlan = slugBase === PLANO_PROFISSIONAL;
   const isEssentialPlan = slugBase === PLANO_ESSENCIAL;
 
   const isTrial = assinatura.status === ASSINATURA_USUARIO_STATUS_TRIAL;
@@ -49,14 +51,17 @@ export function extractPlanoData(assinatura: any) {
     status: assinatura.status,
     trial_end_at: assinatura.trial_end_at,
     ativo: assinatura.ativo,
-    planoCompleto: plano,
+    planoProfissional: plano,
     isTrial,
     isValidTrial,
     isActive,
     isValidPlan,
     isFreePlan,
-    isCompletePlan,
+    isProfissionalPlan,
     isEssentialPlan,
+    isPendente: assinatura.status === ASSINATURA_USUARIO_STATUS_PENDENTE_PAGAMENTO,
+    isSuspensa: assinatura.status === ASSINATURA_USUARIO_STATUS_SUSPENSA,
+    isCanceled,
   };
 }
 
@@ -96,7 +101,7 @@ export function getPlanoUsuario(usuario: any) {
  * Valida se o usuário tem acesso à funcionalidade de solicitação de passageiros (pre-passageiro)
  * 
  * Regras:
- * - Pode usar: Qualquer plano ativo (Gratuito, Essencial trial/ativo, Completo ativo)
+ * - Pode usar: Qualquer plano ativo (Gratuito, Essencial trial/ativo, Profissional ativo)
  * - Não pode usar: Apenas se a assinatura não estiver ativa (suspensa ou cancelada)
  * 
  * Nota: A funcionalidade está disponível para todos os planos ativos para maximizar o uso
@@ -141,7 +146,7 @@ export function hasPrePassageiroAccess(planoData: ReturnType<typeof extractPlano
  * Valida se o usuário tem acesso aos relatórios
  * 
  * Regras:
- * - Plano Completo (qualquer status válido) OU
+ * - Plano Profissional (qualquer status válido) OU
  * - Plano Essencial ativo OU
  * - Trial válido
  */
@@ -149,7 +154,7 @@ export function hasRelatoriosAccess(planoData: ReturnType<typeof extractPlanoDat
   if (!planoData) return false;
 
   return (
-    planoData.isCompletePlan ||
+    planoData.isProfissionalPlan ||
     (planoData.isEssentialPlan && planoData.isActive) ||
     (planoData.isTrial && planoData.isValidTrial)
   );

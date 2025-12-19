@@ -43,11 +43,11 @@ interface CarteirinhaCobrancasProps {
   cobrancas: Cobranca[];
   passageiro: Passageiro;
   plano?: {
-    isCompletePlan?: boolean;
+    isProfissionalPlan?: boolean;
     slug?: string;
     isEssentialPlan?: boolean;
   } | null;
-  planoCompletoAtivo: boolean;
+  planoProfissionalAtivo: boolean;
   yearFilter: string;
   availableYears: string[];
   mostrarTodasCobrancas: boolean;
@@ -127,8 +127,8 @@ export const CarteirinhaCobrancas = ({
     ? cobrancas
     : cobrancas.slice(0, limiteCobrancasMobile);
 
-  // Verificar se o plano gera cobranças automaticamente (ESSENCIAL ou COMPLETO)
-  const geraCobrancasAutomaticas = canUsePremiumFeatures(plano);
+  // Verificar se o plano gera cobranças automaticamente (ESSENCIAL ou PROFISSIONAL)
+  const geraCobrancasAutomaticas = canUsePremiumFeatures(plano as any);
 
   return (
     <motion.div
@@ -487,7 +487,6 @@ export const CarteirinhaCobrancas = ({
                           >
                             <CobrancaActionsMenu
                               cobranca={cobranca}
-                              passageiroId={passageiro.id}
                               plano={plano}
                               onVerCobranca={() =>
                                 onNavigateToCobranca(cobranca.id)
