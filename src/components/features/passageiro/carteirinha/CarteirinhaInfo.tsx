@@ -252,9 +252,9 @@ export const CarteirinhaInfo = ({
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3, duration: 0.3 }}
-                  className="shrink-0 absolute top-5 lg:-top-3.5 right-2"
+                  className="shrink-0 absolute top-5 lg:-top-3.5 right-4"
                 >
-                  <div className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-700 px-2.5 py-1 rounded-lg shadow-sm">
+                  <div className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-700 px-2.5 py-1 rounded-sm shadow-sm">
                     <AlertCircle className="h-3.5 w-3.5" />
                     <span className="text-xs font-semibold whitespace-nowrap">
                       Em atraso
@@ -332,6 +332,21 @@ export const CarteirinhaInfo = ({
           </div>
 
           {/* Botões de Ação Sempre Visíveis */}
+          {passageiro.enviar_cobranca_automatica && (
+            <div className="mb-4 flex items-center gap-3 px-3 py-2 bg-indigo-50 border border-indigo-100 rounded-xl">
+              <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm">
+                <Bot className="h-4 w-4 text-indigo-600" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 ">
+                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                  <p className="text-xs font-bold text-indigo-700 uppercase tracking-wide">
+                    Cobrança Automática Ativa
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="space-y-2 mb-6">
             {/* Botão de Cobrança Automática - Sempre visível */}
             {passageiro.enviar_cobranca_automatica ? (
