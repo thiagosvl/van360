@@ -107,10 +107,43 @@ export function PlanUpgradeDialog({
     }, [open, isEssencial, isProfissional, defaultTab]);
 
     // Filtrar opções que sejam menores que a quantidade atual de passageiros
+    // Filtrar opções que sejam menores que a quantidade atual de passageiros
     const availableFranchiseOptions = useMemo(() => {
         if (!franchiseOptions) return [];
-        return franchiseOptions.filter(opt => (opt.quantidade || 0) >= passageirosAtivos);
-    }, [franchiseOptions, passageirosAtivos]);
+        // Fix: Access the subscription from the array, as 'assinatura' property does not exist on the raw profile object from useProfile
+        const assinatura = profile?.assinaturas_usuarios?.[0];
+        const franquiaAtual = assinatura?.franquia_cobrancas_mes || assinatura?.franquia_contratada_cobrancas || 0;
+
+        console.log("DEBUG: PlanUpgradeDialog Filter", {
+            isProfissional,
+            planoAtualSlug,
+            franquiaAtual,
+            franquia_mes: assinatura?.franquia_cobrancas_mes,
+            franquia_contratada: assinatura?.franquia_contratada_cobrancas,
+            passageirosAtivos,
+            franchiseOptionsLength: franchiseOptions.length
+        });
+
+        return franchiseOptions.filter(opt => {
+            const quantidade = opt.quantidade || 0;
+            
+            // 1. Deve suportar os passageiros ativos atuais (Requisito Básico)
+            if (quantidade < passageirosAtivos) {
+                console.log(`DEBUG: Filtered OUT (Active Users) - Opt: ${quantidade}, Active: ${passageirosAtivos}`);
+                return false;
+            }
+
+            // 2. Se já for Profissional, só mostrar opções MAIORES que a franquia atual (Upgrade)
+            // Isso evita erro no backend "Esta operação não é um upgrade" e oculta a opção atual
+            if (isProfissional && quantidade <= franquiaAtual) {
+                console.log(`DEBUG: Filtered OUT (Not Upgrade) - Opt: ${quantidade}, Current: ${franquiaAtual}`);
+                return false;
+            }
+
+            console.log(`DEBUG: Kept Option - Opt: ${quantidade}`);
+            return true;
+        });
+    }, [franchiseOptions, passageirosAtivos, isProfissional, profile?.assinatura?.franquia_cobrancas_mes, planoAtualSlug]);
 
 
 
@@ -451,7 +484,7 @@ export function PlanUpgradeDialog({
                                         <BenefitItem text="Tudo do Plano Essencial" highlighted />
                                         <div className="h-px bg-purple-100 my-1"/>
                                         <BenefitItem 
-                                            text={`Até ${currentTierOption?.quantidade || 'X'} Alunos no Automático`} 
+                                            text={`Até ${currentTierOption?.quantidade || 'X'} Passageiros no Automático`} 
                                             highlighted 
                                         />
                                         <BenefitItem text="Cobrança Automática (Zap)" />
@@ -516,7 +549,7 @@ export function PlanUpgradeDialog({
                     cobrancaId={pagamentoDialog.cobrancaId}
                     valor={pagamentoDialog.valor}
                     nomePlano={pagamentoDialog.nomePlano}
-                    quantidadeAlunos={pagamentoDialog.franquia}
+                    quantidadePassageiros={pagamentoDialog.franquia}
                     usuarioId={user?.id}
                     context={activeTab === "completo" ? "upgrade" : undefined}
                     onPaymentVerified={() => setIsPaymentVerified(true)}
