@@ -47,7 +47,12 @@ export function PullToRefreshWrapper({ onRefresh, children }: PullToRefreshProps
       
       if (window.scrollY > 0 || isRefreshing || isScrollLocked || isInsideDialog) return;
       
+      
       const startY = e.touches[0].clientY;
+
+      // Proteção de Navbar: Ignora toques nos primeiros 80px (header fixo)
+      if (startY < 80) return;
+
       let isPulling = false;
 
       const handleTouchMove = (e: TouchEvent) => {
