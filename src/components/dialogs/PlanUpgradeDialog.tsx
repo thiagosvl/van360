@@ -462,166 +462,126 @@ export function PlanUpgradeDialog({
               {/* Conteúdo Profissional */}
               <TabsContent
                 value="profissional"
-                className="p-6 space-y-5 m-0 focus-visible:ring-0 outline-none"
+                className="p-6 space-y-6 m-0 focus-visible:ring-0 outline-none"
               >
-                <div className="text-center space-y-1 mb-4">
-                  <div className="inline-flex items-center gap-2 bg-purple-50 px-3 py-1 rounded-full text-purple-700 text-xs font-bold uppercase tracking-wider mb-2">
-                    <TrendingUp className="w-3 h-3" />
-                    {currentTierOption?.recomendado
-                      ? "Para todos seus passageiros"
-                      : "Tenha folga para o futuro"}
-                  </div>
-
-                  {availableFranchiseOptions &&
-                  availableFranchiseOptions.length > 0 ? (
+                  {availableFranchiseOptions && availableFranchiseOptions.length > 0 ? (
                     <>
-                      <h3 className="text-3xl font-bold text-gray-900 tracking-tight flex flex-col items-center leading-none">
-                        {(() => {
-                          // Usa o currentTierOption para pegar preço correto.
-                          // A lógica aqui é visual: Mostramos o preço que será cobrado.
-
-                          // 1. Se for Custom (Sob Medida)
-                          if (currentTierOption?.isCustom) {
-                            if (customPrice) {
-                              return (
-                                <div className="flex items-baseline gap-1">
-                                  {formatCurrency(customPrice)}
-                                  <span className="text-sm font-medium text-gray-500">
-                                    /mês
-                                  </span>
-                                </div>
-                              );
-                            }
-                            // Loading state for custom price
-                            return (
-                              <Loader2 className="w-6 h-6 animate-spin text-gray-300" />
-                            );
-                          }
-
-                          // 2. Se for Plano Oficial (Tier de Prateleira)
-                          // Buscamos o plano original nos dados para checar promoções e valores
-                          const officialPlan = planos?.find(
-                            (p: any) => p.id === currentTierOption?.id
-                          );
-
-                          if (officialPlan) {
-                            const hasPromo =
-                              officialPlan.promocao_ativa &&
-                              officialPlan.preco_promocional;
-                            const finalPrice = hasPromo
-                              ? Number(officialPlan.preco_promocional)
-                              : Number(officialPlan.preco);
-
-                            return (
-                              <div className="flex flex-col items-center">
-                                {hasPromo && (
-                                  <div className="self-center pb-1 text-xs text-gray-400 line-through font-normal mb-[-2px]">
-                                    De{" "}
-                                    {formatCurrency(Number(officialPlan.preco))}
-                                  </div>
-                                )}
-                                <div className="flex items-baseline gap-1">
-                                  {formatCurrency(finalPrice)}
-                                  <span className="text-sm font-medium text-gray-500">
-                                    /mês
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          }
-
-                          // Fallback (não deveria acontecer com a nova lógica)
-                          return (
-                            <span className="text-gray-400 text-lg">--</span>
-                          );
-                        })()}
-                      </h3>
-                      {/* Tier Selector Moved Here */}
-                      {availableFranchiseOptions &&
-                        availableFranchiseOptions.length > 0 && (
-                          <div className="flex flex-col items-center mt-4 mb-2">
-                            <p className="text-sm uppercase mt-3 font-bold   text-gray-500 tracking-wide mb-2.5">
-                              Quantos passageiros no automático?
-                            </p>
-                            <div className="flex flex-wrap justify-center gap-2">
-                              {availableFranchiseOptions
-                                .sort(
-                                  (a, b) =>
-                                    (a?.quantidade || 0) - (b?.quantidade || 0)
-                                )
-                                .map((opt) => (
-                                  <button
-                                    key={opt?.id}
-                                    onClick={() => {
-                                      if (opt?.id) setSelectedTierId(opt.id);
-                                    }}
-                                    className={cn(
-                                      "px-3 py-2 rounded-lg text-xs font-bold border transition-all",
-                                      opt?.id === currentTierOption?.id
-                                        ? "bg-purple-600 border-purple-600 text-white shadow-md scale-105"
-                                        : "bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
-                                    )}
-                                  >
-                                    Até {opt?.quantidade} Passageiros
-                                  </button>
-                                ))}
+                        {/* 1. SELETOR (Segmented Control) */}
+                        <div className="space-y-3">
+                            <div className="text-center">
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                    Quantos passageiros?
+                                </span>
                             </div>
-                          </div>
-                        )}
-                      {(!availableFranchiseOptions ||
-                        availableFranchiseOptions.length === 0) && (
-                        <p className="text-sm text-purple-600 font-medium mt-1">
-                          {currentTierOption?.quantidade} Passageiros no
-                          Automático
-                        </p>
-                      )}
+                            <div className="bg-gray-100 p-1.5 rounded-2xl flex flex-wrap justify-center gap-1.5">
+                                {availableFranchiseOptions
+                                    .sort((a, b) => (a?.quantidade || 0) - (b?.quantidade || 0))
+                                    .map((opt) => {
+                                        const isSelected = opt?.id === currentTierOption?.id;
+                                        return (
+                                            <button
+                                                key={opt?.id}
+                                                onClick={() => {
+                                                    if (opt?.id) setSelectedTierId(opt.id);
+                                                }}
+                                                className={cn(
+                                                    "flex-1 min-w-[70px] py-2.5 px-3 rounded-xl text-sm font-semibold transition-all duration-200 border border-transparent",
+                                                    isSelected
+                                                        ? "bg-white text-violet-700 shadow-sm border-gray-100 scale-[1.02]"
+                                                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
+                                                )}
+                                            >
+                                                {opt?.quantidade}
+                                            </button>
+                                        );
+                                    })}
+                            </div>
+                        </div>
+
+                        {/* 2. HERO SECTION (Preço) */}
+                        <div className="text-center py-2 space-y-1 min-h-[100px] flex flex-col justify-center transition-all duration-300">
+                             {(() => {
+                                // Lógica de Renderização do Preço
+                                if (currentTierOption?.isCustom) {
+                                    if (customPrice) {
+                                        return (
+                                            <>
+                                                <div className="flex items-baseline justify-center gap-1.5 text-gray-900">
+                                                    <span className="text-4xl font-bold tracking-tight">{formatCurrency(customPrice)}</span>
+                                                    <span className="text-gray-400 font-medium text-lg">/mês</span>
+                                                </div>
+                                                <p className="text-xs text-gray-400 font-medium">Plano sob medida</p>
+                                            </>
+                                        );
+                                    }
+                                    return <Loader2 className="w-8 h-8 animate-spin text-gray-300 mx-auto" />;
+                                }
+
+                                const officialPlan = planos?.find((p: any) => p.id === currentTierOption?.id);
+                                if (officialPlan) {
+                                    const hasPromo = officialPlan.promocao_ativa && officialPlan.preco_promocional;
+                                    const finalPrice = hasPromo ? Number(officialPlan.preco_promocional) : Number(officialPlan.preco);
+
+                                    return (
+                                        <>
+                                            {hasPromo && (
+                                                <span className="inline-flex items-center gap-1 mx-auto bg-green-50 text-green-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide mb-1">
+                                                    <TrendingUp className="w-3 h-3" />
+                                                    Melhor Preço
+                                                </span>
+                                            )}
+                                            <div className="flex items-baseline justify-center gap-1.5 text-gray-900">
+                                                <span className="text-4xl font-bold tracking-tight">{formatCurrency(finalPrice)}</span>
+                                                <span className="text-gray-400 font-medium text-lg">/mês</span>
+                                            </div>
+                                            {hasPromo && (
+                                                <p className="text-xs text-gray-400 line-through">
+                                                    De {formatCurrency(Number(officialPlan.preco))}
+                                                </p>
+                                            )}
+                                        </>
+                                    );
+                                }
+                                return <span className="text-gray-400 text-lg">--</span>;
+                            })()}
+                        </div>
+
+                        {/* 3. LISTA DE BENEFÍCIOS */}
+                        <div className="space-y-4 pt-2">
+                             <div className="space-y-3.5">
+                                 {/* Benefícios Destaque */}
+                                <BenefitItem text="Passageiros ILIMITADOS (Cadastro)" highlighted />
+                                <BenefitItem 
+                                    text={`Até ${currentTierOption?.quantidade || 'X'} Passageiros no Automático`} 
+                                    highlighted 
+                                />
+                                <div className="h-px bg-gray-100 my-2" />
+                                
+                                <BenefitItem text="Cobrança Automática (Zap)" />
+                                <BenefitItem text="Baixas de pagamento automáticas" />
+                                <BenefitItem text="Envio de Recibos no Pix" />
+                                <BenefitItem text="Relatórios Financeiros" />
+                             </div>
+                        </div>
+
+                        {/* Botão Ver Mais Benefícios */}
+                        <button 
+                            onClick={() => setIsBenefitsOpen(true)}
+                            className="w-full text-center text-xs font-semibold text-gray-400 hover:text-violet-600 transition-colors flex items-center justify-center gap-1 py-2 mt-2"
+                        >
+                            Ver todos recursos
+                            <ChevronRight className="w-3 h-3" />
+                        </button>
                     </>
                   ) : (
-                    <div className="h-20 flex items-center justify-center">
-                      <Loader2 className="animate-spin text-gray-300" />
+                    <div className="h-40 flex items-center justify-center flex-col gap-3">
+                        <Loader2 className="animate-spin text-gray-300 w-8 h-8" />
+                        <p className="text-sm text-gray-400">Carregando planos...</p>
                     </div>
                   )}
-                </div>
-
-                {/* Card de Destaque */}
-                <div className="bg-gradient-to-br from-purple-50 to-white border border-purple-100 p-4 rounded-xl shadow-sm relative overflow-hidden group hover:border-purple-200 transition-colors cursor-default">
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
-
-                  <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-purple-600 fill-current" />
-                    Piloto Automático
-                  </h4>
-
-                  <div className="space-y-2.5">
-                    <BenefitItem
-                      text="Passageiros ILIMITADOS (Cadastro)"
-                      highlighted
-                    />
-                    <div className="h-px bg-purple-100 my-1" />
-                    <BenefitItem
-                      text={`Até ${
-                        currentTierOption?.quantidade || "X"
-                      } Passageiros no Automático`}
-                      highlighted
-                    />
-                    <BenefitItem text="Tudo do Plano Essencial" />
-                    <BenefitItem text="Cobrança Automática (Zap)" />
-                    <BenefitItem text="Baixas e Notificações Auto." />
-                    <BenefitItem text="Envio de Recibos no Pix" />
-                  </div>
-                </div>
-
-                {/* Botão Ver Benefícios (Movido para cá) */}
-                <button
-                  onClick={() => setIsBenefitsOpen(true)}
-                  className="w-full text-center text-xs font-semibold text-gray-400 hover:text-purple-600 transition-colors flex items-center justify-center gap-1 py-1"
-                >
-                  Ver todos benefícios
-                  <ChevronRight className="w-3 h-3" />
-                </button>
-
-                {/* Espaçador para garantir scroll se necessário */}
-                <div className="h-4 sm:h-0" />
+                  
+                  {/* Espaçador */}
+                  <div className="h-4 sm:h-0" />
               </TabsContent>
             </div>
           </Tabs>
@@ -644,14 +604,14 @@ export function PlanUpgradeDialog({
               </Button>
             ) : (
               <Button
-                className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-lg shadow-purple-100 transition-all text-base mb-0"
+                className="w-full h-12 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg shadow-violet-100 transition-all text-base mb-0"
                 onClick={onUpgradeProfissional}
                 disabled={loading || !currentTierOption}
               >
                 {loading ? (
                   <Loader2 className="animate-spin w-5 h-5" />
                 ) : (
-                  "Ativar Profissional"
+                  `Ativar Plano (Até ${currentTierOption?.quantidade || 'X'} Passageiros)`
                 )}
               </Button>
             )}
