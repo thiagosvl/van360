@@ -28,11 +28,11 @@ import { formatCurrency } from "@/utils/formatters/currency";
 import {
     Check,
     ChevronRight,
+    Crown,
     Loader2,
     Sparkles,
-    TrendingUp,
     X,
-    Zap,
+    Zap
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import PagamentoAssinaturaDialog from "./PagamentoAssinaturaDialog";
@@ -382,7 +382,7 @@ export function PlanUpgradeDialog({
                 </TabsTrigger>
                 <TabsTrigger
                   value="profissional"
-                  className="h-full rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-700 text-gray-500 font-semibold transition-all shadow-none"
+                  className="h-full rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-violet-600 data-[state=active]:text-violet-700 text-gray-500 font-semibold transition-all shadow-none"
                 >
                   Plano Profissional
                 </TabsTrigger>
@@ -394,68 +394,80 @@ export function PlanUpgradeDialog({
               {/* Conteúdo Essencial */}
               <TabsContent
                 value="essencial"
-                className="p-6 space-y-5 m-0 focus-visible:ring-0 outline-none"
+                className="p-6 space-y-6 m-0 focus-visible:ring-0 outline-none"
               >
-                <div className="text-center space-y-2">
+                {/* 1. Hero Price (Standardized) */}
+                <div className="text-center py-2 space-y-1">
                   <div className="inline-flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full text-blue-700 text-xs font-bold uppercase tracking-wider mb-2">
                     <Sparkles className="w-3 h-3" />
                     Grátis por 7 dias
                   </div>
-                  <h3 className="text-3xl font-bold text-gray-900 tracking-tight flex flex-col items-center">
-                    <div className="flex items-baseline gap-1">
-                      {planoEssencialData
-                        ? formatCurrency(
-                            Number(
-                              planoEssencialData.promocao_ativa
-                                ? planoEssencialData.preco_promocional
-                                : planoEssencialData.preco
+                  <div className="flex flex-col items-center">
+                    {planoEssencialData?.promocao_ativa &&
+                      planoEssencialData?.preco_promocional && (
+                        <span className="text-sm text-gray-400 line-through font-medium mb-[-4px]">
+                          De {formatCurrency(Number(planoEssencialData.preco))}
+                        </span>
+                      )}
+                    <div className="flex items-baseline justify-center gap-1.5 text-gray-900">
+                      <span className="text-4xl font-extrabold tracking-tight">
+                        {planoEssencialData
+                          ? formatCurrency(
+                              Number(
+                                planoEssencialData.promocao_ativa
+                                  ? planoEssencialData.preco_promocional
+                                  : planoEssencialData.preco
+                              )
                             )
-                          )
-                        : "R$ --"}
-                      <span className="text-sm font-medium text-gray-500">
+                          : "R$ --"}
+                      </span>
+                      <span className="text-lg font-medium text-gray-400">
                         /mês
                       </span>
                     </div>
-                    {planoEssencialData?.promocao_ativa &&
-                      planoEssencialData?.preco_promocional && (
-                        <div className="text-xs text-gray-400 line-through font-medium">
-                          {formatCurrency(Number(planoEssencialData.preco))}
-                        </div>
-                      )}
-                  </h3>
+                  </div>
                 </div>
 
-                <div className="space-y-3 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-                  <BenefitItem text="Passageiros Ilimitados" highlighted />
-                  <BenefitItem text="Organização Básica" />
-                  <BenefitItem text="Suporte Prioritário" />
+                {/* 2. Benefits List (Standardized) */}
+                <div className="space-y-4 pt-2">
+                  <div className="space-y-3.5">
+                    <BenefitItem text="Passageiros Ilimitados" highlighted />
+                    <BenefitItem text="Organização Básica" />
+                    <BenefitItem text="Suporte Prioritário" />
+                  </div>
                 </div>
 
-                {/* Botão Ver Benefícios */}
+                {/* Botão Ver Mais Benefícios */}
                 <button
                   onClick={() => setIsBenefitsOpen(true)}
-                  className="w-full text-center text-xs font-semibold text-gray-400 hover:text-blue-600 transition-colors flex items-center justify-center gap-1 py-1"
+                  className="w-full text-center text-xs font-semibold text-gray-400 hover:text-blue-600 transition-colors flex items-center justify-center gap-1 py-2 mt-2"
                 >
-                  Ver todos benefícios
+                  Ver todos recursos
                   <ChevronRight className="w-3 h-3" />
                 </button>
 
-                {/* Upsell para Profissional */}
-                <div className="flex items-center justify-between px-2 py-1">
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                    <Zap className="w-3 h-3 text-amber-500/70" />
-                    <span>Cobrança Manual</span>
+                {/* 3. Upsell Trigger (Banner) */}
+                <div
+                  onClick={() => setActiveTab("profissional")}
+                  className="mt-6 bg-violet-50 border border-violet-100 rounded-xl p-4 flex items-center justify-between cursor-pointer group hover:bg-violet-100 hover:border-violet-200 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 group-hover:bg-white transition-colors">
+                      <Zap className="w-4 h-4 fill-current animate-pulse" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-bold text-violet-900 leading-tight">
+                        Quero 100% Automático
+                      </p>
+                      <p className="text-[11px] text-violet-600/80 leading-tight mt-0.5">
+                        Cobranças e recibos no piloto automático
+                      </p>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => setActiveTab("profissional")}
-                    className="text-xs font-bold text-purple-600 hover:text-purple-700 hover:underline flex items-center gap-1"
-                  >
-                    Quero 100% Automático
-                    <ChevronRight className="w-3 h-3" />
-                  </button>
+                  <ChevronRight className="w-5 h-5 text-violet-400 group-hover:text-violet-700 transition-colors" />
                 </div>
 
-                {/* Espaçador para garantir scroll se necessário */}
+                {/* Espaçador */}
                 <div className="h-4 sm:h-0" />
               </TabsContent>
 
@@ -464,124 +476,182 @@ export function PlanUpgradeDialog({
                 value="profissional"
                 className="p-6 space-y-6 m-0 focus-visible:ring-0 outline-none"
               >
-                  {availableFranchiseOptions && availableFranchiseOptions.length > 0 ? (
-                    <>
-                        {/* 1. SELETOR (Segmented Control) */}
-                        <div className="space-y-3">
-                            <div className="text-center">
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                    Quantos passageiros?
-                                </span>
-                            </div>
-                            <div className="bg-gray-100 p-1.5 rounded-2xl flex flex-wrap justify-center gap-1.5">
-                                {availableFranchiseOptions
-                                    .sort((a, b) => (a?.quantidade || 0) - (b?.quantidade || 0))
-                                    .map((opt) => {
-                                        const isSelected = opt?.id === currentTierOption?.id;
-                                        return (
-                                            <button
-                                                key={opt?.id}
-                                                onClick={() => {
-                                                    if (opt?.id) setSelectedTierId(opt.id);
-                                                }}
-                                                className={cn(
-                                                    "flex-1 min-w-[70px] py-2.5 px-3 rounded-xl text-sm font-semibold transition-all duration-200 border border-transparent",
-                                                    isSelected
-                                                        ? "bg-white text-violet-700 shadow-sm border-gray-100 scale-[1.02]"
-                                                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
-                                                )}
-                                            >
-                                                {opt?.quantidade}
-                                            </button>
-                                        );
-                                    })}
-                            </div>
+                {availableFranchiseOptions &&
+                availableFranchiseOptions.length > 0 ? (
+                  <>
+                    {/* 1. SELETOR (Segmented Control Refined) */}
+                    <div className="space-y-3">
+                      {/* Check if current is Custom AND it is strictly custom scenario (no alternatives) or simply render normally to allow switching if possible? 
+                          User request: "Quando não houver opções de tiers...". 
+                          If upgrades exist, we show selector. If only custom exists, show Card. */}
+                      {availableFranchiseOptions.length === 1 &&
+                      availableFranchiseOptions[0].isCustom ? (
+                        <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 flex items-center justify-center gap-3">
+                          <Crown className="w-5 h-5 text-violet-600 fill-current" />
+                          <div className="text-center">
+                            <span className="block text-xs font-bold text-violet-700 uppercase tracking-wider">
+                              Sua Frota Atual
+                            </span>
+                            <span className="text-lg font-bold text-violet-900">
+                              {currentTierOption?.quantidade} Passageiros
+                            </span>
+                          </div>
                         </div>
-
-                        {/* 2. HERO SECTION (Preço) */}
-                        <div className="text-center py-2 space-y-1 min-h-[100px] flex flex-col justify-center transition-all duration-300">
-                             {(() => {
-                                // Lógica de Renderização do Preço
-                                if (currentTierOption?.isCustom) {
-                                    if (customPrice) {
-                                        return (
-                                            <>
-                                                <div className="flex items-baseline justify-center gap-1.5 text-gray-900">
-                                                    <span className="text-4xl font-bold tracking-tight">{formatCurrency(customPrice)}</span>
-                                                    <span className="text-gray-400 font-medium text-lg">/mês</span>
-                                                </div>
-                                                <p className="text-xs text-gray-400 font-medium">Plano sob medida</p>
-                                            </>
-                                        );
-                                    }
-                                    return <Loader2 className="w-8 h-8 animate-spin text-gray-300 mx-auto" />;
-                                }
-
-                                const officialPlan = planos?.find((p: any) => p.id === currentTierOption?.id);
-                                if (officialPlan) {
-                                    const hasPromo = officialPlan.promocao_ativa && officialPlan.preco_promocional;
-                                    const finalPrice = hasPromo ? Number(officialPlan.preco_promocional) : Number(officialPlan.preco);
-
-                                    return (
-                                        <>
-                                            {hasPromo && (
-                                                <span className="inline-flex items-center gap-1 mx-auto bg-green-50 text-green-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide mb-1">
-                                                    <TrendingUp className="w-3 h-3" />
-                                                    Melhor Preço
-                                                </span>
-                                            )}
-                                            <div className="flex items-baseline justify-center gap-1.5 text-gray-900">
-                                                <span className="text-4xl font-bold tracking-tight">{formatCurrency(finalPrice)}</span>
-                                                <span className="text-gray-400 font-medium text-lg">/mês</span>
-                                            </div>
-                                            {hasPromo && (
-                                                <p className="text-xs text-gray-400 line-through">
-                                                    De {formatCurrency(Number(officialPlan.preco))}
-                                                </p>
-                                            )}
-                                        </>
-                                    );
-                                }
-                                return <span className="text-gray-400 text-lg">--</span>;
-                            })()}
-                        </div>
-
-                        {/* 3. LISTA DE BENEFÍCIOS */}
-                        <div className="space-y-4 pt-2">
-                             <div className="space-y-3.5">
-                                 {/* Benefícios Destaque */}
-                                <BenefitItem text="Passageiros ILIMITADOS (Cadastro)" highlighted />
-                                <BenefitItem 
-                                    text={`Até ${currentTierOption?.quantidade || 'X'} Passageiros no Automático`} 
-                                    highlighted 
-                                />
-                                <div className="h-px bg-gray-100 my-2" />
-                                
-                                <BenefitItem text="Cobrança Automática (Zap)" />
-                                <BenefitItem text="Baixas de pagamento automáticas" />
-                                <BenefitItem text="Envio de Recibos no Pix" />
-                                <BenefitItem text="Relatórios Financeiros" />
-                             </div>
-                        </div>
-
-                        {/* Botão Ver Mais Benefícios */}
-                        <button 
-                            onClick={() => setIsBenefitsOpen(true)}
-                            className="w-full text-center text-xs font-semibold text-gray-400 hover:text-violet-600 transition-colors flex items-center justify-center gap-1 py-2 mt-2"
-                        >
-                            Ver todos recursos
-                            <ChevronRight className="w-3 h-3" />
-                        </button>
-                    </>
-                  ) : (
-                    <div className="h-40 flex items-center justify-center flex-col gap-3">
-                        <Loader2 className="animate-spin text-gray-300 w-8 h-8" />
-                        <p className="text-sm text-gray-400">Carregando planos...</p>
+                      ) : (
+                        <>
+                          <div className="text-center">
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                              Quantos passageiros?
+                            </span>
+                          </div>
+                          <div className="bg-gray-100 p-1 rounded-xl flex flex-wrap justify-center gap-1">
+                            {availableFranchiseOptions
+                              .sort(
+                                (a, b) =>
+                                  (a?.quantidade || 0) - (b?.quantidade || 0)
+                              )
+                              .map((opt) => {
+                                const isSelected =
+                                  opt?.id === currentTierOption?.id;
+                                return (
+                                  <button
+                                    key={opt?.id}
+                                    onClick={() => {
+                                      if (opt?.id) setSelectedTierId(opt.id);
+                                    }}
+                                    className={cn(
+                                      "flex-1 min-w-[60px] py-2 rounded-lg text-sm font-bold transition-all duration-200",
+                                      isSelected
+                                        ? "bg-white text-violet-700 shadow-sm scale-[1.02]"
+                                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
+                                    )}
+                                  >
+                                    {opt?.quantidade}
+                                  </button>
+                                );
+                              })}
+                          </div>
+                        </>
+                      )}
                     </div>
-                  )}
-                  
-                  {/* Espaçador */}
-                  <div className="h-4 sm:h-0" />
+
+                    {/* 2. HERO SECTION (Preço) */}
+                    <div className="text-center py-2 space-y-1 min-h-[100px] flex flex-col justify-center transition-all duration-300">
+                      {(() => {
+                        // Lógica de Renderização do Preço
+                        if (currentTierOption?.isCustom) {
+                          if (customPrice) {
+                            return (
+                              <>
+                                <div className="flex items-baseline justify-center gap-1.5 text-gray-900">
+                                  <span className="text-4xl font-extrabold tracking-tight">
+                                    {formatCurrency(customPrice)}
+                                  </span>
+                                  <span className="text-gray-400 font-medium text-lg">
+                                    /mês
+                                  </span>
+                                </div>
+                                <p className="text-xs text-gray-400 font-medium">
+                                  Plano sob medida
+                                </p>
+                              </>
+                            );
+                          }
+                          return (
+                            <Loader2 className="w-8 h-8 animate-spin text-gray-300 mx-auto" />
+                          );
+                        }
+
+                        const officialPlan = planos?.find(
+                          (p: any) => p.id === currentTierOption?.id
+                        );
+                        if (officialPlan) {
+                          const hasPromo =
+                            officialPlan.promocao_ativa &&
+                            officialPlan.preco_promocional;
+                          const finalPrice = hasPromo
+                            ? Number(officialPlan.preco_promocional)
+                            : Number(officialPlan.preco);
+
+                          return (
+                            <>
+                              {hasPromo ? (
+                                <div className="flex flex-col items-center">
+                                  <span className="text-sm text-gray-400 line-through font-medium mb-[-4px]">
+                                    De{" "}
+                                    {formatCurrency(Number(officialPlan.preco))}
+                                  </span>
+                                  <div className="flex items-baseline justify-center gap-1.5 text-gray-900">
+                                    <span className="text-4xl font-extrabold tracking-tight">
+                                      {formatCurrency(finalPrice)}
+                                    </span>
+                                    <span className="text-gray-400 font-medium text-lg">
+                                      /mês
+                                    </span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-baseline justify-center gap-1.5 text-gray-900">
+                                  <span className="text-4xl font-extrabold tracking-tight">
+                                    {formatCurrency(finalPrice)}
+                                  </span>
+                                  <span className="text-gray-400 font-medium text-lg">
+                                    /mês
+                                  </span>
+                                </div>
+                              )}
+                            </>
+                          );
+                        }
+                        return (
+                          <span className="text-gray-400 text-lg">--</span>
+                        );
+                      })()}
+                    </div>
+
+                    {/* 3. LISTA DE BENEFÍCIOS */}
+                    <div className="space-y-4 pt-2">
+                      <div className="space-y-3.5">
+                        {/* Benefícios Destaque */}
+                        <BenefitItem
+                          text="Passageiros ILIMITADOS (Cadastro)"
+                          highlighted
+                        />
+                        <BenefitItem
+                          text={`Até ${
+                            currentTierOption?.quantidade || "X"
+                          } Passageiros no Automático`}
+                          highlighted
+                        />
+                        <div className="h-px bg-gray-100 my-2" />
+
+                        <BenefitItem text="Cobrança Automática (Zap)" />
+                        <BenefitItem text="Baixas de pagamento automáticas" />
+                        <BenefitItem text="Envio de Recibos no Pix" />
+                        <BenefitItem text="Relatórios Financeiros" />
+                      </div>
+                    </div>
+
+                    {/* Botão Ver Mais Benefícios */}
+                    <button
+                      onClick={() => setIsBenefitsOpen(true)}
+                      className="w-full text-center text-xs font-semibold text-gray-400 hover:text-violet-600 transition-colors flex items-center justify-center gap-1 py-2 mt-2"
+                    >
+                      Ver todos recursos
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </>
+                ) : (
+                  <div className="h-40 flex items-center justify-center flex-col gap-3">
+                    <Loader2 className="animate-spin text-gray-300 w-8 h-8" />
+                    <p className="text-sm text-gray-400">
+                      Carregando planos...
+                    </p>
+                  </div>
+                )}
+
+                {/* Espaçador */}
+                <div className="h-4 sm:h-0" />
               </TabsContent>
             </div>
           </Tabs>
