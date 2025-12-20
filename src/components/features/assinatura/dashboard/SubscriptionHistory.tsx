@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { ASSINATURA_COBRANCA_STATUS_PAGO, ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO } from "@/constants";
 import { formatPaymentType } from "@/utils/formatters/cobranca";
-import { Calendar, CheckCircle2, CircleDollarSign, Clock, Download, Printer, Receipt } from "lucide-react";
+import { Calendar, Download, Printer, Receipt } from "lucide-react";
 
 interface SubscriptionHistoryProps {
   cobrancas: any[];
@@ -25,23 +25,14 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
       case ASSINATURA_COBRANCA_STATUS_PAGO:
         return { 
             badge: <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200">Pago</Badge>,
-            icon: CheckCircle2,
-            bg: "bg-green-100",
-            color: "text-green-600"
         };
       case ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO:
         return { 
             badge: <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-yellow-200">Pendente</Badge>,
-            icon: Clock,
-            bg: "bg-yellow-100",
-            color: "text-yellow-600"
         };
       default:
         return { 
             badge: <Badge variant="outline" className="text-gray-500">{status}</Badge>,
-            icon: CircleDollarSign,
-            bg: "bg-gray-100",
-            color: "text-gray-600"
         };
     }
   };
@@ -50,18 +41,29 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
      new Date(b.data_vencimento).getTime() - new Date(a.data_vencimento).getTime()
   );
 
+  const getMonthYear = (dateString: string) => {
+    const date = new Date(dateString);
+    // Adiciona o timezone offset para garantir que a data não volte um dia
+    const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+    const adjustedDate = new Date(date.getTime() + userTimezoneOffset);
+    
+    // Capitalize first letter
+    const month = adjustedDate.toLocaleDateString("pt-BR", { month: "long" });
+    const year = adjustedDate.toLocaleDateString("pt-BR", { year: "numeric" });
+    return `${month.charAt(0).toUpperCase() + month.slice(1)} ${year}`;
+  };
+
   const MobileCard = ({ cobranca }: { cobranca: any }) => {
-      const { badge, icon: Icon, bg, color } = getStatusConfig(cobranca.status);
+      const { badge } = getStatusConfig(cobranca.status);
       
       return (
         <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3">
             <div className="flex justify-between items-start">
                 <div className="flex items-center gap-3">
-                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${bg} ${color}`}>
-                        <Icon className="h-5 w-5" />
-                    </div>
                     <div className="flex flex-col">
-                        <span className="font-bold text-gray-900 text-sm">Mensalidade</span>
+                        <span className="font-bold text-gray-900 text-sm">
+                            {getMonthYear(cobranca.data_vencimento)}
+                        </span>
                         <div className="flex items-center gap-1.5 mt-0.5">
                              <Calendar className="w-3 h-3 text-gray-400" />
                              <span className="text-xs text-gray-500">
@@ -126,8 +128,7 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
                 <Table>
                     <thead className="bg-gray-50/50">
                         <TableRow className="border-b border-gray-100 hover:bg-transparent">
-                            <TableHead className="w-[80px] pl-6"></TableHead>
-                            <TableHead className="text-xs font-bold text-gray-400 uppercase tracking-wider">Vencimento</TableHead>
+                            <TableHead className="text-xs font-bold text-gray-400 uppercase tracking-wider w-[200px]">Mês</TableHead>
                             <TableHead className="text-xs font-bold text-gray-400 uppercase tracking-wider">Valor</TableHead>
                             <TableHead className="text-xs font-bold text-gray-400 uppercase tracking-wider">Status</TableHead>
                             <TableHead className="text-right pr-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Ações</TableHead>
@@ -135,16 +136,18 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
                     </thead>
                     <TableBody className="divide-y divide-gray-50">
                             {sortedCobrancas.map((cobranca) => {
-                                const { badge, icon: Icon, bg, color } = getStatusConfig(cobranca.status);
+                                const { badge } = getStatusConfig(cobranca.status);
                                 return (
                                 <TableRow key={cobranca.id} className="hover:bg-gray-50/50 transition-colors border-0">
-                                    <TableCell className="pl-6 py-4 w-[60px]">
-                                        <div className={`h-10 w-10 rounded-full flex items-center justify-center ${bg} ${color}`}>
-                                            <Icon className="h-5 w-5" />
-                                        </div>
-                                    </TableCell>
                                     <TableCell className="py-4 font-medium text-gray-900">
-                                        {new Date(cobranca.data_vencimento).toLocaleDateString("pt-BR")}
+                                        <div className="flex flex-col">
+                                            <span className="font-semibold text-gray-900">
+                                                {getMonthYear(cobranca.data_vencimento)}
+                                            </span>
+                                            <span className="text-xs text-gray-500">
+                                                Venc. {new Date(cobranca.data_vencimento).toLocaleDateString("pt-BR")}
+                                            </span>
+                                        </div>
                                     </TableCell>
                                     <TableCell className="py-4 font-bold text-gray-900">
                                         {Number(cobranca.valor).toLocaleString("pt-BR", {

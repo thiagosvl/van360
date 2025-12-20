@@ -1,15 +1,15 @@
 import {
-    Check,
-    CreditCard,
-    DollarSign,
-    FileText,
-    Plus,
-    Receipt,
-    TrendingDown,
-    TrendingUp,
-    Users,
-    Wallet,
-    Zap,
+  Check,
+  CreditCard,
+  DollarSign,
+  FileText,
+  Plus,
+  Receipt,
+  TrendingDown,
+  TrendingUp,
+  Users,
+  Wallet,
+  Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -31,12 +31,12 @@ import { useSession } from "@/hooks/business/useSession";
 
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import {
-    FEATURE_GASTOS,
-    FEATURE_LIMITE_PASSAGEIROS,
-    PASSAGEIRO_COBRANCA_STATUS_PAGO,
-    PLANO_ESSENCIAL,
-    PLANO_GRATUITO,
-    PLANO_PROFISSIONAL,
+  FEATURE_GASTOS,
+  FEATURE_LIMITE_PASSAGEIROS,
+  PASSAGEIRO_COBRANCA_STATUS_PAGO,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
+  PLANO_PROFISSIONAL,
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
@@ -311,7 +311,9 @@ const Home = () => {
     });
   }, []);
 
-  const handleEscolaCreated = useCallback((novaEscola: any) => {
+  const handleEscolaCreated = useCallback((novaEscola: any, keepOpen?: boolean) => {
+    if (keepOpen) return;
+    
     safeCloseDialog(() => {
       setIsCreatingEscola(false);
       setNovaEscolaId(novaEscola.id);
@@ -666,6 +668,7 @@ const Home = () => {
         onClose={handleCloseEscolaFormDialog}
         onSuccess={handleEscolaCreated}
         profile={profile}
+        allowBatchCreation
       />
 
       <VeiculoFormDialog

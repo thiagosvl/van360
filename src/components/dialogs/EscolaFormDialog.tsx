@@ -12,7 +12,7 @@ import {
   DialogClose,
   DialogContent,
   DialogDescription,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -31,12 +31,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateEscola, useUpdateEscola } from "@/hooks/api/useEscolaMutations";
+import {
+  useCreateEscola,
+  useUpdateEscola,
+} from "@/hooks/api/useEscolaMutations";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { cn } from "@/lib/utils";
 import { cepSchema } from "@/schemas/common"; // Oops, don't import random things.
 import { Escola } from "@/types/escola";
+import { safeCloseDialog } from "@/utils/dialogUtils";
 import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
 import { toast } from "@/utils/notifications/toast";
 import { validateEnderecoFields } from "@/utils/validators";
@@ -115,7 +119,9 @@ export default function EscolaFormDialog({
   const [keepOpen, setKeepOpen] = useState(false);
   const { user } = useSession();
   // Só chamar useProfile se não receber profile como prop e o dialog estiver aberto
-  const { profile: profileFromHook } = useProfile(profileProp ? undefined : (isOpen ? user?.id : undefined));
+  const { profile: profileFromHook } = useProfile(
+    profileProp ? undefined : isOpen ? user?.id : undefined
+  );
   const profile = profileProp || profileFromHook;
 
   const createEscola = useCreateEscola();
@@ -166,23 +172,24 @@ export default function EscolaFormDialog({
         });
         setOpenAccordionItems(["dados-escola", "endereco"]);
       } else {
-         // Só limpa se não estiver mantendo aberto (modo batch)
-         if (!keepOpen) {
-            form.reset({
-              nome: "",
-              logradouro: "",
-              numero: "",
-              bairro: "",
-              cidade: "",
-              estado: "",
-              cep: "",
-              referencia: "",
-              ativo: true,
-            });
-         }
+        // Só limpa se não estiver mantendo aberto (modo batch)
+        if (!keepOpen) {
+          form.reset({
+            nome: "",
+            logradouro: "",
+            numero: "",
+            bairro: "",
+            cidade: "",
+            estado: "",
+            cep: "",
+            referencia: "",
+            ativo: true,
+          });
+          setOpenAccordionItems(["dados-escola"]);
+        }
       }
     } else {
-        setKeepOpen(false);
+      setKeepOpen(false);
     }
   }, [isOpen, editingEscola, form]);
 
@@ -218,8 +225,8 @@ export default function EscolaFormDialog({
         {
           onSuccess: (escolaSalva) => {
             onSuccess(escolaSalva, keepOpen);
-            
-            if (keepOpen) {              
+
+            if (keepOpen) {
               // Resetar formulário mantendo alguns campos se necessário, ou reset total
               form.reset({
                 nome: "",
@@ -232,11 +239,16 @@ export default function EscolaFormDialog({
                 referencia: "",
                 ativo: true,
               });
-              
-              // Focar no campo nome
-              form.setFocus("nome");
+
+              // Focar no campo nome com delay para garantir que a UI atualizou
+              setTimeout(() => {
+                form.setFocus("nome");
+                setKeepOpen(false);
+              }, 100);
             } else {
-              onClose();
+              safeCloseDialog(() => {
+                onClose();
+              });
             }
           },
           onError: (error: any) => {
@@ -257,19 +269,18 @@ export default function EscolaFormDialog({
       updateEscola.mutate(
         { id: editingEscola.id, data },
         {
-          onSuccess: (escolaSalva) => {
-            onSuccess(escolaSalva);
-            onClose();
+          onSuccess: (escolaSalvo) => {
+            onSuccess(escolaSalvo);
+            safeCloseDialog(onClose);
           },
         }
       );
     }
   };
 
-
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog open={isOpen} onOpenChange={() => safeCloseDialog(onClose)}>
         <DialogContent
           onOpenAutoFocus={(e) => e.preventDefault()}
           className="w-full max-w-2xl p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
@@ -280,7 +291,7 @@ export default function EscolaFormDialog({
               <X className="h-6 w-6" />
               <span className="sr-only">Close</span>
             </DialogClose>
-            
+
             <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
               <Building2 className="w-5 h-5 text-white" />
             </div>
@@ -288,7 +299,9 @@ export default function EscolaFormDialog({
               {editingEscola ? "Editar Escola" : "Cadastrar Escola"}
             </DialogTitle>
             <DialogDescription className="text-blue-100/80 text-sm mt-1">
-              {editingEscola ? "Atualize as informações da escola." : "Preencha os dados da nova escola."}
+              {editingEscola
+                ? "Atualize as informações da escola."
+                : "Preencha os dados da nova escola."}
             </DialogDescription>
           </div>
 
@@ -324,8 +337,8 @@ export default function EscolaFormDialog({
                             <FormControl>
                               <div className="relative">
                                 <Building2 className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                                <Input 
-                                  {...field} 
+                                <Input
+                                  {...field}
                                   className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                   placeholder="Ex: Escola Municipal..."
                                   aria-invalid={!!fieldState.error}
@@ -349,7 +362,7 @@ export default function EscolaFormDialog({
                                   onCheckedChange={field.onChange}
                                   className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
                                 />
-                                <FormLabel 
+                                <FormLabel
                                   htmlFor="ativo"
                                   className="flex-1 cursor-pointer font-medium text-gray-700 m-0 mt-0"
                                 >
@@ -362,7 +375,7 @@ export default function EscolaFormDialog({
                       )}
                     </AccordionContent>
                   </AccordionItem>
-                  
+
                   <AccordionItem value="endereco" className="mt-2 border-b-0">
                     <AccordionTrigger className="hover:no-underline py-2">
                       <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
@@ -377,8 +390,8 @@ export default function EscolaFormDialog({
                           name="cep"
                           render={({ field }) => (
                             <div className="md:col-span-2">
-                              <CepInput 
-                                field={field} 
+                              <CepInput
+                                field={field}
                                 inputClassName="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                               />
                             </div>
@@ -389,10 +402,12 @@ export default function EscolaFormDialog({
                           name="logradouro"
                           render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-4">
-                              <FormLabel className="text-gray-700 font-medium ml-1">Logradouro</FormLabel>
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Logradouro
+                              </FormLabel>
                               <FormControl>
-                                <Input 
-                                  {...field} 
+                                <Input
+                                  {...field}
                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                   aria-invalid={!!fieldState.error}
                                 />
@@ -407,10 +422,12 @@ export default function EscolaFormDialog({
                           name="numero"
                           render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-2">
-                              <FormLabel className="text-gray-700 font-medium ml-1">Número</FormLabel>
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Número
+                              </FormLabel>
                               <FormControl>
-                                <Input 
-                                  {...field} 
+                                <Input
+                                  {...field}
                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                   aria-invalid={!!fieldState.error}
                                 />
@@ -424,10 +441,12 @@ export default function EscolaFormDialog({
                           name="bairro"
                           render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-4">
-                              <FormLabel className="text-gray-700 font-medium ml-1">Bairro</FormLabel>
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Bairro
+                              </FormLabel>
                               <FormControl>
-                                <Input 
-                                  {...field} 
+                                <Input
+                                  {...field}
                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                   aria-invalid={!!fieldState.error}
                                 />
@@ -442,10 +461,12 @@ export default function EscolaFormDialog({
                           name="cidade"
                           render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-4">
-                              <FormLabel className="text-gray-700 font-medium ml-1">Cidade</FormLabel>
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Cidade
+                              </FormLabel>
                               <FormControl>
-                                <Input 
-                                  {...field} 
+                                <Input
+                                  {...field}
                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                                   aria-invalid={!!fieldState.error}
                                 />
@@ -459,13 +480,15 @@ export default function EscolaFormDialog({
                           name="estado"
                           render={({ field, fieldState }) => (
                             <FormItem className="md:col-span-2">
-                              <FormLabel className="text-gray-700 font-medium ml-1">Estado</FormLabel>
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Estado
+                              </FormLabel>
                               <Select
                                 onValueChange={field.onChange}
                                 value={field.value}
                               >
                                 <FormControl>
-                                  <SelectTrigger 
+                                  <SelectTrigger
                                     className={cn(
                                       "h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
                                       fieldState.error && "border-red-500"
@@ -490,11 +513,15 @@ export default function EscolaFormDialog({
                                   </SelectItem>
                                   <SelectItem value="GO">Goiás</SelectItem>
                                   <SelectItem value="MA">Maranhão</SelectItem>
-                                  <SelectItem value="MT">Mato Grosso</SelectItem>
+                                  <SelectItem value="MT">
+                                    Mato Grosso
+                                  </SelectItem>
                                   <SelectItem value="MS">
                                     Mato Grosso do Sul
                                   </SelectItem>
-                                  <SelectItem value="MG">Minas Gerais</SelectItem>
+                                  <SelectItem value="MG">
+                                    Minas Gerais
+                                  </SelectItem>
                                   <SelectItem value="PA">Pará</SelectItem>
                                   <SelectItem value="PB">Paraíba</SelectItem>
                                   <SelectItem value="PR">Paraná</SelectItem>
@@ -529,7 +556,9 @@ export default function EscolaFormDialog({
                           name="referencia"
                           render={({ field, fieldState }) => (
                             <FormItem className="col-span-1 md:col-span-6">
-                              <FormLabel className="text-gray-700 font-medium ml-1">Referência</FormLabel>
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Referência
+                              </FormLabel>
                               <FormControl>
                                 <Textarea
                                   placeholder="Ex: próximo ao mercado"
@@ -546,13 +575,15 @@ export default function EscolaFormDialog({
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
-                
+
                 {allowBatchCreation && (
                   <div className="flex items-center gap-2 px-1 pt-4">
                     <Checkbox
                       id="keepOpen"
                       checked={keepOpen}
-                      onCheckedChange={(checked) => setKeepOpen(checked as boolean)}
+                      onCheckedChange={(checked) =>
+                        setKeepOpen(checked as boolean)
+                      }
                       className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     <label
@@ -563,25 +594,24 @@ export default function EscolaFormDialog({
                     </label>
                   </div>
                 )}
+              </form>
+            </Form>
+          </div>
 
-            </form>
-          </Form>
-        </div>
-
-        <div className="p-4 border-t bg-white shrink-0 grid grid-cols-2 gap-3">
-          <Button
+          <div className="p-4 border-t bg-white shrink-0 grid grid-cols-2 gap-3">
+            <Button
               type="button"
               variant="outline"
-              onClick={onClose}
+              onClick={() => safeCloseDialog(onClose)}
               disabled={loading}
               className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
             >
               Cancelar
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               onClick={form.handleSubmit(handleSubmit, onFormError)}
-              disabled={loading} 
+              disabled={loading}
               className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:-translate-y-0.5"
             >
               {loading ? (
@@ -595,8 +625,7 @@ export default function EscolaFormDialog({
                 "Salvar"
               )}
             </Button>
-        </div>
-
+          </div>
         </DialogContent>
       </Dialog>
     </>

@@ -2,17 +2,17 @@ import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
 import EditarCadastroDialog from "@/components/dialogs/EditarCadastroDialog";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
 } from "@/components/ui/sheet";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -21,12 +21,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { clearLoginStorageMotorista } from "@/utils/domain/motorista/motoristaUtils";
 import {
-  ChevronDown,
-  Lock,
-  LogOut,
-  Menu,
-  Receipt,
-  UserPen,
+    ChevronDown,
+    Lock,
+    LogOut,
+    Menu,
+    Receipt,
+    UserPen,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { redirect, useNavigate } from "react-router-dom";
@@ -73,7 +73,7 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
 
   return (
     <>
-      <header className="fixed top-0 right-0 left-0 md:left-72 z-30 border-b border-gray-100 bg-white">
+      <header className="fixed top-0 right-0 left-0 md:left-72 z-30 border-b border-gray-100 bg-white touch-none">
         <div className="flex h-20 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <div className="md:hidden">

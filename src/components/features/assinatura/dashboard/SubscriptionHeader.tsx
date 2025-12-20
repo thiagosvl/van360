@@ -112,7 +112,6 @@ export function SubscriptionHeader({
 
   const statusConfig = getStatusConfig();
   const StatusIcon = statusConfig.icon;
-  const isFree = isFreePlan; // alias for easier reading in JSX
 
   const handlePrimaryAction = () => {
     if (isPendente || isSuspensa) {
@@ -146,7 +145,7 @@ export function SubscriptionHeader({
     <Card className="border-none shadow-md bg-white overflow-visible relative mt-2">
         {/* Status Badge - Absolute Position (Sticker Style) */}
         {(!isFreePlan || isSuspensa || isPendente || isTrial) && (
-          <div className="absolute -top-3 right-4 z-10">
+          <div className="absolute -top-2 right-2 z-10">
             <Badge
               variant="outline"
               className={cn(
@@ -179,9 +178,13 @@ export function SubscriptionHeader({
             <div
               className={cn(
                 "p-3 rounded-2xl flex items-center justify-center shadow-sm",
-                isFreePlan
+                isPendente || isSuspensa
+                  ? "bg-red-50 text-red-600"
+                  : isTrial
+                  ? "bg-yellow-50 text-yellow-600"
+                  : isFreePlan
                   ? "bg-gray-100 text-gray-600"
-                  : "bg-blue-50 text-blue-600"
+                  : "bg-green-50 text-green-600"
               )}
             >
               {isFreePlan ? (

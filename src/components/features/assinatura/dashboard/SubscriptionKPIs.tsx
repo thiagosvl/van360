@@ -144,7 +144,7 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
                     <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wide">
                         Economia Estimada
                     </span>
-                    <span className="text-sm font-bold text-green-600 flex items-center gap-1">
+                    <span className="text-sm font-bold flex items-center gap-1">
                         {horasEstimadas}h/mês <TrendingUp className="w-3 h-3" />
                     </span>
                 </div>

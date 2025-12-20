@@ -5,7 +5,7 @@ import {
   DialogClose,
   DialogContent,
   DialogDescription,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -16,10 +16,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useCreateVeiculo, useUpdateVeiculo } from "@/hooks/api/useVeiculoMutations";
+import {
+  useCreateVeiculo,
+  useUpdateVeiculo,
+} from "@/hooks/api/useVeiculoMutations";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Veiculo } from "@/types/veiculo";
+import { safeCloseDialog } from "@/utils/dialogUtils";
 import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
 import {
   aplicarMascaraPlaca,
@@ -142,7 +146,9 @@ export default function VeiculoFormDialog({
         {
           onSuccess: (veiculoSalvo) => {
             onSuccess(veiculoSalvo);
-            onClose();
+            safeCloseDialog(() => {
+              onClose();
+            });
           },
           onError: (error: any) => {
             // Reverter QuickStart em caso de erro
@@ -165,7 +171,7 @@ export default function VeiculoFormDialog({
         {
           onSuccess: (veiculoSalvo) => {
             onSuccess(veiculoSalvo);
-            onClose();
+            safeCloseDialog(onClose);
           },
         }
       );
@@ -173,7 +179,7 @@ export default function VeiculoFormDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={() => safeCloseDialog(onClose)}>
       <DialogContent
         className="w-full max-w-md p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
@@ -192,7 +198,9 @@ export default function VeiculoFormDialog({
             {editingVeiculo ? "Editar Veículo" : "Cadastrar Veículo"}
           </DialogTitle>
           <DialogDescription className="text-blue-100/80 text-sm mt-1">
-            {editingVeiculo ? "Atualize as informações do veículo." : "Insira os dados do novo veículo."}
+            {editingVeiculo
+              ? "Atualize as informações do veículo."
+              : "Insira os dados do novo veículo."}
           </DialogDescription>
         </div>
 
@@ -292,7 +300,7 @@ export default function VeiculoFormDialog({
                         onCheckedChange={field.onChange}
                         className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <FormLabel 
+                      <FormLabel
                         htmlFor="ativo"
                         className="flex-1 cursor-pointer font-medium text-gray-700 m-0 mt-0"
                       >
@@ -302,7 +310,6 @@ export default function VeiculoFormDialog({
                   )}
                 />
               )}
-
             </form>
           </Form>
         </div>
@@ -311,7 +318,7 @@ export default function VeiculoFormDialog({
           <Button
             type="button"
             variant="outline"
-            onClick={onClose}
+            onClick={() => safeCloseDialog(onClose)}
             disabled={loading}
             className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
           >
@@ -325,8 +332,7 @@ export default function VeiculoFormDialog({
           >
             {loading ? (
               <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />{" "}
-                Salvando...
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Salvando...
               </>
             ) : (
               "Salvar"

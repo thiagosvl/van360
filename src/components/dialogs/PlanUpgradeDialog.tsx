@@ -454,7 +454,7 @@ export function PlanUpgradeDialog({
                                                                         : "bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
                                                                 )}
                                                             >
-                                                                {opt?.quantidade} Passageiros
+                                                                Até {opt?.quantidade} Passageiros
                                                             </button>
                                                         ))}
                                                     </div>

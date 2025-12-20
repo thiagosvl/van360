@@ -45,10 +45,7 @@ export function AssinaturaDashboard({
         }}
       />
 
-      {/* 2. KPIs Strategy (FOMO, Pain, Success) */}
-      <SubscriptionKPIs plano={plano} metricas={metricas} />
-
-      {/* 3. History & Management */}
+      {/* 2. History & Management (Now Prioritized) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content: History */}
         <div className="lg:col-span-2 space-y-6">
@@ -95,6 +92,9 @@ export function AssinaturaDashboard({
           </div>
         </div>
       </div>
+
+      {/* 3. KPIs Strategy (Moved to bottom) */}
+      <SubscriptionKPIs plano={plano} metricas={metricas} />
     </div>
   );
 }

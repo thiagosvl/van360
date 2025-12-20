@@ -25,11 +25,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreateEscola,
-  useDeleteEscola,
-  useEscolas,
-  useFilters,
-  useToggleAtivoEscola,
+    useCreateEscola,
+    useDeleteEscola,
+    useEscolas,
+    useFilters,
+    useToggleAtivoEscola,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -279,7 +279,7 @@ export default function Escolas() {
                   onClearFilters={clearFilters}
                   hasActiveFilters={hasActiveFilters}
                   onApplyFilters={setFilters}
-                  onRegister={() => openEscolaFormDialog()}
+                  onRegister={() => openEscolaFormDialog({ allowBatchCreation: true })}
                 />
               </div>
 
