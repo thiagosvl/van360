@@ -367,7 +367,7 @@ export const PlanoCardSelection = ({
   };
 
   const getButtonText = () => {
-    if (isSelected) return "Confirmar e Avançar";
+    if (isSelected) return "Escolher Plano";
     if (isGratuito) return "Selecionar Grátis";
     if (isEssencial) return "Selecionar Essencial";
     if (isProfissional) return "Selecionar Profissional";
