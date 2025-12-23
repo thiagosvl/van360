@@ -1,23 +1,25 @@
 import { CepInput } from "@/components/forms";
 import {
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FileText, MapPin } from "lucide-react";
+import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 export function PassageiroFormEndereco() {
   const form = useFormContext();
+  const [isCepLoading, setIsCepLoading] = useState(false);
 
   return (
     <>
@@ -44,6 +46,7 @@ export function PassageiroFormEndereco() {
                   label="CEP"
                   className="md:col-span-2"
                   inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                  onLoadingChange={setIsCepLoading}
                 />
               )}
             />
@@ -62,6 +65,7 @@ export function PassageiroFormEndereco() {
                         placeholder="Ex: Rua Comendador"
                         className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                         aria-invalid={!!fieldState.error}
+                        disabled={isCepLoading}
                       />
                     </div>
                   </FormControl>
@@ -105,6 +109,7 @@ export function PassageiroFormEndereco() {
                         {...field}
                         className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                         aria-invalid={!!fieldState.error}
+                        disabled={isCepLoading}
                       />
                     </div>
                   </FormControl>
@@ -127,6 +132,7 @@ export function PassageiroFormEndereco() {
                         {...field}
                         className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                         aria-invalid={!!fieldState.error}
+                        disabled={isCepLoading}
                       />
                     </div>
                   </FormControl>
@@ -151,6 +157,7 @@ export function PassageiroFormEndereco() {
                         placeholder="UF"
                         className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                          aria-invalid={!!fieldState.error}
+                         disabled={isCepLoading}
                       />
                      </div>
                   <FormMessage />

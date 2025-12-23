@@ -22,6 +22,7 @@ interface CepInputProps<T extends FieldValues> {
   className?: string;
   inputClassName?: string;
   nextField?: FieldPath<T>;
+  onLoadingChange?: (loading: boolean) => void;
 }
 
 export function CepInput<T extends FieldValues>({
@@ -32,8 +33,14 @@ export function CepInput<T extends FieldValues>({
   className,
   inputClassName,
   nextField = "numero" as FieldPath<T>,
+  onLoadingChange,
 }: CepInputProps<T>) {
   const [loadingCep, setLoadingCep] = useState(false);
+
+  const updateLoading = (isLoading: boolean) => {
+    setLoadingCep(isLoading);
+    onLoadingChange?.(isLoading);
+  };
   const form = useFormContext<T>();
   const { error } = useFormField();
 
@@ -44,7 +51,7 @@ export function CepInput<T extends FieldValues>({
     const cleanCep = value.replace(/\D/g, "");
     if (cleanCep.length === 8) {
       try {
-        setLoadingCep(true);
+        updateLoading(true);
         const endereco = await cepService.buscarEndereco(cleanCep);
         if (endereco) {
           // Preencher campos de endereço se existirem no form
@@ -121,7 +128,7 @@ export function CepInput<T extends FieldValues>({
           description: error.message || "Não foi possível concluir a operação.",
         });
       } finally {
-        setLoadingCep(false);
+        updateLoading(false);
       }
     }
   };
