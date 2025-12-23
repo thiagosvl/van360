@@ -227,10 +227,10 @@ export function SubscriptionHeader({
                 : isTrial
                 ? "Ativar Plano Agora"
                 : isFreePlan
-                ? "Fazer Upgrade"
+                ? "Trocar de Plano"
                 : isProfissionalPlan
                 ? "Aumentar limite"
-                : "Fazer Upgrade"}
+                : "Trocar de Plano"}
             </Button>
           </div>
         </CardContent>
