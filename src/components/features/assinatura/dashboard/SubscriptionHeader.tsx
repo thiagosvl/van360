@@ -65,7 +65,9 @@ export function SubscriptionHeader({
         color: "bg-yellow-100 text-yellow-800 border-yellow-200",
         icon: AlertTriangle,
         text: `Teste Grátis (${trialDaysLeft} dias)`,
-        description: "Aproveite todas as funcionalidades.",
+        description: `O período de teste termina em ${new Date(assinatura.trial_end_at).toLocaleDateString(
+              "pt-BR"
+            )}.`,
       };
     }
     if (isPendente)
@@ -90,7 +92,7 @@ export function SubscriptionHeader({
         description: assinatura?.vigencia_fim
           ? `Renova em ${new Date(assinatura.vigencia_fim).toLocaleDateString(
               "pt-BR"
-            )}`
+            )}.`
           : "Tudo certo com seu plano.",
       };
 

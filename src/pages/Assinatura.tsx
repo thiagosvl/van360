@@ -83,7 +83,7 @@ export default function Assinatura() {
     // - Profissional: sempre ilimitado
     let limitePassageiros = planoData.limite_passageiros;
     
-    if (plano.IsProfissionalPlan) {
+    if (plano.isProfissionalPlan) {
       // Profissional sempre tem passageiros ilimitados
       limitePassageiros = null;
     } else if (plano.isEssentialPlan) {
@@ -93,7 +93,10 @@ export default function Assinatura() {
     // Caso contrário, mantém o limite do plano (apenas Gratuito)
     
     return {
-      assinatura: assinatura,
+      assinatura: {
+        ...assinatura,
+        isTrial: plano.isTrial,
+      },
       plano: planoData,
       cobrancas: cobrancasData as any[], // Explicit cast to any[] to fix 'find' and 'map' errors downstream
       passageirosAtivos: 0, // Será atualizado abaixo
@@ -179,7 +182,7 @@ export default function Assinatura() {
     const planoAtual = dataWithCounts.plano as any;
     const planoNome = planoAtual.parent?.nome ?? planoAtual.nome;
 
-    if (plano.IsProfissionalPlan) {
+    if (plano.isProfissionalPlan) {
       return "Ao cancelar, você perderá funcionaliades avançadas, cobranças automáticas e acesso a relatórios detalhados. Você será migrado para o Plano Gratuito ao final do período contratado.";
     } else if (plano.isEssentialPlan) {
       return "Ao cancelar, você perderá passageiros ilimitados, envio de lembretes de cobrança e suporte via WhatsApp. Você será migrado para o Plano Gratuito ao final do período contratado.";
