@@ -1,4 +1,5 @@
 
+import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { Bot, ChevronRight, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -14,7 +15,7 @@ export function AutomaticChargesPrompt({
   onUpgrade,
 }: AutomaticChargesPromptProps) {
   const [dismissed, setDismissed] = useState(false);
-  const { openLimiteFranquiaDialog, openPlanosDialog } = useLayout();
+  const { openPlanUpgradeDialog } = useLayout();
   const storageKey = "automaticChargesPromptDismissed:cobrancas";
 
   useEffect(() => {
@@ -30,11 +31,8 @@ export function AutomaticChargesPrompt({
     if (onUpgrade) {
       onUpgrade();
     } else {
-      openLimiteFranquiaDialog({
-        title: "Cobrança Automática",
-        description:
-          "Automatize o envio de cobranças e reduza a inadimplência com o Plano Profissional.",
-        hideLimitInfo: true,
+      openPlanUpgradeDialog({
+        feature: FEATURE_COBRANCA_AUTOMATICA,
       });
     }
   };
@@ -58,11 +56,8 @@ export function AutomaticChargesPrompt({
         <Button
           size="sm"
           onClick={() =>
-            openLimiteFranquiaDialog({
-              title: "Cobrança Automática",
-              description:
-                "Automatize o envio de cobranças e reduza a inadimplência com o Plano Profissional.",
-              hideLimitInfo: true,
+            openPlanUpgradeDialog({
+              feature: FEATURE_COBRANCA_AUTOMATICA,
             })
           }
           className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-indigo-200/50 h-8 text-xs px-4"

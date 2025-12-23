@@ -36,7 +36,7 @@ import { useGastosCalculations } from "@/hooks/business/useGastosCalculations"; 
 import { usePermissions } from "@/hooks/business/usePermissions";
 
 // Utils
-import { PLANO_ESSENCIAL } from "@/constants";
+import { FEATURE_GASTOS, PLANO_ESSENCIAL } from "@/constants";
 import { cn } from "@/lib/utils";
 import { MOCK_DATA_NO_ACCESS_GASTOS, MOCK_VEICULOS } from "@/utils/mocks/restrictedData";
 // import { enablePageActions } from "@/utils/domain/pages/pagesUtils"; // DEPRECATED
@@ -47,15 +47,15 @@ import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 // Icons
 import { UpgradeStickyFooter } from "@/components/common/UpgradeStickyFooter";
 import {
-  CalendarIcon,
-  Lock,
-  TrendingDown,
-  TrendingUp,
-  Wallet,
+    CalendarIcon,
+    Lock,
+    TrendingDown,
+    TrendingUp,
+    Wallet,
 } from "lucide-react";
 
 export default function Gastos() {
-  const { setPageTitle, openPlanosDialog, openContextualUpsellDialog } = useLayout();
+  const { setPageTitle, openPlanosDialog, openPlanUpgradeDialog } = useLayout();
   const deleteGasto = useDeleteGasto();
 
   const isActionLoading = deleteGasto.isPending;
@@ -281,9 +281,9 @@ export default function Gastos() {
                   onRegistrarGasto={() =>
                     enabledPageActions
                       ? openDialog()
-                      : openContextualUpsellDialog({
-                          feature: "controle_gastos",
-                          targetPlan: PLANO_ESSENCIAL,
+                      : openPlanUpgradeDialog({
+                          feature: FEATURE_GASTOS,
+                          defaultTab: PLANO_ESSENCIAL,
                         })
                   }
                   categorias={CATEGORIAS_GASTOS}
@@ -329,9 +329,9 @@ export default function Gastos() {
                             Chega de adivinhar. Saiba exatamente quanto sua van gasta com combustível, manutenção e salários e descubra o seu lucro real.
                           </p>
                           <Button
-                            onClick={() => openContextualUpsellDialog({
-                              feature: "controle_gastos",
-                              targetPlan: PLANO_ESSENCIAL,
+                            onClick={() => openPlanUpgradeDialog({
+                              feature: FEATURE_GASTOS,
+                              defaultTab: PLANO_ESSENCIAL,
                             })}
                             className="bg-orange-600 hover:bg-orange-700 text-white font-semibold h-12 px-8 rounded-xl shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all transform hover:-translate-y-0.5"
                           >
@@ -390,9 +390,9 @@ export default function Gastos() {
         title="Quer ver seu lucro real?"
         description="Chega de adivinhar. Libere seu acesso."
         buttonText="Liberar Acesso"
-        onAction={() => openContextualUpsellDialog({
-          feature: "controle_gastos",
-          targetPlan: PLANO_ESSENCIAL,
+        onAction={() => openPlanUpgradeDialog({
+          feature: FEATURE_GASTOS,
+          defaultTab: PLANO_ESSENCIAL,
         })}
       />
     </>

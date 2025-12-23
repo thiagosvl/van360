@@ -9,12 +9,13 @@ interface CobrancaActionsMenuProps {
   onVerCobranca?: () => void;
   onEditarCobranca?: () => void;
   onRegistrarPagamento?: () => void;
-  onEnviarNotificacao?: () => void; // Optional in hooks? Check hook signature
+  onEnviarNotificacao?: () => void;
   onToggleLembretes?: () => void; 
   onDesfazerPagamento?: () => void;
   onExcluirCobranca?: () => void;
   onVerCarteirinha?: () => void;
-  onUpgrade?: (featureName: string, description: string) => void;
+  onUpgrade?: (feature: string) => void;
+  onActionSuccess?: () => void;
 }
 
 export function CobrancaActionsMenu({

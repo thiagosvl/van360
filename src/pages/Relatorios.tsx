@@ -9,15 +9,15 @@ import { RelatoriosVisaoGeral } from "@/components/features/relatorios/Relatorio
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PLANO_ESSENCIAL } from "@/constants";
+import { FEATURE_RELATORIOS, PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCobrancas,
-  useEscolas,
-  useGastos,
-  usePassageiroContagem,
-  usePassageiros,
-  useVeiculos
+    useCobrancas,
+    useEscolas,
+    useGastos,
+    usePassageiroContagem,
+    usePassageiros,
+    useVeiculos
 } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
@@ -60,7 +60,7 @@ export default function Relatorios() {
     }
   }, [searchParams, setSearchParams]);
 
-  const { setPageTitle, openPlanosDialog, openContextualUpsellDialog } = useLayout();
+  const { setPageTitle, openPlanosDialog, openPlanUpgradeDialog } = useLayout();
   const { user } = useSession();
   
   // Use Access Control Hook
@@ -208,9 +208,9 @@ export default function Relatorios() {
             </div>
           </div>
           <Button
-            onClick={() => openContextualUpsellDialog({
-                feature: "relatorios",
-                targetPlan: PLANO_ESSENCIAL,
+            onClick={() => openPlanUpgradeDialog({
+                feature: FEATURE_RELATORIOS,
+                defaultTab: PLANO_ESSENCIAL,
             })}
             size="sm"
             className="bg-amber-600 hover:bg-amber-700 text-white border-none shadow-none"
@@ -297,9 +297,9 @@ export default function Relatorios() {
         title="Você sabe o lucro exato da sua van?"
         description="Veja seus números reais."
         buttonText="Ver meu Lucro Real"
-        onAction={() => openContextualUpsellDialog({
-           feature: "relatorios",
-           targetPlan: PLANO_ESSENCIAL,
+        onAction={() => openPlanUpgradeDialog({
+           feature: FEATURE_RELATORIOS,
+           defaultTab: PLANO_ESSENCIAL,
         })}
       />
       

@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PLANO_ESSENCIAL } from "@/constants";
+import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_LIMITE_FRANQUIA, FEATURE_LIMITE_PASSAGEIROS, PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
     useCreateEscola,
@@ -55,8 +55,6 @@ export default function Passageiros() {
   } = usePassageiroDialogs();
   const {
     setPageTitle,
-    openContextualUpsellDialog,
-    openLimiteFranquiaDialog,
     openPlanUpgradeDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
@@ -236,13 +234,10 @@ export default function Passageiros() {
   };
 
   const handleOpenUpgradeDialog = useCallback(() => {
-    openLimiteFranquiaDialog({
-      title: "Cobrança Automática",
-      description:
-        "A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Profissional.",
-      hideLimitInfo: true,
+    openPlanUpgradeDialog({
+      feature: FEATURE_COBRANCA_AUTOMATICA,
     });
-  }, [openLimiteFranquiaDialog]);
+  }, [openPlanUpgradeDialog]);
 
   const limitePassageiros = limits.passengers.limit;
   const isLimitedUser = plano?.isFreePlan ?? false;
@@ -368,13 +363,9 @@ export default function Passageiros() {
         if (!podeAtivar) {
           // Se franquia contratada for 0, usa a mensagem de upgrade/primeira ativação
           if (validacaoFranquiaGeral.franquiaContratada === 0) {
-            openLimiteFranquiaDialog({
-              title: "Cobrança Automática",
-              description:
-                "A Cobrança Automática envia as faturas e lembretes sozinhas. Automatize sua rotina com o Plano Profissional.",
-              hideLimitInfo: true,
-              targetPassengerId: passageiro.id,
-              onUpgradeSuccess: () => {
+            openPlanUpgradeDialog({
+              feature: FEATURE_COBRANCA_AUTOMATICA,
+              onSuccess: () => {
                 // Resume action: Enable auto-billing
                 updatePassageiro.mutate({
                   id: passageiro.id,
@@ -385,10 +376,10 @@ export default function Passageiros() {
             });
           } else {
             // Caso contrário, usa a lógica padrão de limite atingido
-            openLimiteFranquiaDialog({
-              hideLimitInfo: false,
-              targetPassengerId: passageiro.id,
-              onUpgradeSuccess: () => {
+            openPlanUpgradeDialog({
+              feature: FEATURE_LIMITE_FRANQUIA,
+              targetPassengerCount: limits.franchise.used + 1,
+              onSuccess: () => {
                 // Resume action: Enable auto-billing
                 updatePassageiro.mutate({
                   id: passageiro.id,
@@ -420,8 +411,9 @@ export default function Passageiros() {
 
   const handleOpenNewDialog = useCallback(() => {
     if (isLimitedUser && isLimitReached) {
-      openContextualUpsellDialog({
-        feature: "passageiros",
+      openPlanUpgradeDialog({
+        feature: FEATURE_LIMITE_PASSAGEIROS,
+        targetPassengerCount: (countPassageiros || 0) + 1,
         onSuccess: refetchPassageiros,
       });
       return;
@@ -433,7 +425,7 @@ export default function Passageiros() {
     isLimitedUser,
     isLimitReached,
     dialogActions,
-    openContextualUpsellDialog,
+    openPlanUpgradeDialog,
     refetchPassageiros,
   ]);
 
@@ -783,14 +775,11 @@ export default function Passageiros() {
             cancelText="Reativar sem cobrança"
             onVerPlanos={() => {
               excessoFranquia.onClose();
-              // Open LimiteFranquiaDialog directly
-              openLimiteFranquiaDialog({
-                title: "Aumentar Limite de Cobranças",
-                description:
-                  "Você atingiu o limite do seu plano. Aumente sua franquia para continuar automatizando.",
-                hideLimitInfo: false,
-                targetPassengerId: excessoFranquia.passageiro?.id,
-                onUpgradeSuccess: () => {
+              // Open PlanUpgradeDialog directly
+              openPlanUpgradeDialog({
+                feature: FEATURE_LIMITE_FRANQUIA,
+                targetPassengerCount: excessoFranquia.limiteApos,
+                onSuccess: () => {
                   // Resume action: Reactivate passenger
                   if (excessoFranquia.passageiro) {
                     toggleAtivoPassageiro.mutate(
@@ -830,8 +819,10 @@ export default function Passageiros() {
         description="Remova os limites do plano gratuito."
         buttonText="Ver Planos"
         onAction={() =>
-          openContextualUpsellDialog({
-            feature: "passageiros",
+          openPlanUpgradeDialog({
+            feature: FEATURE_LIMITE_PASSAGEIROS,
+            defaultTab: PLANO_ESSENCIAL,
+            targetPassengerCount: (countPassageiros || 0) + 1,
             onSuccess: refetchPassageiros,
           })
         }

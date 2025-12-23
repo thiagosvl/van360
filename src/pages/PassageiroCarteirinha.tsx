@@ -82,7 +82,7 @@ import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { toast } from "@/utils/notifications/toast";
 
 // Types
-import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
+import { FEATURE_COBRANCA_AUTOMATICA, PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
 
@@ -100,7 +100,7 @@ export default function PassageiroCarteirinha() {
   const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
   const [cobrancaDialogOpen, setCobrancaDialogOpen] = useState(false);
 
-  const { setPageTitle, openLimiteFranquiaDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const { setPageTitle, openPlanUpgradeDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -169,15 +169,13 @@ export default function PassageiroCarteirinha() {
     // Backend activates passenger via webhook (using targetPassengerId)
   };
 
-  const handleUpgrade = useCallback((featureName: string, description: string) => {
+  const handleUpgrade = useCallback((featureName: string) => {
     safeCloseDialog(() => {
-      openLimiteFranquiaDialog({
-        title: featureName,
-        description: description,
-        hideLimitInfo: true,
+      openPlanUpgradeDialog({
+        feature: featureName,
       });
     });
-  }, [openLimiteFranquiaDialog]);
+  }, [openPlanUpgradeDialog]);
   
   // ... (rest of code)
 
@@ -454,16 +452,15 @@ export default function PassageiroCarteirinha() {
 
         if (!podeAtivar) {
           if (validacaoFranquiaGeral.franquiaContratada === 0) {
-             openLimiteFranquiaDialog({
-              targetPassengerId: passageiro_id,
-              title: "Cobrança Automática",
-              description: "A Cobrança Automática envia as faturas e lembretes sozinhas. Automatize sua rotina com o Plano Profissional.",
-              hideLimitInfo: true,
+             openPlanUpgradeDialog({
+              feature: FEATURE_COBRANCA_AUTOMATICA,
+              targetPassengerCount: limits.franchise.used + 1,
             });
           } else {
-            openLimiteFranquiaDialog({
-              targetPassengerId: passageiro_id,
-            });
+              openPlanUpgradeDialog({
+                feature: FEATURE_COBRANCA_AUTOMATICA,
+                targetPassengerCount: limits.franchise.used + 1,
+              });
           }
           return;
         }

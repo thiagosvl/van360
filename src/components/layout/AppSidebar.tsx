@@ -14,7 +14,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 
 export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
   const navigate = useNavigate();
-  const { openContextualUpsellDialog } = useLayout();
+  const { openPlanUpgradeDialog } = useLayout();
   const userItems = pagesItems.map((item) => ({
     ...item,
   }));
@@ -126,7 +126,7 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
           variant="secondary"
           size="sm"
           onClick={() => {
-            openContextualUpsellDialog({ feature: "outros", targetPlan: PLANO_ESSENCIAL });
+            openPlanUpgradeDialog({ feature: PLANO_ESSENCIAL, defaultTab: PLANO_ESSENCIAL });
             onLinkClick?.();
           }}
           className="mt-4 w-full rounded-full border-white/30 bg-white/20 text-white hover:bg-white/30 font-semibold"

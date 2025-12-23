@@ -6,48 +6,48 @@ import { PrePassengerListSkeleton } from "@/components/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
-import { PLANO_ESSENCIAL } from "@/constants";
+import { FEATURE_LIMITE_FRANQUIA, FEATURE_LIMITE_PASSAGEIROS, PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreatePrePassageiro,
-  useDeletePrePassageiro,
-  usePassageiros,
-  usePrePassageiros,
+    useCreatePrePassageiro,
+    useDeletePrePassageiro,
+    usePassageiros,
+    usePrePassageiros,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import {
-  formatarTelefone,
-  formatRelativeTime,
-  periodos,
+    formatarTelefone,
+    formatRelativeTime,
+    periodos,
 } from "@/utils/formatters";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import {
-  Clock,
-  Copy,
-  Eye,
-  MoreVertical,
-  Search,
-  Trash2,
-  Users2,
+    Clock,
+    Copy,
+    Eye,
+    MoreVertical,
+    Search,
+    Trash2,
+    Users2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -76,8 +76,8 @@ export default function PrePassageiros({
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const {
     openPlanosDialog,
-    openLimiteFranquiaDialog,
-    openContextualUpsellDialog,
+    openPlanosDialog,
+    openPlanUpgradeDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
   } = useLayout();
@@ -190,16 +190,16 @@ export default function PrePassageiros({
     const isFreePlan = plano?.slug === "gratuito" || plano?.slug === "teste";
     if (isLimitedUser && isLimitReached) {
       if (isFreePlan) {
-        openContextualUpsellDialog({
-          feature: "passageiros",
-          targetPlan: PLANO_ESSENCIAL,
+        openPlanUpgradeDialog({
+          feature: FEATURE_LIMITE_PASSAGEIROS,
+          defaultTab: PLANO_ESSENCIAL,
+          targetPassengerCount: countPassageiros + 1,
         });
       } else {
         // Se for plano pago, abre dialogo de aumentar franquia
-        openLimiteFranquiaDialog({
-          title: "Aumentar Limite",
-          description:
-            "Você atingiu seu limite de passageiros contratado. Aumente sua franquia para continuar cadastrando.",
+        openPlanUpgradeDialog({
+          feature: FEATURE_LIMITE_FRANQUIA,
+          targetPassengerCount: countPassageiros + 1,
         });
       }
       return;

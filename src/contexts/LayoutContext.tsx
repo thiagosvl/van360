@@ -1,7 +1,5 @@
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
-import { ContextualUpsellDialog } from "@/components/dialogs/ContextualUpsellDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
-import LimiteFranquiaDialog from "@/components/dialogs/LimiteFranquiaDialog";
 import PlanosDialog from "@/components/dialogs/PlanosDialog";
 import { PlanUpgradeDialog, PlanUpgradeDialogProps } from "@/components/dialogs/PlanUpgradeDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
@@ -12,20 +10,6 @@ import { useSession } from "@/hooks/business/useSession";
 import { Escola } from "@/types/escola";
 import { Veiculo } from "@/types/veiculo";
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-
-interface OpenLimiteFranquiaDialogProps {
-  title?: string;
-  description?: string;
-  hideLimitInfo?: boolean;
-  targetPassengerId?: string;
-  onUpgradeSuccess?: () => void;
-}
-
-interface OpenContextualUpsellDialogProps {
-  feature: "passageiros" | "controle_gastos" | "relatorios" | "automacao" | "outros";
-  targetPlan?: "essencial" | "profissional";
-  onSuccess?: () => void;
-}
 
 type OpenPlanUpgradeDialogProps = Omit<PlanUpgradeDialogProps, "open" | "onOpenChange"> & { onClose?: () => void };
 
@@ -56,9 +40,6 @@ interface LayoutContextType {
   pageSubtitle: string;
   setPageSubtitle: (subtitle: string) => void;
   openPlanosDialog: () => void;
-  openLimiteFranquiaDialog: (props?: OpenLimiteFranquiaDialogProps) => void;
-  isLimiteFranquiaDialogOpen: boolean;
-  openContextualUpsellDialog: (props: OpenContextualUpsellDialogProps) => void;
   openPlanUpgradeDialog: (props?: OpenPlanUpgradeDialogProps) => void;
   isPlanUpgradeDialogOpen: boolean;
   openConfirmationDialog: (props: OpenConfirmationDialogProps) => void;
@@ -81,23 +62,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [pageTitle]);
   
-  // Limite Franquia Dialog State
-  const [limiteFranquiaDialogState, setLimiteFranquiaDialogState] = useState<{
-    open: boolean;
-    props?: OpenLimiteFranquiaDialogProps;
-  }>({
-    open: false,
-  });
-
-  // Contextual Upsell Dialog State
-  const [contextualUpsellDialogState, setContextualUpsellDialogState] = useState<{
-      open: boolean;
-      props?: OpenContextualUpsellDialogProps;
-
-  }>({
-      open: false
-  });
-
   // Novo Plan Upgrade Dialog State (Unificado)
   const [planUpgradeDialogState, setPlanUpgradeDialogState] = useState<{
       open: boolean;
@@ -135,34 +99,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   
   // Carregar dados de franquia globalmente se o dialog estiver aberto
   // Isso garante que temos os números "Limite X de Y" atualizados
-  // Carregar dados de franquia globalmente se o dialog estiver aberto
-  // Isso garante que temos os números "Limite X de Y" atualizados
   const { limits } = usePlanLimits({
       userUid: user?.id,
       profile
   });
 
-  const validacaoFranquia = {
-      franquiaContratada: limits.franchise.limit,
-      cobrancasEmUso: limits.franchise.used
-  };
-
   const openPlanosDialog = () => setIsPlanosDialogOpen(true);
   
-  const openLimiteFranquiaDialog = (props?: OpenLimiteFranquiaDialogProps) => {
-    setLimiteFranquiaDialogState({
-      open: true,
-      props,
-    });
-  };
-
-  const openContextualUpsellDialog = (props: OpenContextualUpsellDialogProps) => {
-      setContextualUpsellDialogState({
-          open: true,
-          props
-      });
-  };
-
   const openPlanUpgradeDialog = (props?: OpenPlanUpgradeDialogProps) => {
       let defaultTab = props?.defaultTab;
       
@@ -222,10 +165,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       pageSubtitle, 
       setPageSubtitle, 
       openPlanosDialog,
-      openLimiteFranquiaDialog,
-      isLimiteFranquiaDialogOpen: limiteFranquiaDialogState.open,
-
-      openContextualUpsellDialog,
       openPlanUpgradeDialog,
       isPlanUpgradeDialogOpen: planUpgradeDialogState.open,
       openConfirmationDialog,
@@ -238,34 +177,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         isOpen={isPlanosDialogOpen} 
         onOpenChange={setIsPlanosDialogOpen} 
       />
-      <LimiteFranquiaDialog
-        open={limiteFranquiaDialogState.open}
-        onOpenChange={(open) => setLimiteFranquiaDialogState(prev => ({ ...prev, open }))}
-        franquiaContratada={validacaoFranquia.franquiaContratada}
-        cobrancasEmUso={validacaoFranquia.cobrancasEmUso}
-        usuarioId={profile?.id}
-        // Repassando props customizadas (titulo, descrição, etc)
-        title={limiteFranquiaDialogState.props?.title}
-        description={limiteFranquiaDialogState.props?.description}
-        hideLimitInfo={limiteFranquiaDialogState.props?.hideLimitInfo}
-        targetPassengerId={limiteFranquiaDialogState.props?.targetPassengerId}
-        onUpgradeSuccess={limiteFranquiaDialogState.props?.onUpgradeSuccess}
-      />
       
-      {contextualUpsellDialogState.props && (
-        <ContextualUpsellDialog
-            open={contextualUpsellDialogState.open}
-            onOpenChange={(open) => setContextualUpsellDialogState(prev => ({ ...prev, open }))}
-            feature={contextualUpsellDialogState.props.feature}
-            targetPlan={contextualUpsellDialogState.props.targetPlan || PLANO_PROFISSIONAL}
-            onViewAllPlans={() => {
-                // setContextualUpsellDialogState(prev => ({ ...prev, open: false }));
-                setTimeout(() => setIsPlanosDialogOpen(true), 150);
-            }}
-            onSuccess={contextualUpsellDialogState.props.onSuccess}
-        />
-      )}
-
       {planUpgradeDialogState.open && (
          <PlanUpgradeDialog
             open={planUpgradeDialogState.open}

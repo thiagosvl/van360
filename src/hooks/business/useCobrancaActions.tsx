@@ -1,36 +1,38 @@
 import {
-    PLANO_ESSENCIAL,
-    PLANO_GRATUITO,
+  FEATURE_COBRANCA_AUTOMATICA,
+  FEATURE_NOTIFICACOES,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useDeleteCobranca,
-    useDesfazerPagamento,
-    useEnviarNotificacaoCobranca,
-    useToggleNotificacoesCobranca,
+  useDeleteCobranca,
+  useDesfazerPagamento,
+  useEnviarNotificacaoCobranca,
+  useToggleNotificacoesCobranca,
 } from "@/hooks";
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
 import {
-    disableDesfazerPagamento,
-    disableEditarCobranca,
-    disableExcluirCobranca,
-    disableRegistrarPagamento,
-    seForPago,
+  disableDesfazerPagamento,
+  disableEditarCobranca,
+  disableExcluirCobranca,
+  disableRegistrarPagamento,
+  seForPago,
 } from "@/utils/domain/cobranca/disableActions";
 import {
-    canUseNotificacoes,
+  canUseNotificacoes,
 } from "@/utils/domain/plano/accessRules";
 import {
-    ArrowLeft,
-    Bell,
-    BellOff,
-    CheckCircle2,
-    DollarSign,
-    FilePen,
-    Send,
-    Trash2,
-    User,
+  ArrowLeft,
+  Bell,
+  BellOff,
+  CheckCircle2,
+  DollarSign,
+  FilePen,
+  Send,
+  Trash2,
+  User,
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
@@ -38,7 +40,7 @@ export interface UseCobrancaOperationsProps {
   cobranca: Cobranca;
   plano?: any;
   onActionSuccess?: () => void;
-  onUpgrade?: (featureName: string, description: string) => void;
+  onUpgrade?: (feature: string) => void;
 }
 
 export function useCobrancaOperations({
@@ -49,7 +51,7 @@ export function useCobrancaOperations({
 }: UseCobrancaOperationsProps) {
   const {
     openConfirmationDialog,
-    openLimiteFranquiaDialog,
+    openPlanUpgradeDialog,
     closeConfirmationDialog,
   } = useLayout();
 
@@ -60,27 +62,18 @@ export function useCobrancaOperations({
   const deleteCobranca = useDeleteCobranca();
 
   const handleUpgrade = useCallback(
-    (featureName: string, description: string) => {
-      if (onUpgrade) {
-        onUpgrade(featureName, description);
-        return;
-      }
-      openLimiteFranquiaDialog({
-        title: featureName,
-        description: description,
-        hideLimitInfo: true,
+    (feature: string) => {
+      openPlanUpgradeDialog({
+        feature,
       });
     },
-    [onUpgrade, openLimiteFranquiaDialog]
+    [openPlanUpgradeDialog]
   );
 
   const handleToggleLembretes = useCallback(async () => {
     const hasAccess = canUseNotificacoes(plano);
     if (!hasAccess) {
-      handleUpgrade(
-        "Notificações Automáticas",
-        "Automatize o envio de lembretes e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
-      );
+      handleUpgrade(FEATURE_NOTIFICACOES);
       return;
     }
     try {
@@ -97,10 +90,7 @@ export function useCobrancaOperations({
   const handleEnviarNotificacao = useCallback(async () => {
     const hasAccess = canUseNotificacoes(plano);
     if (!hasAccess) {
-      handleUpgrade(
-        "Envio de Cobranças",
-        "Automatize o envio de cobranças e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
-      );
+      handleUpgrade(FEATURE_COBRANCA_AUTOMATICA);
       return;
     }
     openConfirmationDialog({
@@ -116,10 +106,7 @@ export function useCobrancaOperations({
             plano?.slug &&
             [PLANO_GRATUITO, PLANO_ESSENCIAL].includes(plano.slug)
           ) {
-            handleUpgrade(
-              "Cobranças Automáticas",
-              "Cobrança enviada! Automatize esse envio e ganhe tempo."
-            );
+            handleUpgrade(FEATURE_COBRANCA_AUTOMATICA);
           }
           if (onActionSuccess) onActionSuccess();
         } catch (error) {

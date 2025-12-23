@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
-  FEATURE_LIMITE_PASSAGEIROS,
-  PLANO_ESSENCIAL,
-  PLANO_PROFISSIONAL,
+    FEATURE_LIMITE_PASSAGEIROS,
+    PLANO_ESSENCIAL,
+    PLANO_PROFISSIONAL,
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { cn } from "@/lib/utils";
@@ -54,7 +54,7 @@ export const RelatoriosOperacional = ({
   limits,
   IsProfissionalPlan,
 }: RelatoriosOperacionalProps) => {
-  const { openPlanUpgradeDialog, openContextualUpsellDialog } = useLayout();
+  const { openPlanUpgradeDialog } = useLayout();
 
   return (
     <div className="space-y-4 mt-0">
@@ -150,9 +150,9 @@ export const RelatoriosOperacional = ({
                   size="sm"
                   className="mt-4 px-5 rounded-full border-white/30 bg-white/20 text-white hover:bg-white/30 font-semibold"
                   onClick={() =>
-                    openContextualUpsellDialog({
-                      feature: "relatorios",
-                      targetPlan: PLANO_ESSENCIAL,
+                    openPlanUpgradeDialog({
+                      feature: FEATURE_RELATORIOS,
+                      defaultTab: PLANO_ESSENCIAL,
                     })
                   }
                 >

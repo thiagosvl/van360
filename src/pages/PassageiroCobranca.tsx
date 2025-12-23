@@ -136,7 +136,7 @@ export default function PassageiroCobranca() {
   };
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
-  const { setPageTitle, openLimiteFranquiaDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
   const { user } = useSession();

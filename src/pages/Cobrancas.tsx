@@ -49,7 +49,8 @@ import { UnifiedEmptyState } from "@/components/empty";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
-    PASSAGEIRO_COBRANCA_STATUS_PAGO
+    FEATURE_COBRANCA_AUTOMATICA,
+    PASSAGEIRO_COBRANCA_STATUS_PAGO,
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -108,7 +109,7 @@ const Cobrancas = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
 
-  const { setPageTitle, openLimiteFranquiaDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const { setPageTitle, openPlanUpgradeDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Tab state from URL
@@ -156,13 +157,11 @@ const Cobrancas = () => {
   const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
   const permissions = usePermissions();
 
-  const handleUpgrade = useCallback((featureName: string, description: string) => {
-    openLimiteFranquiaDialog({
-      title: featureName,
-      description: description,
-      hideLimitInfo: true,
+  const handleUpgrade = useCallback((feature: string) => {
+    openPlanUpgradeDialog({
+      feature,
     });
-  }, [openLimiteFranquiaDialog]);
+  }, [openPlanUpgradeDialog]);
 
   const [buscaAbertas, setBuscaAbertas] = useState("");
   const [buscaPagas, setBuscaPagas] = useState("");
@@ -331,10 +330,7 @@ const Cobrancas = () => {
               <div>
                 <AutomaticChargesPrompt 
                   variant="slim-desktop" 
-                  onUpgrade={() => handleUpgrade(
-                    "Cobranças Automáticas",
-                    "Automatize o envio de cobranças e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
-                  )}
+                  onUpgrade={() => handleUpgrade(FEATURE_COBRANCA_AUTOMATICA)}
                 />
               </div>
             )}
@@ -477,10 +473,7 @@ const Cobrancas = () => {
                       {index === 2 && !permissions.canUseAutomatedCharges && (
                         <AutomaticChargesPrompt 
                           variant="inline-mobile"
-                          onUpgrade={() => handleUpgrade(
-                            "Cobranças Automáticas",
-                            "Automatize o envio de cobranças e reduza a inadimplência. Envie notificações automáticas para seus passageiros via WhatsApp."
-                          )}
+                          onUpgrade={() => handleUpgrade(FEATURE_COBRANCA_AUTOMATICA)}
                         />
                       )}
                       </Fragment>
