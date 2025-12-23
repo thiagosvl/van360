@@ -1,22 +1,22 @@
 import { BeneficiosPlanoSheet } from "@/components/features/pagamento/BeneficiosPlanoSheet";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-    FEATURE_COBRANCA_AUTOMATICA,
-    FEATURE_GASTOS,
-    FEATURE_LIMITE_FRANQUIA,
-    FEATURE_LIMITE_PASSAGEIROS,
-    FEATURE_NOTIFICACOES,
-    FEATURE_RELATORIOS,
-    PLANO_ESSENCIAL,
-    PLANO_GRATUITO,
-    PLANO_PROFISSIONAL,
+  FEATURE_COBRANCA_AUTOMATICA,
+  FEATURE_GASTOS,
+  FEATURE_LIMITE_FRANQUIA,
+  FEATURE_LIMITE_PASSAGEIROS,
+  FEATURE_NOTIFICACOES,
+  FEATURE_RELATORIOS,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
+  PLANO_PROFISSIONAL,
 } from "@/constants";
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks/api/usePlanos";
 import { usePlanUpgrade } from "@/hooks/business/usePlanUpgrade";
@@ -26,13 +26,13 @@ import { useUpgradeFranquia } from "@/hooks/business/useUpgradeFranquia";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters/currency";
 import {
-    Check,
-    ChevronRight,
-    Crown,
-    Loader2,
-    Sparkles,
-    X,
-    Zap
+  Check,
+  ChevronRight,
+  Crown,
+  Loader2,
+  Sparkles,
+  X,
+  Zap
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import PagamentoAssinaturaDialog from "./PagamentoAssinaturaDialog";
@@ -91,6 +91,13 @@ export function PlanUpgradeDialog({
     planoAtualSlug === PLANO_PROFISSIONAL ||
     plano?.planoProfissional?.parent?.slug === PLANO_PROFISSIONAL;
 
+  // --- Contexto de Venda (Sales Context) ---
+  const salesContext = useMemo(() => {
+    if (isProfissional) return "expansion"; // Já é Pro, quer mais franquia
+    if (isEssencial) return "upgrade_auto"; // É Essencial, quer automação
+    return "acquisition"; // É Grátis/Novo, quer assinar
+  }, [isProfissional, isEssencial]);
+
   // Se o usuário já é Essencial ou Profissional, escondemos a navegação de tabs e forçamos Profissional
   const hideTabs = isEssencial || isProfissional;
 
@@ -100,6 +107,7 @@ export function PlanUpgradeDialog({
     assinatura?.franquia_cobrancas_mes ||
     assinatura?.franquia_contratada_cobrancas ||
     0;
+  const valorAtual = Number(assinatura?.valor || 0);
 
   // Definição de passageiros ativos e alvo
   const passageirosAtivos = profile?.estatisticas?.total_passageiros || 0;
@@ -118,7 +126,7 @@ export function PlanUpgradeDialog({
   const { options: franchiseOptions, calculateProrata } = useUpgradeFranquia({
     franquiaContratada: franquiaAtual,
     totalPassageiros: effectiveTarget,
-    valorAtualMensal: 0, // Placeholder
+    valorAtualMensal: valorAtual,
     dataVencimento: profile?.assinatura?.data_vencimento,
   });
 
@@ -168,18 +176,37 @@ export function PlanUpgradeDialog({
     null
   );
 
+  // Estados para Quantidade Personalizada
+  const [isCustomQuantityMode, setIsCustomQuantityMode] = useState(false);
+  const [manualQuantity, setManualQuantity] = useState<number>(0);
+
   useEffect(() => {
     if (open && availableFranchiseOptions.length > 0) {
-      // Tenta achar um recomendado VÁLIDO (dentro dos filtrados)
-      const recommended =
-        availableFranchiseOptions.find((o) => o.recomendado) ||
-        availableFranchiseOptions[0];
-      if (recommended) setSelectedTierId(recommended.id);
+      if (!selectedTierId && !isCustomQuantityMode) {
+        // Tenta achar um recomendado VÁLIDO (dentro dos filtrados)
+        const recommended =
+          availableFranchiseOptions.find((o) => o.recomendado) ||
+          availableFranchiseOptions[0];
+        if (recommended) {
+          setSelectedTierId(recommended.id);
+          setManualQuantity(recommended.quantidade || 0);
+        }
+      }
     }
-  }, [open, availableFranchiseOptions]);
+  }, [open, availableFranchiseOptions, selectedTierId, isCustomQuantityMode]);
 
   // Computar a opção visualizada no momento
   const currentTierOption = useMemo(() => {
+    if (isCustomQuantityMode) {
+      return {
+        id: "custom_manual",
+        label: `${manualQuantity} Vagas`,
+        quantidade: manualQuantity,
+        tipo: "tier" as const,
+        isCustom: true,
+      };
+    }
+
     if (!availableFranchiseOptions || availableFranchiseOptions.length === 0)
       return null;
 
@@ -191,12 +218,16 @@ export function PlanUpgradeDialog({
       if (selected) return selected;
     }
 
-    // Fallback para o recomendado ou o primeiro da lista FILTRADA
-    return (
-      availableFranchiseOptions.find((o) => o.recomendado) ||
-      availableFranchiseOptions[0]
-    );
-  }, [selectedTierId, availableFranchiseOptions]);
+    // Fallback para o primeiro
+    return availableFranchiseOptions[0] || null;
+  }, [
+    selectedTierId,
+    availableFranchiseOptions,
+    isCustomQuantityMode,
+    manualQuantity,
+  ]);
+
+
 
   // --- Lógica de Preço Sob Medida (Robustez) ---
   const [customPrice, setCustomPrice] = useState<number | null>(null);
@@ -289,10 +320,14 @@ export function PlanUpgradeDialog({
       desc: "Cadastros ilimitados e controle de gastos básico.",
     },
     profissional: {
-      title: isProfissional ? "Aumente sua Capacidade" : "Você só dirige",
-      desc: isProfissional
-        ? "Expanda sua franquia para automatizar mais passageiros."
-        : "Cobranças e recibos automáticos, zero dor de cabeça.",
+      title:
+        salesContext === "expansion"
+          ? "Aumente sua Capacidade"
+          : "Automatize sua Cobrança",
+      desc:
+        salesContext === "expansion"
+          ? "Expanda sua franquia para automatizar mais passageiros."
+          : "Cobranças e recibos automáticos, zero dor de cabeça.",
     },
   };
 
@@ -342,15 +377,15 @@ export function PlanUpgradeDialog({
           onOpenAutoFocus={(e) => e.preventDefault()}
           hideCloseButton
         >
-          {/* Header Dinâmico (Fixed) */}
+          {/* Header Slim (Fixed) */}
           <div
             className={cn(
-              "px-6 py-6 text-center relative overflow-hidden transition-colors duration-300 shrink-0",
+              "px-5 py-4 text-center relative overflow-hidden transition-colors duration-300 shrink-0 flex items-center justify-center min-h-[60px]",
               requestHeaderStyle
             )}
           >
-            {/* Botão Fechar Padronizado */}
-            <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors z-50">
+            {/* Botão Fechar Padronizado - Alinhado Verticalmente */}
+            <DialogClose className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors z-50 p-2 hover:bg-white/10 rounded-full">
               <X className="h-6 w-6" />
               <span className="sr-only">Close</span>
             </DialogClose>
@@ -358,13 +393,9 @@ export function PlanUpgradeDialog({
             {/* Padrão de fundo sutil */}
             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
 
-            <DialogTitle className="text-2xl font-bold text-white relative z-10 leading-tight">
+            <DialogTitle className="text-xl font-bold text-white relative z-10 leading-tight">
               {displayContent.title}
             </DialogTitle>
-            {/* Subtitulo opcional, mais sutil */}
-            <p className="text-blue-50/80 text-xs mt-1.5 relative z-10 font-medium leading-relaxed max-w-[80%] mx-auto">
-              {displayContent.desc}
-            </p>
           </div>
 
           <Tabs
@@ -446,26 +477,28 @@ export function PlanUpgradeDialog({
                   <ChevronRight className="w-3 h-3" />
                 </button>
 
-                {/* 3. Upsell Trigger (Banner) */}
-                <div
+                {/* 3. Upsell Trigger (Banner Button) */}
+                <button
                   onClick={() => setActiveTab("profissional")}
-                  className="mt-6 bg-violet-50 border border-violet-100 rounded-xl p-4 flex items-center justify-between cursor-pointer group hover:bg-violet-100 hover:border-violet-200 transition-all"
+                  className="mt-6 w-full group relative overflow-hidden bg-violet-50 hover:bg-violet-100 border border-violet-200 hover:border-violet-300 rounded-xl p-4 transition-all duration-300 text-left"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 group-hover:bg-white transition-colors">
-                      <Zap className="w-4 h-4 fill-current animate-pulse" />
+                  <div className="relative z-10 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-violet-100 group-hover:bg-white flex items-center justify-center text-violet-600 transition-colors shadow-sm">
+                        <Zap className="w-4 h-4 fill-current animate-pulse" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-violet-900 leading-tight">
+                          Quer automatizar tudo?
+                        </p>
+                        <p className="text-xs text-violet-600/80 leading-tight mt-0.5 font-medium">
+                          Veja o Plano Profissional
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <p className="text-sm font-bold text-violet-900 leading-tight">
-                        Quero 100% Automático
-                      </p>
-                      <p className="text-[11px] text-violet-600/80 leading-tight mt-0.5">
-                        Cobranças e recibos no piloto automático
-                      </p>
-                    </div>
+                    <ChevronRight className="w-5 h-5 text-violet-400 group-hover:text-violet-700 transition-colors transform group-hover:translate-x-1" />
                   </div>
-                  <ChevronRight className="w-5 h-5 text-violet-400 group-hover:text-violet-700 transition-colors" />
-                </div>
+                </button>
 
                 {/* Espaçador */}
                 <div className="h-4 sm:h-0" />
@@ -480,39 +513,72 @@ export function PlanUpgradeDialog({
                 availableFranchiseOptions.length > 0 ? (
                   <>
                     {/* 1. SELETOR (Segmented Control Refined) */}
-                    <div className="space-y-3">
-                      {/* Check if current is Custom AND it is strictly custom scenario (no alternatives) or simply render normally to allow switching if possible? 
-                          User request: "Quando não houver opções de tiers...". 
-                          If upgrades exist, we show selector. If only custom exists, show Card. */}
-                      {availableFranchiseOptions.length === 1 &&
-                      availableFranchiseOptions[0].isCustom ? (
-                        <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 flex items-center justify-center gap-3">
-                          <Crown className="w-5 h-5 text-violet-600 fill-current" />
-                          <div className="text-center">
-                            <span className="block text-xs font-bold text-violet-700 uppercase tracking-wider">
-                              Sua Frota Atual
+                    <div className="space-y-2">
+                         <div className="text-center">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                {salesContext === "expansion" 
+                                    ? "Nova Capacidade Desejada" 
+                                    : "Tamanho da sua Frota"}
                             </span>
-                            <span className="text-lg font-bold text-violet-900">
-                              {currentTierOption?.quantidade} Passageiros
-                            </span>
+                        </div>
+
+                      {/* Check if Custom Mode is Active */}
+                      {isCustomQuantityMode ? (
+                        <div className="bg-white p-3 rounded-xl border-2 border-violet-100 shadow-sm flex items-center gap-3 animate-in fade-in zoom-in-95 duration-200">
+                           <div className="flex-1 pb-1">
+                                <label className="text-[10px] font-bold text-violet-500 uppercase tracking-wider block mb-1">
+                                    Quantidade Personalizada
+                                </label>
+                                <div className="flex items-center gap-2">
+                                    <input 
+                                        type="number" 
+                                        className="w-full text-2xl font-bold text-violet-900 placeholder:text-gray-300 focus:outline-none bg-transparent"
+                                        placeholder="00"
+                                        value={manualQuantity || ""}
+                                        onChange={(e) => setManualQuantity(Number(e.target.value))}
+                                        autoFocus
+                                     />
+                                     <span className="text-sm font-medium text-gray-400">Vagas</span>
+                                </div>
+                           </div>
+                           <button 
+                                onClick={() => setIsCustomQuantityMode(false)}
+                                className="p-2 hover:bg-gray-100 rounded-xl text-gray-400 hover:text-gray-600 transition-colors"
+                                title="Cancelar"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                      ) : availableFranchiseOptions.length === 1 &&
+                        availableFranchiseOptions[0].isCustom ? (
+                        <div className="bg-violet-50 border border-violet-200 rounded-xl p-3 flex items-center justify-between shadow-sm group cursor-pointer hover:border-violet-300 transition-all" onClick={() => setIsCustomQuantityMode(true)}>
+                          <div className="flex items-center gap-3">
+                              <Crown className="w-6 h-6 text-violet-600 fill-current" />
+                              <div className="text-left">
+                                <span className="block text-[10px] font-bold text-violet-600 uppercase tracking-wider">
+                                  {salesContext === "expansion"
+                                    ? "Nova Capacidade"
+                                    : "Sua Frota Atual"}
+                                </span>
+                                <span className="text-xl font-bold text-violet-900 leading-none">
+                                  {currentTierOption?.quantidade} Passageiros
+                                </span>
+                              </div>
                           </div>
+                           <span className="text-xs font-bold text-violet-400 bg-white/50 px-2 py-1 rounded-lg border border-violet-100 group-hover:bg-white group-hover:text-violet-600 transition-colors">Alterar</span>
                         </div>
                       ) : (
-                        <>
-                          <div className="text-center">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                              Quantos passageiros?
-                            </span>
-                          </div>
-                          <div className="bg-gray-100 p-1 rounded-xl flex flex-wrap justify-center gap-1">
+                        <div className="bg-gray-100 p-1.5 rounded-xl flex flex-wrap justify-center gap-1.5 ring-1 ring-inset ring-black/5">
                             {availableFranchiseOptions
                               .sort(
                                 (a, b) =>
                                   (a?.quantidade || 0) - (b?.quantidade || 0)
                               )
-                              .map((opt) => {
+                              .map((opt, index) => {
                                 const isSelected =
                                   opt?.id === currentTierOption?.id;
+                                const isRecommended = index === 0 && salesContext !== "expansion";
+                                
                                 return (
                                   <button
                                     key={opt?.id}
@@ -520,23 +586,42 @@ export function PlanUpgradeDialog({
                                       if (opt?.id) setSelectedTierId(opt.id);
                                     }}
                                     className={cn(
-                                      "flex-1 min-w-[60px] py-2 rounded-lg text-sm font-bold transition-all duration-200",
+                                      "flex-1 min-w-[60px] py-1.5 rounded-lg text-sm font-bold transition-all duration-200 flex flex-col items-center justify-center leading-none gap-0.5",
                                       isSelected
-                                        ? "bg-white text-violet-700 shadow-sm scale-[1.02]"
-                                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
+                                        ? "bg-white text-violet-700 shadow-sm ring-1 ring-black/5"
+                                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50",
+                                       isRecommended && !isSelected && "bg-violet-50/50 text-violet-600"
                                     )}
                                   >
-                                    {opt?.quantidade}
+                                    <span className="text-sm">{opt?.quantidade}</span>
+                                    {isRecommended && (
+                                        <span className="text-[8px] font-extrabold uppercase tracking-wideropacity-90">
+                                            {salesContext === "upgrade_auto" ? "Toda Frota" : "Ideal"}
+                                        </span>
+                                    )}
                                   </button>
                                 );
                               })}
+                              
+                            {/* Botão Outro */}
+                            <button
+                                onClick={() => {
+                                    setIsCustomQuantityMode(true);
+                                    setManualQuantity(currentTierOption?.quantidade || 0);
+                                }}
+                                className="px-3 py-2 rounded-lg text-xs font-bold transition-all duration-200 text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-100 flex items-center gap-1 min-w-[60px] justify-center"
+                            >
+                                Outro...
+                            </button>
                           </div>
-                        </>
                       )}
                     </div>
 
                     {/* 2. HERO SECTION (Preço) */}
-                    <div className="text-center py-2 space-y-1 min-h-[100px] flex flex-col justify-center transition-all duration-300">
+                    <div className="text-center py-2 space-y-0.5 min-h-[90px] flex flex-col justify-center transition-all duration-300">
+                      <span className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold mb-1">
+                        Nova mensalidade total
+                      </span>
                       {(() => {
                         // Lógica de Renderização do Preço
                         if (currentTierOption?.isCustom) {
@@ -609,27 +694,75 @@ export function PlanUpgradeDialog({
                       })()}
                     </div>
 
-                    {/* 3. LISTA DE BENEFÍCIOS */}
+                    {/* 3. INFO DINÂMICA: RESUMO FINANCEIRO (Expansão) OU BENEFÍCIOS (Migração) */}
                     <div className="space-y-4 pt-2">
-                      <div className="space-y-3.5">
-                        {/* Benefícios Destaque */}
-                        <BenefitItem
-                          text="Passageiros ILIMITADOS (Cadastro)"
-                          highlighted
-                        />
-                        <BenefitItem
-                          text={`Até ${
-                            currentTierOption?.quantidade || "X"
-                          } Passageiros no Automático`}
-                          highlighted
-                        />
-                        <div className="h-px bg-gray-100 my-2" />
-
-                        <BenefitItem text="Cobrança Automática (Zap)" />
-                        <BenefitItem text="Baixas de pagamento automáticas" />
-                        <BenefitItem text="Envio de Recibos no Pix" />
-                        <BenefitItem text="Relatórios Financeiros" />
-                      </div>
+                        {(() => {
+                             // Cálculo do Preço Selecionado para Prorata
+                             let price = 0;
+                             if (currentTierOption?.isCustom && customPrice) {
+                                 price = customPrice;
+                             } else {
+                                 const officialPlan = planos?.find((p: any) => p.id === currentTierOption?.id);
+                                 if (officialPlan) {
+                                     price = officialPlan.promocao_ativa 
+                                        ? Number(officialPlan.preco_promocional) 
+                                        : Number(officialPlan.preco);
+                                 }
+                             }
+                             
+                             const prorata = calculateProrata(price);
+                             
+                             if (salesContext === "expansion") {
+                                 return (
+                                     <div className="bg-violet-50/60 rounded-xl p-4 border border-violet-100 space-y-3">
+                                         <div className="flex justify-between items-center text-sm">
+                                            <span className="text-gray-500 font-medium">Capacidade</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-gray-400 line-through decoration-gray-400/50 text-xs">{franquiaAtual}</span>
+                                                <ChevronRight className="w-3 h-3 text-violet-400" />
+                                                <span className="font-bold text-violet-700">{currentTierOption?.quantidade} Passageiros</span>
+                                            </div>
+                                        </div>
+                                         <div className="flex justify-between items-center text-sm">
+                                            <span className="text-gray-500 font-medium">Nova Mensalidade</span>
+                                             <span className="font-bold text-gray-900">{formatCurrency(price)}</span>
+                                        </div>
+                                        
+                                        <div className="h-px bg-violet-200/50 my-1" />
+                                        
+                                         <div className="flex justify-between items-center">
+                                            <div className="flex flex-col text-left">
+                                                <span className="text-xs font-bold text-violet-600 uppercase tracking-wide">Pagar Agora (Proporcional)</span>
+                                                <span className="text-[10px] text-gray-400 leading-tight">Referente aos dias restantes</span>
+                                            </div>
+                                             <span className="text-xl font-extrabold text-violet-700">{formatCurrency(prorata.valorHoje)}</span>
+                                        </div>
+                                    </div>
+                                 )
+                             }
+                             
+                             // Visão Padrão (Benefícios)
+                             return (
+                                  <div className="space-y-3.5">
+                                    <BenefitItem
+                                      text="Passageiros ILIMITADOS (Cadastro)"
+                                      highlighted
+                                    />
+                                    <BenefitItem
+                                      text={`Até ${
+                                        currentTierOption?.quantidade || "X"
+                                      } Passageiros no Automático`}
+                                      highlighted
+                                    />
+                                    <div className="h-px bg-gray-100 my-2" />
+            
+                                    <BenefitItem text="Cobrança Automática (Zap)" />
+                                    <BenefitItem text="Baixas de pagamento automáticas" />
+                                    <BenefitItem text="Envio de Recibos no Pix" />
+                                    <BenefitItem text="Relatórios Financeiros" />
+                                  </div>
+                             )
+                        })()}
                     </div>
 
                     {/* Botão Ver Mais Benefícios */}
@@ -680,8 +813,18 @@ export function PlanUpgradeDialog({
               >
                 {loading ? (
                   <Loader2 className="animate-spin w-5 h-5" />
+                ) : salesContext === "expansion" ? (
+                  `Contratar Nova Franquia (Até ${
+                    currentTierOption?.quantidade || "X"
+                  } Vagas)`
+                ) : salesContext === "upgrade_auto" ? (
+                  `Migrar para Automático (Até ${
+                    currentTierOption?.quantidade || "X"
+                  } Vagas)`
                 ) : (
-                  `Ativar Plano (Até ${currentTierOption?.quantidade || 'X'} Passageiros)`
+                  `Assinar Mensal (Até ${
+                    currentTierOption?.quantidade || "X"
+                  } Vagas)`
                 )}
               </Button>
             )}
