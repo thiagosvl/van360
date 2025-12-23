@@ -1,15 +1,15 @@
 import {
-  Check,
-  CreditCard,
-  DollarSign,
-  FileText,
-  Plus,
-  Receipt,
-  TrendingDown,
-  TrendingUp,
-  Users,
-  Wallet,
-  Zap,
+    Check,
+    CreditCard,
+    DollarSign,
+    FileText,
+    Plus,
+    Receipt,
+    TrendingDown,
+    TrendingUp,
+    Users,
+    Wallet,
+    Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -31,12 +31,10 @@ import { useSession } from "@/hooks/business/useSession";
 
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import {
-  FEATURE_GASTOS,
-  FEATURE_LIMITE_PASSAGEIROS,
-  PASSAGEIRO_COBRANCA_STATUS_PAGO,
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
-  PLANO_PROFISSIONAL,
+    FEATURE_GASTOS,
+    FEATURE_LIMITE_PASSAGEIROS,
+    PASSAGEIRO_COBRANCA_STATUS_PAGO,
+    PLANO_ESSENCIAL
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
@@ -51,6 +49,7 @@ import { DashboardStatusCard } from "@/components/features/home/DashboardStatusC
 import { MiniKPI } from "@/components/features/home/MiniKPI";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
+import { useUpsellContent } from "@/hooks/business/useUpsellContent";
 
 // --- Main Component ---
 
@@ -69,6 +68,8 @@ const Home = () => {
   } = usePermissions();
 
   const { limits: planLimits } = usePlanLimits({ profile, plano });
+
+  const upsellContent = useUpsellContent(plano);
 
   const permissions = {
     isFreePlan,
@@ -327,70 +328,7 @@ const Home = () => {
     });
   }, []);
 
-  // Obter slug principal do plano (usa parent se existir)
-  const getMainPlanSlug = () => {
-    if (!plano?.planoProfissional) return null;
-    return (
-      plano.planoProfissional.parent?.slug ??
-      plano.planoProfissional.slug ??
-      plano?.slug ??
-      null
-    );
-  };
 
-  const getPlanMessage = (planSlug?: string) => {
-    const slug = planSlug?.toLowerCase() || "";
-
-    if (slug === PLANO_GRATUITO) {
-      return "Cadastre quantos passageiros quiser e tenha controle total das suas finanças.";
-    }
-
-    if (slug === PLANO_ESSENCIAL) {
-      return "Deixe a cobrança com a gente! Recebimento automático e baixa instantânea.";
-    }
-
-    if (slug === PLANO_PROFISSIONAL) {
-      return "Automação total: cobranças, notificações e muito mais tempo livre para você.";
-    }
-
-    return "Acesse recursos exclusivos e profissionalize sua gestão escolar.";
-  };
-
-  const getPlanCTA = (planSlug?: string) => {
-    const slug = planSlug?.toLowerCase() || "";
-
-    if (slug === PLANO_GRATUITO) {
-      return "Quero mais recursos →";
-    }
-
-    if (slug === PLANO_ESSENCIAL) {
-      return "Quero automação total →";
-    }
-
-    if (slug === PLANO_PROFISSIONAL) {
-      return "Ver todos benefícios";
-    }
-
-    return "Conhecer planos";
-  };
-
-  const getPlanTitle = (planSlug?: string) => {
-    const slug = planSlug?.toLowerCase() || "";
-
-    if (slug === PLANO_GRATUITO) {
-      return "Cresça sem limites 🚀";
-    }
-
-    if (slug === PLANO_ESSENCIAL) {
-      return "Automatize sua rotina ⚡";
-    }
-
-    if (slug === PLANO_PROFISSIONAL) {
-      return "Máxima eficiência 🎯";
-    }
-
-    return "Eleve seu negócio 🚀";
-  };
 
   if (isSessionLoading || isProfileLoading || isInitialLoading) {
     return (
@@ -631,20 +569,18 @@ const Home = () => {
               <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                   <h3 className="font-bold text-lg">
-                    {getPlanTitle(plano?.slug)}
+                    {upsellContent.title}
                   </h3>
                   <p className="text-indigo-100 text-sm mt-1 max-w-md">
-                    {getPlanMessage(plano?.slug)}
+                    {upsellContent.description}
                   </p>
                 </div>
                 <Button
                   variant="secondary"
                   className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold border-none shadow-sm shrink-0"
-                  onClick={() => {
-                    openPlanosDialog();
-                  }}
+                  onClick={upsellContent.action}
                 >
-                  {getPlanCTA(plano?.slug)}
+                  {upsellContent.buttonText}
                 </Button>
               </div>
             </div>

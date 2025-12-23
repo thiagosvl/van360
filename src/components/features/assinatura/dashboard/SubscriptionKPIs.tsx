@@ -1,9 +1,8 @@
 import { KPICard } from "@/components/common/KPICard";
 import { LimitHealthBar } from "@/components/common/LimitHealthBar";
 import {
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
-  PLANO_PROFISSIONAL,
+    PLANO_ESSENCIAL,
+    PLANO_PROFISSIONAL
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { Bot, Timer, TrendingUp, Users } from "lucide-react";
@@ -20,11 +19,11 @@ interface SubscriptionKPIsProps {
 
 export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
   const { openPlanUpgradeDialog } = useLayout();
-  const slug = plano?.slug;
-  const isFree = slug === PLANO_GRATUITO;
-  const isEssential = slug === PLANO_ESSENCIAL;
-  const isProfissional =
-    slug === PLANO_PROFISSIONAL || plano?.parent?.slug === PLANO_PROFISSIONAL;
+  
+  // Source of truth: plano object flags
+  const isFree = plano?.isFreePlan;
+  const isEssential = plano?.isEssentialPlan;
+  const isProfissional = plano?.isProfissionalPlan;
 
   // Renderiza componente de passageiros ativos (Reutilizado EM TODOS)
   const renderPassengerCard = (variant: "success" | "info" | "default") => {

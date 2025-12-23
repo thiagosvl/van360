@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { PLANO_ESSENCIAL, PLANO_GRATUITO, PLANO_PROFISSIONAL } from "@/constants";
 import { cn } from "@/lib/utils";
 import { pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -10,69 +9,15 @@ interface AppSidebarProps {
   plano?: any;
 }
 
-import { useLayout } from "@/contexts/LayoutContext";
+import { useUpsellContent } from "@/hooks/business/useUpsellContent";
 
 export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
   const navigate = useNavigate();
-  const { openPlanUpgradeDialog } = useLayout();
+  const upsellContent = useUpsellContent(plano);
+
   const userItems = pagesItems.map((item) => ({
     ...item,
   }));
-
-  // Helper functions for plan display
-  const getPlanTitle = (planSlug?: string) => {
-    const slug = planSlug?.toLowerCase() || "";
-    
-    if (slug === PLANO_GRATUITO) {
-      return "Cresça sem limites 🚀";
-    }
-    
-    if (slug === PLANO_ESSENCIAL) {
-      return "Automatize sua rotina ⚡";
-    }
-    
-    if (slug === PLANO_PROFISSIONAL) {
-      return "Máxima eficiência 🎯";
-    }
-    
-    return "Eleve seu negócio 🚀";
-  };
-
-  const getPlanMessage = (planSlug?: string) => {
-    const slug = planSlug?.toLowerCase() || "";
-    
-    if (slug === PLANO_GRATUITO) {
-      return "Cadastre quantos passageiros quiser e tenha controle total das suas finanças.";
-    }
-    
-    if (slug === PLANO_ESSENCIAL) {
-      return "Deixe a cobrança com a gente! Recebimento automático e baixa instantânea.";
-    }
-    
-    if (slug === PLANO_PROFISSIONAL) {
-      return "Automação total: cobranças, notificações e muito mais tempo livre para você.";
-    }
-    
-    return "Acesse recursos exclusivos e profissionalize sua gestão escolar.";
-  };
-
-  const getPlanCTA = (planSlug?: string) => {
-    const slug = planSlug?.toLowerCase() || "";
-    
-    if (slug === PLANO_GRATUITO) {
-      return "Quero mais recursos →";
-    }
-    
-    if (slug === PLANO_ESSENCIAL) {
-      return "Quero automação total →";
-    }
-    
-    if (slug === PLANO_PROFISSIONAL) {
-      return "Ver todos benefícios";
-    }
-    
-    return "Conhecer planos";
-  };
 
   return (
     <div className="flex h-full flex-col gap-6">
@@ -117,23 +62,24 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
 
       <div className="hidden sm:block rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-500 to-purple-500 p-5 text-white shadow-lg">
         <p className="text-sm font-semibold">
-          {getPlanTitle(plano?.slug)}
+          {upsellContent.title}
         </p>
         <p className="text-xs text-white/80">
-          {getPlanMessage(plano?.slug)}
+          {upsellContent.description}
         </p>
         <Button
           variant="secondary"
           size="sm"
           onClick={() => {
-            openPlanUpgradeDialog({ feature: PLANO_ESSENCIAL, defaultTab: PLANO_ESSENCIAL });
+            upsellContent.action();
             onLinkClick?.();
           }}
           className="mt-4 w-full rounded-full border-white/30 bg-white/20 text-white hover:bg-white/30 font-semibold"
         >
-          {getPlanCTA(plano?.slug)}
+          {upsellContent.buttonText}
         </Button>
       </div>
     </div>
   );
 }
+

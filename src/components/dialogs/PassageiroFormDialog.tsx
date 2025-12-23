@@ -46,7 +46,7 @@ type PlanoUsuario = {
   isActive: boolean;
   isValidPlan: boolean;
   isFreePlan: boolean;
-  IsProfissionalPlan: boolean;
+  isProfissionalPlan: boolean;
   isEssentialPlan: boolean;
 } | null;
 
@@ -164,11 +164,6 @@ export default function PassengerFormDialog({
   const handleRequestUpgrade = () => {
     // Determina o contexto do upgrade baseado no limite atual
     const targetCount = limits.franchise.used + 1;
-    console.log("DEBUG: Requesting Upgrade", { 
-        limit: limits.franchise.limit, 
-        used: limits.franchise.used, 
-        targetCount 
-    });
 
     if (limits.franchise.limit === 0) {
       setUpgradeFeature(FEATURE_COBRANCA_AUTOMATICA);
