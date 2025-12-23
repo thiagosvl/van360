@@ -23,7 +23,7 @@ import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import { CobrancasFilters } from "@/components/features/cobranca/CobrancasFilters";
 import { ListSkeleton } from "@/components/skeletons";
 import {
-    useCobrancas
+  useCobrancas
 } from "@/hooks";
 import { useCobrancaActions } from "@/hooks/business/useCobrancaActions";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -32,10 +32,10 @@ import { useSession } from "@/hooks/business/useSession";
 // Utils
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
-    formatDateToBR,
-    formatPaymentType,
-    getStatusColor,
-    meses
+  formatDateToBR,
+  formatPaymentType,
+  getStatusColor,
+  meses
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 
@@ -49,8 +49,8 @@ import { UnifiedEmptyState } from "@/components/empty";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
-    FEATURE_COBRANCA_AUTOMATICA,
-    PASSAGEIRO_COBRANCA_STATUS_PAGO,
+  FEATURE_COBRANCA_AUTOMATICA,
+  PASSAGEIRO_COBRANCA_STATUS_PAGO,
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -157,9 +157,11 @@ const Cobrancas = () => {
   const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
   const permissions = usePermissions();
 
-  const handleUpgrade = useCallback((feature: string) => {
+  const handleUpgrade = useCallback((feature: string, description?: string) => {
     openPlanUpgradeDialog({
       feature,
+      title: description ? "Cobrança Automática" : undefined, // Contextual title
+      description,
     });
   }, [openPlanUpgradeDialog]);
 

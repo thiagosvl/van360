@@ -11,7 +11,11 @@ import { Escola } from "@/types/escola";
 import { Veiculo } from "@/types/veiculo";
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
-type OpenPlanUpgradeDialogProps = Omit<PlanUpgradeDialogProps, "open" | "onOpenChange"> & { onClose?: () => void };
+type OpenPlanUpgradeDialogProps = Omit<PlanUpgradeDialogProps, "open" | "onOpenChange"> & { 
+  onClose?: () => void;
+  title?: string;
+  description?: string;
+};
 
 interface OpenConfirmationDialogProps {
   title: string;
@@ -191,6 +195,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             feature={planUpgradeDialogState.props?.feature}
             targetPassengerCount={planUpgradeDialogState.props?.targetPassengerCount}
             onSuccess={planUpgradeDialogState.props?.onSuccess}
+            title={planUpgradeDialogState.props?.title}
+            description={planUpgradeDialogState.props?.description}
          />
       )}
 

@@ -45,6 +45,9 @@ export interface PlanUpgradeDialogProps {
   onSuccess?: () => void;
   // Context Feature Flag
   feature?: string;
+  // Custom Override
+  title?: string;
+  description?: string;
 }
 
 export function PlanUpgradeDialog({
@@ -54,6 +57,8 @@ export function PlanUpgradeDialog({
   targetPassengerCount,
   onSuccess,
   feature,
+  title,
+  description,
 }: PlanUpgradeDialogProps) {
   const { user } = useSession();
   const { profile, plano, refreshProfile } = useProfile(user?.id);
@@ -333,16 +338,24 @@ export function PlanUpgradeDialog({
 
   // Decide o texto final: Se a aba ativa for a mesma da 'dor', usa o texto específico. Senão, genérico.
   const displayContent = useMemo(() => {
+    // 1. Custom Override (Highest Priority)
+    if (title && description) {
+      return { title, desc: description };
+    }
+
+    // 2. Feature Context
     if (specificContent && activeTab === featureTargetPlan) {
       return {
         title: specificContent.title,
         desc: specificContent.desc,
       };
     }
+
+    // 3. Generic Fallback
     return activeTab === "essencial"
       ? genericContent.essencial
       : genericContent.profissional;
-  }, [activeTab, featureTargetPlan, specificContent, genericContent]);
+  }, [activeTab, featureTargetPlan, specificContent, genericContent, title, description]);
 
   // Cores Dinâmicas do Header
   const requestHeaderStyle =

@@ -1,10 +1,10 @@
 import {
-    Suspense,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 
 // React Router
@@ -58,18 +58,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useAvailableYears,
-    useCobrancasByPassageiro,
-    useDeleteCobranca,
-    useDeletePassageiro,
-    useDesfazerPagamento,
-    useEnviarNotificacaoCobranca,
-    usePassageiro,
-    usePassageiros,
-    useToggleAtivoPassageiro,
-    useToggleNotificacoesCobranca,
-    useUpdateCobranca,
-    useUpdatePassageiro
+  useAvailableYears,
+  useCobrancasByPassageiro,
+  useDeleteCobranca,
+  useDeletePassageiro,
+  useDesfazerPagamento,
+  useEnviarNotificacaoCobranca,
+  usePassageiro,
+  usePassageiros,
+  useToggleAtivoPassageiro,
+  useToggleNotificacoesCobranca,
+  useUpdateCobranca,
+  useUpdatePassageiro
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -169,10 +169,12 @@ export default function PassageiroCarteirinha() {
     // Backend activates passenger via webhook (using targetPassengerId)
   };
 
-  const handleUpgrade = useCallback((featureName: string) => {
+  const handleUpgrade = useCallback((featureName: string, description?: string, title?: string) => {
     safeCloseDialog(() => {
       openPlanUpgradeDialog({
         feature: featureName,
+        description,
+        title,
       });
     });
   }, [openPlanUpgradeDialog]);
@@ -722,7 +724,16 @@ export default function PassageiroCarteirinha() {
               status={selectedCobranca.status}
               dataVencimento={selectedCobranca.data_vencimento}
               onPaymentRecorded={() =>
-                safeCloseDialog(() => handlePaymentRecorded())
+                safeCloseDialog(() => {
+                  handlePaymentRecorded();
+                  if (!canUseCobrancaAutomatica(plano)) {
+                    handleUpgrade(
+                      FEATURE_COBRANCA_AUTOMATICA, 
+                      "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?",
+                      "Cobrança Automática"
+                    );
+                  }
+                })
               }
             />
           )}

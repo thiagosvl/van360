@@ -40,7 +40,7 @@ export interface UseCobrancaOperationsProps {
   cobranca: Cobranca;
   plano?: any;
   onActionSuccess?: () => void;
-  onUpgrade?: (feature: string) => void;
+  onUpgrade?: (feature: string, description?: string, title?: string) => void;
 }
 
 export function useCobrancaOperations({
@@ -62,9 +62,11 @@ export function useCobrancaOperations({
   const deleteCobranca = useDeleteCobranca();
 
   const handleUpgrade = useCallback(
-    (feature: string) => {
+    (feature: string, description?: string, title?: string) => {
       openPlanUpgradeDialog({
         feature,
+        description,
+        title,
       });
     },
     [openPlanUpgradeDialog]
