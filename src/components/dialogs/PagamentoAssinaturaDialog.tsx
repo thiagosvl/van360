@@ -1,11 +1,11 @@
 import PagamentoPixContent from "@/components/features/pagamento/PagamentoPixContent";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 
@@ -58,13 +58,13 @@ export default function PagamentoAssinaturaDialog({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose(false)}>
       <DialogContent
-        className="sm:max-w-md max-h-[95vh] overflow-y-auto bg-white p-0 gap-0 rounded-3xl"
+        className="w-full max-w-md p-0 gap-0 bg-white h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         onInteractOutside={(e) => e.preventDefault()}
         onOpenAutoFocus={(e) => e.preventDefault()}
         hideCloseButton
       >
         {/* Header Minimalista */}
-        <DialogHeader className="p-3 flex flex-row items-center justify-between border-b border-gray-100 sticky top-0 bg-white z-10">
+        <DialogHeader className="p-3 flex flex-row items-center justify-between border-b border-gray-100 bg-white shrink-0">
           <div className="w-8" /> {/* Spacer */}
           <DialogTitle className="text-base font-semibold text-gray-900 uppercase tracking-wide">
             ASSINATURA
@@ -78,7 +78,7 @@ export default function PagamentoAssinaturaDialog({
           </DialogClose>
         </DialogHeader>
 
-        <div className="p-4 pt-3">
+        <div className="flex-1 overflow-hidden flex flex-col">
           <PagamentoPixContent
             cobrancaId={cobrancaId}
             onPaymentSuccess={onPaymentSuccess}
