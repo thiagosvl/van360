@@ -195,11 +195,7 @@ export default function Assinatura() {
     setPaymentModalOpen(false);
     setSelectedCobranca(null);
     
-    // Aguardar um pouco para o backend processar a atualização
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    // Redirect literal para /assinatura forçando reload completo e atualização do profile
-    window.location.href = "/assinatura";
+    pullToRefreshReload();
   };
 
   const handlePagarClick = (cobranca: any) => {
@@ -286,7 +282,7 @@ export default function Assinatura() {
           cobrancaId={selectedCobranca.id}
           valor={Number(selectedCobranca.valor)}
           onPaymentSuccess={handlePaymentSuccess}
-          usuarioId={profile?.id}
+          usuarioId={user?.id}
           onPrecisaSelecaoManual={handlePrecisaSelecaoManual}
         />
       )}
