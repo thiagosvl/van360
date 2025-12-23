@@ -2,21 +2,21 @@ import { PlanUpgradeDialog } from "@/components/dialogs/PlanUpgradeDialog";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_LIMITE_FRANQUIA } from "@/constants";
 import {
-  useBuscarResponsavel,
-  useCreatePassageiro,
-  useFinalizePreCadastro,
-  usePassageiroForm,
-  useUpdatePassageiro,
+    useBuscarResponsavel,
+    useCreatePassageiro,
+    useFinalizePreCadastro,
+    usePassageiroForm,
+    useUpdatePassageiro,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
@@ -321,7 +321,7 @@ export default function PassengerFormDialog({
                     className="space-y-4"
                   >
                     <PassageiroFormDadosCadastrais profile={profile} />
-                    <PassageiroFormResponsavel />
+                    <PassageiroFormResponsavel isSearching={buscarResponsavel.isPending} />
                     <PassageiroFormFinanceiro
                       editingPassageiro={editingPassageiro}
                       validacaoFranquia={validacaoFranquia}

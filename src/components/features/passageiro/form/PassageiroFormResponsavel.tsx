@@ -13,10 +13,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cpfMask } from "@/utils/masks";
-import { Contact, Hash, Mail, User } from "lucide-react";
+import { Contact, Hash, Loader2, Mail, User } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 
-export function PassageiroFormResponsavel() {
+interface PassageiroFormResponsavelProps {
+  isSearching?: boolean;
+}
+
+export function PassageiroFormResponsavel({ isSearching }: PassageiroFormResponsavelProps) {
   const form = useFormContext();
 
   return (
@@ -27,7 +31,7 @@ export function PassageiroFormResponsavel() {
       <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
         <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
           <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-            <Contact className="w-5 h-5" />
+            {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Contact className="w-5 h-5" />}
           </div>
           Responsável
         </div>
@@ -69,12 +73,13 @@ export function PassageiroFormResponsavel() {
                   Nome do Responsável <span className="text-red-600">*</span>
                 </FormLabel>
                 <FormControl>
-                  <div className="relative">
+                    <div className="relative">
                     <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                     <Input
                       {...field}
                       className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                       aria-invalid={!!fieldState.error}
+                      disabled={isSearching}
                     />
                   </div>
                 </FormControl>
@@ -99,6 +104,7 @@ export function PassageiroFormResponsavel() {
                       {...field}
                       className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                       aria-invalid={!!fieldState.error}
+                      disabled={isSearching}
                     />
                   </div>
                 </FormControl>
@@ -115,6 +121,7 @@ export function PassageiroFormResponsavel() {
                 label="WhatsApp"
                 required
                 inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                disabled={isSearching}
               />
             )}
           />

@@ -11,6 +11,7 @@ interface PhoneInputProps<T extends FieldValues> {
   placeholder?: string;
   className?: string;
   inputClassName?: string;
+  disabled?: boolean;
 }
 
 export function PhoneInput<T extends FieldValues>({
@@ -20,6 +21,7 @@ export function PhoneInput<T extends FieldValues>({
   placeholder = "(00) 00000-0000",
   className,
   inputClassName,
+  disabled,
 }: PhoneInputProps<T>) {
   const { error } = useFormField();
 
@@ -40,6 +42,7 @@ export function PhoneInput<T extends FieldValues>({
             }}
             className={inputClassName}
             aria-invalid={!!error}
+            disabled={disabled}
           />
         </div>
       </FormControl>
