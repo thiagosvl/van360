@@ -1,4 +1,7 @@
-import { MobileAction, MobileActionItem } from "@/components/common/MobileActionItem";
+import {
+  MobileAction,
+  MobileActionItem,
+} from "@/components/common/MobileActionItem";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
@@ -6,65 +9,54 @@ import { PrePassengerListSkeleton } from "@/components/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import { FEATURE_LIMITE_FRANQUIA, FEATURE_LIMITE_PASSAGEIROS, PLANO_ESSENCIAL } from "@/constants";
+import {
+  FEATURE_LIMITE_FRANQUIA,
+  FEATURE_LIMITE_PASSAGEIROS,
+  PLANO_ESSENCIAL,
+} from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreatePrePassageiro,
-    useDeletePrePassageiro,
-    usePassageiros,
-    usePrePassageiros,
+  useCreatePrePassageiro,
+  useDeletePrePassageiro,
+  usePassageiros,
+  usePrePassageiros,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import {
-    formatarTelefone,
-    formatRelativeTime,
-    periodos,
+  formatarTelefone,
+  formatRelativeTime,
+  periodos,
 } from "@/utils/formatters";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import {
-    Clock,
-    Copy,
-    Eye,
-    MoreVertical,
-    Search,
-    Trash2,
-    Users2,
+  Clock,
+  Copy,
+  Eye,
+  MoreVertical,
+  Search,
+  Trash2,
+  Users2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-
-type PlanoUsuario = {
-  slug: string;
-  status: string;
-  trial_end_at: string | null;
-  ativo: boolean;
-  planoProfissional: any;
-  isTrial: boolean;
-  isValidTrial: boolean;
-  isActive: boolean;
-  isValidPlan: boolean;
-  isFreePlan: boolean;
-  IsProfissionalPlan: boolean;
-  isEssentialPlan: boolean;
-} | null;
 
 export default function PrePassageiros({
   onFinalizeNewPrePassageiro,
@@ -75,8 +67,6 @@ export default function PrePassageiros({
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const {
-    openPlanosDialog,
-    openPlanosDialog,
     openPlanUpgradeDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
@@ -458,7 +448,9 @@ export default function PrePassageiros({
                           onConfirm: async () => {
                             if (prePassageiro.id) {
                               try {
-                                await deletePrePassageiro.mutateAsync(prePassageiro.id);
+                                await deletePrePassageiro.mutateAsync(
+                                  prePassageiro.id
+                                );
                                 closeConfirmationDialog();
                               } catch (error) {
                                 console.error(error);
