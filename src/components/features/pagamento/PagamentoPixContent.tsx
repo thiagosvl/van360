@@ -636,88 +636,85 @@ export default function PagamentoPixContent({
   }
 
   return (
-    <div className="flex flex-col items-center w-full max-w-md mx-auto">
+    <div className="flex flex-col h-full w-full bg-white">
       {gerarPix.isPending ? (
-        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+        <div className="flex flex-col items-center justify-center py-12 space-y-4 flex-1">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
           <p className="text-gray-500 font-medium">Gerando código PIX...</p>
         </div>
       ) : dadosPagamento ? (
         <>
-          {/* Ilustração e Status */}
-          <div className="relative mb-4">
-            <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center">
-              <Smartphone className="w-10 h-10 text-blue-600" />
-              <div className="absolute top-0 right-0 bg-white rounded-full p-1 shadow-sm">
-                <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+          {/* ÁREA ROLÁVEL: Conteúdo principal */}
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center">
+            {/* Ilustração e Status */}
+            <div className="relative mb-4 shrink-0">
+              <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center">
+                <Smartphone className="w-10 h-10 text-blue-600" />
+                <div className="absolute top-0 right-0 bg-white rounded-full p-1 shadow-sm">
+                  <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+                </div>
               </div>
             </div>
-          </div>
 
-          <h2 className="text-xl font-bold text-gray-800 mb-2 text-center">
-            Aguardando pagamento
-          </h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-2 text-center shrink-0">
+              Aguardando pagamento
+            </h2>
 
-          <p className="text-gray-500 text-center text-sm mb-6 max-w-xs">
-            Copie o código abaixo e utilize o Pix Copia e Cola no aplicativo que
-            você vai fazer o pagamento:
-          </p>
+            <p className="text-gray-500 text-center text-sm mb-6 max-w-xs shrink-0">
+              Copie o código abaixo e utilize o Pix Copia e Cola no aplicativo que
+              você vai fazer o pagamento:
+            </p>
 
-          {/* Código PIX */}
-          <div className="w-full border-2 border-gray-200 border-dashed rounded-xl px-4 py-1.5 mb-4 flex items-center justify-between gap-3">
-            <code className="text-xs text-gray-600 font-mono truncate flex-1">
-              {dadosPagamento.qrCodePayload}
-            </code>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={handleCopyPix}
-              className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-            >
-              {isCopied ? (
-                <CheckCircle2 className="h-4 w-4" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-
-          {/* Timer */}
-          <div className="w-full mb-6">
-            <div className="flex justify-between items-end mb-1.5">
-              <span className="text-sm font-semibold text-gray-400">
-                Este código expira em:
-              </span>
+            {/* Código PIX */}
+            <div className="w-full border-2 border-gray-200 border-dashed rounded-xl px-4 py-1.5 mb-4 flex items-center justify-between gap-3 overflow-hidden shrink-0">
+              <div className="flex-1 min-w-0 max-w-[220px] sm:max-w-[280px]">
+                  <code className="text-xs text-gray-600 font-mono truncate block">
+                      {dadosPagamento.qrCodePayload}
+                  </code>
+              </div>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={handleCopyPix}
+                className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 shrink-0"
+              >
+                {isCopied ? (
+                  <CheckCircle2 className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">
-              {formatTime(timeLeft)}
-            </div>
-            <Progress
-              value={progressValue}
-              className="h-1 bg-gray-100"
-              indicatorClassName="bg-blue-600"
-            />
-          </div>
 
-          {/* QR Code (Requisito do usuário) */}
-          {qrCodeImage && (
-            <div className="flex flex-col items-center mb-4 bg-white">
-              <span className="text-xs text-gray-400 mb-2 uppercase tracking-wider font-semibold">
-                Ou escaneie o QR Code
-              </span>
-              <img src={qrCodeImage} alt="QR Code PIX" className="w-32 h-32" />
+            {/* Timer */}
+            <div className="w-full mb-6 shrink-0">
+              <div className="flex justify-between items-end mb-1.5">
+                <span className="text-sm font-semibold text-gray-400">
+                  Este código expira em:
+                </span>
+              </div>
+              <div className="text-2xl font-bold text-gray-900 mb-1">
+                {formatTime(timeLeft)}
+              </div>
+              <Progress
+                value={progressValue}
+                className="h-1 bg-gray-100"
+                indicatorClassName="bg-blue-600"
+              />
             </div>
-          )}
 
-          {/* Como funciona */}
-          <div className="w-full mb-6">
-            <Button
-              variant="ghost"
-              onClick={() => setIsInstructionsOpen(true)}
-              className="w-full flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-transparent font-medium"
-            >
-              Como funciona
-            </Button>
+            {/* QR Code (Requisito do usuário) */}
+            {qrCodeImage && (
+              <div className="flex flex-col items-center mb-4 bg-white shrink-0">
+                <span className="text-xs text-gray-400 mb-2 uppercase tracking-wider font-semibold">
+                  Ou escaneie o QR Code
+                </span>
+                <img src={qrCodeImage} alt="QR Code PIX" className="w-32 h-32" />
+              </div>
+            )}
+            
+            {/* Espaço extra para scroll */}
+            <div className="h-4 shrink-0" />
           </div>
 
           <ComoFuncionaPixSheet
@@ -725,8 +722,16 @@ export default function PagamentoPixContent({
             onOpenChange={setIsInstructionsOpen}
           />
 
-          {/* Botão Principal Fixo */}
-          <div className="w-full sticky bottom-0 bg-white pt-2 pb-4">
+          {/* RODAPÉ FIXO: Ações */}
+          <div className="shrink-0 p-4 border-t bg-white space-y-3">
+             <Button
+              variant="ghost"
+              onClick={() => setIsInstructionsOpen(true)}
+              className="w-full flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium h-10 rounded-xl"
+            >
+              Como funciona
+            </Button>
+            
             <Button
               className={`w-full hover:bg-blue-700 text-white font-bold h-12 rounded-xl shadow-lg shadow-blue-100 ${
                 isCopied ? "opacity-75 cursor-not-allowed" : "bg-blue-600"
@@ -738,7 +743,7 @@ export default function PagamentoPixContent({
           </div>
         </>
       ) : (
-        <div className="text-center py-8">
+        <div className="text-center py-8 flex-1 flex flex-col items-center justify-center">
           <p className="text-gray-500 mb-4">Erro ao gerar pagamento.</p>
           <Button variant="outline" onClick={() => onClose && onClose()}>
             Tentar novamente
