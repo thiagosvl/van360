@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Bus, CheckCircle2, Lock as LockIcon, School, Trophy, User } from "lucide-react";
+import { Bus, CheckCircle2, Lock as LockIcon, School, Trophy, User } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PassengerOnboardingDrawer } from "./PassengerOnboardingDrawer";
 
@@ -128,9 +128,9 @@ export const QuickStartCard = ({
                   <div
                       key={step.id}
                       className={cn(
-                      "flex items-center justify-between p-3 rounded-xl border transition-all duration-300",
+                      "flex items-center justify-between p-3 rounded-xl border transition-colors duration-200",
                       isCurrent
-                          ? "bg-indigo-50/50 border-indigo-200 shadow-sm scale-[1.02]"
+                          ? "bg-indigo-50 border-indigo-200 shadow-sm"
                           : "bg-white border-gray-100",
                       isDone && "bg-gray-50 border-gray-100 opacity-70"
                       )}
@@ -173,7 +173,6 @@ export const QuickStartCard = ({
                           className="bg-indigo-600 hover:bg-indigo-700 text-white h-8 px-3 rounded-lg text-xs font-bold shadow-indigo-200/50 shadow-lg"
                       >
                           {step.buttonText}
-                          <ArrowRight className="ml-1 h-3 w-3" />
                       </Button>
                       )}
                   </div>
