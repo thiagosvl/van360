@@ -27,8 +27,8 @@ export function SubscriptionSettings({
 
   return (
     <>
-      <div className="flex items-center gap-2 mb-4">
-        <h3 className="text-sm font-semibold text-gray-900">
+      <div className="flex items-center gap-2 mb-3 pt-4">
+        <h3 className="text-sm font-semibold text-gray-400">
           Configurações da Assinatura
         </h3>
       </div>
