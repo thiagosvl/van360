@@ -41,7 +41,7 @@ export function AssinaturaDashboard({
             (c) => c.status === "pendente_pagamento"
           );
           if (pendente) onPagarClick(pendente);
-          else onPagarClick(null); // Triggers generic pay logic if logic exists
+          else onPagarClick(null);
         }}
       />
 
@@ -71,6 +71,18 @@ export function AssinaturaDashboard({
                   )}
                 </span>
               </div>
+              {assinatura?.isTrial && assinatura?.trial_end_at && (
+                <div className="flex justify-between items-center group">
+                  <span className="text-gray-500 group-hover:text-gray-700 transition-colors">
+                    Período de teste
+                  </span>
+                  <span className="font-medium text-gray-700">
+                    Até {new Date(assinatura.trial_end_at).toLocaleDateString(
+                      "pt-BR"
+                    )}
+                  </span>
+                </div>
+              )}
               {assinatura?.vigencia_fim && (
                 <div className="flex justify-between items-center group">
                   <span className="text-gray-500 group-hover:text-gray-700 transition-colors">
