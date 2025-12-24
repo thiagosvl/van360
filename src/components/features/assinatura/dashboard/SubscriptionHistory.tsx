@@ -9,7 +9,7 @@ import {
     TableHead,
     TableRow
 } from "@/components/ui/table";
-import { ASSINATURA_COBRANCA_STATUS_PAGO, ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO } from "@/constants";
+import { ASSINATURA_COBRANCA_STATUS_CANCELADA, ASSINATURA_COBRANCA_STATUS_PAGO, ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO } from "@/constants";
 import { formatPaymentType } from "@/utils/formatters/cobranca";
 import { Calendar, Download, Printer, Receipt } from "lucide-react";
 
@@ -17,6 +17,18 @@ interface SubscriptionHistoryProps {
   cobrancas: any[];
   onPagarClick: (cobranca: any) => void;
 }
+
+const getMonthYear = (dateString: string) => {
+  const date = new Date(dateString);
+  // Adiciona o timezone offset para garantir que a data não volte um dia
+  const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+  const adjustedDate = new Date(date.getTime() + userTimezoneOffset);
+  
+  // Capitalize first letter
+  const month = adjustedDate.toLocaleDateString("pt-BR", { month: "long" });
+  const year = adjustedDate.toLocaleDateString("pt-BR", { year: "numeric" });
+  return `${month.charAt(0).toUpperCase() + month.slice(1)} ${year}`;
+};
 
 export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHistoryProps) {
   
@@ -30,6 +42,10 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
         return { 
             badge: <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-yellow-200">Pendente</Badge>,
         };
+      case ASSINATURA_COBRANCA_STATUS_CANCELADA:
+        return { 
+            badge: <Badge className="text-gray-500 bg-transparent hover:bg-transparent">Cancelada</Badge>,
+        };
       default:
         return { 
             badge: <Badge variant="outline" className="text-gray-500">{status}</Badge>,
@@ -41,18 +57,6 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
      new Date(b.data_vencimento).getTime() - new Date(a.data_vencimento).getTime()
   );
 
-  const getMonthYear = (dateString: string) => {
-    const date = new Date(dateString);
-    // Adiciona o timezone offset para garantir que a data não volte um dia
-    const userTimezoneOffset = date.getTimezoneOffset() * 60000;
-    const adjustedDate = new Date(date.getTime() + userTimezoneOffset);
-    
-    // Capitalize first letter
-    const month = adjustedDate.toLocaleDateString("pt-BR", { month: "long" });
-    const year = adjustedDate.toLocaleDateString("pt-BR", { year: "numeric" });
-    return `${month.charAt(0).toUpperCase() + month.slice(1)} ${year}`;
-  };
-
   const MobileCard = ({ cobranca }: { cobranca: any }) => {
       const { badge } = getStatusConfig(cobranca.status);
       
@@ -62,7 +66,7 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
                 <div className="flex items-center gap-3">
                     <div className="flex flex-col">
                         <span className="font-bold text-gray-900 text-sm">
-                            {getMonthYear(cobranca.data_vencimento)}
+                            {cobranca.descricao || `Assinatura - ${getMonthYear(cobranca.data_vencimento)}`}
                         </span>
                         <div className="flex items-center gap-1.5 mt-0.5">
                              <Calendar className="w-3 h-3 text-gray-400" />
@@ -128,7 +132,7 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
                 <Table>
                     <thead className="bg-gray-50/50">
                         <TableRow className="border-b border-gray-100 hover:bg-transparent">
-                            <TableHead className="text-xs font-bold text-gray-400 uppercase tracking-wider w-[200px]">Mês</TableHead>
+                            <TableHead className="text-xs font-bold text-gray-400 uppercase tracking-wider w-[260px]">Descrição / Vencimento</TableHead>
                             <TableHead className="text-xs font-bold text-gray-400 uppercase tracking-wider">Valor</TableHead>
                             <TableHead className="text-xs font-bold text-gray-400 uppercase tracking-wider">Status</TableHead>
                             <TableHead className="text-right pr-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Ações</TableHead>
@@ -142,10 +146,10 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
                                     <TableCell className="py-4 font-medium text-gray-900">
                                         <div className="flex flex-col">
                                             <span className="font-semibold text-gray-900">
-                                                {getMonthYear(cobranca.data_vencimento)}
+                                                {cobranca.descricao || `Assinatura - ${getMonthYear(cobranca.data_vencimento)}`}
                                             </span>
                                             <span className="text-xs text-gray-500">
-                                                Venc. {new Date(cobranca.data_vencimento).toLocaleDateString("pt-BR")}
+                                                Vencimento: {new Date(cobranca.data_vencimento).toLocaleDateString("pt-BR")}
                                             </span>
                                         </div>
                                     </TableCell>
@@ -202,6 +206,12 @@ function ReceiptDialog({ cobranca, trigger }: { cobranca: any, trigger: React.Re
                     </div>
                     
                     <div className="space-y-3 text-sm">
+                        <div className="flex justify-between">
+                            <span className="text-gray-500">Item</span>
+                            <span className="font-medium text-gray-900 text-right max-w-[200px] break-words">
+                                {cobranca.descricao || `Assinatura - ${getMonthYear(cobranca.data_vencimento)}`}
+                            </span>
+                        </div>
                         <div className="flex justify-between">
                             <span className="text-gray-500">Valor Pago</span>
                             <span className="font-bold text-gray-900">{Number(cobranca.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>

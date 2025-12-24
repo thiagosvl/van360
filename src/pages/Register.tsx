@@ -159,6 +159,7 @@ export default function Register() {
               : undefined
           }
           context="register"
+          initialData={pagamentoDialog.initialData}
           onIrParaInicio={async () => {
             await handlePaymentSuccess();
             setPagamentoDialog(null);

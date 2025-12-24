@@ -116,7 +116,6 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
         
         // Cenario 1: Customizado (Quantidade > tiers padrão)
         if (targetPlan?.isCustom) {
-            console.log("Fluxo: Custom (Ja no Profissional)");
              result = await usuarioApi.criarAssinaturaProfissionalPersonalizado({
                 usuario_id: profile.id,
                 quantidade: targetPlan.quantidade
@@ -124,16 +123,12 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
         } 
         // Cenario 2: Subplano Padrão (6, 8, 10 vagas...)
         else if (targetId) {
-            console.log("Fluxo: Trocar Subplano (Ja no Profissional)");
              result = await usuarioApi.trocarSubplano({
                 usuario_id: profile.id,
                 subplano_id: targetId
             });
         }
       } else {
-        // --- Fluxo de Upgrade de Tier (Ex: Essencial -> Profissional) ---
-        console.log("Fluxo: Upgrade de Tier (Novo no Profissional)");
-        
         // Aqui usamos upgradePlano, mas ele suporta quantidade personalizada tb
         result = await usuarioApi.upgradePlano({
             usuario_id: profile.id,
@@ -157,13 +152,13 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
              cobrancaId: String(result.cobrancaId)
           }
         });
-      } else {
+      } else if (result.success) {
+        // Se já teve sucesso sem pagamento (ex: redução de plano ou valor zero)
         await refreshProfile();
         
-        // Mensagem direta sem pagamento (ex: valor zero ou fatura futura)
-        const title = isAlreadyProfissional ? "Limite aumentado!" : "Plano atualizado!";
+        const title = isAlreadyProfissional ? "Limite atualizado!" : "Plano atualizado!";
         const desc = isAlreadyProfissional 
-            ? "Sua franquia de automação foi expandida." 
+            ? "Sua franquia de cobranças foi ajustada." 
             : "Bem-vindo ao Plano Profissional.";
 
         toast.success(title, { description: desc });

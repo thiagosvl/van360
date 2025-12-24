@@ -1,11 +1,10 @@
 import PagamentoPixContent from "@/components/features/pagamento/PagamentoPixContent";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 
@@ -63,20 +62,18 @@ export default function PagamentoAssinaturaDialog({
         onOpenAutoFocus={(e) => e.preventDefault()}
         hideCloseButton
       >
-        {/* Header Minimalista */}
-        <DialogHeader className="p-3 flex flex-row items-center justify-between border-b border-gray-100 bg-white shrink-0">
-          <div className="w-8" /> {/* Spacer */}
-          <DialogTitle className="text-base font-semibold text-gray-900 uppercase tracking-wide">
-            ASSINATURA
-          </DialogTitle>
-          <DialogDescription className="sr-only">
-            Selecione a forma de pagamento e finalize sua assinatura.
-          </DialogDescription>
-          <DialogClose className="text-gray-500 font-medium text-sm hover:text-gray-700 transition-colors">
-            <X className="h-5 w-5" />
-            <span className="sr-only">Close</span>
-          </DialogClose>
-        </DialogHeader>
+        <DialogTitle className="sr-only">
+          ASSINATURA
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+          Selecione a forma de pagamento e finalize sua assinatura.
+        </DialogDescription>
+        
+        {/* Botão fechar flutuante */}
+        <DialogClose className="absolute right-4 top-4 z-50 text-gray-400 hover:text-gray-600 transition-colors bg-white/50 backdrop-blur-sm rounded-full p-1 border border-gray-100/50">
+          <X className="h-5 w-5" />
+          <span className="sr-only">Fechar</span>
+        </DialogClose>
 
         <div className="flex-1 overflow-hidden flex flex-col">
           <PagamentoPixContent
@@ -92,6 +89,7 @@ export default function PagamentoAssinaturaDialog({
             onPaymentVerified={onPaymentVerified}
             context={context}
             initialData={initialData}
+            valor={valor}
           />
 
         </div>

@@ -27,6 +27,12 @@ export function useRegisterController() {
     isOpen: boolean;
     cobrancaId: string;
     valor: number;
+    initialData?: {
+      qrCodePayload: string;
+      location: string;
+      inter_txid: string;
+      cobrancaId: string;
+    };
   } | null>(null);
   
   const [pagamentoSucessoDialog, setPagamentoSucessoDialog] = useState<{
@@ -498,6 +504,12 @@ export function useRegisterController() {
               isOpen: true,
               cobrancaId: String((result as any).cobrancaId),
               valor: Number((result as any).preco_aplicado || (result as any).valor || 0),
+              initialData: {
+                qrCodePayload: result.qrCodePayload,
+                location: result.location,
+                inter_txid: result.inter_txid,
+                cobrancaId: String(result.cobrancaId)
+              }
             });
             if ((result as any).session) {
               (window as any).__registerSession = (result as any).session;

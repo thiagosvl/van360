@@ -199,7 +199,7 @@ export function SubscriptionHeader({
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <h2 className="text-2xl font-bold text-gray-900 leading-none">
-                  {plano?.nome || "Plano"}
+                 Plano {plano?.nome || "Plano"}
                 </h2>
               </div>
               <p className="text-sm text-gray-500 max-w-md">

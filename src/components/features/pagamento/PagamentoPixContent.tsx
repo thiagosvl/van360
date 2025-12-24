@@ -34,6 +34,7 @@ interface PagamentoPixContentProps {
     inter_txid: string;
     cobrancaId: string;
   };
+  valor: number;
 }
 
 export default function PagamentoPixContent({
@@ -49,6 +50,7 @@ export default function PagamentoPixContent({
   onPaymentVerified,
   context,
   initialData,
+  valor,
 }: PagamentoPixContentProps) {
   const queryClient = useQueryClient();
   const gerarPix = useGerarPixParaCobranca();
@@ -135,15 +137,15 @@ export default function PagamentoPixContent({
     const gerarPixAction = () => {
       // Se já temos dados iniciais (ex: vindos de upgradePlano), usamos direto
       if (initialData && initialData.cobrancaId === cobrancaId) {
-          setDadosPagamento(initialData);
-          pixGeradoRef.current = cobrancaId;
-          
-          if (initialData.qrCodePayload) {
-             QRCode.toDataURL(initialData.qrCodePayload)
-              .then(setQrCodeImage)
-              .catch(() => setQrCodeImage(null));
-          }
-          return;
+        setDadosPagamento(initialData);
+        pixGeradoRef.current = cobrancaId;
+
+        if (initialData.qrCodePayload) {
+          QRCode.toDataURL(initialData.qrCodePayload)
+            .then(setQrCodeImage)
+            .catch(() => setQrCodeImage(null));
+        }
+        return;
       }
 
       setDadosPagamento(null);
@@ -211,77 +213,80 @@ export default function PagamentoPixContent({
 
     // 3. Aguardar propagação inicial no banco (1500ms)
     // Mantemos esse delay mínimo de segurança para todos os casos (propagação de transação)
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     // 4. "Polling Infinito Seguro" (Apenas para Upgrade Interno)
     let sucesso = false;
-    
+
     // No cadastro, o login subsequente fará o fetch limpo. No upgrade, precisamos garantir update local.
     if (context !== "register") {
-        let tentativa = 0;
-        const MAX_TENTATIVAS = 60; 
+      let tentativa = 0;
+      const MAX_TENTATIVAS = 60;
 
-        while (tentativa < MAX_TENTATIVAS && !sucesso) {
-            try {
-                // Força busca dos dados frescos usando a query correta (com usuarioId se disponível)
-                // Se não tiver usuarioId (ex: registro), o fetchProfile falha, mas isso não deve acontecer no upgrade
-                
-                let profileData = null;
-                
-                if (usuarioId) {
-                    profileData = await queryClient.fetchQuery({ 
-                        queryKey: ["profile", usuarioId], 
-                        queryFn: () => fetchProfile(usuarioId),
-                        staleTime: 0 
-                    });
-                } else {
-                    // Fallback para profile da sessão atual (kev)
-                     profileData = await queryClient.fetchQuery({ 
-                        queryKey: ["profile"], 
-                        staleTime: 0 
-                    });
-                }
+      while (tentativa < MAX_TENTATIVAS && !sucesso) {
+        try {
+          // Força busca dos dados frescos usando a query correta (com usuarioId se disponível)
+          // Se não tiver usuarioId (ex: registro), o fetchProfile falha, mas isso não deve acontecer no upgrade
 
-                // Também invalida plano para garantir
-                await queryClient.invalidateQueries({ queryKey: ["plano"] });
-                
-                // Validação: Assinatura ativa encontrada
-                if (profileData) {
-                    sucesso = true;
-                    // Atualiza cache
-                    if (usuarioId) {
-                         queryClient.setQueryData(["profile", usuarioId], profileData);
-                    }
-                } else {
-                // Polling Híbrido: A primeira já esperou 1.5s. Se falhar, tenta repetidamente rápido (200ms).
-                const delay = 200;
-                await new Promise(resolve => setTimeout(resolve, delay));
-                }
-            } catch (err) {
-                // Erro (ex: missing queryFn se não passar), espera 1s
-                await new Promise(resolve => setTimeout(resolve, 1000));
+          let profileData = null;
+
+          if (usuarioId) {
+            profileData = await queryClient.fetchQuery({
+              queryKey: ["profile", usuarioId],
+              queryFn: () => fetchProfile(usuarioId),
+              staleTime: 0,
+            });
+          } else {
+            // Fallback para profile da sessão atual (kev)
+            profileData = await queryClient.fetchQuery({
+              queryKey: ["profile"],
+              staleTime: 0,
+            });
+          }
+
+          // Também invalida plano para garantir
+          await queryClient.invalidateQueries({ queryKey: ["plano"] });
+
+          // Validação: Assinatura ativa encontrada
+          if (profileData) {
+            sucesso = true;
+            // Atualiza cache
+            if (usuarioId) {
+              queryClient.setQueryData(["profile", usuarioId], profileData);
             }
-            tentativa++;
+          } else {
+            // Polling Híbrido: A primeira já esperou 1.5s. Se falhar, tenta repetidamente rápido (200ms).
+            const delay = 200;
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          }
+        } catch (err) {
+          // Erro (ex: missing queryFn se não passar), espera 1s
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
+        tentativa++;
+      }
     } else {
-        // No registro, assumimos sucesso imediatamente após o delay de segurança
-        sucesso = true;
+      // No registro, assumimos sucesso imediatamente após o delay de segurança
+      sucesso = true;
     }
 
     // 5. Finalização: Sai do modo processando e mostra tela de Sucesso
     setIsProcessing(false);
     setPaymentConfirmed(true);
-    
+
     // Feedback visual apropriado
     if (!sucesso && context !== "register") {
-        toast.warning("Pagamento recebido, mas a liberação está demorando. Ela ocorrerá automaticamente em instantes.", { duration: 6000 });
+      toast.warning(
+        "Pagamento recebido, mas a liberação está demorando. Ela ocorrerá automaticamente em instantes.",
+        { duration: 6000 }
+      );
     } else {
-        // Sucesso "silencioso" no toast pois a tela já mudará para Sucesso
+      // Sucesso "silencioso" no toast pois a tela já mudará para Sucesso
     }
 
     // Só avisa o pai (liberando clicks) quando tudo estiver pronto
     if (onPaymentVerified) {
-        onPaymentVerified();
+      onPaymentVerified();
     }
 
     // Iniciar contagem regressiva para redirect (só agora que a tela de sucesso vai aparecer)
@@ -327,14 +332,14 @@ export default function PagamentoPixContent({
       monitorandoRef.current = false;
       return;
     }
-    
+
     // Safety check: if payment already confirmed, ensure we stop polling
     if (paymentConfirmed || hasFetchedRef.current) {
-        if (pollerRef.current) {
-            clearInterval(pollerRef.current);
-            pollerRef.current = null;
-        }
-        return;
+      if (pollerRef.current) {
+        clearInterval(pollerRef.current);
+        pollerRef.current = null;
+      }
+      return;
     }
 
     if (monitorandoRef.current) {
@@ -387,23 +392,33 @@ export default function PagamentoPixContent({
       // 2. Roda a cada 6 segundos (não precisa ser agressivo, o Realtime é o principal)
       if (!pollerRef.current && monitorandoRef.current) {
         setTimeout(() => {
-            // Verifica se ainda precisa (pode ter pago nesse meio tempo)
-            if (!mountedRef.current || !monitorandoRef.current || paymentConfirmed) return;
-            
-            // Execução imediata pós-delay (no segundo 10)
-            checkPaymentStatus();
-            
-            pollerRef.current = setInterval(() => {
-              // Safety Checks rigorosos
-              if (!mountedRef.current || !monitorandoRef.current || paymentConfirmed || hasFetchedRef.current) {
-                if (pollerRef.current) {
-                  clearInterval(pollerRef.current);
-                  pollerRef.current = null;
-                }
-                return;
+          // Verifica se ainda precisa (pode ter pago nesse meio tempo)
+          if (
+            !mountedRef.current ||
+            !monitorandoRef.current ||
+            paymentConfirmed
+          )
+            return;
+
+          // Execução imediata pós-delay (no segundo 10)
+          checkPaymentStatus();
+
+          pollerRef.current = setInterval(() => {
+            // Safety Checks rigorosos
+            if (
+              !mountedRef.current ||
+              !monitorandoRef.current ||
+              paymentConfirmed ||
+              hasFetchedRef.current
+            ) {
+              if (pollerRef.current) {
+                clearInterval(pollerRef.current);
+                pollerRef.current = null;
               }
-              checkPaymentStatus();
-            }, 6000); // 6 segundos (Backup)
+              return;
+            }
+            checkPaymentStatus();
+          }, 6000); // 6 segundos (Backup)
         }, 10000); // 10 segundos de delay inicial
       }
 
@@ -426,7 +441,7 @@ export default function PagamentoPixContent({
                     clearInterval(pollerRef.current);
                     pollerRef.current = null;
                   }
-                  
+
                   if (
                     mountedRef.current &&
                     monitorandoRef.current &&
@@ -487,149 +502,168 @@ export default function PagamentoPixContent({
 
   // Se estiver processando (Pagamento OK, buscando dados), mostra tela de loading rica
   if (isProcessing) {
-      return (
-        <div className="flex flex-col items-center w-full max-w-md mx-auto py-8">
-            <div className="bg-emerald-50 rounded-full p-4 mb-4 relative">
-                 <Loader2 className="w-10 h-10 text-emerald-600 animate-spin" />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Validando Pagamento...</h2>
-            <p className="text-gray-500 text-center text-sm px-6">
-                Recebemos seu PIX! Estamos finalizando a configuração da sua assinatura. Isso leva apenas alguns segundos.
-            </p>
+    return (
+      <div className="flex flex-col items-center w-full max-w-md mx-auto py-8 flex-1 justify-center">
+        <div className="bg-emerald-50 rounded-full p-4 mb-4 relative">
+          <Loader2 className="w-10 h-10 text-emerald-600 animate-spin" />
         </div>
-      );
+        <h2 className="text-xl font-bold text-gray-900 mb-2 text-center">
+          Validando Pagamento...
+        </h2>
+        <p className="text-gray-500 text-center text-sm px-6">
+          Recebemos seu PIX! Estamos finalizando a configuração da sua
+          assinatura. Isso leva apenas alguns segundos.
+        </p>
+      </div>
+    );
   }
 
   // Se pagamento confirmado e DADOS JÁ SINCRONIZADOS, exibir tela de sucesso
   if (paymentConfirmed) {
     return (
-      <div className="flex flex-col items-center w-full max-w-md mx-auto">
-        <div className="bg-emerald-50 rounded-2xl p-4 text-center w-full max-w-full">
-          <div className="mx-auto bg-emerald-600 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-            <CheckCircle2 className="w-8 h-8 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-emerald-900 mb-2">
-            Pagamento confirmado!
-          </h2>
-          <p className="text-emerald-700 text-sm mb-2">
-            {nomePlano
-              ? `Seu plano ${nomePlano} foi ativado com sucesso.`
-              : "Seu plano foi ativado com sucesso."}
-          </p>
-          {redirectSeconds !== null && redirectSeconds > 0 && (
-            <p className="text-emerald-600 text-xs mb-6">
-              Você será redirecionado em{" "}
-              <span className="font-semibold">{redirectSeconds}s</span>...
-            </p>
-          )}
-
-          {quantidadePassageiros !== undefined && quantidadePassageiros > 0 && (
-            <div className="mb-6 p-4 bg-white rounded-xl border border-emerald-200">
-              <p className="text-sm font-medium text-emerald-900">
-                {quantidadePassageiros}{" "}
-                {quantidadePassageiros === 1
-                  ? "Passageiro agora tem"
-                  : "Passageiros agora têm"}{" "}
-                Cobrança Automática.
-              </p>
+      <div className="flex flex-col h-full w-full bg-emerald-50/50">
+        {/* ÁREA ROLÁVEL: Mensagem de Sucesso */}
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center justify-center text-center pt-10 sm:pt-16">
+          <div className="w-full max-w-sm flex flex-col items-center py-4">
+            <div className="mx-auto bg-emerald-600 w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-emerald-200">
+              <CheckCircle2 className="w-10 h-10 text-white" />
             </div>
+
+            <h2 className="text-3xl font-extrabold text-emerald-900 mb-3 tracking-tight">
+              Pagamento confirmado!
+            </h2>
+
+            <p className="text-emerald-700 text-base font-medium mb-1">
+              {nomePlano
+                ? `Seu plano ${nomePlano} foi ativado.`
+                : "Seu plano foi ativado com sucesso."}
+            </p>
+
+            {redirectSeconds !== null && redirectSeconds > 0 && (
+              <p className="text-emerald-600 text-xs mb-8">
+                Você será redirecionado em{" "}
+                <span className="font-bold">{redirectSeconds}s</span>...
+              </p>
+            )}
+
+            {quantidadePassageiros !== undefined &&
+              quantidadePassageiros > 0 && (
+                <div className="w-full p-6 bg-white rounded-2xl border border-emerald-100 shadow-sm mb-6">
+                  <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2">
+                    Franquia Atualizada
+                  </p>
+                  <p className="text-sm font-bold text-emerald-900 leading-snug">
+                    Você agora pode ativar a Cobrança Automática para até{" "}
+                    <span className="text-emerald-600">
+                      {quantidadePassageiros} passageiros
+                    </span>
+                    .
+                  </p>
+                </div>
+              )}
+          </div>
+        </div>
+
+        {/* RODAPÉ FIXO: Ações de Sucesso */}
+        <div className="shrink-0 p-4 border-t border-emerald-100 bg-white/80 backdrop-blur-sm space-y-3">
+          {/* Cenário de cadastro: foco em começar a usar */}
+          {context === "register" && onIrParaInicio && (
+            <Button
+              onClick={() => {
+                onIrParaInicio();
+                if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
+                else if (onClose) setTimeout(onClose, 0);
+              }}
+              className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/10"
+            >
+              Começar a usar agora
+            </Button>
           )}
 
-          <div className="flex flex-col gap-3">
-            {/* Cenário de cadastro: foco em começar a usar */}
-            {context === "register" && onIrParaInicio && (
-              <Button
-                onClick={() => {
-                  onIrParaInicio();
-                  if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
-                  else if (onClose) setTimeout(onClose, 0);
-                }}
-                className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/20"
-              >
-                Começar a usar agora
-              </Button>
-            )}
-            {context === "register" && onIrParaAssinatura && (
-              <Button
-                onClick={() => {
-                  onIrParaAssinatura();
-                  if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
-                  else if (onClose) setTimeout(onClose, 0);
-                }}
-                variant="ghost"
-                className="w-full h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
-              >
-                Ver detalhes da minha assinatura
-              </Button>
-            )}
+          {context === "register" && onIrParaAssinatura && (
+            <Button
+              onClick={() => {
+                onIrParaAssinatura();
+                if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
+                else if (onClose) setTimeout(onClose, 0);
+              }}
+              variant="ghost"
+              className="w-full h-10 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium"
+            >
+              Ver detalhes da minha assinatura
+            </Button>
+          )}
 
-            {/* Cenário de upgrade: foco em revisar assinatura */}
-            {context === "upgrade" && onIrParaAssinatura && (
-              <Button
-                onClick={() => {
-                  onIrParaAssinatura();
-                  if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
-                  else if (onClose) setTimeout(onClose, 0);
-                }}
-                className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/20"
-              >
-                Ver minha assinatura
-              </Button>
-            )}
-            {context === "upgrade" && onIrParaInicio && (
-              <Button
-                onClick={() => {
-                  onIrParaInicio();
-                  if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
-                  else if (onClose) setTimeout(onClose, 0);
-                }}
-                variant="ghost"
-                className="w-full h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
-              >
-                Ir para tela inicial
-              </Button>
-            )}
+          {/* Cenário de upgrade: foco em revisar assinatura */}
+          {context === "upgrade" && onIrParaAssinatura && (
+            <Button
+              onClick={() => {
+                onIrParaAssinatura();
+                if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
+                else if (onClose) setTimeout(onClose, 0);
+              }}
+              className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/10"
+            >
+              Ver minha assinatura
+            </Button>
+          )}
 
-            {/* Fallback genérico */}
-            {!context && onIrParaAssinatura && (
-              <Button
-                onClick={() => {
-                  onIrParaAssinatura();
-                  if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
-                  else if (onClose) setTimeout(onClose, 0);
-                }}
-                className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/20"
-              >
-                Ver minha assinatura
-              </Button>
-            )}
-            {!context && !onIrParaAssinatura && onIrParaInicio && (
-              <Button
-                onClick={() => {
-                  onIrParaInicio();
-                  if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
-                  else if (onClose) setTimeout(onClose, 0);
-                }}
-                variant="ghost"
-                className="w-full h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
-              >
-                Ir para tela inicial
-              </Button>
-            )}
+          {context === "upgrade" && onIrParaInicio && (
+            <Button
+              onClick={() => {
+                onIrParaInicio();
+                if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
+                else if (onClose) setTimeout(onClose, 0);
+              }}
+              variant="ghost"
+              className="w-full h-10 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium"
+            >
+              Ir para tela inicial
+            </Button>
+          )}
 
-            {/* Botão Fechar Simples */}
-            {!onIrParaAssinatura && !onIrParaInicio && (
-              <Button
-                onClick={() => {
-                  if (onPaymentSuccess) setTimeout(() => onPaymentSuccess(true), 0);
-                  else if (onClose) setTimeout(() => onClose(paymentConfirmed), 0);
-                }}
-                className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-              >
-                Fechar
-              </Button>
-            )}
-          </div>
+          {/* Fallback genérico */}
+          {!context && onIrParaAssinatura && (
+            <Button
+              onClick={() => {
+                onIrParaAssinatura();
+                if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
+                else if (onClose) setTimeout(onClose, 0);
+              }}
+              className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/10"
+            >
+              Ver minha assinatura
+            </Button>
+          )}
+
+          {!context && !onIrParaAssinatura && onIrParaInicio && (
+            <Button
+              onClick={() => {
+                onIrParaInicio();
+                if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
+                else if (onClose) setTimeout(onClose, 0);
+              }}
+              variant="ghost"
+              className="w-full h-10 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium"
+            >
+              Ir para tela inicial
+            </Button>
+          )}
+
+          {/* Botão Fechar Simples */}
+          {!onIrParaAssinatura && !onIrParaInicio && (
+            <Button
+              onClick={() => {
+                if (onPaymentSuccess)
+                  setTimeout(() => onPaymentSuccess(true), 0);
+                else if (onClose)
+                  setTimeout(() => onClose(paymentConfirmed), 0);
+              }}
+              className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+            >
+              Fechar
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -645,32 +679,39 @@ export default function PagamentoPixContent({
       ) : dadosPagamento ? (
         <>
           {/* ÁREA ROLÁVEL: Conteúdo principal */}
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center">
-            {/* Ilustração e Status */}
-            <div className="relative mb-4 shrink-0">
-              <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center">
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center justify-start pt-10 sm:pt-16">
+            {/* Ilustração e Status (Ultra Reduzido) */}
+            <div className="relative mb-2 shrink-0">
+              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
                 <Smartphone className="w-10 h-10 text-blue-600" />
-                <div className="absolute top-0 right-0 bg-white rounded-full p-1 shadow-sm">
+                <div className="absolute -top-1 -right-2 bg-white rounded-full p-1 shadow-sm">
                   <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
                 </div>
               </div>
             </div>
 
-            <h2 className="text-xl font-bold text-gray-800 mb-2 text-center shrink-0">
-              Aguardando pagamento
-            </h2>
+            {/* Valor da Cobrança (Minimalista) */}
+            <div className="flex flex-col items-center mb-4 shrink-0">
+              <div className="bg-blue-50/30 px-3 py-1 rounded-lg border border-blue-100/30">
+                <span className="text-xl font-bold text-blue-900 tracking-tight">
+                  R${" "}
+                  {Number(valor).toLocaleString("pt-BR", {
+                    minimumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+            </div>
 
-            <p className="text-gray-500 text-center text-sm mb-6 max-w-xs shrink-0">
-              Copie o código abaixo e utilize o Pix Copia e Cola no aplicativo que
-              você vai fazer o pagamento:
+            <p className="text-gray-500 text-center text-xs mb-2 max-w-[200px] shrink-0 font-medium leading-tight">
+              Copie o código abaixo e pague no app do seu banco:
             </p>
 
             {/* Código PIX */}
-            <div className="w-full border-2 border-gray-200 border-dashed rounded-xl px-4 py-1.5 mb-4 flex items-center justify-between gap-3 overflow-hidden shrink-0">
-              <div className="flex-1 min-w-0 max-w-[220px] sm:max-w-[280px]">
-                  <code className="text-xs text-gray-600 font-mono truncate block">
-                      {dadosPagamento.qrCodePayload}
-                  </code>
+            <div className="w-full border-2 mt-1 border-gray-100 border-dashed rounded-xl px-4 py-1 mb-6 flex items-center justify-between gap-3 overflow-hidden shrink-0 bg-gray-50/50">
+              <div className="flex-1 min-w-0">
+                <code className="text-xs text-gray-500 font-mono truncate block">
+                  {dadosPagamento.qrCodePayload}
+                </code>
               </div>
               <Button
                 size="icon"
@@ -686,15 +727,31 @@ export default function PagamentoPixContent({
               </Button>
             </div>
 
-            {/* Timer */}
-            <div className="w-full mb-6 shrink-0">
-              <div className="flex justify-between items-end mb-1.5">
-                <span className="text-sm font-semibold text-gray-400">
-                  Este código expira em:
+            {/* QR Code */}
+            {qrCodeImage && (
+              <div className="flex flex-col items-center mb-4 bg-white shrink-0">
+                <span className="text-[10px] text-gray-400 mb-3 uppercase tracking-wider font-bold">
+                  Ou escaneie o código
                 </span>
+                <div className="p-1 border border-gray-100 rounded-2xl shadow-sm">
+                  <img
+                    src={qrCodeImage}
+                    alt="QR Code PIX"
+                    className="w-40 h-40"
+                  />
+                </div>
               </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">
-                {formatTime(timeLeft)}
+            )}
+
+            {/* Timer */}
+            <div className="w-full mb-6 shrink-0 px-2">
+              <div className="flex justify-between items-end mb-1.5">
+                <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">
+                  Expira em:
+                </span>
+                <span className="text-sm font-bold text-gray-900">
+                  {formatTime(timeLeft)}
+                </span>
               </div>
               <Progress
                 value={progressValue}
@@ -702,19 +759,6 @@ export default function PagamentoPixContent({
                 indicatorClassName="bg-blue-600"
               />
             </div>
-
-            {/* QR Code (Requisito do usuário) */}
-            {qrCodeImage && (
-              <div className="flex flex-col items-center mb-4 bg-white shrink-0">
-                <span className="text-xs text-gray-400 mb-2 uppercase tracking-wider font-semibold">
-                  Ou escaneie o QR Code
-                </span>
-                <img src={qrCodeImage} alt="QR Code PIX" className="w-32 h-32" />
-              </div>
-            )}
-            
-            {/* Espaço extra para scroll */}
-            <div className="h-4 shrink-0" />
           </div>
 
           <ComoFuncionaPixSheet
@@ -723,17 +767,17 @@ export default function PagamentoPixContent({
           />
 
           {/* RODAPÉ FIXO: Ações */}
-          <div className="shrink-0 p-4 border-t bg-white space-y-3">
-             <Button
+          <div className="shrink-0 p-4 border-t bg-white/80 backdrop-blur-sm space-y-3">
+            <Button
               variant="ghost"
               onClick={() => setIsInstructionsOpen(true)}
-              className="w-full flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium h-10 rounded-xl"
+              className="w-full flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-semibold h-10 rounded-xl"
             >
-              Como funciona
+              Como funciona o pagamento?
             </Button>
-            
+
             <Button
-              className={`w-full hover:bg-blue-700 text-white font-bold h-12 rounded-xl shadow-lg shadow-blue-100 ${
+              className={`w-full hover:bg-blue-700 text-white font-bold h-12 rounded-xl shadow-lg shadow-blue-500/10 ${
                 isCopied ? "opacity-75 cursor-not-allowed" : "bg-blue-600"
               }`}
               onClick={handleCopyPix}
