@@ -1,18 +1,18 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -139,104 +139,108 @@ export default function AlterarSenhaDialog({
           </DialogDescription>
         </div>
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6 p-6 pt-2"
-          >
-            <FormField
-              control={form.control}
-              name="senhaAtual"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 font-medium ml-1">Senha atual</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                      <Input
-                        type={showCurrentPassword ? "text" : "password"}
-                        placeholder="Digite sua senha atual"
-                        {...field}
-                        className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                        className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 focus:outline-none"
-                      >
-                        {showCurrentPassword ? (
-                          <EyeOff className="h-5 w-5" />
-                        ) : (
-                          <Eye className="h-5 w-5" />
-                        )}
-                      </button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="novaSenha"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 font-medium ml-1">Nova senha</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <KeyRound className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                      <Input
-                        type={showNewPassword ? "text" : "password"}
-                        placeholder="Digite a nova senha"
-                        {...field}
-                        className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 focus:outline-none"
-                      >
-                        {showNewPassword ? (
-                          <EyeOff className="h-5 w-5" />
-                        ) : (
-                          <Eye className="h-5 w-5" />
-                        )}
-                      </button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex gap-3 pt-2">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={onClose}
-                disabled={form.formState.isSubmitting}
-                className="flex-1 h-12 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
-              >
-                Cancelar
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={form.formState.isSubmitting}
-                className="flex-1 h-12 rounded-xl shadow-lg shadow-blue-500/20 font-semibold text-base"
-              >
-                {form.formState.isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Salvando...
-                  </>
-                ) : (
-                  "Salvar"
+        <div className="flex-1 overflow-y-auto p-6 bg-white">
+          <Form {...form}>
+            <form
+              id="alterar-senha-form"
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-6"
+            >
+              <FormField
+                control={form.control}
+                name="senhaAtual"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 font-medium ml-1">Senha atual</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                        <Input
+                          type={showCurrentPassword ? "text" : "password"}
+                          placeholder="Digite sua senha atual"
+                          {...field}
+                          className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                          className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 focus:outline-none"
+                        >
+                          {showCurrentPassword ? (
+                            <EyeOff className="h-5 w-5" />
+                          ) : (
+                            <Eye className="h-5 w-5" />
+                          )}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </Button>
-            </div>
-          </form>
-        </Form>
+              />
+
+              <FormField
+                control={form.control}
+                name="novaSenha"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 font-medium ml-1">Nova senha</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <KeyRound className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                        <Input
+                          type={showNewPassword ? "text" : "password"}
+                          placeholder="Digite a nova senha"
+                          {...field}
+                          className="pl-12 pr-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                          className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 focus:outline-none"
+                        >
+                          {showNewPassword ? (
+                            <EyeOff className="h-5 w-5" />
+                          ) : (
+                            <Eye className="h-5 w-5" />
+                          )}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
+        </div>
+
+        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={form.formState.isSubmitting}
+            className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Cancelar
+          </Button>
+          <Button 
+            form="alterar-senha-form"
+            type="submit" 
+            disabled={form.formState.isSubmitting}
+            className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:-translate-y-0.5"
+          >
+            {form.formState.isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Salvando...
+              </>
+            ) : (
+              "Salvar"
+            )}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

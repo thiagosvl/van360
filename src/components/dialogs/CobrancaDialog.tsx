@@ -1,19 +1,19 @@
 import { CobrancaFormContent } from "@/components/forms/cobranca/CobrancaForm";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import {
-  Loader2,
-  PlusCircle,
-  User,
-  X
+    Loader2,
+    PlusCircle,
+    User,
+    X
 } from "lucide-react";
 
 interface CobrancaDialogProps {
@@ -99,7 +99,7 @@ export default function CobrancaDialog({
           </Form>
         </div>
 
-        <div className="p-4 border-t bg-white shrink-0 grid grid-cols-2 gap-3">
+        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
           <Button
             type="button"
             variant="outline"

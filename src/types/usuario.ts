@@ -5,6 +5,8 @@ export interface Usuario {
   cpfcnpj: string;
   email: string;
   telefone: string;
+  chave_pix?: string;
+  tipo_chave_pix?: string;
   auth_uid: string;
   role?: string;
   created_at: string;

@@ -61,7 +61,8 @@ export function PlanUpgradeDialog({
   description,
 }: PlanUpgradeDialogProps) {
   const { user } = useSession();
-  const { profile, plano, refreshProfile } = useProfile(user?.id);
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  const { profile, plano, isEssencial, isProfissional, refreshProfile } = useProfile(user?.id);
 
   // API Data
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -91,10 +92,6 @@ export function PlanUpgradeDialog({
 
   // Dados do Usuário
   const planoAtualSlug = plano?.slug;
-  const isEssencial = planoAtualSlug === PLANO_ESSENCIAL;
-  const isProfissional =
-    planoAtualSlug === PLANO_PROFISSIONAL ||
-    plano?.planoProfissional?.parent?.slug === PLANO_PROFISSIONAL;
 
   // --- Contexto de Venda (Sales Context) ---
   const salesContext = useMemo(() => {

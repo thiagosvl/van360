@@ -33,32 +33,13 @@ export const usuarioApi = {
   criarAssinaturaProfissionalPersonalizado: (payload: { usuario_id: string; quantidade: number; targetPassengerId?: string }) =>
     apiClient.post(`/usuarios/criar-assinatura-profissional-personalizado`, payload).then(res => res.data),
 
-  listarPassageirosParaSelecao: (usuarioId: string, tipo: "upgrade" | "downgrade", franquia: number) =>
-    apiClient.get(`/usuarios/${usuarioId}/passageiros-para-selecao`, {
-      params: { tipo, franquia }
-    }).then(res => res.data),
 
-  confirmarSelecaoPassageiros: (usuarioId: string, payload: { 
-    passageiroIds: string[]; 
-    franquia: number;
-    tipoDowngrade?: "subplano" | "personalizado";
-    subplanoId?: string;
-    quantidadePersonalizada?: number;
-    tipo?: "upgrade" | "downgrade";
-    planoId?: string;
-    precoAplicado?: number;
-    precoOrigem?: string;
-  }) =>
-    apiClient.post(`/usuarios/${usuarioId}/selecionar-passageiros-cobranca-automatica`, payload).then(res => res.data),
 
-  verificarSelecaoManualNecessaria: (usuarioId: string) =>
-    apiClient.get(`/usuarios/${usuarioId}/verificar-selecao-manual-necessaria`).then(res => res.data),
-
-  salvarSelecaoPassageiros: (usuarioId: string, payload: {
-    cobrancaId: string;
-    passageiroIds: string[];
-    tipo: "upgrade" | "downgrade";
-    franquia: number;
-  }) =>
-    apiClient.post(`/usuarios/${usuarioId}/salvar-selecao-passageiros`, payload).then(res => res.data),
+  atualizarUsuario: (usuarioId: string, payload: {
+    nome?: string;
+    apelido?: string;
+    telefone?: string;
+    chave_pix?: string;
+    tipo_chave_pix?: string;
+  }) => apiClient.patch(`/usuarios/${usuarioId}`, payload).then(res => res.data),
 };

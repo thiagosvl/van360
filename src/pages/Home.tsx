@@ -1,15 +1,17 @@
 import {
-    Check,
-    CreditCard,
-    DollarSign,
-    FileText,
-    Plus,
-    Receipt,
-    TrendingDown,
-    TrendingUp,
-    Users,
-    Wallet,
-    Zap,
+  Check,
+  CreditCard,
+  DollarSign,
+  FileText,
+  HandCoins,
+  Plus,
+  Receipt,
+  TrendingDown,
+  TrendingUp,
+  UserPlus,
+  Users,
+  Wallet,
+  Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -31,10 +33,10 @@ import { useSession } from "@/hooks/business/useSession";
 
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import {
-    FEATURE_GASTOS,
-    FEATURE_LIMITE_PASSAGEIROS,
-    PASSAGEIRO_COBRANCA_STATUS_PAGO,
-    PLANO_ESSENCIAL
+  FEATURE_GASTOS,
+  FEATURE_LIMITE_PASSAGEIROS,
+  PASSAGEIRO_COBRANCA_STATUS_PAGO,
+  PLANO_ESSENCIAL,
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
@@ -45,16 +47,18 @@ import { toast } from "@/utils/notifications/toast";
 
 // New Component Imports
 import { LimitHealthBar } from "@/components/common/LimitHealthBar";
+import PixKeyDialog from "@/components/dialogs/PixKeyDialog";
 import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
 import { MiniKPI } from "@/components/features/home/MiniKPI";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
+import { usePixKeyGuard } from "@/hooks/business/usePixKeyGuard";
 import { useUpsellContent } from "@/hooks/business/useUpsellContent";
 
 // --- Main Component ---
 
 const Home = () => {
-  const { setPageTitle, openPlanosDialog, openPlanUpgradeDialog } = useLayout();
+  const { setPageTitle, openPlanUpgradeDialog } = useLayout();
   const { user, loading: isSessionLoading } = useSession();
 
   // Use Access Control Hook
@@ -64,6 +68,7 @@ const Home = () => {
     isLoading: isProfileLoading,
     plano,
     isFreePlan,
+    isProfissional,
     canViewModuleGastos,
   } = usePermissions();
 
@@ -94,8 +99,16 @@ const Home = () => {
   const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
   const [isGastoDialogOpen, setIsGastoDialogOpen] = useState(false);
 
+  const {
+    isOpen: isPixKeyDialogOpen,
+    setIsOpen: setIsPixKeyDialogOpen,
+    onSuccess: onPixKeySuccess,
+  } = usePixKeyGuard(profile, isProfissional, isProfileLoading);
+
   const mesAtual = new Date().getMonth() + 1;
   const anoAtual = new Date().getFullYear();
+
+
 
   // Queries
   const {
@@ -174,6 +187,8 @@ const Home = () => {
     0
   );
 
+
+
   const cobrancasPendentes = cobrancas.filter(
     (c) => c.status !== PASSAGEIRO_COBRANCA_STATUS_PAGO
   );
@@ -199,13 +214,20 @@ const Home = () => {
     0
   );
 
+
+
   // Onboarding Logic (Layout Control)
+  const hasPixKey = !!profile?.chave_pix;
+
   const completedSteps = [
     veiculosCount > 0,
     escolasCount > 0,
     passageirosCount > 0,
-  ].filter(Boolean).length;
-  const showOnboarding = completedSteps < 3;
+    isProfissional ? hasPixKey : null, // Only count PIX if professional
+  ].filter((step) => step === true).length;
+
+  const totalSteps = isProfissional ? 4 : 3;
+  const showOnboarding = completedSteps < totalSteps;
 
   // Date Context
   const dateContext = useMemo(() => {
@@ -294,6 +316,42 @@ const Home = () => {
     });
   }, []);
 
+  // Quick Actions (Memoized)
+  const quickActions = useMemo(
+    () => [
+      {
+        icon: UserPlus,
+        label: "Novo Passageiro",
+        onClick: handleOpenPassageiroDialog,
+        disabled: hasPassengerLimit && passageirosAtivosCount >= limitePassageiros,
+        tooltip:
+          hasPassengerLimit && passageirosAtivosCount >= limitePassageiros
+            ? "Limite de passageiros atingido. Faça um upgrade para adicionar mais."
+            : undefined,
+        variant: "primary",
+      },
+      {
+        icon: HandCoins,
+        label: "Novo Gasto",
+        onClick: () => setIsGastoDialogOpen(true),
+        variant: "secondary",
+      },
+      {
+        icon: FileText,
+        label: null, // "Relatórios" removed as per request
+        onClick: () => {}, // TODO
+        disabled: true,
+        variant: "ghost",
+      },
+    ],
+    [
+      handleOpenPassageiroDialog,
+      hasPassengerLimit,
+      passageirosAtivosCount,
+      limitePassageiros,
+    ]
+  );
+
   const handleSuccessFormPassageiro = useCallback(() => {
     setNovoVeiculoId(null);
     setNovaEscolaId(null);
@@ -312,14 +370,17 @@ const Home = () => {
     });
   }, []);
 
-  const handleEscolaCreated = useCallback((novaEscola: any, keepOpen?: boolean) => {
-    if (keepOpen) return;
-    
-    safeCloseDialog(() => {
-      setIsCreatingEscola(false);
-      setNovaEscolaId(novaEscola.id);
-    });
-  }, []);
+  const handleEscolaCreated = useCallback(
+    (novaEscola: any, keepOpen?: boolean) => {
+      if (keepOpen) return;
+
+      safeCloseDialog(() => {
+        setIsCreatingEscola(false);
+        setNovaEscolaId(novaEscola.id);
+      });
+    },
+    []
+  );
 
   const handleVeiculoCreated = useCallback((novoVeiculo: any) => {
     safeCloseDialog(() => {
@@ -327,8 +388,6 @@ const Home = () => {
       setNovoVeiculoId(novoVeiculo.id);
     });
   }, []);
-
-
 
   if (isSessionLoading || isProfileLoading || isInitialLoading) {
     return (
@@ -568,9 +627,7 @@ const Home = () => {
               </div>
               <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="font-bold text-lg">
-                    {upsellContent.title}
-                  </h3>
+                  <h3 className="font-bold text-lg">{upsellContent.title}</h3>
                   <p className="text-indigo-100 text-sm mt-1 max-w-md">
                     {upsellContent.description}
                   </p>
@@ -589,40 +646,56 @@ const Home = () => {
       </PullToRefreshWrapper>
 
       {/* Dialogs */}
-      <PassageiroFormDialog
-        isOpen={isPassageiroDialogOpen}
-        onClose={handleClosePassageiroDialog}
-        onSuccess={handleSuccessFormPassageiro}
-        editingPassageiro={editingPassageiro}
-        mode="create"
-        profile={profile}
-        plano={plano}
-      />
+      {isPassageiroDialogOpen && (
+        <PassageiroFormDialog
+          isOpen={isPassageiroDialogOpen}
+          onClose={handleClosePassageiroDialog}
+          onSuccess={handleSuccessFormPassageiro}
+          editingPassageiro={editingPassageiro}
+          mode="create"
+          profile={profile}
+          plano={plano}
+        />
+      )}
 
-      <EscolaFormDialog
-        isOpen={isCreatingEscola}
-        onClose={handleCloseEscolaFormDialog}
-        onSuccess={handleEscolaCreated}
-        profile={profile}
-        allowBatchCreation
-      />
+      {isCreatingEscola && (
+        <EscolaFormDialog
+          isOpen={isCreatingEscola}
+          onClose={handleCloseEscolaFormDialog}
+          onSuccess={handleEscolaCreated}
+          profile={profile}
+          allowBatchCreation
+        />
+      )}
 
-      <VeiculoFormDialog
-        isOpen={isCreatingVeiculo}
-        onClose={handleCloseVeiculoFormDialog}
-        onSuccess={handleVeiculoCreated}
-        profile={profile}
-      />
+      {isCreatingVeiculo && (
+        <VeiculoFormDialog
+          isOpen={isCreatingVeiculo}
+          onClose={handleCloseVeiculoFormDialog}
+          onSuccess={handleVeiculoCreated}
+          profile={profile}
+        />
+      )}
 
-      <GastoFormDialog
-        isOpen={isGastoDialogOpen}
-        onOpenChange={setIsGastoDialogOpen}
-        veiculos={veiculosData?.list || []}
-        usuarioId={profile?.id}
-        onSuccess={() => {
-          toast.success("Gasto registrado com sucesso!");
-        }}
-      />
+      {isGastoDialogOpen && (
+        <GastoFormDialog
+          isOpen={isGastoDialogOpen}
+          onOpenChange={setIsGastoDialogOpen}
+          veiculos={veiculosData?.list || []}
+          usuarioId={profile?.id}
+          onSuccess={() => {
+            toast.success("Gasto registrado com sucesso!");
+          }}
+        />
+      )}
+      {isPixKeyDialogOpen && (
+        <PixKeyDialog
+          isOpen={isPixKeyDialogOpen}
+          onClose={() => setIsPixKeyDialogOpen(false)}
+          canClose={true}
+          onSuccess={onPixKeySuccess}
+        />
+      )}
     </>
   );
 };

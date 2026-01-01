@@ -1,10 +1,10 @@
 import PagamentoPixContent from "@/components/features/pagamento/PagamentoPixContent";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 
@@ -15,11 +15,6 @@ interface PagamentoAssinaturaDialogProps {
   valor: number;
   onPaymentSuccess?: (success?: boolean) => void;
   usuarioId?: string;
-  onPrecisaSelecaoManual?: (data: {
-    tipo: "upgrade" | "downgrade";
-    franquia: number;
-    cobrancaId: string;
-  }) => void;
   nomePlano?: string;
   quantidadePassageiros?: number;
   onIrParaInicio?: () => void;
@@ -41,7 +36,6 @@ export default function PagamentoAssinaturaDialog({
   valor,
   onPaymentSuccess,
   usuarioId,
-  onPrecisaSelecaoManual,
   nomePlano,
   quantidadePassageiros,
   onIrParaInicio,
@@ -80,7 +74,6 @@ export default function PagamentoAssinaturaDialog({
             cobrancaId={cobrancaId}
             onPaymentSuccess={onPaymentSuccess}
             usuarioId={usuarioId}
-            onPrecisaSelecaoManual={onPrecisaSelecaoManual}
             onClose={(success) => onClose(success)}
             nomePlano={nomePlano}
             quantidadePassageiros={quantidadePassageiros}

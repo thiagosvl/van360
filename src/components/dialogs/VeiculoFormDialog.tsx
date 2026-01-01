@@ -1,24 +1,24 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  useCreateVeiculo,
-  useUpdateVeiculo,
+    useCreateVeiculo,
+    useUpdateVeiculo,
 } from "@/hooks/api/useVeiculoMutations";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -26,8 +26,8 @@ import { Veiculo } from "@/types/veiculo";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
 import {
-  aplicarMascaraPlaca,
-  validarPlaca,
+    aplicarMascaraPlaca,
+    validarPlaca,
 } from "@/utils/domain/veiculo/placaUtils";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -314,7 +314,7 @@ export default function VeiculoFormDialog({
           </Form>
         </div>
 
-        <div className="p-4 border-t bg-white shrink-0 grid grid-cols-2 gap-3">
+        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
           <Button
             type="button"
             variant="outline"

@@ -1,6 +1,5 @@
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
-import PlanosDialog from "@/components/dialogs/PlanosDialog";
 import { PlanUpgradeDialog, PlanUpgradeDialogProps } from "@/components/dialogs/PlanUpgradeDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_GASTOS, FEATURE_LIMITE_PASSAGEIROS, FEATURE_NOTIFICACOES, FEATURE_RELATORIOS, PLANO_PROFISSIONAL } from "@/constants";
@@ -43,7 +42,6 @@ interface LayoutContextType {
   setPageTitle: (title: string) => void;
   pageSubtitle: string;
   setPageSubtitle: (subtitle: string) => void;
-  openPlanosDialog: () => void;
   openPlanUpgradeDialog: (props?: OpenPlanUpgradeDialogProps) => void;
   isPlanUpgradeDialogOpen: boolean;
   openConfirmationDialog: (props: OpenConfirmationDialogProps) => void;
@@ -57,7 +55,6 @@ const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [pageTitle, setPageTitle] = useState('Carregando...');
   const [pageSubtitle, setPageSubtitle] = useState('Por favor, aguarde.');
-  const [isPlanosDialogOpen, setIsPlanosDialogOpen] = useState(false);
   
   // Sync document title with page title
   useEffect(() => {
@@ -101,14 +98,11 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
   
-  // Carregar dados de franquia globalmente se o dialog estiver aberto
-  // Isso garante que temos os números "Limite X de Y" atualizados
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   const { limits } = usePlanLimits({
       userUid: user?.id,
       profile
   });
-
-  const openPlanosDialog = () => setIsPlanosDialogOpen(true);
   
   const openPlanUpgradeDialog = (props?: OpenPlanUpgradeDialogProps) => {
       let defaultTab = props?.defaultTab;
@@ -168,7 +162,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       setPageTitle, 
       pageSubtitle, 
       setPageSubtitle, 
-      openPlanosDialog,
       openPlanUpgradeDialog,
       isPlanUpgradeDialogOpen: planUpgradeDialogState.open,
       openConfirmationDialog,
@@ -177,10 +170,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openVeiculoFormDialog
     }}>
       {children}
-      <PlanosDialog 
-        isOpen={isPlanosDialogOpen} 
-        onOpenChange={setIsPlanosDialogOpen} 
-      />
+      {children}
       
       {planUpgradeDialogState.open && (
          <PlanUpgradeDialog

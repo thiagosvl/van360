@@ -12,12 +12,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FEATURE_RELATORIOS, PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCobrancas,
-    useEscolas,
-    useGastos,
-    usePassageiroContagem,
-    usePassageiros,
-    useVeiculos
+  useCobrancas,
+  useEscolas,
+  useGastos,
+  usePassageiroContagem,
+  usePassageiros,
+  useVeiculos
 } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
@@ -60,7 +60,7 @@ export default function Relatorios() {
     }
   }, [searchParams, setSearchParams]);
 
-  const { setPageTitle, openPlanosDialog, openPlanUpgradeDialog } = useLayout();
+  const { setPageTitle, openPlanUpgradeDialog } = useLayout();
   const { user } = useSession();
   
   // Use Access Control Hook
@@ -146,7 +146,7 @@ export default function Relatorios() {
     profile?.id,
     { enviar_cobranca_automatica: "true" },
     { enabled: !!profile?.id }
-  );
+  ) as { data: { count: number }; refetch: () => void };
 
   const pullToRefreshReload = async () => {
     if (!hasAccess) return;

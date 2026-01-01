@@ -131,7 +131,7 @@ export default function CobrancaEditDialog({
           </Form>
         </div>
 
-        <div className="p-4 border-t bg-white shrink-0 grid grid-cols-2 gap-3">
+        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
           <Button
             type="button"
             variant="outline"

@@ -16,11 +16,6 @@ interface PagamentoPixContentProps {
   cobrancaId: string;
   onPaymentSuccess?: (success?: boolean) => void;
   usuarioId?: string;
-  onPrecisaSelecaoManual?: (data: {
-    tipo: "upgrade" | "downgrade";
-    franquia: number;
-    cobrancaId: string;
-  }) => void;
   onClose?: (success?: boolean) => void; // Opcional, para quando usado em modal
   nomePlano?: string; // Para exibir no sucesso
   quantidadePassageiros?: number; // Para exibir no sucesso
@@ -41,7 +36,6 @@ export default function PagamentoPixContent({
   cobrancaId,
   onPaymentSuccess,
   usuarioId,
-  onPrecisaSelecaoManual,
   onClose,
   nomePlano,
   quantidadePassageiros,
@@ -153,19 +147,6 @@ export default function PagamentoPixContent({
 
       gerarPix.mutate(cobrancaId, {
         onSuccess: (result: any) => {
-          if (
-            result.precisaSelecaoManual &&
-            onPrecisaSelecaoManual &&
-            usuarioId
-          ) {
-            if (onClose) onClose();
-            onPrecisaSelecaoManual({
-              tipo: result.tipo || "upgrade",
-              franquia: result.franquia || 0,
-              cobrancaId: cobrancaId,
-            });
-            return;
-          }
 
           setDadosPagamento(result);
           pixGeradoRef.current = cobrancaId;

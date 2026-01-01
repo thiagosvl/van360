@@ -55,7 +55,7 @@ import {
 } from "lucide-react";
 
 export default function Gastos() {
-  const { setPageTitle, openPlanosDialog, openPlanUpgradeDialog } = useLayout();
+  const { setPageTitle, openPlanUpgradeDialog } = useLayout();
   const deleteGasto = useDeleteGasto();
 
   const isActionLoading = deleteGasto.isPending;

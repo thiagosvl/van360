@@ -1,5 +1,11 @@
 import { useProfile } from "@/hooks/business/useProfile";
-import { canUseCobrancaAutomatica, canUseNotificacoes, canUsePrePassageiro, canViewGastos, canViewRelatorios } from "@/utils/domain/plano/accessRules";
+import {
+  canUseCobrancaAutomatica,
+  canUseNotificacoes,
+  canUsePrePassageiro,
+  canViewGastos,
+  canViewRelatorios
+} from "@/utils/domain/plano/accessRules";
 import { useSession } from "./useSession";
 
 /**
@@ -11,7 +17,17 @@ export function usePermissions() {
   // Role extraction from Auth (Strict source of truth per architecture V3)
   const role = user?.app_metadata?.role as string | undefined;
 
-  const { profile, plano, isLoading, refreshProfile } = useProfile(user?.id);
+  const { 
+    profile, 
+    plano, 
+    isLoading, 
+    refreshProfile,
+    isGratuito,
+    isEssencial,
+    isProfissional,
+} = useProfile(user?.id);
+
+  const isFreePlan = isGratuito;
 
   // Regras de Visualização (Páginas/Módulos)
   const canViewModuleGastos = canViewGastos(plano);
@@ -27,10 +43,6 @@ export function usePermissions() {
   // Pode ser refinado para regras mais complexas
   const canEditCobranca = !!plano?.isValidPlan; 
   const canCreateCobranca = !!plano?.isValidPlan;
-
-  // Helpers de Limites
-  // Se futuramente precisarmos de limites (ex: max de passageiros), exportamos aqui também
-  const isFreePlan = plano?.isFreePlan ?? false;
 
   return {
     isLoading,
@@ -50,6 +62,9 @@ export function usePermissions() {
 
     // State
     isFreePlan,
+    isGratuito,
+    isEssencial,
+    isProfissional,
     
     // Raw Data (Use com cautela, prefira as flags acima)
     plano,

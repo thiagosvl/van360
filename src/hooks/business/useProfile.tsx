@@ -53,6 +53,10 @@ export function useProfile(uid?: string) {
   return {
     profile: data,
     plano,
+    isGratuito: plano?.slug === "gratuito",
+    isEssencial: plano?.slug === "essencial",
+    isProfissional: plano?.slug === "profissional",
+
     error,
     isLoading,
     refreshProfile: refetch, // Mantém compatibilidade com assinatura anterior
