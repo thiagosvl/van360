@@ -37,13 +37,24 @@ export const pixKeyRefinement = (data: { tipo_chave_pix?: TipoChavePix | null; c
         }
     } else if (data.tipo_chave_pix === TipoChavePix.TELEFONE) {
          if (data.chave_pix.length < 14) { 
-             ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Telefone incompleto", path: ["chave_pix"] });
+             ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Telefone inválido", path: ["chave_pix"] });
          }
     } else if (data.tipo_chave_pix === TipoChavePix.ALEATORIA) {
          if (data.chave_pix.length < 32) {
-             ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Chave aleatória muito curta", path: ["chave_pix"] });
+             ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Chave aleatória inválida", path: ["chave_pix"] });
          }
     }
 };
 
 export const pixKeySchema = pixKeyObject.superRefine(pixKeyRefinement);
+
+export const pixKeyObjectRequired = z.object({
+  tipo_chave_pix: z.nativeEnum(TipoChavePix, {
+    required_error: "Selecione o tipo de chave",
+  }),
+  chave_pix: z.string({
+      required_error: "Chave PIX é obrigatória"
+  }).min(1, "Chave PIX é obrigatória"),
+});
+
+export const pixKeySchemaRequired = pixKeyObjectRequired.superRefine(pixKeyRefinement);

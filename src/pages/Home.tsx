@@ -47,18 +47,16 @@ import { toast } from "@/utils/notifications/toast";
 
 // New Component Imports
 import { LimitHealthBar } from "@/components/common/LimitHealthBar";
-import PixKeyDialog from "@/components/dialogs/PixKeyDialog";
 import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
 import { MiniKPI } from "@/components/features/home/MiniKPI";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
-import { usePixKeyGuard } from "@/hooks/business/usePixKeyGuard";
 import { useUpsellContent } from "@/hooks/business/useUpsellContent";
 
 // --- Main Component ---
 
 const Home = () => {
-  const { setPageTitle, openPlanUpgradeDialog } = useLayout();
+  const { setPageTitle, openPlanUpgradeDialog, openPixKeyDialog } = useLayout();
   const { user, loading: isSessionLoading } = useSession();
 
   // Use Access Control Hook
@@ -98,12 +96,6 @@ const Home = () => {
   const [isCreatingEscola, setIsCreatingEscola] = useState(false);
   const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
   const [isGastoDialogOpen, setIsGastoDialogOpen] = useState(false);
-
-  const {
-    isOpen: isPixKeyDialogOpen,
-    setIsOpen: setIsPixKeyDialogOpen,
-    onSuccess: onPixKeySuccess,
-  } = usePixKeyGuard(profile, isProfissional, isProfileLoading);
 
   const mesAtual = new Date().getMonth() + 1;
   const anoAtual = new Date().getFullYear();
@@ -422,6 +414,7 @@ const Home = () => {
                 onOpenVeiculoDialog={() => setIsCreatingVeiculo(true)}
                 onOpenEscolaDialog={() => setIsCreatingEscola(true)}
                 onOpenPassageiroDialog={() => setIsPassageiroDialogOpen(true)}
+                onOpenPixKeyDialog={() => openPixKeyDialog()}
               />
             </section>
           )}
@@ -688,14 +681,7 @@ const Home = () => {
           }}
         />
       )}
-      {isPixKeyDialogOpen && (
-        <PixKeyDialog
-          isOpen={isPixKeyDialogOpen}
-          onClose={() => setIsPixKeyDialogOpen(false)}
-          canClose={true}
-          onSuccess={onPixKeySuccess}
-        />
-      )}
+
     </>
   );
 };

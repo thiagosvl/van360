@@ -1,14 +1,23 @@
 import { STORAGE_KEY_QUICKSTART_STATUS } from "@/constants";
 import { Usuario } from "@/types/usuario";
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
-export function usePixKeyGuard(
-  profile: Usuario | null | undefined,
-  isProfissional: boolean,
-  isLoading: boolean
-) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [hasChecked, setHasChecked] = useState(false);
+interface UsePixKeyGuardProps {
+    profile: Usuario | null | undefined;
+    isProfissional: boolean;
+    isLoading: boolean;
+    onShouldOpen: () => void;
+}
+
+export function usePixKeyGuard({
+  profile,
+  isProfissional,
+  isLoading,
+  onShouldOpen
+}: UsePixKeyGuardProps) {
+  const location = useLocation();
+  const [triggeredPath, setTriggeredPath] = useState<string | null>(null);
 
   useEffect(() => {
     if (isLoading || !profile) return;
@@ -31,24 +40,27 @@ export function usePixKeyGuard(
             }));
         }
       } else {
-        if (!hasPixKeyLocal && !hasChecked) {
-            setIsOpen(true);
-            setHasChecked(true); 
+        if (!hasPixKeyLocal) {
+            // Check if we are on the Home screen ('/inicio' or '/')
+            const isHomePage = location.pathname === '/inicio' || location.pathname === '/';
+
+            if (!isHomePage) {
+                // If not on home, reset the trigger so it can fire again when returning to home
+                if (triggeredPath) {
+                    setTriggeredPath(null);
+                }
+                return;
+            }
+
+            // Only trigger if we haven't triggered for this specific path check yet
+            if (triggeredPath !== location.pathname) {
+                onShouldOpen();
+                setTriggeredPath(location.pathname);
+            }
         }
       }
     }
-  }, [profile, isProfissional, isLoading, hasChecked]);
+  }, [profile, isProfissional, isLoading, onShouldOpen, location.pathname, triggeredPath]);
 
-  return { 
-    isOpen, 
-    setIsOpen,
-    onSuccess: () => {
-        const storageRaw = localStorage.getItem(STORAGE_KEY_QUICKSTART_STATUS);
-        const storageObj = storageRaw ? JSON.parse(storageRaw) : {};
-        localStorage.setItem(STORAGE_KEY_QUICKSTART_STATUS, JSON.stringify({
-            ...storageObj,
-            step_pix: true
-        }));
-    }
-  };
+  // No return needed, this hook is a side-effect manager
 }

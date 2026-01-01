@@ -212,6 +212,7 @@ export const messages = {
     },
     sucesso: {
       perfilAtualizado: "Perfil atualizado com sucesso.",
+      perfilAtualizadoDescricao: "Suas informações foram salvas.",
     },
     info: {
       pagamentoConfirmado: "Pagamento Confirmado.",

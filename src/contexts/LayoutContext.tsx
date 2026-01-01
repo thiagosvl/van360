@@ -1,8 +1,10 @@
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
+import PixKeyDialog from "@/components/dialogs/PixKeyDialog";
 import { PlanUpgradeDialog, PlanUpgradeDialogProps } from "@/components/dialogs/PlanUpgradeDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_GASTOS, FEATURE_LIMITE_PASSAGEIROS, FEATURE_NOTIFICACOES, FEATURE_RELATORIOS, PLANO_PROFISSIONAL } from "@/constants";
+import { usePixKeyGuard } from "@/hooks/business/usePixKeyGuard";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -48,6 +50,8 @@ interface LayoutContextType {
   closeConfirmationDialog: () => void;
   openEscolaFormDialog: (props?: OpenEscolaFormProps) => void;
   openVeiculoFormDialog: (props?: OpenVeiculoFormProps) => void;
+  openPixKeyDialog: (options?: { onSuccess?: () => void, canClose?: boolean }) => void;
+  closePixKeyDialog: () => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -96,15 +100,39 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const { user } = useSession();
-  const { profile } = useProfile(user?.id);
+  const { profile, isProfissional, isLoading: isProfileLoading } = useProfile(user?.id);
   
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   const { limits } = usePlanLimits({
       userUid: user?.id,
       profile
   });
+
+  // Global Check for Pix Key (Professional Plan)
+  usePixKeyGuard({
+      profile,
+      isProfissional: !!isProfissional,
+      isLoading: isProfileLoading,
+      onShouldOpen: () => {
+          setPixKeyDialogState({
+              open: true,
+              canClose: true
+          });
+      }
+  });
   
+  // PixKey Dialog State (Global)
+  const [pixKeyDialogState, setPixKeyDialogState] = useState<{
+    open: boolean;
+    onSuccess?: () => void;
+    canClose?: boolean;
+  }>({
+    open: false,
+    canClose: true
+  });
+
   const openPlanUpgradeDialog = (props?: OpenPlanUpgradeDialogProps) => {
+    // ... existing logic ...
       let defaultTab = props?.defaultTab;
       
       // Inferência inteligente de aba baseada na feature/dor
@@ -129,6 +157,18 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
               defaultTab
           }
       });
+  };
+
+  const openPixKeyDialog = (options?: { onSuccess?: () => void, canClose?: boolean }) => {
+    setPixKeyDialogState({
+      open: true,
+      onSuccess: options?.onSuccess,
+      canClose: options?.canClose ?? true
+    });
+  };
+
+  const closePixKeyDialog = () => {
+    setPixKeyDialogState(prev => ({ ...prev, open: false }));
   };
 
   const openConfirmationDialog = (props: OpenConfirmationDialogProps) => {
@@ -167,7 +207,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       openConfirmationDialog,
       closeConfirmationDialog,
       openEscolaFormDialog,
-      openVeiculoFormDialog
+      openVeiculoFormDialog,
+      openPixKeyDialog,
+      closePixKeyDialog
     }}>
       {children}
       {children}
@@ -231,6 +273,20 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         }}
         editingVeiculo={veiculoFormDialogState.props?.editingVeiculo}
         profile={profile}
+      />
+
+      <PixKeyDialog
+        isOpen={pixKeyDialogState.open}
+        onClose={() => setPixKeyDialogState(prev => ({ ...prev, open: false }))}
+        canClose={pixKeyDialogState.canClose}
+        onSuccess={() => {
+            pixKeyDialogState.onSuccess?.();
+            // Optional: Close on success if not handled by dialog itself, but PixKeyDialog handles it usually?
+            // PixKeyDialog calls onClose() internally on success.
+            // But let's ensure state sync.
+            // Actually PixKeyDialog calls onSuccess then onClose. 
+            // So onClose here updates state to false. correctness verified.
+        }}
       />
     </LayoutContext.Provider>
   );

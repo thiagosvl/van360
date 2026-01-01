@@ -1,3 +1,4 @@
+
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { LayoutProvider } from "@/contexts/LayoutContext";

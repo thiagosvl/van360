@@ -1,40 +1,41 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { useProfile } from "@/hooks/business/useProfile";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
+import { pixKeySchemaRequired } from "@/schemas/pix";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { TIPOS_CHAVE_PIX_LABEL, TipoChavePix } from "@/types/pix";
 import { cnpjMask, cpfMask as maskCpf, phoneMask as maskPhone } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
+import { cleanString } from "@/utils/string";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Key, Loader2, X } from "lucide-react";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { pixKeySchema } from "@/schemas/pix";
 
 interface PixKeyDialogProps {
   isOpen: boolean;
@@ -44,7 +45,7 @@ interface PixKeyDialogProps {
 }
 
 // O schema já vem com .superRefine do arquivo compartilhado.
-const schema = pixKeySchema;
+const schema = pixKeySchemaRequired;
 
 type FormData = z.infer<typeof schema>;
 
@@ -55,7 +56,8 @@ export default function PixKeyDialog({
   canClose = true
 }: PixKeyDialogProps) {
   const { user } = useSession();
-  const { profile, refreshProfile } = useProfile(user?.id);
+  // Using usePermissions for consistency
+  const { profile, refreshProfile, isProfissional } = usePermissions();
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -111,18 +113,32 @@ export default function PixKeyDialog({
     if (!profile?.id) return;
 
     try {
+      // Limpar chave PIX
+      let chavePixLimpa = data.chave_pix;
+      const tipo = data.tipo_chave_pix;
+
+      if (chavePixLimpa && tipo) {
+          if ([TipoChavePix.CPF, TipoChavePix.CNPJ, TipoChavePix.TELEFONE].includes(tipo)) {
+              chavePixLimpa = chavePixLimpa.replace(/\D/g, "");
+          } else {
+              chavePixLimpa = cleanString(chavePixLimpa);
+          }
+      }
+
       await usuarioApi.atualizarUsuario(profile.id, {
-        chave_pix: data.chave_pix,
-        tipo_chave_pix: data.tipo_chave_pix
+        chave_pix: chavePixLimpa,
+        tipo_chave_pix: tipo
       });
 
       toast.success("Chave PIX salva com sucesso!");
       
       updateQuickStartStorage();
-      await refreshProfile();
       
+      // Close immediately for better UX
       if (onSuccess) onSuccess();
       onClose();
+
+      await refreshProfile();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Erro ao salvar chave PIX.";
       toast.error("Falha ao salvar", {
@@ -172,6 +188,7 @@ export default function PixKeyDialog({
                     <Select onValueChange={(val) => {
                         field.onChange(val);
                         form.setValue("chave_pix", ""); // Limpa chave ao trocar tipo
+                        form.clearErrors("chave_pix"); // Limpa erros de validação anteriores
                     }} defaultValue={field.value} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200 focus:ring-blue-500/20 focus:border-blue-500">

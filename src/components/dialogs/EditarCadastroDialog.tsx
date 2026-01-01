@@ -29,10 +29,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useProfile } from "@/hooks/business/useProfile";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
 import { emailSchema, phoneSchema } from "@/schemas/common";
-import { pixKeyObject, pixKeyRefinement } from "@/schemas/pix";
+import { pixKeyObjectRequired, pixKeyRefinement } from "@/schemas/pix";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { TIPOS_CHAVE_PIX_LABEL, TipoChavePix } from "@/types/pix";
 import { cnpjMask, cpfMask as maskCpf, phoneMask as maskPhone } from "@/utils/masks";
@@ -55,24 +55,32 @@ const basicSchema = z.object({
   cpfcnpj: z.string(), // Apenas leitura/exibição
   telefone: phoneSchema,
   email: emailSchema,
-}).merge(pixKeyObject);
+});
 
-const schema = basicSchema.superRefine(pixKeyRefinement);
+// Schema estendido com validação de PIX (Strict)
+const schemaWithPix = basicSchema
+  .merge(pixKeyObjectRequired)
+  .superRefine(pixKeyRefinement);
 
-type FormData = z.infer<typeof schema>;
+type FormData = z.infer<typeof schemaWithPix>;
 
 export default function EditarCadastroDialog({
   isOpen,
   onClose,
 }: EditarCadastroDialogProps) {
   const { user } = useSession();
-  const { profile, isLoading, refreshProfile } = useProfile(user?.id);
+  // Usar usePermissions para acesso centralizado às flags de plano
+  const { profile, isLoading, refreshProfile, isProfissional } = usePermissions();
+  
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "dados-pessoais",
   ]);
 
+  // Escolher o schema baseado no plano
+  const activeSchema = isProfissional ? schemaWithPix : basicSchema;
+
   const form = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(activeSchema),
     defaultValues: {
       nome: "",
       apelido: "",
@@ -98,10 +106,14 @@ export default function EditarCadastroDialog({
         tipo_chave_pix: (profile.tipo_chave_pix as TipoChavePix) || undefined,
         chave_pix: profile.chave_pix || ""
       });
-      // Abre ambas as sections se já tiver dados, ou apenas a primeira
-      setOpenAccordionItems(["dados-pessoais", "dados-recebimento"]);
+      // Abre ambas as sections se já tiver dados e for profissional
+      if (isProfissional) {
+        setOpenAccordionItems(["dados-pessoais", "dados-recebimento"]);
+      } else {
+        setOpenAccordionItems(["dados-pessoais"]);
+      }
     }
-  }, [profile, form]);
+  }, [profile, form, isProfissional]);
 
     const handleChavePixChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value;
@@ -121,12 +133,24 @@ export default function EditarCadastroDialog({
       const apelido = cleanString(data.apelido || "", true);
       const telefone = data.telefone.replace(/\D/g, "");
 
+      // Limpar chave PIX
+      let chavePixLimpa = data.chave_pix;
+      const tipo = data.tipo_chave_pix;
+
+      if (chavePixLimpa && tipo) {
+          if ([TipoChavePix.CPF, TipoChavePix.CNPJ, TipoChavePix.TELEFONE].includes(tipo)) {
+              chavePixLimpa = chavePixLimpa.replace(/\D/g, "");
+          } else {
+              chavePixLimpa = cleanString(chavePixLimpa);
+          }
+      }
+
       await usuarioApi.atualizarUsuario(profile.id, {
           nome,
           apelido,
           telefone,
-          chave_pix: data.chave_pix || undefined,
-          tipo_chave_pix: data.tipo_chave_pix || undefined
+          chave_pix: chavePixLimpa || undefined,
+          tipo_chave_pix: tipo || undefined
       });
 
       toast.success("cadastro.sucesso.perfilAtualizado", {
@@ -203,7 +227,7 @@ export default function EditarCadastroDialog({
                             name="nome"
                             render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-gray-700 font-medium ml-1">Nome completo</FormLabel>
+                                <FormLabel className="text-gray-700 font-medium ml-1">Nome completo <span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
                                 <div className="relative">
                                     <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
@@ -224,7 +248,7 @@ export default function EditarCadastroDialog({
                             name="apelido"
                             render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-gray-700 font-medium ml-1">Apelido</FormLabel>
+                                <FormLabel className="text-gray-700 font-medium ml-1">Apelido <span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
                                 <div className="relative">
                                     <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
@@ -248,6 +272,7 @@ export default function EditarCadastroDialog({
                                 field={field}
                                 label="WhatsApp"
                                 placeholder="(00) 00000-0000"
+                                required
                                 inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
                             />
                             )}
@@ -259,7 +284,7 @@ export default function EditarCadastroDialog({
                                 name="cpfcnpj"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-gray-700 font-medium ml-1">CPF</FormLabel>
+                                    <FormLabel className="text-gray-700 font-medium ml-1">CPF <span className="text-red-500">*</span></FormLabel>
                                     <FormControl>
                                     <Input
                                         {...field}
@@ -276,7 +301,7 @@ export default function EditarCadastroDialog({
                                 name="email"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-gray-700 font-medium ml-1">E-mail</FormLabel>
+                                    <FormLabel className="text-gray-700 font-medium ml-1">E-mail <span className="text-red-500">*</span></FormLabel>
                                     <FormControl>
                                     <div className="relative">
                                         <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
@@ -295,75 +320,78 @@ export default function EditarCadastroDialog({
                     </AccordionContent>
                   </AccordionItem>
                   
-                  <AccordionItem value="dados-recebimento" className="border-b-0">
-                    <AccordionTrigger className="hover:no-underline py-2">
-                        <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                            <Key className="w-5 h-5 text-blue-600" />
-                            Dados de Recebimento
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="tipo_chave_pix"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-gray-700 font-medium ml-1">Tipo de Chave</FormLabel>
-                                    <Select 
-                                        onValueChange={(val) => {
-                                            field.onChange(val);
-                                            form.setValue("chave_pix", ""); // Limpa chave ao trocar tipo
-                                        }} 
-                                        value={field.value || undefined}
-                                    >
-                                    <FormControl>
-                                        <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200">
-                                        <SelectValue placeholder="Selecione o tipo..." />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {Object.entries(TIPOS_CHAVE_PIX_LABEL).map(([key, label]) => (
-                                            <SelectItem key={key} value={key}>{label}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
+                  {isProfissional && (
+                    <AccordionItem value="dados-recebimento" className="border-b-0">
+                      <AccordionTrigger className="hover:no-underline py-2">
+                          <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
+                              <Key className="w-5 h-5 text-blue-600" />
+                              Dados de Recebimento
+                          </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <FormField
+                                  control={form.control}
+                                  name="tipo_chave_pix"
+                                  render={({ field }) => (
+                                  <FormItem>
+                                      <FormLabel className="text-gray-700 font-medium ml-1">Tipo de Chave <span className="text-red-500">*</span></FormLabel>
+                                      <Select 
+                                          onValueChange={(val) => {
+                                              field.onChange(val);
+                                              form.setValue("chave_pix", ""); // Limpa chave ao trocar tipo
+                                              form.clearErrors("chave_pix"); // Limpa erros de validação anteriores
+                                          }} 
+                                          value={field.value || undefined}
+                                      >
+                                      <FormControl>
+                                          <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200">
+                                          <SelectValue placeholder="Selecione o tipo..." />
+                                          </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                          {Object.entries(TIPOS_CHAVE_PIX_LABEL).map(([key, label]) => (
+                                              <SelectItem key={key} value={key}>{label}</SelectItem>
+                                          ))}
+                                      </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                  </FormItem>
+                                  )}
+                              />
 
-                            <FormField
-                                control={form.control}
-                                name="chave_pix"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-gray-700 font-medium ml-1">Chave PIX</FormLabel>
-                                    <FormControl>
-                                    <div className="relative">
-                                        <Input
-                                            placeholder={tipoPixSelecionado ? "Digite a chave" : "Selecione o tipo primeiro"}
-                                            {...field}
-                                            value={field.value || ""}
-                                            disabled={!tipoPixSelecionado}
-                                            maxLength={tipoPixSelecionado === TipoChavePix.CPF ? 14 : tipoPixSelecionado === TipoChavePix.CNPJ ? 18 : 100}
-                                            onChange={handleChavePixChange}
-                                            className="h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-indigo-500 pr-10"
-                                        />
-                                        {tipoPixSelecionado && field.value && !form.formState.errors.chave_pix && (
-                                            <div className="absolute right-3 top-3.5 text-green-500 animate-in fade-in zoom-in">
-                                                <Check className="w-5 h-5" />
-                                            </div>
-                                        )}
-                                    </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                        </div>
-                    </AccordionContent>
-                  </AccordionItem>
+                              <FormField
+                                  control={form.control}
+                                  name="chave_pix"
+                                  render={({ field }) => (
+                                  <FormItem>
+                                      <FormLabel className="text-gray-700 font-medium ml-1">Chave PIX <span className="text-red-500">*</span></FormLabel>
+                                      <FormControl>
+                                      <div className="relative">
+                                          <Input
+                                              placeholder={tipoPixSelecionado ? "Digite a chave" : "Selecione o tipo primeiro"}
+                                              {...field}
+                                              value={field.value || ""}
+                                              disabled={!tipoPixSelecionado}
+                                              maxLength={tipoPixSelecionado === TipoChavePix.CPF ? 14 : tipoPixSelecionado === TipoChavePix.CNPJ ? 18 : 100}
+                                              onChange={handleChavePixChange}
+                                              className="h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-indigo-500 pr-10"
+                                          />
+                                          {tipoPixSelecionado && field.value && !form.formState.errors.chave_pix && (
+                                              <div className="absolute right-3 top-3.5 text-green-500 animate-in fade-in zoom-in">
+                                                  <Check className="w-5 h-5" />
+                                              </div>
+                                          )}
+                                      </div>
+                                      </FormControl>
+                                      <FormMessage />
+                                  </FormItem>
+                                  )}
+                              />
+                          </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )}
               </Accordion>
             </form>
           </Form>

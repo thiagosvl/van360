@@ -1,10 +1,10 @@
 import { useProfile } from "@/hooks/business/useProfile";
 import {
-  canUseCobrancaAutomatica,
-  canUseNotificacoes,
-  canUsePrePassageiro,
-  canViewGastos,
-  canViewRelatorios
+    canUseCobrancaAutomatica,
+    canUseNotificacoes,
+    canUsePrePassageiro,
+    canViewGastos,
+    canViewRelatorios
 } from "@/utils/domain/plano/accessRules";
 import { useSession } from "./useSession";
 
@@ -70,6 +70,6 @@ export function usePermissions() {
     plano,
     role,
     profile,
-    refetchProfile: refreshProfile
+    refreshProfile
   };
 }

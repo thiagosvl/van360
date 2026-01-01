@@ -1,15 +1,14 @@
-import PixKeyDialog from "@/components/dialogs/PixKeyDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
-  Bus,
-  CheckCircle2,
-  Key,
-  Lock as LockIcon,
-  School,
-  Trophy,
-  User,
+    Bus,
+    CheckCircle2,
+    Key,
+    Lock as LockIcon,
+    School,
+    Trophy,
+    User,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PassengerOnboardingDrawer } from "./PassengerOnboardingDrawer";
@@ -25,12 +24,14 @@ interface QuickStartCardProps {
   onOpenVeiculoDialog: () => void;
   onOpenEscolaDialog: () => void;
   onOpenPassageiroDialog: () => void;
+  onOpenPixKeyDialog: () => void;
 }
 
 export const QuickStartCard = ({
   onOpenVeiculoDialog,
   onOpenEscolaDialog,
   onOpenPassageiroDialog,
+  onOpenPixKeyDialog,
 }: QuickStartCardProps) => {
   const { user } = useSession();
   const { profile, plano } = useProfile(user?.id);
@@ -69,7 +70,6 @@ export const QuickStartCard = ({
     (passageirosData as { total?: number } | undefined)?.total ?? 0;
 
   const [isPassengerDrawerOpen, setIsPassengerDrawerOpen] = useState(false);
-  const [isPixDialogOpen, setIsPixDialogOpen] = useState(false);
 
   const steps = useMemo(() => {
     const defaultSteps = [
@@ -105,7 +105,7 @@ export const QuickStartCard = ({
         id: 4,
         done: !!profile?.chave_pix,
         label: "Configurar Recebimento (PIX)",
-        onAction: () => setIsPixDialogOpen(true),
+        onAction: onOpenPixKeyDialog,
         icon: Key,
         buttonText: "Configurar",
       });
@@ -118,6 +118,7 @@ export const QuickStartCard = ({
     passageirosCount,
     onOpenVeiculoDialog,
     onOpenEscolaDialog,
+    onOpenPixKeyDialog,
     plano,
     profile,
   ]);
@@ -233,13 +234,6 @@ export const QuickStartCard = ({
         onManualRegistration={onOpenPassageiroDialog}
         profile={profile}
       />
-
-      {isPixDialogOpen && (
-        <PixKeyDialog
-          isOpen={isPixDialogOpen}
-          onClose={() => setIsPixDialogOpen(false)}
-        />
-      )}
     </>
   );
 };

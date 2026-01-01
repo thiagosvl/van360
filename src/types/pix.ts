@@ -1,9 +1,9 @@
 export enum TipoChavePix {
-  CPF = 'cpf',
-  CNPJ = 'cnpj',
-  EMAIL = 'email',
-  TELEFONE = 'telefone',
-  ALEATORIA = 'aleatoria'
+  CPF = 'CPF',
+  CNPJ = 'CNPJ',
+  EMAIL = 'EMAIL',
+  TELEFONE = 'TELEFONE',
+  ALEATORIA = 'ALEATORIA'
 }
 
 export const TIPOS_CHAVE_PIX_LABEL: Record<TipoChavePix, string> = {
