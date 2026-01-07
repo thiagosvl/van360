@@ -2,18 +2,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
-    Bus,
-    CheckCircle2,
-    Key,
-    Lock as LockIcon,
-    School,
-    Trophy,
-    User,
+  Bus,
+  CheckCircle2,
+  Key,
+  Lock as LockIcon,
+  School,
+  Trophy,
+  User,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PassengerOnboardingDrawer } from "./PassengerOnboardingDrawer";
 
 // Hooks
+import { PLANO_PROFISSIONAL } from "@/constants";
 import { useEscolas } from "@/hooks/api/useEscolas";
 import { usePassageiros } from "@/hooks/api/usePassageiros";
 import { useVeiculos } from "@/hooks/api/useVeiculos";
@@ -100,7 +101,7 @@ export const QuickStartCard = ({
     ];
 
     // Adiciona step de PIX se for Profissional
-    if (plano?.slug === "profissional") {
+    if (plano?.slug === PLANO_PROFISSIONAL) {
       defaultSteps.push({
         id: 4,
         done: !!profile?.chave_pix,

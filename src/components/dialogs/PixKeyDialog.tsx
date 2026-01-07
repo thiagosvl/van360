@@ -1,29 +1,30 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
+import { supabase } from "@/integrations/supabase/client";
 import { pixKeySchemaRequired } from "@/schemas/pix";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { TIPOS_CHAVE_PIX_LABEL, TipoChavePix } from "@/types/pix";
@@ -58,6 +59,7 @@ export default function PixKeyDialog({
   const { user } = useSession();
   const { profile, refreshProfile, isProfissional } = usePermissions();
   const [isChecking, setIsChecking] = React.useState(false);
+  const [overrideStatus, setOverrideStatus] = React.useState(false);
 
   // Define form
   const form = useForm<FormData>({
@@ -141,20 +143,75 @@ export default function PixKeyDialog({
           }
       }
 
-      await usuarioApi.atualizarUsuario(profile.id, {
-        chave_pix: chavePixLimpa,
-        tipo_chave_pix: tipo
-      });
+      // Feedback visual enquanto valida
+      const loadingToast = toast.info("Salvando e validando chave PIX...", { duration: 30000 });
 
-      toast.success("Chave enviada para validação!");
-      
-      updateQuickStartStorage();
-      await refreshProfile();
-      
-      // We do NOT close immediately if we are in blocking mode, we switch to pending view implicitly
-      if (canClose && onSuccess) {
-          onSuccess();
-          onClose();
+      try {
+        await usuarioApi.atualizarUsuario(profile.id, {
+          chave_pix: chavePixLimpa,
+          tipo_chave_pix: tipo
+        });
+
+        // Polling para validação síncrona (experiência do usuário)
+        let attempts = 0;
+        const maxAttempts = 15; // 30 segundos
+        let finalStatus = 'PENDENTE_VALIDACAO';
+
+        while (attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Busca direta na API para evitar cache do hook
+            const { data: usuario } = await supabase
+                .from("usuarios")
+                .select("status_chave_pix")
+                .eq("id", profile.id)
+                .single();
+            
+            // Supabase pode retornar null para data se houver erro não tratado, mas .single() geralmente lança exceção se configurado ou retorna error.
+            // Cast 'any' temporário para resolver erro de inferência de tipos do Supabase Client gerado
+            const status = (usuario as any)?.status_chave_pix;
+
+            if (status === 'VALIDADA') {
+                finalStatus = 'VALIDADA';
+                break;
+            }
+            if (status === 'FALHA_VALIDACAO') {
+                finalStatus = 'FALHA_VALIDACAO';
+                break;
+            }
+            attempts++;
+        }
+
+        toast.dismiss(loadingToast);
+
+        if (finalStatus === 'VALIDADA') {
+            toast.success("Chave PIX validada com sucesso!");
+            
+            updateQuickStartStorage();
+            await refreshProfile(); // Sincroniza estado global
+            
+            if (canClose && onClose) {
+                onClose();
+                if (onSuccess) onSuccess();
+            }
+        } else if (finalStatus === 'FALHA_VALIDACAO') {
+            toast.error("Validação Falhou", {
+                description: "O banco não confirmou a titularidade da conta. Verifique se o CPF/CNPJ da chave pertence a você."
+            });
+            await refreshProfile();
+            // Mantém aberto para correção
+        } else {
+            // Timeout - Bloqueante (Pedido do Usuário: "Ou faz na hora, ou não faz")
+            toast.error("Tempo excedido na validação", {
+                description: "O banco demorou para responder. Verifique sua chave e tente novamente ou entre em contato com o suporte."
+            });
+            await refreshProfile();
+            // NÃO FECHAR O DIALOG - Mantém o usuário bloqueado até conseguir
+        }
+
+      } catch (err: unknown) {
+        toast.dismiss(loadingToast);
+        throw err;
       }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Erro ao salvar chave PIX.";
@@ -180,16 +237,10 @@ export default function PixKeyDialog({
       }
   };
 
-  const handleRetry = async () => {
-      // Logic to allow retry: Basically we just want to show the form again.
-      // But status is in profile. We need to clear the status locally? 
-      // Or just render the form despite the status if user clicks "Corrigir".
-      // Let's implement a local override state.
+  const handleRetry = () => {
       setOverrideStatus(true);
   };
   
-  const [overrideStatus, setOverrideStatus] = React.useState(false);
-
   // If we are in a pending/failed state but user wants to fix:
   const showForm = !status || (status !== 'PENDENTE_VALIDACAO' && status !== 'FALHA_VALIDACAO') || overrideStatus;
   

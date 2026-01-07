@@ -14,4 +14,8 @@ export interface Cobranca {
   desativar_lembretes?: boolean;
   pagamento_manual?: boolean;
   origem: string;
+  status_repasse?: "PENDENTE" | "PROCESSANDO" | "REPASSADO" | "FALHA_REPASSE" | "SEM_REPASSE";
+  valor_a_repassar?: number;
+  txid_pix?: string;
+  data_envio_notificacao?: string;
 }

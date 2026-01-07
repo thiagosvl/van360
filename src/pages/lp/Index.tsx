@@ -51,7 +51,7 @@ const Index = () => {
   // Permitir indexação da landing page
   useSEO({
     noindex: false,
-    title: "Van360 - Gestão para Transporte Escolar | Você só dirige. O Van360 cuida da burocracia.",
+    title: "Van360 - Gestão para Transporte Escolar | Você só dirige. Nós cuidamos da burocracia.",
     description: "Sistema de gestão para transporte escolar. Automatize cobranças, controle passageiros e organize sua frota. Cobrança automática via WhatsApp e baixa automática de PIX.",
   });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -238,7 +238,7 @@ const Index = () => {
           <h1 className="text-3xl font-extrabold tracking-tight leading-tight mt-12 mb-3">
             Você só dirige.
             <span className="text-yellow-400 block">
-              O Van360 cuida da burocracia.
+              Nós cuidamos da burocracia.
             </span>
           </h1>
 
@@ -325,7 +325,7 @@ const Index = () => {
               <h1 className="text-5xl lg:text-6xl xl:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
                 Você só dirige. <br />
                 <span className="text-blue-700 relative inline-block">
-                  O Van360 cuida da burocracia.
+                  Nós cuidamos da burocracia.
                   <svg
                     className="absolute w-full h-3 -bottom-2 left-0 text-yellow-400 -z-10"
                     viewBox="0 0 100 10"
@@ -572,7 +572,7 @@ const Index = () => {
               {
                 step: "3",
                 title: "Automatize",
-                desc: "O Van360 cobra e confirma o pagamento.",
+                desc: "Nós cobramos e confirmamos o pagamento.",
                 icon: Zap,
                 color: "bg-green-500",
               },
@@ -1398,7 +1398,7 @@ const Index = () => {
       <section className="py-20 bg-slate-900 text-white text-center px-4 relative overflow-hidden selection:bg-blue-700">
         <div className="max-w-4xl mx-auto relative z-10">
           <h2 className="text-4xl md:text-5xl font-extrabold mb-8">
-            Você só dirige. O Van360 cuida da burocracia.
+            Você só dirige. Nós cuidamos da burocracia.
           </h2>
           <p className="text-slate-300 text-xl mb-12 max-w-2xl mx-auto">
             Automatize a rotina, pare de perder tempo no WhatsApp e tenha a

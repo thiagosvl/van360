@@ -1,24 +1,21 @@
 import { CobrancaFormContent } from "@/components/forms/cobranca/CobrancaForm";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
-import {
-    getStatusColor,
-    getStatusText,
-} from "@/utils/formatters";
+import { getStatusColor, getStatusText } from "@/utils/formatters";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Loader2, Pencil, User, X } from "lucide-react";
+import { AlertTriangle, Loader2, Pencil, User, X } from "lucide-react";
 import { useEffect } from "react";
 
 interface CobrancaEditDialogProps {
@@ -34,7 +31,6 @@ export default function CobrancaEditDialog({
   cobranca,
   onCobrancaUpdated,
 }: CobrancaEditDialogProps) {
-
   // Cleanup effect to ensure body is unlocked when dialog closes
   useEffect(() => {
     if (!isOpen) {
@@ -51,8 +47,8 @@ export default function CobrancaEditDialog({
     mode: "edit",
     cobranca,
     onSuccess: () => {
-        onCobrancaUpdated();
-        onClose();
+      onCobrancaUpdated();
+      onClose();
     },
   });
 
@@ -76,7 +72,7 @@ export default function CobrancaEditDialog({
             Edição de Cobrança
           </DialogTitle>
           <DialogDescription className="text-blue-100/80 text-sm mt-1">
-             Atualize os dados da cobrança.
+            Atualize os dados da cobrança.
           </DialogDescription>
         </div>
 
@@ -120,14 +116,36 @@ export default function CobrancaEditDialog({
             </div>
           </div>
 
+          {/* Alerta de PIX */}
+          {cobranca.txid_pix && (
+            <div className="mb-6 p-3 bg-amber-50 rounded-lg border border-amber-200 flex items-start gap-3">
+              <div className="shrink-0 mt-0.5">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+              </div>
+              <div className="text-sm">
+                <p className="font-bold text-amber-800 mb-0.5">Atenção!</p>
+                <p className="text-amber-700 leading-relaxed text-xs">
+                  Ao salvar alterações de preço ou data, o PIX atual será{" "}
+                  <strong>invalidado e regenerado</strong> automaticamente.
+                </p>
+                {cobranca.data_envio_notificacao && (
+                  <p className="text-amber-800 font-semibold mt-1 text-xs underline">
+                    Como já foi enviada, você precisará reenviar a cobrança ao
+                    responsável!
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
           <Form {...form}>
-             <CobrancaFormContent
-                form={form}
-                mode="edit"
-                cobranca={cobranca}
-                onCancel={onClose}
-                hideButtons={true} 
-             />
+            <CobrancaFormContent
+              form={form}
+              mode="edit"
+              cobranca={cobranca}
+              onCancel={onClose}
+              hideButtons={true}
+            />
           </Form>
         </div>
 
@@ -153,7 +171,7 @@ export default function CobrancaEditDialog({
                 Salvando...
               </>
             ) : (
-                "Salvar Alterações"
+              "Salvar Alterações"
             )}
           </Button>
         </div>

@@ -212,7 +212,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       closePixKeyDialog
     }}>
       {children}
-      {children}
       
       {planUpgradeDialogState.open && (
          <PlanUpgradeDialog

@@ -1,3 +1,4 @@
+import { PLANO_ESSENCIAL, PLANO_GRATUITO, PLANO_PROFISSIONAL } from "@/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { Usuario } from "@/types/usuario";
 import { getPlanoUsuario } from "@/utils/domain/plano/planoUtils";
@@ -53,9 +54,9 @@ export function useProfile(uid?: string) {
   return {
     profile: data,
     plano,
-    isGratuito: plano?.slug === "gratuito",
-    isEssencial: plano?.slug === "essencial",
-    isProfissional: plano?.slug === "profissional",
+    isGratuito: plano?.slug === PLANO_GRATUITO,
+    isEssencial: plano?.slug === PLANO_ESSENCIAL,
+    isProfissional: plano?.slug === PLANO_PROFISSIONAL,
 
     error,
     isLoading,

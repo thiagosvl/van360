@@ -28,6 +28,7 @@ import {
   FEATURE_LIMITE_FRANQUIA,
   FEATURE_LIMITE_PASSAGEIROS,
   PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
@@ -177,7 +178,7 @@ export default function PrePassageiros({
 
   const handleFinalizeClick = (prePassageiro: PrePassageiro) => {
     // Verificar se é plano gratuito E limite atingido
-    const isFreePlan = plano?.slug === "gratuito" || plano?.slug === "teste";
+    const isFreePlan = plano?.slug === PLANO_GRATUITO;
     if (isLimitedUser && isLimitReached) {
       if (isFreePlan) {
         openPlanUpgradeDialog({
