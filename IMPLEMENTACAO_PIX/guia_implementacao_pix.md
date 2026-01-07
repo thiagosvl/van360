@@ -16,8 +16,8 @@ As colunas para armazenar a chave PIX do motorista e seu status de validação f
 
 | Campo | Tipo | Descrição | Opcionalidade |
 | :--- | :--- | :--- | :--- |
-| `chave_pix` | `TEXT` | Chave PIX informada pelo motorista. | **OPCIONAL** |
-| `status_chave_pix` | `VARCHAR(50)` | Status da chave: `NAO_CADASTRADA`, `PENDENTE_VALIDACAO`, `VALIDADA`, `FALHA_VALIDACAO`. | **OPCIONAL** |
+| `chave_pix` | `TEXT` | Chave PIX informada pelo motorista. |
+| `status_chave_pix` | `VARCHAR(50)` | Status da chave: `NAO_CADASTRADA`, `PENDENTE_VALIDACAO`, `VALIDADA`, `FALHA_VALIDACAO`. |
 | `chave_pix_validada_em` | `TIMESTAMP` | Data e hora da última validação bem-sucedida. | **OPCIONAL** |
 | `nome_titular_pix_validado` | `TEXT` | Nome do titular retornado pelo Inter durante a validação. | **OPCIONAL** |
 | `cpf_cnpj_titular_pix_validado` | `TEXT` | CPF/CNPJ do titular retornado pelo Inter durante a validação. | **OPCIONAL** |
