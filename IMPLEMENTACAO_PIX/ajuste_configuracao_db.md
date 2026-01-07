@@ -8,7 +8,6 @@ O modelo de Piso Fixo de R$ 2,50 por passageiro adicional é o mais seguro. Para
 | :--- | :--- | :--- | :--- | :--- |
 | `PRO_RATA_VALOR_MINIMO` | `0.1` | `0.01` | **CORRIGIR** | O valor mínimo deve ser R$ 0,01 para garantir que o fluxo PIX seja sempre disparado, evitando requisições de R$ 0,00 que podem falhar na API do Inter. Em cenários de pro-rata com poucos dias restantes e pequena diferença de preço, o cálculo pode resultar em valores muito baixos ou zero, o que travaria o fluxo de pagamento. |
 | `ENTERPRISE_INCREMENTO_BLOCO` | `70` | `2.50` | **RENOMEAR/CORRIGIR** | Esta chave deve ser renomeada para `ENTERPRISE_INCREMENTO_PASSAGEIRO` e seu valor deve ser o custo por passageiro adicional (R$ 2,50). |
-| `ENTERPRISE_TAMANHO_BLOCO` | `30` | `90` | **RENOMEAR/CORRIGIR** | Esta chave deve ser renomeada para `ENTERPRISE_LIMITE_BASE` e seu valor deve ser o limite de passageiros do maior plano pré-definido (90). |
 | `PRO_RATA_DIAS_MES` | `30` | `30` | **MANTER** | Valor correto para o cálculo pro-rata. |
 
 ## 2. Estrutura do Banco de Dados para Validação PIX
@@ -21,12 +20,12 @@ Os comandos SQL para criar a nova tabela `pix_validacao_pendente` e adicionar as
 
 O modelo de precificação para quantidades acima do maior plano pré-definido (90 passageiros) será baseado em um **custo fixo por passageiro adicional de R$ 2,50**.
 
-**Atenção:** As chaves `ENTERPRISE_PLANO_BASE_ID` e `ENTERPRISE_LIMITE_BASE` **não são necessárias** como configurações separadas na tabela `configuracao_interna`. O backend deve **buscar dinamicamente** o preço e o limite de passageiros do maior plano pré-definido (atualmente 90 passageiros) diretamente da tabela `planos` do Supabase. Isso evita redundância e garante que a lógica esteja sempre alinhada com os planos cadastrados.
+**Atenção:** A chave `ENTERPRISE_LIMITE_BASE` **não é necessária** como uma configuração separada na tabela `configuracao_interna`. O backend deve **buscar dinamicamente** o preço e o limite de passageiros do maior plano pré-definido (atualmente 90 passageiros) diretamente da tabela `planos` do Supabase. Isso evita redundância, simplifica a manutenção e garante que a lógica esteja sempre alinhada com os planos cadastrados.
 
 **Ação de Implementação:**
 
 1.  Executar os comandos SQL do arquivo `sql_implementacao_pix.sql` no Supabase.
-2.  Atualizar os valores das chaves existentes e renomear conforme a tabela acima (`PRO_RATA_VALOR_MINIMO`, `ENTERPRISE_INCREMENTO_PASSAGEIRO`, `ENTERPRISE_LIMITE_BASE`).
+2.  Atualizar os valores das chaves existentes e renomear conforme a tabela acima (`PRO_RATA_VALOR_MINIMO`, `ENTERPRISE_INCREMENTO_PASSAGEIRO`).
 3.  A função `calcularPrecoEnterprise` deve ser reescrita para:
     *   **Obter dinamicamente** o preço e o limite de passageiros do maior plano pré-definido (atualmente 90 passageiros) da tabela `planos`.
     *   Utilizar a chave `ENTERPRISE_INCREMENTO_PASSAGEIRO` (que virá da `configuracao_interna`) para o cálculo do valor adicional.
