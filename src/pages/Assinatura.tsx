@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Components - Features
-import { SelecaoPassageirosDialog } from "@/components/dialogs/SelecaoPassageirosDialog";
 import { AssinaturaDashboard } from "@/components/features/assinatura/dashboard/AssinaturaDashboard";
 
 // Components - Navigation
@@ -30,7 +29,11 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 // Services
-import { useAssinaturaCobrancas, useGerarPixParaCobranca, usePassageiroContagem } from "@/hooks";
+import {
+  useAssinaturaCobrancas,
+  useGerarPixParaCobranca,
+  usePassageiroContagem,
+} from "@/hooks";
 import { usuarioApi } from "@/services";
 
 // Utils
@@ -41,7 +44,11 @@ import { toast } from "@/utils/notifications/toast";
 export default function Assinatura() {
   const { setPageTitle } = useLayout();
   const { user, loading: isSessionLoading } = useSession();
-  const { profile, plano, isLoading: isProfileLoading, refreshProfile } = useProfile(user?.id);
+  const {
+    profile,
+    plano,
+    isLoading: isProfileLoading,
+  } = useProfile(user?.id);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -49,23 +56,25 @@ export default function Assinatura() {
     id: string;
     valor: string | number;
   } | null>(null);
-  const [selecaoPassageirosDialog, setSelecaoPassageirosDialog] = useState<{
-    isOpen: boolean;
-    tipo: "upgrade" | "downgrade";
-    franquia: number;
-    cobrancaId?: string;
-  } | null>(null);
+
+
+
+
 
   const navigate = useNavigate();
   const gerarPix = useGerarPixParaCobranca();
 
   // Usar hooks do React Query
-  const { data: cobrancasData = [], refetch: refetchCobrancas } = useAssinaturaCobrancas(
-    profile?.id ? { usuarioId: profile.id } : undefined,
-    { enabled: !!profile?.id }
-  );
+  const { data: cobrancasData = [], refetch: refetchCobrancas } =
+    useAssinaturaCobrancas(
+      profile?.id ? { usuarioId: profile.id } : undefined,
+      { enabled: !!profile?.id }
+    );
 
-  const { data: countPassageirosAtivos = { count: 0 }, refetch: refetchPassageirosContagem } = usePassageiroContagem(
+  const {
+    data: countPassageirosAtivos = { count: 0 },
+    refetch: refetchPassageirosContagem,
+  } = usePassageiroContagem(
     profile?.id,
     { ativo: "true" },
     { enabled: !!profile?.id }
@@ -76,13 +85,13 @@ export default function Assinatura() {
     if (!profile?.assinaturas_usuarios?.[0] || !plano) return null;
     const assinatura = profile.assinaturas_usuarios[0];
     const planoData = assinatura.planos;
-    
+
     // Calcular limitePassageiros usando informações do hook useProfile:
     // - Gratuito: sempre tem limite
     // - Essencial: sempre ilimitado (trial e ativo) - estratégia de lock-in
     // - Profissional: sempre ilimitado
     let limitePassageiros = planoData.limite_passageiros;
-    
+
     if (plano.isProfissionalPlan) {
       // Profissional sempre tem passageiros ilimitados
       limitePassageiros = null;
@@ -91,7 +100,7 @@ export default function Assinatura() {
       limitePassageiros = null;
     }
     // Caso contrário, mantém o limite do plano (apenas Gratuito)
-    
+
     return {
       assinatura: {
         ...assinatura,
@@ -107,7 +116,10 @@ export default function Assinatura() {
   }, [profile, plano, cobrancasData]);
 
   // Só buscar contagem de cobranças automáticas se for plano Profissional
-  const { data: countPassageirosEnviarCobrancaAutomatica = { count: 0 }, refetch: refetchCobrancasAutomaticas } = usePassageiroContagem(
+  const {
+    data: countPassageirosEnviarCobrancaAutomatica = { count: 0 },
+    refetch: refetchCobrancasAutomaticas,
+  } = usePassageiroContagem(
     profile?.id,
     { enviar_cobranca_automatica: "true" },
     { enabled: !!profile?.id && canUseCobrancaAutomatica(plano) }
@@ -119,7 +131,8 @@ export default function Assinatura() {
     return {
       ...data,
       passageirosAtivos: (countPassageirosAtivos as any)?.count ?? 0,
-      cobrancasEmUso: (countPassageirosEnviarCobrancaAutomatica as any)?.count ?? 0,
+      cobrancasEmUso:
+        (countPassageirosEnviarCobrancaAutomatica as any)?.count ?? 0,
     };
   }, [data, countPassageirosAtivos, countPassageirosEnviarCobrancaAutomatica]);
 
@@ -127,12 +140,13 @@ export default function Assinatura() {
     setPageTitle("Minha Assinatura");
   }, [setPageTitle]);
 
-
   const pullToRefreshReload = async () => {
     await Promise.all([
       refetchCobrancas(),
       refetchPassageirosContagem(),
-      ...(canUseCobrancaAutomatica(plano) ? [refetchCobrancasAutomaticas()] : []),
+      ...(canUseCobrancaAutomatica(plano)
+        ? [refetchCobrancasAutomaticas()]
+        : []),
     ]);
   };
 
@@ -163,7 +177,7 @@ export default function Assinatura() {
 
     try {
       await usuarioApi.cancelarAssinatura({
-        usuarioId: profile.id
+        usuarioId: profile.id,
       });
       window.location.reload();
     } catch (error: any) {
@@ -177,7 +191,8 @@ export default function Assinatura() {
 
   // Gerar mensagem de cancelamento baseada no plano atual
   const getMensagemCancelamento = () => {
-    if (!dataWithCounts?.plano || !plano) return "Tem certeza que deseja cancelar sua assinatura?";
+    if (!dataWithCounts?.plano || !plano)
+      return "Tem certeza que deseja cancelar sua assinatura?";
 
     const planoAtual = dataWithCounts.plano as any;
     const planoNome = planoAtual.parent?.nome ?? planoAtual.nome;
@@ -194,29 +209,18 @@ export default function Assinatura() {
   const handlePaymentSuccess = async () => {
     setPaymentModalOpen(false);
     setSelectedCobranca(null);
-    
+
     pullToRefreshReload();
   };
 
   const handlePagarClick = (cobranca: any) => {
-      if (cobranca) {
-          setSelectedCobranca(cobranca);
-          setPaymentModalOpen(true);
-      }
+    if (cobranca) {
+      setSelectedCobranca(cobranca);
+      setPaymentModalOpen(true);
+    }
   };
 
-  const handlePrecisaSelecaoManual = (data: {
-    tipo: "upgrade" | "downgrade";
-    franquia: number;
-    cobrancaId: string;
-  }) => {
-    setSelecaoPassageirosDialog({
-      isOpen: true,
-      tipo: data.tipo,
-      franquia: data.franquia,
-      cobrancaId: data.cobrancaId,
-    });
-  };
+
 
   if (isSessionLoading || isProfileLoading || !dataWithCounts || !plano) {
     return (
@@ -228,131 +232,69 @@ export default function Assinatura() {
 
   return (
     <>
-      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div className="space-y-6 md:p-6 ">
+      <div className="relative min-h-screen pb-20 space-y-6 bg-gray-50/50">
+        <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
+          <div className="space-y-6 md:p-6 ">
             {/* Dashboard Unificado */}
             {dataWithCounts && (
-                <AssinaturaDashboard 
-                    plano={plano}
-                    assinatura={dataWithCounts.assinatura}
-                    metricas={{
-                        passageirosAtivos: dataWithCounts.passageirosAtivos,
-                        limitePassageiros: dataWithCounts.limitePassageiros,
-                        cobrancasEmUso: dataWithCounts.cobrancasEmUso,
-                        franquiaContratada: dataWithCounts.franquiaContratada
-                    }}
-                    cobrancas={dataWithCounts.cobrancas}
-                    onPagarClick={handlePagarClick}
-                    onCancelClick={handleCancelSubscriptionClick}
-                    onRefresh={pullToRefreshReload}
-                />
+              <AssinaturaDashboard
+                plano={plano}
+                assinatura={dataWithCounts.assinatura}
+                metricas={{
+                  passageirosAtivos: dataWithCounts.passageirosAtivos,
+                  limitePassageiros: dataWithCounts.limitePassageiros,
+                  cobrancasEmUso: dataWithCounts.cobrancasEmUso,
+                  franquiaContratada: dataWithCounts.franquiaContratada,
+                }}
+                cobrancas={dataWithCounts.cobrancas}
+                onPagarClick={handlePagarClick}
+                onCancelClick={handleCancelSubscriptionClick}
+                onRefresh={pullToRefreshReload}
+              />
             )}
-        </div>
-      </PullToRefreshWrapper>
-      <LoadingOverlay active={refreshing} text="Carregando..." />
+          </div>
+        </PullToRefreshWrapper>
+        <LoadingOverlay active={refreshing} text="Carregando..." />
 
-      {/* Dialog de Confirmação de Cancelamento */}
-      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar cancelamento</AlertDialogTitle>
-            <AlertDialogDescription>
-              {getMensagemCancelamento()}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmCancelSubscription}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Confirmar cancelamento
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        {/* Dialog de Confirmação de Cancelamento */}
+        <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar cancelamento</AlertDialogTitle>
+              <AlertDialogDescription>
+                {getMensagemCancelamento()}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmCancelSubscription}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Confirmar cancelamento
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
-      {selectedCobranca && (
-        <PagamentoAssinaturaDialog
-          isOpen={paymentModalOpen}
-          onClose={() => {
-            setPaymentModalOpen(false);
-            setSelectedCobranca(null);
-          }}
-          cobrancaId={selectedCobranca.id}
-          valor={Number(selectedCobranca.valor)}
-          onPaymentSuccess={handlePaymentSuccess}
-          usuarioId={user?.id}
-          onPrecisaSelecaoManual={handlePrecisaSelecaoManual}
-        />
-      )}
+        {selectedCobranca && (
+          <PagamentoAssinaturaDialog
+            isOpen={paymentModalOpen}
+            onClose={() => {
+              setPaymentModalOpen(false);
+              setSelectedCobranca(null);
+            }}
+            cobrancaId={selectedCobranca.id}
+            valor={Number(selectedCobranca.valor)}
+            onPaymentSuccess={handlePaymentSuccess}
+            usuarioId={user?.id}
+          />
+        )}
 
-      {selecaoPassageirosDialog && profile?.id && (
-        <SelecaoPassageirosDialog
-          isOpen={selecaoPassageirosDialog.isOpen}
-          usuarioId={profile.id}
-          tipo={selecaoPassageirosDialog.tipo}
-          franquia={selecaoPassageirosDialog.franquia}
-          onClose={() => setSelecaoPassageirosDialog(null)}
-          onConfirm={async (passageiroIds) => {
-            try {
-              setRefreshing(true);
-              const resultado = await usuarioApi.confirmarSelecaoPassageiros(
-                profile.id!,
-                { 
-                  passageiroIds, 
-                  franquia: selecaoPassageirosDialog.franquia,
-                  tipo: selecaoPassageirosDialog.tipo,
-                }
-              );
-              
-              setSelecaoPassageirosDialog(null);
-              
-              toast.success("assinatura.sucesso.atualizada", {
-                description: `${resultado.ativados} passageiros ativados, ${resultado.desativados} desativados.`,
-              });
 
-              // Após seleção, gerar PIX para a cobrança se houver ID
-              if (selecaoPassageirosDialog.cobrancaId) {
-                const cobrancaEncontrada = dataWithCounts.cobrancas.find(
-                  (c: any) => c.id === selecaoPassageirosDialog.cobrancaId
-                );
-                
-                gerarPix.mutate(selecaoPassageirosDialog.cobrancaId, {
-                  onSuccess: (pixResult: any) => {
-                    if (pixResult.precisaSelecaoManual) {
-                      toast.error("assinatura.erro.processar", {
-                        description: "Ainda é necessário selecionar passageiros. Tente novamente.",
-                      });
-                      return;
-                    }
-                    
-                    setSelectedCobranca({
-                      id: selecaoPassageirosDialog.cobrancaId!,
-                      valor: cobrancaEncontrada?.valor || 0,
-                    });
-                    setPaymentModalOpen(true);
-                  },
-                  onError: (error: any) => {
-                    toast.error("assinatura.erro.gerarPix", {
-                      description: error.response?.data?.error || "Erro ao gerar PIX após seleção.",
-                    });
-                  },
-                });
-              } else {
-                 await refreshProfile();
-                 window.location.reload();
-              }
-            } catch (error: any) {
-              toast.error("assinatura.erro.processar", {
-                description: error.response?.data?.error || "Erro ao confirmar seleção.",
-              });
-            } finally {
-              setRefreshing(false);
-            }
-          }}
-        />
-      )}
+
+
+      </div>
     </>
   );
 }
