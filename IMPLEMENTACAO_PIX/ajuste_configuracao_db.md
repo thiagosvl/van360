@@ -18,15 +18,22 @@ O modelo de Piso Fixo de R$ 2,50 por passageiro adicional é o mais seguro. Para
 | `ENTERPRISE_PLANO_BASE_ID` | `prof_90` | **ADICIONAR** | ID do plano que serve como base para o cálculo 91+. |
 | `ENTERPRISE_LIMITE_BASE` | `90` | **ADICIONAR** | Limite de passageiros do plano base (90). |
 
-## 3. Conclusão do Ajuste
+## 3. Estrutura do Banco de Dados para Validação PIX
+
+Os comandos SQL para criar a nova tabela `pix_validacao_pendente` e adicionar as colunas de validação PIX à tabela `public.usuarios` foram fornecidos no arquivo `sql_implementacao_pix.sql`.
+
+É crucial que os campos relacionados ao PIX na tabela `public.usuarios` (`chave_pix`, `status_chave_pix`, `chave_pix_validada_em`, `nome_titular_pix_validado`, `cpf_cnpj_titular_pix_validado`) sejam configurados como **opcionais (NULL)**. Isso se deve ao fato de que nem todos os planos exigirão a chave PIX do motorista, e a obrigatoriedade será controlada pela lógica de negócio no frontend e backend, conforme o plano do usuário.
+
+## 4. Conclusão do Ajuste
 
 O modelo anterior de "blocos" (R$ 70 por 30) deve ser totalmente substituído pelo modelo de "piso fixo por passageiro" (R$ 2,50 por 1).
 
 **Ação de Implementação:**
 
-1.  Atualizar os valores das chaves existentes (`PRO_RATA_VALOR_MINIMO`, `ENTERPRISE_INCREMENTO_BLOCO`, `ENTERPRISE_TAMANHO_BLOCO`).
-2.  Adicionar as chaves `ENTERPRISE_PLANO_BASE_ID` e `ENTERPRISE_LIMITE_BASE`.
-3.  A função `calcularPrecoEnterprise` deve ser reescrita para usar a fórmula:
+1.  Executar os comandos SQL do arquivo `sql_implementacao_pix.sql` no Supabase.
+2.  Atualizar os valores das chaves existentes (`PRO_RATA_VALOR_MINIMO`, `ENTERPRISE_INCREMENTO_BLOCO`, `ENTERPRISE_TAMANHO_BLOCO`).
+3.  Adicionar as chaves `ENTERPRISE_PLANO_BASE_ID` e `ENTERPRISE_LIMITE_BASE`.
+4.  A função `calcularPrecoEnterprise` deve ser reescrita para usar a fórmula:
     $$
     \text{Preço}(n) = \text{Preço Base 90} + (n - 90) \times \text{R\$ 2,50}
     $$

@@ -12,19 +12,19 @@ Este guia detalha os passos para implementar o fluxo de validação de chave PIX
 
 ### A. Tabela `usuarios`
 
-Adicionar os seguintes campos para armazenar a chave PIX do motorista e seu status de validação:
+As colunas para armazenar a chave PIX do motorista e seu status de validação foram detalhadas no arquivo `sql_implementacao_pix.sql`. É crucial que esses campos sejam configurados como **opcionais (NULL)**, pois nem todos os planos exigirão a chave PIX do motorista. A obrigatoriedade será controlada pela lógica de negócio no frontend e backend, conforme o plano do usuário.
 
-| Campo | Tipo | Descrição |
-| :--- | :--- | :--- |
-| `chave_pix` | `TEXT` | Chave PIX informada pelo motorista. |
-| `status_chave_pix` | `VARCHAR(50)` | Status da chave: `NAO_CADASTRADA`, `PENDENTE_VALIDACAO`, `VALIDADA`, `FALHA_VALIDACAO`. |
-| `chave_pix_validada_em` | `TIMESTAMP` | Data e hora da última validação bem-sucedida. |
-| `nome_titular_pix_validado` | `TEXT` | Nome do titular retornado pelo Inter durante a validação. |
-| `cpf_cnpj_titular_pix_validado` | `TEXT` | CPF/CNPJ do titular retornado pelo Inter durante a validação. |
+| Campo | Tipo | Descrição | Opcionalidade |
+| :--- | :--- | :--- | :--- |
+| `chave_pix` | `TEXT` | Chave PIX informada pelo motorista. | **OPCIONAL** |
+| `status_chave_pix` | `VARCHAR(50)` | Status da chave: `NAO_CADASTRADA`, `PENDENTE_VALIDACAO`, `VALIDADA`, `FALHA_VALIDACAO`. | **OPCIONAL** |
+| `chave_pix_validada_em` | `TIMESTAMP` | Data e hora da última validação bem-sucedida. | **OPCIONAL** |
+| `nome_titular_pix_validado` | `TEXT` | Nome do titular retornado pelo Inter durante a validação. | **OPCIONAL** |
+| `cpf_cnpj_titular_pix_validado` | `TEXT` | CPF/CNPJ do titular retornado pelo Inter durante a validação. | **OPCIONAL** |
 
 ### B. Nova Tabela `pix_validacao_pendente`
 
-Criar uma tabela temporária para correlacionar as requisições de micro-pagamento com as respostas do webhook:
+A criação desta tabela temporária para correlacionar as requisições de micro-pagamento com as respostas do webhook foi detalhada no arquivo `sql_implementacao_pix.sql`.
 
 | Campo | Tipo | Descrição |
 | :--- | :--- | :--- |
