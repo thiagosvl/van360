@@ -30,34 +30,44 @@ export function usePixKeyGuard({
       const hasPixKeyLocal = !!storageObj.step_pix;
       
       const hasPixKeyProfile = !!profile.chave_pix;
+      const isPixKeyValidated = profile.status_chave_pix === 'VALIDADA';
+      const isPendingOrFailed = profile.status_chave_pix === 'PENDENTE_VALIDACAO' || profile.status_chave_pix === 'FALHA_VALIDACAO';
 
-      // Sync local storage if profile has key
-      if (hasPixKeyProfile) {
-        if (!hasPixKeyLocal) {
+      // Se tem chave MAS não está validada -> Bloqueia
+      // Se NÃO tem chave -> Bloqueia (comportamento antigo, mas reforçado)
+      
+      const shouldBlock = !hasPixKeyProfile || !isPixKeyValidated;
+
+      if (!shouldBlock) {
+          // Se já tem chave E está validada, garante que o storage local saiba
+          if (!hasPixKeyLocal) {
             localStorage.setItem(STORAGE_KEY_QUICKSTART_STATUS, JSON.stringify({
                 ...storageObj,
                 step_pix: true
             }));
-        }
-      } else {
-        if (!hasPixKeyLocal) {
-            // Check if we are on the Home screen ('/inicio' or '/')
-            const isHomePage = location.pathname === '/inicio' || location.pathname === '/';
+          }
+          return; 
+      }
 
-            if (!isHomePage) {
-                // If not on home, reset the trigger so it can fire again when returning to home
-                if (triggeredPath) {
-                    setTriggeredPath(null);
-                }
-                return;
-            }
+      // Se chegamos aqui, PRECISA bloquear/abrir dialog
+      
+      // Check if we are on the Home screen ('/inicio' or '/')
+      const isHomePage = location.pathname === '/inicio' || location.pathname === '/';
 
-            // Only trigger if we haven't triggered for this specific path check yet
-            if (triggeredPath !== location.pathname) {
-                onShouldOpen();
-                setTriggeredPath(location.pathname);
-            }
-        }
+      if (!isHomePage) {
+          // If not on home, reset the trigger so it can fire again when returning to home
+          if (triggeredPath) {
+              setTriggeredPath(null);
+          }
+          return;
+      }
+
+      // Only trigger if we haven't triggered for this specific path check yet
+      if (triggeredPath !== location.pathname) {
+          // Se a chave existe mas está pendente/falha, ou se não existe, chamamos o onShouldOpen
+          // O LayoutContext vai decidir se pode fechar ou não (agora vamos mudar lá pra canClose: false)
+          onShouldOpen();
+          setTriggeredPath(location.pathname);
       }
     }
   }, [profile, isProfissional, isLoading, onShouldOpen, location.pathname, triggeredPath]);

@@ -12,6 +12,7 @@ export interface Usuario {
   created_at: string;
   updated_at: string;
   assinaturas_usuarios?: any;
+  status_chave_pix?: string;
   // Computed/Joined fields
   estatisticas?: {
     total_passageiros: number;

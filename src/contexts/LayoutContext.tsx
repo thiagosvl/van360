@@ -116,7 +116,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       onShouldOpen: () => {
           setPixKeyDialogState({
               open: true,
-              canClose: true
+              canClose: false
           });
       }
   });

@@ -1,71 +1,95 @@
-## PROMPT TÉCNICO MESTRE: Implementação Van360 (Backend & Frontend)
+# PLANO MESTRE: Implementação de Precificação, Pro-Rata e Validação PIX
 
-Este prompt consolida todas as instruções para a implementação das funcionalidades de precificação dinâmica, cálculo pro-rata e validação de chave PIX no projeto Van360. O objetivo é garantir um sistema robusto, configurável e seguro.
+Este documento consolida TODAS as instruções técnicas para a implementação.
 
-### 1. Ajustes no Banco de Dados (Supabase)
+## 1. Banco de Dados (Supabase)
+**Status**: ✅ O usuário já executou o SQL.
+**Verificação**:
+- Tabela `pix_validacao_pendente` existe.
+- Colunas `chave_pix`, `status_chave_pix`, etc., existem em `public.usuarios`.
 
-**A. Executar SQL para Estrutura PIX:**
+**Configuração Obrigatória (`public.configuracao_interna`)**:
+Garanta que estas chaves existam:
+- `PRO_RATA_VALOR_MINIMO`: `0.01`
+- `VALOR_INCREMENTO_PASSAGEIRO_EXCESSO`: `2.50` (Custo por passageiro extra > 90)
+- `PRO_RATA_DIAS_MES`: `30`
 
-*   **Ação:** Executar o conteúdo do arquivo `sql_implementacao_pix.sql` diretamente no console do Supabase.
-*   **Objetivo:** Criar a tabela `pix_validacao_pendente` e adicionar as colunas de validação PIX à tabela `public.usuarios`.
-
-**B. Atualizar Tabela `configuracao_interna`:**
-
-*   **Ação:** Inserir/Atualizar as seguintes chaves na tabela `public.configuracao_interna`:
-
-| Chave | Valor | Justificativa |
-| :--- | :--- | :--- |
-| `PRO_RATA_VALOR_MINIMO` | `0.01` | Garante que o fluxo PIX seja sempre disparado, evitando requisições de R$ 0,00 que podem falhar na API do Inter. |
-| `ENTERPRISE_INCREMENTO_PASSAGEIRO` | `2.50` | Custo fixo por passageiro adicional acima do limite base (90). |
-| `PRO_RATA_DIAS_MES` | `30` | Valor padrão para o cálculo pro-rata. |
-
-*   **Observação:** As chaves `ENTERPRISE_INCREMENTO_BLOCO` e `ENTERPRISE_TAMANHO_BLOCO` devem ser removidas se ainda existirem. A chave `ENTERPRISE_LIMITE_BASE` **não é necessária** como configuração separada, pois o limite base será buscado dinamicamente.
-
-### 2. Implementação no Backend (Node.js/TypeScript)
-
-**A. Lógica de Precificação Dinâmica (Função `calcularPrecoPlano` ou similar):**
-
-*   **Ação:** Modificar a função que calcula o preço mensal do plano para incluir a lógica Enterprise.
-*   **Detalhes:**
-    *   Para planos pré-definidos (25, 60, 90 passageiros), buscar os preços diretamente da tabela `planos`.
-    *   Para `n > 90` passageiros (plano personalizado):
-        1.  **Buscar Dinamicamente:** Obter o preço (`preco_base`) e o limite de passageiros (`limite_base`) do maior plano pré-definido (atualmente 90 passageiros) diretamente da tabela `planos`.
-        2.  **Obter Incremento:** Buscar o valor de `ENTERPRISE_INCREMENTO_PASSAGEIRO` da tabela `configuracao_interna`.
-        3.  **Calcular:** `Preço(n) = preco_base + (n - limite_base) * ENTERPRISE_INCREMENTO_PASSAGEIRO`.
-
-**B. Lógica de Cálculo Pro-Rata (Função `calcularProRata` ou similar):**
-
-*   **Ação:** Implementar/Ajustar a função de cálculo pro-rata.
-*   **Detalhes:**
-    *   Receber `preco_atual`, `preco_novo`, `dias_restantes`.
-    *   Buscar `PRO_RATA_DIAS_MES` e `PRO_RATA_VALOR_MINIMO` da tabela `configuracao_interna`.
-    *   **Fórmula:** `pro_rata = (preco_novo / dias_no_mes - preco_atual / dias_no_mes) * dias_restantes`.
-    *   **Regra de Negócio:**
-        *   Se `pro_rata > 0` e `pro_rata < PRO_RATA_VALOR_MINIMO`, retornar `PRO_RATA_VALOR_MINIMO`.
-        *   Se `pro_rata <= 0` (downgrade ou upgrade de franquia com mesmo preço), retornar `0.0`.
-
-**C. Implementação do Fluxo de Validação PIX:**
-
-*   **Ação:** Seguir o `guia_implementacao_pix.md` para implementar o fluxo de micro-pagamento e webhook para validação de chaves PIX.
-*   **Tabelas Envolvidas:** `usuarios` (colunas PIX) e `pix_validacao_pendente`.
-
-### 3. Implementação no Frontend (UI/UX)
-
-**A. Dialog de Chave PIX Obrigatória:**
-
-*   **Ação:** Implementar o dialog "infechável" e persistente para motoristas em planos que exigem chave PIX, até que ela seja validada.
-*   **Detalhes:**
-    *   Condição de exibição: `usuario.plano.exige_chave_pix_validada === true && usuario.status_chave_pix !== 'VALIDADA'`.
-    *   Feedback de loading durante o micro-pagamento (instantâneo).
-
-### 4. Testes
-
-*   **Ação:** Realizar testes unitários e de integração para todas as funcionalidades implementadas.
-*   **Cenários Críticos:**
-    *   Upgrades em diferentes dias do mês (início, meio, fim).
-    *   Upgrades para planos personalizados (91, 100, 150, 200 passageiros).
-    *   Downgrades (garantir que não há cobrança).
-    *   Validação de chave PIX (sucesso e falha).
-    *   Comportamento do dialog de chave PIX.
+> **Nota**: `ENTERPRISE_LIMITE_BASE` e `ENTERPRISE_TAMANHO_BLOCO` são obsoletos e não devem ser usados. O sistema deve buscar o limite base (90) dinamicamente na tabela `planos`.
 
 ---
+
+## 2. Backend (Node.js/TypeScript)
+
+### A. Precificação Dinâmica (Enterprise)
+**Arquivo Alvo**: `src/services/planos.service.ts` (ou onde for calculado o preço).
+
+**Lógica**:
+1. Se `passageiros <= 90` (ou maior plano fixo): Busca preço direto na tabela `planos`.
+2. Se `passageiros > 90`:
+   - Buscar o maior plano fixo (Ex: 90 pax, R$ 197,00).
+   - `Preço = PreçoBase + ((Passageiros - 90) * VALOR_INCREMENTO_PASSAGEIRO_EXCESSO)`.
+
+### B. Cálculo Pro-Rata (Mudança de Plano)
+**Arquivo Alvo**: `src/services/assinatura.service.ts`.
+
+**Fórmula**:
+```typescript
+diasNoMes = 30; // Config
+diferencaMensal = (novoPreco - precoAtual);
+valorDia = diferencaMensal / diasNoMes;
+proRata = valorDia * diasRestantes;
+```
+
+**Regras de Ouro**:
+1. **Downgrade ou Troca Equivalente**: Se `proRata <= 0`, o valor a cobrar é **R$ 0,00**. Não existe crédito/estorno.
+2. **Valor Mínimo**: Se `proRata > 0` mas `proRata < 0.01`, cobrar **R$ 0,01** (para garantir fluxo transacional).
+
+### C. Validação de Chave PIX (Micro-Pagamento)
+**Arquivo Alvo**: `src/services/usuario.service.ts` e `webhook.controller.ts`.
+
+**Fluxo de Validação**:
+1. **Início (`cadastrarChavePix`)**:
+   - Valide formato (Regex).
+   - Salve `status_chave_pix = 'PENDENTE_VALIDACAO'`.
+   - Gere UUID `x-id-idempotente`.
+   - Salve em `pix_validacao_pendente`.
+   - Chame API Inter (`POST /pix`) enviando **R$ 0,01** para a chave.
+
+2. **Webhook (`receberWebhookPix`)**:
+   - Recebe notificação do Inter.
+   - Busca detalhes (`GET /pix/{e2eId}`).
+   - Extrai `nome` e `cpf` do titular da conta destino.
+   - **Compara** com os dados do motorista no sistema.
+     - *Nome*: Use similaridade (leve tolerância).
+     - *CPF*: Exato.
+   - **Resultado**:
+     - *Sucesso*: `status_chave_pix = 'VALIDADA'`.
+     - *Falha*: `status_chave_pix = 'FALHA_VALIDACAO'`.
+
+---
+
+## 3. Frontend (React)
+
+### A. Dialog de Bloqueio (Obrigatoriedade)
+**Componente**: `PixKeyDialog.tsx` / `LayoutContext.tsx`
+
+**Lógica de Exibição ("Trava")**:
+O Dialog deve abrir e **não permitir fechar** (remover botão X, cobrir backdrop) SE:
+1. `user.plano.exige_pix === true` (Geralmente Profissional).
+2. `user.status_chave_pix !== 'VALIDADA'`.
+
+**Estados da Interface**:
+- **Padrão**: Input de chave.
+- **Validando**: Spinner com texto "Validando sua chave com o banco... (pode levar alguns segundos)".
+- **Sucesso**: Check verde, fecha dialog.
+- **Erro**: "Esta chave não pertence ao titular X. Tente outra."
+
+---
+
+## 4. Checklist de Entrega
+
+- [ ] Backend: Cálculo Enterprise correto (simular 100 pax).
+- [ ] Backend: Pro-Rata correto (simular upgrade faltando 1 dia e 15 dias).
+- [ ] Backend: Fluxo PIX enviando R$ 0,01.
+- [ ] Backend: Webhook validando titularidade.
+- [ ] Frontend: Dialog bloqueante funcionando para Profissional sem chave.
