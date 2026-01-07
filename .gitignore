@@ -15,7 +15,6 @@ dist
 dist-ssr
 *.local
 android/
-IA/
 .env.production
 .env.development
 supabase/.temp
