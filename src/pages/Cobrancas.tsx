@@ -23,7 +23,7 @@ import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import { CobrancasFilters } from "@/components/features/cobranca/CobrancasFilters";
 import { ListSkeleton } from "@/components/skeletons";
 import {
-    useCobrancas
+  useCobrancas
 } from "@/hooks";
 import { useCobrancaActions } from "@/hooks/business/useCobrancaActions";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -32,10 +32,10 @@ import { useSession } from "@/hooks/business/useSession";
 // Utils
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
-    formatDateToBR,
-    formatPaymentType,
-    getStatusColor,
-    meses
+  formatDateToBR,
+  formatPaymentType,
+  getStatusColor,
+  meses
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 
@@ -49,8 +49,8 @@ import { UnifiedEmptyState } from "@/components/empty";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
-    FEATURE_COBRANCA_AUTOMATICA,
-    PASSAGEIRO_COBRANCA_STATUS_PAGO,
+  FEATURE_COBRANCA_AUTOMATICA,
+  PASSAGEIRO_COBRANCA_STATUS_PAGO,
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -673,38 +673,6 @@ const Cobrancas = () => {
                               </p>
                             </div>
                           </div>
-
-                          {/* Linha 4: Status do Repasse (Se existir) */}
-                          {cobranca.status_repasse && (
-                             <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-                                <div>
-                                   <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-                                      STATUS REPASSE
-                                   </span>
-                                   <div className="mt-1">
-                                      <span className={cn(
-                                          "text-[10px] font-bold px-2 py-0.5 rounded-full w-fit",
-                                          cobranca.status_repasse === "REPASSADO" && "bg-blue-100 text-blue-700",
-                                          cobranca.status_repasse === "PENDENTE" && "bg-yellow-100 text-yellow-700",
-                                          cobranca.status_repasse === "PROCESSANDO" && "bg-orange-100 text-orange-700",
-                                          cobranca.status_repasse === "FALHA_REPASSE" && "bg-red-100 text-red-700",
-                                       )}>
-                                          {cobranca.status_repasse}
-                                       </span>
-                                   </div>
-                                </div>
-                                {cobranca.valor_a_repassar && (
-                                   <div className="flex flex-col items-end">
-                                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-                                         VALOR REPASSE
-                                      </span>
-                                      <span className="text-xs text-gray-600 font-medium">
-                                         {Number(cobranca.valor_a_repassar).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                      </span>
-                                   </div>
-                                )}
-                             </div>
-                          )}
                         </div>
                         </CobrancaMobileItemWrapper>
                       )}
@@ -726,9 +694,6 @@ const Cobrancas = () => {
                               </th>
                               <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                 Forma
-                              </th>
-                              <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                Repasse
                               </th>
                               <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
                                 Ações
@@ -789,28 +754,6 @@ const Cobrancas = () => {
                                       </span>
                                     )}
                                   </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                  {cobranca.status_repasse ? (
-                                    <div className="flex flex-col gap-1">
-                                       <span className={cn(
-                                          "text-[10px] font-bold px-2 py-0.5 rounded-full w-fit",
-                                          cobranca.status_repasse === "REPASSADO" && "bg-blue-100 text-blue-700",
-                                          cobranca.status_repasse === "PENDENTE" && "bg-yellow-100 text-yellow-700",
-                                          cobranca.status_repasse === "PROCESSANDO" && "bg-orange-100 text-orange-700",
-                                          cobranca.status_repasse === "FALHA_REPASSE" && "bg-red-100 text-red-700",
-                                       )}>
-                                          {cobranca.status_repasse}
-                                       </span>
-                                       {cobranca.valor_a_repassar && (
-                                          <span className="text-[10px] text-gray-400">
-                                            Repasse: {Number(cobranca.valor_a_repassar).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                                          </span>
-                                       )}
-                                    </div>
-                                  ) : (
-                                    <span className="text-gray-400 text-xs">-</span>
-                                  )}
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                   <CobrancaActionsMenu

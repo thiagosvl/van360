@@ -31,27 +31,24 @@ Este documento detalha o estado atual da automação do Van360, cruzando com as 
 
 ## 💳 2. Assinaturas (SaaS Motoristas)
 
-### 2.1 Job: Renovação de Assinatura (`subscription-generator`)
-*   **Status:** ✅ **Implementado (Ajustado)**
-*   **Frequência:** Diária (11:00 UTC).
-*   **Ação:** Verifica quem vai vencer daqui a `DIAS_ANTECEDENCIA_RENOVACAO` (Padrão: 5 dias).
-*   **Processo:**
-    *   Gera nova cobrança (`billing_type: renewal`).
-    *   Gera PIX imediatamente.
-    *   **Resposta (2/5):** Sim, geramos antecipadamente e enviamos o PIX.
-    *   **Resposta (4):** A notificação de envio do PIX é feita pelo Monitor abaixo.
+### 2.1 Job: Renovação de Assinatura (`charge-generator`)
+*   **Status:** ✅ **Implementado e Blindado 🛡️**
+*   **Frequência:** Diária (Roda após 00:00, gatilho dia 25).
+*   **Ação:** Gera mensalidade do mês seguinte.
+*   **Melhorias Recentes:**
+    *   **Blindagem:** Ignora usuários com `cancelamento_manual` agendado. (Evita gerar cobrança para quem está de saída).
+    *   **Gera PIX:** Imediatamente na criação.
+    *   **Notificação:** Apenas cria. O monitor envia.
 
-### 2.2 Job: Monitor de Motoristas (`driver-monitor`)
-*   **Status:** ✅ **Implementado**
-*   **Frequência:** Diária (09:00 UTC).
-*   **Ação:** Gerencia acesso e notificações do motorista.
-*   **Regras Cobertas:**
-    *   **Vence em Breve:** Avisa que a fatura foi gerada (manda PIX).
-    *   **Vence Hoje:** Avisa urgência.
-    *   **Venceu (Atraso):** Avisa bloqueio.
-    *   **Bloqueio:** Se passou do vencimento, altera status da assinatura para `SUSPENSA` e bloqueia acesso.
-*   **Resposta (4):** Sim, deixamos claro o bloqueio.
-*   **Resposta (6):** **Gap:** Não enviamos recibo de pagamento confirmado para o motorista.
+### 2.2 Job: Monitor de Motoristas (`monitoring-subscriptions`)
+*   **Status:** ✅ **Implementado e Variado 🧟**
+*   **Frequência:** Diária (08:00 UTC).
+*   **Ação:** Gerencia ciclo de vida, notificações e *limpeza*.
+*   **Novas Funcionalidades (Ciclo Completo):**
+    *   **Sweeper (O Faxineiro):** Encerra assinaturas Zumbis (Cancelamento agendado vencido). Define `Status: CANCELADA`.
+    *   **Notificações:** Vence em Breve, Hoje, Atraso.
+    *   **Bloqueio:** Suspende inadimplentes após X dias.
+*   **Resposta (6):** **Gap:** Recibo PDF ainda pendente. Mensagem de confirmação já existe via webhook.
 
 ### 2.3 Cadastro e Upgrades
 *   **Cadastro:** 
@@ -64,43 +61,51 @@ Este documento detalha o estado atual da automação do Van360, cruzando com as 
 
 ## ⚙️ 3. Auditorias e Segurança
 
-### 3.1 Job: Reconciliação PIX
-*   **Status:** ❌ **Não Implementado (Gap 8)**
-*   **Necessidade:** Se o webhook falhar, o cliente paga e o sistema não libera.
-*   **Ação Necessária:** Criar job que varre cobranças `pendente` vencidas ou próximas e consulta API Inter para ver status real.
+### 3.1 Job: Reconciliação PIX (Entrada)
+*   **Status:** ✅ **Implementado (`reconciliacao-entrada.job.ts`)**
+*   **Frequência:** Diária (ou Cron Específico).
+*   **Ação:** Consulta últimos 2 dias na API Inter e processa pagamentos via Webhook Handler (Idempotente).
+*   **Segurança:** Garante que se o webhook falhou, o sistema recupera o pagamento.
 
 ### 3.2 Job: Monitor de Conexão WhatsApp
 *   **Status:** ❌ **Não Implementado (Gap 10)**
 *   **Necessidade:** Garantir que o motorista (e admin) saibam se o Zap desconectou.
 *   **Ação Necessária:** Job que consulta status da instância na Evolution API e notifica (por email ou aviso no painel) se estiver `disconnected`.
 
----
-
-## 🚨 Resumo de Gaps e Falhas (To-Do List)
-
-Aqui está o que **FALTA** para fechar 100% de acordo com suas perguntas:
-
-1.  **Recibos:** (Pais e Motoristas)
-    *   [x] Implementar envio de mensagem "Pagamento Confirmado" pós-webhook. (Implementado via `DRIVER_EVENT_PAYMENT_CONFIRMED` e `PASSENGER_EVENT_PAYMENT_RECEIVED`)
-    *   [ ] Gerar PDF/Imagem do recibo (Futuro).
-2.  **Trial Conversion:**
-    *   [x] Validar se o `subscription-generator` vai gerar o boleto do Plano Essencial (Já é gerado na criação).
-    *   [x] Implementar mensagem específica "Fim de Trial" para não pegar de surpresa. (Implementado via `DRIVER_EVENT_TRIAL_ENDING`)
-3.  **Envio Imediato Cadastro:**
-    *   [x] Ao cadastrar, além de mostrar na tela, já disparar o Zap com o PIX (garantia de entrega). (Implementado em `upgradePlano`)
-4.  **Reconciliação PIX (Pagamentos Recebidos e Enviados):**
-    *   [x] Monitoramento de Repasses Enviados (Segurança para garantir que o motorista recebeu). (Implementado via `repasse-monitor`)
-    *   [x] Retry de Repasses Acumulados (Fila para pagar motoristas que corrigiram a chave). (Implementado via `repasse-retry`)
-    *   [ ] Reconciliação de Entrada (Prioridade Baixa - Inter Webhook é confiável).
-5.  **Monitor de Instância WhatsApp:**
-    *   [ ] Criar Job de verificação de saúde da conexão.
-6.  **Validação Chave PIX (Recebimento):**
-    *   [x] Envio de 1 centavo para validar chave.
-    *   [x] Job de monitoramento de status da validação. (Implementado: `pix-validation-monitor`)
+### 3.3 Integridade de Cancelamento (Eventos)
+*   **Status:** ✅ **Implementado (Ghost Killer + Ressurreição)**
+*   **Trigger (Não é Job):** Ação do Usuário no Frontend.
+*   **Ao Cancelar:** Mata cobranças futuras e invalida PIX no Inter. (Ghost Killer).
+*   **Ao Desistir:** Se for tarde (pós-dia 25), regenera a cobrança morta. (Ressurreição).
 
 ---
 
-## � Arquitetura de Pastas (Referência)
+## 🚨 Resumo de Gaps e Pendências (Status Final)
+
+Baseado nas últimas implementações e feedback:
+
+1.  **Robustez de Cancelamento (Prioridade Alta):**
+    *   [x] **Preventivo:** Bloquear geração de cobrança para quem agendou saída. (Feito)
+    *   [x] **Ghost Killer:** Matar cobranças futuras ao cancelar. (Feito)
+    *   [x] **Sweeper:** Encerrar assinatura zumbi pós-vigência. (Feito)
+    *   [x] **Ressurreição:** Regenerar cobrança se desistir do cancelamento. (Feito)
+    *   [ ] **Testes:** Criar scripts de simulação para validar tudo isso. (Futuro)
+
+2.  **Recibos:**
+    *   [x] Imagem/Texto no WhatsApp. (Ok)
+    *   [ ] PDF por e-mail. (Futuro - Backlog)
+
+3.  **Trial Conversion:**
+    *   [x] Lógica de geração de cobrança inicial (Fim do Trial) existe. (Validado via análise de código).
+    *   [ ] Teste prático de conversão. (Futuro)
+
+4.  **Monitoramento Técnico:**
+    *   [ ] Saúde do WhatsApp. (Futuro - Backlog)
+    *   [x] Reconciliação PIX Entrada. (Feito - `reconciliacao-entrada.job.ts`)
+
+---
+
+##  Arquitetura de Pastas (Referência)
 *   **Jobs:** `src/services/jobs/*.job.ts`
 *   **Rotas:** `src/api/jobs.route.ts` (Protegidas por Cron Secret)
 *   **Templates:** `src/services/notifications/templates/*.ts`

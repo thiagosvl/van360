@@ -31,6 +31,8 @@ Mensagens destinadas aos parceiros motoristas sobre a assinatura do software.
 | **Recibo de Pagamento** | Webhook Inter (`PAYMENT_RECEIVED`). Assinatura paga. | "Pagamento confirmado! ✅ Sua assinatura [Plano] está ativa até [Data]." | ❌ |
 | **Alerta: Venda Realizada** | Webhook Inter. Quando um Pai paga o Motorista. | "💰 Oba! [Responsável] pagou a mensalidade de [Aluno] ([Valor])." | ❌ |
 | **Alerta: Falha no Repasse** | Job de Monitoramento (`repasse-monitor`). Quando transferência falha. | "⚠️ Atenção: Falha no Repasse. Sua chave PIX foi invalidada por segurança. Cadastre novamente no App." | ❌ |
+| **Cancelamento Agendado** | Ação Manual. | 🔇 **Silencioso**. O sistema apenas confirma na tela. Nenhuma mensagem é enviada para não gerar atrito. | ❌ |
+| **Ressurreição (Desistir)** | Ação Manual (Recuperação). | 🔇 **Silencioso**. O sistema recria a cobrança internamente. O fluxo normal ("Fatura vence em 5 dias") será retomado pelo Job Diário no momento certo. | ❌ |
 
 ---
 
