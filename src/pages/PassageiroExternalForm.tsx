@@ -19,6 +19,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -192,8 +193,6 @@ export default function PassageiroExternalForm() {
       setHasAccess(accessValidation.hasAccess);
       setAccessReason(accessValidation.reason || null);
 
-
-
       setLoading(false);
     };
 
@@ -232,6 +231,7 @@ export default function PassageiroExternalForm() {
 
       await prePassageiroApi.createPrePassageiro({
         ...payload,
+        escola_id: payload.escola_id === "none" ? null : payload.escola_id,
         usuario_id: motoristaId,
       });
 
@@ -270,7 +270,7 @@ export default function PassageiroExternalForm() {
       escola_id: "",
       periodo: "",
       observacoes: "",
-      
+
       // Zerar dados de Cobrança (pois podem variar)
       valor_cobranca: "",
       dia_vencimento: "",
@@ -290,7 +290,7 @@ export default function PassageiroExternalForm() {
       "endereco",
       "observacoes",
     ]);
-    
+
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     toast.info("Dados mantidos!", {
@@ -368,9 +368,9 @@ export default function PassageiroExternalForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 px-3 sm:py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-0 px-0 sm:py-8 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        <div className="shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
+        <div className="shadow-2xl sm:rounded-3xl overflow-hidden border border-gray-100">
           {/* Header */}
           <div className="bg-blue-600 p-6 sm:p-8 text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('/assets/pattern.png')] opacity-10"></div>
@@ -378,7 +378,7 @@ export default function PassageiroExternalForm() {
               <div className="mx-auto bg-white/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-sm">
                 <User className="w-8 h-8 text-white" />
               </div>
-              <h1 className="text-3xl font-bold text-white mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
                 Cadastro de Passageiro
               </h1>
               <div className="inline-flex items-center gap-2 bg-blue-700/50 px-4 py-1.5 rounded-full text-blue-100 text-sm font-medium backdrop-blur-sm border border-blue-500/30">
@@ -421,8 +421,7 @@ export default function PassageiroExternalForm() {
                           render={({ field, fieldState }) => (
                             <FormItem>
                               <FormLabel className="text-gray-700 font-medium ml-1">
-                                Nome{" "}
-                                <span className="text-red-500">*</span>
+                                Nome <span className="text-red-500">*</span>
                               </FormLabel>
                               <FormControl>
                                 <div className="relative">
@@ -457,7 +456,7 @@ export default function PassageiroExternalForm() {
                                       <School className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                                       <SelectTrigger
                                         className={cn(
-                                          "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                          "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 text-left focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
                                           fieldState.error && "border-red-500"
                                         )}
                                       >
@@ -474,8 +473,25 @@ export default function PassageiroExternalForm() {
                                         {escola.nome}
                                       </SelectItem>
                                     ))}
+                                    <SelectItem
+                                      value="none"
+                                      className="text-blue-600 font-semibold border-t border-blue-50 mt-1"
+                                    >
+                                      Nenhuma das opções acima
+                                    </SelectItem>
                                   </SelectContent>
                                 </Select>
+
+                                {field.value === "none" && (
+                                  <Alert className="mt-4 bg-blue-50 border-blue-100 text-blue-900 animate-in fade-in slide-in-from-top-1 duration-300">
+                                    <AlertTriangle className="h-4 w-4 text-blue-600" />
+                                    <AlertDescription className="text-xs text-blue-700 leading-relaxed font-medium">
+                                      Escola não listada? Continue o cadastro. O
+                                      motorista será avisado para ajustar
+                                      depois.
+                                    </AlertDescription>
+                                  </Alert>
+                                )}
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -498,7 +514,7 @@ export default function PassageiroExternalForm() {
                                       <Sun className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 z-10" />
                                       <SelectTrigger
                                         className={cn(
-                                          "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                          "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 text-left focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
                                           fieldState.error && "border-red-500"
                                         )}
                                       >
@@ -621,13 +637,6 @@ export default function PassageiroExternalForm() {
               </form>
             </Form>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-8 text-center text-gray-500 text-sm">
-          <p>
-            © {new Date().getFullYear()} Van360. Todos os direitos reservados.
-          </p>
         </div>
       </div>
     </div>
