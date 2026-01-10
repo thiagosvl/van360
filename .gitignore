@@ -18,6 +18,9 @@ android/
 .env.production
 .env.development
 supabase/.temp
+playwright-report
+test-results
+tests-e2e
 
 # Editor directories and files
 .vscode/*
