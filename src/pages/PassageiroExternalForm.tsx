@@ -376,7 +376,11 @@ export default function PassageiroExternalForm() {
             <div className="absolute top-0 left-0 w-full h-full bg-[url('/assets/pattern.png')] opacity-10"></div>
             <div className="relative z-10">
               <div className="mx-auto bg-white/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-sm">
-                <User className="w-8 h-8 text-white" />
+                <img
+                  src="/assets/logo-van360.png"
+                  alt="Van360"
+                  className="h-16 sm:h-20 w-auto mb-2 sm:mb-4 select-none drop-shadow-sm"
+                />
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
                 Cadastro de Passageiro

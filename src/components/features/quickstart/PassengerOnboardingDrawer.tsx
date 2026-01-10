@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet";
 import { Usuario } from "@/types/usuario";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
@@ -48,8 +48,8 @@ export function PassengerOnboardingDrawer({
       >
         <SheetHeader className="text-left px-6 pt-4">
           <SheetTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
-             <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-               <Users className="h-5 w-5 text-indigo-600" />
+             <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+               <Users className="h-5 w-5 text-blue-600" />
             </div>
             Cadastrar Passageiro
           </SheetTitle>
@@ -65,7 +65,7 @@ export function PassengerOnboardingDrawer({
             className="w-full h-auto p-4 flex items-center gap-4 rounded-xl border border-gray-200 hover:bg-white bg-white shadow-sm transition-all hover:border-gray-300 justify-start group"
             onClick={handleShareLink}
           >
-            <div className="h-10 w-10 rounded-full bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100 group-hover:scale-105 transition-transform text-indigo-600">
+            <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0 border border-blue-100 group-hover:scale-105 transition-transform text-blue-600">
               {copied ? (
                   <Check className="h-5 w-5" />
               ) : (
@@ -77,7 +77,7 @@ export function PassengerOnboardingDrawer({
                 {copied ? "Link Copiado!" : "Copiar Link de Cadastro"}
               </div>
               <div className="text-xs text-gray-500 leading-relaxed whitespace-normal break-words">
-                Envie para o responsável preencher.
+                Copie o link e envie para o responsável preencher.
               </div>
             </div>
           </Button>
@@ -105,7 +105,7 @@ export function PassengerOnboardingDrawer({
                 Cadastrar Manualmente
               </div>
               <div className="text-xs text-gray-500 whitespace-normal break-words">
-                Preencha você mesmo os dados.
+                Preencha você mesmo os dados do passageiro e do responsável.
               </div>
             </div>
           </Button>

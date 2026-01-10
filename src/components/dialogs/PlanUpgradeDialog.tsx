@@ -53,7 +53,7 @@ export interface PlanUpgradeDialogProps {
 export function PlanUpgradeDialog({
   open,
   onOpenChange,
-  defaultTab = "essencial",
+  defaultTab = PLANO_ESSENCIAL,
   targetPassengerCount,
   onSuccess,
   feature,
@@ -257,11 +257,11 @@ export function PlanUpgradeDialog({
       case FEATURE_GASTOS:
       case FEATURE_LIMITE_PASSAGEIROS:
       case FEATURE_RELATORIOS:
-        return "essencial";
+        return PLANO_ESSENCIAL;
       case FEATURE_COBRANCA_AUTOMATICA:
       case FEATURE_NOTIFICACOES:
       case FEATURE_LIMITE_FRANQUIA:
-        return "profissional";
+        return PLANO_PROFISSIONAL;
       default:
         return defaultTab;
     }
@@ -277,7 +277,7 @@ export function PlanUpgradeDialog({
         };
       case FEATURE_LIMITE_PASSAGEIROS:
         return {
-          title: "Sua Frota Cresceu?",
+          title: "Limite de passageiros atingido",
           desc: "Libere cadastros ilimitados migrando para o Plano Essencial.",
         };
       case FEATURE_COBRANCA_AUTOMATICA:
@@ -339,7 +339,7 @@ export function PlanUpgradeDialog({
     }
 
     // 3. Generic Fallback
-    return activeTab === "essencial"
+    return activeTab === PLANO_ESSENCIAL
       ? genericContent.essencial
       : genericContent.profissional;
   }, [activeTab, featureTargetPlan, specificContent, genericContent, title, description]);
@@ -351,7 +351,7 @@ export function PlanUpgradeDialog({
       setIsPaymentVerified(false);
 
       if (isEssencial || isProfissional) {
-        setActiveTab("profissional");
+        setActiveTab(PLANO_PROFISSIONAL);
       } else {
         // Usa o plano alvo da feature (se houver) ou cai no defaultTab
         setActiveTab(featureTargetPlan || defaultTab);
@@ -361,7 +361,7 @@ export function PlanUpgradeDialog({
 
   // Cores Dinâmicas do Header
   const requestHeaderStyle =
-    activeTab === "essencial"
+    activeTab === PLANO_ESSENCIAL
       ? "bg-blue-600"
       : "bg-gradient-to-r from-purple-700 to-indigo-700";
 
@@ -494,7 +494,7 @@ export function PlanUpgradeDialog({
 
                 {/* 3. Upsell Trigger (Banner Button) */}
                 <button
-                  onClick={() => setActiveTab("profissional")}
+                  onClick={() => setActiveTab(PLANO_PROFISSIONAL)}
                   className="mt-6 w-full group relative overflow-hidden bg-violet-50 hover:bg-violet-100 border border-violet-200 hover:border-violet-300 rounded-xl p-4 transition-all duration-300 text-left"
                 >
                   <div className="relative z-10 flex items-center justify-between">
@@ -806,7 +806,7 @@ export function PlanUpgradeDialog({
 
           {/* Footer Fixo (Actions) */}
           <div className="bg-white p-4 border-t border-gray-100 shrink-0 shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.05)] z-20">
-            {activeTab === "essencial" ? (
+            {activeTab === PLANO_ESSENCIAL ? (
               <Button
                 className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all text-base mb-0"
                 onClick={onUpgradeEssencial}
@@ -852,10 +852,10 @@ export function PlanUpgradeDialog({
         open={isBenefitsOpen}
         onOpenChange={setIsBenefitsOpen}
         planName={
-          activeTab === "essencial" ? "Plano Essencial" : "Plano Profissional"
+          activeTab === PLANO_ESSENCIAL ? "Plano Essencial" : "Plano Profissional"
         }
         benefits={
-          activeTab === "essencial"
+          activeTab === PLANO_ESSENCIAL
             ? planoEssencialData?.beneficios || [
                 "Passageiros Ilimitados",
                 "Suporte WhatsApp",
@@ -877,7 +877,7 @@ export function PlanUpgradeDialog({
           nomePlano={pagamentoDialog.nomePlano}
           quantidadePassageiros={pagamentoDialog.franquia}
           usuarioId={user?.id}
-          context={activeTab === "profissional" ? "upgrade" : undefined}
+          context={activeTab === PLANO_PROFISSIONAL ? "upgrade" : undefined}
           onPaymentVerified={() => setIsPaymentVerified(true)}
           onPaymentSuccess={handleClosePayment}
           initialData={pagamentoDialog.initialData}

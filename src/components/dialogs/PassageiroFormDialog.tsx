@@ -14,9 +14,11 @@ import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_LIMITE_FRANQUIA } from "@/constant
 import {
   useBuscarResponsavel,
   useCreatePassageiro,
+  useEscolasWithFilters,
   useFinalizePreCadastro,
   usePassageiroForm,
   useUpdatePassageiro,
+  useVeiculosWithFilters,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
@@ -27,8 +29,9 @@ import { Usuario } from "@/types/usuario";
 import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
 import { moneyToNumber, phoneMask } from "@/utils/masks";
+import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
-import { Loader2, User, X } from "lucide-react";
+import { Loader2, User, Wand2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PassageiroFormDadosCadastrais } from "../features/passageiro/form/PassageiroFormDadosCadastrais";
 import { PassageiroFormEndereco } from "../features/passageiro/form/PassageiroFormEndereco";
@@ -97,6 +100,19 @@ export default function PassengerFormDialog({
     cobrancasEmUso: limits.franchise.used,
     podeAtivar,
   };
+
+  // Fetch lists for mock filling auto-selection
+  const { data: escolasData = [] } = useEscolasWithFilters(
+    profile?.id,
+    { ativo: "true" },
+    { enabled: isOpen && !!profile?.id }
+  ) as { data: import("@/types/escola").Escola[] };
+
+  const { data: veiculosData = [] } = useVeiculosWithFilters(
+    profile?.id,
+    { ativo: "true" },
+    { enabled: isOpen && !!profile?.id }
+  ) as { data: import("@/types/veiculo").Veiculo[] };
 
   const { form, refreshing, openAccordionItems, setOpenAccordionItems } =
     usePassageiroForm({
@@ -170,6 +186,39 @@ export default function PassengerFormDialog({
       setUpgradeFeature(FEATURE_LIMITE_FRANQUIA);
     }
     setIsUpgradeDialogOpen(true);
+  };
+
+  const handleFillMock = () => {
+    const currentValues = form.getValues();
+    
+    // Auto-pick school and vehicle if empty and lists are available
+    let escolaId = currentValues.escola_id;
+    if (!escolaId && escolasData.length > 0) {
+      escolaId = escolasData[Math.floor(Math.random() * escolasData.length)].id;
+    }
+
+    let veiculoId = currentValues.veiculo_id;
+    if (!veiculoId && veiculosData.length > 0) {
+      veiculoId = veiculosData[Math.floor(Math.random() * veiculosData.length)].id;
+    }
+
+    const mockData = mockGenerator.passenger({
+      escola_id: escolaId,
+      veiculo_id: veiculoId,
+    });
+    
+    form.reset(mockData);
+    
+    // Abrir todos os accordions para mostrar os dados preenchidos
+    setOpenAccordionItems([
+      "passageiro",
+      "responsavel",
+      "cobranca",
+      "endereco",
+      "observacoes",
+    ]);
+    
+    toast.success("Campos preenchidos com dados de teste!");
   };
 
   const handleSubmit = async (data: PassageiroFormData) => {
@@ -280,6 +329,19 @@ export default function PassengerFormDialog({
           }}
         >
           <div className="bg-blue-600 p-4 text-center relative shrink-0">
+            <div className="absolute left-4 top-4 flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
+                onClick={handleFillMock}
+                title="Preencher com dados fictícios"
+              >
+                <Wand2 className="h-5 w-5" />
+              </Button>
+            </div>
+
             <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
               <X className="h-6 w-6" />
               <span className="sr-only">Close</span>

@@ -1,10 +1,10 @@
 import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+    Suspense,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
 } from "react";
 
 // React Router
@@ -13,13 +13,7 @@ import { useNavigate, useParams } from "react-router-dom";
 // Components - Dialogs
 import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
-
-import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
-
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
-import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
-
-import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 
 // Components - Empty & Skeletons
 import { CarteirinhaSkeleton } from "@/components/skeletons";
@@ -58,18 +52,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useAvailableYears,
-  useCobrancasByPassageiro,
-  useDeleteCobranca,
-  useDeletePassageiro,
-  useDesfazerPagamento,
-  useEnviarNotificacaoCobranca,
-  usePassageiro,
-  usePassageiros,
-  useToggleAtivoPassageiro,
-  useToggleNotificacoesCobranca,
-  useUpdateCobranca,
-  useUpdatePassageiro
+    useAvailableYears,
+    useCobrancasByPassageiro,
+    useDeleteCobranca,
+    useDeletePassageiro,
+    useDesfazerPagamento,
+    useEnviarNotificacaoCobranca,
+    usePassageiro,
+    usePassageiros,
+    useToggleAtivoPassageiro,
+    useToggleNotificacoesCobranca,
+    useUpdateCobranca,
+    useUpdatePassageiro
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -92,17 +86,20 @@ const COBRANCAS_LIMIT = 3;
 export default function PassageiroCarteirinha() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
-  const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
-  const [isCreatingEscola, setIsCreatingEscola] = useState(false);
-  const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
+  const { 
+    setPageTitle, 
+    openPlanUpgradeDialog, 
+    openConfirmationDialog, 
+    closeConfirmationDialog,
+    openEscolaFormDialog,
+    openVeiculoFormDialog,
+    openPassageiroFormDialog
+  } = useLayout();
+  const { passageiro_id } = useParams<{ passageiro_id: string }>();
+
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
   const [cobrancaDialogOpen, setCobrancaDialogOpen] = useState(false);
-
-  const { setPageTitle, openPlanUpgradeDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
-  const { passageiro_id } = useParams<{ passageiro_id: string }>();
-  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
@@ -288,35 +285,19 @@ export default function PassageiroCarteirinha() {
     }
   }, [availableYears, yearFilter]);
 
-  const handleCloseEscolaFormDialog = () => {
-    safeCloseDialog(() => {
-      setIsCreatingEscola(false);
-    });
-  };
+  const handlePassageiroFormSuccess = useCallback(() => {
+    setNovoVeiculoId(null);
+    setNovaEscolaId(null);
+    refetchPassageiro();
+  }, [refetchPassageiro]);
 
-  const handleCloseVeiculoFormDialog = () => {
-    safeCloseDialog(() => {
-      setIsCreatingVeiculo(false);
+  const handleEditClick = useCallback(() => {
+    openPassageiroFormDialog({
+        mode: "edit",
+        editingPassageiro: passageiro,
+        onSuccess: handlePassageiroFormSuccess
     });
-  };
-
-  const handleEscolaCreated = (novaEscola) => {
-    safeCloseDialog(() => {
-      setIsCreatingEscola(false);
-      setNovaEscolaId(novaEscola.id);
-    });
-  };
-
-  const handleVeiculoCreated = (novoVeiculo) => {
-    safeCloseDialog(() => {
-      setIsCreatingVeiculo(false);
-      setNovoVeiculoId(novoVeiculo.id);
-    });
-  };
-
-  const handleEditClick = () => {
-    setIsFormOpen(true);
-  };
+  }, [openPassageiroFormDialog, passageiro, handlePassageiroFormSuccess]);
 
   const handleCopyToClipboard = async (text: string, label: string) => {
     try {
@@ -364,12 +345,6 @@ export default function PassageiroCarteirinha() {
     );
   };
 
-  const handlePassageiroFormSuccess = () => {
-    setNovoVeiculoId(null);
-    setNovaEscolaId(null);
-    // Invalidação feita automaticamente pelos hooks de mutation
-    setIsFormOpen(false);
-  };
 
   const handleCobrancaAdded = () => {
     // Invalidação feita automaticamente pelos hooks de mutation
@@ -696,9 +671,7 @@ export default function PassageiroCarteirinha() {
                         setPaymentDialogOpen(true);
                       }}
                       onEnviarNotificacao={handleEnviarNotificacaoClick}
-                      onToggleLembretes={(cobranca) =>
-                        handleToggleLembretes(cobranca)
-                      }
+                      onToggleLembretes={handleToggleLembretes}
                       onDesfazerPagamento={handleDesfazerClick}
                       onExcluirCobranca={handleDeleteCobrancaClick}
                       onToggleMostrarTodas={() =>
@@ -748,35 +721,6 @@ export default function PassageiroCarteirinha() {
             onCobrancaAdded={() => safeCloseDialog(() => handleCobrancaAdded())}
           />
 
-          {isFormOpen && (
-            <PassageiroFormDialog
-              isOpen={isFormOpen}
-              onClose={() =>
-                safeCloseDialog(() => {
-                  setNovoVeiculoId(null);
-                  setNovaEscolaId(null);
-                  setIsFormOpen(false);
-                })
-              }
-              onSuccess={handlePassageiroFormSuccess}
-              editingPassageiro={passageiro}
-              mode="edit"
-              profile={profile}
-              plano={plano}
-            />
-          )}
-          <EscolaFormDialog
-            isOpen={isCreatingEscola}
-            onClose={handleCloseEscolaFormDialog}
-            onSuccess={handleEscolaCreated}
-            profile={profile}
-          />
-          <VeiculoFormDialog
-            isOpen={isCreatingVeiculo}
-            onClose={handleCloseVeiculoFormDialog}
-            onSuccess={handleVeiculoCreated}
-            profile={profile}
-          />
           {cobrancaToEdit && (
             <CobrancaEditDialog
               isOpen={editDialogOpen}

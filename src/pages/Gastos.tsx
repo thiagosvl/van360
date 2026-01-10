@@ -1,5 +1,5 @@
 // React
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 
 // Third-party
 import { toast } from "@/utils/notifications/toast";
@@ -27,8 +27,6 @@ import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
 
 // Components - Dialogs
 
-import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
-
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import { useDeleteGasto, useFilters, useGastos, useVeiculos } from "@/hooks";
@@ -47,15 +45,19 @@ import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 // Icons
 import { UpgradeStickyFooter } from "@/components/common/UpgradeStickyFooter";
 import {
-    CalendarIcon,
-    Lock,
-    TrendingDown,
-    TrendingUp,
-    Wallet,
+  CalendarIcon,
+  Lock,
+  TrendingDown,
+  TrendingUp,
+  Wallet,
 } from "lucide-react";
 
 export default function Gastos() {
-  const { setPageTitle, openPlanUpgradeDialog } = useLayout();
+  const { 
+    setPageTitle, 
+    openPlanUpgradeDialog,
+    openGastoFormDialog 
+  } = useLayout();
   const deleteGasto = useDeleteGasto();
 
   const isActionLoading = deleteGasto.isPending;
@@ -80,13 +82,10 @@ export default function Gastos() {
     searchParam: "search",
   });
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const [editingGasto, setEditingGasto] = useState<Gasto | null>(null);
   
   // Authorization Hook
   // Authorization Hook
-  const { profile, isLoading: isAuthLoading, canViewModuleGastos, refetchProfile } = usePermissions();
+  const { profile, isLoading: isAuthLoading, canViewModuleGastos } = usePermissions();
   const enabledPageActions = canViewModuleGastos;
   const loadingActions = isAuthLoading;
 
@@ -136,9 +135,13 @@ export default function Gastos() {
   );
 
   const openDialog = useCallback((gasto: Gasto | null = null) => {
-    setEditingGasto(gasto);
-    setIsDialogOpen(true);
-  }, []);
+    openGastoFormDialog({
+        gastoToEdit: gasto,
+        veiculos: veiculos.map((v) => ({ id: v.id, placa: v.placa })),
+        usuarioId: profile?.id,
+        onSuccess: refetchGastos
+    });
+  }, [openGastoFormDialog, veiculos, profile?.id, refetchGastos]);
 
   const pullToRefreshReload = async () => {
     if (!enabledPageActions) return;
@@ -368,16 +371,6 @@ export default function Gastos() {
             </Card>
           </div>
 
-          <GastoFormDialog
-            isOpen={isDialogOpen}
-            onOpenChange={setIsDialogOpen}
-            gastoToEdit={editingGasto}
-            veiculos={veiculos.map((v) => ({ id: v.id, placa: v.placa }))}
-            usuarioId={profile?.id}
-            onSuccess={() => {
-              // Optional: Refetch or show success message if needed
-            }}
-          />
 
 
         </div>

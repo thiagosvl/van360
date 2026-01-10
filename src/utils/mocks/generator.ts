@@ -167,17 +167,61 @@ export const generateAddress = () => {
     complemento: Math.random() > 0.5 ? `Apto ${randomNumber(1, 100)}` : "",
     bairro: bairros[randomNumber(0, bairros.length - 1)],
     cidade: cidade.nome,
-    estado: cidade.estado
+    estado: cidade.estado,
+    referencia: "referencia teste",
   };
+};
+
+/**
+ * Gera um período aleatório
+ */
+export const generatePeriodo = (): string => {
+  const periodos = ["manha", "tarde", "noite", "integral"];
+  return periodos[randomNumber(0, periodos.length - 1)];
+};
+
+/**
+ * Gera um dia de vencimento aleatório (comum)
+ */
+export const generateVencimento = (): string => {
+  const dias = ["05", "10", "15", "20"];
+  return dias[randomNumber(0, dias.length - 1)];
+};
+
+/**
+ * Gera um valor de cobrança aleatório formatado
+ */
+export const generateValorCobranca = (): string => {
+  const valores = ["150,00", "250,00", "350,00", "450,00", "550,00"];
+  return valores[randomNumber(0, valores.length - 1)];
 };
 
 export const mockGenerator = {
   cpf: generateCPF,
   name: generateName,
   email: generateEmail,
-  phone: generatePhone,
+  phone: "(11) 95118-6951",
   cep: generateCEP,
   address: generateAddress,
   escola: () => escolas[randomNumber(0, escolas.length - 1)],
   veiculo: () => veiculos[randomNumber(0, veiculos.length - 1)],
+  passenger: (overrides?: any) => {
+    const name = generateName();
+    const address = generateAddress();
+    return {
+      nome: name,
+      periodo: generatePeriodo(),
+      nome_responsavel: generateName(),
+      email_responsavel: generateEmail(name),
+      cpf_responsavel: generateCPF(),
+      telefone_responsavel: "(11) 95118-6951",
+      valor_cobranca: generateValorCobranca(),
+      dia_vencimento: generateVencimento(),
+      ...address,
+      ativo: true,
+      observacoes: "é um teste",
+      enviar_cobranca_automatica: false,
+      ...overrides
+    };
+  }
 };

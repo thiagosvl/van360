@@ -25,11 +25,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreateVeiculo,
-  useDeleteVeiculo,
-  useFilters,
-  useToggleAtivoVeiculo,
-  useVeiculos,
+    useCreateVeiculo,
+    useDeleteVeiculo,
+    useFilters,
+    useToggleAtivoVeiculo,
+    useVeiculos,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -269,7 +269,7 @@ export default function Veiculos() {
                   onClearFilters={clearFilters}
                   hasActiveFilters={hasActiveFilters}
                   onApplyFilters={setFilters}
-                  onRegister={() => openVeiculoFormDialog()}
+                  onRegister={() => openVeiculoFormDialog({ allowBatchCreation: true })}
                 />
               </div>
 

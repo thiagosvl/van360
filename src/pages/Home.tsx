@@ -16,9 +16,6 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
-import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
-import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Button } from "@/components/ui/button";
 
@@ -31,7 +28,6 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
 
-import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import {
   FEATURE_GASTOS,
   FEATURE_LIMITE_PASSAGEIROS,
@@ -39,8 +35,6 @@ import {
   PLANO_ESSENCIAL,
 } from "@/constants";
 import { cn } from "@/lib/utils";
-import { Passageiro } from "@/types/passageiro";
-import { safeCloseDialog } from "@/utils/dialogUtils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { toast } from "@/utils/notifications/toast";
@@ -56,10 +50,17 @@ import { useUpsellContent } from "@/hooks/business/useUpsellContent";
 // --- Main Component ---
 
 const Home = () => {
-  const { setPageTitle, openPlanUpgradeDialog, openPixKeyDialog } = useLayout();
+  const { 
+    setPageTitle, 
+    openPlanUpgradeDialog, 
+    openPixKeyDialog,
+    openEscolaFormDialog,
+    openVeiculoFormDialog,
+    openPassageiroFormDialog,
+    openGastoFormDialog
+  } = useLayout();
   const { user, loading: isSessionLoading } = useSession();
 
-  // Use Access Control Hook
   // Use Access Control Hook
   const {
     profile,
@@ -86,16 +87,8 @@ const Home = () => {
 
   const navigate = useNavigate();
 
-  // Dialog states
-  const [isPassageiroDialogOpen, setIsPassageiroDialogOpen] = useState(false);
-  const [editingPassageiro, setEditingPassageiro] = useState<Passageiro | null>(
-    null
-  );
   const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
   const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
-  const [isCreatingEscola, setIsCreatingEscola] = useState(false);
-  const [isCreatingVeiculo, setIsCreatingVeiculo] = useState(false);
-  const [isGastoDialogOpen, setIsGastoDialogOpen] = useState(false);
 
   const mesAtual = new Date().getMonth() + 1;
   const anoAtual = new Date().getFullYear();
@@ -107,7 +100,6 @@ const Home = () => {
     data: cobrancasData,
     refetch: refetchCobrancas,
     isLoading: isLoadingCobrancas,
-    isFetching: isFetchingCobrancas,
   } = useCobrancas(
     { usuarioId: profile?.id, mes: mesAtual, ano: anoAtual },
     { enabled: !!profile?.id }
@@ -117,14 +109,12 @@ const Home = () => {
     data: passageirosData,
     refetch: refetchPassageiros,
     isLoading: isLoadingPassageiros,
-    isFetching: isFetchingPassageiros,
   } = usePassageiros({ usuarioId: profile?.id }, { enabled: !!profile?.id });
 
   const {
     data: escolasData,
     refetch: refetchEscolas,
     isLoading: isLoadingEscolas,
-    isFetching: isFetchingEscolas,
   } = useEscolas(profile?.id, {
     enabled: !!profile?.id,
   });
@@ -133,12 +123,11 @@ const Home = () => {
     data: veiculosData,
     refetch: refetchVeiculos,
     isLoading: isLoadingVeiculos,
-    isFetching: isFetchingVeiculos,
   } = useVeiculos(profile?.id, {
     enabled: !!profile?.id,
   });
 
-  // Estado de loading unificado - só renderiza conteúdo quando todas as queries terminarem
+  // Estado de loading unificado
   const isInitialLoading = useMemo(() => {
     // Se não tem profile ainda, está carregando
     if (!profile?.id) return true;
@@ -208,7 +197,7 @@ const Home = () => {
 
 
 
-  // Onboarding Logic (Layout Control)
+  // Onboarding Logic
   const hasPixKey = !!profile?.chave_pix;
 
   const completedSteps = [
@@ -265,50 +254,71 @@ const Home = () => {
     }
   };
 
-  // Passageiro Dialog Handlers
-  const handleOpenPassageiroDialog = useCallback(() => {
-    // Validação de limite para plano gratuito
-    if (permissions.isFreePlan) {
-      const limite = Number(limits.passageiros || 0);
-      if (passageirosCount >= limite) {
-        // Para plano gratuito, o "upgrade" é trocar de plano (Contextual)
-        // Callback: Ao sucesso, abrir o dialog de passageiro diretamente (bypass check)
-        openPlanUpgradeDialog({
-          feature: FEATURE_LIMITE_PASSAGEIROS,
-          defaultTab: PLANO_ESSENCIAL,
-          onSuccess: () => setIsPassageiroDialogOpen(true),
-        });
-        return;
-      }
-    }
+  // Dialog Handlers
+  const handleSuccessFormPassageiro = useCallback(() => {
+    setNovoVeiculoId(null);
+    setNovaEscolaId(null);
+    refetchPassageiros(); // Invalidação feita automaticamente pelos hooks de mutation
+  }, [refetchPassageiros]);
 
-    setEditingPassageiro(null);
-    setIsPassageiroDialogOpen(true);
-  }, [permissions.isFreePlan, limits.passageiros, passageirosCount]);
+  const handleOpenPassageiroDialog = useCallback(() => {
+    if (permissions.isFreePlan && hasPassengerLimit && passageirosCount >= limits.passageiros) {
+      openPlanUpgradeDialog({
+        feature: FEATURE_LIMITE_PASSAGEIROS,
+        defaultTab: PLANO_ESSENCIAL,
+        targetPassengerCount: passageirosAtivosCount,
+        onSuccess: () => openPassageiroFormDialog({ mode: "create", onSuccess: handleSuccessFormPassageiro }),
+      });
+      return;
+    }
+    openPassageiroFormDialog({
+        mode: "create",
+        onSuccess: handleSuccessFormPassageiro
+    });
+  }, [permissions.isFreePlan, limits.passageiros, passageirosCount, openPassageiroFormDialog, handleSuccessFormPassageiro, hasPassengerLimit, openPlanUpgradeDialog, passageirosAtivosCount]);
 
   const handleOpenGastoDialog = useCallback(() => {
+    const triggerGasto = () => {
+        openGastoFormDialog({
+            veiculos: veiculosData?.list || [],
+            onSuccess: () => {
+                toast.success("Gasto registrado com sucesso!");
+                refetchCobrancas(); // Or appropriate refetch
+            }
+        });
+    };
+
     if (!permissions.canViewGastos) {
-      // Callback: Ao sucesso, abrir o dialog de gastos diretamente
       openPlanUpgradeDialog({
         feature: FEATURE_GASTOS,
         defaultTab: PLANO_ESSENCIAL,
-        onSuccess: () => setIsGastoDialogOpen(true),
+        onSuccess: triggerGasto,
       });
       return;
     }
 
-    setIsGastoDialogOpen(true);
-  }, [permissions.canViewGastos]);
+    triggerGasto();
+  }, [permissions.canViewGastos, openPlanUpgradeDialog, openGastoFormDialog, veiculosData?.list, refetchCobrancas]);
 
-  const handleClosePassageiroDialog = useCallback(() => {
-    safeCloseDialog(() => {
-      setNovoVeiculoId(null);
-      setNovaEscolaId(null);
-      setIsPassageiroDialogOpen(false);
-    });
-  }, []);
+  const handleEscolaCreated = useCallback(
+    (novaEscola: any, keepOpen?: boolean) => {
+      refetchEscolas();
+      if (keepOpen) return;
+      setNovaEscolaId(novaEscola.id);
+    },
+    [refetchEscolas]
+  );
 
-  // Quick Actions (Memoized)
+  const handleVeiculoCreated = useCallback(
+    (novoVeiculo: any, keepOpen?: boolean) => {
+      refetchVeiculos();
+      if (keepOpen) return;
+      setNovoVeiculoId(novoVeiculo.id);
+    },
+    [refetchVeiculos]
+  );
+
+  // Quick Actions
   const quickActions = useMemo(
     () => [
       {
@@ -325,7 +335,7 @@ const Home = () => {
       {
         icon: HandCoins,
         label: "Novo Gasto",
-        onClick: () => setIsGastoDialogOpen(true),
+        onClick: handleOpenGastoDialog,
         variant: "secondary",
       },
       {
@@ -338,48 +348,12 @@ const Home = () => {
     ],
     [
       handleOpenPassageiroDialog,
+      handleOpenGastoDialog,
       hasPassengerLimit,
       passageirosAtivosCount,
       limitePassageiros,
     ]
   );
-
-  const handleSuccessFormPassageiro = useCallback(() => {
-    setNovoVeiculoId(null);
-    setNovaEscolaId(null);
-    // Invalidação feita automaticamente pelos hooks de mutation
-  }, []);
-
-  const handleCloseEscolaFormDialog = useCallback(() => {
-    safeCloseDialog(() => {
-      setIsCreatingEscola(false);
-    });
-  }, []);
-
-  const handleCloseVeiculoFormDialog = useCallback(() => {
-    safeCloseDialog(() => {
-      setIsCreatingVeiculo(false);
-    });
-  }, []);
-
-  const handleEscolaCreated = useCallback(
-    (novaEscola: any, keepOpen?: boolean) => {
-      if (keepOpen) return;
-
-      safeCloseDialog(() => {
-        setIsCreatingEscola(false);
-        setNovaEscolaId(novaEscola.id);
-      });
-    },
-    []
-  );
-
-  const handleVeiculoCreated = useCallback((novoVeiculo: any) => {
-    safeCloseDialog(() => {
-      setIsCreatingVeiculo(false);
-      setNovoVeiculoId(novoVeiculo.id);
-    });
-  }, []);
 
   if (isSessionLoading || isProfileLoading || isInitialLoading) {
     return (
@@ -411,9 +385,18 @@ const Home = () => {
           {showOnboarding && (
             <section>
               <QuickStartCard
-                onOpenVeiculoDialog={() => setIsCreatingVeiculo(true)}
-                onOpenEscolaDialog={() => setIsCreatingEscola(true)}
-                onOpenPassageiroDialog={() => setIsPassageiroDialogOpen(true)}
+                onOpenVeiculoDialog={() => openVeiculoFormDialog({ 
+                    allowBatchCreation: true,
+                    onSuccess: handleVeiculoCreated 
+                })}
+                onOpenEscolaDialog={() => openEscolaFormDialog({ 
+                    allowBatchCreation: true,
+                    onSuccess: handleEscolaCreated 
+                })}
+                onOpenPassageiroDialog={() => openPassageiroFormDialog({
+                    mode: "create",
+                    onSuccess: handleSuccessFormPassageiro
+                })}
                 onOpenPixKeyDialog={() => openPixKeyDialog()}
               />
             </section>
@@ -475,7 +458,7 @@ const Home = () => {
                       feature: FEATURE_LIMITE_PASSAGEIROS,
                       defaultTab: PLANO_ESSENCIAL,
                       targetPassengerCount: passageirosAtivosCount,
-                      onSuccess: () => setIsPassageiroDialogOpen(true), // Retornar ao fluxo de cadastro
+                      onSuccess: () => openPassageiroFormDialog({ mode: "create", onSuccess: handleSuccessFormPassageiro }),
                     })
                   }
                   label="Passageiros Ativos"
@@ -637,50 +620,6 @@ const Home = () => {
           </section>
         </div>
       </PullToRefreshWrapper>
-
-      {/* Dialogs */}
-      {isPassageiroDialogOpen && (
-        <PassageiroFormDialog
-          isOpen={isPassageiroDialogOpen}
-          onClose={handleClosePassageiroDialog}
-          onSuccess={handleSuccessFormPassageiro}
-          editingPassageiro={editingPassageiro}
-          mode="create"
-          profile={profile}
-          plano={plano}
-        />
-      )}
-
-      {isCreatingEscola && (
-        <EscolaFormDialog
-          isOpen={isCreatingEscola}
-          onClose={handleCloseEscolaFormDialog}
-          onSuccess={handleEscolaCreated}
-          profile={profile}
-          allowBatchCreation
-        />
-      )}
-
-      {isCreatingVeiculo && (
-        <VeiculoFormDialog
-          isOpen={isCreatingVeiculo}
-          onClose={handleCloseVeiculoFormDialog}
-          onSuccess={handleVeiculoCreated}
-          profile={profile}
-        />
-      )}
-
-      {isGastoDialogOpen && (
-        <GastoFormDialog
-          isOpen={isGastoDialogOpen}
-          onOpenChange={setIsGastoDialogOpen}
-          veiculos={veiculosData?.list || []}
-          usuarioId={profile?.id}
-          onSuccess={() => {
-            toast.success("Gasto registrado com sucesso!");
-          }}
-        />
-      )}
 
     </>
   );

@@ -4,7 +4,6 @@ import { UpgradeStickyFooter } from "@/components/common/UpgradeStickyFooter";
 import { DialogExcessoFranquia } from "@/components/dialogs/DialogExcessoFranquia";
 
 import { LimitHealthBar } from "@/components/common/LimitHealthBar";
-import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PassageirosList } from "@/components/features/passageiro/PassageirosList";
 import { PassageirosToolbar } from "@/components/features/passageiro/PassageirosToolbar";
@@ -16,7 +15,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_LIMITE_FRANQUIA, FEATURE_LIMITE_PASSAGEIROS, PLANO_ESSENCIAL } from "@/constants";
+import {
+  FEATURE_COBRANCA_AUTOMATICA,
+  FEATURE_LIMITE_FRANQUIA,
+  FEATURE_LIMITE_PASSAGEIROS,
+  PLANO_ESSENCIAL,
+} from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   useCreateEscola,
@@ -58,6 +62,7 @@ export default function Passageiros() {
     openPlanUpgradeDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
+    openPassageiroFormDialog,
   } = useLayout();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -258,7 +263,10 @@ export default function Passageiros() {
   useEffect(() => {
     const openModal = searchParams.get("openModal");
     if (openModal === "true") {
-      dialogActions.openNewPassageiro();
+      openPassageiroFormDialog({
+        mode: "create",
+        onSuccess: refetchPassageiros,
+      });
     }
   }, [searchParams, dialogActions]);
 
@@ -403,10 +411,13 @@ export default function Passageiros() {
 
   const handleEdit = useCallback(
     (passageiro: Passageiro) => {
-      // We can rely on the hook logic
-      dialogActions.openEditPassageiro(passageiro);
+      openPassageiroFormDialog({
+        mode: "edit",
+        editingPassageiro: passageiro,
+        onSuccess: refetchPassageiros,
+      });
     },
-    [dialogActions]
+    [openPassageiroFormDialog, refetchPassageiros]
   );
 
   const handleOpenNewDialog = useCallback(() => {
@@ -419,8 +430,11 @@ export default function Passageiros() {
       return;
     }
 
-    // Use dialogActions
-    dialogActions.openNewPassageiro();
+    // Use openPassageiroFormDialog
+    openPassageiroFormDialog({
+      mode: "create",
+      onSuccess: refetchPassageiros,
+    });
   }, [
     isLimitedUser,
     isLimitReached,
@@ -525,8 +539,8 @@ export default function Passageiros() {
     // Verificar se pode ligar cobrança automática
     let enviarCobrancaAutomatica = false;
     if (canUseCobrancaAutomatica(plano)) {
-        // Passa false pois estamos criando um novo, logo "não está habilitado" ainda na contagem
-        enviarCobrancaAutomatica = limits.franchise.checkAvailability(false);
+      // Passa false pois estamos criando um novo, logo "não está habilitado" ainda na contagem
+      enviarCobrancaAutomatica = limits.franchise.checkAvailability(false);
     }
 
     createPassageiro.mutate(
@@ -755,16 +769,6 @@ export default function Passageiros() {
               />
             </TabsContent>
           </Tabs>
-
-          <PassageiroFormDialog
-            isOpen={passageiroForm.isOpen}
-            onClose={passageiroForm.onClose}
-            onSuccess={passageiroForm.onSuccess}
-            editingPassageiro={passageiroForm.editingPassageiro}
-            mode={passageiroForm.mode}
-            profile={profile}
-            plano={plano}
-          />
 
           <DialogExcessoFranquia
             isOpen={excessoFranquia.isOpen}

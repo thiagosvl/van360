@@ -32,7 +32,7 @@ import {
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Car, Hash, Loader2, Tag, X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -56,8 +56,9 @@ interface VeiculoFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
   editingVeiculo?: Veiculo | null;
-  onSuccess: (veiculo: Veiculo) => void;
-  profile?: any; // Passar profile como prop para evitar chamadas duplicadas de useProfile
+  onSuccess: (veiculo: Veiculo, keepOpen?: boolean) => void;
+  profile?: any;
+  allowBatchCreation?: boolean;
 }
 
 export default function VeiculoFormDialog({
@@ -66,13 +67,15 @@ export default function VeiculoFormDialog({
   editingVeiculo = null,
   onSuccess,
   profile: profileProp,
+  allowBatchCreation = false,
 }: VeiculoFormDialogProps) {
   const { user } = useSession();
-  // Só chamar useProfile se não receber profile como prop e o dialog estiver aberto
   const { profile: profileFromHook } = useProfile(
     profileProp ? undefined : isOpen ? user?.id : undefined
   );
   const profile = profileProp || profileFromHook;
+
+  const [keepOpen, setKeepOpen] = useState(false);
 
   const createVeiculo = useCreateVeiculo();
   const updateVeiculo = useUpdateVeiculo();
@@ -104,13 +107,17 @@ export default function VeiculoFormDialog({
           ativo: editingVeiculo.ativo,
         });
       } else {
-        form.reset({
-          placa: "",
-          marca: "",
-          modelo: "",
-          ativo: true,
-        });
+        if (!keepOpen) {
+          form.reset({
+            placa: "",
+            marca: "",
+            modelo: "",
+            ativo: true,
+          });
+        }
       }
+    } else {
+      setKeepOpen(false);
     }
   }, [isOpen, editingVeiculo, form]);
 
@@ -145,10 +152,25 @@ export default function VeiculoFormDialog({
         { usuarioId: profile.id, data },
         {
           onSuccess: (veiculoSalvo) => {
-            onSuccess(veiculoSalvo);
-            safeCloseDialog(() => {
-              onClose();
-            });
+            onSuccess(veiculoSalvo, keepOpen);
+            
+            if (keepOpen) {
+                form.reset({
+                    placa: "",
+                    marca: "",
+                    modelo: "",
+                    ativo: true,
+                });
+                
+                setTimeout(() => {
+                    form.setFocus("placa");
+                    setKeepOpen(false);
+                }, 100);
+            } else {
+                safeCloseDialog(() => {
+                    onClose();
+                });
+            }
           },
           onError: (error: any) => {
             // Reverter QuickStart em caso de erro
@@ -309,6 +331,24 @@ export default function VeiculoFormDialog({
                     </FormItem>
                   )}
                 />
+              )}
+              {allowBatchCreation && !editingVeiculo && (
+                <div className="flex items-center gap-2 px-1 pt-4">
+                    <Checkbox
+                      id="keepOpen"
+                      checked={keepOpen}
+                      onCheckedChange={(checked) =>
+                        setKeepOpen(checked as boolean)
+                      }
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <label
+                      htmlFor="keepOpen"
+                      className="text-sm font-medium text-gray-600 cursor-pointer select-none"
+                    >
+                      Cadastrar outro em seguida
+                    </label>
+                  </div>
               )}
             </form>
           </Form>
