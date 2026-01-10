@@ -1,5 +1,6 @@
 import { veiculoApi } from "@/services/api/veiculo.api";
 import { Veiculo } from "@/types/veiculo";
+import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -35,7 +36,7 @@ export function useCreateVeiculo() {
     },
     onError: (error: any) => {
       toast.error("veiculo.erro.criar", {
-        description: error.message || "veiculo.erro.criarDetalhe",
+        description: getErrorMessage(error, "veiculo.erro.criarDetalhe"),
       });
     },
   });
@@ -72,7 +73,7 @@ export function useUpdateVeiculo() {
         });
       }
       toast.error("veiculo.erro.atualizar", {
-        description: error.message || "veiculo.erro.atualizarDetalhe",
+        description: getErrorMessage(error, "veiculo.erro.atualizarDetalhe"),
       });
     },
     onSuccess: () => {
@@ -117,7 +118,7 @@ export function useDeleteVeiculo() {
         });
       }
       toast.error("veiculo.erro.excluir", {
-        description: error.message || "veiculo.erro.excluirDetalhe",
+        description: getErrorMessage(error, "veiculo.erro.excluirDetalhe"),
       });
     },
     onSuccess: () => {
@@ -167,7 +168,7 @@ export function useToggleAtivoVeiculo() {
         });
       }
       toast.error("veiculo.erro.alterarStatus", {
-        description: error.message || "veiculo.erro.alterarStatusDetalhe",
+        description: getErrorMessage(error, "veiculo.erro.alterarStatusDetalhe"),
       });
     },
     onSuccess: (data, variables) => {

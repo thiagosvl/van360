@@ -62,7 +62,7 @@ export const cobrancaApi = {
         const payload = {
             cobranca_id: cobrancaId,
             tipo_origem: 'manual',
-            tipo_evento: 'REENVIO_MANUAL',
+            tipo_evento: 'COBRANCA_MANUAL',
             canal: 'whatsapp',
         };
 

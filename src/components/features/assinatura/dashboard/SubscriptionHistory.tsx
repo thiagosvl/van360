@@ -1,7 +1,7 @@
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
+import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
     Table,
     TableBody,
@@ -10,8 +10,7 @@ import {
     TableRow
 } from "@/components/ui/table";
 import { ASSINATURA_COBRANCA_STATUS_CANCELADA, ASSINATURA_COBRANCA_STATUS_PAGO, ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO } from "@/constants";
-import { formatPaymentType } from "@/utils/formatters/cobranca";
-import { Calendar, Download, Printer, Receipt } from "lucide-react";
+import { Calendar, Receipt } from "lucide-react";
 
 interface SubscriptionHistoryProps {
   cobrancas: any[];
@@ -100,8 +99,12 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
                         Pagar
                         </Button>
                     ) : (
-                        <ReceiptDialog cobranca={cobranca} trigger={
-                            <Button variant="outline" size="sm" className="h-9 px-3 gap-2 text-gray-600 border-gray-200 hover:bg-gray-50 rounded-lg">
+                        <ReceiptDialog url={cobranca.recibo_url} trigger={
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-9 px-3 gap-2 text-gray-600 border-gray-200 hover:bg-gray-50 rounded-lg"
+                            >
                                 <Receipt className="w-4 h-4" />
                                 <span className="hidden xs:inline">Recibo</span>
                             </Button>
@@ -170,8 +173,12 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
                                             Pagar
                                             </Button>
                                         ) : (
-                                            <ReceiptDialog cobranca={cobranca} trigger={
-                                                <Button variant="outline" size="sm" className="h-9 px-3 gap-2 text-gray-600 border-gray-200 hover:bg-gray-50 rounded-lg hover:text-gray-900 transition-colors">
+                                            <ReceiptDialog url={cobranca.recibo_url} trigger={
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    className="h-9 px-3 gap-2 text-gray-600 border-gray-200 hover:bg-gray-50 rounded-lg hover:text-gray-900 transition-colors"
+                                                >
                                                     <Receipt className="w-4 h-4" />
                                                     Recibo
                                                 </Button>
@@ -179,7 +186,8 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
                                         )}
                                     </TableCell>
                                 </TableRow>
-                            )})}
+                            );
+                          })}
                     </TableBody>
                 </Table>
             </div>
@@ -188,99 +196,4 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
   );
 }
 
-// Extracted Receipt Dialog to avoid duplication and nesting issues
-function ReceiptDialog({ cobranca, trigger }: { cobranca: any, trigger: React.ReactNode }) {
-    return (
-        <Dialog>
-            <DialogTrigger asChild>
-                {trigger}
-            </DialogTrigger>
-            <DialogContent className="max-w-md sm:rounded-2xl">
-                <DialogHeader>
-                    <DialogTitle>Comprovante de Pagamento</DialogTitle>
-                </DialogHeader>
-                <div id={`receipt-content-${cobranca.id}`} className="space-y-6 p-6 bg-white rounded-xl border border-gray-100 shadow-sm my-4">
-                    <div className="text-center border-b border-gray-100 pb-4">
-                        <h3 className="font-bold text-lg text-gray-900">Van360</h3>
-                        <p className="text-xs text-gray-500">Recibo de Pagamento</p>
-                    </div>
-                    
-                    <div className="space-y-3 text-sm">
-                        <div className="flex justify-between">
-                            <span className="text-gray-500">Item</span>
-                            <span className="font-medium text-gray-900 text-right max-w-[200px] break-words">
-                                {cobranca.descricao || `Assinatura - ${getMonthYear(cobranca.data_vencimento)}`}
-                            </span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-500">Valor Pago</span>
-                            <span className="font-bold text-gray-900">{Number(cobranca.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-500">Data de Vencimento</span>
-                            <span className="font-medium text-gray-900">{new Date(cobranca.data_vencimento).toLocaleDateString("pt-BR")}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-500">Forma de Pagamento</span>
-                            <span className="font-medium text-gray-900">
-                                {formatPaymentType(cobranca.forma_pagamento || cobranca.metodo_pagamento || "PIX")}
-                            </span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-500">Status</span>
-                            <span className="text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full text-xs">Pago</span>
-                        </div>
-                    </div>
 
-                    <div className="pt-4 border-t border-gray-100 text-center space-y-1">
-                        <p className="text-xs text-gray-400">ID da Transação</p>
-                        <p className="text-xs font-mono text-gray-600">{cobranca.id}</p>
-                    </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <Button className="flex-1 gap-2 rounded-xl h-11" onClick={() => {
-                        const content = document.getElementById(`receipt-content-${cobranca.id}`)?.innerHTML;
-                        const printWindow = window.open('', '', 'height=600,width=800');
-                        if (printWindow && content) {
-                            printWindow.document.write('<html><head><title>Recibo Van360</title>');
-                            printWindow.document.write('<script src="https://cdn.tailwindcss.com"></script>'); 
-                            printWindow.document.write('</head><body class="p-8 bg-white">');
-                            printWindow.document.write(content);
-                            printWindow.document.write('</body></html>');
-                            printWindow.document.close();
-                            printWindow.focus();
-                            setTimeout(() => {
-                                printWindow.print();
-                                printWindow.close();
-                            }, 500);
-                        }
-                    }}>
-                        <Printer className="w-4 h-4" />
-                        Imprimir
-                    </Button>
-                    <Button variant="outline" className="flex-1 gap-2 rounded-xl h-11" onClick={() => {
-                            const content = document.getElementById(`receipt-content-${cobranca.id}`)?.innerHTML;
-                            const printWindow = window.open('', '', 'height=600,width=800');
-                            if (printWindow && content) {
-                                printWindow.document.write('<html><head><title>Recibo Van360</title>');
-                                printWindow.document.write('<script src="https://cdn.tailwindcss.com"></script>'); 
-                                printWindow.document.write('</head><body class="p-8 bg-white">');
-                                printWindow.document.write(content);
-                                printWindow.document.write('</body></html>');
-                                printWindow.document.close();
-                                printWindow.focus();
-                                setTimeout(() => {
-                                    printWindow.print(); 
-                                    printWindow.close();
-                                }, 500);
-                            }
-                    }}>
-                        <Download className="w-4 h-4" />
-                        Baixar PDF
-                    </Button>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
-}

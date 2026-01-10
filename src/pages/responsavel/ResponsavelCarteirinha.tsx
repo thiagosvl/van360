@@ -14,18 +14,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 
 // Services
@@ -38,12 +38,12 @@ import { seForPago } from "@/utils/domain/cobranca/disableActions";
 import { clearLoginStorageResponsavel } from "@/utils/domain/responsavel/responsavelUtils";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
-    formatarEnderecoCompleto,
-    formatarTelefone,
-    formatDateToBR,
-    getMesNome,
-    getStatusColor,
-    getStatusText,
+  formatarEnderecoCompleto,
+  formatarTelefone,
+  formatDateToBR,
+  getMesNome,
+  getStatusColor,
+  getStatusText,
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 
@@ -53,15 +53,15 @@ import { Cobranca } from "@/types/cobranca";
 // Icons
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import {
-    AlertTriangle,
-    Car,
-    Contact,
-    Info,
-    Mail,
-    MapPin,
-    MessageCircle,
-    MoreVertical,
-    School,
+  AlertTriangle,
+  Car,
+  Contact,
+  Info,
+  Mail,
+  MapPin,
+  MessageCircle,
+  MoreVertical,
+  School,
 } from "lucide-react";
 
 interface CobrancaResponsavelActionsDropdownProps {
@@ -590,7 +590,7 @@ export default function ResponsavelCarteirinha() {
                       </InfoItem>
                     </div>
                     <InfoItem icon={School} label="Escola">
-                      {selectedPassageiro.escolas?.nome || "Não informada"}
+                      {selectedPassageiro.escola?.nome || "Não informada"}
                     </InfoItem>
                     <InfoItem icon={Car} label="Veículo">
                       {formatarPlacaExibicao(

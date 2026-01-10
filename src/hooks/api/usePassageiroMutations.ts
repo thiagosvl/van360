@@ -1,5 +1,6 @@
 import { passageiroApi } from "@/services/api/passageiro.api";
 import { Passageiro } from "@/types/passageiro";
+import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -19,7 +20,7 @@ export function useCreatePassageiro() {
     },
     onError: (error: any) => {
       toast.error("passageiro.erro.criar", {
-        description: error.response?.data?.error || error.message || "passageiro.erro.criarDetalhe",
+        description: getErrorMessage(error, "passageiro.erro.criarDetalhe"),
       });
     },
   });
@@ -79,7 +80,7 @@ export function useUpdatePassageiro() {
         queryClient.setQueryData(["passageiro", variables.id], context.previousPassageiro);
       }
       toast.error("passageiro.erro.atualizar", {
-        description: error.message || "passageiro.erro.atualizarDetalhe",
+        description: getErrorMessage(error, "passageiro.erro.atualizarDetalhe"),
       });
     },
     onSuccess: (data, variables) => {
@@ -160,7 +161,7 @@ export function useDeletePassageiro() {
       
       // Tratamento temporário: detecta erro de foreign key constraint relacionado a cobranças
       // TODO: Backend deve validar antes de tentar deletar e retornar erro específico
-      const errorMessage = error?.response?.data?.error || error.message || "";
+      const errorMessage = getErrorMessage(error);
       const isConstraintError = 
         errorMessage.includes("foreign key constraint") || 
         errorMessage.includes("cobrancas") ||
@@ -248,7 +249,7 @@ export function useToggleAtivoPassageiro() {
       toast.error(
         variables.novoStatus ? "passageiro.erro.ativar" : "passageiro.erro.desativar",
         {
-          description: error.message || "passageiro.erro.statusDetalhe",
+          description: getErrorMessage(error, "passageiro.erro.statusDetalhe"),
         }
       );
     },
@@ -302,7 +303,7 @@ export function useFinalizePreCadastro() {
     },
     onError: (error: any) => {
       toast.error("passageiro.erro.criar", {
-        description: error.message || "passageiro.erro.confirmarDetalhe",
+        description: getErrorMessage(error, "passageiro.erro.confirmarDetalhe"),
       });
     },
   });

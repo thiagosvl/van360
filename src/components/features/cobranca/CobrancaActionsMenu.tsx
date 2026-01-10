@@ -10,21 +10,44 @@ interface CobrancaActionsMenuProps {
   onEditarCobranca?: () => void;
   onRegistrarPagamento?: () => void;
   onEnviarNotificacao?: () => void;
-  onToggleLembretes?: () => void; 
+  onToggleLembretes?: () => void;
   onDesfazerPagamento?: () => void;
   onExcluirCobranca?: () => void;
   onVerCarteirinha?: () => void;
   onUpgrade?: (feature: string) => void;
+  onVerRecibo?: () => void;
   onActionSuccess?: () => void;
 }
 
-export function CobrancaActionsMenu({
+export const CobrancaActionsMenu = ({
+  cobranca,
+  plano,
   variant = "default",
-  ...props
-}: CobrancaActionsMenuProps) {
-  const actions = useCobrancaActions(props);
+  onVerCobranca,
+  onEditarCobranca,
+  onRegistrarPagamento,
+  onEnviarNotificacao,
+  onToggleLembretes,
+  onDesfazerPagamento,
+  onExcluirCobranca,
+  onVerCarteirinha,
+  onUpgrade,
+  onVerRecibo,
+  onActionSuccess,
+}: CobrancaActionsMenuProps) => {
+  const actions = useCobrancaActions({
+    cobranca,
+    plano,
+    onVerCobranca,
+    onVerCarteirinha,
+    onEditarCobranca,
+    onRegistrarPagamento,
+    onUpgrade: onUpgrade ? (f, d) => onUpgrade(f) : undefined,
+    onVerRecibo,
+    onActionSuccess,
+  });
   const triggerClassName = variant === "mobile" ? "h-8 w-8 shrink-0 -mr-2 -mt-1" : "h-8 w-8 p-0";
-  
+
   return (
     <ActionsDropdown
       actions={actions}
@@ -32,4 +55,4 @@ export function CobrancaActionsMenu({
       triggerSize={variant === "mobile" ? "icon" : "sm"}
     />
   );
-}
+};

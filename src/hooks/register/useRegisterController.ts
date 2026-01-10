@@ -1,8 +1,8 @@
 import { isPlanoPagoNoAto } from "@/components/features/register";
 import {
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
-  PLANO_PROFISSIONAL,
+    PLANO_ESSENCIAL,
+    PLANO_GRATUITO,
+    PLANO_PROFISSIONAL,
 } from "@/constants";
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks";
 import { supabase } from "@/integrations/supabase/client";
@@ -499,14 +499,19 @@ export function useRegisterController() {
 
           if (result?.error) throw new Error(result.error);
 
-          if (result.qrCodePayload && (result as any).cobrancaId) {
+          // Suporte para nova estrutura (aninhada em pix) e antiga (plana)
+          const pixData = (result as any).pix || result;
+          const qrCode = pixData.qrCode || pixData.qrCodePayload;
+          const location = pixData.qrCodeUrl || pixData.location;
+
+          if (qrCode && (result as any).cobrancaId) {
             setPagamentoDialog({
               isOpen: true,
               cobrancaId: String((result as any).cobrancaId),
               valor: Number((result as any).preco_aplicado || (result as any).valor || 0),
               initialData: {
-                qrCodePayload: result.qrCodePayload,
-                location: result.location,
+                qrCodePayload: qrCode,
+                location: location,
                 inter_txid: result.inter_txid,
                 cobrancaId: String(result.cobrancaId)
               }

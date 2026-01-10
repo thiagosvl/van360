@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { prePassageiroApi } from "@/services/api/pre-passageiro.api";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { toast } from "@/utils/notifications/toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useCreatePrePassageiro() {
   const queryClient = useQueryClient();
@@ -14,7 +14,7 @@ export function useCreatePrePassageiro() {
     },
     onError: (error: any) => {
       toast.error("prePassageiro.erro.gerarLink", {
-        description: error.message || "Não foi possível criar o registro temporário.",
+        description: getErrorMessage(error, "Não foi possível criar o registro temporário."),
       });
     },
   });
@@ -44,7 +44,7 @@ export function useDeletePrePassageiro() {
         });
       }
       toast.error("prePassageiro.erro.excluir", {
-        description: error.message || "Não foi possível concluir a operação.",
+        description: getErrorMessage(error, "Não foi possível concluir a operação."),
       });
     },
     onSuccess: () => {

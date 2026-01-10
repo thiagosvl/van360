@@ -33,7 +33,7 @@ import { useCreateGasto, useUpdateGasto } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { moneyMask } from "@/utils/masks";
+import { moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -128,6 +128,7 @@ export default function GastoFormDialog({
 
     const formattedData = {
       ...data,
+      valor: moneyToNumber(data.valor),
       veiculo_id: data.veiculo_id === "none" || !data.veiculo_id ? null : data.veiculo_id,
     };
 

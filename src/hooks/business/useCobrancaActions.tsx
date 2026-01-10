@@ -14,11 +14,13 @@ import {
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
 import {
+  canSendNotification,
+  canViewReceipt,
   disableDesfazerPagamento,
   disableEditarCobranca,
   disableExcluirCobranca,
   disableRegistrarPagamento,
-  seForPago,
+  seForPago
 } from "@/utils/domain/cobranca/disableActions";
 import {
   canUseNotificacoes,
@@ -30,6 +32,7 @@ import {
   CheckCircle2,
   DollarSign,
   FilePen,
+  Receipt,
   Send,
   Trash2,
   User,
@@ -196,6 +199,7 @@ export function useCobrancaOperations({
 }
 
 export interface UseCobrancaActionsProps extends UseCobrancaOperationsProps {
+  onVerRecibo?: () => void;
   onVerCobranca?: () => void;
   onVerCarteirinha?: () => void;
   onEditarCobranca?: () => void;
@@ -223,6 +227,16 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     const hasNotificacoesAccess = canUseNotificacoes(plano);
     const isPago = seForPago(cobranca);
     const actions: ActionItem[] = [];
+
+    // 0. Ver Recibo (Se pago e com URL)
+    if (canViewReceipt(cobranca) && props.onVerRecibo) {
+      actions.push({
+        label: "Ver Recibo",
+        icon: <Receipt className="h-4 w-4" />,
+        onClick: props.onVerRecibo,
+        swipeColor: "bg-blue-600",
+      });
+    }
 
     // 1. Ver Carteirinha
     if (onVerCarteirinha) {
@@ -258,8 +272,8 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     }
 
     // 4. Enviar Cobrança
-    if (!isPago) {
-      // const canSend = hasNotificacoesAccess;
+    const canSend = canSendNotification(cobranca);
+    if (canSend) {
       actions.push({
         label: "Enviar Cobrança",
         icon: <Send className="h-4 w-4" />,

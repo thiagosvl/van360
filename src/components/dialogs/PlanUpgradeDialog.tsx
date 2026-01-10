@@ -104,12 +104,14 @@ export function PlanUpgradeDialog({
   const hideTabs = isEssencial || isProfissional;
 
   // Extrair franquia atual para base da lógica de target
-  const assinatura = profile?.assinaturas_usuarios?.[0];
+  const assinatura = profile?.assinatura || profile?.assinaturas_usuarios?.[0];
   const franquiaAtual =
     assinatura?.franquia_cobrancas_mes ||
     assinatura?.franquia_contratada_cobrancas ||
     0;
-  const valorAtual = Number(assinatura?.valor || 0);
+  
+  // Robustez: Tenta pegar 'preco_aplicado' (novo padrão) ou 'valor' (velho padrão)
+  const valorAtual = Number(assinatura?.preco_aplicado ?? assinatura?.valor ?? 0);
 
   // Definição de passageiros ativos e alvo
   const passageirosAtivos = profile?.estatisticas?.total_passageiros || 0;
@@ -142,19 +144,7 @@ export function PlanUpgradeDialog({
     (p: any) => p.slug === PLANO_PROFISSIONAL
   );
 
-  // Sincronizar Tab padrão
-  useEffect(() => {
-    if (open) {
-      // Reset states on open
-      setIsPaymentVerified(false);
 
-      if (isEssencial || isProfissional) {
-        setActiveTab("profissional");
-      } else {
-        setActiveTab(defaultTab);
-      }
-    }
-  }, [open, isEssencial, isProfissional, defaultTab]);
 
   const availableFranchiseOptions = useMemo(() => {
     if (!franchiseOptions) return [];
@@ -353,6 +343,21 @@ export function PlanUpgradeDialog({
       ? genericContent.essencial
       : genericContent.profissional;
   }, [activeTab, featureTargetPlan, specificContent, genericContent, title, description]);
+
+  // Sincronizar Tab padrão
+  useEffect(() => {
+    if (open) {
+      // Reset states on open
+      setIsPaymentVerified(false);
+
+      if (isEssencial || isProfissional) {
+        setActiveTab("profissional");
+      } else {
+        // Usa o plano alvo da feature (se houver) ou cai no defaultTab
+        setActiveTab(featureTargetPlan || defaultTab);
+      }
+    }
+  }, [open, isEssencial, isProfissional, defaultTab, featureTargetPlan]);
 
   // Cores Dinâmicas do Header
   const requestHeaderStyle =
@@ -733,17 +738,17 @@ export function PlanUpgradeDialog({
                                                 <span className="font-bold text-violet-700">{currentTierOption?.quantidade} Passageiros</span>
                                             </div>
                                         </div>
-                                         <div className="flex justify-between items-center text-sm">
-                                            <span className="text-gray-500 font-medium">Nova Mensalidade</span>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-gray-500 font-medium">Próxima Mensalidade</span>
                                              <span className="font-bold text-gray-900">{formatCurrency(price)}</span>
                                         </div>
                                         
                                         <div className="h-px bg-violet-200/50 my-1" />
                                         
-                                         <div className="flex justify-between items-center">
+                                         <div className="flex justify-between items-center bg-white/50 p-2 rounded-lg border border-violet-100/50">
                                             <div className="flex flex-col text-left">
-                                                <span className="text-xs font-bold text-violet-600 uppercase tracking-wide">Pagar Agora (Proporcional)</span>
-                                                <span className="text-[10px] text-gray-400 leading-tight">Referente aos dias restantes</span>
+                                                <span className="text-xs font-bold text-violet-600 uppercase tracking-wide">Pagar Agora</span>
+                                                <span className="text-[10px] text-gray-500 leading-tight">Diferença Proporcional</span>
                                             </div>
                                              <span className="text-xl font-extrabold text-violet-700">{formatCurrency(prorata.valorHoje)}</span>
                                         </div>

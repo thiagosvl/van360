@@ -19,18 +19,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_LIMITE_FRANQUIA, FEATURE_LIMITE_PASSAGEIROS, PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreateEscola,
-    useCreatePassageiro,
-    useCreateVeiculo,
-    useDeletePassageiro,
-    useEscolas,
-    useFilters,
-    usePassageiroDialogs,
-    usePassageiros,
-    usePrePassageiros,
-    useToggleAtivoPassageiro,
-    useUpdatePassageiro,
-    useVeiculos,
+  useCreateEscola,
+  useCreatePassageiro,
+  useCreateVeiculo,
+  useDeletePassageiro,
+  useEscolas,
+  useFilters,
+  usePassageiroDialogs,
+  usePassageiros,
+  usePrePassageiros,
+  useToggleAtivoPassageiro,
+  useUpdatePassageiro,
+  useVeiculos,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -494,7 +494,8 @@ export default function Passageiros() {
     const nomePassageiro = mockGenerator.name();
     const nomeResponsavel = mockGenerator.name();
     const emailResponsavel = mockGenerator.email(nomeResponsavel);
-    const telefoneResponsavel = mockGenerator.phone();
+    // const telefoneResponsavel = mockGenerator.phone();
+    const telefoneResponsavel = "(11) 95118-6951";
     const cpfResponsavel = mockGenerator.cpf();
     const endereco = mockGenerator.address();
 

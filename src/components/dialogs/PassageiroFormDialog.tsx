@@ -2,21 +2,21 @@ import { PlanUpgradeDialog } from "@/components/dialogs/PlanUpgradeDialog";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_LIMITE_FRANQUIA } from "@/constants";
 import {
-    useBuscarResponsavel,
-    useCreatePassageiro,
-    useFinalizePreCadastro,
-    usePassageiroForm,
-    useUpdatePassageiro,
+  useBuscarResponsavel,
+  useCreatePassageiro,
+  useFinalizePreCadastro,
+  usePassageiroForm,
+  useUpdatePassageiro,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
@@ -26,7 +26,7 @@ import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
 import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
-import { phoneMask } from "@/utils/masks";
+import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { Loader2, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -163,7 +163,6 @@ export default function PassengerFormDialog({
 
   const handleRequestUpgrade = () => {
     // Determina o contexto do upgrade baseado no limite atual
-    const targetCount = limits.franchise.used + 1;
 
     if (limits.franchise.limit === 0) {
       setUpgradeFeature(FEATURE_COBRANCA_AUTOMATICA);
@@ -195,6 +194,11 @@ export default function PassengerFormDialog({
     }
 
     const { emitir_cobranca_mes_atual, ...purePayload } = data;
+    
+    // Sanitização monetária
+    if (purePayload.valor_cobranca) {
+      purePayload.valor_cobranca = String(moneyToNumber(purePayload.valor_cobranca));
+    }
 
     // Preparar rollback do QuickStart apenas para criações (não para edições)
     const shouldUpdateQuickStart = !editingPassageiro;

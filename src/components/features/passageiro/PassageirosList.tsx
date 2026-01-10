@@ -140,7 +140,7 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
               Escola / Período
             </span>
             <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
-              {passageiro.escolas?.nome || "-"} •{" "}
+              {passageiro.escola?.nome || "-"} •{" "}
               {formatPeriodo(passageiro.periodo)}
             </p>
           </div>
@@ -223,7 +223,7 @@ export function PassageirosList({
                 <TableCell className="py-4">
                   <div className="flex flex-col">
                     <span className="text-sm font-medium text-gray-700">
-                      {passageiro.escolas?.nome}
+                      {passageiro.escola?.nome}
                     </span>
                     <span className="text-xs text-gray-500 capitalize">
                       {formatPeriodo(passageiro.periodo)}
@@ -241,8 +241,8 @@ export function PassageirosList({
                     variant="secondary"
                     className="font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-200"
                   >
-                    {passageiro.veiculos
-                      ? formatarPlacaExibicao(passageiro.veiculos.placa)
+                    {passageiro.veiculo
+                      ? formatarPlacaExibicao(passageiro.veiculo.placa)
                       : "-"}
                   </Badge>
                 </TableCell>

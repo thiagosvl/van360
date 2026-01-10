@@ -1,5 +1,6 @@
-// rebuild
+
 import { MobileActionItem } from "@/components/common/MobileActionItem";
+import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActionsMenu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,7 @@ import {
   Plus,
   RotateCcw,
 } from "lucide-react";
-import { memo, ReactNode } from "react";
+import { memo, ReactNode, useState } from "react";
 
 interface CarteirinhaCobrancasProps {
   cobrancas: Cobranca[];
@@ -78,6 +79,7 @@ const CobrancaMobileItemWrapper = memo(
     onVerCobranca,
     onEditarCobranca,
     onRegistrarPagamento,
+    onVerRecibo,
     showHint,
   }: {
     cobranca: Cobranca;
@@ -87,6 +89,7 @@ const CobrancaMobileItemWrapper = memo(
     onVerCobranca: () => void;
     onEditarCobranca: () => void;
     onRegistrarPagamento: () => void;
+    onVerRecibo?: () => void;
     showHint?: boolean;
   }) => {
     const actions = useCobrancaActions({
@@ -96,6 +99,7 @@ const CobrancaMobileItemWrapper = memo(
       onVerCobranca,
       onEditarCobranca,
       onRegistrarPagamento,
+      onVerRecibo,
     });
 
     return (
@@ -129,6 +133,8 @@ export const CarteirinhaCobrancas = ({
 
   // Verificar se o plano gera cobranças automaticamente (ESSENCIAL ou PROFISSIONAL)
   const geraCobrancasAutomaticas = canUsePremiumFeatures(plano as any);
+
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
 
   return (
     <motion.div
@@ -495,7 +501,8 @@ export const CarteirinhaCobrancas = ({
                               onRegistrarPagamento={() =>
                                 onRegistrarPagamento(cobranca)
                               }
-                              onUpgrade={onUpgrade}
+                              onUpgrade={(feature) => onUpgrade(feature, "Upgrade via Menu de Ações")}
+                              onVerRecibo={() => cobranca.recibo_url && setReceiptUrl(cobranca.recibo_url)}
                             />
                           </td>
                         </motion.tr>
@@ -508,6 +515,11 @@ export const CarteirinhaCobrancas = ({
           )}
         </CardContent>
       </Card>
+      <ReceiptDialog 
+        url={receiptUrl} 
+        open={!!receiptUrl} 
+        onOpenChange={(open) => !open && setReceiptUrl(null)} 
+      />
     </motion.div>
   );
 };

@@ -14,31 +14,26 @@ export const NotificationTimeline = ({ items }: NotificationTimelineProps) => {
   const hasMore = items.length > 3;
 
   const getIcon = (type: string) => {
-    switch (type) {
-      case "auto":
-        return (
-          <div className="h-8 w-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 z-10">
-            <Bot className="h-4 w-4" />
-          </div>
-        );
-      case "manual":
-        return (
-          <div className="h-8 w-8 rounded-full bg-green-50 border border-green-100 flex items-center justify-center text-green-600 z-10">
-            <User className="h-4 w-4" />
-          </div>
-        );
-      default:
-        return (
-          <div className="h-8 w-8 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-500 z-10">
-            <Bot className="h-4 w-4" />
-          </div>
-        );
+    const lowerType = type?.toLowerCase() || "";
+    
+    if (lowerType.includes("manual") || lowerType.includes("force")) {
+      return (
+        <div className="h-8 w-8 rounded-full bg-green-50 border border-green-100 flex items-center justify-center text-green-600 z-10">
+          <User className="h-4 w-4" />
+        </div>
+      );
     }
+    
+    return (
+      <div className="h-8 w-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 z-10">
+        <Bot className="h-4 w-4" />
+      </div>
+    );
   };
 
   const getEventDescription = (tipoEvento: string): string => {
-    if (tipoEvento === "REENVIO_MANUAL") {
-      return "Você enviou lembrete";
+    if (tipoEvento === "REENVIO_MANUAL" || tipoEvento === "COBRANCA_MANUAL") {
+      return "Envio manual de cobrança";
     }
     const atrasoMatch = tipoEvento.match(/^LEMBRETE_ATRASO_(\d+)$/);
     if (atrasoMatch) {
@@ -46,9 +41,14 @@ export const NotificationTimeline = ({ items }: NotificationTimelineProps) => {
     }
     switch (tipoEvento) {
       case "AVISO_VENCIMENTO":
+      case "DUE_SOON":
         return "Lembrete de vencimento";
       case "AVISO_ANTECIPADO":
         return "Lembrete antecipado";
+      case "DUE_TODAY":
+        return "Lembrete de vencimento hoje";
+      case "OVERDUE":
+        return "Aviso de atraso";
       default:
         return tipoEvento;
     }

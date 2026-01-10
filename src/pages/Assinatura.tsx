@@ -13,14 +13,14 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 // Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
 // Hooks
@@ -30,13 +30,14 @@ import { useSession } from "@/hooks/business/useSession";
 
 // Services
 import {
-  useAssinaturaCobrancas,
-  useGerarPixParaCobranca,
-  usePassageiroContagem,
+    useAssinaturaCobrancas,
+    useGerarPixParaCobranca,
+    usePassageiroContagem,
 } from "@/hooks";
 import { usuarioApi } from "@/services";
 
 // Utils
+import { WhatsappConnect } from "@/components/Whatsapp/WhatsappConnect";
 import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaDialog";
 import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { toast } from "@/utils/notifications/toast";
@@ -237,20 +238,31 @@ export default function Assinatura() {
           <div className="space-y-6 md:p-6 ">
             {/* Dashboard Unificado */}
             {dataWithCounts && (
-              <AssinaturaDashboard
-                plano={plano}
-                assinatura={dataWithCounts.assinatura}
-                metricas={{
-                  passageirosAtivos: dataWithCounts.passageirosAtivos,
-                  limitePassageiros: dataWithCounts.limitePassageiros,
-                  cobrancasEmUso: dataWithCounts.cobrancasEmUso,
-                  franquiaContratada: dataWithCounts.franquiaContratada,
-                }}
-                cobrancas={dataWithCounts.cobrancas}
-                onPagarClick={handlePagarClick}
-                onCancelClick={handleCancelSubscriptionClick}
-                onRefresh={pullToRefreshReload}
-              />
+              <div className="space-y-6">
+                <AssinaturaDashboard
+                  plano={plano}
+                  assinatura={dataWithCounts.assinatura}
+                  metricas={{
+                    passageirosAtivos: dataWithCounts.passageirosAtivos,
+                    limitePassageiros: dataWithCounts.limitePassageiros,
+                    cobrancasEmUso: dataWithCounts.cobrancasEmUso,
+                    franquiaContratada: dataWithCounts.franquiaContratada,
+                  }}
+                  cobrancas={dataWithCounts.cobrancas}
+                  onPagarClick={handlePagarClick}
+                  onCancelClick={handleCancelSubscriptionClick}
+                  onRefresh={pullToRefreshReload}
+                />
+                
+                <div className="mx-1">
+                   {plano.isProfissionalPlan && (
+                       <>
+                           <h2 className="text-lg font-semibold text-gray-800 mb-3 pl-1">Integrações</h2>
+                           <WhatsappConnect />
+                       </>
+                   )}
+                </div>
+              </div>
             )}
           </div>
         </PullToRefreshWrapper>

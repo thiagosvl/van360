@@ -3,11 +3,13 @@ import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import PixKeyDialog from "@/components/dialogs/PixKeyDialog";
 import { PlanUpgradeDialog, PlanUpgradeDialogProps } from "@/components/dialogs/PlanUpgradeDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
+import { WhatsappDialog } from "@/components/dialogs/WhatsappDialog";
 import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_GASTOS, FEATURE_LIMITE_PASSAGEIROS, FEATURE_NOTIFICACOES, FEATURE_RELATORIOS, PLANO_PROFISSIONAL } from "@/constants";
 import { usePixKeyGuard } from "@/hooks/business/usePixKeyGuard";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useWhatsappGuard } from "@/hooks/business/useWhatsappGuard";
 import { Escola } from "@/types/escola";
 import { Veiculo } from "@/types/veiculo";
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
@@ -120,11 +122,34 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           });
       }
   });
+
+  // Global Check for Whatsapp (Professional Plan)
+  useWhatsappGuard({
+    isProfissional: !!isProfissional,
+    isLoading: isProfileLoading,
+    onShouldOpen: () => {
+       // Só abre se não tiver outros dialogs críticos abertos (evitar sobreposição chata)
+       // Mas o requisito é "SEMPRE". Vamos permitir a sobreposição ou gerenciar prioridade?
+       // Vamos priorizar PIX, se PIX estiver ok, mostra Whatsapp.
+       if (!pixKeyDialogState.open) {
+          setWhatsappDialogState({ open: true, canClose: false });
+       }
+    }
+  });
   
   // PixKey Dialog State (Global)
   const [pixKeyDialogState, setPixKeyDialogState] = useState<{
     open: boolean;
     onSuccess?: () => void;
+    canClose?: boolean;
+  }>({
+    open: false,
+    canClose: true
+  });
+
+  // Whatsapp Dialog State (Global)
+  const [whatsappDialogState, setWhatsappDialogState] = useState<{
+    open: boolean;
     canClose?: boolean;
   }>({
     open: false,
@@ -286,6 +311,12 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             // Actually PixKeyDialog calls onSuccess then onClose. 
             // So onClose here updates state to false. correctness verified.
         }}
+      />
+      
+      <WhatsappDialog 
+         isOpen={whatsappDialogState.open}
+         onClose={() => setWhatsappDialogState(prev => ({ ...prev, open: false }))}
+         canClose={whatsappDialogState.canClose}
       />
     </LayoutContext.Provider>
   );

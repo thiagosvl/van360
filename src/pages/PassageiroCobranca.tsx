@@ -1,7 +1,7 @@
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 
-
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
+import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { NotificationTimeline } from "@/components/features/cobranca/NotificationTimeline";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Badge } from "@/components/ui/badge";
@@ -9,12 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FEATURE_COBRANCA_AUTOMATICA, PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
-import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCobranca,
-  useCobrancaNotificacoes,
-} from "@/hooks";
+  FEATURE_COBRANCA_AUTOMATICA,
+  PASSAGEIRO_COBRANCA_STATUS_PAGO,
+} from "@/constants";
+import { useLayout } from "@/contexts/LayoutContext";
+import { useCobranca, useCobrancaNotificacoes } from "@/hooks";
 import { useCobrancaOperations } from "@/hooks/business/useCobrancaActions";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -25,6 +25,8 @@ import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import { Passageiro } from "@/types/passageiro";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
+  canSendNotification,
+  canViewReceipt,
   disableEditarCobranca,
   disableExcluirCobranca,
   disableRegistrarPagamento,
@@ -61,12 +63,13 @@ import {
   MapPin,
   Pencil,
   Phone,
+  Receipt,
   School,
   Send,
   Trash2,
   User,
   Wallet,
-  XCircle
+  XCircle,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -125,8 +128,6 @@ const CobrancaSkeleton = () => (
   </div>
 );
 
-
-
 export default function PassageiroCobranca() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -137,19 +138,15 @@ export default function PassageiroCobranca() {
   };
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const { setPageTitle } = useLayout();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
   const { user } = useSession();
-  const { plano, profile } = useProfile(user?.id);
+  const { plano } = useProfile(user?.id);
   const permissions = usePermissions();
 
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
-  
-
-
-
 
   // Buscar cobrança usando React Query
   const {
@@ -162,10 +159,9 @@ export default function PassageiroCobranca() {
     enabled: !!cobranca_id,
   });
 
-  const { data: notificacoesData, refetch: refetchNotificacoes } =
-    useCobrancaNotificacoes(cobranca_id, {
-      enabled: !!cobranca_id,
-    });
+  const { data: notificacoesData } = useCobrancaNotificacoes(cobranca_id, {
+    enabled: !!cobranca_id,
+  });
 
   const cobranca = cobrancaData as Cobranca | null;
   const cobrancaTyped = cobranca;
@@ -231,28 +227,22 @@ export default function PassageiroCobranca() {
     return cobranca;
   }, [cobranca]);
 
-  const { 
-    handleToggleLembretes, 
-    handleEnviarNotificacao, 
+  const {
+    handleToggleLembretes,
+    handleEnviarNotificacao,
     handleDesfazerPagamento,
     handleDeleteCobranca,
     handleUpgrade,
-    isActionLoading
+    isActionLoading,
   } = useCobrancaOperations({
-     cobranca: cobranca!, // Asserting non-null because of checks above
-     plano: plano,
-     onActionSuccess: () => {
-         refetchCobranca();
-         refetchNotificacoes();
-     }
+    cobranca: cobranca!, // Asserting non-null because of checks above
+    plano: plano,
   });
 
-
-
   const handleCopyEndereco = async () => {
-    if (!cobrancaTyped?.passageiros) return;
+    if (!cobrancaTyped?.passageiro) return;
     const passageiroSemReferencia = {
-      ...cobrancaTyped.passageiros,
+      ...cobrancaTyped.passageiro,
       referencia: "",
     };
     const enderecoCompleto = formatarEnderecoCompleto(
@@ -269,11 +259,11 @@ export default function PassageiroCobranca() {
   };
 
   const handleCopyTelefone = async () => {
-    if (!cobrancaTyped?.passageiros?.telefone_responsavel) return;
+    if (!cobrancaTyped?.passageiro?.telefone_responsavel) return;
     try {
       await navigator.clipboard.writeText(
         formatarTelefone(
-          (cobrancaTyped.passageiros as Passageiro).telefone_responsavel
+          (cobrancaTyped.passageiro as Passageiro).telefone_responsavel
         )
       );
       setIsCopiedTelefone(true);
@@ -285,7 +275,7 @@ export default function PassageiroCobranca() {
 
   useEffect(() => {
     if (cobranca) {
-      setPageTitle(`Cobrança de ${cobranca.passageiros.nome.split(" ")[0]}`);
+      setPageTitle(`Cobrança de ${cobranca.passageiro.nome.split(" ")[0]}`);
     }
   }, [cobranca, setPageTitle]);
 
@@ -313,7 +303,7 @@ export default function PassageiroCobranca() {
 
   if (!cobranca || !cobrancaTyped) return null;
   if (!cobranca || !cobrancaTyped) return null;
-  const passageiroCompleto = cobrancaTyped.passageiros as Passageiro;
+  const passageiroCompleto = cobrancaTyped.passageiro as Passageiro;
 
   const pullToRefreshReload = async () => {
     await refetchCobranca();
@@ -384,7 +374,7 @@ export default function PassageiroCobranca() {
                     <div
                       className={cn(
                         "h-24 w-24 rounded-full bg-gray-50 flex items-center justify-center border-4 border-white shadow-sm",
-                        cobrancaTyped.passageiros.ativo
+                        cobrancaTyped.passageiro.ativo
                           ? "ring-2 ring-offset-2 ring-green-500"
                           : "ring-2 ring-offset-2 ring-red-500"
                       )}
@@ -394,20 +384,20 @@ export default function PassageiroCobranca() {
                     <div
                       className={cn(
                         "absolute bottom-1 right-1 h-5 w-5 rounded-full border-2 border-white",
-                        cobrancaTyped.passageiros.ativo
+                        cobrancaTyped.passageiro.ativo
                           ? "bg-green-500"
                           : "bg-red-500"
                       )}
                       title={
-                        cobrancaTyped.passageiros.ativo ? "Ativo" : "Desativado"
+                        cobrancaTyped.passageiro.ativo ? "Ativo" : "Desativado"
                       }
                     />
                   </div>
                   <h2 className="text-xl font-bold text-gray-900">
-                    {cobrancaTyped.passageiros.nome}
+                    {cobrancaTyped.passageiro.nome}
                   </h2>
                   <p className="text-sm text-gray-500 font-medium mt-1">
-                    {cobrancaTyped.passageiros.nome_responsavel}
+                    {cobrancaTyped.passageiro.nome_responsavel}
                   </p>
                 </div>
 
@@ -465,7 +455,7 @@ export default function PassageiroCobranca() {
                               <div className="flex items-center gap-2">
                                 <span className="text-sm">
                                   {formatarEnderecoCompleto(
-                                    cobrancaTyped.passageiros as Passageiro
+                                    cobrancaTyped.passageiro as Passageiro
                                   )}
                                 </span>
                                 <Button
@@ -492,11 +482,11 @@ export default function PassageiroCobranca() {
                   {/* Info Grid - Blocos Estilizados */}
                   <div className="grid grid-cols-2 gap-3">
                     <SidebarInfoBlock icon={School} label="Escola">
-                      {cobrancaTyped.passageiros.escolas.nome}
+                      {cobrancaTyped.passageiro.escola.nome}
                     </SidebarInfoBlock>
                     <SidebarInfoBlock icon={Car} label="Veículo">
                       {formatarPlacaExibicao(
-                        cobrancaTyped.passageiros.veiculos.placa
+                        cobrancaTyped.passageiro.veiculo.placa
                       )}
                     </SidebarInfoBlock>
                   </div>
@@ -657,35 +647,51 @@ export default function PassageiroCobranca() {
                         <Pencil className="w-3.5 h-3.5 mr-2" /> Editar Cobrança
                       </Button>
 
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
-                            disabled={seForPago(cobrancaTyped)}
-                            onClick={handleEnviarNotificacao}
-                          >
-                            <Send className="w-3.5 h-3.5 mr-2" /> Enviar
-                            Cobrança
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
-                            disabled={seForPago(cobrancaTyped)}
-                            onClick={handleToggleLembretes}
-                          >
-                            {cobrancaTyped.desativar_lembretes ? (
-                              <>
-                                <Bell className="w-3.5 h-3.5 mr-2" /> Ativar
-                                Notificações
-                              </>
-                            ) : (
-                              <>
-                                <BellOff className="w-3.5 h-3.5 mr-2" /> Pausar
-                                Notificações
-                              </>
-                            )}
-                          </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
+                        disabled={!canSendNotification(cobrancaTyped)}
+                        onClick={handleEnviarNotificacao}
+                      >
+                        <Send className="w-3.5 h-3.5 mr-2" /> Enviar Cobrança
+                      </Button>
+
+                      {canViewReceipt(cobrancaTyped) && (
+                        <ReceiptDialog
+                          url={cobrancaTyped.recibo_url}
+                          trigger={
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
+                            >
+                              <Receipt className="w-3.5 h-3.5 mr-2" /> Ver
+                              Recibo
+                            </Button>
+                          }
+                        />
+                      )}
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
+                        disabled={seForPago(cobrancaTyped)}
+                        onClick={handleToggleLembretes}
+                      >
+                        {cobrancaTyped.desativar_lembretes ? (
+                          <>
+                            <Bell className="w-3.5 h-3.5 mr-2" /> Ativar
+                            Notificações
+                          </>
+                        ) : (
+                          <>
+                            <BellOff className="w-3.5 h-3.5 mr-2" /> Pausar
+                            Notificações
+                          </>
+                        )}
+                      </Button>
                     </div>
 
                     {/* Delete Action (Separado por borda para segurança) */}
@@ -767,8 +773,8 @@ export default function PassageiroCobranca() {
                   isOpen={paymentDialogOpen}
                   onClose={() => setPaymentDialogOpen(false)}
                   cobrancaId={cobranca_id}
-                  passageiroNome={cobrancaTyped.passageiros.nome}
-                  responsavelNome={cobrancaTyped.passageiros.nome_responsavel}
+                  passageiroNome={cobrancaTyped.passageiro.nome}
+                  responsavelNome={cobrancaTyped.passageiro.nome_responsavel}
                   valorOriginal={Number(cobrancaTyped.valor)}
                   status={cobrancaTyped.status}
                   dataVencimento={cobrancaTyped.data_vencimento}
@@ -777,7 +783,7 @@ export default function PassageiroCobranca() {
                     // Upsell Check
                     if (!permissions.canUseAutomatedCharges) {
                       handleUpgrade(
-                        FEATURE_COBRANCA_AUTOMATICA, 
+                        FEATURE_COBRANCA_AUTOMATICA,
                         "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?",
                         "Cobrança Automática"
                       );
@@ -804,13 +810,7 @@ export default function PassageiroCobranca() {
             </div>
           </div>
 
-
-
-          <LoadingOverlay
-            active={isActionLoading}
-          />
-          
-
+          <LoadingOverlay active={isActionLoading} />
         </div>
       </PullToRefreshWrapper>
     </>

@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { gastoApi } from "@/services/api/gasto.api";
 import { Gasto } from "@/types/gasto";
 import { toast } from "@/utils/notifications/toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateGasto() {
   const queryClient = useQueryClient();
@@ -15,7 +15,7 @@ export function useCreateGasto() {
     },
     onError: (error: any) => {
       toast.error("gasto.erro.criar", {
-        description: error.message || "Não foi possível criar o gasto.",
+        description: getErrorMessage(error, "Não foi possível criar o gasto."),
       });
     },
   });
@@ -46,7 +46,7 @@ export function useUpdateGasto() {
         });
       }
       toast.error("gasto.erro.atualizar", {
-        description: error.message || "Não foi possível atualizar o gasto.",
+        description: getErrorMessage(error, "Não foi possível atualizar o gasto."),
       });
     },
     onSuccess: () => {
@@ -82,7 +82,7 @@ export function useDeleteGasto() {
         });
       }
       toast.error("gasto.erro.excluir", {
-        description: error.message || "Não foi possível excluir o gasto.",
+        description: getErrorMessage(error, "Não foi possível excluir o gasto."),
       });
     },
     onSuccess: () => {

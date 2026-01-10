@@ -245,8 +245,8 @@ const Cobrancas = () => {
     const searchTerm = buscaAbertas.toLowerCase();
     return cobrancasAbertas.filter(
       (c) =>
-        c.passageiros.nome.toLowerCase().includes(searchTerm) ||
-        c.passageiros.nome_responsavel?.toLowerCase().includes(searchTerm)
+        c.passageiro.nome.toLowerCase().includes(searchTerm) ||
+        c.passageiro.nome_responsavel?.toLowerCase().includes(searchTerm)
     );
   }, [cobrancasAbertas, buscaAbertas]);
 
@@ -255,8 +255,8 @@ const Cobrancas = () => {
     const searchTerm = buscaPagas.toLowerCase();
     return cobrancasPagas.filter(
       (c) =>
-        c.passageiros.nome.toLowerCase().includes(searchTerm) ||
-        c.passageiros.nome_responsavel?.toLowerCase().includes(searchTerm)
+        c.passageiro.nome.toLowerCase().includes(searchTerm) ||
+        c.passageiro.nome_responsavel?.toLowerCase().includes(searchTerm)
     );
   }, [cobrancasPagas, buscaPagas]);
 
@@ -420,14 +420,14 @@ const Cobrancas = () => {
                                 getStatusColor(cobranca.status, cobranca.data_vencimento)
                               )}
                             >
-                              {cobranca.passageiros.nome.charAt(0)}
+                              {cobranca.passageiro.nome.charAt(0)}
                             </div>
                             <div>
                               <p className="font-bold text-gray-900 text-sm">
-                                {cobranca.passageiros.nome}
+                                {cobranca.passageiro.nome}
                               </p>
                               <p className="text-xs text-gray-500">
-                                {cobranca.passageiros.nome_responsavel ||
+                                {cobranca.passageiro.nome_responsavel ||
                                   "Não inf."}{" "}
                                 •{" "}
                                 <span className="text-sm font-bold text-gray-900 tracking-tight">
@@ -517,14 +517,14 @@ const Cobrancas = () => {
                                       cobranca.data_vencimento
                                     )}`}
                                   >
-                                    {cobranca.passageiros.nome.charAt(0)}
+                                    {cobranca.passageiro.nome.charAt(0)}
                                   </div>
                                   <div>
                                     <p className="font-bold text-gray-900 text-sm">
-                                      {cobranca.passageiros.nome}
+                                      {cobranca.passageiro.nome}
                                     </p>
                                     <p className="text-xs text-gray-500">
-                                      {cobranca.passageiros.nome_responsavel ||
+                                      {cobranca.passageiro.nome_responsavel ||
                                         "Responsável não inf."}
                                     </p>
                                   </div>
@@ -624,14 +624,14 @@ const Cobrancas = () => {
                                   getStatusColor(cobranca.status, cobranca.data_vencimento)
                                 )}
                               >
-                                {cobranca.passageiros.nome.charAt(0)}
+                                {cobranca.passageiro.nome.charAt(0)}
                               </div>
                               <div>
                                 <p className="font-bold text-gray-900 text-sm">
-                                  {cobranca.passageiros.nome}
+                                  {cobranca.passageiro.nome}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                  {cobranca.passageiros.nome_responsavel ||
+                                  {cobranca.passageiro.nome_responsavel ||
                                     "Não inf."}{" "}
                                   •{" "}
                                   <span className="text-sm font-bold text-gray-900 tracking-tight">
@@ -715,14 +715,14 @@ const Cobrancas = () => {
                                         getStatusColor(cobranca.status, cobranca.data_vencimento)
                                       )}
                                     >
-                                      {cobranca.passageiros.nome.charAt(0)}
+                                      {cobranca.passageiro.nome.charAt(0)}
                                     </div>
                                     <div>
                                       <p className="font-bold text-gray-900 text-sm">
-                                        {cobranca.passageiros.nome}
+                                        {cobranca.passageiro.nome}
                                       </p>
                                       <p className="text-xs text-gray-500">
-                                        {cobranca.passageiros.nome_responsavel ||
+                                        {cobranca.passageiro.nome_responsavel ||
                                           "Responsável não inf."}
                                       </p>
                                     </div>
@@ -785,8 +785,8 @@ const Cobrancas = () => {
               isOpen={paymentDialogOpen}
               onClose={() => safeCloseDialog(() => setPaymentDialogOpen(false))}
               cobrancaId={selectedCobranca.id}
-              passageiroNome={selectedCobranca.passageiros.nome}
-              responsavelNome={selectedCobranca.passageiros.nome_responsavel}
+              passageiroNome={selectedCobranca.passageiro.nome}
+              responsavelNome={selectedCobranca.passageiro.nome_responsavel}
               valorOriginal={Number(selectedCobranca.valor)}
               status={selectedCobranca.status}
               dataVencimento={selectedCobranca.data_vencimento}

@@ -68,6 +68,11 @@ export function CepInput<T extends FieldValues>({
             if (form.getValues("estado" as FieldPath<T>) !== undefined) {
               form.setValue("estado" as FieldPath<T>, endereco.estado);
             }
+
+            // Limpa os erros de validação dos campos preenchidos automaticamente
+            // @ts-ignore - Tipagem dinâmica do react-hook-form
+            form.clearErrors(["logradouro", "bairro", "cidade", "estado"]);
+
             // Limpar número e referência para evitar dados incorretos
             if (form.getValues("numero" as FieldPath<T>) !== undefined) {
               form.setValue("numero" as FieldPath<T>, "" as any);

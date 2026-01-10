@@ -10,7 +10,7 @@ export interface Cobranca {
   data_vencimento: string;
   data_pagamento?: string;
   tipo_pagamento?: string;
-  passageiros?: Partial<Passageiro>;
+  passageiro?: Partial<Passageiro>;
   desativar_lembretes?: boolean;
   pagamento_manual?: boolean;
   origem: string;
@@ -18,4 +18,7 @@ export interface Cobranca {
   valor_a_repassar?: number;
   txid_pix?: string;
   data_envio_notificacao?: string;
+  qr_code_payload?: string;
+  url_qr_code?: string;
+  recibo_url?: string;
 }

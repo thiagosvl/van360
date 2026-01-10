@@ -192,7 +192,7 @@ export const CarteirinhaInfo = ({
       icon: Car,
       label: "Veículo",
       content:
-        formatarPlacaExibicao(passageiro.veiculos?.placa) || "Não informado",
+        formatarPlacaExibicao(passageiro.veiculo?.placa) || "Não informado",
     },
     {
       icon: CalendarDays,
@@ -324,9 +324,9 @@ export const CarteirinhaInfo = ({
               </div>
               <p
                 className="font-semibold text-gray-900 text-sm sm:text-base"
-                title={passageiro.escolas?.nome}
+                title={passageiro.escola?.nome}
               >
-                {passageiro.escolas?.nome || "—"}
+                {passageiro.escola?.nome || "—"}
               </p>
             </div>
 

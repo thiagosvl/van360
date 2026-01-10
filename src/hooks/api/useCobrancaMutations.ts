@@ -1,5 +1,6 @@
 import { cobrancaApi } from "@/services/api/cobranca.api";
 import { Cobranca } from "@/types/cobranca";
+import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -28,7 +29,7 @@ export function useCreateCobranca() {
       }
     
       toast.error("cobranca.erro.criar", {
-        description: error.message || "cobranca.erro.criarDetalhe",
+        description: getErrorMessage(error, "cobranca.erro.criarDetalhe"),
       });
     },
   });
@@ -87,7 +88,7 @@ export function useUpdateCobranca() {
         });
       }
       toast.error("cobranca.erro.atualizar", {
-        description: error.message || "cobranca.erro.atualizarDetalhe",
+        description: getErrorMessage(error, "cobranca.erro.atualizarDetalhe"),
       });
     },
     onSuccess: (_, variables) => {
@@ -152,7 +153,7 @@ export function useDeleteCobranca() {
         });
       }
       toast.error("cobranca.erro.excluir", {
-        description: error.message || "cobranca.erro.excluirDetalhe",
+        description: getErrorMessage(error, "cobranca.erro.excluirDetalhe"),
       });
     },
     onSuccess: () => {
@@ -201,7 +202,7 @@ export function useDesfazerPagamento() {
     },
     onError: (error: any) => {
       toast.error("cobranca.erro.desfazerPagamento", {
-        description: error.message || "cobranca.erro.desfazerPagamentoDetalhe",
+        description: getErrorMessage(error, "cobranca.erro.desfazerPagamentoDetalhe"),
       });
     },
   });
@@ -236,7 +237,7 @@ export function useRegistrarPagamentoManual() {
     },
     onError: (error: any) => {
       toast.error("cobranca.erro.registrarPagamento", {
-        description: error.message || "cobranca.erro.registrarPagamentoDetalhe",
+        description: getErrorMessage(error, "cobranca.erro.registrarPagamentoDetalhe"),
       });
     },
   });
@@ -259,7 +260,7 @@ export function useEnviarNotificacaoCobranca() {
     },
     onError: (error: any) => {
       toast.error("cobranca.erro.notificacao", {
-        description: error.message || "cobranca.erro.notificacaoDetalhe",
+        description: getErrorMessage(error, "cobranca.erro.notificacaoDetalhe"),
       });
     },
   });
@@ -287,7 +288,7 @@ export function useToggleNotificacoesCobranca() {
     },
     onError: (error: any) => {
       toast.error("cobranca.erro.alterarNotificacoes", {
-        description: error.message || "cobranca.erro.alterarNotificacoesDetalhe",
+        description: getErrorMessage(error, "cobranca.erro.alterarNotificacoesDetalhe"),
       });
     },
   });

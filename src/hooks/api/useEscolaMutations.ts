@@ -72,7 +72,7 @@ export function useUpdateEscola() {
         });
       }
       toast.error("escola.erro.atualizar", {
-        description: error.message || "escola.erro.atualizarDetalhe",
+        description: getErrorMessage(error, "escola.erro.atualizarDetalhe"),
       });
     },
     onSuccess: () => {
@@ -117,7 +117,7 @@ export function useDeleteEscola() {
         });
       }
       toast.error("escola.erro.excluir", {
-        description: error.message || "escola.erro.excluirDetalhe",
+        description: getErrorMessage(error, "escola.erro.excluirDetalhe"),
       });
     },
     onSuccess: () => {
@@ -167,7 +167,7 @@ export function useToggleAtivoEscola() {
         });
       }
       toast.error("escola.erro.alterarStatus", {
-        description: error.message || "escola.erro.alterarStatusDetalhe",
+        description: getErrorMessage(error, "escola.erro.alterarStatusDetalhe"),
       });
     },
     onSuccess: (data, variables) => {
