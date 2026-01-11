@@ -4,8 +4,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
@@ -71,9 +70,6 @@ export default function CobrancaEditDialog({
           <DialogTitle className="text-xl font-bold text-white">
             Edição de Cobrança
           </DialogTitle>
-          <DialogDescription className="text-blue-100/80 text-sm mt-1">
-            Atualize os dados da cobrança.
-          </DialogDescription>
         </div>
 
         <div className="p-4 sm:p-6 pt-2 overflow-y-auto flex-1 bg-white">
@@ -125,8 +121,8 @@ export default function CobrancaEditDialog({
               <div className="text-sm">
                 <p className="font-bold text-amber-800 mb-0.5">Atenção!</p>
                 <p className="text-amber-700 leading-relaxed text-xs">
-                  Ao salvar alterações de preço ou data, o PIX atual será{" "}
-                  <strong>invalidado e regenerado</strong> automaticamente.
+                  Ao realizar alterações de preço ou data, <strong>o PIX atual será{" "}
+                  cancelado (ficará inválido) e um novo PIX será gerado</strong>.
                 </p>
                 {cobranca.data_envio_notificacao && (
                   <p className="text-amber-800 font-semibold mt-1 text-xs underline">

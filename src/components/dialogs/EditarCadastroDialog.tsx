@@ -10,7 +10,6 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogTitle
 } from "@/components/ui/dialog";
 import {
@@ -192,9 +191,6 @@ export default function EditarCadastroDialog({
           <DialogTitle className="text-xl font-bold text-white">
             Editar Perfil
           </DialogTitle>
-          <DialogDescription className="text-blue-100/80 text-sm mt-1">
-             Atualize suas informações de perfil e recebimento.
-          </DialogDescription>
         </div>
 
         <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">

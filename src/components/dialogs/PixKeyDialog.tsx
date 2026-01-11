@@ -3,7 +3,6 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogTitle
 } from "@/components/ui/dialog";
 import {
@@ -431,9 +430,6 @@ export default function PixKeyDialog({
           <DialogTitle className="text-xl font-bold text-white">
             Configurar Recebimento
           </DialogTitle>
-          <DialogDescription className="text-blue-100/90 text-sm mt-1 max-w-[280px] mx-auto leading-relaxed">
-             Para receber pagamentos automáticos, precisamos da sua chave PIX.
-          </DialogDescription>
         </div>
 
         {renderContent()}

@@ -9,6 +9,7 @@ interface CobrancaActionsMenuProps {
   onVerCobranca?: () => void;
   onEditarCobranca?: () => void;
   onRegistrarPagamento?: () => void;
+  onPagarPix?: () => void;
   onEnviarNotificacao?: () => void;
   onToggleLembretes?: () => void;
   onDesfazerPagamento?: () => void;
@@ -26,6 +27,7 @@ export const CobrancaActionsMenu = ({
   onVerCobranca,
   onEditarCobranca,
   onRegistrarPagamento,
+  onPagarPix,
   onEnviarNotificacao,
   onToggleLembretes,
   onDesfazerPagamento,
@@ -42,6 +44,7 @@ export const CobrancaActionsMenu = ({
     onVerCarteirinha,
     onEditarCobranca,
     onRegistrarPagamento,
+    onPagarPix,
     onUpgrade: onUpgrade ? (f, d) => onUpgrade(f) : undefined,
     onVerRecibo,
     onActionSuccess,

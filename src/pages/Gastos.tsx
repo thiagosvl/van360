@@ -36,7 +36,10 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 // Utils
 import { FEATURE_GASTOS, PLANO_ESSENCIAL } from "@/constants";
 import { cn } from "@/lib/utils";
-import { MOCK_DATA_NO_ACCESS_GASTOS, MOCK_VEICULOS } from "@/utils/mocks/restrictedData";
+import {
+  MOCK_DATA_NO_ACCESS_GASTOS,
+  MOCK_VEICULOS,
+} from "@/utils/mocks/restrictedData";
 // import { enablePageActions } from "@/utils/domain/pages/pagesUtils"; // DEPRECATED
 
 // Types
@@ -53,11 +56,8 @@ import {
 } from "lucide-react";
 
 export default function Gastos() {
-  const { 
-    setPageTitle, 
-    openPlanUpgradeDialog,
-    openGastoFormDialog 
-  } = useLayout();
+  const { setPageTitle, openPlanUpgradeDialog, openGastoFormDialog } =
+    useLayout();
   const deleteGasto = useDeleteGasto();
 
   const isActionLoading = deleteGasto.isPending;
@@ -73,7 +73,6 @@ export default function Gastos() {
     setSelectedCategoria,
     selectedVeiculo: veiculoFilter = "todos",
     setSelectedVeiculo,
-    setFilters,
   } = useFilters({
     mesParam: "mes",
     anoParam: "ano",
@@ -82,10 +81,12 @@ export default function Gastos() {
     searchParam: "search",
   });
 
-  
   // Authorization Hook
-  // Authorization Hook
-  const { profile, isLoading: isAuthLoading, canViewModuleGastos } = usePermissions();
+  const {
+    profile,
+    isLoading: isAuthLoading,
+    canViewModuleGastos,
+  } = usePermissions();
   const enabledPageActions = canViewModuleGastos;
   const loadingActions = isAuthLoading;
 
@@ -134,14 +135,17 @@ export default function Gastos() {
     [deleteGasto]
   );
 
-  const openDialog = useCallback((gasto: Gasto | null = null) => {
-    openGastoFormDialog({
+  const openDialog = useCallback(
+    (gasto: Gasto | null = null) => {
+      openGastoFormDialog({
         gastoToEdit: gasto,
         veiculos: veiculos.map((v) => ({ id: v.id, placa: v.placa })),
         usuarioId: profile?.id,
-        onSuccess: refetchGastos
-    });
-  }, [openGastoFormDialog, veiculos, profile?.id, refetchGastos]);
+        onSuccess: refetchGastos,
+      });
+    },
+    [openGastoFormDialog, veiculos, profile?.id, refetchGastos]
+  );
 
   const pullToRefreshReload = async () => {
     if (!enabledPageActions) return;
@@ -155,6 +159,23 @@ export default function Gastos() {
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div>
           <div className="space-y-6 md:space-y-8">
+            {/* Banner Modo Demo */}
+            {!enabledPageActions && (
+              <div className="bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-4 flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="bg-orange-200 p-1.5 rounded-full shrink-0">
+                    <Lock className="w-3.5 h-3.5 text-orange-700" />
+                  </div>
+                  <span className="text-sm text-orange-900 font-semibold leading-tight">
+                    Dados de exemplo para demonstração
+                  </span>
+                </div>
+                <span className="text-[10px] uppercase font-bold text-orange-600 tracking-wider shrink-0 whitespace-nowrap ml-4">
+                  MODO DEMO
+                </span>
+              </div>
+            )}
+
             {/* 1. Header & Navigation */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <DateNavigation
@@ -168,31 +189,26 @@ export default function Gastos() {
               />
             </div>
 
-            {/* Banner Modo Demo */}
-            {!enabledPageActions && (
-              <div className="bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-4 flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-3">
-                    <div className="bg-orange-200 p-1.5 rounded-full shrink-0">
-                        <Lock className="w-3.5 h-3.5 text-orange-700" />
-                    </div>
-                    <span className="text-sm text-orange-900 font-semibold leading-tight">Dados de exemplo para demonstração</span>
-                </div>
-                <span className="text-[10px] uppercase font-bold text-orange-600 tracking-wider shrink-0 whitespace-nowrap ml-4">MODO DEMO</span>
-              </div>
-            )}
-
             {/* 2. KPIs */}
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               <KPICard
                 title="Gasto Total"
                 value={
                   <BlurredValue
-                    value={enabledPageActions ? displayData.totalGasto : MOCK_DATA_NO_ACCESS_GASTOS.totalGasto}
+                    value={
+                      enabledPageActions
+                        ? displayData.totalGasto
+                        : MOCK_DATA_NO_ACCESS_GASTOS.totalGasto
+                    }
                     visible={true} // Sempre visível (Real ou Demo)
                     type="currency"
                   />
                 }
-                count={enabledPageActions ? displayData.gastosFiltrados.length : MOCK_DATA_NO_ACCESS_GASTOS.gastos.length}
+                count={
+                  enabledPageActions
+                    ? displayData.gastosFiltrados.length
+                    : MOCK_DATA_NO_ACCESS_GASTOS.gastos.length
+                }
                 icon={TrendingDown}
                 bgClass="bg-red-50"
                 colorClass="text-red-600"
@@ -213,9 +229,12 @@ export default function Gastos() {
                     visible={true}
                     type="text"
                     className={cn(
-                      (enabledPageActions
-                        ? displayData.principalCategoriaData?.name?.length >= 12
-                        : false)
+                      (
+                        enabledPageActions
+                          ? displayData.principalCategoriaData?.name?.length >=
+                            12
+                          : false
+                      )
                         ? "text-xs sm:text-lg"
                         : "text-base sm:text-lg",
                       "font-bold"
@@ -247,7 +266,11 @@ export default function Gastos() {
                 title="Média Diária"
                 value={
                   <BlurredValue
-                    value={enabledPageActions ? displayData.mediaDiaria : MOCK_DATA_NO_ACCESS_GASTOS.mediaDiaria}
+                    value={
+                      enabledPageActions
+                        ? displayData.mediaDiaria
+                        : MOCK_DATA_NO_ACCESS_GASTOS.mediaDiaria
+                    }
                     visible={true}
                     type="currency"
                   />
@@ -256,11 +279,7 @@ export default function Gastos() {
                 bgClass="bg-blue-50"
                 colorClass="text-blue-600"
                 countText={
-                  <BlurredValue
-                    value="por dia"
-                    visible={true}
-                    type="text"
-                  />
+                  <BlurredValue value="por dia" visible={true} type="text" />
                 }
                 countVisible={true}
               />
@@ -290,7 +309,11 @@ export default function Gastos() {
                         })
                   }
                   categorias={CATEGORIAS_GASTOS}
-                  veiculos={enabledPageActions ? veiculos.map((v) => ({ id: v.id, placa: v.placa })) : MOCK_VEICULOS}
+                  veiculos={
+                    enabledPageActions
+                      ? veiculos.map((v) => ({ id: v.id, placa: v.placa }))
+                      : MOCK_VEICULOS
+                  }
                   disabled={loading || loadingActions}
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
@@ -299,24 +322,30 @@ export default function Gastos() {
                 {loading ? (
                   <Skeleton className="h-40 w-full" />
                 ) : (
-                    <div
-                      className={cn(
-                        "relative",
-                        !enabledPageActions && "pb-20 md:pb-0"
-                      )}
-                    >
-
-
+                  <div
+                    className={cn(
+                      "relative",
+                      !enabledPageActions && "pb-20 md:pb-0"
+                    )}
+                  >
                     <GastosList
-                      gastos={!enabledPageActions ? (MOCK_DATA_NO_ACCESS_GASTOS.gastos as unknown as Gasto[]) : displayData.gastosFiltrados}
+                      gastos={
+                        !enabledPageActions
+                          ? (MOCK_DATA_NO_ACCESS_GASTOS.gastos as unknown as Gasto[])
+                          : displayData.gastosFiltrados
+                      }
                       onEdit={openDialog}
                       onDelete={handleDelete}
                       isRestricted={!enabledPageActions}
                       showVisibleValues={true} // Modo Demo: mostra valores mesmo restrito
-                      veiculos={enabledPageActions ? veiculos.map((v) => ({
-                        id: v.id,
-                        placa: v.placa,
-                      })) : MOCK_VEICULOS}
+                      veiculos={
+                        enabledPageActions
+                          ? veiculos.map((v) => ({
+                              id: v.id,
+                              placa: v.placa,
+                            }))
+                          : MOCK_VEICULOS
+                      }
                     />
 
                     {!enabledPageActions && (
@@ -329,13 +358,17 @@ export default function Gastos() {
                             Quer ver seu lucro de verdade?
                           </h3>
                           <p className="text-sm text-gray-600 mb-6">
-                            Chega de adivinhar. Saiba exatamente quanto sua van gasta com combustível, manutenção e salários e descubra o seu lucro real.
+                            Chega de adivinhar. Saiba exatamente quanto sua van
+                            gasta com combustível, manutenção e salários e
+                            descubra o seu lucro real.
                           </p>
                           <Button
-                            onClick={() => openPlanUpgradeDialog({
-                              feature: FEATURE_GASTOS,
-                              defaultTab: PLANO_ESSENCIAL,
-                            })}
+                            onClick={() =>
+                              openPlanUpgradeDialog({
+                                feature: FEATURE_GASTOS,
+                                defaultTab: PLANO_ESSENCIAL,
+                              })
+                            }
                             className="bg-orange-600 hover:bg-orange-700 text-white font-semibold h-12 px-8 rounded-xl shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all transform hover:-translate-y-0.5"
                           >
                             Liberar Acesso
@@ -370,9 +403,6 @@ export default function Gastos() {
               </CardContent>
             </Card>
           </div>
-
-
-
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Aguarde..." />
@@ -383,10 +413,12 @@ export default function Gastos() {
         title="Quer ver seu lucro real?"
         description="Chega de adivinhar. Libere seu acesso."
         buttonText="Liberar Acesso"
-        onAction={() => openPlanUpgradeDialog({
-          feature: FEATURE_GASTOS,
-          defaultTab: PLANO_ESSENCIAL,
-        })}
+        onAction={() =>
+          openPlanUpgradeDialog({
+            feature: FEATURE_GASTOS,
+            defaultTab: PLANO_ESSENCIAL,
+          })
+        }
       />
     </>
   );

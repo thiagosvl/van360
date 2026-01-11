@@ -1,10 +1,9 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { CheckCircle2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -65,11 +64,6 @@ export function PagamentoSucessoDialog({
           <DialogTitle className="text-2xl font-bold text-white">
             Pagamento confirmado!
           </DialogTitle>
-          <DialogDescription className="text-emerald-100 text-sm mt-1">
-            {nomePlano
-              ? `Seu plano ${nomePlano} foi ativado com sucesso.`
-              : "Seu plano foi ativado com sucesso."}
-          </DialogDescription>
         </div>
 
         <div className="p-6 pt-4 bg-white flex-1 overflow-y-auto">

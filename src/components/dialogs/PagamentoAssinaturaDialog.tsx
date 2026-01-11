@@ -1,10 +1,9 @@
 import PagamentoPixContent from "@/components/features/pagamento/PagamentoPixContent";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 
@@ -59,9 +58,6 @@ export default function PagamentoAssinaturaDialog({
         <DialogTitle className="sr-only">
           ASSINATURA
         </DialogTitle>
-        <DialogDescription className="sr-only">
-          Selecione a forma de pagamento e finalize sua assinatura.
-        </DialogDescription>
         
         {/* Botão fechar flutuante */}
         <DialogClose className="absolute right-4 top-4 z-50 text-gray-400 hover:text-gray-600 transition-colors bg-white/50 backdrop-blur-sm rounded-full p-1 border border-gray-100/50">

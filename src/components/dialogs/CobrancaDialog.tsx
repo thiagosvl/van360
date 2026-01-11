@@ -1,19 +1,18 @@
 import { CobrancaFormContent } from "@/components/forms/cobranca/CobrancaForm";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import {
-    Loader2,
-    PlusCircle,
-    User,
-    X
+  Loader2,
+  PlusCircle,
+  User,
+  X
 } from "lucide-react";
 
 interface CobrancaDialogProps {
@@ -72,9 +71,6 @@ export default function CobrancaDialog({
           <DialogTitle className="text-xl font-bold text-white">
             Registrar Cobrança
           </DialogTitle>
-          <DialogDescription className="text-blue-100/80 text-sm mt-1">
-             Preencha os dados da cobrança.
-          </DialogDescription>
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-white">

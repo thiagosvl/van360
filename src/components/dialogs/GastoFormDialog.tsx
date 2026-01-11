@@ -5,8 +5,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -164,9 +163,6 @@ export default function GastoFormDialog({
           <DialogTitle className="text-xl font-bold text-white">
             {gastoToEdit ? "Editar Gasto" : "Registrar Gasto"}
           </DialogTitle>
-          <DialogDescription className="text-blue-100/80 text-sm mt-1">
-             Preencha os dados do gasto.
-          </DialogDescription>
         </div>
 
         <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">

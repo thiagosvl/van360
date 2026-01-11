@@ -1,24 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    useCreateVeiculo,
-    useUpdateVeiculo,
+  useCreateVeiculo,
+  useUpdateVeiculo,
 } from "@/hooks/api/useVeiculoMutations";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -26,8 +25,8 @@ import { Veiculo } from "@/types/veiculo";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
 import {
-    aplicarMascaraPlaca,
-    validarPlaca,
+  aplicarMascaraPlaca,
+  validarPlaca,
 } from "@/utils/domain/veiculo/placaUtils";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -219,11 +218,6 @@ export default function VeiculoFormDialog({
           <DialogTitle className="text-xl font-bold text-white">
             {editingVeiculo ? "Editar Veículo" : "Cadastrar Veículo"}
           </DialogTitle>
-          <DialogDescription className="text-blue-100/80 text-sm mt-1">
-            {editingVeiculo
-              ? "Atualize as informações do veículo."
-              : "Insira os dados do novo veículo."}
-          </DialogDescription>
         </div>
 
         <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">

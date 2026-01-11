@@ -18,6 +18,7 @@ export interface ConfirmationDialogProps {
   title: string;
   description: string;
   onConfirm: () => void | Promise<void>;
+  onCancel?: () => void;
   confirmText?: string;
   cancelText?: string;
    variant?: "default" | "destructive" | "warning" | "success";
@@ -30,6 +31,7 @@ export default function ConfirmationDialog({
   title,
   description,
   onConfirm,
+  onCancel,
   confirmText = "Confirmar",
   cancelText = "Cancelar",
   variant = "default",
@@ -67,6 +69,7 @@ export default function ConfirmationDialog({
         <AlertDialogFooter className="flex-row justify-end gap-2 space-x-0">
           <AlertDialogCancel
             disabled={showLoading}
+            onClick={() => onCancel?.()}
             className="mt-0 h-10 px-4 rounded-xl border-none bg-transparent hover:bg-gray-100 text-gray-700 font-medium transition-colors"
           >
             {cancelText}

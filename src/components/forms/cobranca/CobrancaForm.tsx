@@ -136,10 +136,9 @@ export function CobrancaFormContent({
 
     // --- Logic for Edit Mode ---
     const isPagamentoManual = cobranca?.pagamento_manual;
-    const isOrigemAutomatica = cobranca?.origem === "automatica";
 
     // Condições de bloqueio
-    const shouldDisableValue = mode === "edit" && ((isPaga && !isPagamentoManual) || isOrigemAutomatica);
+    const shouldDisableValue = mode === "edit" && (isPaga && !isPagamentoManual);
     const shouldDisableDueDate = mode === "edit" && isPaga;
     // Disable calendar date logic for Edit Vencimento
     const cobrancaMesAnoDate = cobranca ? new Date(cobranca.data_vencimento) : new Date();

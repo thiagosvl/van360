@@ -359,7 +359,11 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           }}
           title={confirmationDialogState.props.title}
           description={confirmationDialogState.props.description}
-          onConfirm={confirmationDialogState.props.onConfirm}
+          onConfirm={() =>
+            safeCloseDialog(() => {
+              confirmationDialogState.props.onConfirm();
+            })
+          }
           confirmText={confirmationDialogState.props.confirmText}
           cancelText={confirmationDialogState.props.cancelText}
           variant={confirmationDialogState.props.variant}

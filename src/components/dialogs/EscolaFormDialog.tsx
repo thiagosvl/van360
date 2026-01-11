@@ -1,39 +1,38 @@
 import { CepInput } from "@/components/forms";
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-    useCreateEscola,
-    useUpdateEscola,
+  useCreateEscola,
+  useUpdateEscola,
 } from "@/hooks/api/useEscolaMutations";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -299,11 +298,6 @@ export default function EscolaFormDialog({
             <DialogTitle className="text-xl font-bold text-white">
               {editingEscola ? "Editar Escola" : "Cadastrar Escola"}
             </DialogTitle>
-            <DialogDescription className="text-blue-100/80 text-sm mt-1">
-              {editingEscola
-                ? "Atualize as informações da escola."
-                : "Preencha os dados da nova escola."}
-            </DialogDescription>
           </div>
 
           <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">

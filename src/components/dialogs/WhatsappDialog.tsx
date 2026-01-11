@@ -67,7 +67,7 @@ export function WhatsappDialog({ isOpen, onClose, canClose = true }: WhatsappDia
              <DialogTitle>Conexão WhatsApp Necessária</DialogTitle>
           </div>
           <DialogDescription>
-            Para enviar notificações automáticas aos seus passageiros, é necessário manter seu WhatsApp conectado.
+            Para enviar notificações automáticas aos responsáiveis dos passageiros, é necessário manter seu WhatsApp conectado.
           </DialogDescription>
         </DialogHeader>
         

@@ -2,40 +2,39 @@ import { MoneyInput } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useRegistrarPagamentoManual } from "@/hooks";
 import { cn } from "@/lib/utils";
 import {
-    getStatusColor,
-    getStatusText,
-    parseCurrencyToNumber,
-    toLocalDateString
+  getStatusColor,
+  getStatusText,
+  parseCurrencyToNumber,
+  toLocalDateString
 } from "@/utils/formatters";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -156,9 +155,6 @@ export default function ManualPaymentDialog({
           <DialogTitle className="text-xl font-bold text-white">
             Registrar Pagamento
           </DialogTitle>
-          <DialogDescription className="text-blue-100/80 text-sm mt-1">
-             Informe o valor e a data do pagamento.
-          </DialogDescription>
         </div>
 
         <div className="p-4 sm:p-6 pt-2 overflow-y-auto flex-1 bg-white">

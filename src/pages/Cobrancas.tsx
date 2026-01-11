@@ -59,6 +59,7 @@ import { BellOff, CheckCircle2, DollarSign, TrendingUp, Wallet } from "lucide-re
 
 // --- Internal Components ---
 import { MobileActionItem } from "@/components/common/MobileActionItem";
+import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
 
 interface CobrancaMobileItemWrapperProps {
   cobranca: Cobranca;
@@ -69,6 +70,7 @@ interface CobrancaMobileItemWrapperProps {
   onVerCarteirinha: () => void;
   onEditarCobranca: () => void;
   onRegistrarPagamento: () => void;
+  onPagarPix: () => void;
   onActionSuccess: () => void;
   index: number;
 }
@@ -82,6 +84,7 @@ const CobrancaMobileItemWrapper = memo(({
   onVerCarteirinha,
   onEditarCobranca,
   onRegistrarPagamento,
+  onPagarPix,
   onActionSuccess,
   index
 }: CobrancaMobileItemWrapperProps) => {
@@ -93,6 +96,7 @@ const CobrancaMobileItemWrapper = memo(({
     onVerCarteirinha,
     onEditarCobranca,
     onRegistrarPagamento,
+    onPagarPix,
     onActionSuccess
   });
   
@@ -141,7 +145,6 @@ const Cobrancas = () => {
     [searchParams, setSearchParams]
   );
 
-  // Date State
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
 
@@ -149,18 +152,18 @@ const Cobrancas = () => {
   const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
     null
   );
+  const [pixDrawerOpen, setPixDrawerOpen] = useState(false);
+  const [pixCobranca, setPixCobranca] = useState<Cobranca | null>(null);
 
-  // Dialog States
-
-  
   const { user, loading: isSessionLoading } = useSession();
   const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
   const permissions = usePermissions();
 
   const handleUpgrade = useCallback((feature: string, description?: string) => {
     openPlanUpgradeDialog({
+      onSuccess: refetchCobrancas,
       feature,
-      title: description ? "Cobrança Automática" : undefined, // Contextual title
+      title: description ? "Cobrança Automática" : undefined,
       description,
     });
   }, [openPlanUpgradeDialog]);
@@ -218,6 +221,11 @@ const Cobrancas = () => {
   const openPaymentDialog = useCallback((cobranca: Cobranca) => {
     setSelectedCobranca(cobranca);
     setPaymentDialogOpen(true);
+  }, []);
+
+  const handlePagarPix = useCallback((cobranca: Cobranca) => {
+    setPixCobranca(cobranca);
+    setPixDrawerOpen(true);
   }, []);
 
   const navigateToDetails = useCallback(
@@ -405,6 +413,7 @@ const Cobrancas = () => {
                          onVerCarteirinha={() => navigate(`/passageiros/${cobranca.passageiro_id}`)}
                          onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
                          onRegistrarPagamento={() => openPaymentDialog(cobranca)}
+                         onPagarPix={() => handlePagarPix(cobranca)}
                          onActionSuccess={refetchCobrancas}
                       >
                       <div
@@ -569,6 +578,7 @@ const Cobrancas = () => {
                                   onVerCobranca={() => navigateToDetails(cobranca)}
                                   onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
                                   onRegistrarPagamento={() => openPaymentDialog(cobranca)}
+                                  onPagarPix={() => handlePagarPix(cobranca)}
                                   onActionSuccess={refetchCobrancas}
                                   onUpgrade={handleUpgrade}
                                 />
@@ -609,6 +619,7 @@ const Cobrancas = () => {
                          onVerCarteirinha={() => navigate(`/passageiros/${cobranca.passageiro_id}`)}
                          onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
                          onRegistrarPagamento={() => openPaymentDialog(cobranca)}
+                         onPagarPix={() => handlePagarPix(cobranca)}
                          onActionSuccess={refetchCobrancas}
                         >
                         <div
@@ -764,10 +775,11 @@ const Cobrancas = () => {
                                     }
                                     onVerCobranca={() => navigateToDetails(cobranca)}
                                     onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
-                                    onRegistrarPagamento={() => openPaymentDialog(cobranca)}
-                                    onActionSuccess={refetchCobrancas}
-                                    onUpgrade={handleUpgrade}
-                                  />
+                                   onRegistrarPagamento={() => openPaymentDialog(cobranca)}
+                                   onPagarPix={() => handlePagarPix(cobranca)}
+                                   onActionSuccess={refetchCobrancas}
+                                   onUpgrade={handleUpgrade}
+                                 />
                                 </td>
                               </tr>
                             ))}
@@ -806,6 +818,18 @@ const Cobrancas = () => {
               onClose={() => setEditDialogOpen(false)}
               cobranca={cobrancaToEdit}
               onCobrancaUpdated={handleCobrancaUpdated}
+            />
+          )}
+
+          {pixDrawerOpen && pixCobranca && (
+            <CobrancaPixDrawer
+              open={pixDrawerOpen}
+              onOpenChange={setPixDrawerOpen}
+              qrCodePayload={pixCobranca.qr_code_payload || ""}
+              valor={Number(pixCobranca.valor)}
+              passageiroNome={pixCobranca.passageiro.nome}
+              mes={pixCobranca.mes}
+              ano={pixCobranca.ano}
             />
           )}
         </div>

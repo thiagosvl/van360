@@ -272,7 +272,7 @@ export function PlanUpgradeDialog({
     switch (feature) {
       case FEATURE_GASTOS:
         return {
-          title: "Assuma o Controle",
+          title: "Controle seus gastos",
           desc: "Gerencie abastecimentos e manutenções com o Plano Essencial.",
         };
       case FEATURE_LIMITE_PASSAGEIROS:
@@ -292,7 +292,7 @@ export function PlanUpgradeDialog({
         };
       case FEATURE_RELATORIOS:
         return {
-          title: "Visão de Dono",
+          title: "Saiba seu lucro real",
           desc: "Tenha relatórios financeiros detalhados para tomar melhores decisões.",
         };
       case FEATURE_LIMITE_FRANQUIA:

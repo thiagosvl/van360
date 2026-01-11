@@ -5,8 +5,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
@@ -357,11 +356,6 @@ export default function PassengerFormDialog({
                 ? "Confirmar Cadastro"
                 : "Novo Passageiro"}
             </DialogTitle>
-            <DialogDescription className="text-blue-100/80 text-sm mt-1">
-              {mode === "edit"
-                ? "Atualize as informações do passageiro."
-                : "Revise os dados abaixo e confirme o cadastro."}
-            </DialogDescription>
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">

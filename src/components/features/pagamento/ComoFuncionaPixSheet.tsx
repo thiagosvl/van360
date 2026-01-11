@@ -10,11 +10,13 @@ import { DollarSign, Hand, Smartphone } from "lucide-react";
 interface ComoFuncionaPixSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  title?: string;
 }
 
 export function ComoFuncionaPixSheet({
   open,
   onOpenChange,
+  title = "Como pagar com PIX",
 }: ComoFuncionaPixSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -45,7 +47,7 @@ export function ComoFuncionaPixSheet({
 
           <SheetHeader className="mb-4 text-center">
             <SheetTitle className="text-lg font-bold text-gray-900">
-              Como pagar assinatura com Pix
+              {title}
             </SheetTitle>
           </SheetHeader>
 

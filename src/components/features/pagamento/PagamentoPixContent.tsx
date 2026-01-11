@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/utils/notifications/toast";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Copy, Loader2, Smartphone } from "lucide-react";
+import { CheckCircle2, Copy, HelpCircle, Loader2, Smartphone } from "lucide-react";
 import QRCode from "qrcode";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -754,7 +754,8 @@ export default function PagamentoPixContent({
               onClick={() => setIsInstructionsOpen(true)}
               className="w-full flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-semibold h-10 rounded-xl"
             >
-              Como funciona o pagamento?
+              <HelpCircle className="w-4 h-4" />
+              Como fazer o pagamento?
             </Button>
 
             <Button

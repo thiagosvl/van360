@@ -2,6 +2,7 @@ import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
+import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
 import { NotificationTimeline } from "@/components/features/cobranca/NotificationTimeline";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Badge } from "@/components/ui/badge";
@@ -63,6 +64,7 @@ import {
   MapPin,
   Pencil,
   Phone,
+  QrCode,
   Receipt,
   School,
   Send,
@@ -140,6 +142,7 @@ export default function PassageiroCobranca() {
   const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
   const { setPageTitle } = useLayout();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [pixDrawerOpen, setPixDrawerOpen] = useState(false);
 
   const { user } = useSession();
   const { plano } = useProfile(user?.id);
@@ -240,9 +243,9 @@ export default function PassageiroCobranca() {
   });
 
   const handleCopyEndereco = async () => {
-    if (!cobrancaTyped?.passageiro) return;
+    if (!passageiroCompleto) return;
     const passageiroSemReferencia = {
-      ...cobrancaTyped.passageiro,
+      ...passageiroCompleto,
       referencia: "",
     };
     const enderecoCompleto = formatarEnderecoCompleto(
@@ -259,12 +262,10 @@ export default function PassageiroCobranca() {
   };
 
   const handleCopyTelefone = async () => {
-    if (!cobrancaTyped?.passageiro?.telefone_responsavel) return;
+    if (!passageiroCompleto?.telefone_responsavel) return;
     try {
       await navigator.clipboard.writeText(
-        formatarTelefone(
-          (cobrancaTyped.passageiro as Passageiro).telefone_responsavel
-        )
+        formatarTelefone(passageiroCompleto.telefone_responsavel)
       );
       setIsCopiedTelefone(true);
       setTimeout(() => setIsCopiedTelefone(false), 1000);
@@ -301,7 +302,6 @@ export default function PassageiroCobranca() {
     );
   }
 
-  if (!cobranca || !cobrancaTyped) return null;
   if (!cobranca || !cobrancaTyped) return null;
   const passageiroCompleto = cobrancaTyped.passageiro as Passageiro;
 
@@ -374,7 +374,7 @@ export default function PassageiroCobranca() {
                     <div
                       className={cn(
                         "h-24 w-24 rounded-full bg-gray-50 flex items-center justify-center border-4 border-white shadow-sm",
-                        cobrancaTyped.passageiro.ativo
+                        passageiroCompleto.ativo
                           ? "ring-2 ring-offset-2 ring-green-500"
                           : "ring-2 ring-offset-2 ring-red-500"
                       )}
@@ -384,20 +384,16 @@ export default function PassageiroCobranca() {
                     <div
                       className={cn(
                         "absolute bottom-1 right-1 h-5 w-5 rounded-full border-2 border-white",
-                        cobrancaTyped.passageiro.ativo
-                          ? "bg-green-500"
-                          : "bg-red-500"
+                        passageiroCompleto.ativo ? "bg-green-500" : "bg-red-500"
                       )}
-                      title={
-                        cobrancaTyped.passageiro.ativo ? "Ativo" : "Desativado"
-                      }
+                      title={passageiroCompleto.ativo ? "Ativo" : "Desativado"}
                     />
                   </div>
                   <h2 className="text-xl font-bold text-gray-900">
-                    {cobrancaTyped.passageiro.nome}
+                    {passageiroCompleto.nome}
                   </h2>
                   <p className="text-sm text-gray-500 font-medium mt-1">
-                    {cobrancaTyped.passageiro.nome_responsavel}
+                    {passageiroCompleto.nome_responsavel}
                   </p>
                 </div>
 
@@ -454,9 +450,7 @@ export default function PassageiroCobranca() {
                             <div className="font-semibold text-foreground mt-1">
                               <div className="flex items-center gap-2">
                                 <span className="text-sm">
-                                  {formatarEnderecoCompleto(
-                                    cobrancaTyped.passageiro as Passageiro
-                                  )}
+                                  {formatarEnderecoCompleto(passageiroCompleto)}
                                 </span>
                                 <Button
                                   variant="ghost"
@@ -482,12 +476,10 @@ export default function PassageiroCobranca() {
                   {/* Info Grid - Blocos Estilizados */}
                   <div className="grid grid-cols-2 gap-3">
                     <SidebarInfoBlock icon={School} label="Escola">
-                      {cobrancaTyped.passageiro.escola.nome}
+                      {passageiroCompleto.escola.nome}
                     </SidebarInfoBlock>
                     <SidebarInfoBlock icon={Car} label="Veículo">
-                      {formatarPlacaExibicao(
-                        cobrancaTyped.passageiro.veiculo.placa
-                      )}
+                      {formatarPlacaExibicao(passageiroCompleto.veiculo.placa)}
                     </SidebarInfoBlock>
                   </div>
 
@@ -593,7 +585,16 @@ export default function PassageiroCobranca() {
                     </div>
 
                     {/* Primary Actions */}
-                    <div className="flex flex-wrap flex-col items-center justify-center gap-4 max-w-2xl mx-auto mb-8 w-full">
+                    <div className="flex flex-wrap flex-col sm:flex-row items-center justify-center gap-4 max-w-2xl mx-auto mb-8 w-full">
+                      {cobrancaTyped.txid_pix && cobrancaTyped.qr_code_payload && !isPago && (
+                        <Button
+                          className="h-12 px-8 rounded-xl font-bold text-base bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto min-w-[200px]"
+                          onClick={() => setPixDrawerOpen(true)}
+                        >
+                          <QrCode className="w-5 h-5 mr-2" />
+                          Pagar via PIX
+                        </Button>
+                      )}
                       {!disableRegistrarPagamento(cobrancaTyped) ? (
                         <Button
                           className={cn(
@@ -773,8 +774,8 @@ export default function PassageiroCobranca() {
                   isOpen={paymentDialogOpen}
                   onClose={() => setPaymentDialogOpen(false)}
                   cobrancaId={cobranca_id}
-                  passageiroNome={cobrancaTyped.passageiro.nome}
-                  responsavelNome={cobrancaTyped.passageiro.nome_responsavel}
+                  passageiroNome={passageiroCompleto.nome}
+                  responsavelNome={passageiroCompleto.nome_responsavel}
                   valorOriginal={Number(cobrancaTyped.valor)}
                   status={cobrancaTyped.status}
                   dataVencimento={cobrancaTyped.data_vencimento}
@@ -805,6 +806,18 @@ export default function PassageiroCobranca() {
                       refetchCobranca();
                     });
                   }}
+                />
+              )}
+
+              {cobrancaTyped && (
+                <CobrancaPixDrawer
+                  open={pixDrawerOpen}
+                  onOpenChange={setPixDrawerOpen}
+                  qrCodePayload={cobrancaTyped.qr_code_payload || ""}
+                  valor={Number(cobrancaTyped.valor)}
+                  passageiroNome={passageiroCompleto.nome}
+                  mes={cobrancaTyped.mes}
+                  ano={cobrancaTyped.ano}
                 />
               )}
             </div>

@@ -1,8 +1,6 @@
 // Imports updated
 import { UpgradeStickyFooter } from "@/components/common/UpgradeStickyFooter";
 
-import { DialogExcessoFranquia } from "@/components/dialogs/DialogExcessoFranquia";
-
 import { LimitHealthBar } from "@/components/common/LimitHealthBar";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PassageirosList } from "@/components/features/passageiro/PassageirosList";
@@ -29,7 +27,6 @@ import {
   useDeletePassageiro,
   useEscolas,
   useFilters,
-  usePassageiroDialogs,
   usePassageiros,
   usePrePassageiros,
   useToggleAtivoPassageiro,
@@ -52,11 +49,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function Passageiros() {
-  const {
-    passageiroForm,
-    excessoFranquia,
-    actions: dialogActions,
-  } = usePassageiroDialogs();
   const {
     setPageTitle,
     openPlanUpgradeDialog,
@@ -254,10 +246,9 @@ export default function Passageiros() {
     }, 400);
     return () => clearTimeout(handler);
   }, [searchTerm]);
-
   useEffect(() => {
     setPageTitle("Passageiros");
-  }, [countPassageirosAtivos, setPageTitle]);
+  }, [setPageTitle]);
 
   // Check for openModal param on mount
   useEffect(() => {
@@ -268,7 +259,7 @@ export default function Passageiros() {
         onSuccess: refetchPassageiros,
       });
     }
-  }, [searchParams, dialogActions]);
+  }, [searchParams, refetchPassageiros, openPassageiroFormDialog]);
 
   const handleDeleteClick = useCallback(
     (passageiro: Passageiro) => {
@@ -325,14 +316,32 @@ export default function Passageiros() {
             const limiteApos = cobrancasEmUso + 1;
 
             if (limiteApos > franquiaContratada) {
-              // Set pending action for resume after upgrade
-
-              dialogActions.openExcessoFranquia(
-                franquiaContratada,
-                limiteApos,
-                p
-              );
-              closeConfirmationDialog();
+              openConfirmationDialog({
+                title: "Limite de automação atingido",
+                description: "Sua van digital está cheia no modo automático! Deseja assinar o Plano Profissional agora para manter as cobranças automatizadas ou reativar este passageiro sem a cobrança automática?",
+                confirmText: "Ver Planos",
+                cancelText: "Reativar sem cobranças",
+                onConfirm: () => {
+                   closeConfirmationDialog();
+                   openPlanUpgradeDialog({
+                     feature: FEATURE_LIMITE_FRANQUIA,
+                     targetPassengerCount: limiteApos,
+                     onSuccess: () => {
+                        toggleAtivoPassageiro.mutate({ id: p.id, novoStatus: true });
+                        refetchPassageiros();
+                     }
+                   });
+                },
+                onCancel: () => {
+                  updatePassageiro.mutate({
+                    id: p.id,
+                    data: {
+                      ativo: true,
+                      enviar_cobranca_automatica: false,
+                    },
+                  });
+                }
+              });
               return;
             }
           }
@@ -353,6 +362,9 @@ export default function Passageiros() {
       plano,
       validacaoFranquiaGeral,
       toggleAtivoPassageiro,
+      openPlanUpgradeDialog,
+      updatePassageiro,
+      refetchPassageiros,
     ]
   );
 
@@ -406,7 +418,15 @@ export default function Passageiros() {
         data: { enviar_cobranca_automatica: novoValor },
       });
     },
-    [profile?.id, plano, updatePassageiro, validacaoFranquiaGeral]
+    [
+      profile?.id,
+      plano,
+      updatePassageiro,
+      validacaoFranquiaGeral,
+      openPlanUpgradeDialog,
+      refetchPassageiros,
+      limits,
+    ]
   );
 
   const handleEdit = useCallback(
@@ -438,7 +458,6 @@ export default function Passageiros() {
   }, [
     isLimitedUser,
     isLimitReached,
-    dialogActions,
     openPlanUpgradeDialog,
     refetchPassageiros,
   ]);
@@ -769,53 +788,6 @@ export default function Passageiros() {
               />
             </TabsContent>
           </Tabs>
-
-          <DialogExcessoFranquia
-            isOpen={excessoFranquia.isOpen}
-            onClose={excessoFranquia.onClose}
-            limiteAtual={excessoFranquia.limiteAtual}
-            limiteApos={excessoFranquia.limiteApos}
-            contexto="reativacao"
-            confirmText="Aumentar Limite"
-            cancelText="Reativar sem cobrança"
-            onVerPlanos={() => {
-              excessoFranquia.onClose();
-              // Open PlanUpgradeDialog directly
-              openPlanUpgradeDialog({
-                feature: FEATURE_LIMITE_FRANQUIA,
-                targetPassengerCount: excessoFranquia.limiteApos,
-                onSuccess: () => {
-                  // Resume action: Reactivate passenger
-                  if (excessoFranquia.passageiro) {
-                    toggleAtivoPassageiro.mutate(
-                      { id: excessoFranquia.passageiro.id, novoStatus: true },
-                      {
-                        onSuccess: () => {
-                          toast.success(
-                            "Passageiro reativado com sucesso com cobrança automática!"
-                          );
-                          refetchPassageiros();
-                        },
-                      }
-                    );
-                  }
-                },
-              });
-            }}
-            onContinuarSemAtivar={() => {
-              excessoFranquia.onClose();
-
-              if (excessoFranquia.passageiro) {
-                updatePassageiro.mutate({
-                  id: excessoFranquia.passageiro.id,
-                  data: {
-                    ativo: true,
-                    enviar_cobranca_automatica: false,
-                  },
-                });
-              }
-            }}
-          />
         </div>
       </PullToRefreshWrapper>
       <UpgradeStickyFooter
