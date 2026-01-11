@@ -592,7 +592,7 @@ export default function PassageiroCobranca() {
                           onClick={() => setPixDrawerOpen(true)}
                         >
                           <QrCode className="w-5 h-5 mr-2" />
-                          Pagar via PIX
+                          Ver PIX
                         </Button>
                       )}
                       {!disableRegistrarPagamento(cobrancaTyped) ? (

@@ -1,10 +1,10 @@
 import {
-    Suspense,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 
 // React Router
@@ -14,6 +14,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
+import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
 
 // Components - Empty & Skeletons
 import { CarteirinhaSkeleton } from "@/components/skeletons";
@@ -52,18 +53,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useAvailableYears,
-    useCobrancasByPassageiro,
-    useDeleteCobranca,
-    useDeletePassageiro,
-    useDesfazerPagamento,
-    useEnviarNotificacaoCobranca,
-    usePassageiro,
-    usePassageiros,
-    useToggleAtivoPassageiro,
-    useToggleNotificacoesCobranca,
-    useUpdateCobranca,
-    useUpdatePassageiro
+  useAvailableYears,
+  useCobrancasByPassageiro,
+  useDeleteCobranca,
+  useDeletePassageiro,
+  useDesfazerPagamento,
+  useEnviarNotificacaoCobranca,
+  usePassageiro,
+  usePassageiros,
+  useToggleAtivoPassageiro,
+  useToggleNotificacoesCobranca,
+  useUpdateCobranca,
+  useUpdatePassageiro
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -125,6 +126,15 @@ export default function PassageiroCarteirinha() {
   const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
     null
   );
+  
+  // PIX Drawer State
+  const [pixDrawerOpen, setPixDrawerOpen] = useState(false);
+  const [selectedCobrancaPix, setSelectedCobrancaPix] = useState<Cobranca | null>(null);
+
+  const handlePagarPix = useCallback((cobranca: Cobranca) => {
+    setSelectedCobrancaPix(cobranca);
+    setPixDrawerOpen(true);
+  }, []);
 
   // State for year filter
   const [yearFilter, setYearFilter] = useState(currentYear);
@@ -670,6 +680,7 @@ export default function PassageiroCarteirinha() {
                         setSelectedCobranca(cobranca);
                         setPaymentDialogOpen(true);
                       }}
+                      onPagarPix={handlePagarPix}
                       onEnviarNotificacao={handleEnviarNotificacaoClick}
                       onToggleLembretes={handleToggleLembretes}
                       onDesfazerPagamento={handleDesfazerClick}
@@ -710,6 +721,18 @@ export default function PassageiroCarteirinha() {
               }
             />
           )}
+
+          {/* PIX Drawer */}
+          {selectedCobrancaPix && (
+            <CobrancaPixDrawer
+              open={pixDrawerOpen}
+              onOpenChange={setPixDrawerOpen}
+              qrCodePayload={selectedCobrancaPix.qr_code_payload || ""}
+              valor={Number(selectedCobrancaPix.valor)}
+              passageiroNome={passageiro.nome}
+            />
+          )}
+
           <CobrancaDialog
             isOpen={cobrancaDialogOpen}
             onClose={() => safeCloseDialog(() => setCobrancaDialogOpen(false))}

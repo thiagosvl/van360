@@ -57,6 +57,7 @@ interface CarteirinhaCobrancasProps {
   onNavigateToCobranca: (cobrancaId: string) => void;
   onEditCobranca: (cobranca: Cobranca) => void;
   onRegistrarPagamento: (cobranca: Cobranca) => void;
+  onPagarPix: (cobranca: Cobranca) => void;
   onEnviarNotificacao: (cobrancaId: string) => void;
   onToggleLembretes: (cobranca: Cobranca) => void;
   onDesfazerPagamento: (cobrancaId: string) => void;
@@ -79,6 +80,7 @@ const CobrancaMobileItemWrapper = memo(
     onVerCobranca,
     onEditarCobranca,
     onRegistrarPagamento,
+    onPagarPix,
     onVerRecibo,
     showHint,
   }: {
@@ -89,6 +91,7 @@ const CobrancaMobileItemWrapper = memo(
     onVerCobranca: () => void;
     onEditarCobranca: () => void;
     onRegistrarPagamento: () => void;
+    onPagarPix: () => void;
     onVerRecibo?: () => void;
     showHint?: boolean;
   }) => {
@@ -99,6 +102,7 @@ const CobrancaMobileItemWrapper = memo(
       onVerCobranca,
       onEditarCobranca,
       onRegistrarPagamento,
+      onPagarPix,
       onVerRecibo,
     });
 
@@ -122,6 +126,7 @@ export const CarteirinhaCobrancas = ({
   onNavigateToCobranca,
   onEditCobranca,
   onRegistrarPagamento,
+  onPagarPix,
   onToggleMostrarTodas,
   onToggleClick,
   limiteCobrancasMobile = COBRANCAS_LIMIT_DEFAULT,
@@ -331,6 +336,7 @@ export const CarteirinhaCobrancas = ({
                             onRegistrarPagamento={() =>
                               onRegistrarPagamento(cobranca)
                             }
+                            onPagarPix={() => onPagarPix(cobranca)}
                             showHint={index === 0}
                           >
                             <div
@@ -501,6 +507,7 @@ export const CarteirinhaCobrancas = ({
                               onRegistrarPagamento={() =>
                                 onRegistrarPagamento(cobranca)
                               }
+                              onPagarPix={() => onPagarPix(cobranca)}
                               onUpgrade={(feature) => onUpgrade(feature, "Upgrade via Menu de Ações")}
                               onVerRecibo={() => cobranca.recibo_url && setReceiptUrl(cobranca.recibo_url)}
                             />

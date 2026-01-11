@@ -89,7 +89,7 @@ export function SubscriptionSettings({
                 Cancelar Assinatura
               </span>
               <span className="text-xs text-red-400/80 font-normal">
-                A renovação automática será desativada
+                Ao cancelar, novas cobranças não serão geradas
               </span>
             </div>
           </div>

@@ -1,42 +1,42 @@
 import {
-    FEATURE_COBRANCA_AUTOMATICA,
-    FEATURE_NOTIFICACOES,
-    PLANO_ESSENCIAL,
-    PLANO_GRATUITO,
+  FEATURE_COBRANCA_AUTOMATICA,
+  FEATURE_NOTIFICACOES,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useDeleteCobranca,
-    useDesfazerPagamento,
-    useEnviarNotificacaoCobranca,
-    useToggleNotificacoesCobranca,
+  useDeleteCobranca,
+  useDesfazerPagamento,
+  useEnviarNotificacaoCobranca,
+  useToggleNotificacoesCobranca,
 } from "@/hooks";
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
 import {
-    canSendNotification,
-    canViewReceipt,
-    disableDesfazerPagamento,
-    disableEditarCobranca,
-    disableExcluirCobranca,
-    disableRegistrarPagamento,
-    seForPago
+  canSendNotification,
+  canViewReceipt,
+  disableDesfazerPagamento,
+  disableEditarCobranca,
+  disableExcluirCobranca,
+  disableRegistrarPagamento,
+  seForPago
 } from "@/utils/domain/cobranca/disableActions";
 import {
-    canUseNotificacoes,
+  canUseNotificacoes,
 } from "@/utils/domain/plano/accessRules";
 import {
-    ArrowLeft,
-    Bell,
-    BellOff,
-    CheckCircle2,
-    DollarSign,
-    FilePen,
-    QrCode,
-    Receipt,
-    Send,
-    Trash2,
-    User
+  ArrowLeft,
+  Bell,
+  BellOff,
+  CheckCircle2,
+  DollarSign,
+  FilePen,
+  QrCode,
+  Receipt,
+  Send,
+  Trash2,
+  User
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
@@ -264,10 +264,9 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // 2.5 Pagar via PIX (Se tiver txid e não estiver pago)
     if (!isPago && cobranca.txid_pix && cobranca.qr_code_payload && onPagarPix) {
       actions.push({
-        label: "Pagar via PIX",
+        label: "Ver PIX",
         icon: <QrCode className="h-4 w-4" />,
         onClick: () => {
           document.body.click(); // Close menus
