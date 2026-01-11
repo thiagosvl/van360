@@ -730,6 +730,8 @@ export default function PassageiroCarteirinha() {
               qrCodePayload={selectedCobrancaPix.qr_code_payload || ""}
               valor={Number(selectedCobrancaPix.valor)}
               passageiroNome={passageiro.nome}
+              mes={selectedCobrancaPix.mes}
+              ano={selectedCobrancaPix.ano}
             />
           )}
 

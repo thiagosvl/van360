@@ -1,10 +1,10 @@
 import { ComoFuncionaPixSheet } from "@/components/features/pagamento/ComoFuncionaPixSheet";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import { meses } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
@@ -166,6 +166,7 @@ export function CobrancaPixDrawer({
           <ComoFuncionaPixSheet
             open={isInstructionsOpen}
             onOpenChange={setIsInstructionsOpen}
+            context="cobranca_passageiro"
           />
 
           {/* RODAPÉ FIXO: Ações */}

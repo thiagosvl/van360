@@ -5,19 +5,24 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DollarSign, Hand, Smartphone } from "lucide-react";
 
 interface ComoFuncionaPixSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title?: string;
+  context?: "cobranca_passageiro" | "assinatura_motorista";
 }
 
 export function ComoFuncionaPixSheet({
   open,
   onOpenChange,
   title = "Como pagar com PIX",
+  context = "assinatura_motorista", // Default to simple self-instruction
 }: ComoFuncionaPixSheetProps) {
+  const isParaTerceiro = context === "cobranca_passageiro";
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -32,7 +37,10 @@ export function ComoFuncionaPixSheet({
             <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center relative z-10">
               <div className="relative">
                 {/* Hand */}
-                <Hand className="w-12 h-12 text-blue-300 absolute -bottom-5 -right-2 rotate-[-15deg]" strokeWidth={1.5} />
+                <Hand
+                  className="w-12 h-12 text-blue-300 absolute -bottom-5 -right-2 rotate-[-15deg]"
+                  strokeWidth={1.5}
+                />
                 {/* Phone */}
                 <div className="relative z-10 bg-white rounded-xl border-2 border-blue-100 p-1.5 shadow-sm rotate-[-5deg]">
                   <Smartphone className="w-8 h-8 text-blue-600" />
@@ -51,37 +59,126 @@ export function ComoFuncionaPixSheet({
             </SheetTitle>
           </SheetHeader>
 
-          {/* Steps */}
-          <div className="w-full space-y-4 mb-6">
-            <div className="flex flex-col items-center text-center space-y-1">
-              <span className="text-xs font-bold text-blue-600 tracking-wider">
-                1º passo
-              </span>
-              <p className="text-gray-600 font-medium text-sm px-4">
-                Copie o código que foi gerado
-              </p>
-            </div>
+          <Tabs
+            defaultValue={
+              context === "cobranca_passageiro" ? "qr-code" : "copia-cola"
+            }
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-2 mb-6 p-1 bg-gray-100 rounded-xl h-11">
+              <TabsTrigger
+                value="copia-cola"
+                className="rounded-lg text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all"
+              >
+                Copia e Cola
+              </TabsTrigger>
+              <TabsTrigger
+                value="qr-code"
+                className="rounded-lg text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all"
+              >
+                QR Code
+              </TabsTrigger>
+            </TabsList>
 
-            <div className="flex flex-col items-center text-center space-y-1 pt-2">
-              <span className="text-xs font-bold text-blue-600 tracking-wider">
-                2º passo
-              </span>
-              <p className="text-gray-600 font-medium text-sm px-4">
-                Abra o aplicativo do seu banco e use a opção {" "}
-                <span className="font-bold text-gray-900">Pix Copia e Cola</span>
-              </p>
-            </div>
+            <TabsContent
+              value="copia-cola"
+              className="mt-0 focus-visible:outline-none"
+            >
+              <div className="w-full space-y-4 mb-6">
+                <div className="flex flex-col items-center text-center space-y-1">
+                  <span className="text-xs font-bold text-blue-600 tracking-wider">
+                    1º passo
+                  </span>
+                  <p className="text-gray-600 font-medium text-sm px-4">
+                    {isParaTerceiro
+                      ? "Copie o código que foi gerado e envie para o responsável"
+                      : "Copie o código que foi gerado"}
+                  </p>
+                </div>
 
-            <div className="flex flex-col items-center text-center space-y-1 pt-2">
-              <span className="text-xs font-bold text-blue-600 tracking-wider">
-                3º passo
-              </span>
-              <p className="text-gray-600 font-medium text-sm px-4">
-                Cole o código, confirme o valor e faça o pagamento. Ele será
-                confirmado na hora :)
-              </p>
-            </div>
-          </div>
+                <div className="flex flex-col items-center text-center space-y-1 pt-2">
+                  <span className="text-xs font-bold text-blue-600 tracking-wider">
+                    2º passo
+                  </span>
+                  <p className="text-gray-600 font-medium text-sm px-4">
+                    {isParaTerceiro && (
+                      <>
+                        Ele deve abrir o aplicativo do banco e pagar com a opção{" "}
+                        <span className="font-bold text-gray-900">
+                          Pix Copia e Cola
+                        </span>
+                      </>
+                    )}
+                    {!isParaTerceiro && (
+                      <>
+                        Abra o aplicativo do seu banco e use a opção{" "}
+                        <span className="font-bold text-gray-900">
+                          Pix Copia e Cola
+                        </span>
+                      </>
+                    )}
+                  </p>
+                </div>
+
+                <div className="flex flex-col items-center text-center space-y-1 pt-2">
+                  <span className="text-xs font-bold text-blue-600 tracking-wider">
+                    3º passo
+                  </span>
+                  <p className="text-gray-600 font-medium text-sm px-4">
+                    {isParaTerceiro && <>Após ele realizar o pagamento, o sistema dará baixa e te enviará um aviso!</>}
+                    {!isParaTerceiro && (
+                      <>
+                        Cole o código, confirme o valor e faça o pagamento. Ele
+                        será confirmado na hora :)
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="qr-code"
+              className="mt-0 focus-visible:outline-none"
+            >
+              <div className="w-full space-y-4 mb-6">
+                <div className="flex flex-col items-center text-center space-y-1">
+                  <span className="text-xs font-bold text-blue-600 tracking-wider">
+                    1º passo
+                  </span>
+                  <p className="text-gray-600 font-medium text-sm px-4">
+                    {isParaTerceiro
+                      ? "Peça para o responsável abrir o app do banco"
+                      : "Abra o aplicativo do banco"}
+                  </p>
+                </div>
+
+                <div className="flex flex-col items-center text-center space-y-1 pt-2">
+                  <span className="text-xs font-bold text-blue-600 tracking-wider">
+                    2º passo
+                  </span>
+                  <p className="text-gray-600 font-medium text-sm px-4">
+                    {isParaTerceiro ? "Escolher a opção " : "Escolha a opção "}
+                    <span className="font-bold text-gray-900">
+                      Pagar com QR Code
+                    </span>
+                    {isParaTerceiro && ", apontar a câmera para o código e confirmar o valor"}
+                  </p>
+                </div>
+
+                <div className="flex flex-col items-center text-center space-y-1 pt-2">
+                  <span className="text-xs font-bold text-blue-600 tracking-wider">
+                    3º passo
+                  </span>
+                  <p className="text-gray-600 font-medium text-sm px-4">
+                    {isParaTerceiro
+                      ? "Após ele realizar o pagamento, o sistema dará baixa e te enviará um aviso!"
+                      : "Aponte a câmera para o código na tela, confirme o valor e pronto! Ele será confirmado na hora :)"}
+                  </p>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
 
           {/* Button */}
           <Button
