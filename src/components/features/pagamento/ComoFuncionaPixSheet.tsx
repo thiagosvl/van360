@@ -105,7 +105,7 @@ export function ComoFuncionaPixSheet({
                       <>
                         Ele deve abrir o aplicativo do banco e pagar com a opção{" "}
                         <span className="font-bold text-gray-900">
-                          Pix Copia e Cola
+                          PIX Copia e Cola
                         </span>
                       </>
                     )}
@@ -113,7 +113,7 @@ export function ComoFuncionaPixSheet({
                       <>
                         Abra o aplicativo do seu banco e use a opção{" "}
                         <span className="font-bold text-gray-900">
-                          Pix Copia e Cola
+                          PIX Copia e Cola
                         </span>
                       </>
                     )}

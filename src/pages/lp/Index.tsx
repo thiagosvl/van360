@@ -265,7 +265,7 @@ const Index = () => {
               </div>
               <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
-                  Pix Recebido
+                  PIX Recebido
                 </p>
                 <p className="font-extrabold text-slate-900 text-sm">
                   R$ 350,00
@@ -408,7 +408,7 @@ const Index = () => {
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
-                        Pix Recebido
+                        PIX Recebido
                       </p>
                       <p className="font-extrabold text-slate-900 text-base">
                         R$ 350,00

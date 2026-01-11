@@ -176,7 +176,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     profile,
   });
 
-  // Global Check for Pix Key (Professional Plan)
+  // Global Check for PIX Key (Professional Plan)
   usePixKeyGuard({
     profile,
     isProfissional: !!isProfissional,
