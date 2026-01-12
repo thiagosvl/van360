@@ -22,7 +22,7 @@ export function PlanUpgradeHeader({ title, headerStyle }: PlanUpgradeHeaderProps
 
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
 
-      <DialogTitle className="text-xl max-w-[200px] font-bold text-white relative z-10 leading-tight">
+      <DialogTitle className="max-[320px]:max-w-[200px] text-xl font-bold text-white relative z-10 leading-tight">
         {title}
       </DialogTitle>
     </div>

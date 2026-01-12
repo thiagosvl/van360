@@ -27,7 +27,7 @@ export function BenefitItem({ text, included = true }: BenefitItemProps) {
       <span
         className={cn(
           "text-sm leading-tight pt-0.5",
-          included ? "text-gray-700 font-medium" : "text-gray-400 line-through"
+          included ? "text-gray-700 font-medium" : "text-gray-500"
         )}
       >
         {text}

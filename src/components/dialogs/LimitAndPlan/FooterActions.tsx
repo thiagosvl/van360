@@ -49,11 +49,11 @@ export function FooterActions({
           {loading ? (
             <Loader2 className="animate-spin w-5 h-5" />
           ) : salesContext === "expansion" ? (
-            `Aumentar franquia (Até ${currentTierOption?.quantidade || "X"} Vagas)`
+            `Aumentar franquia`
           ) : salesContext === "upgrade_auto" ? (
-            `Contratar agora (Até ${currentTierOption?.quantidade || "X"} Vagas)`
+            `Contratar agora`
           ) : (
-            `Assinar Mensal (Até ${currentTierOption?.quantidade || "X"} Vagas)`
+            `Contratar agora`
           )}
         </Button>
       )}
