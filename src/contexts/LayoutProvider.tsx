@@ -4,17 +4,17 @@ import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import PixKeyDialog from "@/components/dialogs/PixKeyDialog";
 import {
-    PlanUpgradeDialog,
+  PlanUpgradeDialog,
 } from "@/components/dialogs/PlanUpgradeDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { WhatsappDialog } from "@/components/dialogs/WhatsappDialog";
 import {
-    FEATURE_COBRANCA_AUTOMATICA,
-    FEATURE_GASTOS,
-    FEATURE_LIMITE_PASSAGEIROS,
-    FEATURE_NOTIFICACOES,
-    FEATURE_RELATORIOS,
-    PLANO_PROFISSIONAL,
+  FEATURE_COBRANCA_AUTOMATICA,
+  FEATURE_GASTOS,
+  FEATURE_LIMITE_PASSAGEIROS,
+  FEATURE_NOTIFICACOES,
+  FEATURE_RELATORIOS,
+  PLANO_PROFISSIONAL,
 } from "@/constants";
 import { safeCloseDialog } from "@/hooks";
 import { usePixKeyGuard } from "@/hooks/business/usePixKeyGuard";
@@ -23,18 +23,18 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useWhatsappGuard } from "@/hooks/business/useWhatsappGuard";
 import {
-    ReactNode,
-    useEffect,
-    useState,
+  ReactNode,
+  useEffect,
+  useState,
 } from "react";
 import {
-    LayoutContext,
-    OpenConfirmationDialogProps,
-    OpenEscolaFormProps,
-    OpenGastoFormProps,
-    OpenPassageiroFormProps,
-    OpenPlanUpgradeDialogProps,
-    OpenVeiculoFormProps
+  LayoutContext,
+  OpenConfirmationDialogProps,
+  OpenEscolaFormProps,
+  OpenGastoFormProps,
+  OpenPassageiroFormProps,
+  OpenPlanUpgradeDialogProps,
+  OpenVeiculoFormProps
 } from "./LayoutContext";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
@@ -259,9 +259,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <PlanUpgradeDialog
           open={planUpgradeDialogState.open}
           onOpenChange={(open) => {
-            setPlanUpgradeDialogState((prev) => ({ ...prev, open }));
             if (!open) {
-              planUpgradeDialogState.props?.onClose?.();
+                safeCloseDialog(() => {
+                    setPlanUpgradeDialogState((prev) => ({ ...prev, open: false }));
+                    planUpgradeDialogState.props?.onClose?.();
+                });
+            } else {
+                setPlanUpgradeDialogState((prev) => ({ ...prev, open }));
             }
           }}
           defaultTab={planUpgradeDialogState.props?.defaultTab}
@@ -306,7 +310,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <EscolaFormDialog
           isOpen={true}
           onClose={() =>
-            setEscolaFormDialogState((prev) => ({ ...prev, open: false }))
+            safeCloseDialog(() => 
+                setEscolaFormDialogState((prev) => ({ ...prev, open: false }))
+            )
           }
           onSuccess={(escola, keepOpen) => {
             if (!keepOpen) {
@@ -324,7 +330,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <VeiculoFormDialog
           isOpen={true}
           onClose={() =>
-            setVeiculoFormDialogState((prev) => ({ ...prev, open: false }))
+            safeCloseDialog(() => 
+                setVeiculoFormDialogState((prev) => ({ ...prev, open: false }))
+            )
           }
           onSuccess={(veiculo, keepOpen) => {
             if (!keepOpen) {
@@ -342,7 +350,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <PassageiroFormDialog
           isOpen={true}
           onClose={() =>
-            setPassageiroFormDialogState((prev) => ({ ...prev, open: false }))
+            safeCloseDialog(() => 
+                setPassageiroFormDialogState((prev) => ({ ...prev, open: false }))
+            )
           }
           onSuccess={() => {
             setPassageiroFormDialogState((prev) => ({ ...prev, open: false }));
@@ -361,9 +371,15 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {gastoFormDialogState.open && (
         <GastoFormDialog
           isOpen={true}
-          onOpenChange={(open) =>
-            setGastoFormDialogState((prev) => ({ ...prev, open }))
-          }
+           onOpenChange={(open) => {
+            if (!open) {
+                safeCloseDialog(() => {
+                    setGastoFormDialogState((prev) => ({ ...prev, open: false }));
+                });
+            } else {
+                setGastoFormDialogState((prev) => ({ ...prev, open }));
+            }
+          }}
           onSuccess={() => {
             setGastoFormDialogState((prev) => ({ ...prev, open: false }));
             gastoFormDialogState.props?.onSuccess?.();
@@ -378,7 +394,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <PixKeyDialog
           isOpen={true}
           onClose={() =>
-            setPixKeyDialogState((prev) => ({ ...prev, open: false }))
+            safeCloseDialog(() => 
+                setPixKeyDialogState((prev) => ({ ...prev, open: false }))
+            )
           }
           canClose={pixKeyDialogState.canClose}
           onSuccess={() => {
@@ -391,7 +409,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <WhatsappDialog
           isOpen={true}
           onClose={() =>
-            setWhatsappDialogState((prev) => ({ ...prev, open: false }))
+            safeCloseDialog(() => 
+                setWhatsappDialogState((prev) => ({ ...prev, open: false }))
+            )
           }
           canClose={whatsappDialogState.canClose}
         />

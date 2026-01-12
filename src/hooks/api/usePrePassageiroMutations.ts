@@ -1,5 +1,6 @@
 import { prePassageiroApi } from "@/services/api/pre-passageiro.api";
 import { PrePassageiro } from "@/types/prePassageiro";
+import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -50,8 +51,10 @@ export function useDeletePrePassageiro() {
     onSuccess: () => {
       toast.success("prePassageiro.sucesso.excluido");
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["pre-passageiros"] });
+    onSettled: (data, error) => {
+      if (!error) {
+        queryClient.invalidateQueries({ queryKey: ["pre-passageiros"] });
+      }
     },
   });
 }

@@ -1,5 +1,6 @@
 import { gastoApi } from "@/services/api/gasto.api";
 import { Gasto } from "@/types/gasto";
+import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -52,8 +53,10 @@ export function useUpdateGasto() {
     onSuccess: () => {
       toast.success("gasto.sucesso.atualizado");
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["gastos"] });
+    onSettled: (data, error) => {
+      if (!error) {
+        queryClient.invalidateQueries({ queryKey: ["gastos"] });
+      }
     },
   });
 }
@@ -88,8 +91,10 @@ export function useDeleteGasto() {
     onSuccess: () => {
       toast.success("gasto.sucesso.excluido");
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["gastos"] });
+    onSettled: (data, error) => {
+      if (!error) {
+        queryClient.invalidateQueries({ queryKey: ["gastos"] });
+      }    
     },
   });
 }

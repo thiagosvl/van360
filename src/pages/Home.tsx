@@ -3,13 +3,11 @@ import {
   CreditCard,
   DollarSign,
   FileText,
-  HandCoins,
   Plus,
   Receipt,
   TrendingDown,
   TrendingUp,
   UserCheck,
-  UserPlus,
   Users,
   Wallet,
   Zap,
@@ -50,14 +48,14 @@ import { useUpsellContent } from "@/hooks/business/useUpsellContent";
 // --- Main Component ---
 
 const Home = () => {
-  const { 
-    setPageTitle, 
-    openPlanUpgradeDialog, 
+  const {
+    setPageTitle,
+    openPlanUpgradeDialog,
     openPixKeyDialog,
     openEscolaFormDialog,
     openVeiculoFormDialog,
     openPassageiroFormDialog,
-    openGastoFormDialog
+    openGastoFormDialog,
   } = useLayout();
   const { user, loading: isSessionLoading } = useSession();
 
@@ -94,17 +92,19 @@ const Home = () => {
   const mesAtual = new Date().getMonth() + 1;
   const anoAtual = new Date().getFullYear();
 
-
-
   // Queries
-  const { data: cobrancasData, refetch: refetchCobrancas, isLoading: isLoadingCobrancas } = useCobrancas(
+  const {
+    data: cobrancasData,
+    refetch: refetchCobrancas,
+    isLoading: isLoadingCobrancas,
+  } = useCobrancas(
     { usuarioId: profile?.id, mes: mesAtual, ano: anoAtual },
     { enabled: !!profile?.id }
   );
 
   // Escolas e Veículos: Usamos apenas para o create/refresh. As contagens vêm do systemSummary
   // Podemos manter os refetchs, mas não precisamos das datas para o render principal
-  
+
   // Estado de loading unificado
   const isInitialLoading = useMemo(() => {
     if (!profile?.id) return true;
@@ -116,12 +116,13 @@ const Home = () => {
 
   const escolasCount = systemSummary?.contadores.escolas.total ?? 0;
   const veiculosCount = systemSummary?.contadores.veiculos.total ?? 0;
-  
+
   // Mantemos a lista de passageiros pois ela tem flags (ativo) que podem não estar sincadas
   // ou usamos o contador do resumo, MAS o Home.tsx usa para filtrar 'passageirosAtivosCount'
   // O resumo JÁ TEM passageiros ativos.
   const passageirosCount = systemSummary?.contadores.passageiros.total ?? 0;
-  const passageirosAtivosCount = systemSummary?.contadores.passageiros.ativos ?? 0;
+  const passageirosAtivosCount =
+    systemSummary?.contadores.passageiros.ativos ?? 0;
 
   // Passenger Limit Logic
   const limitePassageiros = limits.passageiros;
@@ -132,8 +133,6 @@ const Home = () => {
     (acc, c) => acc + Number(c.valor || 0),
     0
   );
-
-
 
   const cobrancasPendentes = cobrancas.filter(
     (c) => c.status !== PASSAGEIRO_COBRANCA_STATUS_PAGO
@@ -159,8 +158,6 @@ const Home = () => {
     (acc, c) => acc + Number(c.valor || 0),
     0
   );
-
-
 
   // Onboarding Logic
   const hasPixKey = !!profile?.chave_pix;
@@ -199,10 +196,7 @@ const Home = () => {
   const queryClient = useQueryClient();
 
   const handlePullToRefresh = async () => {
-    await Promise.all([
-      refetchCobrancas(),
-      refetchSummary(),
-    ]);
+    await Promise.all([refetchCobrancas(), refetchSummary()]);
   };
 
   // Copy Link Logic
@@ -228,40 +222,46 @@ const Home = () => {
   }, [refetchSummary]);
 
   const handleOpenPassageiroDialog = useCallback(() => {
-    if (permissions.isFreePlan && hasPassengerLimit && passageirosCount >= limits.passageiros) {
+    if (
+      permissions.isFreePlan &&
+      hasPassengerLimit &&
+      passageirosCount >= limits.passageiros
+    ) {
       openPlanUpgradeDialog({
         feature: FEATURE_LIMITE_PASSAGEIROS,
         defaultTab: PLANO_ESSENCIAL,
         targetPassengerCount: passageirosAtivosCount,
-        onSuccess: () => openPassageiroFormDialog({ mode: "create", onSuccess: handleSuccessFormPassageiro }),
+        onSuccess: () =>
+          openPassageiroFormDialog({
+            mode: "create",
+            onSuccess: handleSuccessFormPassageiro,
+          }),
       });
       return;
     }
     openPassageiroFormDialog({
-        mode: "create",
-        onSuccess: handleSuccessFormPassageiro
+      mode: "create",
+      onSuccess: handleSuccessFormPassageiro,
     });
-  }, [permissions.isFreePlan, limits.passageiros, passageirosCount, openPassageiroFormDialog, handleSuccessFormPassageiro, hasPassengerLimit, openPlanUpgradeDialog, passageirosAtivosCount]);
+  }, [
+    permissions.isFreePlan,
+    limits.passageiros,
+    passageirosCount,
+    openPassageiroFormDialog,
+    handleSuccessFormPassageiro,
+    hasPassengerLimit,
+    openPlanUpgradeDialog,
+    passageirosAtivosCount,
+  ]);
 
   const handleOpenGastoDialog = useCallback(() => {
     const triggerGasto = () => {
-        openGastoFormDialog({
-            // veiculos: veiculosData?.list || [], // REMOVIDO: Home não tem mais vehiclesData. 
-            // O Dialog deve buscar seus proprios veiculos ou receber user props.
-            // Se openGastoFormDialog exige veiculos, precisamos passar undefined e deixar ele buscar? 
-            // Ou o Context não exige? Vamos verificar. Normalmente dialogs buscam seus dados.
-            // Se "veiculos" é opcional no payload do contexto, ok. Se for mandatório, teremos problema.
-            // Assumindo que o OpenGastoFormDialogProps aceita opcional ou o componente interno busca.
-            // Para garantir, vamos passar vazio e deixar o componente lidar, ou refatorar o contexto depois.
-            // Mas espera, GastoFormDialog geralmente precisa da lista para o select.
-            // Se tiramos do Home, ele vai quebrar se depender dessa prop.
-            // Vou passar [] por enquanto e verificar se o GastoFormDialog busca sozinho se vazio.
-            veiculos: [], 
-            onSuccess: () => {
-                toast.success("Gasto registrado com sucesso!");
-                refetchCobrancas();
-            }
-        });
+      openGastoFormDialog({
+        onSuccess: () => {
+          toast.success("Gasto registrado com sucesso!");
+          refetchCobrancas();
+        },
+      });
     };
 
     if (!permissions.canViewGastos) {
@@ -274,7 +274,12 @@ const Home = () => {
     }
 
     triggerGasto();
-  }, [permissions.canViewGastos, openPlanUpgradeDialog, openGastoFormDialog, refetchCobrancas]);
+  }, [
+    permissions.canViewGastos,
+    openPlanUpgradeDialog,
+    openGastoFormDialog,
+    refetchCobrancas,
+  ]);
 
   const handleEscolaCreated = useCallback(
     (novaEscola: any, keepOpen?: boolean) => {
@@ -294,43 +299,6 @@ const Home = () => {
       setNovoVeiculoId(novoVeiculo.id);
     },
     [queryClient, refetchSummary]
-  );
-
-  // Quick Actions
-  const quickActions = useMemo(
-    () => [
-      {
-        icon: UserPlus,
-        label: "Novo Passageiro",
-        onClick: handleOpenPassageiroDialog,
-        disabled: hasPassengerLimit && passageirosAtivosCount >= limitePassageiros,
-        tooltip:
-          hasPassengerLimit && passageirosAtivosCount >= limitePassageiros
-            ? "Limite de passageiros atingido. Faça um upgrade para adicionar mais."
-            : undefined,
-        variant: "primary",
-      },
-      {
-        icon: HandCoins,
-        label: "Novo Gasto",
-        onClick: handleOpenGastoDialog,
-        variant: "secondary",
-      },
-      {
-        icon: FileText,
-        label: null, // "Relatórios" removed as per request
-        onClick: () => {}, // TODO
-        disabled: true,
-        variant: "ghost",
-      },
-    ],
-    [
-      handleOpenPassageiroDialog,
-      handleOpenGastoDialog,
-      hasPassengerLimit,
-      passageirosAtivosCount,
-      limitePassageiros,
-    ]
   );
 
   if (isSessionLoading || isProfileLoading || isInitialLoading) {
@@ -363,18 +331,24 @@ const Home = () => {
           {showOnboarding && (
             <section>
               <QuickStartCard
-                onOpenVeiculoDialog={() => openVeiculoFormDialog({ 
+                onOpenVeiculoDialog={() =>
+                  openVeiculoFormDialog({
                     allowBatchCreation: true,
-                    onSuccess: handleVeiculoCreated 
-                })}
-                onOpenEscolaDialog={() => openEscolaFormDialog({ 
+                    onSuccess: handleVeiculoCreated,
+                  })
+                }
+                onOpenEscolaDialog={() =>
+                  openEscolaFormDialog({
                     allowBatchCreation: true,
-                    onSuccess: handleEscolaCreated 
-                })}
-                onOpenPassageiroDialog={() => openPassageiroFormDialog({
+                    onSuccess: handleEscolaCreated,
+                  })
+                }
+                onOpenPassageiroDialog={() =>
+                  openPassageiroFormDialog({
                     mode: "create",
-                    onSuccess: handleSuccessFormPassageiro
-                })}
+                    onSuccess: handleSuccessFormPassageiro,
+                  })
+                }
                 onOpenPixKeyDialog={() => openPixKeyDialog()}
               />
             </section>
@@ -436,7 +410,11 @@ const Home = () => {
                       feature: FEATURE_LIMITE_PASSAGEIROS,
                       defaultTab: PLANO_ESSENCIAL,
                       targetPassengerCount: passageirosAtivosCount,
-                      onSuccess: () => openPassageiroFormDialog({ mode: "create", onSuccess: handleSuccessFormPassageiro }),
+                      onSuccess: () =>
+                        openPassageiroFormDialog({
+                          mode: "create",
+                          onSuccess: handleSuccessFormPassageiro,
+                        }),
                     })
                   }
                   label="Passageiros Ativos"
@@ -456,19 +434,20 @@ const Home = () => {
             )}
           </div>
 
-
           {/* Status Operacional & Alertas System Summary */}
           {/* WhatsApp Disconnected Alert */}
-          {systemSummary?.usuario.flags.whatsapp_status === 'DISCONNECTED' && (
-             <section className="mb-4">
-                <DashboardStatusCard
-                  type="pending"
-                  title="WhatsApp Desconectado"
-                  description="Seu WhatsApp não está enviando mensagens. Reconecte agora."
-                  actionLabel="Reconectar"
-                  onAction={() => { /* TODO: Open WhatsApp Dialog via URL or context */ }}
-                />
-             </section>
+          {systemSummary?.usuario.flags.whatsapp_status === "DISCONNECTED" && (
+            <section className="mb-4">
+              <DashboardStatusCard
+                type="pending"
+                title="WhatsApp Desconectado"
+                description="Seu WhatsApp não está enviando mensagens. Reconecte agora."
+                actionLabel="Reconectar"
+                onAction={() => {
+                  /* TODO: Open WhatsApp Dialog via URL or context */
+                }}
+              />
+            </section>
           )}
 
           {!showOnboarding && cobrancas.length > 0 && (
@@ -619,7 +598,6 @@ const Home = () => {
           </section>
         </div>
       </PullToRefreshWrapper>
-
     </>
   );
 };

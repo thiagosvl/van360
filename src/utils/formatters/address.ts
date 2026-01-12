@@ -1,4 +1,3 @@
-import { Passageiro } from "@/types/passageiro";
 
 export function formatarCEP(cep: string): string {
   if (!cep || cep === "") return "";
@@ -7,14 +6,15 @@ export function formatarCEP(cep: string): string {
   return onlyNumbers.replace(/(\d{5})(\d{3})/, "$1-$2");
 }
 
-export function formatarEnderecoCompleto(passageiro: Passageiro): string {
-  const cep = formatarCEP(passageiro.cep);
-  const lograoduro = passageiro.logradouro;
-  const bairro = passageiro.bairro;
-  const cidade = passageiro.cidade;
-  const estado = passageiro.estado;
-  const numero = passageiro.numero;
-  const referencia = passageiro.referencia;
+export function formatarEnderecoCompleto(obj: any): string {
+  if(!obj.cep) return "";
+  const cep = formatarCEP(obj.cep);
+  const lograoduro = obj.logradouro;
+  const bairro = obj.bairro;
+  const cidade = obj.cidade;
+  const estado = obj.estado;
+  const numero = obj.numero;
+  const referencia = obj.referencia;
 
   if (referencia && referencia !== "") {
     return `${lograoduro}, ${numero} (${referencia}) - ${bairro}, ${cidade} - ${estado}, ${cep}`;

@@ -85,9 +85,6 @@ export function useUpdatePassageiro() {
       });
     },
     onSuccess: (data, variables) => {
-      // Mensagem especial apenas para toggle de cobranças automáticas
-      // O toggle envia apenas o campo enviar_cobranca_automatica (1 campo)
-      // O formulário de edição envia todos os campos (muitos campos)
       const dataKeys = Object.keys(variables.data || {});
       const isToggleOnly = 
         dataKeys.length === 1 && 
@@ -105,26 +102,27 @@ export function useUpdatePassageiro() {
       }
     },
     onSettled: (data, error, variables, context) => {
-      // Sempre invalidar queries de passageiros e cobranças
-      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
-      queryClient.invalidateQueries({ queryKey: ["passageiros-contagem"] });
-      queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
-      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
-      queryClient.invalidateQueries({ queryKey: ["cobranca"] });
-      queryClient.invalidateQueries({ queryKey: ["cobranca"] });
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      if (!error) {
+        // Sempre invalidar queries de passageiros e cobranças
+        queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+        queryClient.invalidateQueries({ queryKey: ["passageiros-contagem"] });
+        queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
+        queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+        queryClient.invalidateQueries({ queryKey: ["cobranca"] });
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
+        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
 
-      // Invalidar escolas/veículos apenas se houve mudança de escola/veículo
-      // Isso evita requisições desnecessárias quando apenas outros campos são editados
-      const escolaIdChanged = context?.previousEscolaId !== context?.newEscolaId;
-      const veiculoIdChanged = context?.previousVeiculoId !== context?.newVeiculoId;
+        // Invalidar escolas/veículos apenas se houve mudança de escola/veículo
+        // Isso evita requisições desnecessárias quando apenas outros campos são editados
+        const escolaIdChanged = context?.previousEscolaId !== context?.newEscolaId;
+        const veiculoIdChanged = context?.previousVeiculoId !== context?.newVeiculoId;
 
-      if (escolaIdChanged) {
-        queryClient.invalidateQueries({ queryKey: ["escolas"] });
-      }
-      if (veiculoIdChanged) {
-        queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+        if (escolaIdChanged) {
+          queryClient.invalidateQueries({ queryKey: ["escolas"] });
+        }
+        if (veiculoIdChanged) {
+          queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+        }
       }
     },
   });
@@ -162,45 +160,41 @@ export function useDeletePassageiro() {
         });
       }
       
-      // Tratamento temporário: detecta erro de foreign key constraint relacionado a cobranças
-      // TODO: Backend deve validar antes de tentar deletar e retornar erro específico
       const errorMessage = getErrorMessage(error);
-      const isConstraintError = 
-        errorMessage.includes("foreign key constraint") || 
-        errorMessage.includes("cobrancas") ||
-        errorMessage.toLowerCase().includes("violates foreign key");
       
-      if (isConstraintError) {
-        toast.error("passageiro.erro.excluir", {
-          description: "passageiro.erro.excluirComCobrancas",
-        });
+      if (error?.response?.status === 400 || errorMessage) {
+         toast.error(errorMessage || "passageiro.erro.excluir", {
+            description: errorMessage
+         });
       } else {
-        toast.error("passageiro.erro.excluir", {
-          description: errorMessage || "passageiro.erro.excluirDetalhe",
-        });
+         toast.error("passageiro.erro.excluir", {
+            description: "passageiro.erro.excluirDetalhe",
+         });
       }
     },
     onSuccess: () => {
       toast.success("passageiro.sucesso.excluido");
     },
-    onSettled: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
-      queryClient.invalidateQueries({ queryKey: ["passageiros-contagem"] });
-      // Invalida a query específica do passageiro excluído para garantir que não seja mais acessível
-      if (id) {
-        queryClient.invalidateQueries({ queryKey: ["passageiro", id] });
-        // Remove do cache para evitar acesso após exclusão
-        queryClient.removeQueries({ queryKey: ["passageiro", id] });
-        // Remove também queries relacionadas (cobranças do passageiro, anos disponíveis)
-        queryClient.removeQueries({ queryKey: ["cobrancas-by-passageiro", id] });
-        queryClient.removeQueries({ queryKey: ["available-years", id] });
+    onSettled: (data, error, id) => {
+      // Só invalidar se NÃO houve erro. Se deu erro (ex: validação), nada mudou no server.
+      if (!error) {
+        queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+        queryClient.invalidateQueries({ queryKey: ["passageiros-contagem"] });
+        
+        // Invalida a query específica do passageiro excluído
+        if (id) {
+            queryClient.invalidateQueries({ queryKey: ["passageiro", id] });
+            queryClient.removeQueries({ queryKey: ["passageiro", id] });
+            queryClient.removeQueries({ queryKey: ["cobrancas-by-passageiro", id] });
+            queryClient.removeQueries({ queryKey: ["available-years", id] });
+        }
+        
+        queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+        queryClient.invalidateQueries({ queryKey: ["escolas"] });
+        queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
+        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       }
-      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
-      queryClient.invalidateQueries({ queryKey: ["escolas"] });
-      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
-      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 }
@@ -264,21 +258,21 @@ export function useToggleAtivoPassageiro() {
       );
     },
     onSettled: (data, error, variables) => {
-      // Sempre invalidar queries de passageiros e cobranças
-      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
-      queryClient.invalidateQueries({ queryKey: ["passageiros-contagem"] });
-      queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
-      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
-      queryClient.invalidateQueries({ queryKey: ["cobranca"] });
-      queryClient.invalidateQueries({ queryKey: ["cobranca"] });
-      queryClient.invalidateQueries({ queryKey: ["cobranca"] });
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-      
-      // Quando toggle de ativo, a contagem de passageiros nas escolas/veículos muda
-      // então precisamos invalidar essas queries
-      queryClient.invalidateQueries({ queryKey: ["escolas"] });
-      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
-      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      if (!error) {
+        // Sempre invalidar queries de passageiros e cobranças
+        queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+        queryClient.invalidateQueries({ queryKey: ["passageiros-contagem"] });
+        queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
+        queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+        queryClient.invalidateQueries({ queryKey: ["cobranca"] });
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
+        
+        // Quando toggle de ativo, a contagem de passageiros nas escolas/veículos muda
+        // então precisamos invalidar essas queries
+        queryClient.invalidateQueries({ queryKey: ["escolas"] });
+        queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      }
     },
   });
 }

@@ -2,17 +2,17 @@ import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
 import EditarCadastroDialog from "@/components/dialogs/EditarCadastroDialog";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -21,12 +21,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { clearLoginStorageMotorista } from "@/utils/domain/motorista/motoristaUtils";
 import {
-    ChevronDown,
-    Lock,
-    LogOut,
-    Menu,
-    Receipt,
-    UserPen,
+  ChevronDown,
+  Lock,
+  LogOut,
+  Menu,
+  Receipt,
+  UserPen,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { redirect, useNavigate } from "react-router-dom";
@@ -142,7 +142,7 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={handleSignOut}
-                  className="text-red-600"
+                  className="text-red-500"
                 >
                   <LogOut className="mr-2 h-4 w-4" /> Sair
                 </DropdownMenuItem>

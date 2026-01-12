@@ -28,22 +28,15 @@ export const cobrancaApi = {
         apiClient.get(`/cobrancas/passageiro/${passageiroId}/count`).then(res => res.data.count),
 
 
-    desfazerPagamento: (cobrancaId: string) => {
-        const payload = {
-            status: "pendente",
-            data_pagamento: null,
-            tipo_pagamento: null,
-            pagamento_manual: null,
-        }
-        return cobrancaApi.updateCobranca(cobrancaId, payload);
-    },
+    desfazerPagamento: (cobrancaId: string) =>
+        apiClient.post(`/cobrancas/${cobrancaId}/desfazer-pagamento`).then(res => res.data),
 
     registrarPagamentoManual: (cobrancaId: string, data) => {
         return cobrancaApi.updateCobranca(cobrancaId, {
             status: PASSAGEIRO_COBRANCA_STATUS_PAGO,
             data_pagamento: data.data_pagamento,
             tipo_pagamento: data.tipo_pagamento,
-            valor: data.valor_pago,
+            valor_pago: data.valor_pago,
             pagamento_manual: true,
         });
     },

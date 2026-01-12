@@ -1,3 +1,4 @@
+import DeleteAccountDialog from "@/components/dialogs/DeleteAccountDialog";
 import { PhoneInput } from "@/components/forms";
 import {
   Accordion,
@@ -74,6 +75,7 @@ export default function EditarCadastroDialog({
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "dados-pessoais",
   ]);
+  const [openDeleteAccount, setOpenDeleteAccount] = useState(false);
 
   // Escolher o schema baseado no plano
   const activeSchema = isProfissional ? schemaWithPix : basicSchema;
@@ -392,7 +394,30 @@ export default function EditarCadastroDialog({
             </form>
           </Form>
           )} 
+
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+                <p className="text-sm text-red-700 mb-3">
+                    Deseja excluir sua conta permanentemente? Esta ação não pode ser desfeita.
+                </p>
+                <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setOpenDeleteAccount(true)}
+                    className="w-full border-red-200 text-red-600 hover:bg-red-100 hover:text-red-700 hover:border-red-300 transition-colors"
+                >
+                    Excluir minha conta
+                </Button>
+            </div>
+          </div>
         </div>
+        
+        {openDeleteAccount && (
+            <DeleteAccountDialog 
+                isOpen={openDeleteAccount} 
+                onClose={() => setOpenDeleteAccount(false)}
+            />
+        )}
 
         <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
           <Button

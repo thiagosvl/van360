@@ -410,7 +410,7 @@ const Cobrancas = () => {
                          plano={plano}
                          onUpgrade={handleUpgrade}
                          onVerCobranca={() => navigateToDetails(cobranca)}
-                         onVerCarteirinha={() => navigate(`/passageiros/${cobranca.passageiro_id}`)}
+                         onVerCarteirinha={() => navigate(`/passageiros/${cobranca?.passageiro_id}`)}
                          onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
                          onRegistrarPagamento={() => openPaymentDialog(cobranca)}
                          onPagarPix={() => handlePagarPix(cobranca)}
@@ -426,21 +426,21 @@ const Cobrancas = () => {
                             <div
                               className={cn(
                                 "h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm",
-                                getStatusColor(cobranca.status, cobranca.data_vencimento)
+                                getStatusColor(cobranca?.status, cobranca?.data_vencimento)
                               )}
                             >
-                              {cobranca.passageiro.nome.charAt(0)}
+                              {cobranca?.passageiro.nome.charAt(0)}
                             </div>
                             <div>
                               <p className="font-bold text-gray-900 text-sm">
-                                {cobranca.passageiro.nome}
+                                {cobranca?.passageiro.nome}
                               </p>
                               <p className="text-xs text-gray-500">
-                                {cobranca.passageiro.nome_responsavel ||
+                                {cobranca?.passageiro.nome_responsavel ||
                                   "Não inf."}{" "}
                                 •{" "}
                                 <span className="text-sm font-bold text-gray-900 tracking-tight">
-                                  {Number(cobranca.valor).toLocaleString(
+                                  {Number(cobranca?.valor).toLocaleString(
                                     "pt-BR",
                                     {
                                       style: "currency",
@@ -457,11 +457,11 @@ const Cobrancas = () => {
                         <div className="flex justify-between items-center pt-2 border-t border-gray-50">
                           <div className="flex items-center gap-2">
                             <StatusBadge 
-                              status={cobranca.status} 
-                              dataVencimento={cobranca.data_vencimento} 
+                              status={cobranca?.status} 
+                              dataVencimento={cobranca?.data_vencimento} 
                               className="font-semibold h-6 shadow-none"
                             />
-                            {cobranca.desativar_lembretes && (
+                            {cobranca?.desativar_lembretes && (
                               <BellOff className="w-3 h-3 text-orange-700" />
                             )}
                           </div>
@@ -471,8 +471,8 @@ const Cobrancas = () => {
                               VENCIMENTO
                             </span>
                             <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
-                              {cobranca.data_vencimento
-                                ? formatDateToBR(cobranca.data_vencimento)
+                              {cobranca?.data_vencimento
+                                ? formatDateToBR(cobranca?.data_vencimento)
                                 : "-"}
                             </p>
                           </div>
@@ -514,7 +514,7 @@ const Cobrancas = () => {
                         <tbody className="divide-y divide-gray-50">
                           {cobrancasAbertasFiltradas.map((cobranca) => (
                             <tr
-                              key={cobranca.id}
+                              key={cobranca?.id}
                               onClick={() => navigateToDetails(cobranca)}
                               className="hover:bg-gray-50/80 transition-colors cursor-pointer group"
                             >
@@ -522,18 +522,18 @@ const Cobrancas = () => {
                                 <div className="flex items-center gap-3">
                                   <div
                                     className={`h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm ${getStatusColor(
-                                      cobranca.status,
-                                      cobranca.data_vencimento
+                                      cobranca?.status,
+                                      cobranca?.data_vencimento
                                     )}`}
                                   >
-                                    {cobranca.passageiro.nome.charAt(0)}
+                                    {cobranca?.passageiro.nome.charAt(0)}
                                   </div>
                                   <div>
                                     <p className="font-bold text-gray-900 text-sm">
-                                      {cobranca.passageiro.nome}
+                                      {cobranca?.passageiro.nome}
                                     </p>
                                     <p className="text-xs text-gray-500">
-                                      {cobranca.passageiro.nome_responsavel ||
+                                      {cobranca?.passageiro.nome_responsavel ||
                                         "Responsável não inf."}
                                     </p>
                                   </div>
@@ -541,7 +541,7 @@ const Cobrancas = () => {
                               </td>
                               <td className="px-6 py-4 text-right">
                                 <span className="font-bold text-gray-900 text-sm">
-                                  {Number(cobranca.valor).toLocaleString(
+                                  {Number(cobranca?.valor).toLocaleString(
                                     "pt-BR",
                                     { style: "currency", currency: "BRL" }
                                   )}
@@ -549,18 +549,18 @@ const Cobrancas = () => {
                               </td>
                               <td className="px-6 py-4">
                                 <span className="text-sm text-gray-600 font-medium">
-                                  {formatDateToBR(cobranca.data_vencimento)}
+                                  {formatDateToBR(cobranca?.data_vencimento)}
                                 </span>
                               </td>
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-2">
                                     <StatusBadge 
-                                      status={cobranca.status} 
-                                      dataVencimento={cobranca.data_vencimento} 
+                                      status={cobranca?.status} 
+                                      dataVencimento={cobranca?.data_vencimento} 
                                       className="font-semibold shadow-none"
                                     />
-                                  {cobranca.desativar_lembretes &&
-                                    cobranca.status !==
+                                  {cobranca?.desativar_lembretes &&
+                                    cobranca?.status !==
                                       PASSAGEIRO_COBRANCA_STATUS_PAGO && (
                                       <span title="Envio de notificações desativado">
                                         <BellOff className="w-3.5 h-3.5 text-orange-700" />
@@ -573,7 +573,7 @@ const Cobrancas = () => {
                                   cobranca={cobranca}
                                   plano={plano}
                                   onVerCarteirinha={() =>
-                                    navigate(`/passageiros/${cobranca.passageiro_id}`)
+                                    navigate(`/passageiros/${cobranca?.passageiro_id}`)
                                   }
                                   onVerCobranca={() => navigateToDetails(cobranca)}
                                   onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
@@ -610,13 +610,13 @@ const Cobrancas = () => {
                      }
                       mobileItemRenderer={(cobranca, index) => (
                         <CobrancaMobileItemWrapper
-                         key={cobranca.id}
+                         key={cobranca?.id}
                          cobranca={cobranca}
                          index={index}
                          plano={plano}
                          onUpgrade={handleUpgrade}
                          onVerCobranca={() => navigateToDetails(cobranca)}
-                         onVerCarteirinha={() => navigate(`/passageiros/${cobranca.passageiro_id}`)}
+                         onVerCarteirinha={() => navigate(`/passageiros/${cobranca?.passageiro_id}`)}
                          onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
                          onRegistrarPagamento={() => openPaymentDialog(cobranca)}
                          onPagarPix={() => handlePagarPix(cobranca)}
@@ -632,21 +632,21 @@ const Cobrancas = () => {
                               <div
                                 className={cn(
                                   "h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm",
-                                  getStatusColor(cobranca.status, cobranca.data_vencimento)
+                                  getStatusColor(cobranca?.status, cobranca?.data_vencimento)
                                 )}
                               >
-                                {cobranca.passageiro.nome.charAt(0)}
+                                {cobranca?.passageiro.nome.charAt(0)}
                               </div>
                               <div>
                                 <p className="font-bold text-gray-900 text-sm">
-                                  {cobranca.passageiro.nome}
+                                  {cobranca?.passageiro.nome}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                  {cobranca.passageiro.nome_responsavel ||
+                                  {cobranca?.passageiro.nome_responsavel ||
                                     "Não inf."}{" "}
                                   •{" "}
                                   <span className="text-sm font-bold text-gray-900 tracking-tight">
-                                    {Number(cobranca.valor).toLocaleString(
+                                    {Number(cobranca?.valor).toLocaleString(
                                       "pt-BR",
                                       {
                                         style: "currency",
@@ -668,7 +668,7 @@ const Cobrancas = () => {
                               </span>
                               {/* Esquerda: Forma de Pagamento (Badge Cinza Elegante) */}
                               <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
-                                {formatPaymentType(cobranca.tipo_pagamento)}
+                                {formatPaymentType(cobranca?.tipo_pagamento)}
                               </p>
                             </div>
 
@@ -678,8 +678,8 @@ const Cobrancas = () => {
                                 PAGO EM
                               </span>
                               <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
-                                {cobranca.data_pagamento
-                                  ? formatDateToBR(cobranca.data_pagamento)
+                                {cobranca?.data_pagamento
+                                  ? formatDateToBR(cobranca?.data_pagamento)
                                   : "-"}
                               </p>
                             </div>
@@ -714,7 +714,7 @@ const Cobrancas = () => {
                           <tbody className="divide-y divide-gray-50">
                             {cobrancasPagasFiltradas.map((cobranca) => (
                               <tr
-                                key={cobranca.id}
+                                key={cobranca?.id}
                                 onClick={() => navigateToDetails(cobranca)}
                                 className="hover:bg-gray-50/80 border-b border-gray-50 last:border-0 transition-colors cursor-pointer"
                               >
@@ -723,17 +723,17 @@ const Cobrancas = () => {
                                     <div
                                       className={cn(
                                         "h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm",
-                                        getStatusColor(cobranca.status, cobranca.data_vencimento)
+                                        getStatusColor(cobranca?.status, cobranca?.data_vencimento)
                                       )}
                                     >
-                                      {cobranca.passageiro.nome.charAt(0)}
+                                      {cobranca?.passageiro.nome.charAt(0)}
                                     </div>
                                     <div>
                                       <p className="font-bold text-gray-900 text-sm">
-                                        {cobranca.passageiro.nome}
+                                        {cobranca?.passageiro.nome}
                                       </p>
                                       <p className="text-xs text-gray-500">
-                                        {cobranca.passageiro.nome_responsavel ||
+                                        {cobranca?.passageiro.nome_responsavel ||
                                           "Responsável não inf."}
                                       </p>
                                     </div>
@@ -741,7 +741,7 @@ const Cobrancas = () => {
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                   <span className="font-bold text-gray-900 text-sm">
-                                    {Number(cobranca.valor).toLocaleString(
+                                    {Number(cobranca?.valor).toLocaleString(
                                       "pt-BR",
                                       { style: "currency", currency: "BRL" }
                                     )}
@@ -749,17 +749,17 @@ const Cobrancas = () => {
                                 </td>
                                 <td className="px-6 py-4">
                                   <span className="text-sm text-gray-600 font-medium">
-                                    {cobranca.data_pagamento
-                                      ? formatDateToBR(cobranca.data_pagamento)
+                                    {cobranca?.data_pagamento
+                                      ? formatDateToBR(cobranca?.data_pagamento)
                                       : "-"}
                                   </span>
                                 </td>
                                 <td className="px-6 py-4">
                                   <div className="flex flex-col">
                                     <span className="text-sm text-gray-700 font-medium">
-                                      {formatPaymentType(cobranca.tipo_pagamento)}
+                                      {formatPaymentType(cobranca?.tipo_pagamento)}
                                     </span>
-                                    {cobranca.pagamento_manual && (
+                                    {cobranca?.pagamento_manual && (
                                       <span className="text-[10px] text-gray-400">
                                         Pagamento Registrado Manualmente
                                       </span>
@@ -771,7 +771,7 @@ const Cobrancas = () => {
                                     cobranca={cobranca}
                                     plano={plano}
                                     onVerCarteirinha={() =>
-                                      navigate(`/passageiros/${cobranca.passageiro_id}`)
+                                      navigate(`/passageiros/${cobranca?.passageiro_id}`)
                                     }
                                     onVerCobranca={() => navigateToDetails(cobranca)}
                                     onEditarCobranca={() => handleEditCobrancaClick(cobranca)}

@@ -1,4 +1,3 @@
-
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActionsMenu";
@@ -275,14 +274,14 @@ export const CarteirinhaCobrancas = ({
                   <AnimatePresence>
                     {cobrancasMobile.map((cobranca, index) => {
                       const statusColor = getStatusColor(
-                        cobranca.status,
-                        cobranca.data_vencimento
+                        cobranca?.status,
+                        cobranca?.data_vencimento
                       );
                       const isPago =
-                        cobranca.status === PASSAGEIRO_COBRANCA_STATUS_PAGO;
+                        cobranca?.status === PASSAGEIRO_COBRANCA_STATUS_PAGO;
                       const statusText = getStatusText(
-                        cobranca.status,
-                        cobranca.data_vencimento
+                        cobranca?.status,
+                        cobranca?.data_vencimento
                       );
 
                       // Lógica de cores e ícones (mantida)
@@ -308,7 +307,7 @@ export const CarteirinhaCobrancas = ({
 
                       return (
                         <motion.div
-                          key={cobranca.id}
+                          key={cobranca?.id}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.05 }}
@@ -330,7 +329,7 @@ export const CarteirinhaCobrancas = ({
                             plano={plano}
                             onUpgrade={onUpgrade}
                             onVerCobranca={() =>
-                              onNavigateToCobranca(cobranca.id)
+                              onNavigateToCobranca(cobranca?.id)
                             }
                             onEditarCobranca={() => onEditCobranca(cobranca)}
                             onRegistrarPagamento={() =>
@@ -341,18 +340,32 @@ export const CarteirinhaCobrancas = ({
                           >
                             <div
                               className="bg-white rounded-xl border border-gray-100 shadow-sm transition-all p-4 cursor-pointer"
-                              onClick={() => onNavigateToCobranca(cobranca.id)}
+                              onClick={() => onNavigateToCobranca(cobranca?.id)}
                             >
                               {/* Cabeçalho: Mês e Data */}
                               <div className="flex justify-between items-start mb-4">
                                 <div className="flex-1">
                                   <h4 className="text-base font-bold text-gray-900">
-                                    {getMesNome(cobranca.mes)}
+                                    {getMesNome(cobranca?.mes)}
                                   </h4>
                                   <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                                     <Calendar className="w-3 h-3" />
-                                    Vence em{" "}
-                                    {formatDateToBR(cobranca.data_vencimento)}
+                                    {cobranca?.status ===
+                                    PASSAGEIRO_COBRANCA_STATUS_PAGO ? (
+                                      <>
+                                        Paga em{" "}
+                                        {formatDateToBR(
+                                          cobranca?.data_pagamento
+                                        )}
+                                      </>
+                                    ) : (
+                                      <>
+                                        Vence em{" "}
+                                        {formatDateToBR(
+                                          cobranca?.data_vencimento
+                                        )}
+                                      </>
+                                    )}
                                   </p>
                                 </div>
                                 <Eye className="h-4 w-4 text-gray-300 absolute right-4 top-3" />
@@ -365,7 +378,7 @@ export const CarteirinhaCobrancas = ({
                                     Valor
                                   </span>
                                   <p className="font-semibold text-gray-900 leading-none mt-0.5 text-md">
-                                    {Number(cobranca.valor).toLocaleString(
+                                    {Number(cobranca?.valor).toLocaleString(
                                       "pt-BR",
                                       {
                                         style: "currency",
@@ -389,7 +402,7 @@ export const CarteirinhaCobrancas = ({
                               </div>
 
                               {/* Alerta de Lembretes (Estilo Full-width Warning) */}
-                              {cobranca.desativar_lembretes && !isPago && (
+                              {cobranca?.desativar_lembretes && !isPago && (
                                 <div className="mt-4 -mx-4 -mb-4 px-4 py-2.5 bg-orange-50 border-t border-orange-100 rounded-b-xl flex items-center gap-2">
                                   <BellOff className="w-4 h-4 text-orange-700" />
                                   <span className="text-xs font-medium text-orange-700">
@@ -442,35 +455,35 @@ export const CarteirinhaCobrancas = ({
                   <tbody className="divide-y divide-gray-50">
                     {cobrancas.map((cobranca, index) => {
                       const statusColor = getStatusColor(
-                        cobranca.status,
-                        cobranca.data_vencimento
+                        cobranca?.status,
+                        cobranca?.data_vencimento
                       );
                       const isPago =
-                        cobranca.status === PASSAGEIRO_COBRANCA_STATUS_PAGO;
+                        cobranca?.status === PASSAGEIRO_COBRANCA_STATUS_PAGO;
 
                       return (
                         <motion.tr
-                          key={cobranca.id}
+                          key={cobranca?.id}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.03 }}
                           className="group hover:bg-gray-50/50 transition-colors cursor-pointer"
-                          onClick={() => onNavigateToCobranca(cobranca.id)}
+                          onClick={() => onNavigateToCobranca(cobranca?.id)}
                         >
                           <td className="px-6 py-4">
                             <div className="flex flex-col">
                               <span className="font-medium text-gray-900 capitalize">
-                                {getMesNome(cobranca.mes)}
+                                {getMesNome(cobranca?.mes)}
                               </span>
                               <span className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                                 <Calendar className="w-3 h-3" />
                                 Vence em{" "}
-                                {formatDateToBR(cobranca.data_vencimento)}
+                                {formatDateToBR(cobranca?.data_vencimento)}
                               </span>
                             </div>
                           </td>
                           <td className="px-6 py-4 font-semibold text-gray-900">
-                            {Number(cobranca.valor).toLocaleString("pt-BR", {
+                            {Number(cobranca?.valor).toLocaleString("pt-BR", {
                               style: "currency",
                               currency: "BRL",
                             })}
@@ -482,11 +495,11 @@ export const CarteirinhaCobrancas = ({
                                 className={cn("font-medium", statusColor)}
                               >
                                 {getStatusText(
-                                  cobranca.status,
-                                  cobranca.data_vencimento
+                                  cobranca?.status,
+                                  cobranca?.data_vencimento
                                 )}
                               </Badge>
-                              {cobranca.desativar_lembretes && !isPago && (
+                              {cobranca?.desativar_lembretes && !isPago && (
                                 <span title="Envio de notificações desativado">
                                   <BellOff className="w-3.5 h-3.5 text-orange-700" />
                                 </span>
@@ -501,15 +514,20 @@ export const CarteirinhaCobrancas = ({
                               cobranca={cobranca}
                               plano={plano}
                               onVerCobranca={() =>
-                                onNavigateToCobranca(cobranca.id)
+                                onNavigateToCobranca(cobranca?.id)
                               }
                               onEditarCobranca={() => onEditCobranca(cobranca)}
                               onRegistrarPagamento={() =>
                                 onRegistrarPagamento(cobranca)
                               }
                               onPagarPix={() => onPagarPix(cobranca)}
-                              onUpgrade={(feature) => onUpgrade(feature, "Upgrade via Menu de Ações")}
-                              onVerRecibo={() => cobranca.recibo_url && setReceiptUrl(cobranca.recibo_url)}
+                              onUpgrade={(feature) =>
+                                onUpgrade(feature, "Upgrade via Menu de Ações")
+                              }
+                              onVerRecibo={() =>
+                                cobranca?.recibo_url &&
+                                setReceiptUrl(cobranca?.recibo_url)
+                              }
                             />
                           </td>
                         </motion.tr>
@@ -522,10 +540,10 @@ export const CarteirinhaCobrancas = ({
           )}
         </CardContent>
       </Card>
-      <ReceiptDialog 
-        url={receiptUrl} 
-        open={!!receiptUrl} 
-        onOpenChange={(open) => !open && setReceiptUrl(null)} 
+      <ReceiptDialog
+        url={receiptUrl}
+        open={!!receiptUrl}
+        onOpenChange={(open) => !open && setReceiptUrl(null)}
       />
     </motion.div>
   );

@@ -1,4 +1,3 @@
-import { PlanUpgradeDialog } from "@/components/dialogs/PlanUpgradeDialog";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,6 +7,8 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
+import { useLayout } from "@/contexts/LayoutContext";
+
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_LIMITE_FRANQUIA } from "@/constants";
 import {
@@ -31,7 +32,7 @@ import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { Loader2, User, Wand2, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { PassageiroFormDadosCadastrais } from "../features/passageiro/form/PassageiroFormDadosCadastrais";
 import { PassageiroFormEndereco } from "../features/passageiro/form/PassageiroFormEndereco";
 import { PassageiroFormFinanceiro } from "../features/passageiro/form/PassageiroFormFinanceiro";
@@ -79,8 +80,7 @@ export default function PassengerFormDialog({
   plano,
 }: PassengerFormDialogProps) {
   const { user } = useSession();
-  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
-  const [upgradeFeature, setUpgradeFeature] = useState(FEATURE_LIMITE_FRANQUIA);
+  const { openPlanUpgradeDialog } = useLayout();
 
   const createPassageiro = useCreatePassageiro();
   const updatePassageiro = useUpdatePassageiro();
@@ -102,16 +102,31 @@ export default function PassengerFormDialog({
     podeAtivar,
   };
 
-  // Fetch lists for mock filling auto-selection
+  // Determine includeId for lists based on mode
+  const includeEscolaId =
+    mode === "edit"
+      ? editingPassageiro?.escola_id
+      : mode === "finalize"
+      ? prePassageiro?.escola_id
+      : undefined;
+
+  const includeVeiculoId =
+    mode === "edit"
+      ? editingPassageiro?.veiculo_id
+      : mode === "finalize"
+      ? prePassageiro?.veiculo_id
+      : undefined;
+
+  // Fetch lists (Centralized)
   const { data: escolasData = [] } = useEscolasWithFilters(
     profile?.id,
-    { ativo: "true" },
+    { ativo: "true", includeId: includeEscolaId || undefined },
     { enabled: isOpen && !!profile?.id }
   ) as { data: import("@/types/escola").Escola[] };
 
   const { data: veiculosData = [] } = useVeiculosWithFilters(
     profile?.id,
-    { ativo: "true" },
+    { ativo: "true", includeId: includeVeiculoId || undefined },
     { enabled: isOpen && !!profile?.id }
   ) as { data: import("@/types/veiculo").Veiculo[] };
 
@@ -180,13 +195,16 @@ export default function PassengerFormDialog({
 
   const handleRequestUpgrade = () => {
     // Determina o contexto do upgrade baseado no limite atual
-
+    let feature = FEATURE_LIMITE_FRANQUIA;
     if (limits.franchise.limit === 0) {
-      setUpgradeFeature(FEATURE_COBRANCA_AUTOMATICA);
-    } else {
-      setUpgradeFeature(FEATURE_LIMITE_FRANQUIA);
-    }
-    setIsUpgradeDialogOpen(true);
+      feature = FEATURE_COBRANCA_AUTOMATICA;
+    } 
+
+    openPlanUpgradeDialog({
+        feature,
+        targetPassengerCount: limits.franchise.used + 1,
+        onSuccess: handleUpgradeSuccess
+    });
   };
 
   const handleFillMock = () => {
@@ -323,10 +341,7 @@ export default function PassengerFormDialog({
           onOpenAutoFocus={(e) => e.preventDefault()}
           // @ts-ignore
           onPointerDownOutside={(e) => {
-            // Se o dialog de upgrade estiver aberto, ignorar cliques fora
-            if (isUpgradeDialogOpen) {
-              e.preventDefault();
-            }
+            // Se necessário, impedir fechar, mas sem dependência de estado local
           }}
         >
           <div className="bg-blue-600 p-4 text-center relative shrink-0">
@@ -377,7 +392,11 @@ export default function PassengerFormDialog({
                     onValueChange={setOpenAccordionItems}
                     className="space-y-4"
                   >
-                    <PassageiroFormDadosCadastrais profile={profile} />
+                    <PassageiroFormDadosCadastrais 
+                      profile={profile} 
+                      escolas={escolasData}
+                      veiculos={veiculosData}
+                    />
                     <PassageiroFormResponsavel isSearching={buscarResponsavel.isPending} />
                     <PassageiroFormFinanceiro
                       editingPassageiro={editingPassageiro}
@@ -423,13 +442,7 @@ export default function PassengerFormDialog({
       </Dialog>
       <LoadingOverlay active={isSubmitting} text="Salvando..." />
       
-      <PlanUpgradeDialog 
-        open={isUpgradeDialogOpen} 
-        onOpenChange={setIsUpgradeDialogOpen} 
-        onSuccess={handleUpgradeSuccess}
-        feature={upgradeFeature}
-        targetPassengerCount={limits.franchise.used + 1}
-      />
+
     </>
   );
 }

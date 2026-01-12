@@ -96,12 +96,14 @@ export function useUpdateCobranca() {
       queryClient.invalidateQueries({ queryKey: ["cobranca", variables.id] });
       toast.success("cobranca.sucesso.atualizada");
     },
-    onSettled: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
-      queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
-      // Invalida query específica da cobrança (a invalidação genérica ["cobranca"] já cobre todas)
-      if (variables?.id) {
-        queryClient.invalidateQueries({ queryKey: ["cobranca", variables.id] });
+    onSettled: (_, error, variables) => {
+      if (!error) {
+        queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+        queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+        // Invalida query específica da cobrança (a invalidação genérica ["cobranca"] já cobre todas)
+        if (variables?.id) {
+          queryClient.invalidateQueries({ queryKey: ["cobranca", variables.id] });
+        }
       }
     },
   });
@@ -159,17 +161,19 @@ export function useDeleteCobranca() {
     onSuccess: () => {
       toast.success("cobranca.sucesso.excluida");
     },
-    onSettled: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
-      queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
-      // Invalida a query específica da cobrança excluída para garantir que não seja mais acessível
-      if (id) {
-        queryClient.invalidateQueries({ queryKey: ["cobranca", id] });
-        // Remove do cache para evitar acesso após exclusão
-        queryClient.removeQueries({ queryKey: ["cobranca", id] });
+    onSettled: (data, error, id) => {
+      if (!error) {
+        queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+        queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+        // Invalida a query específica da cobrança excluída para garantir que não seja mais acessível
+        if (id) {
+            queryClient.invalidateQueries({ queryKey: ["cobranca", id] });
+            // Remove do cache para evitar acesso após exclusão
+            queryClient.removeQueries({ queryKey: ["cobranca", id] });
+        }
+        // Invalida anos disponíveis (pode ter mudado após excluir cobrança)
+        queryClient.invalidateQueries({ queryKey: ["available-years"] });
       }
-      // Invalida anos disponíveis (pode ter mudado após excluir cobrança)
-      queryClient.invalidateQueries({ queryKey: ["available-years"] });
     },
   });
 }
@@ -187,8 +191,8 @@ export function useDesfazerPagamento() {
         return {
           ...old,
           ...updatedCobranca,
-          // Preserva passageiros se não vier na resposta
-          passageiros: updatedCobranca.passageiros || old.passageiros,
+          // Preserva passageiro se não vier na resposta
+          passageiro: updatedCobranca.passageiro || old.passageiro,
         } as Cobranca;
       });
       
@@ -222,8 +226,8 @@ export function useRegistrarPagamentoManual() {
         return {
           ...old,
           ...updatedCobranca,
-          // Preserva passageiros se não vier na resposta
-          passageiros: updatedCobranca.passageiros || old.passageiros,
+          // Preserva passageiro se não vier na resposta
+          passageiro: updatedCobranca.passageiro || old.passageiro,
         } as Cobranca;
       });
       

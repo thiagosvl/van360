@@ -303,21 +303,21 @@ export default function PassageiroCobranca() {
   }
 
   if (!cobranca || !cobrancaTyped) return null;
-  const passageiroCompleto = cobrancaTyped.passageiro as Passageiro;
+  const passageiroCompleto = cobrancaTyped?.passageiro as Passageiro;
 
   const pullToRefreshReload = async () => {
     await refetchCobranca();
   };
 
   // Status Logic using Utils (DRY)
-  const isPago = cobrancaTyped.status === PASSAGEIRO_COBRANCA_STATUS_PAGO;
+  const isPago = cobrancaTyped?.status === PASSAGEIRO_COBRANCA_STATUS_PAGO;
   const statusText = getStatusText(
-    cobrancaTyped.status,
-    cobrancaTyped.data_vencimento
+    cobrancaTyped?.status,
+    cobrancaTyped?.data_vencimento
   );
   const statusColorClass = getStatusColor(
-    cobrancaTyped.status,
-    cobrancaTyped.data_vencimento
+    cobrancaTyped?.status,
+    cobrancaTyped?.data_vencimento
   );
 
   // Header Color Logic derived from status
@@ -489,7 +489,7 @@ export default function PassageiroCobranca() {
                       variant="ghost"
                       className="w-full h-10 rounded-xl text-gray-500 hover:bg-transparent hover:text-primary font-medium"
                       onClick={() =>
-                        navigate(`/passageiros/${cobrancaTyped.passageiro_id}`)
+                        navigate(`/passageiros/${cobrancaTyped?.passageiro_id}`)
                       }
                     >
                       <IdCard className="h-4 w-4 mr-2" /> Ver Carteirinha
@@ -524,7 +524,7 @@ export default function PassageiroCobranca() {
                       <div className="flex items-center gap-2">
                         <CalendarDays className="w-5 h-5 opacity-80" />
                         <span className="text-base sm:text-xl font-bold tracking-tight text-gray-900">
-                          {meses[cobrancaTyped.mes - 1]}
+                          {meses[cobrancaTyped?.mes - 1]}
                         </span>
                       </div>
                     </div>
@@ -536,22 +536,22 @@ export default function PassageiroCobranca() {
                       </span>
                       <span className="text-sm sm:text-base font-bold text-gray-900">
                         {isPago
-                          ? formatDateToBR(cobrancaTyped.data_pagamento).split(
+                          ? formatDateToBR(cobrancaTyped?.data_pagamento).split(
                               "/"
                             )[0] +
                             "/" +
-                            formatDateToBR(cobrancaTyped.data_pagamento).split(
+                            formatDateToBR(cobrancaTyped?.data_pagamento).split(
                               "/"
                             )[1]
                           : `Dia ${
-                              cobrancaTyped.data_vencimento.split("-")[2]
+                              cobrancaTyped?.data_vencimento.split("-")[2]
                             }`}
                       </span>
                     </div>
                   </div>
 
                   {/* ALERTA DE LEMBRETES DESATIVADOS (NOVO) */}
-                  {cobrancaTyped.desativar_lembretes && !isPago && (
+                  {cobrancaTyped?.desativar_lembretes && !isPago && (
                     <div className="bg-orange-50 border-b border-orange-100 px-6 py-2 flex items-center justify-center gap-2 text-xs font-medium text-orange-700 animate-in fade-in slide-in-from-top-2">
                       <BellOff className="w-3.5 h-3.5 text-orange-700" />
                       <span>Notificações desativadas para esta cobrança.</span>
@@ -576,7 +576,7 @@ export default function PassageiroCobranca() {
                           R$
                         </span>
                         <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 tracking-tighter">
-                          {cobrancaTyped.valor.toLocaleString("pt-BR", {
+                          {cobrancaTyped?.valor.toLocaleString("pt-BR", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}
@@ -586,7 +586,7 @@ export default function PassageiroCobranca() {
 
                     {/* Primary Actions */}
                     <div className="flex flex-wrap flex-col sm:flex-row items-center justify-center gap-4 max-w-2xl mx-auto mb-8 w-full">
-                      {cobrancaTyped.txid_pix && cobrancaTyped.qr_code_payload && !isPago && (
+                      {cobrancaTyped?.txid_pix && cobrancaTyped?.qr_code_payload && !isPago && (
                         <Button
                           className="h-12 px-8 rounded-xl font-bold text-base bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto min-w-[200px]"
                           onClick={() => setPixDrawerOpen(true)}
@@ -606,7 +606,7 @@ export default function PassageiroCobranca() {
                           <BadgeCheck className="w-5 h-5 mr-2" />
                           Registrar Pagamento
                         </Button>
-                      ) : cobrancaTyped.pagamento_manual ? (
+                      ) : cobrancaTyped?.pagamento_manual ? (
                         <>
                           <Button
                             size="lg"
@@ -660,7 +660,7 @@ export default function PassageiroCobranca() {
 
                       {canViewReceipt(cobrancaTyped) && (
                         <ReceiptDialog
-                          url={cobrancaTyped.recibo_url}
+                          url={cobrancaTyped?.recibo_url}
                           trigger={
                             <Button
                               variant="ghost"
@@ -681,7 +681,7 @@ export default function PassageiroCobranca() {
                         disabled={seForPago(cobrancaTyped)}
                         onClick={handleToggleLembretes}
                       >
-                        {cobrancaTyped.desativar_lembretes ? (
+                        {cobrancaTyped?.desativar_lembretes ? (
                           <>
                             <Bell className="w-3.5 h-3.5 mr-2" /> Ativar
                             Notificações
@@ -727,15 +727,15 @@ export default function PassageiroCobranca() {
                     <CardContent className="space-y-4 pt-4">
                       <div className="grid grid-cols-1 gap-4">
                         <InfoItem icon={CreditCard} label="Forma de Pagamento">
-                          {formatPaymentType(cobrancaTyped.tipo_pagamento)}
+                          {formatPaymentType(cobrancaTyped?.tipo_pagamento)}
                         </InfoItem>
                         <InfoItem icon={Calendar} label="Data do Pagamento">
-                          {cobrancaTyped.data_pagamento
-                            ? formatDateToBR(cobrancaTyped.data_pagamento)
+                          {cobrancaTyped?.data_pagamento
+                            ? formatDateToBR(cobrancaTyped?.data_pagamento)
                             : "—"}
                         </InfoItem>
                         <InfoItem icon={ArrowRight} label="Origem da Cobrança">
-                          {formatCobrancaOrigem(cobrancaTyped.origem)}
+                          {formatCobrancaOrigem(cobrancaTyped?.origem)}
                         </InfoItem>
                       </div>
                     </CardContent>
@@ -776,9 +776,9 @@ export default function PassageiroCobranca() {
                   cobrancaId={cobranca_id}
                   passageiroNome={passageiroCompleto.nome}
                   responsavelNome={passageiroCompleto.nome_responsavel}
-                  valorOriginal={Number(cobrancaTyped.valor)}
-                  status={cobrancaTyped.status}
-                  dataVencimento={cobrancaTyped.data_vencimento}
+                  valorOriginal={Number(cobrancaTyped?.valor)}
+                  status={cobrancaTyped?.status}
+                  dataVencimento={cobrancaTyped?.data_vencimento}
                   onPaymentRecorded={() => {
                     refetchCobranca();
                     // Upsell Check
@@ -813,11 +813,11 @@ export default function PassageiroCobranca() {
                 <CobrancaPixDrawer
                   open={pixDrawerOpen}
                   onOpenChange={setPixDrawerOpen}
-                  qrCodePayload={cobrancaTyped.qr_code_payload || ""}
-                  valor={Number(cobrancaTyped.valor)}
+                  qrCodePayload={cobrancaTyped?.qr_code_payload || ""}
+                  valor={Number(cobrancaTyped?.valor)}
                   passageiroNome={passageiroCompleto.nome}
-                  mes={cobrancaTyped.mes}
-                  ano={cobrancaTyped.ano}
+                  mes={cobrancaTyped?.mes}
+                  ano={cobrancaTyped?.ano}
                 />
               )}
             </div>

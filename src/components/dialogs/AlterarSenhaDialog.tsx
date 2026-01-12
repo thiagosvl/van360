@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -117,7 +117,7 @@ export default function AlterarSenhaDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="w-[90vw] sm:w-full sm:max-w-md max-h-[95vh] flex flex-col overflow-hidden bg-white rounded-3xl border-0 shadow-2xl p-0"
+        className="w-full max-w-lg p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         onOpenAutoFocus={(e) => e.preventDefault()}
         hideCloseButton
       >
@@ -135,12 +135,12 @@ export default function AlterarSenhaDialog({
           </DialogTitle>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 bg-white">
+        <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
           <Form {...form}>
             <form
               id="alterar-senha-form"
               onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-6"
+              className="space-y-6 pt-4"
             >
               <FormField
                 control={form.control}

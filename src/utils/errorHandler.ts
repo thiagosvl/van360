@@ -13,14 +13,21 @@ export function getErrorMessage(
   if (typeof error === "string") {
     return error;
   }
-
-  if (error instanceof Error) {
-    return error.message || fallbackMessage;
+  
+  if(error?.response.data.message) {
+    return error?.response?.data?.message;
   }
 
-  const axiosError = error as AxiosError<{ message?: string }>;
+  // Tenta extrair mensagem de erro da resposta da API (Axios)
+  // Prioridade alta pois contém a regra de negócio/validação do backend
+  const axiosError = error as any; // Cast para any para facilitar acesso seguro
   if (axiosError?.response?.data?.message) {
     return axiosError.response.data.message;
+  }
+  
+  // Tratamento para erro genérico (Error) ou msg de rede do Axios
+  if (error instanceof Error) {
+    return error.message || fallbackMessage;
   }
 
   if (axiosError?.message) {

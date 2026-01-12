@@ -20,7 +20,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useLayout } from "@/contexts/LayoutContext";
-import { useEscolasWithFilters, useVeiculosWithFilters } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Usuario } from "@/types/usuario";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
@@ -29,35 +28,25 @@ import { Car, School, Sun, User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
+import { Escola } from "@/types/escola";
+import { Veiculo } from "@/types/veiculo";
+
 interface PassageiroFormDadosCadastraisProps {
   profile: Usuario | null | undefined;
+  escolas: Escola[];
+  veiculos: Veiculo[];
 }
 
 export function PassageiroFormDadosCadastrais({
   profile,
+  escolas,
+  veiculos,
 }: PassageiroFormDadosCadastraisProps) {
   const form = useFormContext();
   const { openEscolaFormDialog, openVeiculoFormDialog } = useLayout();
 
   const [newVeiculo, setNewVeiculo] = useState<any | null>(null);
   const [newEscola, setNewEscola] = useState<any | null>(null);
-
-  // Usar valores iniciais para includeId para evitar refetch ao trocar seleção
-  // O includeId serve apenas para garantir que o item pré-selecionado (ex: arquivado) apareça na lista de edição
-  const initialEscolaId = form.formState.defaultValues?.escola_id;
-  const initialVeiculoId = form.formState.defaultValues?.veiculo_id;
-
-  const { data: escolas = [] } = useEscolasWithFilters(
-    profile?.id,
-    { ativo: "true", includeId: initialEscolaId || undefined },
-    { enabled: !!profile?.id }
-  ) as { data: import("@/types/escola").Escola[] };
-
-  const { data: veiculos = [] } = useVeiculosWithFilters(
-    profile?.id,
-    { ativo: "true", includeId: initialVeiculoId || undefined },
-    { enabled: !!profile?.id }
-  ) as { data: import("@/types/veiculo").Veiculo[] };
 
   const veiculosDisplay = useMemo(() => {
     if (!newVeiculo) return veiculos;

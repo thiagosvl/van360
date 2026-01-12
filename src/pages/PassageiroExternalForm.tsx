@@ -14,28 +14,28 @@ import { MoneyInput } from "@/components/forms";
 
 // Components - UI
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 
 // Services
@@ -53,16 +53,16 @@ import { toast } from "@/utils/notifications/toast";
 // Icons
 import { periodos } from "@/utils/formatters";
 import {
-  AlertTriangle,
-  CalendarDays,
-  Car,
-  CheckCircle2,
-  CreditCard,
-  Loader2,
-  School,
-  Sun,
-  User,
-  Wand2,
+    AlertTriangle,
+    CalendarDays,
+    Car,
+    CheckCircle2,
+    CreditCard,
+    Loader2,
+    School,
+    Sun,
+    User,
+    Wand2,
 } from "lucide-react";
 
 import { PassageiroFormEndereco } from "@/components/features/passageiro/form/PassageiroFormEndereco";
@@ -402,7 +402,7 @@ export default function PassageiroExternalForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-0 px-0 sm:py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-0 px-0 sm:py-8 sm:px-6 lg:px-8 pb-32">
       <div className="max-w-3xl mx-auto">
         <div className="shadow-2xl sm:rounded-3xl overflow-hidden border border-gray-100">
           {/* Header */}
@@ -672,23 +672,28 @@ export default function PassageiroExternalForm() {
                   <PassageiroFormEndereco />
                 </Accordion>
 
-                <Button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full h-14 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                      Enviando Cadastro...
-                    </>
-                  ) : (
-                    "Enviar Cadastro"
-                  )}
-                </Button>
+
               </form>
             </Form>
           </div>
+        </div>
+      </div>
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 border-t border-gray-200 backdrop-blur-sm z-50">
+        <div className="max-w-3xl mx-auto">
+          <Button
+            onClick={form.handleSubmit(handleSubmit, onFormError)}
+            disabled={submitting}
+            className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:-translate-y-0.5"
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                Enviando Cadastro...
+              </>
+            ) : (
+              "Enviar Cadastro"
+            )}
+          </Button>
         </div>
       </div>
     </div>

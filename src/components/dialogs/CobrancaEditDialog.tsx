@@ -124,7 +124,7 @@ export default function CobrancaEditDialog({
                   Ao realizar alterações de preço ou data, <strong>o PIX atual será{" "}
                   cancelado (ficará inválido) e um novo PIX será gerado</strong>.
                 </p>
-                {cobranca.data_envio_notificacao && (
+                {cobranca.data_envio_ultima_notificacao && (
                   <p className="text-amber-800 font-semibold mt-1 text-xs underline">
                     Como já foi enviada, você precisará reenviar a cobrança ao
                     responsável!

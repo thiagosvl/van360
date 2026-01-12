@@ -17,7 +17,7 @@ export interface Cobranca {
   status_repasse?: "PENDENTE" | "PROCESSANDO" | "REPASSADO" | "FALHA_REPASSE" | "SEM_REPASSE";
   valor_a_repassar?: number;
   txid_pix?: string;
-  data_envio_notificacao?: string;
+  data_envio_ultima_notificacao?: string;
   qr_code_payload?: string;
   url_qr_code?: string;
   recibo_url?: string;

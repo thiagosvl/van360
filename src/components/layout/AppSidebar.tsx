@@ -9,35 +9,15 @@ interface AppSidebarProps {
   plano?: any;
 }
 
-import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { useUpsellContent } from "@/hooks/business/useUpsellContent";
 
 export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
   const upsellContent = useUpsellContent(plano);
-  const { data: systemSummary } = useUsuarioResumo();
-
-  const funcionalidades = systemSummary?.usuario.plano.funcionalidades;
-
-  const userItems = pagesItems.filter(item => {
-    if ((item as any).featureFlag) {
-      const flag = (item as any).featureFlag as keyof typeof funcionalidades;
-      return funcionalidades?.[flag] === true;
-    }
-    return true;
-  }).map((item) => {
-    if (item.title === "Passageiros" || item.href === "/passageiros") {
-       return {
-         ...item,
-         badge: systemSummary?.contadores.passageiros.ativos || undefined
-       };
-    }
-    return { ...item };
-  });
 
   return (
     <div className="flex h-full flex-col gap-6">
       <nav className="flex-1 space-y-1 overflow-y-auto pr-1 md:space-y-1">
-        {userItems.map((item) => (
+        {pagesItems.map((item) => (
           <NavLink
             key={item.href}
             to={item.href}
@@ -56,9 +36,7 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
                 <span
                   className={cn(
                     "flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-base",
-                    isActive
-                      ? "bg-white/20 text-white"
-                      : "hover:text-blue-600"
+                    isActive ? "bg-white/20 text-white" : "hover:text-blue-600"
                   )}
                 >
                   <item.icon
@@ -69,15 +47,16 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
                   />
                 </span>
                 <span>{item.title}</span>
-                
+
                 {/* Badge inside render prop */}
                 {/* @ts-ignore */}
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {(item as any).badge !== undefined && (item as any).badge > 0 && (
-                  <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-600">
-                    {(item as any).badge}
-                  </span>
-                )}
+                {(item as any).badge !== undefined &&
+                  (item as any).badge > 0 && (
+                    <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-600">
+                      {(item as any).badge}
+                    </span>
+                  )}
               </>
             )}
           </NavLink>
@@ -85,12 +64,8 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
       </nav>
 
       <div className="hidden sm:block rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-500 to-purple-500 p-5 text-white shadow-lg">
-        <p className="text-sm font-semibold">
-          {upsellContent.title}
-        </p>
-        <p className="text-xs text-white/80">
-          {upsellContent.description}
-        </p>
+        <p className="text-sm font-semibold">{upsellContent.title}</p>
+        <p className="text-xs text-white/80">{upsellContent.description}</p>
         <Button
           variant="secondary"
           size="sm"
@@ -106,4 +81,3 @@ export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
     </div>
   );
 }
-

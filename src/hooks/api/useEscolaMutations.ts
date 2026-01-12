@@ -80,10 +80,12 @@ export function useUpdateEscola() {
     onSuccess: () => {
       toast.success("escola.sucesso.atualizada");
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["escolas"] });
-      queryClient.invalidateQueries({ queryKey: ["escolas-form"] });
-      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+    onSettled: (data, error) => {
+      if (!error) {
+        queryClient.invalidateQueries({ queryKey: ["escolas"] });
+        queryClient.invalidateQueries({ queryKey: ["escolas-form"] });
+        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      }
     },
   });
 }
@@ -126,10 +128,12 @@ export function useDeleteEscola() {
     onSuccess: () => {
       toast.success("escola.sucesso.excluida");
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["escolas"] });
-      queryClient.invalidateQueries({ queryKey: ["escolas-form"] });
-      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+    onSettled: (data, error) => {
+      if (!error) {
+        queryClient.invalidateQueries({ queryKey: ["escolas"] });
+        queryClient.invalidateQueries({ queryKey: ["escolas-form"] });
+        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      }
     },
   });
 }
@@ -179,10 +183,12 @@ export function useToggleAtivoEscola() {
         variables.novoStatus ? "escola.sucesso.ativada" : "escola.sucesso.desativada"
       );
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["escolas"] });
-      queryClient.invalidateQueries({ queryKey: ["escolas-form"] });
-      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+    onSettled: (data, error) => {
+      if (!error) {
+        queryClient.invalidateQueries({ queryKey: ["escolas"] });
+        queryClient.invalidateQueries({ queryKey: ["escolas-form"] });
+        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      }
     },
   });
 }

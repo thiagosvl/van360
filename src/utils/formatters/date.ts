@@ -22,6 +22,7 @@ export const formatDate = (date: string | Date) => {
 };
 
 export const formatDateToBR = (date: string | Date): string => {
+  if(!date) return "";
   const newDate = formatDate(date);
   return newDate.toLocaleDateString("pt-BR", {
     day: "2-digit",

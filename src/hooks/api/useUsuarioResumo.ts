@@ -1,6 +1,6 @@
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "../../services/api/client";
 
 export interface SystemSummary {
@@ -55,24 +55,19 @@ export interface SystemSummary {
 }
 
 export const useUsuarioResumo = () => {
-    const { user } = useSession();
-    const { profile } = useProfile(user?.id);
-    const queryClient = useQueryClient();
+  const { user } = useSession();
+  const { profile } = useProfile(user?.id);
 
-    return useQuery<SystemSummary>({
-        queryKey: ["usuario-resumo", profile?.id],
-        queryFn: async () => {
-            if (!profile?.id) throw new Error("Perfil de usuário não carregado");
-            
-            // Agora usamos o profile.id (ID Público) compatível com o backend
-            const response = await apiClient.get<SystemSummary>(`/usuarios/${profile.id}/resumo`);
-            return response.data;
-        },
-        enabled: !!profile?.id,
-        staleTime: 1000 * 60 * 5, // 5 minutes cache
-    });
-};
+  return useQuery<SystemSummary>({
+    queryKey: ["usuario-resumo", profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) throw new Error("Perfil de usuário não carregado");
 
-export const invalidateUsuarioResumo = (queryClient: any) => {
-    return queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      // Agora usamos o profile.id (ID Público) compatível com o backend
+      const response = await apiClient.get<SystemSummary>(`/usuarios/${profile.id}/resumo`);
+      return response.data;
+    },
+    enabled: !!profile?.id,
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+  });
 };
