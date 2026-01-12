@@ -40,7 +40,6 @@ import { cn } from "@/lib/utils";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { Veiculo } from "@/types/veiculo";
-import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
@@ -56,6 +55,8 @@ export default function Passageiros() {
     closeConfirmationDialog,
     openPassageiroFormDialog,
   } = useLayout();
+
+  const { canUseAutomatedCharges: canUseCobrancaAutomatica } = usePermissions();
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -218,9 +219,6 @@ export default function Passageiros() {
   );
 
   const { limits } = usePlanLimits({
-    userUid: user?.id,
-    profile,
-    plano,
     currentPassengerCount: countPassageiros ?? 0,
   });
 
@@ -306,7 +304,7 @@ export default function Passageiros() {
 
           if (
             novoStatus &&
-            canUseCobrancaAutomatica(plano) &&
+            canUseCobrancaAutomatica &&
             p.enviar_cobranca_automatica
           ) {
             const franquiaContratada =
@@ -374,8 +372,7 @@ export default function Passageiros() {
 
       const novoValor = !passageiro.enviar_cobranca_automatica;
 
-      if (novoValor && canUseCobrancaAutomatica(plano)) {
-        // Use centralized logic from hook to check availability
+      if (novoValor && limits.franchise.canEnable) {       // Use centralized logic from hook to check availability
         // If enabling (novoValor === true), we check availability.
         // We pass 'false' to checkAvailability because if we are enabling, it means it is NOT currently active (so we don't need to subtract from count).
         const podeAtivar = limits.franchise.checkAvailability(false);
@@ -557,7 +554,7 @@ export default function Passageiros() {
 
     // Verificar se pode ligar cobrança automática
     let enviarCobrancaAutomatica = false;
-    if (canUseCobrancaAutomatica(plano)) {
+    if (canUseCobrancaAutomatica) {
       // Passa false pois estamos criando um novo, logo "não está habilitado" ainda na contagem
       enviarCobrancaAutomatica = limits.franchise.checkAvailability(false);
     }

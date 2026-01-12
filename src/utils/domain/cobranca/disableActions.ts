@@ -4,7 +4,7 @@ import {
     PASSAGEIRO_COBRANCA_STATUS_PENDENTE
 } from "@/constants";
 import { Cobranca } from "@/types/cobranca";
-import { canUseNotificacoes } from "@/utils/domain/plano/accessRules";
+// Função depreciada removida: planoPermiteEnviarNotificacao
 
 export const seForPago = (cobranca: Cobranca): boolean => {
   return cobranca.status === PASSAGEIRO_COBRANCA_STATUS_PAGO;
@@ -27,11 +27,7 @@ export const disableRegistrarPagamento = (cobranca: Cobranca): boolean => {
  * @param plano - Objeto com informações do plano do usuário (retornado por useProfile)
  * @returns true se o plano permite enviar notificações
  */
-export const planoPermiteEnviarNotificacao = (
-  plano?: { IsProfissionalPlan?: boolean; isValidPlan?: boolean; isActive?: boolean; isEssentialPlan?: boolean; isValidTrial?: boolean; isTrial?: boolean } | null
-): boolean => {
-  return canUseNotificacoes(plano as any);
-};
+
 
 export const disableDesfazerPagamento = (cobranca: Cobranca): boolean => {
   return !seForPago(cobranca) || !cobranca.pagamento_manual;

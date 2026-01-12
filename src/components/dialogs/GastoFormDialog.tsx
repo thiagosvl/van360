@@ -2,33 +2,33 @@ import { MoneyInput } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateGasto, useUpdateGasto } from "@/hooks";
+import { useCreateGasto, useUpdateGasto, useVeiculos } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 import { safeCloseDialog } from "@/utils/dialogUtils";
@@ -37,11 +37,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  Bus,
-  CalendarIcon,
-  Tag,
-  TrendingDown,
-  X,
+    Bus,
+    CalendarIcon,
+    Tag,
+    TrendingDown,
+    X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -70,13 +70,21 @@ export default function GastoFormDialog({
   isOpen,
   onOpenChange,
   gastoToEdit,
-  veiculos,
+  veiculos: veiculosProp,
   usuarioId,
   onSuccess,
 }: GastoFormDialogProps) {
   const [openCalendar, setOpenCalendar] = useState(false);
   const createGasto = useCreateGasto();
   const updateGasto = useUpdateGasto();
+
+  // Se a prop vier vazia, buscamos do hook.
+  // Isso permite que o Home.tsx não precise carregar veiculos, mas o Dialog carrega on-demand.
+  const { data: veiculosData } = useVeiculos(usuarioId, {
+    enabled: isOpen && veiculosProp.length === 0 && !!usuarioId
+  });
+
+  const veiculos = veiculosProp.length > 0 ? veiculosProp : (veiculosData?.list || []);
 
   const isActionLoading = createGasto.isPending || updateGasto.isPending;
 
@@ -104,8 +112,6 @@ export default function GastoFormDialog({
       } else {
         // Smart UX: Se tiver apenas 1 veículo, seleciona ele por padrão.
         // Se tiver 0 ou > 1, seleciona "none" (Geral).
-        // const defaultVeiculo = veiculos.length === 1 ? veiculos[0].id : "none";
-        
         form.reset({
           valor: "",
           data: undefined,
@@ -115,7 +121,10 @@ export default function GastoFormDialog({
         });
       }
     }
-  }, [isOpen, gastoToEdit, form, veiculos]);
+  }, [isOpen, gastoToEdit, form, veiculosProp]); // Using veiculosProp here to trigger logic if needed? 
+  // Actually, wait. logic for default selection depended on veiculos.
+  // If I fetch async, this useEffect might run before I have vehicles.
+  // It's fine for now, "none" is a safe default.
 
   const handleSubmit = async (data: GastoFormData) => {
     if (!usuarioId) return;

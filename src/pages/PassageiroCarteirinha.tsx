@@ -60,7 +60,7 @@ import {
   useDesfazerPagamento,
   useEnviarNotificacaoCobranca,
   usePassageiro,
-  usePassageiros,
+  usePermissions,
   useToggleAtivoPassageiro,
   useToggleNotificacoesCobranca,
   useUpdateCobranca,
@@ -73,7 +73,6 @@ import { useQueryClient } from "@tanstack/react-query";
 // Utils
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { toast } from "@/utils/notifications/toast";
 
 // Types
@@ -149,16 +148,14 @@ export default function PassageiroCarteirinha() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { user, loading: isSessionLoading } = useSession();
   const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
-  const planoProfissionalAtivo = canUseCobrancaAutomatica(plano);
+  const { canUseAutomatedCharges: canUseCobrancaAutomatica } = usePermissions();
+  // const planoProfissionalAtivo = canUseCobrancaAutomatica(plano); // REMOVED
 
   // Hook para validar franquia (dados já carregados)
   // Passar user?.id (auth_uid) e profile para evitar chamadas duplicadas
   // Hook para validar franquia (dados já carregados)
   // Passar user?.id (auth_uid) e profile para evitar chamadas duplicadas
-  const { limits } = usePlanLimits({
-    userUid: user?.id,
-    profile
-  });
+  const { limits } = usePlanLimits();
 
   const validacaoFranquiaGeral = {
     franquiaContratada: limits.franchise.limit,
@@ -166,11 +163,7 @@ export default function PassageiroCarteirinha() {
     podeAtivar: limits.franchise.canEnable
   };
 
-  const { data: allPassageirosData } = usePassageiros(
-    { usuarioId: profile?.id },
-    { enabled: !!profile?.id }
-  );
-  const totalPassageiros = (allPassageirosData as any)?.total || 0;
+
 
   const handleUpgradeSuccess = () => {
     // Backend activates passenger via webhook (using targetPassengerId)
@@ -296,8 +289,8 @@ export default function PassageiroCarteirinha() {
   }, [availableYears, yearFilter]);
 
   const handlePassageiroFormSuccess = useCallback(() => {
-    setNovoVeiculoId(null);
-    setNovaEscolaId(null);
+    // setNovoVeiculoId(null);
+    // setNovaEscolaId(null);
     refetchPassageiro();
   }, [refetchPassageiro]);
 
@@ -432,7 +425,7 @@ export default function PassageiroCarteirinha() {
 
     const novoValor = !passageiro.enviar_cobranca_automatica;
 
-    if (novoValor && canUseCobrancaAutomatica(plano)) {
+    if (novoValor && canUseCobrancaAutomatica) { // Now boolean from hook
       // Usar validação já calculada via hook
       // Passamos false porque se estamos ativando, não está ativo, logo não descontamos.
       const podeAtivar = limits.franchise.checkAvailability(false);
@@ -662,7 +655,6 @@ export default function PassageiroCarteirinha() {
                       cobrancas={cobrancas}
                       passageiro={passageiro}
                       plano={plano}
-                      planoProfissionalAtivo={!!planoProfissionalAtivo}
                       yearFilter={yearFilter}
                       availableYears={availableYears}
                       mostrarTodasCobrancas={mostrarTodasCobrancas}
@@ -710,7 +702,7 @@ export default function PassageiroCarteirinha() {
               onPaymentRecorded={() =>
                 safeCloseDialog(() => {
                   handlePaymentRecorded();
-                  if (!canUseCobrancaAutomatica(plano)) {
+                  if (!canUseCobrancaAutomatica) { // Boolean
                     handleUpgrade(
                       FEATURE_COBRANCA_AUTOMATICA, 
                       "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?",

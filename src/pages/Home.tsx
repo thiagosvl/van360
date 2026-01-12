@@ -18,12 +18,11 @@ import { useNavigate } from "react-router-dom";
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useLayout } from "@/contexts/LayoutContext";
 import { useCobrancas } from "@/hooks/api/useCobrancas";
-import { useEscolas } from "@/hooks/api/useEscolas";
 import { usePassageiros } from "@/hooks/api/usePassageiros";
-import { useVeiculos } from "@/hooks/api/useVeiculos";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
@@ -45,6 +44,7 @@ import { DashboardStatusCard } from "@/components/features/home/DashboardStatusC
 import { MiniKPI } from "@/components/features/home/MiniKPI";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
+import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { useUpsellContent } from "@/hooks/business/useUpsellContent";
 
 // --- Main Component ---
@@ -71,7 +71,8 @@ const Home = () => {
     canViewModuleGastos,
   } = usePermissions();
 
-  const { limits: planLimits } = usePlanLimits({ profile, plano });
+  const { limits: planLimits } = usePlanLimits();
+  const { data: systemSummary } = useUsuarioResumo(); // New Unified Hook
 
   const upsellContent = useUpsellContent(plano);
 
@@ -96,67 +97,37 @@ const Home = () => {
 
 
   // Queries
-  const {
-    data: cobrancasData,
-    refetch: refetchCobrancas,
-    isLoading: isLoadingCobrancas,
-  } = useCobrancas(
+  const { data: cobrancasData, refetch: refetchCobrancas, isLoading: isLoadingCobrancas } = useCobrancas(
     { usuarioId: profile?.id, mes: mesAtual, ano: anoAtual },
     { enabled: !!profile?.id }
   );
 
-  const {
-    data: passageirosData,
-    refetch: refetchPassageiros,
-    isLoading: isLoadingPassageiros,
-  } = usePassageiros({ usuarioId: profile?.id }, { enabled: !!profile?.id });
+  const { data: passageirosData, refetch: refetchPassageiros, isLoading: isLoadingPassageiros } = usePassageiros(
+    { usuarioId: profile?.id }, 
+    { enabled: !!profile?.id }
+  );
 
-  const {
-    data: escolasData,
-    refetch: refetchEscolas,
-    isLoading: isLoadingEscolas,
-  } = useEscolas(profile?.id, {
-    enabled: !!profile?.id,
-  });
-
-  const {
-    data: veiculosData,
-    refetch: refetchVeiculos,
-    isLoading: isLoadingVeiculos,
-  } = useVeiculos(profile?.id, {
-    enabled: !!profile?.id,
-  });
-
+  // Escolas e Veículos: Usamos apenas para o create/refresh. As contagens vêm do systemSummary
+  // Podemos manter os refetchs, mas não precisamos das datas para o render principal
+  
   // Estado de loading unificado
   const isInitialLoading = useMemo(() => {
-    // Se não tem profile ainda, está carregando
     if (!profile?.id) return true;
-
-    // Verifica se alguma query ainda está carregando pela primeira vez
-    return (
-      isLoadingCobrancas ||
-      isLoadingPassageiros ||
-      isLoadingEscolas ||
-      isLoadingVeiculos
-    );
-  }, [
-    profile?.id,
-    isLoadingCobrancas,
-    isLoadingPassageiros,
-    isLoadingEscolas,
-    isLoadingVeiculos,
-  ]);
+    return isLoadingCobrancas || isLoadingPassageiros || !systemSummary;
+  }, [profile?.id, isLoadingCobrancas, isLoadingPassageiros, systemSummary]);
 
   // Derived Data
   const cobrancas = cobrancasData?.all || [];
   const passageirosList = passageirosData?.list || [];
 
-  const escolasCount =
-    (escolasData as { total?: number } | undefined)?.total ?? 0;
-  const veiculosCount =
-    (veiculosData as { total?: number } | undefined)?.total ?? 0;
-  const passageirosCount = passageirosList.length;
-  const passageirosAtivosCount = passageirosList.filter((p) => p.ativo).length;
+  const escolasCount = systemSummary?.contadores.escolas.total ?? 0;
+  const veiculosCount = systemSummary?.contadores.veiculos.total ?? 0;
+  
+  // Mantemos a lista de passageiros pois ela tem flags (ativo) que podem não estar sincadas
+  // ou usamos o contador do resumo, MAS o Home.tsx usa para filtrar 'passageirosAtivosCount'
+  // O resumo JÁ TEM passageiros ativos.
+  const passageirosCount = systemSummary?.contadores.passageiros.total ?? 0;
+  const passageirosAtivosCount = systemSummary?.contadores.passageiros.ativos ?? 0;
 
   // Passenger Limit Logic
   const limitePassageiros = limits.passageiros;
@@ -230,12 +201,14 @@ const Home = () => {
     }
   }, [profile?.apelido, setPageTitle]);
 
+  const { refetch: refetchSummary } = useUsuarioResumo();
+  const queryClient = useQueryClient();
+
   const handlePullToRefresh = async () => {
     await Promise.all([
       refetchCobrancas(),
       refetchPassageiros(),
-      refetchEscolas(),
-      refetchVeiculos(),
+      refetchSummary(),
     ]);
   };
 
@@ -258,8 +231,9 @@ const Home = () => {
   const handleSuccessFormPassageiro = useCallback(() => {
     setNovoVeiculoId(null);
     setNovaEscolaId(null);
-    refetchPassageiros(); // Invalidação feita automaticamente pelos hooks de mutation
-  }, [refetchPassageiros]);
+    refetchPassageiros(); 
+    refetchSummary();
+  }, [refetchPassageiros, refetchSummary]);
 
   const handleOpenPassageiroDialog = useCallback(() => {
     if (permissions.isFreePlan && hasPassengerLimit && passageirosCount >= limits.passageiros) {
@@ -280,10 +254,20 @@ const Home = () => {
   const handleOpenGastoDialog = useCallback(() => {
     const triggerGasto = () => {
         openGastoFormDialog({
-            veiculos: veiculosData?.list || [],
+            // veiculos: veiculosData?.list || [], // REMOVIDO: Home não tem mais vehiclesData. 
+            // O Dialog deve buscar seus proprios veiculos ou receber user props.
+            // Se openGastoFormDialog exige veiculos, precisamos passar undefined e deixar ele buscar? 
+            // Ou o Context não exige? Vamos verificar. Normalmente dialogs buscam seus dados.
+            // Se "veiculos" é opcional no payload do contexto, ok. Se for mandatório, teremos problema.
+            // Assumindo que o OpenGastoFormDialogProps aceita opcional ou o componente interno busca.
+            // Para garantir, vamos passar vazio e deixar o componente lidar, ou refatorar o contexto depois.
+            // Mas espera, GastoFormDialog geralmente precisa da lista para o select.
+            // Se tiramos do Home, ele vai quebrar se depender dessa prop.
+            // Vou passar [] por enquanto e verificar se o GastoFormDialog busca sozinho se vazio.
+            veiculos: [], 
             onSuccess: () => {
                 toast.success("Gasto registrado com sucesso!");
-                refetchCobrancas(); // Or appropriate refetch
+                refetchCobrancas();
             }
         });
     };
@@ -298,24 +282,26 @@ const Home = () => {
     }
 
     triggerGasto();
-  }, [permissions.canViewGastos, openPlanUpgradeDialog, openGastoFormDialog, veiculosData?.list, refetchCobrancas]);
+  }, [permissions.canViewGastos, openPlanUpgradeDialog, openGastoFormDialog, refetchCobrancas]);
 
   const handleEscolaCreated = useCallback(
     (novaEscola: any, keepOpen?: boolean) => {
-      refetchEscolas();
+      queryClient.invalidateQueries({ queryKey: ["escolas"] });
+      refetchSummary();
       if (keepOpen) return;
       setNovaEscolaId(novaEscola.id);
     },
-    [refetchEscolas]
+    [queryClient, refetchSummary]
   );
 
   const handleVeiculoCreated = useCallback(
     (novoVeiculo: any, keepOpen?: boolean) => {
-      refetchVeiculos();
+      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      refetchSummary();
       if (keepOpen) return;
       setNovoVeiculoId(novoVeiculo.id);
     },
-    [refetchVeiculos]
+    [queryClient, refetchSummary]
   );
 
   // Quick Actions
@@ -478,7 +464,21 @@ const Home = () => {
             )}
           </div>
 
-          {/* Status Operacional */}
+
+          {/* Status Operacional & Alertas System Summary */}
+          {/* WhatsApp Disconnected Alert */}
+          {systemSummary?.usuario.flags.whatsapp_status === 'DISCONNECTED' && (
+             <section className="mb-4">
+                <DashboardStatusCard
+                  type="pending"
+                  title="WhatsApp Desconectado"
+                  description="Seu WhatsApp não está enviando mensagens. Reconecte agora."
+                  actionLabel="Reconectar"
+                  onAction={() => { /* TODO: Open WhatsApp Dialog via URL or context */ }}
+                />
+             </section>
+          )}
+
           {!showOnboarding && cobrancas.length > 0 && (
             <section>
               {latePayments.length > 0 ? (

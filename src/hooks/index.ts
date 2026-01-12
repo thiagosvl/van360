@@ -1,5 +1,6 @@
 // Business hooks
 export { useAssinaturaPendente } from "./business/useAssinaturaPendente";
+export { usePermissions } from "./business/usePermissions";
 export { usePlanLimits } from "./business/usePlanLimits";
 export { useProfile } from "./business/useProfile";
 export { useSession } from "./business/useSession";
@@ -10,9 +11,6 @@ export { safeCloseDialog, useDialogClose } from "./ui/useDialogClose";
 export { useFilters } from "./ui/useFilters";
 export { useLoadingState } from "./ui/useLoadingState";
 export { usePassageiroForm } from "./ui/usePassageiroForm";
-
-// Permission hooks
-export { usePageActions } from "./permissions/usePageActions";
 
 // API hooks (queries)
 export { useAssinaturaCobranca, useAssinaturaCobrancas } from "./api/useAssinaturaCobrancas";
@@ -25,7 +23,6 @@ export { useEscolas } from "./api/useEscolas";
 export { useEscolasWithFilters } from "./api/useEscolasWithFilters";
 export { useGastos } from "./api/useGastos";
 export { usePassageiro } from "./api/usePassageiro";
-export { usePassageiroContagem } from "./api/usePassageiroContagem";
 export { usePassageiros } from "./api/usePassageiros";
 export { useCalcularPrecoPreview, usePlanos } from "./api/usePlanos";
 export { usePrePassageiros } from "./api/usePrePassageiros";

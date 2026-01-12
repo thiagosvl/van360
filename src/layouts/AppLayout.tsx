@@ -1,7 +1,7 @@
 
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
-import { LayoutProvider } from "@/contexts/LayoutContext";
+import { LayoutProvider } from "@/contexts/LayoutProvider";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
 import { useSEO } from "@/hooks/useSEO";

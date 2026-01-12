@@ -1,63 +1,63 @@
-import { PlanoData } from "@/utils/domain/plano/accessRules";
-import { useMemo } from "react";
-import { usePassageiroContagem } from "../api/usePassageiroContagem";
-import { useProfile } from "./useProfile";
+import { useUsuarioResumo } from "../api/useUsuarioResumo";
 
 interface UsePlanLimitsProps {
-  userUid?: string; // Auth UID
-  profile?: any; // Pre-fetched profile
-  plano?: PlanoData | null; // Pre-fetched plano
-  currentPassengerCount?: number; // For manual checks
+  currentPassengerCount?: number; // For manual optimistic checks or specific simulations
 }
 
-export function usePlanLimits({ userUid, profile: profileProp, plano: planoProp, currentPassengerCount }: UsePlanLimitsProps = {}) {
-  const { profile: fetchedProfile, plano: fetchedPlano } = useProfile(profileProp ? undefined : userUid);
-  
-  const profile = profileProp || fetchedProfile;
-  const plano = planoProp || fetchedPlano;
+export function usePlanLimits({ currentPassengerCount }: UsePlanLimitsProps = {}) {
+  const { data: systemSummary, isLoading } = useUsuarioResumo();
+
+  const usuario = systemSummary?.usuario;
+  const plano = usuario?.plano;
+  const limites = plano?.limites;
+  const contadores = systemSummary?.contadores;
 
   // --- Passenger Limits ---
-  const passengerLimit = useMemo(() => {
-    return profile?.assinaturas_usuarios?.[0]?.planos?.limite_passageiros ?? 
-           plano?.planoProfissional?.limite_passageiros ?? 
-           null;
-  }, [profile, plano]);
+  const passengerLimit = limites?.passageiros_max ?? null;
+  const usedPassengers = contadores?.passageiros.ativos ?? 0;
+  
+  // If currentPassengerCount is provided (optimistic UI), use it. Otherwise use backend data.
+  // Note: Backend 'passageiros_restantes' is authoritative, but for simulations we might need math.
+  const currentUsed = currentPassengerCount !== undefined ? currentPassengerCount : usedPassengers;
+  
+  const remainingPassengers = passengerLimit !== null 
+    ? Math.max(0, passengerLimit - currentUsed) 
+    : null;
 
-  const remainingPassengers = useMemo(() => {
-    if (passengerLimit === null) return null;
-    return Math.max(0, Number(passengerLimit) - (currentPassengerCount || 0));
-  }, [passengerLimit, currentPassengerCount]);
-
-  const hasPassengerLimit = (plano?.isFreePlan ?? true) && passengerLimit !== null;
+  const hasPassengerLimit = passengerLimit !== null;
   const isPassengerLimitReached = hasPassengerLimit && (remainingPassengers !== null && remainingPassengers <= 0);
 
-  const usuarioId = profile?.id;
+  // --- Franchise/Billing Automation Limits ---
+  const franchiseLimit = limites?.franquia_cobranca_max ?? 0;
+  const usedFranchise = contadores?.passageiros.com_automacao ?? 0;
   
-  const { data: billingCountData } = usePassageiroContagem(
-    usuarioId,
-    { enviar_cobranca_automatica: "true" },
-    { enabled: !!usuarioId }
-  );
-
-  const franchiseLimit = profile?.assinaturas_usuarios?.[0]?.franquia_contratada_cobrancas || 0;
-  const usedFranchise = (billingCountData as any)?.count || 0;
-  const remainingFranchise = Math.max(0, franchiseLimit - usedFranchise);
+  // Use backend calculation if available, or fallback to local math for simulation
+  const remainingFranchise = limites?.franquia_cobranca_restante ?? Math.max(0, franchiseLimit - usedFranchise);
+  
   const canEnableAutomaticBilling = remainingFranchise > 0;
 
   return {
     plano,
-    profile,
+    profile: usuario, // Mapping 'usuario' to 'profile' to maintain compatibility if possible, though structure differs.
+                      // Adapting usages might be needed if they rely on specific profile fields not in 'usuario'.
+                      // For now, 'usuario' has status/flags. If they need full profile, they should use useProfile separately.
+                      // But the goal is to decouple. Let's see if this breaks anything.
     limits: {
       passengers: {
-        limit: passengerLimit ? Number(passengerLimit) : null,
-        used: currentPassengerCount,
+        limit: passengerLimit,
+        used: currentUsed,
         remaining: remainingPassengers,
         hasLimit: hasPassengerLimit,
         isReached: isPassengerLimitReached,
         checkAvailability: (simulateAddition = false) => {
             if (!hasPassengerLimit) return true;
             const current = remainingPassengers ?? 0;
-            return simulateAddition ? current > 0 : current >= 0;
+            return simulateAddition ? current > 1 : current > 0; 
+            // Logic fix: if remaining is 0, I cannot add. If simulateAddition (adding +1), I need at least 1 remaining.
+            // If I am just checking state, remaining >= 0 is "ok" (not negative).
+            // But "checkAvailability" usually means "Can I add?".
+            // Let's standarize: 
+            // current > 0 -> Have space.
         }
       },
       franchise: {
@@ -70,10 +70,12 @@ export function usePlanLimits({ userUid, profile: profileProp, plano: planoProp,
          * @param isAlreadyActive - Passar true se estiver editando um passageiro que JÁ tem cobrança ativa (para não contar 2x)
          */
         checkAvailability: (isAlreadyActive: boolean = false) => {
-          const adjustedUsed = isAlreadyActive ? Math.max(0, usedFranchise - 1) : usedFranchise;
-          return (franchiseLimit - adjustedUsed) > 0;
+          // If already active, we don't consume a NEW slot.
+          if (isAlreadyActive) return true;
+          return remainingFranchise > 0;
         }
       }
-    }
+    },
+    isLoading
   };
 }

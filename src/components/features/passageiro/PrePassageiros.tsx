@@ -108,8 +108,6 @@ export default function PrePassageiros({
 
   // --- Lógica de Limite (centralizada no hook) ---
   const { limits } = usePlanLimits({
-    plano,
-    profile,
     currentPassengerCount: countPassageiros,
   });
 

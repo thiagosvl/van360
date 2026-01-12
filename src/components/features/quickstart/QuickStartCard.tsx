@@ -2,22 +2,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
-  Bus,
-  CheckCircle2,
-  Key,
-  Lock as LockIcon,
-  School,
-  Trophy,
-  User,
+    Bus,
+    CheckCircle2,
+    Key,
+    Lock as LockIcon,
+    School,
+    Trophy,
+    User,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PassengerOnboardingDrawer } from "./PassengerOnboardingDrawer";
 
 // Hooks
 import { PLANO_PROFISSIONAL } from "@/constants";
-import { useEscolas } from "@/hooks/api/useEscolas";
-import { usePassageiros } from "@/hooks/api/usePassageiros";
-import { useVeiculos } from "@/hooks/api/useVeiculos";
+import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
@@ -36,39 +34,15 @@ export const QuickStartCard = ({
 }: QuickStartCardProps) => {
   const { user } = useSession();
   const { profile, plano } = useProfile(user?.id);
+  const { data: systemSummary, isLoading: isSummaryLoading } = useUsuarioResumo();
 
-  const { data: escolasData, isLoading: isEscolasLoading } = useEscolas(
-    profile?.id,
-    {
-      enabled: !!profile?.id,
-    }
-  );
+  const loading = isSummaryLoading;
 
-  const { data: veiculosData, isLoading: isVeiculosLoading } = useVeiculos(
-    profile?.id,
-    {
-      enabled: !!profile?.id,
-    }
-  );
-
-  const { data: passageirosData, isLoading: isPassageirosLoading } =
-    usePassageiros(
-      {
-        usuarioId: profile?.id,
-      },
-      {
-        enabled: !!profile?.id,
-      }
-    );
-
-  const loading = isEscolasLoading || isVeiculosLoading || isPassageirosLoading;
-
-  const escolasCount =
-    (escolasData as { total?: number } | undefined)?.total ?? 0;
-  const veiculosCount =
-    (veiculosData as { total?: number } | undefined)?.total ?? 0;
-  const passageirosCount =
-    (passageirosData as { total?: number } | undefined)?.total ?? 0;
+  const contadores = systemSummary?.contadores;
+  // Use aggregated counts from backend
+  const escolasCount = contadores?.escolas.total ?? 0;
+  const veiculosCount = contadores?.veiculos.total ?? 0;
+  const passageirosCount = contadores?.passageiros.total ?? 0;
 
   const [isPassengerDrawerOpen, setIsPassengerDrawerOpen] = useState(false);
 

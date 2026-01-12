@@ -12,13 +12,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FEATURE_RELATORIOS, PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCobrancas,
-  useEscolas,
-  useGastos,
-  usePassageiroContagem,
-  usePassageiros,
-  useVeiculos
+    useCobrancas,
+    useEscolas,
+    useGastos,
+    usePassageiros,
+    useVeiculos
 } from "@/hooks";
+import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useRelatoriosCalculations } from "@/hooks/business/useRelatoriosCalculations";
@@ -65,7 +65,7 @@ export default function Relatorios() {
   
   // Use Access Control Hook
   const { profile, plano: profilePlano, canViewModuleRelatorios, isFreePlan } = usePermissions();
-  const { limits: planLimits } = usePlanLimits({ profile, plano: profilePlano });
+  const { limits: planLimits } = usePlanLimits();
 
   const permissions = {
       canViewRelatorios: canViewModuleRelatorios,
@@ -141,12 +141,11 @@ export default function Relatorios() {
     setAno(newAno);
   };
 
+// ... (removed import)
+
   // Buscar contagem precisa de automação (mesma lógica da Assinatura)
-  const { data: countAutomacao = { count: 0 }, refetch: refetchAutomacao } = usePassageiroContagem(
-    profile?.id,
-    { enviar_cobranca_automatica: "true" },
-    { enabled: !!profile?.id }
-  ) as { data: { count: number }; refetch: () => void };
+  const { data: systemSummary, refetch: refetchSummary } = useUsuarioResumo();
+  const countAutomacao = systemSummary?.contadores.passageiros.com_automacao ?? 0;
 
   const pullToRefreshReload = async () => {
     if (!hasAccess) return;
@@ -156,7 +155,7 @@ export default function Relatorios() {
       refetchPassageiros(),
       refetchEscolas(),
       refetchVeiculos(),
-      refetchAutomacao(),
+      refetchSummary(),
     ]);
   };
 
@@ -169,8 +168,8 @@ export default function Relatorios() {
       ...dados,
       automacao: {
           ...dados.automacao,
-          envios: countAutomacao.count,
-          tempoEconomizado: `${Math.round(countAutomacao.count * 0.08)}h` // Recalcular tempo com base na contagem correta
+          envios: countAutomacao,
+          tempoEconomizado: `${Math.round(countAutomacao * 0.08)}h` // Recalcular tempo com base na contagem correta
       }
   };
 

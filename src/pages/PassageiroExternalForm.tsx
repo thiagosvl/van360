@@ -62,11 +62,13 @@ import {
   School,
   Sun,
   User,
+  Wand2,
 } from "lucide-react";
 
 import { PassageiroFormEndereco } from "@/components/features/passageiro/form/PassageiroFormEndereco";
 import { PassageiroFormResponsavel } from "@/components/features/passageiro/form/PassageiroFormResponsavel";
 import { useEscolasWithFilters } from "@/hooks";
+import { mockGenerator } from "@/utils/mocks/generator";
 
 const prePassageiroSchema = z.object({
   nome: z.string().min(2, "Campo obrigatório"),
@@ -300,6 +302,38 @@ export default function PassageiroExternalForm() {
     });
   };
 
+  const handleFillMock = () => {
+    const currentValues = form.getValues();
+
+    // Auto-pick school if empty and lists are available
+    let escolaId = currentValues.escola_id;
+    if ((!escolaId || escolaId === "none") && escolasList.length > 0) {
+      escolaId = escolasList[Math.floor(Math.random() * escolasList.length)].id;
+    }
+
+    // Generate mock data (without vehicle)
+    const mockData = mockGenerator.passenger({
+      escola_id: escolaId,
+      veiculo_id: undefined, // No vehicle in external form
+    });
+
+    form.reset({
+      ...mockData,
+      emitir_cobranca_mes_atual: false,
+    });
+
+    // Abrir todos os accordions para mostrar os dados preenchidos
+    setOpenAccordionItems([
+      "passageiro",
+      "responsavel",
+      "cobranca",
+      "endereco",
+      "observacoes",
+    ]);
+
+    toast.success("Campos preenchidos com dados de teste!");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -374,15 +408,29 @@ export default function PassageiroExternalForm() {
           {/* Header */}
           <div className="bg-blue-600 p-6 sm:p-8 text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('/assets/pattern.png')] opacity-10"></div>
-            <div className="relative z-10">
-              <div className="mx-auto bg-white/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-sm">
+            
+            <div className="absolute right-4 top-4 z-20">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-white/70 hover:text-white hover:bg-white/20 rounded-full"
+                onClick={handleFillMock}
+                title="Preencher com dados fictícios"
+              >
+                <Wand2 className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="mb-6 transition-transform hover:scale-105 duration-500 ease-out">
                 <img
                   src="/assets/logo-van360.png"
                   alt="Van360"
-                  className="h-16 sm:h-20 w-auto mb-2 sm:mb-4 select-none drop-shadow-sm"
+                  className="h-20 sm:h-24 w-auto drop-shadow-lg select-none filter brightness-0 invert opacity-90"
                 />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 tracking-tight">
                 Cadastro de Passageiro
               </h1>
               <div className="inline-flex items-center gap-2 bg-blue-700/50 px-4 py-1.5 rounded-full text-blue-100 text-sm font-medium backdrop-blur-sm border border-blue-500/30">

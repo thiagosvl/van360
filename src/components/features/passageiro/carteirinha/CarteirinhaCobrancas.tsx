@@ -14,10 +14,10 @@ import {
 } from "@/components/ui/select";
 import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useCobrancaActions } from "@/hooks/business/useCobrancaActions";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { Passageiro } from "@/types/passageiro";
-import { canUsePremiumFeatures } from "@/utils/domain/plano/accessRules";
 import {
   formatDateToBR,
   getMesNome,
@@ -44,11 +44,10 @@ interface CarteirinhaCobrancasProps {
   cobrancas: Cobranca[];
   passageiro: Passageiro;
   plano?: {
-    isProfissionalPlan?: boolean;
     slug?: string;
     isEssentialPlan?: boolean;
   } | null;
-  planoProfissionalAtivo: boolean;
+
   yearFilter: string;
   availableYears: string[];
   mostrarTodasCobrancas: boolean;
@@ -136,8 +135,9 @@ export const CarteirinhaCobrancas = ({
     ? cobrancas
     : cobrancas.slice(0, limiteCobrancasMobile);
 
-  // Verificar se o plano gera cobranças automaticamente (ESSENCIAL ou PROFISSIONAL)
-  const geraCobrancasAutomaticas = canUsePremiumFeatures(plano as any);
+  // Verificar se o plano gera cobranças automaticamente (Back-office rule)
+  // Agora usamos a flag correta do backend
+  const { canUseAutomatedCharges: geraCobrancasAutomaticas } = usePermissions();
 
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
 

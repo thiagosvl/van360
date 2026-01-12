@@ -13,33 +13,33 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 // Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
+import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 // Services
 import {
-    useAssinaturaCobrancas,
-    useGerarPixParaCobranca,
-    usePassageiroContagem,
+  useAssinaturaCobrancas,
+  useGerarPixParaCobranca
 } from "@/hooks";
 import { usuarioApi } from "@/services";
 
 // Utils
 import { WhatsappConnect } from "@/components/Whatsapp/WhatsappConnect";
 import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaDialog";
-import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { toast } from "@/utils/notifications/toast";
 
 export default function Assinatura() {
@@ -50,6 +50,9 @@ export default function Assinatura() {
     plano,
     isLoading: isProfileLoading,
   } = useProfile(user?.id);
+  // Hook de permissões
+  const { canUseAutomatedCharges: canUseCobrancaAutomatica } = usePermissions();
+
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -57,6 +60,10 @@ export default function Assinatura() {
     id: string;
     valor: string | number;
   } | null>(null);
+
+  // ... (lines 61-115)
+
+
 
 
 
@@ -72,70 +79,41 @@ export default function Assinatura() {
       { enabled: !!profile?.id }
     );
 
-  const {
-    data: countPassageirosAtivos = { count: 0 },
-    refetch: refetchPassageirosContagem,
-  } = usePassageiroContagem(
-    profile?.id,
-    { ativo: "true" },
-    { enabled: !!profile?.id }
-  );
+  // New Unified Hook
+  const { data: systemSummary, isLoading: isSummaryLoading, refetch: refetchSummary } = useUsuarioResumo();
 
   // Calcular dados derivados primeiro para verificar o plano
   const data = useMemo(() => {
-    if (!profile?.assinaturas_usuarios?.[0] || !plano) return null;
+    if (!profile?.assinaturas_usuarios?.[0] || !plano || !systemSummary) return null;
     const assinatura = profile.assinaturas_usuarios[0];
     const planoData = assinatura.planos;
-
-    // Calcular limitePassageiros usando informações do hook useProfile:
-    // - Gratuito: sempre tem limite
-    // - Essencial: sempre ilimitado (trial e ativo) - estratégia de lock-in
-    // - Profissional: sempre ilimitado
-    let limitePassageiros = planoData.limite_passageiros;
-
-    if (plano.isProfissionalPlan) {
-      // Profissional sempre tem passageiros ilimitados
-      limitePassageiros = null;
-    } else if (plano.isEssentialPlan) {
-      // Essencial sempre tem passageiros ilimitados (trial e ativo)
-      limitePassageiros = null;
-    }
-    // Caso contrário, mantém o limite do plano (apenas Gratuito)
+    const usuarioResumo = systemSummary.usuario;
+    const contadores = systemSummary.contadores;
 
     return {
       assinatura: {
         ...assinatura,
-        isTrial: plano.isTrial,
+        isTrial: plano.isTrial, // Or use usuarioResumo.flags.is_trial_ativo
       },
-      plano: planoData,
-      cobrancas: cobrancasData as any[], // Explicit cast to any[] to fix 'find' and 'map' errors downstream
-      passageirosAtivos: 0, // Será atualizado abaixo
-      limitePassageiros,
-      franquiaContratada: assinatura.franquia_contratada_cobrancas,
-      cobrancasEmUso: 0, // Será atualizado abaixo
+      plano: {
+          ...planoData,
+          // Merge unified limits if needed, or rely on them below
+      }, 
+      cobrancas: cobrancasData as any[],
+      passageirosAtivos: contadores.passageiros.ativos,
+      limitePassageiros: usuarioResumo.plano.limites.passageiros_max,
+      franquiaContratada: usuarioResumo.plano.limites.franquia_cobranca_max,
+      cobrancasEmUso: contadores.passageiros.com_automacao,
+      // Helper for UI to show "restante" correctly
+      franquiaRestante: usuarioResumo.plano.limites.franquia_cobranca_restante
     };
-  }, [profile, plano, cobrancasData]);
+  }, [profile, plano, cobrancasData, systemSummary]);
 
-  // Só buscar contagem de cobranças automáticas se for plano Profissional
-  const {
-    data: countPassageirosEnviarCobrancaAutomatica = { count: 0 },
-    refetch: refetchCobrancasAutomaticas,
-  } = usePassageiroContagem(
-    profile?.id,
-    { enviar_cobranca_automatica: "true" },
-    { enabled: !!profile?.id && canUseCobrancaAutomatica(plano) }
-  );
 
-  // Atualizar dados com as contagens
-  const dataWithCounts = useMemo(() => {
-    if (!data) return null;
-    return {
-      ...data,
-      passageirosAtivos: (countPassageirosAtivos as any)?.count ?? 0,
-      cobrancasEmUso:
-        (countPassageirosEnviarCobrancaAutomatica as any)?.count ?? 0,
-    };
-  }, [data, countPassageirosAtivos, countPassageirosEnviarCobrancaAutomatica]);
+
+  // Atualizar dados com as contagens (Now redundant as 'data' already has them from systemSummary)
+  const dataWithCounts = data; 
+
 
   useEffect(() => {
     setPageTitle("Minha Assinatura");
@@ -144,9 +122,8 @@ export default function Assinatura() {
   const pullToRefreshReload = async () => {
     await Promise.all([
       refetchCobrancas(),
-      refetchPassageirosContagem(),
-      ...(canUseCobrancaAutomatica(plano)
-        ? [refetchCobrancasAutomaticas()]
+      ...(canUseCobrancaAutomatica
+        ? [refetchSummary()]
         : []),
     ]);
   };

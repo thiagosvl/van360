@@ -1,11 +1,11 @@
+import { usePermissions } from "@/hooks/business/usePermissions";
 import {
-    cepSchema,
-    cpfSchema,
-    phoneSchema,
+  cepSchema,
+  cpfSchema,
+  phoneSchema,
 } from "@/schemas/common";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
-import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { cepMask, cpfMask, moneyMask, phoneMask } from "@/utils/masks";
 import { validateEnderecoFields } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -97,6 +97,7 @@ export function usePassageiroForm({
   plano,
   podeAtivarCobrancaAutomatica,
 }: UsePassageiroFormProps) {
+  const { canUseAutomatedCharges: canUseCobrancaAutomatica } = usePermissions();
   const [refreshing, setRefreshing] = useState(false);
   const [openAccordionItems, setOpenAccordionItems] = useState<string[]>([
     "passageiro",
@@ -131,7 +132,7 @@ export function usePassageiroForm({
       emitir_cobranca_mes_atual: false,
       ativo: true,
       enviar_cobranca_automatica:
-        canUseCobrancaAutomatica(plano) && podeAtivarCobrancaAutomatica,
+        canUseCobrancaAutomatica && podeAtivarCobrancaAutomatica,
     },
   });
 
@@ -216,7 +217,7 @@ export function usePassageiroForm({
           emitir_cobranca_mes_atual: false,
           ativo: true,
           enviar_cobranca_automatica:
-            canUseCobrancaAutomatica(plano) && podeAtivarCobrancaAutomatica,
+            canUseCobrancaAutomatica && podeAtivarCobrancaAutomatica,
         });
 
         form.trigger([
@@ -262,7 +263,7 @@ export function usePassageiroForm({
           emitir_cobranca_mes_atual: false,
           ativo: true,
           enviar_cobranca_automatica:
-            canUseCobrancaAutomatica(plano) && podeAtivarCobrancaAutomatica,
+            canUseCobrancaAutomatica && podeAtivarCobrancaAutomatica,
         });
         
         // Reset accordion default on create (All open by default as requested)
@@ -286,6 +287,7 @@ export function usePassageiroForm({
     form,
     plano,
     podeAtivarCobrancaAutomatica,
+    canUseCobrancaAutomatica, // Added
   ]);
   
   // Load data when dialog opens

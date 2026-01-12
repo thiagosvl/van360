@@ -11,9 +11,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
-import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { formatarEnderecoCompleto } from "@/utils/formatters/address";
 import { formatPeriodo } from "@/utils/formatters/periodo";
@@ -78,6 +78,9 @@ export const CarteirinhaInfo = ({
   const [showLimitDialog, setShowLimitDialog] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   
+  // Use hook
+  const { canUseAutomatedCharges: hasCobrancaAutomaticaAccess } = usePermissions();
+
   const handleToggleClickInternal = async () => {
       try {
           await onToggleClick(passageiro.ativo);
@@ -91,8 +94,6 @@ export const CarteirinhaInfo = ({
           }
       }
   };
-
-  const hasCobrancaAutomaticaAccess = canUseCobrancaAutomatica(plano as any);
 
   const handleCobrancaAutomaticaClick = () => {
     if (hasCobrancaAutomaticaAccess) {

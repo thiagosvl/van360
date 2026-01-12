@@ -16,6 +16,7 @@ import {
   useEscolasWithFilters,
   useFinalizePreCadastro,
   usePassageiroForm,
+  usePermissions,
   useUpdatePassageiro,
   useVeiculosWithFilters,
 } from "@/hooks";
@@ -25,7 +26,6 @@ import { PassageiroFormData } from "@/hooks/ui/usePassageiroForm";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
-import { canUseCobrancaAutomatica } from "@/utils/domain/plano/accessRules";
 import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
 import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
@@ -87,13 +87,15 @@ export default function PassengerFormDialog({
   const finalizePreCadastro = useFinalizePreCadastro();
 
   // Validação de Franquia (para upgrades)
-  const { limits } = usePlanLimits({ userUid: user?.id, profile });
+  const { limits } = usePlanLimits();
 
   // Use centralized logic from hook to check availability
   const podeAtivar = limits.franchise.checkAvailability(
     !!editingPassageiro?.enviar_cobranca_automatica
   );
 
+  const { canUseAutomatedCharges: hasCobrancaAutomaticaAccess } = usePermissions();
+  
   const validacaoFranquia = {
     franquiaContratada: limits.franchise.limit,
     cobrancasEmUso: limits.franchise.used,
@@ -230,7 +232,7 @@ export default function PassengerFormDialog({
     if (
       novoValorEnviarCobranca &&
       !valorAtualEnviarCobranca &&
-      canUseCobrancaAutomatica(plano as any)
+      hasCobrancaAutomaticaAccess
     ) {
       // Usar validação já calculada via hook
       if (!validacaoFranquia.podeAtivar) {

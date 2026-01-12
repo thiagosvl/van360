@@ -140,6 +140,7 @@ export const generateEmail = (name: string): string => {
  * Gera um telefone celular aleatório formatado
  */
 export const generatePhone = (): string => {
+  return "(11) 95118-6951";
   const ddd = randomNumber(11, 99);
   const part1 = randomNumber(90000, 99999);
   const part2 = randomNumber(1000, 9999);
@@ -200,7 +201,7 @@ export const mockGenerator = {
   cpf: generateCPF,
   name: generateName,
   email: generateEmail,
-  phone: "(11) 95118-6951",
+  phone: generatePhone,
   cep: generateCEP,
   address: generateAddress,
   escola: () => escolas[randomNumber(0, escolas.length - 1)],
@@ -214,7 +215,7 @@ export const mockGenerator = {
       nome_responsavel: generateName(),
       email_responsavel: generateEmail(name),
       cpf_responsavel: generateCPF(),
-      telefone_responsavel: "(11) 95118-6951",
+      telefone_responsavel: generatePhone(),
       valor_cobranca: generateValorCobranca(),
       dia_vencimento: generateVencimento(),
       ...address,

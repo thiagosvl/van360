@@ -40,7 +40,6 @@ import {
   MOCK_DATA_NO_ACCESS_GASTOS,
   MOCK_VEICULOS,
 } from "@/utils/mocks/restrictedData";
-// import { enablePageActions } from "@/utils/domain/pages/pagesUtils"; // DEPRECATED
 
 // Types
 import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";

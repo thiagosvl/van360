@@ -1,11 +1,5 @@
-import { useProfile } from "@/hooks/business/useProfile";
-import {
-    canUseCobrancaAutomatica,
-    canUseNotificacoes,
-    canUsePrePassageiro,
-    canViewGastos,
-    canViewRelatorios
-} from "@/utils/domain/plano/accessRules";
+import { useUsuarioResumo } from "../api/useUsuarioResumo";
+import { useProfile } from "./useProfile";
 import { useSession } from "./useSession";
 
 /**
@@ -27,25 +21,30 @@ export function usePermissions() {
     isProfissional,
 } = useProfile(user?.id);
 
+  // NEW: Use backend source of truth for features
+  const { data: summary, isLoading: isSummaryLoading } = useUsuarioResumo();
+
   const isFreePlan = isGratuito;
 
   // Regras de Visualização (Páginas/Módulos)
-  const canViewModuleGastos = canViewGastos(plano);
-  const canViewModuleRelatorios = canViewRelatorios(plano);
+  // Agora usamos a flag 'gestao_gastos' que vem do backend
+  const canViewModuleGastos = summary?.usuario.plano.funcionalidades.gestao_gastos ?? false;
+  const canViewModuleRelatorios = summary?.usuario.plano.funcionalidades.relatorios_financeiros ?? false;
 
   // Regras de Funcionalidades (Features)
-  const canUseAutomatedCharges = canUseCobrancaAutomatica(plano);
-  const canUseNotifications = canUseNotificacoes(plano);
-  const canUseQuickStart = canUsePrePassageiro(plano);
+  const canUseAutomatedCharges = summary?.usuario.plano.funcionalidades.cobranca_automatica ?? false;
+  const canUseNotifications = summary?.usuario.plano.funcionalidades.notificacoes_whatsapp ?? false;
+  
+  // QuickStart/PrePassageiro ainda é liberado para todos, mas podemos adicionar flag no backend depois se quiser
+  // Por enquanto mantemos via regra local ou assumimos true se não bloqueado
+  const canUseQuickStart = true; // Feature básica liberada geral
 
   // Regras de Edição e Ações
-  // Exemplo: Pode editar cobrança se tiver plano válido (geral)
-  // Pode ser refinado para regras mais complexas
   const canEditCobranca = !!plano?.isValidPlan; 
   const canCreateCobranca = !!plano?.isValidPlan;
 
   return {
-    isLoading,
+    isLoading: isLoading || isSummaryLoading,
     
     // Modules
     canViewModuleGastos,
