@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO } from "@/constants";
 import { useAssinaturaCobrancas } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { SubscriptionBillingType } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
 import { AlertTriangle, ArrowRight, Clock, Loader2, Receipt } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -115,7 +116,7 @@ export default function AssinaturaPendenteAlert({
       ?.filter(
         (c: any) =>
           c.status === ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO &&
-          c.billing_type === "subscription"
+          c.billing_type === SubscriptionBillingType.SUBSCRIPTION
       )
       .sort(
         (a: any, b: any) =>

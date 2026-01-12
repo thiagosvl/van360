@@ -12,3 +12,13 @@ export enum WhatsappStatus {
   UNKNOWN = "UNKNOWN",
   NOT_FOUND = "NOT_FOUND"
 }
+
+export enum SubscriptionBillingType {
+  SUBSCRIPTION = "subscription",
+  UPGRADE_PLAN = "upgrade_plan",
+  UPGRADE = "upgrade",
+  DOWNGRADE = "downgrade",
+  ACTIVATION = "activation",
+  EXPANSION = "expansion",
+  RENEWAL = "renewal",
+}
