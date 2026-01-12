@@ -1,17 +1,9 @@
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
@@ -57,7 +49,10 @@ interface CarteirinhaInfoProps {
   onToggleClick: (statusAtual: boolean) => void;
   onDeleteClick: () => void;
   onUpgrade: (featureName: string, description: string) => void;
-  onReactivateWithoutAutomation: () => void;
+  // Previously used for the local dialog, now triggered via global dialog but we keep the prop signature if needed or we can pass logic.
+  // Actually, we can just call it directly in the confirm dialog callback.
+  // But since onReactivateWithoutAutomation was passed from parent, we need it.
+  onReactivateWithoutAutomation?: () => Promise<void>; 
 }
 
 export const CarteirinhaInfo = ({
@@ -75,23 +70,57 @@ export const CarteirinhaInfo = ({
   onReactivateWithoutAutomation,
 }: CarteirinhaInfoProps) => {
   const [mostrarMaisInfo, setMostrarMaisInfo] = useState(false);
-  const [showLimitDialog, setShowLimitDialog] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   
-  // Use hook
+  // Hooks
+  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const { canUseAutomatedCharges: hasCobrancaAutomaticaAccess } = usePermissions();
+  // Pass current count (optional) or let it use SWR cache. 
+  // We just need to check availability.
+  const { limits } = usePlanLimits();
 
   const handleToggleClickInternal = async () => {
+      const isReactivating = !passageiro.ativo;
+      
+      // Se for reativação E tiver cobrança automática habilitada E usuário tiver acesso à feature
+      // Precisamos checar se vai estourar a franquia
+      if (
+          isReactivating && 
+          passageiro.enviar_cobranca_automatica && 
+          hasCobrancaAutomaticaAccess
+      ) {
+          // Check availability passing 'false' because we are NOT already active in the count (since we are inactive now)
+          const canEnable = limits.franchise.checkAvailability(false);
+
+          if (!canEnable) {
+              // Proactive handling: Limit Reached
+              openConfirmationDialog({
+                  title: "Limite de Automação Atingido",
+                  description: "Você atingiu o limite de cobranças automáticas do seu plano.\n\nPara reativar este passageiro, você pode aumentar seu limite ou reativar sem a automação.",
+                  confirmText: "Aumentar Limites (Upgrade)",
+                  cancelText: "Reativar sem Automação",
+                  variant: "default", // or something else
+                  onConfirm: () => {
+                      closeConfirmationDialog();
+                      onUpgrade("Limite de Automação", "Aumente seu limite para continuar usando a automação.");
+                  },
+                  onCancel: async () => {
+                      if (onReactivateWithoutAutomation) {
+                          await onReactivateWithoutAutomation();
+                      }
+                      closeConfirmationDialog();
+                  }
+              });
+              return; // Stop execution
+          }
+      }
+
+      // Default behavior (no limit issue or deactivating)
       try {
           await onToggleClick(passageiro.ativo);
       } catch (error: any) {
-          // Captura o erro específico de limite vindo do backend ou do wrapper
-          if (error.message?.includes("LIMIT_EXCEEDED_AUTOMATION") || 
-              error.response?.data?.error?.includes("LIMIT_EXCEEDED_AUTOMATION")) {
-              setShowLimitDialog(true);
-          } else {
-              throw error; // Re-throw para o tratamento padrão (toast de erro genérico)
-          }
+         // Fallback error handling if needed, but proactive check should cover it.
+          throw error;
       }
   };
 
@@ -468,40 +497,6 @@ export const CarteirinhaInfo = ({
           </div>
         </CardContent>
       </Card>
-
-      <AlertDialog open={showLimitDialog} onOpenChange={setShowLimitDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Limite de Automação Atingido</AlertDialogTitle>
-            <AlertDialogDescription>
-              Você atingiu o limite de cobranças automáticas do seu plano.
-              <br /><br />
-              Para reativar este passageiro, você pode:
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-col gap-2">
-            <AlertDialogAction
-                className="w-full bg-indigo-600 hover:bg-indigo-700"
-                onClick={() => {
-                    onUpgrade("Limite de Automação", "Aumente seu limite para continuar usando a automação.");
-                    setShowLimitDialog(false);
-                }}
-            >
-              Aumentar Limites (Upgrade)
-            </AlertDialogAction>
-            <AlertDialogAction 
-                className="w-full bg-white text-gray-900 border border-gray-200 hover:bg-gray-50 mt-2 sm:mt-0"
-                onClick={async () => {
-                    await onReactivateWithoutAutomation();
-                    setShowLimitDialog(false);
-                }}
-            >
-              Reativar sem Automação
-            </AlertDialogAction>
-            <AlertDialogCancel className="w-full mt-2 sm:mt-0">Cancelar</AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </motion.div>
   );
 };

@@ -13,26 +13,27 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 // Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
+import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 // Services
 import {
-  useAssinaturaCobrancas,
-  useGerarPixParaCobranca
+    useAssinaturaCobrancas,
+    useGerarPixParaCobranca
 } from "@/hooks";
 import { usuarioApi } from "@/services";
 
@@ -82,30 +83,26 @@ export default function Assinatura() {
   // New Unified Hook
   const { data: systemSummary, isLoading: isSummaryLoading, refetch: refetchSummary } = useUsuarioResumo();
 
+  // Hook de Limites (Simplifica extração de quotas)
+  const { limits } = usePlanLimits();
+
   // Calcular dados derivados primeiro para verificar o plano
   const data = useMemo(() => {
     if (!profile?.assinaturas_usuarios?.[0] || !plano || !systemSummary) return null;
     const assinatura = profile.assinaturas_usuarios[0];
     const planoData = assinatura.planos;
-    const usuarioResumo = systemSummary.usuario;
-    const contadores = systemSummary.contadores;
+    // const usuarioResumo = systemSummary.usuario; // Not needed directly for limits anymore
+    // const contadores = systemSummary.contadores; // Not needed directly for limits anymore
 
     return {
       assinatura: {
         ...assinatura,
-        isTrial: plano.isTrial, // Or use usuarioResumo.flags.is_trial_ativo
+        isTrial: plano.isTrial, 
       },
       plano: {
           ...planoData,
-          // Merge unified limits if needed, or rely on them below
       }, 
       cobrancas: cobrancasData as any[],
-      passageirosAtivos: contadores.passageiros.ativos,
-      limitePassageiros: usuarioResumo.plano.limites.passageiros_max,
-      franquiaContratada: usuarioResumo.plano.limites.franquia_cobranca_max,
-      cobrancasEmUso: contadores.passageiros.com_automacao,
-      // Helper for UI to show "restante" correctly
-      franquiaRestante: usuarioResumo.plano.limites.franquia_cobranca_restante
     };
   }, [profile, plano, cobrancasData, systemSummary]);
 
@@ -220,10 +217,10 @@ export default function Assinatura() {
                   plano={plano}
                   assinatura={dataWithCounts.assinatura}
                   metricas={{
-                    passageirosAtivos: dataWithCounts.passageirosAtivos,
-                    limitePassageiros: dataWithCounts.limitePassageiros,
-                    cobrancasEmUso: dataWithCounts.cobrancasEmUso,
-                    franquiaContratada: dataWithCounts.franquiaContratada,
+                    passageirosAtivos: limits.passengers.used,
+                    limitePassageiros: limits.passengers.limit,
+                    cobrancasEmUso: limits.franchise.used,
+                    franquiaContratada: limits.franchise.limit,
                   }}
                   cobrancas={dataWithCounts.cobrancas}
                   onPagarClick={handlePagarClick}

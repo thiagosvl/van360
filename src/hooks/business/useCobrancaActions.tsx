@@ -1,8 +1,6 @@
 import {
   FEATURE_COBRANCA_AUTOMATICA,
-  FEATURE_NOTIFICACOES,
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
+  FEATURE_NOTIFICACOES
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
@@ -71,7 +69,10 @@ export function useCobrancaOperations({
     [openPlanUpgradeDialog]
   );
 
-  const { canUseNotifications: hasNotificacoesAccess } = usePermissions();
+  const { 
+    canUseNotifications: hasNotificacoesAccess,
+    canUseAutomatedCharges
+  } = usePermissions();
 
   const handleToggleLembretes = useCallback(async () => {
     if (!hasNotificacoesAccess) {
@@ -103,10 +104,7 @@ export function useCobrancaOperations({
         try {
           await enviarNotificacao.mutateAsync(cobranca.id);
           closeConfirmationDialog();
-          if (
-            plano?.slug &&
-            [PLANO_GRATUITO, PLANO_ESSENCIAL].includes(plano.slug)
-          ) {
+          if (!canUseAutomatedCharges) {
             handleUpgrade(FEATURE_COBRANCA_AUTOMATICA);
           }
           if (onActionSuccess) onActionSuccess();

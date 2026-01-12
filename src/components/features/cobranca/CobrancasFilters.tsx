@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { Bot, Search } from "lucide-react";
 
 interface CobrancasFiltersProps {
@@ -27,7 +27,10 @@ export function CobrancasFilters({
   countAbertas,
   countPagas,
 }: CobrancasFiltersProps) {
-    const isPlanLimited = plano?.slug && [PLANO_GRATUITO, PLANO_ESSENCIAL].includes(plano.slug);
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    const { canUseAutomatedCharges } = usePermissions();
+    // Se NÃO pode usar automação, mostramos o botão de upgrade/automatizar
+    const showUpgradeButton = !canUseAutomatedCharges;
 
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-6">
@@ -60,7 +63,7 @@ export function CobrancasFilters({
       </TabsList>
 
       {/* Botão Automatizar (Desktop) */}
-      {isPlanLimited && (
+      {showUpgradeButton && (
         <Button
           variant="outline"
           size="sm"

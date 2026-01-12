@@ -28,6 +28,7 @@ import {
   useEscolas,
   useFilters,
   usePassageiros,
+  usePermissions,
   usePrePassageiros,
   useToggleAtivoPassageiro,
   useUpdatePassageiro,

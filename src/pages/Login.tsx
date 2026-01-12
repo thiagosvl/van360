@@ -20,7 +20,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -36,21 +35,39 @@ import { clearLoginStorageResponsavel } from "@/utils/domain/responsavel/respons
 import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 
+// Internal Components
+const CustomInput = ({ icon: Icon, label, ...props }: any) => {
+  return (
+    <div className="group relative flex items-center w-full h-14 rounded-xl border border-gray-200 bg-white px-3 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
+      <div className="mr-3 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+        <Icon className="h-5 w-5" />
+      </div>
+      <div className="flex flex-col w-full h-full justify-center">
+        <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide leading-none mb-0.5">
+          {label}
+        </label>
+        <Input
+          {...props}
+          className="h-auto p-0 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-300 text-sm font-medium text-gray-900"
+        />
+      </div>
+    </div>
+  );
+};
+
 export default function Login() {
   // Permitir indexação da página de login
   useSEO({
     noindex: false,
     title: "Login - Van360 | Acesse sua conta",
-    description: "Acesse sua conta Van360. Faça login para gerenciar seu transporte escolar.",
+    description:
+      "Acesse sua conta Van360. Faça login para gerenciar seu transporte escolar.",
   });
   const [tab, setTab] = useState("motorista");
-  const [cpf, setCpf] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
-
-  const appDomain = import.meta.env.VITE_PUBLIC_APP_DOMAIN;
 
   const formMotoristaSchema = z.object({
     cpfcnpj: cpfSchema,
@@ -65,8 +82,8 @@ export default function Login() {
   const formMotorista = useForm<z.infer<typeof formMotoristaSchema>>({
     resolver: zodResolver(formMotoristaSchema),
     defaultValues: {
-      cpfcnpj: "395.423.918-38",
-      senha: "Ogaiht+1",
+      cpfcnpj: "",
+      senha: "",
     },
   });
 
@@ -82,7 +99,8 @@ export default function Login() {
     const cpfDigits = formMotorista.getValues("cpfcnpj")?.replace(/\D/g, "");
     if (!cpfDigits) {
       toast.info("auth.info.informeCpf", {
-        description: "Digite o CPF cadastrado para receber o link de redefinição em seu e-mail.",
+        description:
+          "Digite o CPF cadastrado para receber o link de redefinição em seu e-mail.",
       });
       return;
     }
@@ -134,7 +152,8 @@ export default function Login() {
       });
     } catch (err: any) {
       toast.error("auth.erro.emailNaoEncontrado", {
-        description: "Tente novamente em alguns minutos ou entre em contato com o suporte.",
+        description:
+          "Tente novamente em alguns minutos ou entre em contato com o suporte.",
       });
     } finally {
       setRefreshing(false);
@@ -163,10 +182,11 @@ export default function Login() {
 
       const usuarioData = usuario;
 
-      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: usuarioData.email,
-        password: data.senha,
-      });
+      const { data: authData, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email: usuarioData.email,
+          password: data.senha,
+        });
 
       if (signInError) {
         if (signInError.message.includes("Invalid login credentials")) {
@@ -185,21 +205,25 @@ export default function Login() {
       }
 
       // Role extraction from Auth Metadata (Strict V3)
-      const role = authData.session?.user?.app_metadata?.role as string | undefined;
-      
+      const role = authData.session?.user?.app_metadata?.role as
+        | string
+        | undefined;
+
       if (role) {
         localStorage.setItem("app_role", role);
       }
       clearLoginStorageResponsavel();
       // Garantir que a sessão está ativa e propagada antes de navegar
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (!session) {
-         throw new Error("Sessão não foi estabelecida corretamente.");
+        throw new Error("Sessão não foi estabelecida corretamente.");
       }
 
       // Pequeno delay para garantir que os listeners de auth (useSession nos Gates) capturem a mudança
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       if (role === "admin") {
         navigate("/admin/dashboard", { replace: true });
@@ -260,57 +284,55 @@ export default function Login() {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100 via-blue-50 to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 p-3 sm:p-8">
-        <div className="w-full max-w-md mb-4 sm:mb-8 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <img
-            src="/assets/logo-van360.png"
-            alt="Van360"
-            className="h-16 sm:h-20 w-auto mb-2 sm:mb-4 select-none drop-shadow-sm"
-          />
-          <p className="text-gray-500 text-center text-xs sm:text-sm font-medium">
-            Gestão inteligente para transporte escolar
-          </p>
-        </div>
-
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#60a5fa] to-[#dbeafe] p-4">
         {tab === "motorista" && (
-          <Card className="w-full max-w-md shadow-2xl border-0 rounded-3xl overflow-hidden animate-in zoom-in-95 duration-500">
-            <CardContent className="p-6 sm:p-10 bg-white/80 backdrop-blur-sm">
+          <Card className="w-full max-w-[400px] shadow-2xl shadow-blue-900/10 border-0 rounded-[32px] overflow-hidden bg-white animate-in zoom-in-95 duration-500">
+            <CardContent className="p-6">
               <Form {...formMotorista}>
-                <div className="text-center mb-6 sm:mb-8">
-                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
+                {/* Logo Section */}
+                <div className="mb-8 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+                  <div className="flex items-center gap-3 mb-1">
+                    <img
+                      src="/assets/logo-van360.png"
+                      alt="Van360"
+                      className="h-16 w-auto select-none drop-shadow-sm"
+                    />
+                  </div>
+
+                  <p className="text-slate-600 text-[10px] font-medium">
+                    Gestão inteligente para transporte escolar
+                  </p>
+                </div>
+
+                <div className="text-center mb-8">
+                  <h1 className="text-2xl font-bold text-slate-900 mb-0">
                     Bem-vindo de volta!
                   </h1>
-                  <p className="text-gray-500 text-xs sm:text-sm">
-                    Acesse sua conta para gerenciar suas rotas
+                  <p className="text-slate-500 text-xs sm:text-sm">
+                    Insira seus dados para continuar
                   </p>
                 </div>
 
                 <form
                   onSubmit={formMotorista.handleSubmit(handleLoginMotorista)}
-                  className="space-y-4 sm:space-y-5"
+                  className="space-y-4"
                 >
                   <FormField
                     control={formMotorista.control}
                     name="cpfcnpj"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium ml-1 text-sm">
-                          CPF
-                        </FormLabel>
                         <FormControl>
-                          <div className="relative">
-                            <User className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
-                            <Input
-                              {...field}
-                              autoFocus
-                              placeholder="000.000.000-00"
-                              autoComplete="username"
-                              className="pl-12 h-11 sm:h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
-                              onChange={(e) =>
-                                field.onChange(cpfMask(e.target.value))
-                              }
-                            />
-                          </div>
+                          <CustomInput
+                            icon={User}
+                            label="CPF"
+                            placeholder="000.000.000-00"
+                            autoComplete="username"
+                            {...field}
+                            onChange={(e: any) =>
+                              field.onChange(cpfMask(e.target.value))
+                            }
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -322,31 +344,37 @@ export default function Login() {
                     name="senha"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium ml-1 text-sm">
-                          Senha
-                        </FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Lock className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
-                            <Input
-                              {...field}
-                              type={showPassword ? "text" : "password"}
-                              placeholder="••••••••"
-                              autoComplete="current-password"
-                              className="pl-12 pr-10 h-11 sm:h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                              tabIndex={-1}
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-5 w-5" />
-                              ) : (
-                                <Eye className="h-5 w-5" />
-                              )}
-                            </button>
+                            <div className="group relative flex items-center w-full h-14 rounded-xl border border-gray-200 bg-white px-3 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
+                              <div className="mr-3 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                                <Lock className="h-5 w-5" />
+                              </div>
+                              <div className="flex flex-col w-full h-full justify-center">
+                                <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide leading-none mb-0.5">
+                                  Senha
+                                </label>
+                                <Input
+                                  {...field}
+                                  type={showPassword ? "text" : "password"}
+                                  placeholder="••••••••"
+                                  autoComplete="current-password"
+                                  className="h-auto p-0 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-300 text-sm font-medium text-gray-900 pr-8"
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none p-1"
+                                tabIndex={-1}
+                              >
+                                {showPassword ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </button>
+                            </div>
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -362,32 +390,30 @@ export default function Login() {
                   )}
 
                   <div className="pt-2">
-                    <Button 
-                      type="submit" 
-                      className="w-full h-11 sm:h-12 rounded-xl text-base font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all" 
+                    <Button
+                      type="submit"
+                      className="w-full h-12 rounded-full text-[15px] font-semibold bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/25 transition-all"
                       disabled={loading}
                     >
-                      {loading ? "Acessando..." : "Entrar"}
+                      {loading ? "Entrando..." : "Entrar"}
                     </Button>
                   </div>
 
-                  <div className="flex flex-col items-center gap-3 sm:gap-4 mt-4 sm:mt-6">
+                  <div className="flex flex-col items-center gap-6 mt-6">
                     <button
                       type="button"
                       onClick={handleForgotPassword}
-                      className="text-sm text-gray-500 hover:text-blue-600 transition-colors font-medium"
+                      className="text-sm text-blue-500 hover:text-blue-600 transition-colors font-medium"
                     >
                       Esqueci minha senha
                     </button>
-                    
-                    <div className="w-full border-t border-gray-100 my-1 sm:my-2"></div>
 
-                    <p className="text-[0.85rem] text-gray-600">
+                    <p className="text-sm text-slate-500">
                       Não tem uma conta?{" "}
                       <button
                         type="button"
                         onClick={() => navigate("/cadastro")}
-                        className="text-blue-600 font-bold hover:text-blue-700 hover:underline transition-all"
+                        className="text-blue-500 font-semibold hover:text-blue-600 hover:underline transition-all"
                       >
                         Cadastre-se
                       </button>
@@ -400,14 +426,14 @@ export default function Login() {
         )}
 
         {tab === "responsavel" && (
-          <Card className="w-full max-w-md shadow-2xl border-0 rounded-3xl overflow-hidden animate-in zoom-in-95 duration-500">
-            <CardContent className="p-6 sm:p-10 bg-white/80 backdrop-blur-sm">
+          <Card className="w-full max-w-[400px] shadow-2xl shadow-blue-900/10 border-0 rounded-[32px] overflow-hidden bg-white animate-in zoom-in-95 duration-500">
+            <CardContent className="p-8">
               <Form {...formResponsavel}>
-                <div className="text-center mb-6 sm:mb-8">
-                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
+                <div className="text-center mb-8">
+                  <h1 className="text-xl font-bold text-slate-900 mb-2">
                     Área do Responsável
                   </h1>
-                  <p className="text-gray-500 text-xs sm:text-sm">
+                  <p className="text-slate-500 text-sm">
                     Acompanhe o transporte do seu filho
                   </p>
                 </div>
@@ -416,29 +442,25 @@ export default function Login() {
                   onSubmit={formResponsavel.handleSubmit(
                     handleLoginResponsavel
                   )}
-                  className="space-y-4 sm:space-y-5"
+                  className="space-y-4"
                 >
                   <FormField
                     control={formResponsavel.control}
                     name="cpf_responsavel"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium ml-1 text-sm">
-                          CPF
-                        </FormLabel>
                         <FormControl>
-                          <div className="relative">
-                            <User className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
-                            <Input
-                              placeholder="000.000.000-00"
-                              maxLength={14}
-                              value={cpfMask(field.value || "")}
-                              className="pl-12 h-11 sm:h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
-                              onChange={(e) =>
-                                field.onChange(cpfMask(e.target.value))
-                              }
-                            />
-                          </div>
+                          <CustomInput
+                            icon={User}
+                            label="CPF"
+                            placeholder="000.000.000-00"
+                            maxLength={14}
+                            {...field}
+                            value={cpfMask(field.value || "")}
+                            onChange={(e: any) =>
+                              field.onChange(cpfMask(e.target.value))
+                            }
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -450,19 +472,14 @@ export default function Login() {
                     name="email_responsavel"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium ml-1 text-sm">
-                          Email
-                        </FormLabel>
                         <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
-                            <Input
-                              type="email"
-                              placeholder="seu@email.com"
-                              className="pl-12 h-11 sm:h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
-                              {...field}
-                            />
-                          </div>
+                          <CustomInput
+                            icon={Mail}
+                            label="Email"
+                            placeholder="seu@email.com"
+                            type="email"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -470,10 +487,10 @@ export default function Login() {
                   />
 
                   <div className="pt-2">
-                    <Button 
-                      type="submit" 
-                      disabled={loading} 
-                      className="w-full h-11 sm:h-12 rounded-xl text-base font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all"
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full h-12 rounded-full text-[15px] font-semibold bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/25 transition-all"
                     >
                       {loading ? "Acessando..." : "Acessar Carteirinha"}
                     </Button>
