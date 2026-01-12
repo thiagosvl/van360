@@ -8,9 +8,7 @@ import { useSession } from "./useSession";
  */
 export function usePermissions() {
   const { user } = useSession();
-  // Role extraction from Auth (Strict source of truth per architecture V3)
-  const role = user?.app_metadata?.role as string | undefined;
-
+  
   const { 
     profile, 
     plano, 
@@ -20,6 +18,9 @@ export function usePermissions() {
     isEssencial,
     isProfissional,
 } = useProfile(user?.id);
+
+  // Role extraction: Prioritize database (source of truth) -> fallback to auth metadata
+  const role = profile?.tipo || (user?.app_metadata?.role as string | undefined);
 
   // NEW: Use backend source of truth for features
   const { data: summary, isLoading: isSummaryLoading } = useUsuarioResumo();
