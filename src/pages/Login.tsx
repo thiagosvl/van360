@@ -1,5 +1,5 @@
 // React
-import { useCallback, useState } from "react";
+import { forwardRef, useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 
 // React Router
@@ -36,24 +36,28 @@ import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 
 // Internal Components
-const CustomInput = ({ icon: Icon, label, ...props }: any) => {
-  return (
-    <div className="group relative flex items-center w-full h-14 rounded-xl border border-gray-200 bg-white px-3 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
-      <div className="mr-3 text-gray-400 group-focus-within:text-blue-500 transition-colors">
-        <Icon className="h-5 w-5" />
+const CustomInput = forwardRef<HTMLInputElement, any>(
+  ({ icon: Icon, label, ...props }, ref) => {
+    return (
+      <div className="group relative flex items-center w-full h-14 rounded-xl border border-gray-200 bg-white px-3 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
+        <div className="mr-3 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="flex flex-col w-full h-full justify-center">
+          <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide leading-none mb-0.5">
+            {label}
+          </label>
+          <Input
+            ref={ref}
+            {...props}
+            className="h-auto p-0 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-300 text-sm font-medium text-gray-900"
+          />
+        </div>
       </div>
-      <div className="flex flex-col w-full h-full justify-center">
-        <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide leading-none mb-0.5">
-          {label}
-        </label>
-        <Input
-          {...props}
-          className="h-auto p-0 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-300 text-sm font-medium text-gray-900"
-        />
-      </div>
-    </div>
-  );
-};
+    );
+  }
+);
+CustomInput.displayName = "CustomInput";
 
 export default function Login() {
   // Permitir indexação da página de login
@@ -82,8 +86,8 @@ export default function Login() {
   const formMotorista = useForm<z.infer<typeof formMotoristaSchema>>({
     resolver: zodResolver(formMotoristaSchema),
     defaultValues: {
-      cpfcnpj: "",
-      senha: "",
+      cpfcnpj: "395.423.918-38",
+      senha: "Ogaiht+1",
     },
   });
 

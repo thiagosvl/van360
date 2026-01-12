@@ -133,12 +133,12 @@ export const PlanoCardSelection = ({
 
       handleQuantidadeChange(finalValue);
       setIsTyping(false);
-    }, 1000);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [inputValue, isTyping, quantidadeMinimaSlider, handleQuantidadeChange]); // TODO: handleQuantidadeChange must be stable or use ref but it depends on props. Warning?
 
-    // Handler for Local Input
+  // Handler for Local Input
   const handleLocalInputChange = (value: string) => {
     const numericValue = value.replace(/\D/g, "");
     if (numericValue.length > 4) return;
@@ -149,13 +149,13 @@ export const PlanoCardSelection = ({
     setIsTyping(true);
 
     if (!isSelected) {
-        onSelect(plano.id);
+      onSelect(plano.id);
     }
     if (selectedSubPlanoId && numericValue !== "") {
-        onSubPlanoSelect?.(undefined);
+      onSubPlanoSelect?.(undefined);
     }
     if (!personalizadoClicado) {
-        handlePersonalizadoSelect();
+      handlePersonalizadoSelect();
     }
   };
 
@@ -195,9 +195,9 @@ export const PlanoCardSelection = ({
     setIsTyping(false); // Reset typing
     setInputValue(""); // Clear input
   };
-  
+
   // NOTE: removed original handleQuantidadeChange definition from here since I moved it up
-  
+
   // Resetar estado do slider quando selecionar outro plano ou limpar seleção
   useEffect(() => {
     if (!isSelected && sliderExpandido) {
@@ -208,7 +208,12 @@ export const PlanoCardSelection = ({
 
   // Auto-expandir slider se já vier com quantidade personalizada (ex: persistência ou URL)
   useEffect(() => {
-    if (isSelected && isProfissional && quantidadePersonalizada && !sliderExpandido) {
+    if (
+      isSelected &&
+      isProfissional &&
+      quantidadePersonalizada &&
+      !sliderExpandido
+    ) {
       setSliderExpandido(true);
       setPersonalizadoClicado(true);
     }
@@ -273,7 +278,6 @@ export const PlanoCardSelection = ({
     }
   };
 
-
   // Calcular preço dinâmico baseado na seleção
   const precoExibido = useMemo(() => {
     if (isProfissional) {
@@ -323,9 +327,19 @@ export const PlanoCardSelection = ({
   ]);
 
   // Preço original (sem promoção)
-  const precoOriginal = isProfissional
-    ? Math.min(...(subPlanosProfissional.map((s) => Number(s.preco)) || [0]))
-    : plano.preco;
+  const precoOriginal = useMemo(() => {
+    if (isProfissional) {
+      if (selectedSubPlanoId) {
+        const subPlano = subPlanosProfissional.find(
+          (s) => s.id === selectedSubPlanoId
+        );
+        if (subPlano) return subPlano.preco;
+      }
+      // Se não tiver sub-plano selecionado (ou customizado), pega o menor preço base
+      return Math.min(...(subPlanosProfissional.map((s) => Number(s.preco)) || [0]));
+    }
+    return plano.preco;
+  }, [isProfissional, selectedSubPlanoId, subPlanosProfissional, plano.preco]);
 
   // Função para substituir placeholders nos benefícios
   const processarBeneficio = (beneficio: string): string => {
@@ -344,16 +358,28 @@ export const PlanoCardSelection = ({
 
     if (isSelected) {
       if (isProfissional) {
-        return cn(baseStyles, "border-2 border-yellow-400 bg-yellow-50/30 shadow-lg ring-1 ring-yellow-400/50 z-10");
+        return cn(
+          baseStyles,
+          "border-2 border-yellow-400 bg-yellow-50/30 shadow-lg ring-1 ring-yellow-400/50 z-10"
+        );
       }
-      return cn(baseStyles, "border-2 border-blue-600 bg-blue-50/30 shadow-md ring-1 ring-blue-600/20 z-10");
+      return cn(
+        baseStyles,
+        "border-2 border-blue-600 bg-blue-50/30 shadow-md ring-1 ring-blue-600/20 z-10"
+      );
     }
 
     if (isProfissional) {
-      return cn(baseStyles, "border-2 border-yellow-200 hover:border-yellow-400 hover:shadow-md");
+      return cn(
+        baseStyles,
+        "border-2 border-yellow-200 hover:border-yellow-400 hover:shadow-md"
+      );
     }
-    
-    return cn(baseStyles, "border-2 border-gray-200 hover:border-blue-300 hover:shadow-md");
+
+    return cn(
+      baseStyles,
+      "border-2 border-gray-200 hover:border-blue-300 hover:shadow-md"
+    );
   };
 
   const getButtonStyles = () => {
@@ -375,7 +401,7 @@ export const PlanoCardSelection = ({
   };
 
   return (
-    <div 
+    <div
       onClick={() => !isCalculandoPreco && onSelect(plano.id)}
       className={cn(
         "relative flex flex-col h-full rounded-2xl overflow-hidden transition-all duration-300",
@@ -384,14 +410,26 @@ export const PlanoCardSelection = ({
       )}
     >
       {/* Indicador de Seleção (Radio Check) */}
-      <div className={cn(
-        "absolute right-4 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all z-20",
-        isProfissional ? "top-12" : "top-4",
-        isSelected 
-          ? (isProfissional ? "bg-yellow-400 border-yellow-400" : "bg-blue-600 border-blue-600") 
-          : "border-gray-300 bg-white"
-      )}>
-        {isSelected && <Check className={cn("h-3.5 w-3.5", isProfissional ? "text-gray-900" : "text-white")} strokeWidth={3} />}
+      <div
+        className={cn(
+          "absolute right-4 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all z-20",
+          isProfissional ? "top-12" : "top-4",
+          isSelected
+            ? isProfissional
+              ? "bg-yellow-400 border-yellow-400"
+              : "bg-blue-600 border-blue-600"
+            : "border-gray-300 bg-white"
+        )}
+      >
+        {isSelected && (
+          <Check
+            className={cn(
+              "h-3.5 w-3.5",
+              isProfissional ? "text-gray-900" : "text-white"
+            )}
+            strokeWidth={3}
+          />
+        )}
       </div>
 
       {/* Badge Recomendado para Profissional */}
@@ -404,7 +442,14 @@ export const PlanoCardSelection = ({
       <CardContent className="p-5 sm:p-6 flex flex-col flex-grow">
         {/* Header */}
         <div className="mb-3 pr-8">
-          <h3 className={cn("text-lg font-bold", isSelected ? "text-gray-900" : "text-gray-700")}>{plano.nome}</h3>
+          <h3
+            className={cn(
+              "text-lg font-bold",
+              isSelected ? "text-gray-900" : "text-gray-700"
+            )}
+          >
+            {plano.nome}
+          </h3>
           <p className="text-xs text-gray-500 mt-1 min-h-[32px] leading-relaxed">
             {plano.descricao_curta}
           </p>
@@ -414,16 +459,31 @@ export const PlanoCardSelection = ({
         <div className="mb-5">
           {isGratuito ? (
             <div className="flex items-baseline">
-              <span className="text-3xl font-extrabold text-gray-900">R$ 0</span>
+              <span className="text-3xl font-extrabold text-gray-900">
+                R$ 0
+              </span>
               <span className="text-gray-500 ml-1 text-sm">/mês</span>
             </div>
           ) : (
             <div>
+              {plano.promocao_ativa && (plano.slug === PLANO_PROFISSIONAL || plano.preco_promocional) && !quantidadePersonalizada && (
+                <div className="text-xs text-gray-400 line-through mt-0.5">
+                  R${" "}
+                  {precoOriginal.toLocaleString("pt-BR", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+              )}
               <div className="flex items-baseline">
                 <span className="text-xs text-gray-500 mr-1">R$</span>
                 {/* Loader aparece se estiver calculando OU se for personalizado e não tiver preço ainda */}
-                {isSelected && (isCalculandoPreco || 
-                (isProfissional && quantidadePersonalizada && isQuantidadeValida && !precoCalculadoPreview)) ? (
+                {isSelected &&
+                (isCalculandoPreco ||
+                  (isProfissional &&
+                    quantidadePersonalizada &&
+                    isQuantidadeValida &&
+                    !precoCalculadoPreview)) ? (
                   <Skeleton className="h-9 w-24 mx-1" />
                 ) : (
                   <span className="text-3xl font-extrabold text-gray-900">
@@ -435,29 +495,20 @@ export const PlanoCardSelection = ({
                 )}
                 <span className="text-gray-500 ml-1 text-sm">/mês</span>
               </div>
-              {plano.promocao_ativa && plano.preco_promocional && (
-                <div className="text-xs text-gray-400 line-through mt-0.5">
-                  R${" "}
-                  {precoOriginal.toLocaleString("pt-BR", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </div>
-              )}
             </div>
           )}
         </div>
 
         {/* Seletor de Quantidade (Apenas Profissional e Selecionado) */}
         {isProfissional && isSelected && (
-          <div 
-            onClick={(e) => e.stopPropagation()} 
+          <div
+            onClick={(e) => e.stopPropagation()}
             className="mb-5 space-y-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm animate-in fade-in slide-in-from-top-2"
           >
             <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">
               Passageiros com cobrança
             </div>
-            
+
             <div className="grid grid-cols-3 gap-2">
               {subPlanosOrdenados.map((subPlano) => {
                 const isSubSelecionado = selectedSubPlanoId === subPlano.id;
@@ -502,12 +553,10 @@ export const PlanoCardSelection = ({
                     {inputValue || "0"}
                   </span>
                 </div>
-                
+
                 <Slider
                   value={[
-                    inputValue
-                      ? parseInt(inputValue)
-                      : quantidadeMinimaSlider,
+                    inputValue ? parseInt(inputValue) : quantidadeMinimaSlider,
                   ]}
                   min={quantidadeMinimaSlider}
                   max={QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO}
@@ -522,7 +571,7 @@ export const PlanoCardSelection = ({
                   className="w-full mb-3"
                 />
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 pt-3">
                   <Input
                     id={`quantidade-personalizada-${plano.id}`}
                     type="number"
@@ -546,9 +595,12 @@ export const PlanoCardSelection = ({
         <div className="flex-grow space-y-2 mb-5">
           {/* Desktop: Mostra todos */}
           <div className="hidden md:block space-y-2">
-             {plano.beneficios.map((beneficio, idx) => (
+            {plano.beneficios.map((beneficio, idx) => (
               <div key={idx} className="flex items-start gap-2.5">
-                <Check className="h-3.5 w-3.5 text-green-500 mt-0.5 flex-shrink-0" strokeWidth={3} />
+                <Check
+                  className="h-3.5 w-3.5 text-green-500 mt-0.5 flex-shrink-0"
+                  strokeWidth={3}
+                />
                 <span className="text-xs text-gray-600 leading-snug">
                   {processarBeneficio(beneficio)}
                 </span>
@@ -558,60 +610,70 @@ export const PlanoCardSelection = ({
 
           {/* Mobile: Mantém comportamento de toggle */}
           <div className="md:hidden space-y-2">
-            {plano.beneficios.slice(0, isSelected ? 5 : 3).map((beneficio, idx) => (
-              <div key={idx} className="flex items-start gap-2.5">
-                <Check className="h-3.5 w-3.5 text-green-500 mt-0.5 flex-shrink-0" strokeWidth={3} />
-                <span className="text-xs text-gray-600 leading-snug">
-                  {processarBeneficio(beneficio)}
-                </span>
-              </div>
-            ))}
+            {plano.beneficios
+              .slice(0, isSelected ? 5 : 3)
+              .map((beneficio, idx) => (
+                <div key={idx} className="flex items-start gap-2.5">
+                  <Check
+                    className="h-3.5 w-3.5 text-green-500 mt-0.5 flex-shrink-0"
+                    strokeWidth={3}
+                  />
+                  <span className="text-xs text-gray-600 leading-snug">
+                    {processarBeneficio(beneficio)}
+                  </span>
+                </div>
+              ))}
             {!isSelected && plano.beneficios.length > 3 && (
-               <div className="text-xs text-gray-400 pl-6">
-                  + {plano.beneficios.length - 3} benefícios
-               </div>
+              <div className="text-xs text-gray-400 pl-6">
+                + {plano.beneficios.length - 3} benefícios
+              </div>
             )}
           </div>
         </div>
 
         {/* Action Button - Só aparece se selecionado ou no mobile */}
-        <div className={cn("mt-auto transition-all duration-300", isSelected ? "opacity-100 h-auto" : "opacity-0 h-0 overflow-hidden")}>
-            <Button
+        <div
+          className={cn(
+            "mt-auto transition-all duration-300",
+            isSelected ? "opacity-100 h-auto" : "opacity-0 h-0 overflow-hidden"
+          )}
+        >
+          <Button
             onClick={(e) => {
-                e.stopPropagation();
-                if (isProfissional) {
-                    if (!opcaoSelecionada) {
-                        toast.error("Selecione a quantidade de passageiros");
-                        return;
-                    }
-                    if (opcaoSelecionada === "personalizado") {
-                        if (!quantidadePersonalizada) {
-                            toast.error("Informe a quantidade");
-                            return;
-                        }
-                        if (quantidadeMinima && !isQuantidadeValida) {
-                            toast.error(`Mínimo de ${quantidadeMinima} passageiros`);
-                            return;
-                        }
-                        onQuantidadePersonalizadaConfirm?.();
-                    }
+              e.stopPropagation();
+              if (isProfissional) {
+                if (!opcaoSelecionada) {
+                  toast.error("Selecione a quantidade de passageiros");
+                  return;
                 }
-                onSelect(plano.id);
-                onAvancarStep?.();
+                if (opcaoSelecionada === "personalizado") {
+                  if (!quantidadePersonalizada) {
+                    toast.error("Informe a quantidade");
+                    return;
+                  }
+                  if (quantidadeMinima && !isQuantidadeValida) {
+                    toast.error(`Mínimo de ${quantidadeMinima} passageiros`);
+                    return;
+                  }
+                  onQuantidadePersonalizadaConfirm?.();
+                }
+              }
+              onSelect(plano.id);
+              onAvancarStep?.();
             }}
             disabled={isCalculandoPreco}
             className={cn(
-                "w-full py-5 text-sm uppercase tracking-wide font-bold transition-all rounded-xl",
-                getButtonStyles(),
-                isCalculandoPreco && "opacity-70 cursor-wait"
+              "w-full py-5 text-sm uppercase tracking-wide font-bold transition-all rounded-xl",
+              getButtonStyles(),
+              isCalculandoPreco && "opacity-70 cursor-wait"
             )}
-            >
+          >
             {isCalculandoPreco ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-                getButtonText()
+              getButtonText()
             )}
-            </Button>
+          </Button>
         </div>
       </CardContent>
     </div>

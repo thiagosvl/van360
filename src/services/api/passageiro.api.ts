@@ -6,11 +6,6 @@ export const passageiroApi = {
       .get(`/passageiros/usuario/${usuarioId}`, { params: filtros })
       .then(res => res.data),
 
-  getContagemByUsuario: (usuarioId: string, filtros?: Record<string, string>) =>
-    apiClient
-      .get(`/passageiros/usuario/${usuarioId}/contagem`, { params: filtros })
-      .then(res => res.data),
-
   getPassageiro: (passageiroId: string) =>
     apiClient
       .get(`/passageiros/${passageiroId}`)

@@ -30,5 +30,5 @@ export const ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO = "pendente_pagamento
 export const ASSINATURA_COBRANCA_STATUS_CANCELADA = "cancelada";
 
 export const STORAGE_KEY_QUICKSTART_STATUS = "van360:quickstart_status";
-export const QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO = 50; 
+export const QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO = 500; 
 export const BASE_DOMAIN = typeof window !== "undefined" ? window.location.origin : ""; 

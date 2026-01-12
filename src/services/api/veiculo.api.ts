@@ -18,11 +18,6 @@ export const veiculoApi = {
       .get(`/veiculos/usuario/${usuarioId}`, { params: filtros })
       .then(res => res.data),
 
-  getContagemByUsuario: (usuarioId: string, filtros?: Record<string, string>) =>
-    apiClient
-      .get(`/veiculos/usuario/${usuarioId}/contagem`, { params: filtros })
-      .then(res => res.data),
-
   listVeiculosComContagemAtivos: (usuarioId: string) =>
     apiClient
       .get(`/veiculos/usuario/${usuarioId}/com-contagem`)

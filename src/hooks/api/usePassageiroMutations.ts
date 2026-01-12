@@ -16,6 +16,7 @@ export function useCreatePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("passageiro.sucesso.criado");
     },
     onError: (error: any) => {
@@ -110,7 +111,9 @@ export function useUpdatePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobranca"] });
+      queryClient.invalidateQueries({ queryKey: ["cobranca"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
 
       // Invalidar escolas/veículos apenas se houve mudança de escola/veículo
       // Isso evita requisições desnecessárias quando apenas outros campos são editados
@@ -195,7 +198,9 @@ export function useDeletePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 }
@@ -265,12 +270,15 @@ export function useToggleAtivoPassageiro() {
       queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobranca"] });
+      queryClient.invalidateQueries({ queryKey: ["cobranca"] });
+      queryClient.invalidateQueries({ queryKey: ["cobranca"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       
       // Quando toggle de ativo, a contagem de passageiros nas escolas/veículos muda
       // então precisamos invalidar essas queries
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 }
@@ -299,6 +307,7 @@ export function useFinalizePreCadastro() {
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("passageiro.sucesso.criado");
     },
     onError: (error: any) => {

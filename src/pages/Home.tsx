@@ -8,6 +8,7 @@ import {
   Receipt,
   TrendingDown,
   TrendingUp,
+  UserCheck,
   UserPlus,
   Users,
   Wallet,
@@ -22,7 +23,6 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { useLayout } from "@/contexts/LayoutContext";
 import { useCobrancas } from "@/hooks/api/useCobrancas";
-import { usePassageiros } from "@/hooks/api/usePassageiros";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
@@ -102,23 +102,17 @@ const Home = () => {
     { enabled: !!profile?.id }
   );
 
-  const { data: passageirosData, refetch: refetchPassageiros, isLoading: isLoadingPassageiros } = usePassageiros(
-    { usuarioId: profile?.id }, 
-    { enabled: !!profile?.id }
-  );
-
   // Escolas e Veículos: Usamos apenas para o create/refresh. As contagens vêm do systemSummary
   // Podemos manter os refetchs, mas não precisamos das datas para o render principal
   
   // Estado de loading unificado
   const isInitialLoading = useMemo(() => {
     if (!profile?.id) return true;
-    return isLoadingCobrancas || isLoadingPassageiros || !systemSummary;
-  }, [profile?.id, isLoadingCobrancas, isLoadingPassageiros, systemSummary]);
+    return isLoadingCobrancas || !systemSummary;
+  }, [profile?.id, isLoadingCobrancas, systemSummary]);
 
   // Derived Data
   const cobrancas = cobrancasData?.all || [];
-  const passageirosList = passageirosData?.list || [];
 
   const escolasCount = systemSummary?.contadores.escolas.total ?? 0;
   const veiculosCount = systemSummary?.contadores.veiculos.total ?? 0;
@@ -207,7 +201,6 @@ const Home = () => {
   const handlePullToRefresh = async () => {
     await Promise.all([
       refetchCobrancas(),
-      refetchPassageiros(),
       refetchSummary(),
     ]);
   };
@@ -231,9 +224,8 @@ const Home = () => {
   const handleSuccessFormPassageiro = useCallback(() => {
     setNovoVeiculoId(null);
     setNovaEscolaId(null);
-    refetchPassageiros(); 
     refetchSummary();
-  }, [refetchPassageiros, refetchSummary]);
+  }, [refetchSummary]);
 
   const handleOpenPassageiroDialog = useCallback(() => {
     if (permissions.isFreePlan && hasPassengerLimit && passageirosCount >= limits.passageiros) {
@@ -563,6 +555,13 @@ const Home = () => {
                 label="Passageiros"
                 colorClass="text-blue-600"
                 bgClass="bg-blue-50"
+              />
+              <ShortcutCard
+                to="/passageiros?tab=solicitacoes"
+                icon={UserCheck}
+                label="Solicitações"
+                colorClass="text-pink-600"
+                bgClass="bg-pink-50"
               />
               <ShortcutCard
                 to="/gastos"

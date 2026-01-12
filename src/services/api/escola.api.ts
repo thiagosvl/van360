@@ -18,11 +18,6 @@ export const escolaApi = {
       .get(`/escolas/usuario/${usuarioId}`, { params: filtros })
       .then(res => res.data),
 
-  getContagemByUsuario: (usuarioId: string, filtros?: Record<string, string>) =>
-    apiClient
-      .get(`/escolas/usuario/${usuarioId}/contagem`, { params: filtros })
-      .then(res => res.data),
-
   listEscolasComContagemAtivos: (usuarioId: string) =>
     apiClient
       .get(`/escolas/usuario/${usuarioId}/com-contagem`)

@@ -1,5 +1,6 @@
 import { escolaApi } from "@/services/api/escola.api";
 import { Escola } from "@/types/escola";
+import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -31,6 +32,7 @@ export function useCreateEscola() {
 
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["escolas-form"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("escola.sucesso.criada");
     },
     // onError: (error: any) => {
@@ -81,6 +83,7 @@ export function useUpdateEscola() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["escolas-form"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 }
@@ -126,6 +129,7 @@ export function useDeleteEscola() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["escolas-form"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 }
@@ -178,6 +182,7 @@ export function useToggleAtivoEscola() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["escolas-form"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 }

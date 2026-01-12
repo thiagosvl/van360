@@ -32,6 +32,7 @@ export function useCreateVeiculo() {
 
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos-form"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("veiculo.sucesso.criado");
     },
     onError: (error: any) => {
@@ -82,6 +83,7 @@ export function useUpdateVeiculo() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos-form"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 }
@@ -127,6 +129,7 @@ export function useDeleteVeiculo() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos-form"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 }
@@ -179,6 +182,7 @@ export function useToggleAtivoVeiculo() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos-form"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 }

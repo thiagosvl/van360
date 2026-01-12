@@ -85,20 +85,8 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+    <div className="min-h-screen bg-gradient-to-b from-[#60a5fa] to-[#dbeafe] py-8 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
       <div className="max-w-5xl w-full mx-auto space-y-8">
-        
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">
-            {currentStep === 1 && "Escolha o plano ideal"}
-            {currentStep === 2 && "Crie sua conta"}
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            {currentStep === 1 && "Comece grátis ou potencialize sua gestão com automação."}
-            {currentStep === 2 && "Preencha seus dados para acessar o sistema."}
-          </p>
-        </div>
 
         {/* Main Card */}
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
@@ -110,6 +98,18 @@ export default function Register() {
               style={{ width: `${(currentStep / finalStep) * 100}%` }}
             />
           </div>
+        
+        {/* Header */}
+        <div className="text-center space-y-2 p-6 pb-0">
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl drop-shadow-sm">
+            {currentStep === 1 && "Escolha o plano ideal"}
+            {currentStep === 2 && "Crie sua conta"}
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground mx-auto">
+            {currentStep === 1 && "Nossos planos atendem perfeitamente às suas necessidades."}
+            {currentStep === 2 && "Preencha seus dados para acessar o sistema."}
+          </p>
+        </div>
 
           <div className="p-6 sm:p-10 lg:p-12">
             {/* Step Indicator Text */}
@@ -134,7 +134,7 @@ export default function Register() {
         
         {/* Footer */}
         <div className="text-center pt-4">
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-slate-600 font-medium">
             © {new Date().getFullYear()} Van360. Todos os direitos reservados.
           </p>
         </div>
