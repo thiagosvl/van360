@@ -82,17 +82,30 @@ export function useRegisterController() {
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
+      nome: "",
+      apelido: "",
+      cpfcnpj: "",
+      email: "",
+      telefone: "",
+      senha: "",
+      plano_id: "",
+      sub_plano_id: undefined,
+      quantidade_personalizada: undefined,
+    },
+  });
+
+  const handleFillMagic = () => {
+    form.reset({
+      ...form.getValues(),
       nome: "Thiago Barros",
       apelido: "Tio Thiago",
       cpfcnpj: "395.423.918-38",
       email: "thiago-svl@hotmail.com",
       telefone: "(11) 95118-6951",
       senha: "Ogaiht+1",
-      plano_id: "",
-      sub_plano_id: undefined,
-      quantidade_personalizada: undefined,
-    },
-  });
+    });
+    toast.success("Campos preenchidos com dados de teste!");
+  };
 
   const selectedPlanoId = form.watch("plano_id");
   const selectedSubPlanoId = form.watch("sub_plano_id");
@@ -609,6 +622,7 @@ export function useRegisterController() {
     handleSelectSubPlano,
     handleQuantidadePersonalizadaConfirm,
     handlePaymentSuccess,
+    handleFillMagic,
     getQuantidadeMinima,
     requiresPayment,
   };

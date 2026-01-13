@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 // Third-party
 import { cpfSchema, emailSchema } from "@/schemas/common";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, User, Wand2 } from "lucide-react";
 import { z } from "zod";
 
 // Components - UI
@@ -16,11 +16,11 @@ import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
@@ -86,10 +86,18 @@ export default function Login() {
   const formMotorista = useForm<z.infer<typeof formMotoristaSchema>>({
     resolver: zodResolver(formMotoristaSchema),
     defaultValues: {
-      cpfcnpj: "395.423.918-38",
-      senha: "Ogaiht+1",
+      cpfcnpj: "",
+      senha: "",
     },
   });
+
+  const handleFillMagic = () => {
+    formMotorista.reset({
+      cpfcnpj: "395.423.918-38",
+      senha: "Ogaiht+1",
+    });
+    toast.success("Campos preenchidos com dados de teste!");
+  };
 
   const formResponsavel = useForm<z.infer<typeof formResponsavelSchema>>({
     resolver: zodResolver(formResponsavelSchema),
@@ -308,7 +316,19 @@ export default function Login() {
                   </p>
                 </div>
 
-                <div className="text-center mb-8">
+                <div className="text-center mb-8 relative">
+                  <div className="absolute -right-2 -top-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
+                      onClick={handleFillMagic}
+                      title="Preencher com dados de teste"
+                    >
+                      <Wand2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <h1 className="text-2xl font-bold text-slate-900 mb-0">
                     Bem-vindo de volta!
                   </h1>

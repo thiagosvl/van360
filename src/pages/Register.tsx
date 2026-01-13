@@ -2,9 +2,10 @@ import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaD
 import { PagamentoSucessoDialog } from "@/components/dialogs/PagamentoSucessoDialog";
 import { PlanSelectionStep } from "@/components/features/register/steps/PlanSelectionStep";
 import { RegistrationFormStep } from "@/components/features/register/steps/RegistrationFormStep";
+import { Button } from "@/components/ui/button";
 import { useRegisterController } from "@/hooks/register/useRegisterController";
 import { useSEO } from "@/hooks/useSEO";
-import { Loader2 } from "lucide-react";
+import { Loader2, Wand2 } from "lucide-react";
 
 export default function Register() {
   useSEO({
@@ -36,11 +37,15 @@ export default function Register() {
     handleSelectSubPlano,
     handleQuantidadePersonalizadaConfirm,
     handlePaymentSuccess,
+    handleFillMagic,
     getQuantidadeMinima,
     requiresPayment,
   } = useRegisterController();
 
   const finalStep = 2;
+  
+  // Icons
+  const WandIcon = Wand2;
 
   // Render Logic
   const renderStep = () => {
@@ -100,7 +105,22 @@ export default function Register() {
           </div>
         
         {/* Header */}
-        <div className="text-center space-y-2 p-6 pb-0">
+        <div className="text-center space-y-2 p-6 pb-0 relative">
+          {currentStep === 2 && (
+            <div className="absolute right-6 top-6 z-20">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all"
+                onClick={handleFillMagic}
+                title="Preencher com dados de teste"
+              >
+                <WandIcon className="h-5 w-5" />
+              </Button>
+            </div>
+          )}
+
           <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl drop-shadow-sm">
             {currentStep === 1 && "Escolha o plano ideal"}
             {currentStep === 2 && "Crie sua conta"}
