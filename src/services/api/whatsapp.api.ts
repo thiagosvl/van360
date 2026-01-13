@@ -14,6 +14,7 @@ export interface WhatsappConnectResponse {
   instance?: {
     state: string;
   };
+  pairingCode?: string;
 }
 
 export const whatsappApi = {
@@ -29,5 +30,10 @@ export const whatsappApi = {
 
   disconnect: async (): Promise<void> => {
     await apiClient.post("/whatsapp/disconnect");
+  },
+
+  requestPairingCode: async (phoneNumber: string): Promise<WhatsappConnectResponse> => {
+    const { data } = await apiClient.post<WhatsappConnectResponse>("/whatsapp/pairing-code", { phoneNumber });
+    return data;
   }
 };

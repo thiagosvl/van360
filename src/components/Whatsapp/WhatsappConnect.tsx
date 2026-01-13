@@ -7,7 +7,7 @@ import { useEffect } from "react";
 import { WhatsappStatusView } from "./WhatsappStatusView";
 
 export function WhatsappConnect() {
-  const { state, qrCode, isLoading, connect, disconnect, refresh, instanceName } = useWhatsapp();
+  const { state, qrCode, isLoading, connect, disconnect, refresh, instanceName, requestPairingCode } = useWhatsapp();
 
   useEffect(() => {
     refresh();
@@ -16,8 +16,7 @@ export function WhatsappConnect() {
   const isConnected = state === WHATSAPP_STATUS.OPEN || state === WHATSAPP_STATUS.CONNECTED || state === WHATSAPP_STATUS.PAIRED; 
   // Só consideramos "conectando" para fins de UI (bloqueio) se tivermos um QR Code para mostrar
   // ou se estivermos de fato esperando a mutation de conectar.
-  // Se o backend diz "connecting" mas não temos QR Code, estamos num estado "cego" e precisamos permitir o connect()
-  const isConnecting = (state === WHATSAPP_STATUS.CONNECTING || state === WHATSAPP_STATUS.OPEN.replace("open", "connecting")) && qrCode !== null;
+  const isConnecting = ((state as string) === WHATSAPP_STATUS.CONNECTING || (state as string) === WHATSAPP_STATUS.OPEN.replace("open", "connecting")) && qrCode !== null;
 
   return (
     <Card className={`border-l-4 ${isConnected ? "border-l-green-500" : "border-l-orange-500"}`}>
@@ -36,24 +35,17 @@ export function WhatsappConnect() {
             qrCode={qrCode}
             isLoading={isLoading}
             instanceName={instanceName}
+            onConnect={connect}
+            onRequestPairingCode={requestPairingCode}
           />
       </CardContent>
-      <CardFooter className="flex justify-end gap-2 bg-gray-50/50 p-4">
-        {isConnected ? (
+      {isConnected && (
+        <CardFooter className="flex justify-end gap-2 bg-gray-50/50 p-4">
             <Button variant="destructive" onClick={disconnect} disabled={isLoading}>
                 Desconectar
             </Button>
-        ) : (
-            <Button 
-                variant="default" 
-                onClick={connect} 
-                disabled={isLoading || isConnecting}
-                className="bg-green-600 hover:bg-green-700"
-            >
-                {isConnecting ? "Gerando QR Code..." : "Conectar WhatsApp"}
-            </Button>
-        )}
-      </CardFooter>
+        </CardFooter>
+      )}
     </Card>
   );
 }

@@ -80,13 +80,28 @@ export function useWhatsapp() {
     }
   });
 
+  // Mutation: Request Pairing Code
+  const pairingCodeMutation = useMutation({
+    mutationFn: whatsappApi.requestPairingCode,
+    onSuccess: (data) => {
+        if (data.pairingCode) {
+            setLocalQrCode(null); // Clear QR if exists
+        }
+        return data;
+    },
+    onError: (error: any) => {
+        toast.error("Erro ao gerar código: " + (error.response?.data?.error || "Erro desconhecido"));
+    }
+  });
+
   return {
     state,
     qrCode: localQrCode,
-    isLoading: isLoading || connectMutation.isPending || disconnectMutation.isPending,
+    isLoading: isLoading || connectMutation.isPending || disconnectMutation.isPending || pairingCodeMutation.isPending,
     instanceName,
     connect: () => connectMutation.mutate(),
     disconnect: () => disconnectMutation.mutate(),
+    requestPairingCode: pairingCodeMutation.mutateAsync, // Async to allow awaiting result in UI
     refresh: refetch
   };
 }

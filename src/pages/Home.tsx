@@ -1,16 +1,16 @@
 import {
-  Check,
-  CreditCard,
-  DollarSign,
-  FileText,
-  Plus,
-  Receipt,
-  TrendingDown,
-  TrendingUp,
-  UserCheck,
-  Users,
-  Wallet,
-  Zap,
+    Check,
+    CreditCard,
+    DollarSign,
+    FileText,
+    Plus,
+    Receipt,
+    TrendingDown,
+    TrendingUp,
+    UserCheck,
+    Users,
+    Wallet,
+    Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -26,10 +26,10 @@ import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
 
 import {
-  FEATURE_GASTOS,
-  FEATURE_LIMITE_PASSAGEIROS,
-  PASSAGEIRO_COBRANCA_STATUS_PAGO,
-  PLANO_ESSENCIAL,
+    FEATURE_GASTOS,
+    FEATURE_LIMITE_PASSAGEIROS,
+    PASSAGEIRO_COBRANCA_STATUS_PAGO,
+    PLANO_ESSENCIAL,
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
@@ -45,6 +45,7 @@ import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard"
 import { WHATSAPP_STATUS } from "@/config/constants";
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { useUpsellContent } from "@/hooks/business/useUpsellContent";
+import { useWhatsapp } from "@/hooks/useWhatsapp";
 
 // --- Main Component ---
 
@@ -60,6 +61,7 @@ const Home = () => {
     openWhatsappDialog,
   } = useLayout();
   const { user, loading: isSessionLoading } = useSession();
+  const { state: liveWhatsappStatus, qrCode, isLoading: isWhatsappLoading, instanceName, connect, requestPairingCode } = useWhatsapp();
 
   // Use Access Control Hook
   const {
@@ -359,7 +361,7 @@ const Home = () => {
             ) : (
               /* ONLY if PIX is Valid OR Not Registered (Free Plan path) we show other alerts */
               <>
-                {systemSummary?.usuario.flags.whatsapp_status === WHATSAPP_STATUS.DISCONNECTED && (
+                {liveWhatsappStatus === WHATSAPP_STATUS.DISCONNECTED && (
                   <section className="mb-4">
                     <DashboardStatusCard
                       type="error"

@@ -13,42 +13,46 @@ import { useWhatsapp } from "@/hooks/useWhatsapp";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
-export function WhatsappDialog({ isOpen, onClose, canClose = true }: WhatsappDialogProps) {
-  const { state, qrCode, isLoading, connect, disconnect, instanceName, refresh } = useWhatsapp();
+interface WhatsappDialogProps {
+    isOpen: boolean;
+    onClose: () => void;
+    canClose?: boolean;
+    userPhone?: string;
+}
+
+export function WhatsappDialog({ isOpen, onClose, canClose = true, userPhone }: WhatsappDialogProps) {
+  const { state, qrCode, isLoading, connect, disconnect, instanceName, requestPairingCode } = useWhatsapp();
   
   // Ref para controlar a tentativa automática e evitar loops
   const hasAttemptedRef = useRef(false);
+  const wasConnectedOnOpenRef = useRef(false);
 
   // Status derivados
   // Aceita CONNECTED ou open (API Evolution às vezes alterna)
   const isConnected = state === WHATSAPP_STATUS.OPEN || state === WHATSAPP_STATUS.CONNECTED || state === WHATSAPP_STATUS.PAIRED;
   
-  // Só consideramos conectando se tiver QR code ou status explícito de connecting
-  const isConnecting = (state === WHATSAPP_STATUS.CONNECTING || state === "connecting") && qrCode !== null;
-  const isDisconnected = !isConnected;
+  // 0. Capturar estado inicial ao abrir
+  useEffect(() => {
+      if (isOpen) {
+          wasConnectedOnOpenRef.current = isConnected;
+      }
+  }, [isOpen]);
 
   // 1. Resetar flag quando o dialog fechar
   useEffect(() => {
       if (!isOpen) {
           hasAttemptedRef.current = false;
+          wasConnectedOnOpenRef.current = false;
       }
   }, [isOpen]);
 
-  // 2. Auto-Connect ao abrir (Se desconectado)
-  useEffect(() => {
-      if (isOpen && isDisconnected && !isConnecting && !isLoading && !hasAttemptedRef.current) {
-         hasAttemptedRef.current = true;
-         console.log("WhatsappDialog: Iniciando auto-conexão...");
-         connect();
-      }
-  }, [isOpen, isDisconnected, isConnecting, isLoading, connect]);
+  // REMOVED: Auto-Connect (Mobile First approach suggests waiting for user interaction)
 
-  // 3. Auto-Close ao conectar com sucesso (se estava aberto)
+  // 3. Auto-Close ao conectar com sucesso (se estava aberto e NÃO estava conectado antes)
   useEffect(() => {
-      // Se estamos com o dialog aberto, e de repente o status vira conectado...
-      if (isOpen && isConnected) {
+      if (isOpen && isConnected && !wasConnectedOnOpenRef.current) {
           toast.success("WhatsApp Conectado com Sucesso!");
-          onClose(); // Fecha o dialog automaticamente
+          onClose();
       }
   }, [isOpen, isConnected, onClose]);
 
@@ -77,6 +81,8 @@ export function WhatsappDialog({ isOpen, onClose, canClose = true }: WhatsappDia
                 qrCode={qrCode}
                 isLoading={isLoading}
                 instanceName={instanceName}
+                onConnect={connect}
+                onRequestPairingCode={requestPairingCode}
             />
         </div>
 
@@ -85,18 +91,9 @@ export function WhatsappDialog({ isOpen, onClose, canClose = true }: WhatsappDia
                 {isLoading ? "Verificando status..." : (isConnected ? "Conexão ativa" : "Aguardando conexão...")}
              </div>
 
-             {isConnected ? (
+             {isConnected && (
                 <Button variant="destructive" onClick={disconnect} disabled={isLoading}>
                     Desconectar
-                </Button>
-            ) : (
-                <Button 
-                    variant="default" 
-                    onClick={connect} 
-                    disabled={isLoading || isConnecting}
-                    className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
-                >
-                    {isConnecting ? "Gerando QR..." : "Tentar Novamente"}
                 </Button>
             )}
         </DialogFooter>
