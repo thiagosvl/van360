@@ -283,7 +283,7 @@ export default function EscolaFormDialog({
       <Dialog open={isOpen} onOpenChange={() => safeCloseDialog(onClose)}>
         <DialogContent
           onOpenAutoFocus={(e) => e.preventDefault()}
-          className="w-full max-w-2xl p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
+          className="w-full max-w-2xl p-0 gap-0 bg-gray-50 h-full max-h-screen sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
           hideCloseButton
         >
           <div className="bg-blue-600 p-4 text-center relative shrink-0">

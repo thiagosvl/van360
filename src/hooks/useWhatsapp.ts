@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { ConnectionState, WHATSAPP_STATUS } from "../config/constants";
 import { whatsappApi } from "../services/api/whatsapp.api";
 
+import { supabase } from "../integrations/supabase/client";
 import { useProfile } from "./business/useProfile";
 import { useSession } from "./business/useSession";
 
@@ -13,6 +14,33 @@ export function useWhatsapp() {
   
   const { user } = useSession();
   const { isProfissional } = useProfile(user?.id);
+
+  // Realtime listener for connection status
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel("whatsapp_status_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "usuarios",
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          // Quando houver qualquer mudança no registro do usuário, invalidamos o status do WhatsApp
+          // O backend é a fonte da verdade definitiva (Evolution API), mas o DB local reflete o estado.
+          queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
 
   // Consulta de Status (Deduped e Cached por 10s)
   const { data: statusData, isLoading, refetch } = useQuery({
@@ -99,6 +127,7 @@ export function useWhatsapp() {
     qrCode: localQrCode,
     isLoading: isLoading || connectMutation.isPending || disconnectMutation.isPending || pairingCodeMutation.isPending,
     instanceName,
+    userPhone: (statusData as any)?.telefone || (useProfile(user?.id) as any)?.profile?.telefone,
     connect: () => connectMutation.mutate(),
     disconnect: () => disconnectMutation.mutate(),
     requestPairingCode: pairingCodeMutation.mutateAsync, // Async to allow awaiting result in UI

@@ -32,8 +32,8 @@ export const whatsappApi = {
     await apiClient.post("/whatsapp/disconnect");
   },
 
-  requestPairingCode: async (phoneNumber: string): Promise<WhatsappConnectResponse> => {
-    const { data } = await apiClient.post<WhatsappConnectResponse>("/whatsapp/pairing-code", { phoneNumber });
+  requestPairingCode: async (): Promise<WhatsappConnectResponse> => {
+    const { data } = await apiClient.post<WhatsappConnectResponse>("/whatsapp/pairing-code");
     return data;
   }
 };
