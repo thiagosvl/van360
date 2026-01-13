@@ -50,8 +50,13 @@ export function WhatsappDialog({ isOpen, onClose, canClose = true, userPhone }: 
   // 3. Auto-Close ao conectar com sucesso (se estava aberto e NÃO estava conectado antes)
   useEffect(() => {
       if (isOpen && isConnected && !wasConnectedOnOpenRef.current) {
-          toast.success("WhatsApp Conectado com Sucesso!");
-          onClose();
+          toast.success("WhatsApp Conectado com Sucesso! Fechando em 5 segundos...");
+          
+          const timer = setTimeout(() => {
+              onClose();
+          }, 5000);
+
+          return () => clearTimeout(timer);
       }
   }, [isOpen, isConnected, onClose]);
 
@@ -65,7 +70,7 @@ export function WhatsappDialog({ isOpen, onClose, canClose = true, userPhone }: 
         }
     }}>
       <DialogContent 
-        className="w-full max-w-[95vw] sm:max-w-md p-0 gap-0 overflow-hidden h-full max-h-[96vh] sm:h-auto sm:max-h-[90vh] flex flex-col bg-white sm:rounded-3xl border-0 shadow-2xl" 
+        className="w-full max-w-[95vw] sm:max-w-lg p-0 gap-0 overflow-hidden h-full max-h-[96vh] sm:h-auto sm:max-h-[90vh] flex flex-col bg-white sm:rounded-3xl border-0 shadow-2xl" 
         onPointerDownOutside={(e) => !effectiveCanClose && e.preventDefault()}
         hideCloseButton={!effectiveCanClose}
       >

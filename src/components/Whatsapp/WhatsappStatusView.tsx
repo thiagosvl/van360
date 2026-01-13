@@ -110,8 +110,8 @@ export function WhatsappStatusView({
         // Se já tem código e ainda tem tempo, não faz nada
         if (pairingCode && timeLeft > 0) return;
 
-        // Se já tentamos e falhou feio (sem código), mas não é um refresh (pairingCode já era null), evitamos loop de erro
-        if (autoRequestAttempted.current && !pairingCode && timeLeft !== 60) return;
+        // Se já tentamos e falhou feio (sem código), evitamos loop de erro
+        if (autoRequestAttempted.current && !pairingCode) return;
 
         autoRequestAttempted.current = true;
         const autoRequest = async () => {
@@ -139,7 +139,8 @@ export function WhatsappStatusView({
                 setTimeLeft((prev) => {
                     if (prev <= 1) {
                         setPairingCode(null);
-                        return 60; // Volta para 60 para que o useEffect de auto-request seja disparado
+                        autoRequestAttempted.current = false; // Permite tentar novamente após expirar
+                        return 60;
                     }
                     return prev - 1;
                 });
@@ -218,7 +219,7 @@ export function WhatsappStatusView({
 
     return (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-2 mb-4 sm:mb-8 p-1 bg-slate-100 rounded-xl sm:rounded-2xl shrink-0">
+            <TabsList className="grid w-full grid-cols-2 mb-4 sm:mb-8 p-1 sm:p-1.5 bg-slate-100 rounded-xl sm:rounded-2xl shrink-0">
                 <TabsTrigger value="mobile" className="flex gap-1.5 sm:gap-2 py-1.5 sm:py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg sm:rounded-xl transition-all font-bold text-slate-600 text-[12px] min-[360px]:text-[13px] sm:text-sm tracking-tight">
                     <Smartphone className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> No Celular
                 </TabsTrigger>
