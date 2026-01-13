@@ -97,6 +97,7 @@ export function WhatsappStatusView({
     const [isCopied, setIsCopied] = useState(false);
     const [activeTab, setActiveTab] = useState("mobile");
     const [timeLeft, setTimeLeft] = useState(60);
+    const [retryCount, setRetryCount] = useState(0);
     const autoRequestAttempted = useRef(false);
 
     const isConnected = state === WHATSAPP_STATUS.OPEN || state === WHATSAPP_STATUS.CONNECTED || state === WHATSAPP_STATUS.PAIRED;
@@ -130,7 +131,7 @@ export function WhatsappStatusView({
             }
         };
         autoRequest();
-    }, [activeTab, pairingCode, isRequestingCode, isConnected, onRequestPairingCode, timeLeft]);
+    }, [activeTab, pairingCode, isRequestingCode, isConnected, onRequestPairingCode, timeLeft, retryCount]);
 
     // Timer logic for refreshing the code
     useEffect(() => {
@@ -244,8 +245,8 @@ export function WhatsappStatusView({
                         <Button 
                             onClick={() => {
                                 autoRequestAttempted.current = false;
-                                // Muda brevemente para forçar o re-trigger do useEffect
-                                setTimeLeft(59); 
+                                setRetryCount(prev => prev + 1);
+                                setTimeLeft(60); 
                             }} 
                             variant="outline" 
                             className="mt-2 rounded-xl h-10 px-8 border-slate-200 hover:bg-slate-50 hover:border-blue-200 hover:text-blue-600 transition-all font-bold text-xs sm:text-sm shadow-sm"
