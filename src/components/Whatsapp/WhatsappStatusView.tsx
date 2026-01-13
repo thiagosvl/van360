@@ -231,9 +231,27 @@ export function WhatsappStatusView({
             <div className="flex-1 overflow-y-auto pr-0.5 -mr-0.5 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
                 <TabsContent value="mobile" className="space-y-4 sm:space-y-8 pb-4 mt-0">
                 {!pairingCode && !isRequestingCode ? (
-                    <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
-                        <Loader2 className="h-10 w-10 animate-spin text-slate-300" />
-                        <p className="text-slate-400 text-sm">Preparando ambiente de conexão...</p>
+                    <div className="flex flex-col items-center justify-center py-12 sm:py-16 gap-4 sm:gap-6 text-center px-6 animate-in fade-in zoom-in duration-300">
+                        <div className="p-4 sm:p-5 bg-slate-50 rounded-full">
+                            <WifiOff className="h-8 w-8 sm:h-10 sm:w-10 text-slate-300" />
+                        </div>
+                        <div className="space-y-1 sm:space-y-2">
+                            <h4 className="text-sm sm:text-base font-bold text-slate-700">Não foi possível gerar o código</h4>
+                            <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed max-w-[240px] mx-auto">
+                                O ambiente de conexão demorou a responder. Clique abaixo para tentar novamente.
+                            </p>
+                        </div>
+                        <Button 
+                            onClick={() => {
+                                autoRequestAttempted.current = false;
+                                // Muda brevemente para forçar o re-trigger do useEffect
+                                setTimeLeft(59); 
+                            }} 
+                            variant="outline" 
+                            className="mt-2 rounded-xl h-10 px-8 border-slate-200 hover:bg-slate-50 hover:border-blue-200 hover:text-blue-600 transition-all font-bold text-xs sm:text-sm shadow-sm"
+                        >
+                            Tentar Novamente
+                        </Button>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-6 sm:gap-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
