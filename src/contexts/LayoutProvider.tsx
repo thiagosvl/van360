@@ -24,6 +24,7 @@ import { useSession } from "@/hooks/business/useSession";
 import { useWhatsappGuard } from "@/hooks/business/useWhatsappGuard";
 import {
   ReactNode,
+  useCallback,
   useEffect,
   useState,
 } from "react";
@@ -125,31 +126,36 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     canClose: true,
   });
 
-  // Global Check for PIX Key (Professional Plan)
+  // Prioridade de Dialogs: PIX Key > Whatsapp
+  const isPixKeyValid = !!profile?.chave_pix && profile?.status_chave_pix === 'VALIDADA';
+
+  const handleOpenPixKeyDialog = useCallback(() => {
+    setPixKeyDialogState({
+      open: true,
+      canClose: false,
+    });
+  }, []);
+
   usePixKeyGuard({
     profile,
     isProfissional: !!isProfissional,
     isLoading: isProfileLoading,
-    onShouldOpen: () => {
-      setPixKeyDialogState({
-        open: true,
-        canClose: false,
-      });
-    },
+    onShouldOpen: handleOpenPixKeyDialog,
   });
+
+  const handleOpenWhatsappDialog = useCallback(() => {
+    // SÓ abre Whatsapp se a chave PIX já estiver validada.
+    // PIX tem prioridade máxima no plano Profissional.
+    if (isPixKeyValid) {
+      setWhatsappDialogState({ open: true, canClose: false });
+    }
+  }, [isPixKeyValid]);
 
   // Global Check for Whatsapp (Professional Plan)
   useWhatsappGuard({
     isProfissional: !!isProfissional,
     isLoading: isProfileLoading,
-    onShouldOpen: () => {
-      // Só abre se não tiver outros dialogs críticos abertos (evitar sobreposição chata)
-      // Mas o requisito é "SEMPRE". Vamos permitir a sobreposição ou gerenciar prioridade?
-      // Vamos priorizar PIX, se PIX estiver ok, mostra Whatsapp.
-      if (!pixKeyDialogState.open) {
-        setWhatsappDialogState({ open: true, canClose: false });
-      }
-    },
+    onShouldOpen: handleOpenWhatsappDialog,
   });
 
 
@@ -234,6 +240,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openWhatsappDialog = (options?: { canClose?: boolean }) => {
+    setWhatsappDialogState({
+      open: true,
+      canClose: options?.canClose ?? true,
+    });
+  };
+
   return (
     <LayoutContext.Provider
       value={{
@@ -251,6 +264,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openGastoFormDialog,
         openPixKeyDialog,
         closePixKeyDialog,
+        openWhatsappDialog,
       }}
     >
       {children}

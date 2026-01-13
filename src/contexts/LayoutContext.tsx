@@ -1,5 +1,5 @@
 import {
-  PlanUpgradeDialogProps,
+    PlanUpgradeDialogProps,
 } from "@/components/dialogs/PlanUpgradeDialog";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
@@ -7,8 +7,8 @@ import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Veiculo } from "@/types/veiculo";
 import {
-  createContext,
-  useContext,
+    createContext,
+    useContext,
 } from "react";
 
 export type OpenPlanUpgradeDialogProps = Omit<
@@ -79,6 +79,7 @@ export interface LayoutContextType {
     canClose?: boolean;
   }) => void;
   closePixKeyDialog: () => void;
+  openWhatsappDialog: (options?: { canClose?: boolean }) => void;
 }
 
 export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);

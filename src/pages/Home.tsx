@@ -42,6 +42,7 @@ import { DashboardStatusCard } from "@/components/features/home/DashboardStatusC
 import { MiniKPI } from "@/components/features/home/MiniKPI";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
+import { WHATSAPP_STATUS } from "@/config/constants";
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { useUpsellContent } from "@/hooks/business/useUpsellContent";
 
@@ -56,6 +57,7 @@ const Home = () => {
     openVeiculoFormDialog,
     openPassageiroFormDialog,
     openGastoFormDialog,
+    openWhatsappDialog,
   } = useLayout();
   const { user, loading: isSessionLoading } = useSession();
 
@@ -327,6 +329,62 @@ const Home = () => {
             </p>
           </div>
 
+            {/* 
+              Priority Dashboard Alerts (Strict Sequential Order):
+              1. PIX Validation (Pending/Failed)
+              2. WhatsApp Connection
+              3. Plan Alerts (Free Plan)
+            */}
+            
+            {profile?.status_chave_pix === 'PENDENTE_VALIDACAO' ? (
+              <section className="mb-4">
+                <DashboardStatusCard
+                  type="pending"
+                  title="Validação PIX em Andamento"
+                  description="Estamos confirmando sua chave com o banco. Isso leva alguns minutos."
+                  actionLabel="Verificar Agora"
+                  onAction={() => openPixKeyDialog()}
+                />
+              </section>
+            ) : profile?.status_chave_pix === 'FALHA_VALIDACAO' ? (
+              <section className="mb-4">
+                <DashboardStatusCard
+                  type="error"
+                  title="Validação PIX Falhou"
+                  description="Não conseguimos confirmar sua chave. Corrija os dados para receber repasses."
+                  actionLabel="Corrigir Chave"
+                  onAction={() => openPixKeyDialog()}
+                />
+              </section>
+            ) : (
+              /* ONLY if PIX is Valid OR Not Registered (Free Plan path) we show other alerts */
+              <>
+                {systemSummary?.usuario.flags.whatsapp_status === WHATSAPP_STATUS.DISCONNECTED && (
+                  <section className="mb-4">
+                    <DashboardStatusCard
+                      type="error"
+                      title="WhatsApp Desconectado"
+                      description="Sua instância do WhatsApp está desconectada. Clique em reconectar para garantir que as mensagens enviadas."
+                      actionLabel="Reconectar"
+                      onAction={() => openWhatsappDialog()}
+                    />
+                  </section>
+                )}
+
+                {isFreePlan && (
+                  <section className="mb-4">
+                    <DashboardStatusCard
+                      type="pending"
+                      title="Plano Gratuito Ativo"
+                      description="Você está usando a versão gratuita com recursos limitados. Faça o upgrade para automatizar suas cobranças."
+                      actionLabel="Ver Planos"
+                      onAction={() => openPlanUpgradeDialog()}
+                    />
+                  </section>
+                )}
+              </>
+            )}
+
           {/* Onboarding - Primeiros Passos */}
           {showOnboarding && (
             <section>
@@ -433,22 +491,6 @@ const Home = () => {
               />
             )}
           </div>
-
-          {/* Status Operacional & Alertas System Summary */}
-          {/* WhatsApp Disconnected Alert */}
-          {systemSummary?.usuario.flags.whatsapp_status === "DISCONNECTED" && (
-            <section className="mb-4">
-              <DashboardStatusCard
-                type="pending"
-                title="WhatsApp Desconectado"
-                description="Seu WhatsApp não está enviando mensagens. Reconecte agora."
-                actionLabel="Reconectar"
-                onAction={() => {
-                  /* TODO: Open WhatsApp Dialog via URL or context */
-                }}
-              />
-            </section>
-          )}
 
           {!showOnboarding && cobrancas.length > 0 && (
             <section>

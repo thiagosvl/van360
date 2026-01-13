@@ -1,5 +1,6 @@
 import {
   ASSINATURA_COBRANCA_STATUS_CANCELADA,
+  ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO,
   ASSINATURA_USUARIO_STATUS_ATIVA,
   ASSINATURA_USUARIO_STATUS_PENDENTE_PAGAMENTO,
   ASSINATURA_USUARIO_STATUS_SUSPENSA,
@@ -167,11 +168,11 @@ export function isSubscriptionPending(assinatura: any): boolean {
   if (!assinatura) return false;
 
   const isPendentePagamento =
-    assinatura.status === "pendente_pagamento" &&
+    assinatura.status === ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO &&
     assinatura.ativo === true;
 
   const isTrial =
-    assinatura.status === "trialing" &&
+    assinatura.status === ASSINATURA_USUARIO_STATUS_TRIAL &&
     assinatura.ativo === true;
 
   return isPendentePagamento || isTrial;
@@ -183,7 +184,7 @@ export function isSubscriptionPending(assinatura: any): boolean {
 export function calculateTrialInfo(assinatura: any) {
   if (!assinatura) return { isValidTrial: false, isTrialExpirado: false, diasRestantes: null };
 
-  const isTrial = assinatura.status === "trialing" && assinatura.ativo === true;
+  const isTrial = assinatura.status === ASSINATURA_USUARIO_STATUS_TRIAL && assinatura.ativo === true;
 
   const agora = new Date();
   const trialEndAt = assinatura.trial_end_at

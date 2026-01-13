@@ -1,25 +1,25 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
@@ -89,11 +89,54 @@ export default function PixKeyDialog({
 
   // Effect: if becomes valid, close
   useEffect(() => {
-     if (isOpen && isValid && !canClose) {
-         // Auto close if it was forced open but now is valid
-         onClose();
+     if (isOpen && isValid) {
+         // Auto close if it becomes valid while open
+         const timer = setTimeout(() => {
+            onClose();
+            if (onSuccess) onSuccess();
+         }, 1500); // Give user a moment to see the success state
+         return () => clearTimeout(timer);
      }
-  }, [isValid, isOpen, canClose, onClose]);
+  }, [isValid, isOpen, onClose, onSuccess]);
+
+  // Realtime Listener
+  useEffect(() => {
+    if (!isOpen || !profile?.id || isValid) return;
+
+    const channel = supabase
+      .channel(`pix-validation-${profile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'usuarios',
+          filter: `id=eq.${profile.id}`
+        },
+        (payload) => {
+          const newStatus = payload.new.status_chave_pix;
+          if (newStatus === 'VALIDADA' || newStatus === 'FALHA_VALIDACAO') {
+            refreshProfile(); // Trigger UI update via global state
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isOpen, profile?.id, isValid, refreshProfile]);
+
+  // Plan B: Polling (only while open and pending)
+  useEffect(() => {
+    if (!isOpen || !profile?.id || status !== 'PENDENTE_VALIDACAO') return;
+
+    const interval = setInterval(() => {
+        refreshProfile();
+    }, 5000); // Check every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [isOpen, profile?.id, status, refreshProfile]);
 
 
   const handleChaveChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,76 +185,17 @@ export default function PixKeyDialog({
           }
       }
 
-      // Feedback visual enquanto valida
-      const loadingToast = toast.info("Salvando e validando chave PIX...", { duration: 30000 });
+      // 1. Save locally/notify server
+      await usuarioApi.atualizarUsuario(profile.id, {
+        chave_pix: chavePixLimpa,
+        tipo_chave_pix: tipo
+      });
 
-      try {
-        await usuarioApi.atualizarUsuario(profile.id, {
-          chave_pix: chavePixLimpa,
-          tipo_chave_pix: tipo
-        });
+      // 2. Immediately update local state to "PENDENTE_VALIDACAO" to trigger the validation screen
+      await refreshProfile(); 
 
-        // Polling para validação síncrona (experiência do usuário)
-        let attempts = 0;
-        const maxAttempts = 15; // 30 segundos
-        let finalStatus = 'PENDENTE_VALIDACAO';
+      toast.success("Chave salva! Iniciando validação...");
 
-        while (attempts < maxAttempts) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Busca direta na API para evitar cache do hook
-            const { data: usuario } = await supabase
-                .from("usuarios")
-                .select("status_chave_pix")
-                .eq("id", profile.id)
-                .single();
-            
-            // Supabase pode retornar null para data se houver erro não tratado, mas .single() geralmente lança exceção se configurado ou retorna error.
-            // Cast 'any' temporário para resolver erro de inferência de tipos do Supabase Client gerado
-            const status = (usuario as any)?.status_chave_pix;
-
-            if (status === 'VALIDADA') {
-                finalStatus = 'VALIDADA';
-                break;
-            }
-            if (status === 'FALHA_VALIDACAO') {
-                finalStatus = 'FALHA_VALIDACAO';
-                break;
-            }
-            attempts++;
-        }
-
-        toast.dismiss(loadingToast);
-
-        if (finalStatus === 'VALIDADA') {
-            toast.success("Chave PIX validada com sucesso!");
-            
-            updateQuickStartStorage();
-            await refreshProfile(); // Sincroniza estado global
-            
-            if (canClose && onClose) {
-                onClose();
-                if (onSuccess) onSuccess();
-            }
-        } else if (finalStatus === 'FALHA_VALIDACAO') {
-            toast.error("Validação Falhou", {
-                description: "O banco não confirmou a titularidade da conta. Verifique se o CPF/CNPJ da chave pertence a você."
-            });
-            await refreshProfile();
-            // Mantém aberto para correção
-        } else {
-            // Timeout - Bloqueante (Pedido do Usuário: "Ou faz na hora, ou não faz")
-            toast.error("Tempo excedido na validação", {
-                description: "O banco demorou para responder. Verifique sua chave e tente novamente ou entre em contato com o suporte."
-            });
-            await refreshProfile();
-            // NÃO FECHAR O DIALOG - Mantém o usuário bloqueado até conseguir
-        }
-
-      } catch (err: unknown) {
-        toast.dismiss(loadingToast);
-        throw err;
-      }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Erro ao salvar chave PIX.";
       toast.error("Falha ao salvar", {

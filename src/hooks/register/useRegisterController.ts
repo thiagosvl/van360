@@ -429,12 +429,15 @@ export function useRegisterController() {
           plano_id: selectedPlano.id,
           sub_plano_id: selectedSubPlanoId,
         });
-      } else {
+      } else if (selectedPlano.slug === PLANO_ESSENCIAL) {
         result = await usuarioApi.registrarPlanoEssencial({
           ...data,
           plano_id: selectedPlano.id,
           sub_plano_id: selectedSubPlanoId,
         });
+      } else {
+        // Para Profissional ou outros capturados no handleNextStep
+        throw new Error("Este plano requer ativação via pagamento. Por favor, siga o fluxo de pagamento.");
       }
 
       if (result?.error) throw new Error(result.error);
@@ -520,7 +523,10 @@ export function useRegisterController() {
               (window as any).__registerSession = (result as any).session;
             }
           } else {
-            await handleFinalRegister(formValues);
+            console.error("Resultado de registro profissional incompleto:", result);
+            toast.error("cadastro.erro.criar", {
+              description: "Não foi possível gerar os dados para pagamento. Por favor, tente novamente ou entre em contato com o suporte.",
+            });
           }
           return true;
         } catch (err: any) {

@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { ArrowRight, CheckCircle2, Wallet, Zap } from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle2, Wallet } from "lucide-react";
 
 interface DashboardStatusCardProps {
-  type: "pending" | "success" | "onboarding";
+  type: "pending" | "success" | "error";
   title: string;
   description: string;
   actionLabel?: string;
@@ -41,15 +41,15 @@ export const DashboardStatusCard = ({
       btnVariant: "outline",
       btnClass: "border-emerald-200 text-emerald-700 hover:bg-emerald-100",
     },
-    onboarding: {
-      bg: "bg-white",
-      border: "border-indigo-100",
-      iconBg: "bg-indigo-50",
-      iconColor: "text-indigo-600",
-      titleColor: "text-gray-900",
-      descColor: "text-gray-500",
-      btnVariant: "default",
-      btnClass: "bg-indigo-600 hover:bg-indigo-700 text-white",
+    error: {
+      bg: "bg-red-50",
+      border: "border-red-100",
+      iconBg: "bg-red-100",
+      iconColor: "text-red-600",
+      titleColor: "text-red-900",
+      descColor: "text-red-700",
+      btnVariant: "destructive",
+      btnClass: "bg-red-600 hover:bg-red-700 text-white border-none",
     },
   };
 
@@ -79,7 +79,7 @@ export const DashboardStatusCard = ({
           >
             {type === "pending" && <Wallet className="h-5 w-5" />}
             {type === "success" && <CheckCircle2 className="h-5 w-5" />}
-            {type === "onboarding" && <Zap className="h-5 w-5" />}
+            {type === "error" && <AlertCircle className="h-5 w-5" />}
           </div>
           <div className="flex-1">
             <h3
