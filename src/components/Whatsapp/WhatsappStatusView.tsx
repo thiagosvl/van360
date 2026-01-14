@@ -81,7 +81,6 @@ const TutorialSteps = ({ mode }: { mode: 'mobile' | 'desktop' }) => {
 };
 
 export function WhatsappStatusView({ 
-export function WhatsappStatusView({ 
     state, 
     qrCode, 
     isLoading, 
@@ -140,7 +139,7 @@ export function WhatsappStatusView({
                 setTimeLeft((prev) => {
                     if (prev <= 1) {
                         // TIME IS UP: Trigger Auto-Renewal Loop
-                        setPairingCode(null);
+                        // setPairingCode(null); (Removed: Prop driven)
                         setIsRequestingCode(true); // Loops back to autoRequest
                         return 45;
                     }
@@ -235,7 +234,6 @@ export function WhatsappStatusView({
                     className="mt-6 border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-all font-semibold rounded-xl"
                     onClick={() => {
                         // Forçar nova geração de código (Backend faz o Clean Slate)
-                        setPairingCode(null);
                         setIsRequestingCode(true);
                     }}
                  >
