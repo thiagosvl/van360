@@ -22,24 +22,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
 import { emailSchema, phoneSchema } from "@/schemas/common";
-import { pixKeyObjectRequired, pixKeyRefinement } from "@/schemas/pix";
 import { usuarioApi } from "@/services/api/usuario.api";
-import { TIPOS_CHAVE_PIX_LABEL, TipoChavePix } from "@/types/pix";
-import { cnpjMask, cpfMask as maskCpf, phoneMask as maskPhone } from "@/utils/masks";
+import { cpfMask as maskCpf, phoneMask as maskPhone } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { cleanString } from "@/utils/string";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Key, Loader2, Mail, User, X } from "lucide-react";
+import { Loader2, Mail, User, X } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -57,18 +49,14 @@ const basicSchema = z.object({
   email: emailSchema,
 });
 
-// Schema estendido com validação de PIX (Strict)
-const schemaWithPix = basicSchema
-  .merge(pixKeyObjectRequired)
-  .superRefine(pixKeyRefinement);
-
-type FormData = z.infer<typeof schemaWithPix>;
+type FormData = z.infer<typeof basicSchema>;
 
 export default function EditarCadastroDialog({
   isOpen,
   onClose,
 }: EditarCadastroDialogProps) {
   const { user } = useSession();
+  const { openPixKeyDialog } = useLayout();
   // Usar usePermissions para acesso centralizado às flags de plano
   const { profile, isLoading, refreshProfile, isProfissional } = usePermissions();
   
@@ -77,24 +65,17 @@ export default function EditarCadastroDialog({
   ]);
   const [openDeleteAccount, setOpenDeleteAccount] = useState(false);
 
-  // Escolher o schema baseado no plano
-  const activeSchema = isProfissional ? schemaWithPix : basicSchema;
-
   const form = useForm<FormData>({
-    resolver: zodResolver(activeSchema),
+    resolver: zodResolver(basicSchema),
     defaultValues: {
       nome: "",
       apelido: "",
       cpfcnpj: "",
       telefone: "",
       email: "",
-      tipo_chave_pix: undefined,
-      chave_pix: ""
     },
   });
   
-  const tipoPixSelecionado = form.watch("tipo_chave_pix");
-
   // Carrega dados do perfil no form
   React.useEffect(() => {
     if (profile) {
@@ -104,8 +85,6 @@ export default function EditarCadastroDialog({
         cpfcnpj: maskCpf(profile.cpfcnpj) || "",
         telefone: profile.telefone ? maskPhone(profile.telefone) : "",
         email: profile.email || "",
-        tipo_chave_pix: (profile.tipo_chave_pix as TipoChavePix) || undefined,
-        chave_pix: profile.chave_pix || ""
       });
       // Abre ambas as sections se já tiver dados e for profissional
       if (isProfissional) {
@@ -116,42 +95,16 @@ export default function EditarCadastroDialog({
     }
   }, [profile, form, isProfissional]);
 
-    const handleChavePixChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let value = e.target.value;
-        if (tipoPixSelecionado === TipoChavePix.CPF) {
-            value = maskCpf(value);
-        } else if (tipoPixSelecionado === TipoChavePix.CNPJ) {
-            value = cnpjMask(value);
-        } else if (tipoPixSelecionado === TipoChavePix.TELEFONE) {
-            value = maskPhone(value);
-        }
-        form.setValue("chave_pix", value);
-    };
-
   const handleSubmit = async (data: FormData) => {
     try {
       const nome = cleanString(data.nome, true);
       const apelido = cleanString(data.apelido || "", true);
       const telefone = data.telefone.replace(/\D/g, "");
 
-      // Limpar chave PIX
-      let chavePixLimpa = data.chave_pix;
-      const tipo = data.tipo_chave_pix;
-
-      if (chavePixLimpa && tipo) {
-          if ([TipoChavePix.CPF, TipoChavePix.CNPJ, TipoChavePix.TELEFONE].includes(tipo)) {
-              chavePixLimpa = chavePixLimpa.replace(/\D/g, "");
-          } else {
-              chavePixLimpa = cleanString(chavePixLimpa);
-          }
-      }
-
       await usuarioApi.atualizarUsuario(profile.id, {
           nome,
           apelido,
           telefone,
-          chave_pix: chavePixLimpa || undefined,
-          tipo_chave_pix: tipo || undefined
       });
 
       toast.success("cadastro.sucesso.perfilAtualizado", {
@@ -171,7 +124,7 @@ export default function EditarCadastroDialog({
 
   const onFormError = () => {
        toast.error("Verifique os campos obrigatórios");
-       setOpenAccordionItems(["dados-pessoais", "dados-recebimento"]);
+       setOpenAccordionItems(["dados-pessoais"]);
   }
 
   return (
@@ -318,78 +271,7 @@ export default function EditarCadastroDialog({
                     </AccordionContent>
                   </AccordionItem>
                   
-                  {isProfissional && (
-                    <AccordionItem value="dados-recebimento" className="border-b-0">
-                      <AccordionTrigger className="hover:no-underline py-2">
-                          <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                              <Key className="w-5 h-5 text-blue-600" />
-                              Dados de Recebimento
-                          </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <FormField
-                                  control={form.control}
-                                  name="tipo_chave_pix"
-                                  render={({ field }) => (
-                                  <FormItem>
-                                      <FormLabel className="text-gray-700 font-medium ml-1">Tipo de Chave <span className="text-red-500">*</span></FormLabel>
-                                      <Select 
-                                          onValueChange={(val) => {
-                                              field.onChange(val);
-                                              form.setValue("chave_pix", ""); // Limpa chave ao trocar tipo
-                                              form.clearErrors("chave_pix"); // Limpa erros de validação anteriores
-                                          }} 
-                                          value={field.value || undefined}
-                                      >
-                                      <FormControl>
-                                          <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-200">
-                                          <SelectValue placeholder="Selecione o tipo..." />
-                                          </SelectTrigger>
-                                      </FormControl>
-                                      <SelectContent>
-                                          {Object.entries(TIPOS_CHAVE_PIX_LABEL).map(([key, label]) => (
-                                              <SelectItem key={key} value={key}>{label}</SelectItem>
-                                          ))}
-                                      </SelectContent>
-                                      </Select>
-                                      <FormMessage />
-                                  </FormItem>
-                                  )}
-                              />
 
-                              <FormField
-                                  control={form.control}
-                                  name="chave_pix"
-                                  render={({ field }) => (
-                                  <FormItem>
-                                      <FormLabel className="text-gray-700 font-medium ml-1">Chave PIX <span className="text-red-500">*</span></FormLabel>
-                                      <FormControl>
-                                      <div className="relative">
-                                          <Input
-                                              placeholder={tipoPixSelecionado ? "Digite a chave" : "Selecione o tipo primeiro"}
-                                              {...field}
-                                              value={field.value || ""}
-                                              disabled={!tipoPixSelecionado}
-                                              maxLength={tipoPixSelecionado === TipoChavePix.CPF ? 14 : tipoPixSelecionado === TipoChavePix.CNPJ ? 18 : 100}
-                                              onChange={handleChavePixChange}
-                                              className="h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-indigo-500 pr-10"
-                                          />
-                                          {tipoPixSelecionado && field.value && !form.formState.errors.chave_pix && (
-                                              <div className="absolute right-3 top-3.5 text-green-500 animate-in fade-in zoom-in">
-                                                  <Check className="w-5 h-5" />
-                                              </div>
-                                          )}
-                                      </div>
-                                      </FormControl>
-                                      <FormMessage />
-                                  </FormItem>
-                                  )}
-                              />
-                          </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  )}
               </Accordion>
             </form>
           </Form>

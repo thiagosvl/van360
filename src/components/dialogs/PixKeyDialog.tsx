@@ -74,9 +74,21 @@ export default function PixKeyDialog({
   useEffect(() => {
     if (isOpen && profile) {
         if (profile.chave_pix && (profile.tipo_chave_pix as any)) {
+             let initialValue = profile.chave_pix;
+             const type = profile.tipo_chave_pix as TipoChavePix;
+             
+             // Apply mask to initial value
+             if (type === TipoChavePix.CPF) initialValue = maskCpf(initialValue);
+             else if (type === TipoChavePix.CNPJ) initialValue = cnpjMask(initialValue);
+             else if (type === TipoChavePix.TELEFONE) initialValue = maskPhone(initialValue);
+
              form.reset({
-                 tipo_chave_pix: profile.tipo_chave_pix as TipoChavePix,
-                 chave_pix: profile.chave_pix
+                 tipo_chave_pix: type,
+                 chave_pix: initialValue
+             });
+        } else {
+             form.reset({
+                 chave_pix: "",
              });
         }
     }
@@ -87,17 +99,19 @@ export default function PixKeyDialog({
   const isFailed = status === 'FALHA_VALIDACAO';
   const isValid = status === 'VALIDADA'; // Should usually close if validated, but logic here helps
 
-  // Effect: if becomes valid, close
+  // REMOVED: Auto-close logic was causing the dialog to close instantaneously for users who already had a valid key.
+  // The user should manually close the dialog or we should only auto-close on *new* validation success.
+  /* 
   useEffect(() => {
      if (isOpen && isValid) {
-         // Auto close if it becomes valid while open
          const timer = setTimeout(() => {
             onClose();
             if (onSuccess) onSuccess();
-         }, 1500); // Give user a moment to see the success state
+         }, 1500); 
          return () => clearTimeout(timer);
      }
   }, [isValid, isOpen, onClose, onSuccess]);
+  */
 
   // Realtime Listener
   useEffect(() => {
@@ -139,7 +153,7 @@ export default function PixKeyDialog({
   }, [isOpen, profile?.id, status, refreshProfile]);
 
 
-  const handleChaveChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChaveChange = (e: React.ChangeEvent<HTMLInputElement>, fieldChange: (value: string) => void) => {
     let value = e.target.value;
     
     if (tipoSelecionado === TipoChavePix.CPF) {
@@ -150,7 +164,7 @@ export default function PixKeyDialog({
         value = maskPhone(value);
     }
     
-    form.setValue("chave_pix", value);
+    fieldChange(value);
   };
 
   const updateQuickStartStorage = () => {
@@ -270,6 +284,29 @@ export default function PixKeyDialog({
           );
       }
 
+      // NEW: Success State (Explicit feedback instead of auto-close)
+      if (isValid && !overrideStatus) {
+           return (
+               <div className="flex flex-col items-center justify-center p-8 text-center space-y-6">
+                   <div className="bg-green-50 p-4 rounded-full animate-in zoom-in duration-300">
+                       <Check className="w-12 h-12 text-green-600" />
+                   </div>
+                   <div className="space-y-2">
+                       <h3 className="text-xl font-semibold text-green-900">Chave Validada!</h3>
+                       <p className="text-gray-500 max-w-xs mx-auto">
+                           Sua chave PIX foi confirmada e já está pronta para receber pagamentos.
+                       </p>
+                   </div>
+                   <Button 
+                       onClick={onClose}
+                       className="w-full max-w-xs h-12 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold shadow-lg shadow-green-500/20"
+                   >
+                       Concluir
+                   </Button>
+               </div>
+           );
+      }
+
       return (
           <div className="p-6 bg-white flex-1 overflow-y-auto">
            <Form {...form}>
@@ -313,15 +350,11 @@ export default function PixKeyDialog({
                             placeholder={tipoSelecionado ? "Digite a chave" : "Selecione o tipo primeiro"}
                             {...field}
                             disabled={!tipoSelecionado}
-                            onChange={handleChaveChange}
+                            onChange={(e) => handleChaveChange(e, field.onChange)}
                             maxLength={tipoSelecionado === TipoChavePix.CPF ? 14 : tipoSelecionado === TipoChavePix.CNPJ ? 18 : 100}
                             className="h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all pl-4"
                         />
-                        {tipoSelecionado && field.value && !form.formState.errors.chave_pix && (
-                            <div className="absolute right-3 top-3.5 text-green-500 animate-in fade-in zoom-in">
-                                <Check className="w-5 h-5" />
-                            </div>
-                        )}
+
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -363,6 +396,9 @@ export default function PixKeyDialog({
               </div>
            );
       }
+
+      // Hide default footer if Success (button is inline)
+      if (isValid && !overrideStatus) return null;
 
       // Default Form Footer
       return (

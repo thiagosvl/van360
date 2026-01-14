@@ -1,8 +1,8 @@
 import { isPlanoPagoNoAto } from "@/components/features/register";
 import {
-    PLANO_ESSENCIAL,
-    PLANO_GRATUITO,
-    PLANO_PROFISSIONAL,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
+  PLANO_PROFISSIONAL,
 } from "@/constants";
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks";
 import { supabase } from "@/integrations/supabase/client";
@@ -517,7 +517,7 @@ export function useRegisterController() {
 
           // Suporte para nova estrutura (aninhada em pix) e antiga (plana)
           const pixData = (result as any).pix || result;
-          const qrCode = pixData.qrCode || pixData.qrCodePayload;
+          const qrCode = pixData.qrCodePayload;
           const location = pixData.qrCodeUrl || pixData.location;
 
           if (qrCode && (result as any).cobrancaId) {

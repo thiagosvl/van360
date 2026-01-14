@@ -6,6 +6,7 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
 export default function AppLayout() {
@@ -37,29 +38,42 @@ export default function AppLayout() {
             Erro ao carregar perfil
           </h1>
           <p className="text-gray-500 mb-6">
-            Não foi possível encontrar seus dados de usuário. Isso pode acontecer se o cadastro não foi concluído corretamente.
+            Não foi possível encontrar seus dados de usuário. Redirecionando para login em 5 segundos...
           </p>
           <div className="flex flex-col gap-3">
              <button
               onClick={() => window.location.reload()}
-              className="w-full py-2.5 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="w-full py-2.5 px-4 bg-white border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
             >
-              Tentar Novamente
+              Tentar Novamente Agora
             </button>
             <button
               onClick={async () => {
                 await supabase.auth.signOut();
                 window.location.href = "/login";
               }}
-              className="w-full py-2.5 px-4 bg-white border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full py-2.5 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Sair e Tentar Login
+              Ir para Login
             </button>
           </div>
+          {/* Auto Redirect Script */}
+          <AutoRedirectToLogin />
         </div>
       </div>
     );
   }
+
+function AutoRedirectToLogin() {
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+             await supabase.auth.signOut();
+             window.location.href = "/login";
+        }, 5000);
+        return () => clearTimeout(timer);
+    }, []);
+    return null;
+}
 
   const currentRole = (role || "motorista") as "motorista";
 

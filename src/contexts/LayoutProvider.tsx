@@ -266,6 +266,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openGastoFormDialog,
         openPixKeyDialog,
         closePixKeyDialog,
+        isPixKeyDialogOpen: pixKeyDialogState.open,
         openWhatsappDialog,
       }}
     >

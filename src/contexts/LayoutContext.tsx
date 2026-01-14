@@ -79,6 +79,7 @@ export interface LayoutContextType {
     canClose?: boolean;
   }) => void;
   closePixKeyDialog: () => void;
+  isPixKeyDialogOpen: boolean;
   openWhatsappDialog: (options?: { canClose?: boolean }) => void;
 }
 

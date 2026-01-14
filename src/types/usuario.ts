@@ -20,6 +20,9 @@ export interface Usuario {
   updated_at: string;
   assinaturas_usuarios?: any;
   status_chave_pix?: string;
+  chave_pix_validada_em?: string;
+  nome_titular_pix_validado?: string;
+  cpf_cnpj_titular_pix_validado?: string;
   // Computed/Joined fields
   estatisticas?: {
     total_passageiros: number;

@@ -98,15 +98,19 @@ export function WhatsappStatusView({
     const [activeTab, setActiveTab] = useState("mobile");
     const [timeLeft, setTimeLeft] = useState(60);
     const [retryCount, setRetryCount] = useState(0);
-    const [closeCountdown, setCloseCountdown] = useState(5);
+
     const autoRequestAttempted = useRef(false);
 
     const isConnected = state === WHATSAPP_STATUS.OPEN || state === WHATSAPP_STATUS.CONNECTED || state === WHATSAPP_STATUS.PAIRED;
+    const isConnecting = state === WHATSAPP_STATUS.CONNECTING || state === "connecting";
 
     // Auto-trigger Pairing Code when switching to Mobile tab
     useEffect(() => {
+        // Do not auto-request if we are already connecting!
+        // FIXED: We MUST request even if connecting, because it might be a zombie session.
+        // The backend handles the cleanup of "connecting" states.
         if (isRequestingCode || isConnected || !onRequestPairingCode || activeTab !== "mobile") {
-            return;
+             return;
         }
 
         // Se já tem código e ainda tem tempo, não faz nada
@@ -122,7 +126,7 @@ export function WhatsappStatusView({
                 const data = await onRequestPairingCode();
                 if (data?.pairingCode) {
                     setPairingCode(data.pairingCode);
-                    setTimeLeft(60);
+                    setTimeLeft(45);
                 }
             } catch (error: any) {
                 console.error("Erro ao gerar código automático:", error);
@@ -142,7 +146,7 @@ export function WhatsappStatusView({
                     if (prev <= 1) {
                         setPairingCode(null);
                         autoRequestAttempted.current = false; // Permite tentar novamente após expirar
-                        return 60;
+                        return 45;
                     }
                     return prev - 1;
                 });
@@ -150,17 +154,6 @@ export function WhatsappStatusView({
             return () => clearInterval(timer);
         }
     }, [pairingCode, isConnected, activeTab]);
-
-    // Timer logic for auto-close countdown display (Connected state)
-    useEffect(() => {
-        if (isConnected) {
-            setCloseCountdown(5);
-            const timer = setInterval(() => {
-                setCloseCountdown((prev) => (prev > 0 ? prev - 1 : 0));
-            }, 1000);
-            return () => clearInterval(timer);
-        }
-    }, [isConnected]);
 
     // Auto-trigger QR Code when switching to Desktop tab
     useEffect(() => {
@@ -226,12 +219,33 @@ export function WhatsappStatusView({
                     <h3 className="font-bold text-xl text-slate-800">WhatsApp Conectado!</h3>
                     <p className="text-sm text-green-600 font-medium">Pronto para enviar notificações.</p>
                 </div>
-                <div className="mt-2 flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                        Fechando em {closeCountdown} {closeCountdown === 1 ? "segundo" : "segundos"}
-                    </p>
+
+            </div>
+        );
+    }
+
+    if (isConnecting && !pairingCode) {
+        return (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+                <div className="text-center space-y-1">
+                     <p className="text-sm font-bold text-slate-700 animate-pulse">Conectando ao WhatsApp...</p>
+                     <p className="text-xs text-slate-400">Isso pode levar alguns segundos.</p>
                 </div>
+                 {/* Fallback para destvar se ficar preso aqui */}
+                 {retryCount > 0 && (
+                     <Button 
+                        variant="ghost" 
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 mt-4 h-8 text-xs"
+                        onClick={() => {
+                            // Forçar limpeza local e reload
+                            setPairingCode(null);
+                            window.location.reload();
+                        }}
+                     >
+                        Cancelar e Atualizar
+                     </Button>
+                 )}
             </div>
         );
     }
@@ -264,7 +278,7 @@ export function WhatsappStatusView({
                             onClick={() => {
                                 autoRequestAttempted.current = false;
                                 setRetryCount(prev => prev + 1);
-                                setTimeLeft(60); 
+                                setTimeLeft(45); 
                             }} 
                             variant="outline" 
                             className="mt-2 rounded-xl h-10 px-8 border-slate-200 hover:bg-slate-50 hover:border-blue-200 hover:text-blue-600 transition-all font-bold text-xs sm:text-sm shadow-sm"

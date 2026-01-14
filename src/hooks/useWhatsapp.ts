@@ -8,12 +8,24 @@ import { supabase } from "../integrations/supabase/client";
 import { useProfile } from "./business/useProfile";
 import { useSession } from "./business/useSession";
 
+import { useLayout } from "../contexts/LayoutContext";
+
 export function useWhatsapp() {
   const queryClient = useQueryClient();
   const [localQrCode, setLocalQrCode] = useState<string | null>(null);
   
   const { user } = useSession();
   const { isProfissional } = useProfile(user?.id);
+  
+  // Safe check for Layout context (in case hook is used outside provider)
+  let isPixKeyDialogOpen = false;
+  try {
+      /* eslint-disable-next-line react-hooks/rules-of-hooks */
+      const layout = useLayout();
+      isPixKeyDialogOpen = layout.isPixKeyDialogOpen;
+  } catch (e) {
+      // Ignore if outside layout
+  }
 
   // Realtime listener for connection status
   useEffect(() => {
@@ -46,9 +58,11 @@ export function useWhatsapp() {
   const { data: statusData, isLoading, refetch } = useQuery({
     queryKey: ["whatsapp-status"],
     queryFn: whatsappApi.getStatus,
-    enabled: !!user?.id && isProfissional,
+    enabled: !!user?.id && isProfissional && !isPixKeyDialogOpen, // Pause if Pix Dialog is open
     staleTime: 10000, 
     refetchInterval: (query) => {
+        if (isPixKeyDialogOpen) return false; // Pause polling
+
         const data = query.state.data;
         const state = data?.state as string;
         

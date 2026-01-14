@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/services/api/client";
 import { clearLoginStorageMotorista } from "@/utils/domain/motorista/motoristaUtils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -7,16 +8,12 @@ export const useDeleteAccount = () => {
 
     return useMutation({
         mutationFn: async () => {
-            console.log('aqui');
+            console.log('Solicitando exclusão de conta via Backend...');
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error("Usuário não autenticado");
 
-            // @ts-ignore - RPC novo, ainda não gerado types
-            const { error } = await supabase.rpc('anonymize_user_account', {
-                target_user_id: user.id
-            });
-
-            if (error) throw error;
+            // Substituído RPC direto por chamada ao Backend para garantir limpeza do Whatsapp
+            await apiClient.delete(`/usuario/${user.id}`);
         },
         onSuccess: async () => {
              // 1. Limpar cache do react-query
