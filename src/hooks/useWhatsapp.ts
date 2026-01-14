@@ -59,6 +59,7 @@ export function useWhatsapp() {
     queryKey: ["whatsapp-status"],
     queryFn: whatsappApi.getStatus,
     enabled: !!user?.id && isProfissional && !isPixKeyDialogOpen, // Pause if Pix Dialog is open
+    enabled: !!user?.id && isProfissional && !isPixKeyDialogOpen, // Pause if Pix Dialog is open
     staleTime: Infinity, // Realtime will invalidate this
     refetchOnWindowFocus: true, // Good backup
   });
@@ -111,9 +112,6 @@ export function useWhatsapp() {
     onSuccess: (data) => {
         if (data.pairingCode) {
             setLocalQrCode(null); // Clear QR if exists
-        } else if (data.instance?.state === "open" || data.instance?.state === "connected") {
-            toast.success("Conexão detectada! Atualizando...");
-            queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
         }
         // Normalize checking if we have a code
         return data; 

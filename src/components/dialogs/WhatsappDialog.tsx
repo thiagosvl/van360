@@ -1,8 +1,8 @@
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { WhatsappStatusView } from "@/components/Whatsapp/WhatsappStatusView";
 import { WHATSAPP_STATUS } from "@/config/constants";
@@ -18,7 +18,9 @@ interface WhatsappDialogProps {
 }
 
 export function WhatsappDialog({ isOpen, onClose, canClose = true, userPhone }: WhatsappDialogProps) {
-  const { state, qrCode, isLoading, connect, disconnect, instanceName, requestPairingCode, userPhone: hookPhone } = useWhatsapp();
+  // ATIVAR POLLING APENAS QUANDO O DIALOG ESTIVER ABERTO
+  // Isso garante feedback rápido (3s) na conexão sem pesar o dashboard (100 motoristas)
+  const { state, qrCode, isLoading, connect, disconnect, instanceName, requestPairingCode, userPhone: hookPhone } = useWhatsapp({ enablePolling: isOpen });
   
   const displayPhone = userPhone || hookPhone;
 

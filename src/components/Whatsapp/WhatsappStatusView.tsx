@@ -228,19 +228,20 @@ export function WhatsappStatusView({
                      <p className="text-sm font-bold text-slate-700 animate-pulse">Conectando ao WhatsApp...</p>
                      <p className="text-xs text-slate-400">Isso pode levar alguns segundos.</p>
                 </div>
-                 {/* Fallback para destravar se ficar preso aqui */}
-                 <Button 
-                    variant="ghost" 
-                    className="text-red-500 hover:text-red-600 hover:bg-red-50 mt-4 h-8 text-xs"
-                    onClick={() => {
-                        // Forçar limpeza local e reload
-                        setPairingCode(null);
-                        onConnect && onConnect(); // Tenta resetar
-                        window.location.reload();
-                    }}
-                 >
-                    Cancelar / Tentar Novamente
-                 </Button>
+                 {/* Fallback para destvar se ficar preso aqui */}
+                 {retryCount > 0 && (
+                     <Button 
+                        variant="ghost" 
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 mt-4 h-8 text-xs"
+                        onClick={() => {
+                            // Forçar limpeza local e reload
+                            setPairingCode(null);
+                            window.location.reload();
+                        }}
+                     >
+                        Cancelar e Atualizar
+                     </Button>
+                 )}
             </div>
         );
     }
