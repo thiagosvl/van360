@@ -98,6 +98,7 @@ export function WhatsappStatusView({
     const [activeTab, setActiveTab] = useState("mobile");
     const [timeLeft, setTimeLeft] = useState(60);
     const [retryCount, setRetryCount] = useState(0);
+    const [closeCountdown, setCloseCountdown] = useState(5);
     const autoRequestAttempted = useRef(false);
 
     const isConnected = state === WHATSAPP_STATUS.OPEN || state === WHATSAPP_STATUS.CONNECTED || state === WHATSAPP_STATUS.PAIRED;
@@ -133,7 +134,7 @@ export function WhatsappStatusView({
         autoRequest();
     }, [activeTab, pairingCode, isRequestingCode, isConnected, onRequestPairingCode, timeLeft, retryCount]);
 
-    // Timer logic for refreshing the code
+    // Timer logic for refreshing the code (Mobile Tab)
     useEffect(() => {
         if (pairingCode && !isConnected && activeTab === "mobile") {
             const timer = setInterval(() => {
@@ -149,6 +150,17 @@ export function WhatsappStatusView({
             return () => clearInterval(timer);
         }
     }, [pairingCode, isConnected, activeTab]);
+
+    // Timer logic for auto-close countdown display (Connected state)
+    useEffect(() => {
+        if (isConnected) {
+            setCloseCountdown(5);
+            const timer = setInterval(() => {
+                setCloseCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+            }, 1000);
+            return () => clearInterval(timer);
+        }
+    }, [isConnected]);
 
     // Auto-trigger QR Code when switching to Desktop tab
     useEffect(() => {
@@ -213,6 +225,12 @@ export function WhatsappStatusView({
                 <div className="text-center space-y-1 px-4">
                     <h3 className="font-bold text-xl text-slate-800">WhatsApp Conectado!</h3>
                     <p className="text-sm text-green-600 font-medium">Pronto para enviar notificações.</p>
+                </div>
+                <div className="mt-2 flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        Fechando em {closeCountdown}s
+                    </p>
                 </div>
             </div>
         );
