@@ -125,7 +125,12 @@ export function WhatsappStatusView({
             try {
                 const data = await onRequestPairingCode();
                 if (data?.pairingCode) {
-                    setPairingCode(data.pairingCode);
+                    // Backend pode retornar string direta ou objeto { code: string }
+                    const code = typeof data.pairingCode === 'string' 
+                        ? data.pairingCode 
+                        : data.pairingCode?.code;
+                        
+                    setPairingCode(code);
                     setTimeLeft(45);
                 }
             } catch (error: any) {

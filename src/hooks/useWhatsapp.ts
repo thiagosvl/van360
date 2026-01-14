@@ -129,7 +129,8 @@ export function useWhatsapp() {
         if (data.pairingCode) {
             setLocalQrCode(null); // Clear QR if exists
         }
-        return data;
+        // Normalize checking if we have a code
+        return data; 
     },
     onError: (error: any) => {
         toast.error("Erro ao gerar código: " + (error.response?.data?.error || "Erro desconhecido"));

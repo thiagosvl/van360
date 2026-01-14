@@ -22,6 +22,7 @@ import { useSession } from "@/hooks/business/useSession";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
+import { CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import {

@@ -59,6 +59,7 @@ import { BellOff, CheckCircle2, DollarSign, TrendingUp, Wallet } from "lucide-re
 // --- Internal Components ---
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
+import { CobrancaStatus } from "@/types/enums";
 
 interface CobrancaMobileItemWrapperProps {
   cobranca: Cobranca;
