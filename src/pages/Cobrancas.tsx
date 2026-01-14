@@ -22,8 +22,12 @@ import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 // Components - Empty & Skeletons
 import { CobrancasFilters } from "@/components/features/cobranca/CobrancasFilters";
 import { ListSkeleton } from "@/components/skeletons";
+// Components - UI
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
+
 import {
-  useCobrancas
+  useCobrancas,
+  useDeleteCobranca
 } from "@/hooks";
 import { useCobrancaActions } from "@/hooks/business/useCobrancaActions";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -71,6 +75,7 @@ interface CobrancaMobileItemWrapperProps {
   onEditarCobranca: () => void;
   onRegistrarPagamento: () => void;
   onPagarPix: () => void;
+  onExcluirCobranca: () => void;
   onActionSuccess: () => void;
   index: number;
 }
@@ -85,6 +90,7 @@ const CobrancaMobileItemWrapper = memo(({
   onEditarCobranca,
   onRegistrarPagamento,
   onPagarPix,
+  onExcluirCobranca,
   onActionSuccess,
   index
 }: CobrancaMobileItemWrapperProps) => {
@@ -97,6 +103,7 @@ const CobrancaMobileItemWrapper = memo(({
     onEditarCobranca,
     onRegistrarPagamento,
     onPagarPix,
+    onExcluirCobranca,
     onActionSuccess
   });
   
@@ -115,6 +122,9 @@ const Cobrancas = () => {
 
   const { setPageTitle, openPlanUpgradeDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const deleteCobranca = useDeleteCobranca();
+  const isActionLoading = deleteCobranca.isPending;
 
   // Tab state from URL
   const activeTab = useMemo(() => {
@@ -212,6 +222,25 @@ const Cobrancas = () => {
     refetchCobrancas();
     setEditDialogOpen(false);
   }, [refetchCobrancas]);
+
+  const handleDeleteCobrancaClick = useCallback((cobranca: Cobranca) => {
+    openConfirmationDialog({
+      title: "Excluir cobrança?",
+      description: "Tem certeza que deseja excluir esta cobrança? Essa ação não poderá ser desfeita.",
+      confirmText: "Excluir",
+      variant: "destructive",
+      onConfirm: async () => {
+         try {
+           await deleteCobranca.mutateAsync(cobranca.id);
+           closeConfirmationDialog();
+           // Invalidation is handled by the hook usually, or refetch
+           refetchCobrancas(); 
+         } catch (error) {
+           closeConfirmationDialog();
+         }
+      }
+    });
+  }, [deleteCobranca, closeConfirmationDialog, refetchCobrancas]);
 
   const handleNavigation = useCallback((newMes: number, newAno: number) => {
     setMesFilter(newMes);
@@ -414,6 +443,7 @@ const Cobrancas = () => {
                          onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
                          onRegistrarPagamento={() => openPaymentDialog(cobranca)}
                          onPagarPix={() => handlePagarPix(cobranca)}
+                         onExcluirCobranca={() => handleDeleteCobrancaClick(cobranca)}
                          onActionSuccess={refetchCobrancas}
                       >
                       <div
@@ -581,6 +611,7 @@ const Cobrancas = () => {
                                   onPagarPix={() => handlePagarPix(cobranca)}
                                   onActionSuccess={refetchCobrancas}
                                   onUpgrade={handleUpgrade}
+                                  onExcluirCobranca={() => handleDeleteCobrancaClick(cobranca)}
                                 />
                               </td>
                             </tr>
@@ -620,6 +651,7 @@ const Cobrancas = () => {
                          onEditarCobranca={() => handleEditCobrancaClick(cobranca)}
                          onRegistrarPagamento={() => openPaymentDialog(cobranca)}
                          onPagarPix={() => handlePagarPix(cobranca)}
+                         onExcluirCobranca={() => handleDeleteCobrancaClick(cobranca)}
                          onActionSuccess={refetchCobrancas}
                         >
                         <div
@@ -779,6 +811,7 @@ const Cobrancas = () => {
                                    onPagarPix={() => handlePagarPix(cobranca)}
                                    onActionSuccess={refetchCobrancas}
                                    onUpgrade={handleUpgrade}
+                                   onExcluirCobranca={() => handleDeleteCobrancaClick(cobranca)}
                                  />
                                 </td>
                               </tr>
@@ -802,26 +835,28 @@ const Cobrancas = () => {
               valorOriginal={Number(selectedCobranca.valor)}
               status={selectedCobranca.status}
               dataVencimento={selectedCobranca.data_vencimento}
-              onPaymentRecorded={() => {
-                setPaymentDialogOpen(false);
-                refetchCobrancas();
-                if (!permissions.canUseAutomatedCharges) {
-                  handleUpgrade("Cobranças Automáticas", "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?");
-                }
-              }}
+              onPaymentRecorded={() =>
+                safeCloseDialog(() => {
+                  refetchCobrancas();
+                  if (!permissions.canUseAutomatedCharges) {
+                     handleUpgrade(FEATURE_COBRANCA_AUTOMATICA,
+                      "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?");
+                  }
+                })
+              }
             />
           )}
 
-          {editDialogOpen && cobrancaToEdit && (
-            <CobrancaEditDialog
-              isOpen={editDialogOpen}
-              onClose={() => setEditDialogOpen(false)}
-              cobranca={cobrancaToEdit}
-              onCobrancaUpdated={handleCobrancaUpdated}
-            />
-          )}
+          {/* Dialogs Features */}
+          <CobrancaEditDialog
+            isOpen={editDialogOpen}
+            onClose={() => safeCloseDialog(() => setEditDialogOpen(false))}
+            cobranca={cobrancaToEdit}
+            onCobrancaUpdated={handleCobrancaUpdated}
+          />
 
-          {pixDrawerOpen && pixCobranca && (
+          {/* PIX Drawer */}
+          {pixCobranca && (
             <CobrancaPixDrawer
               open={pixDrawerOpen}
               onOpenChange={setPixDrawerOpen}
@@ -831,9 +866,10 @@ const Cobrancas = () => {
               mes={pixCobranca.mes}
               ano={pixCobranca.ano}
             />
-          )}
+           )}
         </div>
       </PullToRefreshWrapper>
+      <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>
   );
 };

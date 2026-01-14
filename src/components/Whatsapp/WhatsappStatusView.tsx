@@ -35,10 +35,6 @@ const formatPhone = (phone: string) => {
 const TutorialSteps = ({ mode }: { mode: 'mobile' | 'desktop' }) => {
     return (
         <div className="space-y-4 sm:space-y-6 bg-slate-50/30 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-100 overflow-hidden">
-            <div className="flex items-center gap-2 mb-1 sm:mb-2 text-left">
-                <div className="w-1 h-4 sm:w-1.5 sm:h-6 bg-blue-500 rounded-full" />
-                <h4 className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest">Tutorial de Conexão</h4>
-            </div>
             
             <div className="space-y-4 sm:space-y-5">
                 <div className="flex gap-3 sm:gap-4">
@@ -104,28 +100,23 @@ export function WhatsappStatusView({
     const isConnected = state === WHATSAPP_STATUS.OPEN || state === WHATSAPP_STATUS.CONNECTED || state === WHATSAPP_STATUS.PAIRED;
     const isConnecting = state === WHATSAPP_STATUS.CONNECTING || state === "connecting";
 
-    // Auto-trigger Pairing Code when switching to Mobile tab
+    // Manual trigger listener
     useEffect(() => {
-        // Do not auto-request if we are already connecting!
-        // FIXED: We MUST request even if connecting, because it might be a zombie session.
-        // The backend handles the cleanup of "connecting" states.
-        if (isRequestingCode || isConnected || !onRequestPairingCode || activeTab !== "mobile") {
+        // Do not auto-request. Only when isRequestingCode becomes true (Manual Click).
+        
+        // Safety checks
+        if (!isRequestingCode || isConnected || isConnecting || !onRequestPairingCode || activeTab !== "mobile") {
              return;
         }
 
         // Se já tem código e ainda tem tempo, não faz nada
         if (pairingCode && timeLeft > 0) return;
 
-        // Se já tentamos e falhou feio (sem código), evitamos loop de erro
-        if (autoRequestAttempted.current && !pairingCode) return;
-
-        autoRequestAttempted.current = true;
+        // Start Fetch
         const autoRequest = async () => {
-            setIsRequestingCode(true);
             try {
                 const data = await onRequestPairingCode();
                 if (data?.pairingCode) {
-                    // Backend pode retornar string direta ou objeto { code: string }
                     const code = typeof data.pairingCode === 'string' 
                         ? data.pairingCode 
                         : data.pairingCode?.code;
@@ -134,14 +125,14 @@ export function WhatsappStatusView({
                     setTimeLeft(45);
                 }
             } catch (error: any) {
-                console.error("Erro ao gerar código automático:", error);
-                toast.error("Ocorreu um erro ao gerar o código. Verifique se seu telefone está cadastrado corretamente.");
+                console.error("Erro ao gerar código:", error);
+                toast.error("Ocorreu um erro ao gerar o código. Tente novamente.");
             } finally {
                 setIsRequestingCode(false);
             }
         };
         autoRequest();
-    }, [activeTab, pairingCode, isRequestingCode, isConnected, onRequestPairingCode, timeLeft, retryCount]);
+    }, [activeTab, pairingCode, isRequestingCode, isConnected, onRequestPairingCode, timeLeft]);
 
     // Timer logic for refreshing the code (Mobile Tab)
     useEffect(() => {
@@ -269,46 +260,54 @@ export function WhatsappStatusView({
             <div className="flex-1 overflow-y-auto pr-0.5 -mr-0.5 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
                 <TabsContent value="mobile" className="space-y-4 sm:space-y-8 pb-4 mt-0">
                 {!pairingCode && !isRequestingCode ? (
-                    <div className="flex flex-col items-center justify-center py-12 sm:py-16 gap-4 sm:gap-6 text-center px-6 animate-in fade-in zoom-in duration-300">
-                        <div className="p-4 sm:p-5 bg-slate-50 rounded-full">
-                            <WifiOff className="h-8 w-8 sm:h-10 sm:w-10 text-slate-300" />
+                    <div className="flex flex-col gap-6 sm:gap-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        {/* TUTORIAL SECTION - Always Visible First */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg sm:text-xl font-bold text-slate-800 text-center">Como conectar?</h3>
+                            <TutorialSteps mode="mobile" />
                         </div>
-                        <div className="space-y-1 sm:space-y-2">
-                            <h4 className="text-sm sm:text-base font-bold text-slate-700">Não foi possível gerar o código</h4>
-                            <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed max-w-[240px] mx-auto">
-                                O ambiente de conexão demorou a responder. Clique abaixo para tentar novamente.
-                            </p>
+
+                        {/* ACTION SECTION - On Demand Generation */}
+                        <div className="flex flex-col items-center justify-center p-6 bg-blue-50/50 rounded-2xl border border-blue-100 text-center gap-4">
+                            <div className="space-y-1">
+                                <h4 className="text-sm font-bold text-blue-900">Já seguiu os passos acima?</h4>
+                                <p className="text-xs text-blue-600/80 max-w-[280px] mx-auto">
+                                    Ao clicar em gerar, você terá 45 segundos para digitar o código no seu WhatsApp.
+                                </p>
+                            </div>
+                            
+                            <Button 
+                                onClick={() => {
+                                    setRetryCount(prev => prev + 1);
+                                    // Trigger code generation manually
+                                    autoRequestAttempted.current = false; 
+                                    setIsRequestingCode(true); // Will trigger useEffect to fetch code
+                                }} 
+                                className="w-full sm:w-auto rounded-xl h-12 px-8 bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-200 text-white font-bold transition-all active:scale-95"
+                            >
+                                Gerar Código de Conexão
+                            </Button>
                         </div>
-                        <Button 
-                            onClick={() => {
-                                autoRequestAttempted.current = false;
-                                setRetryCount(prev => prev + 1);
-                                setTimeLeft(45); 
-                            }} 
-                            variant="outline" 
-                            className="mt-2 rounded-xl h-10 px-8 border-slate-200 hover:bg-slate-50 hover:border-blue-200 hover:text-blue-600 transition-all font-bold text-xs sm:text-sm shadow-sm"
-                        >
-                            Tentar Novamente
-                        </Button>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-6 sm:gap-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                        {/* HEADER SECTION */}
+                        {/* HEADER SECTION - Code Display */}
                         <div className="space-y-4 text-center">
                             <div className="space-y-1.5 px-2">
-                                <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 leading-tight">Insira o código no seu celular</h3>
+                                <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 leading-tight">Insira este código no WhatsApp</h3>
                                     <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs sm:text-sm text-slate-500">
-                                        <span>Conectando ao WhatsApp de</span>
+                                        <span>Conectando ao número</span>
                                         <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md break-all">
-                                            {userPhone ? formatPhone(userPhone) : "Seu número"}
+                                            {userPhone ? formatPhone(userPhone) : "do perfil"}
                                         </span>
                                     </div>
                             </div>
 
                             <div className="relative group px-1 sm:px-0">
                                 {isRequestingCode && !pairingCode ? (
-                                    <div className="h-[100px] sm:h-[140px] flex items-center justify-center bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
+                                    <div className="h-[100px] sm:h-[140px] flex items-center justify-center bg-slate-50/50 rounded-3xl border border-dashed border-slate-200 flex-col gap-3">
                                         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                                        <p className="text-xs text-slate-400 font-medium">Buscando código...</p>
                                     </div>
                                 ) : (
                                     <>
@@ -349,12 +348,23 @@ export function WhatsappStatusView({
                                                 </div>
                                             </div>
                                         </div>
+                                        
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            onClick={() => {
+                                                setPairingCode(null);
+                                                setIsRequestingCode(true);
+                                                setTimeLeft(45);
+                                            }} 
+                                            className="mt-6 text-red-400 hover:text-red-500 hover:bg-red-50 text-xs h-8 px-4 rounded-lg"
+                                        >
+                                            Cancelar / Gerar Novo
+                                        </Button>
                                     </>
                                 )}
                             </div>
                         </div>
-
-                        <TutorialSteps mode="mobile" />
                     </div>
                 )}
             </TabsContent>

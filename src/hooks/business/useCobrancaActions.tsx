@@ -29,6 +29,7 @@ import {
   QrCode,
   Receipt,
   Send,
+  Trash2,
   User
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
@@ -38,6 +39,7 @@ export interface UseCobrancaOperationsProps {
   plano?: any;
   onActionSuccess?: () => void;
   onUpgrade?: (feature: string, description?: string, title?: string) => void;
+  onExcluirCobranca?: () => void;
 }
 
 export function useCobrancaOperations({
@@ -45,6 +47,7 @@ export function useCobrancaOperations({
   plano,
   onActionSuccess,
   onUpgrade,
+  onExcluirCobranca,
 }: UseCobrancaOperationsProps) {
   const {
     openConfirmationDialog,
@@ -331,7 +334,16 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // ... (rest of function)
+    // 7. Excluir (Se não pago)
+    if (!isPago) {
+      actions.push({
+        label: "Excluir",
+        icon: <Trash2 className="h-4 w-4 text-red-600" />,
+        onClick: props.onExcluirCobranca || handleDeleteCobranca,
+        isDestructive: true,
+        swipeColor: "bg-red-600",
+      });
+    }
 
     return actions;
   }, [
@@ -346,6 +358,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     handleToggleLembretes,
     handleDesfazerPagamento,
     handleDeleteCobranca,
-    props.onVerRecibo
+    props.onVerRecibo,
+    props.onExcluirCobranca
   ]);
 }

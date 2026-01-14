@@ -59,25 +59,9 @@ export function useWhatsapp() {
     queryKey: ["whatsapp-status"],
     queryFn: whatsappApi.getStatus,
     enabled: !!user?.id && isProfissional && !isPixKeyDialogOpen, // Pause if Pix Dialog is open
-    staleTime: 10000, 
-    refetchInterval: (query) => {
-        if (isPixKeyDialogOpen) return false; // Pause polling
-
-        const data = query.state.data;
-        const state = data?.state as string;
-        
-        // Se estiver conectado, polling lento (30s) só para garantir que não caiu
-        if (state === WHATSAPP_STATUS.OPEN || state === WHATSAPP_STATUS.CONNECTED || state === WHATSAPP_STATUS.PAIRED) return 30000;
-        
-        // Se temos QR Code na tela, precisamos de velocidade máxima para fechar o dialog ao escanear
-        if (localQrCode) return 2000;
-
-        // Se o backend diz "connecting" mas sem QR, é um estado de transição/recuperação
-        if (state === "connecting" || state === WHATSAPP_STATUS.CONNECTING) return 5000;
-        
-        // Se estiver desconectado, polling médio (10s)
-        return 10000;
-    }
+    enabled: !!user?.id && isProfissional && !isPixKeyDialogOpen, // Pause if Pix Dialog is open
+    staleTime: Infinity, // Realtime will invalidate this
+    refetchOnWindowFocus: true, // Good backup
   });
 
   const state = (statusData?.state || WHATSAPP_STATUS.UNKNOWN) as ConnectionState;

@@ -1,7 +1,6 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
@@ -81,9 +80,6 @@ export function WhatsappDialog({ isOpen, onClose, canClose = true, userPhone }: 
           <div className="flex items-center gap-2">
              <DialogTitle className="text-xl font-bold text-slate-900">Conexão WhatsApp</DialogTitle>
           </div>
-          <DialogDescription className="text-slate-500">
-            Conecte seu aparelho para habilitar notificações.
-          </DialogDescription>
         </DialogHeader>
         
         <div className="flex-1 overflow-hidden px-6 py-4">
