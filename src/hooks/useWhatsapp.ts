@@ -10,7 +10,7 @@ import { useSession } from "./business/useSession";
 
 import { useLayout } from "../contexts/LayoutContext";
 
-export function useWhatsapp() {
+export function useWhatsapp(options?: { enablePolling?: boolean }) {
   const queryClient = useQueryClient();
   const [localQrCode, setLocalQrCode] = useState<string | null>(null);
   
@@ -54,14 +54,14 @@ export function useWhatsapp() {
     };
   }, [user?.id, queryClient]);
 
-  // Consulta de Status (Deduped e Cached por 10s)
+  // Consulta de Status
   const { data: statusData, isLoading, refetch } = useQuery({
     queryKey: ["whatsapp-status"],
     queryFn: whatsappApi.getStatus,
-    enabled: !!user?.id && isProfissional && !isPixKeyDialogOpen, // Pause if Pix Dialog is open
-    enabled: !!user?.id && isProfissional && !isPixKeyDialogOpen, // Pause if Pix Dialog is open
-    staleTime: Infinity, // Realtime will invalidate this
-    refetchOnWindowFocus: true, // Good backup
+    enabled: !!user?.id && isProfissional && !isPixKeyDialogOpen,
+    staleTime: options?.enablePolling ? 0 : 30000, // Se polling ativo, não usa cache
+    refetchInterval: options?.enablePolling ? 5000 : false, // Polling a cada 5s se solicitado
+    refetchOnWindowFocus: true,
   });
 
   const state = (statusData?.state || WHATSAPP_STATUS.UNKNOWN) as ConnectionState;

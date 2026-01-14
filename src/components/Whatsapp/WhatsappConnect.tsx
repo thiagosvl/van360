@@ -7,7 +7,7 @@ import { useEffect } from "react";
 import { WhatsappStatusView } from "./WhatsappStatusView";
 
 export function WhatsappConnect() {
-  const { state, qrCode, isLoading, connect, disconnect, refresh, instanceName, requestPairingCode, userPhone } = useWhatsapp();
+  const { state, qrCode, isLoading, connect, disconnect, refresh, instanceName, requestPairingCode, userPhone } = useWhatsapp({ enablePolling: true });
 
   useEffect(() => {
     refresh();
