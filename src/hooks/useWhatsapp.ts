@@ -117,7 +117,8 @@ export function useWhatsapp() {
         return data; 
     },
     onError: (error: any) => {
-        toast.error("Erro ao gerar código: " + (error.response?.data?.error || "Erro desconhecido"));
+        const msg = error?.response?.data?.error || error?.message || "Erro desconhecido";
+        toast.error("Erro ao gerar código: " + msg);
     }
   });
 
