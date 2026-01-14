@@ -352,7 +352,7 @@ export function WhatsappStatusView({
                                             variant="ghost" 
                                             size="sm" 
                                             onClick={() => {
-                                                setPairingCode(null);
+                                                // setPairingCode(null); (Removed)
                                                 setIsRequestingCode(true);
                                                 setTimeLeft(45);
                                             }} 
