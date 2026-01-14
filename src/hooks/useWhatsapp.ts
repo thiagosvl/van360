@@ -59,8 +59,9 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
     queryKey: ["whatsapp-status"],
     queryFn: whatsappApi.getStatus,
     enabled: !!user?.id && isProfissional && !isPixKeyDialogOpen,
-    staleTime: options?.enablePolling ? 0 : 30000, // Se polling ativo, não usa cache
-    refetchInterval: options?.enablePolling ? 5000 : false, // Polling a cada 5s se solicitado
+    staleTime: 30000, 
+    // Polling removido. O Realtime (Supabase) cuidará das atualizações.
+    refetchInterval: false, 
     refetchOnWindowFocus: true,
   });
 
