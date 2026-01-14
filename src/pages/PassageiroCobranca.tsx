@@ -11,8 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  FEATURE_COBRANCA_AUTOMATICA,
-  PASSAGEIRO_COBRANCA_STATUS_PAGO,
+  FEATURE_COBRANCA_AUTOMATICA
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useCobranca, useCobrancaNotificacoes } from "@/hooks";
@@ -28,6 +27,7 @@ import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
   canSendNotification,
   canViewReceipt,
+  disableDesfazerPagamento,
   disableEditarCobranca,
   disableExcluirCobranca,
   disableRegistrarPagamento,
@@ -310,7 +310,7 @@ export default function PassageiroCobranca() {
   };
 
   // Status Logic using Utils (DRY)
-  const isPago = cobrancaTyped?.status === PASSAGEIRO_COBRANCA_STATUS_PAGO;
+  const isPago = cobrancaTyped?.status === CobrancaStatus.PAGO;
   const statusText = getStatusText(
     cobrancaTyped?.status,
     cobrancaTyped?.data_vencimento
@@ -606,7 +606,7 @@ export default function PassageiroCobranca() {
                           <BadgeCheck className="w-5 h-5 mr-2" />
                           Registrar Pagamento
                         </Button>
-                      ) : cobrancaTyped?.pagamento_manual ? (
+                      ) : disableDesfazerPagamento(cobrancaTyped) ? (
                         <>
                           <Button
                             size="lg"

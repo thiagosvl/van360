@@ -4,6 +4,6 @@ export const formatPeriodo = (periodo: string): string => {
   if (periodo === "tarde") return "Tarde";
   if (periodo === "noite") return "Noite";
 
-  return "Pendente";
+  return "Não Identificado";
 };
 

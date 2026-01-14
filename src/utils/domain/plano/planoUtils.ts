@@ -1,14 +1,9 @@
 import {
-  ASSINATURA_COBRANCA_STATUS_CANCELADA,
-  ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO,
-  ASSINATURA_USUARIO_STATUS_ATIVA,
-  ASSINATURA_USUARIO_STATUS_PENDENTE_PAGAMENTO,
-  ASSINATURA_USUARIO_STATUS_SUSPENSA,
-  ASSINATURA_USUARIO_STATUS_TRIAL,
   PLANO_ESSENCIAL,
   PLANO_GRATUITO,
-  PLANO_PROFISSIONAL,
+  PLANO_PROFISSIONAL
 } from "@/constants";
+import { AssinaturaCobrancaStatus, AssinaturaStatus } from "@/types/enums";
 
 /**
  * Extrai e normaliza os dados do plano a partir de uma assinatura
@@ -25,7 +20,7 @@ export function extractPlanoData(assinatura: any) {
   const isProfissionalPlan = slugBase === PLANO_PROFISSIONAL;
   const isEssentialPlan = slugBase === PLANO_ESSENCIAL;
 
-  const isTrial = assinatura.status === ASSINATURA_USUARIO_STATUS_TRIAL;
+  const isTrial = assinatura.status === AssinaturaStatus.TRIAL;
 
   const isValidTrial =
     isTrial &&
@@ -33,9 +28,9 @@ export function extractPlanoData(assinatura: any) {
     new Date(assinatura.trial_end_at) >= agora;
 
   const isActive =
-    assinatura.status === ASSINATURA_USUARIO_STATUS_ATIVA && assinatura.ativo;
+    assinatura.status === AssinaturaStatus.ATIVA && assinatura.ativo;
 
-  const isCanceled = assinatura.status === ASSINATURA_COBRANCA_STATUS_CANCELADA;
+  const isCanceled = assinatura.status === AssinaturaCobrancaStatus.CANCELADA;
 
   const isValidCanceled =
     isCanceled &&
@@ -60,8 +55,8 @@ export function extractPlanoData(assinatura: any) {
     isFreePlan,
     isProfissionalPlan,
     isEssentialPlan,
-    isPendente: assinatura.status === ASSINATURA_USUARIO_STATUS_PENDENTE_PAGAMENTO,
-    isSuspensa: assinatura.status === ASSINATURA_USUARIO_STATUS_SUSPENSA,
+    isPendente: assinatura.status === AssinaturaStatus.PENDENTE_PAGAMENTO,
+    isSuspensa: assinatura.status === AssinaturaStatus.SUSPENSA,
     isCanceled,
   };
 }
@@ -168,11 +163,11 @@ export function isSubscriptionPending(assinatura: any): boolean {
   if (!assinatura) return false;
 
   const isPendentePagamento =
-    assinatura.status === ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO &&
+    assinatura.status === AssinaturaCobrancaStatus.PENDENTE_PAGAMENTO &&
     assinatura.ativo === true;
 
   const isTrial =
-    assinatura.status === ASSINATURA_USUARIO_STATUS_TRIAL &&
+    assinatura.status === AssinaturaStatus.TRIAL &&
     assinatura.ativo === true;
 
   return isPendentePagamento || isTrial;
@@ -184,7 +179,7 @@ export function isSubscriptionPending(assinatura: any): boolean {
 export function calculateTrialInfo(assinatura: any) {
   if (!assinatura) return { isValidTrial: false, isTrialExpirado: false, diasRestantes: null };
 
-  const isTrial = assinatura.status === ASSINATURA_USUARIO_STATUS_TRIAL && assinatura.ativo === true;
+  const isTrial = assinatura.status === AssinaturaStatus.TRIAL && assinatura.ativo === true;
 
   const agora = new Date();
   const trialEndAt = assinatura.trial_end_at

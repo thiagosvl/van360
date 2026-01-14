@@ -27,9 +27,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useRegistrarPagamentoManual } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { CobrancaStatus } from "@/types/enums";
 import {
   getStatusColor,
   getStatusText,
@@ -176,7 +176,7 @@ export default function ManualPaymentDialog({
                   getStatusColor(status, dataVencimento)
                 )}
               >
-                {status === PASSAGEIRO_COBRANCA_STATUS_PAGO
+                {status === CobrancaStatus.PAGO
                   ? "PAGO"
                   : getStatusText(status, dataVencimento)}
               </span>

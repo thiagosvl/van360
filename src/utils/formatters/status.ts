@@ -1,23 +1,9 @@
-import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
+import { CobrancaStatus } from "@/types/enums";
 import { checkCobrancaEmAtraso } from "./cobranca";
 import { formatDate } from "./date";
 
-export const formatProfile = (profile: string): string => {
-  if (profile === "admin") {
-    return "Admin";
-  }
-  return "Motorista";
-};
-
-export const formatStatus = (origem: string): string => {
-  if (origem === PASSAGEIRO_COBRANCA_STATUS_PAGO) {
-    return "Pago";
-  }
-  return "Pendente";
-};
-
 export const getStatusText = (status: string, dataVencimento: string) => {
-  if (status === PASSAGEIRO_COBRANCA_STATUS_PAGO) return "Pago";
+  if (status === CobrancaStatus.PAGO) return "Pago";
 
   const vencimento = formatDate(dataVencimento);
   const hoje = new Date();
@@ -36,7 +22,7 @@ export const getStatusText = (status: string, dataVencimento: string) => {
 };
 
 export const getStatusColor = (status: string, dataVencimento: string) => {
-  if (status === PASSAGEIRO_COBRANCA_STATUS_PAGO) {
+  if (status === CobrancaStatus.PAGO) {
     return "bg-green-100 text-green-800 hover:bg-green-200";
   }
 

@@ -1,4 +1,4 @@
-import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
+import { CobrancaStatus } from "@/types/enums";
 import { apiClient } from "./client";
 
 export const cobrancaApi = {
@@ -33,7 +33,7 @@ export const cobrancaApi = {
 
     registrarPagamentoManual: (cobrancaId: string, data) => {
         return cobrancaApi.updateCobranca(cobrancaId, {
-            status: PASSAGEIRO_COBRANCA_STATUS_PAGO,
+            status: CobrancaStatus.PAGO,
             data_pagamento: data.data_pagamento,
             tipo_pagamento: data.tipo_pagamento,
             valor_pago: data.valor_pago,

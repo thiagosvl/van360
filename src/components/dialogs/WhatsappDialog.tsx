@@ -10,7 +10,6 @@ import { WHATSAPP_STATUS } from "@/config/constants";
 import { useWhatsapp } from "@/hooks/useWhatsapp";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { toast } from "sonner";
 
 interface WhatsappDialogProps {
     isOpen: boolean;
@@ -52,8 +51,6 @@ export function WhatsappDialog({ isOpen, onClose, canClose = true, userPhone }: 
   // 3. Auto-Close ao conectar com sucesso (se estava aberto e NÃO estava conectado antes)
   useEffect(() => {
       if (isOpen && isConnected && !wasConnectedOnOpenRef.current) {
-          toast.success("WhatsApp Conectado com Sucesso! Fechando em 5 segundos...");
-          
           const timer = setTimeout(() => {
               onClose();
           }, 5000);
@@ -62,7 +59,6 @@ export function WhatsappDialog({ isOpen, onClose, canClose = true, userPhone }: 
       }
   }, [isOpen, isConnected, onClose]);
 
-  // Permitir fechar se estiver conectado (fallback), ou se prop canClose permitir
   const effectiveCanClose = canClose || isConnected;
 
   return (

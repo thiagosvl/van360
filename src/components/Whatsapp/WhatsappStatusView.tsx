@@ -229,7 +229,7 @@ export function WhatsappStatusView({
                 <div className="mt-2 flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
                     <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                        Fechando em {closeCountdown}s
+                        Fechando em {closeCountdown} {closeCountdown === 1 ? "segundo" : "segundos"}
                     </p>
                 </div>
             </div>

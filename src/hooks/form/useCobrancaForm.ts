@@ -1,14 +1,14 @@
-import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useCreateCobranca, useUpdateCobranca } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Cobranca } from "@/types/cobranca";
+import { CobrancaStatus } from "@/types/enums";
 import {
-    parseCurrencyToNumber
+  parseCurrencyToNumber
 } from "@/utils/formatters";
 import {
-    moneyMask,
-    moneyToNumber,
+  moneyMask,
+  moneyToNumber,
 } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -114,7 +114,7 @@ export function useCobrancaForm({
   // Defaults baseados no modo
   const defaultValues = useMemo<Partial<CobrancaFormData>>(() => {
     if (mode === "edit" && cobranca) {
-      const isPago = cobranca.status === PASSAGEIRO_COBRANCA_STATUS_PAGO;
+      const isPago = cobranca.status === CobrancaStatus.PAGO;
       const valorCentavos = Math.round(Number(cobranca.valor) * 100);
       
       return {
@@ -186,7 +186,7 @@ export function useCobrancaForm({
         ano: data.ano || format(data.data_vencimento, "yyyy"),
         valor: valorNumerico,
         data_vencimento: dataVencimentoStr,
-        status: data.foi_pago ? PASSAGEIRO_COBRANCA_STATUS_PAGO : "pendente",
+        status: data.foi_pago ? CobrancaStatus.PAGO : CobrancaStatus.PENDENTE,
         data_pagamento: data.foi_pago ? dataPagamentoStr : null,
         tipo_pagamento: data.foi_pago ? data.tipo_pagamento : null,
         pagamento_manual: data.foi_pago,

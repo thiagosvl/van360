@@ -9,7 +9,7 @@ import {
     TableHead,
     TableRow
 } from "@/components/ui/table";
-import { ASSINATURA_COBRANCA_STATUS_CANCELADA, ASSINATURA_COBRANCA_STATUS_PAGO, ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO } from "@/constants";
+import { AssinaturaCobrancaStatus } from "@/types/enums";
 import { Calendar, Receipt } from "lucide-react";
 
 interface SubscriptionHistoryProps {
@@ -33,15 +33,15 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
   
   const getStatusConfig = (status: string) => {
     switch (status) {
-      case ASSINATURA_COBRANCA_STATUS_PAGO:
+      case AssinaturaCobrancaStatus.PAGO:
         return { 
             badge: <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200">Pago</Badge>,
         };
-      case ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO:
+      case AssinaturaCobrancaStatus.PENDENTE_PAGAMENTO:
         return { 
             badge: <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-yellow-200">Pendente</Badge>,
         };
-      case ASSINATURA_COBRANCA_STATUS_CANCELADA:
+      case AssinaturaCobrancaStatus.CANCELADA:
         return { 
             badge: <Badge className="text-gray-500 bg-transparent hover:bg-transparent">Cancelada</Badge>,
         };
@@ -90,7 +90,7 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
                 </div>
 
                 <div className="flex items-center gap-2">
-                        {cobranca.status === ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO ? (
+                        {cobranca.status === AssinaturaCobrancaStatus.PENDENTE_PAGAMENTO ? (
                         <Button 
                             size="sm" 
                             className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white shadow-sm rounded-lg"
@@ -164,7 +164,7 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
                                     </TableCell>
                                     <TableCell className="py-4">{badge}</TableCell>
                                     <TableCell className="text-right pr-6 py-4">
-                                        {cobranca.status === ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO ? (
+                                        {cobranca.status === AssinaturaCobrancaStatus.PENDENTE_PAGAMENTO ? (
                                             <Button 
                                                 size="sm" 
                                                 className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium shadow-sm transition-all hover:-translate-y-0.5"

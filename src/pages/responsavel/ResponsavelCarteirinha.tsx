@@ -51,7 +51,7 @@ import { toast } from "@/utils/notifications/toast";
 import { Cobranca } from "@/types/cobranca";
 
 // Icons
-import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
+import { CobrancaStatus } from "@/types/enums";
 import {
   AlertTriangle,
   Car,
@@ -429,7 +429,7 @@ export default function ResponsavelCarteirinha() {
                                         cobranca.status,
                                         cobranca.data_vencimento
                                       )}
-                                      {cobranca.status === PASSAGEIRO_COBRANCA_STATUS_PAGO
+                                      {cobranca.status === CobrancaStatus.PAGO
                                         ? ` em ${formatDateToBR(
                                             cobranca.data_pagamento
                                           )} `
@@ -494,7 +494,7 @@ export default function ResponsavelCarteirinha() {
                                     cobranca.data_vencimento
                                   )}`}
                                 >
-                                  {cobranca.status === PASSAGEIRO_COBRANCA_STATUS_PAGO
+                                  {cobranca.status === CobrancaStatus.PAGO
                                     ? `Paga em ${formatDateToBR(
                                         cobranca.data_pagamento
                                       )}`

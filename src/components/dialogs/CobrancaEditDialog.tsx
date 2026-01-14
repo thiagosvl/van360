@@ -7,10 +7,10 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
+import { CobrancaStatus } from "@/types/enums";
 import { getStatusColor, getStatusText } from "@/utils/formatters";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -91,7 +91,7 @@ export default function CobrancaEditDialog({
                   getStatusColor(cobranca.status, cobranca.data_vencimento)
                 )}
               >
-                {cobranca.status === PASSAGEIRO_COBRANCA_STATUS_PAGO
+                {cobranca.status === CobrancaStatus.PAGO
                   ? "PAGO"
                   : getStatusText(cobranca.status, cobranca.data_vencimento)}
               </span>

@@ -11,11 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useCobrancaActions } from "@/hooks/business/useCobrancaActions";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
+import { CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
   formatDateToBR,
@@ -278,7 +278,7 @@ export const CarteirinhaCobrancas = ({
                         cobranca?.data_vencimento
                       );
                       const isPago =
-                        cobranca?.status === PASSAGEIRO_COBRANCA_STATUS_PAGO;
+                        cobranca?.status === CobrancaStatus.PAGO;
                       const statusText = getStatusText(
                         cobranca?.status,
                         cobranca?.data_vencimento
@@ -351,7 +351,7 @@ export const CarteirinhaCobrancas = ({
                                   <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                                     <Calendar className="w-3 h-3" />
                                     {cobranca?.status ===
-                                    PASSAGEIRO_COBRANCA_STATUS_PAGO ? (
+                                    CobrancaStatus.PAGO ? (
                                       <>
                                         Paga em{" "}
                                         {formatDateToBR(
@@ -459,7 +459,7 @@ export const CarteirinhaCobrancas = ({
                         cobranca?.data_vencimento
                       );
                       const isPago =
-                        cobranca?.status === PASSAGEIRO_COBRANCA_STATUS_PAGO;
+                        cobranca?.status === CobrancaStatus.PAGO;
 
                       return (
                         <motion.tr

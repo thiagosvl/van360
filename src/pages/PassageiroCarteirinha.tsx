@@ -76,8 +76,9 @@ import { safeCloseDialog } from "@/utils/dialogUtils";
 import { toast } from "@/utils/notifications/toast";
 
 // Types
-import { FEATURE_COBRANCA_AUTOMATICA, PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
+import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { Cobranca } from "@/types/cobranca";
+import { CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 
 const currentYear = new Date().getFullYear().toString();
@@ -500,7 +501,7 @@ export default function PassageiroCarteirinha() {
     hoje.setHours(0, 0, 0, 0);
     return cobrancas.reduce(
       (acc, c) => {
-        if (c.status === PASSAGEIRO_COBRANCA_STATUS_PAGO) {
+        if (c.status === CobrancaStatus.PAGO) {
           acc.valorPago += Number(c.valor);
           acc.qtdPago++;
         } else {
@@ -535,7 +536,7 @@ export default function PassageiroCarteirinha() {
     hoje.setHours(0, 0, 0, 0);
     return cobrancas.some(
       (c) =>
-        c.status !== PASSAGEIRO_COBRANCA_STATUS_PAGO &&
+        c.status !== CobrancaStatus.PAGO &&
         new Date(c.data_vencimento) < hoje
     );
   }, [cobrancas]);

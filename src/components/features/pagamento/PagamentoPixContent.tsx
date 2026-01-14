@@ -1,10 +1,10 @@
 import { ComoFuncionaPixSheet } from "@/components/features/pagamento/ComoFuncionaPixSheet";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ASSINATURA_COBRANCA_STATUS_PAGO } from "@/constants";
 import { useGerarPixParaCobranca } from "@/hooks";
 import { fetchProfile } from "@/hooks/business/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { AssinaturaCobrancaStatus } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -353,7 +353,7 @@ export default function PagamentoPixContent({
 
         if (error) return;
 
-        if (data?.status === ASSINATURA_COBRANCA_STATUS_PAGO) {
+        if (data?.status === AssinaturaCobrancaStatus.PAGO) {
           if (
             mountedRef.current &&
             monitorandoRef.current &&
@@ -416,7 +416,7 @@ export default function PagamentoPixContent({
             },
             (payload: any) => {
               try {
-                if (payload?.new?.status === ASSINATURA_COBRANCA_STATUS_PAGO) {
+                if (payload?.new?.status === AssinaturaCobrancaStatus.PAGO) {
                   // Se pagou via Realtime, paramos tudo
                   if (pollerRef.current) {
                     clearInterval(pollerRef.current);

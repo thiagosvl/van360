@@ -49,8 +49,7 @@ import { UnifiedEmptyState } from "@/components/empty";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
-  FEATURE_COBRANCA_AUTOMATICA,
-  PASSAGEIRO_COBRANCA_STATUS_PAGO,
+  FEATURE_COBRANCA_AUTOMATICA
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -561,7 +560,7 @@ const Cobrancas = () => {
                                     />
                                   {cobranca?.desativar_lembretes &&
                                     cobranca?.status !==
-                                      PASSAGEIRO_COBRANCA_STATUS_PAGO && (
+                                      CobrancaStatus.PAGO && (
                                       <span title="Envio de notificações desativado">
                                         <BellOff className="w-3.5 h-3.5 text-orange-700" />
                                       </span>

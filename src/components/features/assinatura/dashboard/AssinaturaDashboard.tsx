@@ -1,4 +1,4 @@
-import { ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO } from "@/constants";
+import { AssinaturaCobrancaStatus } from "@/types/enums";
 import { SubscriptionHeader } from "./SubscriptionHeader";
 import { SubscriptionHistory } from "./SubscriptionHistory";
 import { SubscriptionKPIs } from "./SubscriptionKPIs";
@@ -39,7 +39,7 @@ export function AssinaturaDashboard({
         onPagarClick={() => {
           // Find pending or open modal
           const pendente = cobrancas.find(
-            (c) => c.status === ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO
+            (c) => c.status === AssinaturaCobrancaStatus.PENDENTE_PAGAMENTO
           );
           if (pendente) onPagarClick(pendente);
           else onPagarClick(null);

@@ -1,6 +1,6 @@
-import { PASSAGEIRO_COBRANCA_STATUS_PAGO } from "@/constants";
 import { cobrancaApi } from "@/services/api/cobranca.api";
 import { Cobranca } from "@/types/cobranca";
+import { CobrancaStatus } from "@/types/enums";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
@@ -61,8 +61,8 @@ export function useCobrancas(
       }
 
       const all = cobrancas;
-      const abertas = all.filter((cobranca) => cobranca.status !== PASSAGEIRO_COBRANCA_STATUS_PAGO);
-      const pagas = all.filter((cobranca) => cobranca.status === PASSAGEIRO_COBRANCA_STATUS_PAGO);
+      const abertas = all.filter((cobranca) => cobranca.status !== CobrancaStatus.PAGO);
+      const pagas = all.filter((cobranca) => cobranca.status === CobrancaStatus.PAGO);
 
       return {
         all,

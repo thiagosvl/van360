@@ -1,16 +1,16 @@
 import {
-    Check,
-    CreditCard,
-    DollarSign,
-    FileText,
-    Plus,
-    Receipt,
-    TrendingDown,
-    TrendingUp,
-    UserCheck,
-    Users,
-    Wallet,
-    Zap,
+  Check,
+  CreditCard,
+  DollarSign,
+  FileText,
+  Plus,
+  Receipt,
+  TrendingDown,
+  TrendingUp,
+  UserCheck,
+  Users,
+  Wallet,
+  Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -26,10 +26,9 @@ import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
 
 import {
-    FEATURE_GASTOS,
-    FEATURE_LIMITE_PASSAGEIROS,
-    PASSAGEIRO_COBRANCA_STATUS_PAGO,
-    PLANO_ESSENCIAL,
+  FEATURE_GASTOS,
+  FEATURE_LIMITE_PASSAGEIROS,
+  PLANO_ESSENCIAL
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
@@ -46,6 +45,7 @@ import { WHATSAPP_STATUS } from "@/config/constants";
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { useUpsellContent } from "@/hooks/business/useUpsellContent";
 import { useWhatsapp } from "@/hooks/useWhatsapp";
+import { CobrancaStatus } from "@/types/enums";
 
 // --- Main Component ---
 
@@ -139,7 +139,7 @@ const Home = () => {
   );
 
   const cobrancasPendentes = cobrancas.filter(
-    (c) => c.status !== PASSAGEIRO_COBRANCA_STATUS_PAGO
+    (c) => c.status !== CobrancaStatus.PAGO
   );
 
   const aReceber = cobrancasPendentes.reduce(
@@ -152,7 +152,7 @@ const Home = () => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     return cobrancas.filter((c) => {
-      if (c.status === PASSAGEIRO_COBRANCA_STATUS_PAGO) return false;
+      if (c.status === CobrancaStatus.PAGO) return false;
       const vencimento = new Date(c.data_vencimento);
       return vencimento < hoje;
     });

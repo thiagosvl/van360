@@ -1,10 +1,9 @@
 import BaseAlert, { AlertVariant, getAlertStyles } from "@/components/alerts/BaseAlert";
 import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaDialog";
 import { Button } from "@/components/ui/button";
-import { ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO } from "@/constants";
 import { useAssinaturaCobrancas } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { SubscriptionBillingType } from "@/types/enums";
+import { AssinaturaBillingType, AssinaturaCobrancaStatus } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
 import { AlertTriangle, ArrowRight, Clock, Loader2, Receipt } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -115,8 +114,8 @@ export default function AssinaturaPendenteAlert({
     const cobrancaSubscription = cobrancas
       ?.filter(
         (c: any) =>
-          c.status === ASSINATURA_COBRANCA_STATUS_PENDENTE_PAGAMENTO &&
-          c.billing_type === SubscriptionBillingType.SUBSCRIPTION
+          c.status === AssinaturaCobrancaStatus.PENDENTE_PAGAMENTO &&
+          c.billing_type === AssinaturaBillingType.SUBSCRIPTION
       )
       .sort(
         (a: any, b: any) =>
