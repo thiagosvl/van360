@@ -105,7 +105,8 @@ export function WhatsappStatusView({
         // Do not auto-request. Only when isRequestingCode becomes true (Manual Click).
         
         // Safety checks
-        if (!isRequestingCode || isConnected || isConnecting || !onRequestPairingCode || activeTab !== "mobile") {
+        // Safety checks
+        if (!isRequestingCode || isConnected || !onRequestPairingCode || activeTab !== "mobile") {
              return;
         }
 
@@ -137,11 +138,12 @@ export function WhatsappStatusView({
     // Timer logic for refreshing the code (Mobile Tab)
     useEffect(() => {
         if (pairingCode && !isConnected && activeTab === "mobile") {
-            const timer = setInterval(() => {
+             const timer = setInterval(() => {
                 setTimeLeft((prev) => {
                     if (prev <= 1) {
+                        // TIME IS UP: Trigger Auto-Renewal Loop
                         setPairingCode(null);
-                        autoRequestAttempted.current = false; // Permite tentar novamente após expirar
+                        setIsRequestingCode(true); // Loops back to autoRequest
                         return 45;
                     }
                     return prev - 1;
@@ -220,7 +222,8 @@ export function WhatsappStatusView({
         );
     }
 
-    if (isConnecting && !pairingCode) {
+    // Só exibe "Conectando..." se NÃO estivermos no meio do processo de solicitar um código (loop)
+    if (isConnecting && !pairingCode && !isRequestingCode) {
         return (
             <div className="flex flex-col items-center justify-center py-12 gap-3">
                 <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
@@ -228,20 +231,18 @@ export function WhatsappStatusView({
                      <p className="text-sm font-bold text-slate-700 animate-pulse">Conectando ao WhatsApp...</p>
                      <p className="text-xs text-slate-400">Isso pode levar alguns segundos.</p>
                 </div>
-                 {/* Fallback para destvar se ficar preso aqui */}
-                 {retryCount > 0 && (
-                     <Button 
-                        variant="ghost" 
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50 mt-4 h-8 text-xs"
-                        onClick={() => {
-                            // Forçar limpeza local e reload
-                            setPairingCode(null);
-                            window.location.reload();
-                        }}
-                     >
-                        Cancelar e Atualizar
-                     </Button>
-                 )}
+                 
+                 <Button 
+                    variant="outline" 
+                    className="mt-6 border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-all font-semibold rounded-xl"
+                    onClick={() => {
+                        // Forçar nova geração de código (Backend faz o Clean Slate)
+                        setPairingCode(null);
+                        setIsRequestingCode(true);
+                    }}
+                 >
+                    Problemas? Gerar Novo Código
+                 </Button>
             </div>
         );
     }
