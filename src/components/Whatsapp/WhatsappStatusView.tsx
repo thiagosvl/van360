@@ -14,6 +14,7 @@ interface WhatsappStatusViewProps {
     onConnect?: () => void;
     onRequestPairingCode?: () => Promise<any>;
     userPhone?: string;
+    pairingCode?: string | null;
 }
 
 const formatPhone = (phone: string) => {
@@ -80,15 +81,17 @@ const TutorialSteps = ({ mode }: { mode: 'mobile' | 'desktop' }) => {
 };
 
 export function WhatsappStatusView({ 
+export function WhatsappStatusView({ 
     state, 
     qrCode, 
     isLoading, 
     instanceName, 
     onConnect, 
     onRequestPairingCode,
-    userPhone
+    userPhone,
+    pairingCode // Received from Hook (DB Source)
 }: WhatsappStatusViewProps) {
-    const [pairingCode, setPairingCode] = useState<string | null>(null);
+    // const [pairingCode, setPairingCode] = useState<string | null>(null); // REMOVED STATE
     const [isRequestingCode, setIsRequestingCode] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const [activeTab, setActiveTab] = useState("mobile");
@@ -105,7 +108,6 @@ export function WhatsappStatusView({
         // Do not auto-request. Only when isRequestingCode becomes true (Manual Click).
         
         // Safety checks
-        // Safety checks
         if (!isRequestingCode || isConnected || !onRequestPairingCode || activeTab !== "mobile") {
              return;
         }
@@ -118,11 +120,7 @@ export function WhatsappStatusView({
             try {
                 const data = await onRequestPairingCode();
                 if (data?.pairingCode) {
-                    const code = typeof data.pairingCode === 'string' 
-                        ? data.pairingCode 
-                        : data.pairingCode?.code;
-                        
-                    setPairingCode(code);
+                    // Logic updated: Code comes via prop. We just set timer here.
                     setTimeLeft(45);
                 }
             } catch (error: any) {

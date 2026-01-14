@@ -127,6 +127,7 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
     qrCode: localQrCode,
     isLoading: isLoading || connectMutation.isPending || disconnectMutation.isPending || pairingCodeMutation.isPending,
     instanceName,
+    pairingCode: (statusData as any)?.pairingCode,
     userPhone: (statusData as any)?.telefone || (useProfile(user?.id) as any)?.profile?.telefone,
     connect: () => connectMutation.mutate(),
     disconnect: () => disconnectMutation.mutate(),
