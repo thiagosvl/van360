@@ -37,7 +37,9 @@ export function WhatsappDialog({ isOpen, onClose, canClose = true, userPhone }: 
       if (isOpen) {
           wasConnectedOnOpenRef.current = isConnected;
       }
-  }, [isOpen, isConnected]);
+      // Não incluir isConnected aqui, pois queremos apenas o snapshot inicial
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   // 1. Resetar flag quando o dialog fechar
   useEffect(() => {
