@@ -44,10 +44,14 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
           filter: `auth_uid=eq.${user.id}`,
         },
         (payload) => {
-          // Quando houver mudança no banco, limpamos o buffer da mutação 
-          // e deixamos a query assumir a verdade.
+          // Quando houver mudança no banco, limpar o buffer local e forçar refetch
           setMutationPairingData(null);
-          queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
+          
+          // Refetch imediato com refetchType: "all" para garantir sincronização
+          queryClient.invalidateQueries({ 
+            queryKey: ["whatsapp-status"],
+            refetchType: "all"
+          });
         }
       )
       .subscribe();
@@ -62,8 +66,8 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
     queryKey: ["whatsapp-status"],
     queryFn: whatsappApi.getStatus,
     enabled: !!user?.id && isProfissional && !isPixKeyDialogOpen,
-    staleTime: 5000, 
-    refetchInterval: false, // POLLING REMOVIDO DEFINITIVAMENTE
+    staleTime: 3000, // Reduzido para 3s para melhor sincronização
+    refetchInterval: false, // Polling removido definitivamente
     refetchOnWindowFocus: true,
   });
 
@@ -113,7 +117,11 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
                 expiresAt: new Date(Date.now() + 60000).toISOString()
             });
         }
-        queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
+        // Refetch imediato para sincronizar com o banco
+        queryClient.invalidateQueries({ 
+          queryKey: ["whatsapp-status"],
+          refetchType: "all"
+        });
         return data; 
     },
     onError: (error: any) => {

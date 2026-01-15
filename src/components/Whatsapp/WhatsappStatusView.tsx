@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WHATSAPP_STATUS } from "@/config/constants";
 import { Check, Loader2, Monitor, Smartphone, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { logger } from "@/config/logger";
 
 interface WhatsappStatusViewProps {
     state: string;
@@ -114,9 +115,10 @@ export function WhatsappStatusView({
             const expiry = pairingCodeExpiresAt ? new Date(pairingCodeExpiresAt).getTime() : 0;
             const secondsPastExpiry = (now - expiry) / 1000;
 
-            if (secondsPastExpiry > 20 && activeTab === 'mobile' && !isRequestingCode && !isConnected) {
-                // Failsafe: Se passou muito tempo e nada chegou, forçamos.
-                console.log("Auto-renew failsafe triggered");
+            if (secondsPastExpiry > 45 && activeTab === 'mobile' && !isRequestingCode && !isConnected) {
+                // Failsafe: Se passou muito tempo após expiração e nada chegou, forçamos nova geração
+                // 45s é suficiente para a Evolution API renovar o código e o Webhook chegar
+                logger.info({ secondsPastExpiry }, "Auto-renew failsafe triggered");
                 handleAutoRenew();
             }
         }, 1000);
@@ -136,8 +138,9 @@ export function WhatsappStatusView({
          if (!isLoading) {
              if (activeTab === 'mobile' && !pairingCode && !isRequestingCode && !isConnected && onRequestPairingCode) {
                  const now = Date.now();
-                 // Cooldown de 10s para evitar loop enquanto o pairingCode (prop) não atualiza via Realtime
-                 if (now - lastRequestTime.current > 10000) {
+                 // Cooldown de 3s com jitter para evitar loop enquanto o pairingCode (prop) não atualiza via Realtime
+                 const jitter = Math.random() * 1000; // 0-1s de variação
+                 if (now - lastRequestTime.current > (3000 + jitter)) {
                     handleAutoRenew();
                  }
              }
