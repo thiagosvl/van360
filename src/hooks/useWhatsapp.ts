@@ -44,10 +44,7 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
           table: "usuarios",
           filter: `auth_uid=eq.${user.id}`,
         },
-        (payload) => {
-          // Quando houver mudança no banco, limpar o buffer local e forçar refetch
-          setMutationPairingData(null);
-          
+        () => {
           // Refetch imediato com refetchType: "all" para garantir sincronização
           queryClient.invalidateQueries({ 
             queryKey: ["whatsapp-status"],
@@ -62,15 +59,28 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
     };
   }, [user?.id, queryClient]);
 
+
   // Consulta de Status
   const { data: statusData, isLoading, refetch } = useQuery({
     queryKey: ["whatsapp-status"],
     queryFn: whatsappApi.getStatus,
     enabled: !!user?.id && isProfissional && !isPixKeyDialogOpen,
-    staleTime: 3000, // Reduzido para 3s para melhor sincronização
-    refetchInterval: false, // Polling removido definitivamente
-    refetchOnWindowFocus: true,
+    staleTime: 3000, 
+    refetchInterval: false, 
+    refetchOnWindowFocus: false, // Evita requisições extras ao focar na janela
   });
+
+  // Sync: Transição suave de Mutation State -> Server State
+  useEffect(() => {
+     // Se já temos o código vindo do servidor, limpamos o estado local para evitar inconsistências
+     if ((statusData as any)?.pairing_code) {
+         setMutationPairingData(null);
+     }
+     // Se conectou, limpamos qualquer código pendente
+     if ((statusData as any)?.whatsapp_status === WHATSAPP_STATUS.CONNECTED) {
+         setMutationPairingData(null);
+     }
+  }, [(statusData as any)?.pairing_code, (statusData as any)?.whatsapp_status]);
 
   const state = (statusData?.state || WHATSAPP_STATUS.UNKNOWN) as ConnectionState;
   const instanceName = statusData?.instanceName || null;
