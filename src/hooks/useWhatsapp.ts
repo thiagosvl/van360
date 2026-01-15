@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ConnectionState, WHATSAPP_STATUS } from "../config/constants";
 import { whatsappApi } from "../services/api/whatsapp.api";
@@ -13,6 +13,7 @@ import { useLayout } from "../contexts/LayoutContext";
 export function useWhatsapp(options?: { enablePolling?: boolean }) {
   const queryClient = useQueryClient();
   const [localQrCode, setLocalQrCode] = useState<string | null>(null);
+  const pairingCodeRequestInProgressRef = useRef(false); // Prevenir requisições simultâneas
   
   const { user } = useSession();
   const { isProfissional } = useProfile(user?.id);
@@ -88,7 +89,8 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
         }
     },
     onError: (error: any) => {
-        toast.error("Erro ao iniciar conexão: " + (error.response?.data?.error || "Erro desconhecido"));
+        const errorMsg = error?.response?.data?.error || error?.message || "Erro desconhecido";
+        toast.error("Erro ao iniciar conexão: " + errorMsg);
     }
   });
 
@@ -100,14 +102,28 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
         setLocalQrCode(null);
         queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
     },
-    onError: () => {
-        toast.error("Erro ao desconectar.");
+    onError: (error: any) => {
+        const errorMsg = error?.response?.data?.error || error?.message || "Erro desconhecido";
+        toast.error("Erro ao desconectar: " + errorMsg);
     }
   });
 
   // Mutation: Request Pairing Code
+  // Com proteção contra requisições simultâneas
   const pairingCodeMutation = useMutation({
-    mutationFn: whatsappApi.requestPairingCode,
+    mutationFn: async () => {
+      // Se já há uma requisição em progresso, não fazer outra
+      if (pairingCodeRequestInProgressRef.current) {
+        throw new Error("Requisição de código já em progresso. Aguarde...");
+      }
+      
+      pairingCodeRequestInProgressRef.current = true;
+      try {
+        return await whatsappApi.requestPairingCode();
+      } finally {
+        pairingCodeRequestInProgressRef.current = false;
+      }
+    },
     onSuccess: (data: any) => {
         if (data.pairingCode?.code) {
             setLocalQrCode(null);
@@ -116,6 +132,7 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
                 code: data.pairingCode.code,
                 expiresAt: new Date(Date.now() + 60000).toISOString()
             });
+            toast.success("Código de pareamento gerado! Digite no seu WhatsApp.");
         }
         // Refetch imediato para sincronizar com o banco
         queryClient.invalidateQueries({ 
@@ -131,8 +148,8 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
   });
 
   // VALOR FINAL: Prioriza o dado da mutação (mais rápido) e cai pro DB (mais estável)
-  const pairingCode = mutationPairingData?.code || (statusData as any)?.pairingCode;
-  const pairingCodeExpiresAt = mutationPairingData?.expiresAt || (statusData as any)?.pairingCodeExpiresAt;
+  const pairingCode = mutationPairingData?.code || (statusData as any)?.pairing_code;
+  const pairingCodeExpiresAt = mutationPairingData?.expiresAt || (statusData as any)?.pairing_code_expires_at;
 
   return {
     state,
