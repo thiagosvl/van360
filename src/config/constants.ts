@@ -2,6 +2,7 @@ export const WHATSAPP_STATUS = {
     CONNECTED: "CONNECTED",
     DISCONNECTED: "DISCONNECTED",
     CONNECTING: "CONNECTING",
+    CONNECTING_EVO: "connecting", // Evolution API Status
     OPEN: "open", // Evolution API Status
     CLOSE: "close", // Evolution API Status
     UNKNOWN: "UNKNOWN",

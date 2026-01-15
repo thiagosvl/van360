@@ -135,7 +135,15 @@ export function WhatsappStatusView({
 
     useEffect(() => {
          if (!isLoading) {
-             if (activeTab === 'mobile' && !pairingCode && !isRequestingCode && !isConnected && onRequestPairingCode) {
+             // Só auto-renova se o estado for DEFINTIVAMENTE desconectado ou fechado.
+             // Se estiver em 'connecting', 'open', 'PAIRED', etc, não devemos auto-solicitar.
+             const isDefinitivelyDisconnected = 
+                state === WHATSAPP_STATUS.CLOSE || 
+                state === WHATSAPP_STATUS.DISCONNECTED || 
+                state === WHATSAPP_STATUS.NOT_FOUND ||
+                state === WHATSAPP_STATUS.UNKNOWN;
+
+             if (isDefinitivelyDisconnected && activeTab === 'mobile' && !pairingCode && !isRequestingCode && !isConnected && onRequestPairingCode) {
                  const now = Date.now();
                  // Cooldown de 3s com jitter para evitar loop enquanto o pairingCode (prop) não atualiza via Realtime
                  const jitter = Math.random() * 1000; // 0-1s de variação
@@ -144,7 +152,7 @@ export function WhatsappStatusView({
                  }
              }
          }
-    }, [activeTab, pairingCode, isRequestingCode, isConnected, isLoading]);
+    }, [activeTab, pairingCode, isRequestingCode, isConnected, isLoading, state]);
 
     const handleAutoRenew = async () => {
         if (isRequestingCode || !onRequestPairingCode) return;

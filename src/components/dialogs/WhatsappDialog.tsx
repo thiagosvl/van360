@@ -20,7 +20,20 @@ interface WhatsappDialogProps {
 export function WhatsappDialog({ isOpen, onClose, canClose = true, userPhone }: WhatsappDialogProps) {
   // ATIVAR POLLING APENAS QUANDO O DIALOG ESTIVER ABERTO
   // Isso garante feedback rápido (3s) na conexão sem pesar o dashboard (100 motoristas)
-  const { state, qrCode, isLoading, connect, disconnect, instanceName, requestPairingCode, userPhone: hookPhone, pairingCode, pairingCodeExpiresAt } = useWhatsapp({ enablePolling: isOpen });
+  const { 
+    state, 
+    qrCode, 
+    isLoading, 
+    isInitialLoading,
+    isFetched,
+    connect, 
+    disconnect, 
+    instanceName, 
+    requestPairingCode, 
+    userPhone: hookPhone, 
+    pairingCode, 
+    pairingCodeExpiresAt 
+  } = useWhatsapp({ enablePolling: isOpen });
   
   const displayPhone = userPhone || hookPhone;
 
@@ -85,17 +98,27 @@ export function WhatsappDialog({ isOpen, onClose, canClose = true, userPhone }: 
         </DialogHeader>
         
         <div className="flex-1 overflow-hidden px-6 py-4">
-            <WhatsappStatusView 
-                state={state}
-                qrCode={qrCode}
-                isLoading={isLoading}
-                instanceName={instanceName}
-                onConnect={connect}
-                onRequestPairingCode={requestPairingCode}
-                userPhone={displayPhone}
-                pairingCode={pairingCode}
-                pairingCodeExpiresAt={pairingCodeExpiresAt}
-            />
+            {isInitialLoading || !isFetched ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-3 min-h-[300px]">
+                    <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+                    <div className="text-center space-y-1">
+                        <p className="text-sm text-slate-500 font-medium animate-pulse">Verificando conexão...</p>
+                        <p className="text-xs text-slate-400">Só um instante, estamos sincronizando.</p>
+                    </div>
+                </div>
+            ) : (
+                <WhatsappStatusView 
+                    state={state}
+                    qrCode={qrCode}
+                    isLoading={isLoading}
+                    instanceName={instanceName}
+                    onConnect={connect}
+                    onRequestPairingCode={requestPairingCode}
+                    userPhone={displayPhone}
+                    pairingCode={pairingCode}
+                    pairingCodeExpiresAt={pairingCodeExpiresAt}
+                />
+            )}
         </div>
 
       </DialogContent>

@@ -84,6 +84,7 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
 
   const state = (statusData?.state || WHATSAPP_STATUS.UNKNOWN) as ConnectionState;
   const instanceName = statusData?.instanceName || null;
+  const isFetched = statusData !== undefined;
 
   // Mutation: Connect
   const connectMutation = useMutation({
@@ -164,6 +165,8 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
   return {
     state,
     qrCode: localQrCode,
+    isFetched,
+    isInitialLoading: isLoading && !isFetched,
     isLoading: isLoading || connectMutation.isPending || disconnectMutation.isPending || pairingCodeMutation.isPending,
     instanceName,
     pairingCode,

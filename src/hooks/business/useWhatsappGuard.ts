@@ -9,23 +9,22 @@ interface UseWhatsappGuardProps {
 }
 
 export function useWhatsappGuard({ isProfissional, onShouldOpen, isLoading }: UseWhatsappGuardProps) {
-    const { state, isLoading: isWhatsappLoading, refresh } = useWhatsapp();
+    const { state, isLoading: isWhatsappLoading, isFetched, isInitialLoading } = useWhatsapp();
 
-    // Efeito para verificar status ao montar
-    // OBS: O useWhatsapp ja faz refresh no mount, nao precisamos duplicar.
-    
     // Efeito para gatilho
     useEffect(() => {
-        if (isLoading || isWhatsappLoading) return;
+        // Se ainda está carregando o perfil ou se é o carregamento INICIAL do WhatsApp, esperamos.
+        // O isInitialLoading garante que não abriremos o dialog baseados no estado 'UNKNOWN' inicial.
+        if (isLoading || isInitialLoading || !isFetched) return;
         if (!isProfissional) return;
 
         // Se checagem concluiu e status é desconectado/fechado ou conectando (precisa de QR)
         const isConnected = state === WHATSAPP_STATUS.CONNECTED || state === WHATSAPP_STATUS.OPEN || state === WHATSAPP_STATUS.PAIRED;
         
-        // Se NÃO estiver conectado, deve abrir
-        if (!isConnected && state !== WHATSAPP_STATUS.CONNECTING) {
+        // Se NÃO estiver conectado, e NÃO estiver em processo de transição (CONNECTING), deve abrir.
+        if (!isConnected && state !== WHATSAPP_STATUS.CONNECTING && state !== WHATSAPP_STATUS.CONNECTING_EVO) {
             onShouldOpen();
         }
 
-    }, [isProfissional, state, isLoading, isWhatsappLoading, onShouldOpen]);
+    }, [isProfissional, state, isLoading, isInitialLoading, isFetched, onShouldOpen]);
 }
