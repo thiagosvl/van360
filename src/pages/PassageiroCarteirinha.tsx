@@ -1,20 +1,17 @@
 import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+    Suspense,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
 } from "react";
 
 // React Router
 import { useNavigate, useParams } from "react-router-dom";
 
 // Components - Dialogs
-import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
-import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
-import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
 
 // Components - Empty & Skeletons
 import { CarteirinhaSkeleton } from "@/components/skeletons";
@@ -53,18 +50,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useAvailableYears,
-  useCobrancasByPassageiro,
-  useDeleteCobranca,
-  useDeletePassageiro,
-  useDesfazerPagamento,
-  useEnviarNotificacaoCobranca,
-  usePassageiro,
-  usePermissions,
-  useToggleAtivoPassageiro,
-  useToggleNotificacoesCobranca,
-  useUpdateCobranca,
-  useUpdatePassageiro
+    useAvailableYears,
+    useCobrancasByPassageiro,
+    useDeleteCobranca,
+    useDeletePassageiro,
+    useDesfazerPagamento,
+    useEnviarNotificacaoCobranca,
+    usePassageiro,
+    usePermissions,
+    useToggleAtivoPassageiro,
+    useToggleNotificacoesCobranca,
+    useUpdateCobranca,
+    useUpdatePassageiro
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -94,12 +91,12 @@ export default function PassageiroCarteirinha() {
     closeConfirmationDialog,
     openEscolaFormDialog,
     openVeiculoFormDialog,
-    openPassageiroFormDialog
+    openPassageiroFormDialog,
+    openCobrancaEditDialog,
+    openCobrancaPixDrawer
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
   const [cobrancaDialogOpen, setCobrancaDialogOpen] = useState(false);
 
   const updatePassageiro = useUpdatePassageiro();
@@ -127,14 +124,6 @@ export default function PassageiroCarteirinha() {
     null
   );
   
-  // PIX Drawer State
-  const [pixDrawerOpen, setPixDrawerOpen] = useState(false);
-  const [selectedCobrancaPix, setSelectedCobrancaPix] = useState<Cobranca | null>(null);
-
-  const handlePagarPix = useCallback((cobranca: Cobranca) => {
-    setSelectedCobrancaPix(cobranca);
-    setPixDrawerOpen(true);
-  }, []);
 
   // State for year filter
   const [yearFilter, setYearFilter] = useState(currentYear);
@@ -197,6 +186,16 @@ export default function PassageiroCarteirinha() {
   });
 
   const passageiro = passageiroData as Passageiro;
+
+  const handlePagarPix = useCallback((cobranca: Cobranca) => {
+    openCobrancaPixDrawer({
+      qrCodePayload: cobranca.qr_code_payload || "",
+      valor: Number(cobranca.valor),
+      passageiroNome: passageiro?.nome || "",
+      mes: cobranca.mes,
+      ano: cobranca.ano,
+    });
+  }, [openCobrancaPixDrawer, passageiro]);
 
   const {
     data: cobrancasData,
@@ -666,8 +665,10 @@ export default function PassageiroCarteirinha() {
                         navigate(`/cobrancas/${id}`)
                       }
                       onEditCobranca={(cobranca) => {
-                        setCobrancaToEdit(cobranca);
-                        setEditDialogOpen(true);
+                        openCobrancaEditDialog({
+                          cobranca,
+                          onSuccess: refetchCobrancas,
+                        });
                       }}
                       onRegistrarPagamento={(cobranca) => {
                         setSelectedCobranca(cobranca);
@@ -715,38 +716,6 @@ export default function PassageiroCarteirinha() {
             />
           )}
 
-          {/* PIX Drawer */}
-          {selectedCobrancaPix && (
-            <CobrancaPixDrawer
-              open={pixDrawerOpen}
-              onOpenChange={setPixDrawerOpen}
-              qrCodePayload={selectedCobrancaPix.qr_code_payload || ""}
-              valor={Number(selectedCobrancaPix.valor)}
-              passageiroNome={passageiro.nome}
-              mes={selectedCobrancaPix.mes}
-              ano={selectedCobrancaPix.ano}
-            />
-          )}
-
-          <CobrancaDialog
-            isOpen={cobrancaDialogOpen}
-            onClose={() => safeCloseDialog(() => setCobrancaDialogOpen(false))}
-            passageiroId={passageiro.id}
-            passageiroNome={passageiro.nome}
-            passageiroResponsavelNome={passageiro.nome_responsavel}
-            valorCobranca={passageiro.valor_cobranca}
-            diaVencimento={passageiro.dia_vencimento}
-            onCobrancaAdded={() => safeCloseDialog(() => handleCobrancaAdded())}
-          />
-
-          {cobrancaToEdit && (
-            <CobrancaEditDialog
-              isOpen={editDialogOpen}
-              onClose={() => safeCloseDialog(() => setEditDialogOpen(false))}
-              cobranca={cobrancaToEdit}
-              onCobrancaUpdated={handleCobrancaUpdated}
-            />
-          )}
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Aguarde..." />

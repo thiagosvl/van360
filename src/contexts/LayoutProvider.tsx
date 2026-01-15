@@ -1,3 +1,4 @@
+import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
@@ -8,6 +9,7 @@ import {
 } from "@/components/dialogs/PlanUpgradeDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { WhatsappDialog } from "@/components/dialogs/WhatsappDialog";
+import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
 import {
     FEATURE_COBRANCA_AUTOMATICA,
     FEATURE_GASTOS,
@@ -30,6 +32,8 @@ import {
 } from "react";
 import {
     LayoutContext,
+    OpenCobrancaEditDialogProps,
+    OpenCobrancaPixDrawerProps,
     OpenConfirmationDialogProps,
     OpenEscolaFormProps,
     OpenGastoFormProps,
@@ -125,6 +129,20 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   }>({
     open: false,
     canClose: true,
+  });
+
+  const [cobrancaEditDialogState, setCobrancaEditDialogState] = useState<{
+    open: boolean;
+    props?: OpenCobrancaEditDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [cobrancaPixDrawerState, setCobrancaPixDrawerState] = useState<{
+    open: boolean;
+    props?: OpenCobrancaPixDrawerProps;
+  }>({
+    open: false,
   });
 
   // Prioridade de Dialogs: PIX Key > Whatsapp
@@ -249,6 +267,20 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openCobrancaEditDialog = (props: OpenCobrancaEditDialogProps) => {
+    setCobrancaEditDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const openCobrancaPixDrawer = (props: OpenCobrancaPixDrawerProps) => {
+    setCobrancaPixDrawerState({
+      open: true,
+      props,
+    });
+  };
+
   return (
     <LayoutContext.Provider
       value={{
@@ -268,6 +300,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closePixKeyDialog,
         isPixKeyDialogOpen: pixKeyDialogState.open,
         openWhatsappDialog,
+        openCobrancaEditDialog,
+        openCobrancaPixDrawer,
       }}
     >
       {children}
@@ -432,6 +466,42 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           }
           canClose={whatsappDialogState.canClose}
           userPhone={whatsappDialogState.userPhone}
+        />
+      )}
+
+      {cobrancaEditDialogState.open && cobrancaEditDialogState.props && (
+        <CobrancaEditDialog
+          isOpen={true}
+          onClose={() =>
+            safeCloseDialog(() => 
+                setCobrancaEditDialogState((prev) => ({ ...prev, open: false }))
+            )
+          }
+          cobranca={cobrancaEditDialogState.props.cobranca}
+          onCobrancaUpdated={() => {
+            cobrancaEditDialogState.props?.onSuccess?.();
+            setCobrancaEditDialogState((prev) => ({ ...prev, open: false }));
+          }}
+        />
+      )}
+
+      {cobrancaPixDrawerState.open && cobrancaPixDrawerState.props && (
+        <CobrancaPixDrawer
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) {
+              safeCloseDialog(() => 
+                  setCobrancaPixDrawerState((prev) => ({ ...prev, open: false }))
+              )
+            } else {
+              setCobrancaPixDrawerState((prev) => ({ ...prev, open }));
+            }
+          }}
+          qrCodePayload={cobrancaPixDrawerState.props.qrCodePayload}
+          valor={cobrancaPixDrawerState.props.valor}
+          passageiroNome={cobrancaPixDrawerState.props.passageiroNome}
+          mes={cobrancaPixDrawerState.props.mes}
+          ano={cobrancaPixDrawerState.props.ano}
         />
       )}
     </LayoutContext.Provider>

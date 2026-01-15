@@ -14,7 +14,6 @@ import { AutomaticChargesPrompt } from "@/components/alerts/AutomaticChargesProm
 import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActionsMenu";
 
 // Components - Dialogs
-import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 
 
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
@@ -62,7 +61,6 @@ import { BellOff, CheckCircle2, DollarSign, TrendingUp, Wallet } from "lucide-re
 
 // --- Internal Components ---
 import { MobileActionItem } from "@/components/common/MobileActionItem";
-import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
 import { CobrancaStatus } from "@/types/enums";
 
 interface CobrancaMobileItemWrapperProps {
@@ -117,10 +115,14 @@ const CobrancaMobileItemWrapper = memo(({
 // --- Main Component ---
 
 const Cobrancas = () => {
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
-
-  const { setPageTitle, openPlanUpgradeDialog, openConfirmationDialog, closeConfirmationDialog } = useLayout();
+  const { 
+    setPageTitle, 
+    openPlanUpgradeDialog, 
+    openConfirmationDialog, 
+    closeConfirmationDialog,
+    openCobrancaEditDialog,
+    openCobrancaPixDrawer
+  } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const deleteCobranca = useDeleteCobranca();
@@ -162,8 +164,6 @@ const Cobrancas = () => {
   const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
     null
   );
-  const [pixDrawerOpen, setPixDrawerOpen] = useState(false);
-  const [pixCobranca, setPixCobranca] = useState<Cobranca | null>(null);
 
   const { user, loading: isSessionLoading } = useSession();
   const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
@@ -212,16 +212,11 @@ const Cobrancas = () => {
 
   // Handlers
   const handleEditCobrancaClick = useCallback((cobranca: Cobranca) => {
-    safeCloseDialog(() => {
-      setCobrancaToEdit(cobranca);
-      setEditDialogOpen(true);
+    openCobrancaEditDialog({
+      cobranca,
+      onSuccess: refetchCobrancas,
     });
-  }, []);
-
-  const handleCobrancaUpdated = useCallback(() => {
-    refetchCobrancas();
-    setEditDialogOpen(false);
-  }, [refetchCobrancas]);
+  }, [openCobrancaEditDialog, refetchCobrancas]);
 
   const handleDeleteCobrancaClick = useCallback((cobranca: Cobranca) => {
     openConfirmationDialog({
@@ -253,9 +248,14 @@ const Cobrancas = () => {
   }, []);
 
   const handlePagarPix = useCallback((cobranca: Cobranca) => {
-    setPixCobranca(cobranca);
-    setPixDrawerOpen(true);
-  }, []);
+    openCobrancaPixDrawer({
+      qrCodePayload: cobranca.qr_code_payload || "",
+      valor: Number(cobranca.valor),
+      passageiroNome: cobranca.passageiro.nome,
+      mes: cobranca.mes,
+      ano: cobranca.ano,
+    });
+  }, [openCobrancaPixDrawer]);
 
   const navigateToDetails = useCallback(
     (cobranca: Cobranca) => {
@@ -846,27 +846,6 @@ const Cobrancas = () => {
               }
             />
           )}
-
-          {/* Dialogs Features */}
-          <CobrancaEditDialog
-            isOpen={editDialogOpen}
-            onClose={() => safeCloseDialog(() => setEditDialogOpen(false))}
-            cobranca={cobrancaToEdit}
-            onCobrancaUpdated={handleCobrancaUpdated}
-          />
-
-          {/* PIX Drawer */}
-          {pixCobranca && (
-            <CobrancaPixDrawer
-              open={pixDrawerOpen}
-              onOpenChange={setPixDrawerOpen}
-              qrCodePayload={pixCobranca.qr_code_payload || ""}
-              valor={Number(pixCobranca.valor)}
-              passageiroNome={pixCobranca.passageiro.nome}
-              mes={pixCobranca.mes}
-              ano={pixCobranca.ano}
-            />
-           )}
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Processando..." />

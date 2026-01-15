@@ -1,8 +1,5 @@
-import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
-
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
-import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
 import { NotificationTimeline } from "@/components/features/cobranca/NotificationTimeline";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  FEATURE_COBRANCA_AUTOMATICA
+    FEATURE_COBRANCA_AUTOMATICA
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useCobranca, useCobrancaNotificacoes } from "@/hooks";
@@ -24,55 +21,54 @@ import { Cobranca } from "@/types/cobranca";
 import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import { CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
-import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
-  canSendNotification,
-  canViewReceipt,
-  disableDesfazerPagamento,
-  disableEditarCobranca,
-  disableExcluirCobranca,
-  disableRegistrarPagamento,
-  seForPago,
+    canSendNotification,
+    canViewReceipt,
+    disableDesfazerPagamento,
+    disableEditarCobranca,
+    disableExcluirCobranca,
+    disableRegistrarPagamento,
+    seForPago,
 } from "@/utils/domain/cobranca/disableActions";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
-  formatCobrancaOrigem,
-  formatDateToBR,
-  formatPaymentType,
-  formatarEnderecoCompleto,
-  formatarTelefone,
-  getStatusColor,
-  getStatusText,
-  meses,
+    formatCobrancaOrigem,
+    formatDateToBR,
+    formatPaymentType,
+    formatarEnderecoCompleto,
+    formatarTelefone,
+    getStatusColor,
+    getStatusText,
+    meses,
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowRight,
-  BadgeCheck,
-  Bell,
-  BellOff,
-  Calendar,
-  CalendarDays,
-  Car,
-  CheckCircle,
-  CheckCircle2,
-  Copy,
-  CreditCard,
-  History,
-  IdCard,
-  MapPin,
-  Pencil,
-  Phone,
-  QrCode,
-  Receipt,
-  School,
-  Send,
-  Trash2,
-  User,
-  Wallet,
-  XCircle,
+    ArrowRight,
+    BadgeCheck,
+    Bell,
+    BellOff,
+    Calendar,
+    CalendarDays,
+    Car,
+    CheckCircle,
+    CheckCircle2,
+    Copy,
+    CreditCard,
+    History,
+    IdCard,
+    MapPin,
+    Pencil,
+    Phone,
+    QrCode,
+    Receipt,
+    School,
+    Send,
+    Trash2,
+    User,
+    Wallet,
+    XCircle,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -139,11 +135,8 @@ export default function PassageiroCobranca() {
     passageiro_id: string;
     cobranca_id: string;
   };
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [cobrancaToEdit, setCobrancaToEdit] = useState<Cobranca | null>(null);
-  const { setPageTitle } = useLayout();
+  const { setPageTitle, openCobrancaEditDialog, openCobrancaPixDrawer } = useLayout();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [pixDrawerOpen, setPixDrawerOpen] = useState(false);
 
   const { user } = useSession();
   const { plano } = useProfile(user?.id);
@@ -219,9 +212,9 @@ export default function PassageiroCobranca() {
 
   const handleEditCobrancaClick = () => {
     if (cobrancaNormalizadaParaEdicao) {
-      safeCloseDialog(() => {
-        setCobrancaToEdit(cobrancaNormalizadaParaEdicao);
-        setEditDialogOpen(true);
+      openCobrancaEditDialog({
+        cobranca: cobrancaNormalizadaParaEdicao,
+        onSuccess: refetchCobranca,
       });
     }
   };
@@ -590,7 +583,13 @@ export default function PassageiroCobranca() {
                       {cobrancaTyped?.txid_pix && cobrancaTyped?.qr_code_payload && !isPago && (
                         <Button
                           className="h-12 px-8 rounded-xl font-bold text-base bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto min-w-[200px]"
-                          onClick={() => setPixDrawerOpen(true)}
+                          onClick={() => openCobrancaPixDrawer({
+                            qrCodePayload: cobrancaTyped.qr_code_payload || "",
+                            valor: Number(cobrancaTyped.valor),
+                            passageiroNome: cobrancaTyped.passageiro.nome,
+                            mes: cobrancaTyped.mes,
+                            ano: cobrancaTyped.ano,
+                          })}
                         >
                           <QrCode className="w-5 h-5 mr-2" />
                           Ver PIX
@@ -791,34 +790,6 @@ export default function PassageiroCobranca() {
                       );
                     }
                   }}
-                />
-              )}
-
-              {editDialogOpen && cobrancaToEdit && (
-                <CobrancaEditDialog
-                  isOpen={editDialogOpen}
-                  onClose={() =>
-                    safeCloseDialog(() => setEditDialogOpen(false))
-                  }
-                  cobranca={cobrancaToEdit}
-                  onCobrancaUpdated={() => {
-                    safeCloseDialog(() => {
-                      setEditDialogOpen(false);
-                      refetchCobranca();
-                    });
-                  }}
-                />
-              )}
-
-              {cobrancaTyped && (
-                <CobrancaPixDrawer
-                  open={pixDrawerOpen}
-                  onOpenChange={setPixDrawerOpen}
-                  qrCodePayload={cobrancaTyped?.qr_code_payload || ""}
-                  valor={Number(cobrancaTyped?.valor)}
-                  passageiroNome={passageiroCompleto.nome}
-                  mes={cobrancaTyped?.mes}
-                  ano={cobrancaTyped?.ano}
                 />
               )}
             </div>

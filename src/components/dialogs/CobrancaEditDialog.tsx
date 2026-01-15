@@ -42,6 +42,8 @@ export default function CobrancaEditDialog({
     }
   }, [isOpen]);
 
+  if (!cobranca) return null;
+
   const { form, onSubmit, isSubmitting } = useCobrancaForm({
     mode: "edit",
     cobranca,
@@ -80,20 +82,20 @@ export default function CobrancaEditDialog({
                   Referência
                 </p>
                 <p className="text-lg font-bold text-gray-900 capitalize leading-tight">
-                  {format(new Date(cobranca.data_vencimento), "MMMM", {
+                  {cobranca?.data_vencimento ? format(new Date(cobranca.data_vencimento), "MMMM", {
                     locale: ptBR,
-                  })}
+                  }) : "-"}
                 </p>
               </div>
               <span
                 className={cn(
                   "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide shadow-sm",
-                  getStatusColor(cobranca.status, cobranca.data_vencimento)
+                  getStatusColor(cobranca?.status, cobranca?.data_vencimento)
                 )}
               >
-                {cobranca.status === CobrancaStatus.PAGO
+                {cobranca?.status === CobrancaStatus.PAGO
                   ? "PAGO"
-                  : getStatusText(cobranca.status, cobranca.data_vencimento)}
+                  : getStatusText(cobranca?.status, cobranca?.data_vencimento)}
               </span>
             </div>
 
@@ -103,17 +105,17 @@ export default function CobrancaEditDialog({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-gray-900 leading-tight">
-                  {cobranca.passageiro.nome}
+                  {cobranca?.passageiro.nome}
                 </p>
                 <p className="text-xs text-gray-500 leading-tight mt-0.5">
-                  {cobranca.passageiro.nome_responsavel}
+                  {cobranca?.passageiro.nome_responsavel}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Alerta de PIX */}
-          {cobranca.txid_pix && (
+          {cobranca?.txid_pix && (
             <div className="mb-6 p-3 bg-amber-50 rounded-lg border border-amber-200 flex items-start gap-3">
               <div className="shrink-0 mt-0.5">
                 <AlertTriangle className="h-4 w-4 text-amber-600" />
@@ -124,7 +126,7 @@ export default function CobrancaEditDialog({
                   Ao realizar alterações de preço ou data, <strong>o PIX atual será{" "}
                   cancelado (ficará inválido) e um novo PIX será gerado</strong>.
                 </p>
-                {cobranca.data_envio_ultima_notificacao && (
+                {cobranca?.data_envio_ultima_notificacao && (
                   <p className="text-amber-800 font-semibold mt-1 text-xs underline">
                     Como já foi enviada, você precisará reenviar a cobrança ao
                     responsável!

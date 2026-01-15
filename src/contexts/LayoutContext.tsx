@@ -61,6 +61,19 @@ export interface OpenVeiculoFormProps {
   allowBatchCreation?: boolean;
 }
 
+export interface OpenCobrancaEditDialogProps {
+  onSuccess?: () => void;
+  cobranca: any; // Using any to avoid complex type issues for now, can be Cobranca
+}
+
+export interface OpenCobrancaPixDrawerProps {
+  qrCodePayload: string;
+  valor: number;
+  passageiroNome: string;
+  mes?: number;
+  ano?: number;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -81,6 +94,8 @@ export interface LayoutContextType {
   closePixKeyDialog: () => void;
   isPixKeyDialogOpen: boolean;
   openWhatsappDialog: (options?: { canClose?: boolean }) => void;
+  openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;
+  openCobrancaPixDrawer: (props: OpenCobrancaPixDrawerProps) => void;
 }
 
 export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
