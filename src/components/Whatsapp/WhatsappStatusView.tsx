@@ -3,7 +3,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WHATSAPP_STATUS } from "@/config/constants";
 import { Check, Loader2, Monitor, Smartphone, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { logger } from "@/config/logger";
 
 interface WhatsappStatusViewProps {
     state: string;
@@ -118,7 +117,7 @@ export function WhatsappStatusView({
             if (secondsPastExpiry > 45 && activeTab === 'mobile' && !isRequestingCode && !isConnected) {
                 // Failsafe: Se passou muito tempo após expiração e nada chegou, forçamos nova geração
                 // 45s é suficiente para a Evolution API renovar o código e o Webhook chegar
-                logger.info({ secondsPastExpiry }, "Auto-renew failsafe triggered");
+                console.log("Auto-renew failsafe triggered", { secondsPastExpiry });
                 handleAutoRenew();
             }
         }, 1000);
