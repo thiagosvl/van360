@@ -1,10 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WHATSAPP_STATUS } from "@/config/constants";
-import { cn } from "@/lib/utils";
-import { CheckCircle, Copy, Loader2, Monitor, Smartphone, Wifi, WifiOff } from "lucide-react";
+import { Check, Loader2, Monitor, Smartphone, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 
 interface WhatsappStatusViewProps {
     state: string;
@@ -15,6 +13,7 @@ interface WhatsappStatusViewProps {
     onRequestPairingCode?: () => Promise<any>;
     userPhone?: string;
     pairingCode?: string | null;
+    pairingCodeExpiresAt?: string | null;
 }
 
 const formatPhone = (phone: string) => {
@@ -31,12 +30,9 @@ const formatPhone = (phone: string) => {
     return phone;
 };
 
-// --- COMPONENTS ---
-
 const TutorialSteps = ({ mode }: { mode: 'mobile' | 'desktop' }) => {
     return (
         <div className="space-y-4 sm:space-y-6 bg-slate-50/30 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-100 overflow-hidden">
-            
             <div className="space-y-4 sm:space-y-5">
                 <div className="flex gap-3 sm:gap-4">
                     <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-slate-200 bg-white shadow-sm flex items-center justify-center text-sm sm:text-sm font-bold text-slate-500">1</div>
@@ -45,7 +41,6 @@ const TutorialSteps = ({ mode }: { mode: 'mobile' | 'desktop' }) => {
                         <p className="text-[12px] sm:text-sm text-slate-400">Mantenha o app atualizado</p>
                     </div>
                 </div>
-                
                 <div className="flex gap-3 sm:gap-4">
                     <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-slate-200 bg-white shadow-sm flex items-center justify-center text-sm sm:text-sm font-bold text-slate-500">2</div>
                     <div className="flex flex-col gap-0.5 sm:gap-1 text-left min-w-0">
@@ -55,16 +50,6 @@ const TutorialSteps = ({ mode }: { mode: 'mobile' | 'desktop' }) => {
                         <p className="text-[12px] sm:text-sm text-slate-400">Menu ⋮ no Android ou ⚙️ no iPhone</p>
                     </div>
                 </div>
-
-                <div className="flex gap-3 sm:gap-4">
-                    <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-slate-200 bg-white shadow-sm flex items-center justify-center text-sm sm:text-sm font-bold text-slate-500">3</div>
-                    <div className="flex flex-col gap-0.5 sm:gap-1 text-left min-w-0">
-                        <p className="text-[14px] sm:text-base font-semibold text-slate-700 leading-tight">
-                            <b>Aparelhos conectados</b> {">"} <b>Conectar</b>
-                        </p>
-                    </div>
-                </div>
-
                 <div className="flex gap-3 sm:gap-4">
                     <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full border-blue-100 bg-blue-50 flex items-center justify-center text-sm sm:text-sm font-bold text-blue-600 shadow-sm">4</div>
                     <div className="flex flex-col gap-0.5 sm:gap-1 text-left min-w-0">
@@ -88,74 +73,93 @@ export function WhatsappStatusView({
     onConnect, 
     onRequestPairingCode,
     userPhone,
-    pairingCode // Received from Hook (DB Source)
+    pairingCode,
+    pairingCodeExpiresAt
 }: WhatsappStatusViewProps) {
-    // const [pairingCode, setPairingCode] = useState<string | null>(null); // REMOVED STATE
     const [isRequestingCode, setIsRequestingCode] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const [activeTab, setActiveTab] = useState("mobile");
-    const [timeLeft, setTimeLeft] = useState(60);
-    const [retryCount, setRetryCount] = useState(0);
-
-    const autoRequestAttempted = useRef(false);
+    const [timeLeft, setTimeLeft] = useState(0); // Inicia com 0, calculado via Effect
 
     const isConnected = state === WHATSAPP_STATUS.OPEN || state === WHATSAPP_STATUS.CONNECTED || state === WHATSAPP_STATUS.PAIRED;
     const isConnecting = state === WHATSAPP_STATUS.CONNECTING || state === "connecting";
 
-    // Manual trigger listener
+    // 1. SMART TIMER: Calcula o tempo real restante baseado na expiração do banco
     useEffect(() => {
-        // Do not auto-request. Only when isRequestingCode becomes true (Manual Click).
-        
-        // Safety checks
-        if (!isRequestingCode || isConnected || !onRequestPairingCode || activeTab !== "mobile") {
-             return;
+        if (!pairingCode || !pairingCodeExpiresAt) {
+            setTimeLeft(0);
+            return;
         }
 
-        // Se já tem código e ainda tem tempo, não faz nada
-        if (pairingCode && timeLeft > 0) return;
-
-        // Start Fetch
-        const autoRequest = async () => {
-            try {
-                const data = await onRequestPairingCode();
-                if (data?.pairingCode) {
-                    // Logic updated: Code comes via prop. We just set timer here.
-                    setTimeLeft(45);
-                }
-            } catch (error: any) {
-                console.error("Erro ao gerar código:", error);
-                toast.error("Ocorreu um erro ao gerar o código. Tente novamente.");
-            } finally {
-                setIsRequestingCode(false);
-            }
+        const calculateTimeLeft = () => {
+             const expiry = new Date(pairingCodeExpiresAt).getTime();
+             const now = Date.now();
+             const diff = Math.max(0, Math.ceil((expiry - now) / 1000));
+             return diff;
         };
-        autoRequest();
-    }, [activeTab, pairingCode, isRequestingCode, isConnected, onRequestPairingCode, timeLeft]);
 
-    // Timer logic for refreshing the code (Mobile Tab)
-    useEffect(() => {
-        if (pairingCode && !isConnected && activeTab === "mobile") {
-             const timer = setInterval(() => {
-                setTimeLeft((prev) => {
-                    if (prev <= 1) {
-                        // TIME IS UP: Trigger Auto-Renewal Loop
-                        // setPairingCode(null); (Removed: Prop driven)
-                        setIsRequestingCode(true); // Loops back to autoRequest
-                        return 45;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-            return () => clearInterval(timer);
-        }
-    }, [pairingCode, isConnected, activeTab]);
+        // Set initial
+        setTimeLeft(calculateTimeLeft());
 
-    // Auto-trigger QR Code when switching to Desktop tab
+        const interval = setInterval(() => {
+            const remaining = calculateTimeLeft();
+            setTimeLeft(remaining);
+
+            // AUTO-RENEWAL STRATEGY (Updated based on Manus IA):
+            // A Evolution API RENOVA o Pairing Code automaticamente e envia webhook.
+            // O Frontend deve ser PASSIVO e aguardar o webhook.
+            // Só forçamos uma nova requisição se o ciclo parecer ter morrido (ex: 20s após expiração sem novidades).
+            
+            const now = Date.now();
+            const expiry = pairingCodeExpiresAt ? new Date(pairingCodeExpiresAt).getTime() : 0;
+            const secondsPastExpiry = (now - expiry) / 1000;
+
+            if (secondsPastExpiry > 20 && activeTab === 'mobile' && !isRequestingCode && !isConnected) {
+                // Failsafe: Se passou muito tempo e nada chegou, forçamos.
+                console.log("Auto-renew failsafe triggered");
+                handleAutoRenew();
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [pairingCode, pairingCodeExpiresAt, activeTab, isRequestingCode, isConnected]);
+
+    const lastRequestTime = useRef<number>(0);
+
     useEffect(() => {
-        if (activeTab === "desktop" && !qrCode && !isLoading && !isConnected && onConnect) {
-            onConnect();
+        if (pairingCode) {
+            lastRequestTime.current = 0;
         }
-    }, [activeTab, qrCode, isLoading, isConnected, onConnect]);
+    }, [pairingCode]);
+
+    useEffect(() => {
+         if (!isLoading) {
+             if (activeTab === 'mobile' && !pairingCode && !isRequestingCode && !isConnected && onRequestPairingCode) {
+                 const now = Date.now();
+                 // Cooldown de 10s para evitar loop enquanto o pairingCode (prop) não atualiza via Realtime
+                 if (now - lastRequestTime.current > 10000) {
+                    handleAutoRenew();
+                 }
+             }
+         }
+    }, [activeTab, pairingCode, isRequestingCode, isConnected, isLoading]);
+
+    const handleAutoRenew = async () => {
+        if (isRequestingCode || !onRequestPairingCode) return;
+        
+        lastRequestTime.current = Date.now();
+        setIsRequestingCode(true);
+        try {
+            await onRequestPairingCode();
+        } catch (e) {
+            console.error(e);
+            lastRequestTime.current = 0; // Permitir retry rápido em erro
+        } finally {
+            setIsRequestingCode(false);
+        }
+    };
+    
+    // ... existing copyCode logic ...
 
     const copyCode = () => {
         if (pairingCode) {
@@ -164,6 +168,8 @@ export function WhatsappStatusView({
             setTimeout(() => setIsCopied(false), 3000);
         }
     };
+    
+    // ... existing renderCodeBoxes ...
 
     const renderCodeBoxes = (code: string) => {
         const cleanCode = code.replace(/[^A-Z0-9]/gi, "").toUpperCase();
@@ -195,14 +201,20 @@ export function WhatsappStatusView({
         );
     };
 
-    if (isLoading && !qrCode && !pairingCode && !isRequestingCode && activeTab === 'mobile') {
+    if (isLoading && !qrCode && !pairingCode && activeTab === 'mobile') {
          return (
-            <div className="flex flex-col items-center justify-center py-12 gap-3">
+            <div className="flex flex-col items-center justify-center py-12 gap-3 min-h-[300px]">
                 <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-                <p className="text-sm text-slate-500 font-medium animate-pulse">Verificando conexão...</p>
+                <div className="text-center space-y-1">
+                    <p className="text-sm text-slate-500 font-medium animate-pulse">Iniciando conexão segura...</p>
+                    <p className="text-xs text-slate-400">Aguarde a geração do seu código único.</p>
+                </div>
             </div>
         );
     }
+    
+    // ... Tabs ...
+
 
     if (isConnected) {
         return (
@@ -258,113 +270,101 @@ export function WhatsappStatusView({
                 <TabsContent value="mobile" className="space-y-4 sm:space-y-8 pb-4 mt-0">
                 {!pairingCode && !isRequestingCode ? (
                     <div className="flex flex-col gap-6 sm:gap-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                        {/* TUTORIAL SECTION - Always Visible First */}
+                        {/* TUTORIAL SECTION */}
                         <div className="space-y-4">
-                            <h3 className="text-lg sm:text-xl font-bold text-slate-800 text-center">Como conectar?</h3>
-                            <TutorialSteps mode="mobile" />
+                            <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                                <TutorialSteps mode="mobile" />
+                            </h3>
                         </div>
 
-                        {/* ACTION SECTION - On Demand Generation */}
-                        <div className="flex flex-col items-center justify-center p-6 bg-blue-50/50 rounded-2xl border border-blue-100 text-center gap-4">
+                        {/* ACTION SECTION */}
+                        <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100/50 flex flex-col items-center text-center gap-4">
                             <div className="space-y-1">
-                                <h4 className="text-sm font-bold text-blue-900">Já seguiu os passos acima?</h4>
-                                <p className="text-xs text-blue-600/80 max-w-[280px] mx-auto">
-                                    Ao clicar em gerar, você terá 45 segundos para digitar o código no seu WhatsApp.
-                                </p>
+                                <p className="text-sm font-semibold text-blue-900">Já seguiu os passos acima?</p>
+                                <p className="text-xs text-blue-700/70 max-w-[240px]">Ao clicar em gerar, você terá 60 segundos para digitar o código no seu WhatsApp.</p>
                             </div>
-                            
                             <Button 
-                                onClick={() => {
-                                    setRetryCount(prev => prev + 1);
-                                    // Trigger code generation manually
-                                    autoRequestAttempted.current = false; 
-                                    setIsRequestingCode(true); // Will trigger useEffect to fetch code
-                                }} 
-                                className="w-full sm:w-auto rounded-xl h-12 px-8 bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-200 text-white font-bold transition-all active:scale-95"
+                                onClick={handleAutoRenew}
+                                className="w-full max-w-xs bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200"
                             >
                                 Gerar Código de Conexão
                             </Button>
                         </div>
                     </div>
                 ) : (
-                    <div className="flex flex-col gap-6 sm:gap-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                        {/* HEADER SECTION - Code Display */}
-                        <div className="space-y-4 text-center">
-                            <div className="space-y-1.5 px-2">
-                                <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 leading-tight">Insira este código no WhatsApp</h3>
-                                    <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs sm:text-sm text-slate-500">
-                                        <span>Conectando ao número</span>
-                                        <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md break-all">
-                                            {userPhone ? formatPhone(userPhone) : "do perfil"}
+                    <div className="flex flex-col items-center justify-center py-12 gap-6 animate-in zoom-in-95 duration-500 min-h-[300px]">
+                        {pairingCode ? (
+                            <>
+                                <div className="text-center space-y-2">
+                                    <h3 className="text-lg font-bold text-slate-900">Insira este código no WhatsApp</h3>
+                                    <p className="text-sm text-slate-500">
+                                        Conectando ao número <span className="font-bold text-blue-600 tracking-wide">{formatPhone(userPhone || "")}</span>
+                                    </p>
+                                </div>
+
+                                <div className="relative group w-full px-4" onClick={copyCode}>
+                                    {renderCodeBoxes(pairingCode)}
+                                    
+                                    <div className={`absolute inset-0 bg-blue-600/90 backdrop-blur-sm flex items-center justify-center transition-all duration-300 rounded-[32px] mx-4 ${isCopied ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                                        <div className="flex items-center gap-2 text-white font-bold">
+                                            <Check className="h-5 w-5" />
+                                            Copiado!
+                                        </div>
+                                    </div>
+                                    
+                                    {!isCopied && (
+                                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                            <p className="text-[10px] uppercase tracking-widest font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">Clique para copiar</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="w-full max-w-[280px] space-y-3 pt-4">
+                                    <div className="flex items-center justify-between text-xs mb-1 px-1">
+                                        <span className="font-medium text-slate-500">Expira em</span>
+                                        <span className={`font-mono font-bold ${timeLeft < 15 ? 'text-red-500 animate-pulse' : 'text-blue-600'}`}>
+                                            {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
                                         </span>
                                     </div>
-                            </div>
-
-                            <div className="relative group px-1 sm:px-0">
-                                {isRequestingCode && !pairingCode ? (
-                                    <div className="h-[100px] sm:h-[140px] flex items-center justify-center bg-slate-50/50 rounded-3xl border border-dashed border-slate-200 flex-col gap-3">
-                                        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-                                        <p className="text-xs text-slate-400 font-medium">Buscando código...</p>
+                                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                        <div 
+                                            className={`h-full transition-all duration-1000 ${timeLeft < 15 ? 'bg-red-500' : 'bg-blue-500'}`}
+                                            style={{ width: `${(timeLeft / 60) * 100}%` }}
+                                        />
                                     </div>
-                                ) : (
-                                    <>
-                                        {pairingCode && renderCodeBoxes(pairingCode)}
-                                        <div className="flex items-center justify-center gap-2 mt-4">
-                                            <div className="flex items-center bg-white border border-slate-100 rounded-full p-1 shadow-sm">
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="sm" 
-                                                    onClick={copyCode} 
-                                                    className={cn(
-                                                        "gap-2 h-8 rounded-full px-4 text-[11px] sm:text-xs font-bold transition-all",
-                                                        isCopied 
-                                                            ? "text-green-600 bg-green-50 hover:bg-green-100 hover:text-green-700" 
-                                                            : "text-slate-500 hover:text-blue-600 hover:bg-blue-50/50"
-                                                    )}
-                                                >
-                                                    {isCopied ? (
-                                                        <>
-                                                            <CheckCircle className="h-3.5 w-3.5 animate-in zoom-in duration-300" />
-                                                            Copiado
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Copy className="h-3 w-3" />
-                                                            Copiar 
-                                                        </>
-                                                    )}
-                                                </Button>
-                                                <div className="w-[1px] h-4 bg-slate-100 mx-1" />
-                                                <div className="flex items-center gap-2 px-3 py-1 text-[10px] sm:text-[11px] text-slate-400 font-bold">
-                                                    <div className="flex gap-0.5">
-                                                        {[...Array(4)].map((_, i) => (
-                                                            <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all duration-1000 ${i < Math.ceil(timeLeft/15) ? 'bg-blue-500' : 'bg-slate-200'}`} />
-                                                        ))}
-                                                    </div>
-                                                    {timeLeft}s
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <Button 
-                                            variant="ghost" 
-                                            size="sm" 
-                                            onClick={() => {
-                                                // setPairingCode(null); (Removed)
-                                                setIsRequestingCode(true);
-                                                setTimeLeft(45);
-                                            }} 
-                                            className="mt-6 text-red-400 hover:text-red-500 hover:bg-red-50 text-xs h-8 px-4 rounded-lg"
-                                        >
-                                            Cancelar / Gerar Novo
-                                        </Button>
-                                    </>
-                                )}
+                                    <p className="text-[10px] text-center text-slate-400 leading-relaxed px-4">
+                                        {timeLeft > 0 
+                                            ? "O código é renovado automaticamente pela Evolution API" 
+                                            : "Aguardando renovação automática..."}
+                                    </p>
+                                </div>
+
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={handleAutoRenew} 
+                                    className="mt-4 text-slate-400 hover:text-blue-600 hover:bg-blue-50 text-xs h-8 px-4 rounded-lg"
+                                >
+                                    Gerar Novo Código
+                                </Button>
+                            </>
+                        ) : (
+                            <div className="flex flex-col items-center gap-4 py-8">
+                                <div className="relative">
+                                    <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <Smartphone className="h-5 w-5 text-blue-400 animate-pulse" />
+                                    </div>
+                                </div>
+                                <div className="text-center space-y-1">
+                                    <p className="text-sm font-semibold text-slate-700 animate-pulse">Solicitando código oficial...</p>
+                                    <p className="text-xs text-slate-400 max-w-[200px]">Aguardando resposta da Evolution API para o número {formatPhone(userPhone || "")}</p>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 )}
-            </TabsContent>
+                </TabsContent>
 
             <TabsContent value="desktop" className="space-y-6 sm:space-y-8 pb-4">
                  {qrCode ? (

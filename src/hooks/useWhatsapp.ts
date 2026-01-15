@@ -27,6 +27,8 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
       // Ignore if outside layout
   }
 
+  const [mutationPairingData, setMutationPairingData] = useState<{ code: string, expiresAt: string } | null>(null);
+
   // Realtime listener for connection status
   useEffect(() => {
     if (!user?.id) return;
@@ -39,11 +41,12 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
           event: "*",
           schema: "public",
           table: "usuarios",
-          filter: `id=eq.${user.id}`,
+          filter: `auth_uid=eq.${user.id}`,
         },
         (payload) => {
-          // Quando houver qualquer mudança no registro do usuário, invalidamos o status do WhatsApp
-          // O backend é a fonte da verdade definitiva (Evolution API), mas o DB local reflete o estado.
+          // Quando houver mudança no banco, limpamos o buffer da mutação 
+          // e deixamos a query assumir a verdade.
+          setMutationPairingData(null);
           queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
         }
       )
@@ -59,21 +62,13 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
     queryKey: ["whatsapp-status"],
     queryFn: whatsappApi.getStatus,
     enabled: !!user?.id && isProfissional && !isPixKeyDialogOpen,
-    staleTime: 30000, 
-    // Polling removido. O Realtime (Supabase) cuidará das atualizações.
-    refetchInterval: false, 
+    staleTime: 5000, 
+    refetchInterval: false, // POLLING REMOVIDO DEFINITIVAMENTE
     refetchOnWindowFocus: true,
   });
 
   const state = (statusData?.state || WHATSAPP_STATUS.UNKNOWN) as ConnectionState;
   const instanceName = statusData?.instanceName || null;
-
-  // Atualizar QR Local se a conexão for estabelecida
-  useEffect(() => {
-    if (state === WHATSAPP_STATUS.OPEN) {
-        setLocalQrCode(null);
-    }
-  }, [state]);
 
   // Mutation: Connect
   const connectMutation = useMutation({
@@ -82,7 +77,6 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
         if (data.qrcode?.base64) {
             setLocalQrCode(data.qrcode.base64);
             toast.info("Escaneie o QR Code para conectar.");
-            // Força refetch imediato e inicia polling via refetchInterval
             queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
         } else if (data.instance?.state === "open") {
             toast.success("WhatsApp já está conectado!");
@@ -110,11 +104,16 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
   // Mutation: Request Pairing Code
   const pairingCodeMutation = useMutation({
     mutationFn: whatsappApi.requestPairingCode,
-    onSuccess: (data) => {
-        if (data.pairingCode) {
-            setLocalQrCode(null); // Clear QR if exists
+    onSuccess: (data: any) => {
+        if (data.pairingCode?.code) {
+            setLocalQrCode(null);
+            // Buffer local para exibição instantânea antes do Realtime/Refetch
+            setMutationPairingData({
+                code: data.pairingCode.code,
+                expiresAt: new Date(Date.now() + 60000).toISOString()
+            });
         }
-        // Normalize checking if we have a code
+        queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
         return data; 
     },
     onError: (error: any) => {
@@ -123,16 +122,21 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
     }
   });
 
+  // VALOR FINAL: Prioriza o dado da mutação (mais rápido) e cai pro DB (mais estável)
+  const pairingCode = mutationPairingData?.code || (statusData as any)?.pairingCode;
+  const pairingCodeExpiresAt = mutationPairingData?.expiresAt || (statusData as any)?.pairingCodeExpiresAt;
+
   return {
     state,
     qrCode: localQrCode,
     isLoading: isLoading || connectMutation.isPending || disconnectMutation.isPending || pairingCodeMutation.isPending,
     instanceName,
-    pairingCode: (statusData as any)?.pairingCode,
+    pairingCode,
+    pairingCodeExpiresAt,
     userPhone: (statusData as any)?.telefone || (useProfile(user?.id) as any)?.profile?.telefone,
     connect: () => connectMutation.mutate(),
     disconnect: () => disconnectMutation.mutate(),
-    requestPairingCode: pairingCodeMutation.mutateAsync, // Async to allow awaiting result in UI
+    requestPairingCode: pairingCodeMutation.mutateAsync,
     refresh: refetch
   };
 }
