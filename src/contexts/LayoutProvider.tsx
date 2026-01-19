@@ -2,21 +2,22 @@ import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
+import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import PixKeyDialog from "@/components/dialogs/PixKeyDialog";
 import {
-  PlanUpgradeDialog,
+    PlanUpgradeDialog,
 } from "@/components/dialogs/PlanUpgradeDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { WhatsappDialog } from "@/components/dialogs/WhatsappDialog";
 import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
 import {
-  FEATURE_COBRANCA_AUTOMATICA,
-  FEATURE_GASTOS,
-  FEATURE_LIMITE_PASSAGEIROS,
-  FEATURE_NOTIFICACOES,
-  FEATURE_RELATORIOS,
-  PLANO_PROFISSIONAL,
+    FEATURE_COBRANCA_AUTOMATICA,
+    FEATURE_GASTOS,
+    FEATURE_LIMITE_PASSAGEIROS,
+    FEATURE_NOTIFICACOES,
+    FEATURE_RELATORIOS,
+    PLANO_PROFISSIONAL,
 } from "@/constants";
 import { safeCloseDialog } from "@/hooks";
 import { usePixKeyGuard } from "@/hooks/business/usePixKeyGuard";
@@ -25,21 +26,22 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useWhatsappGuard } from "@/hooks/business/useWhatsappGuard";
 import {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useState,
+    ReactNode,
+    useCallback,
+    useEffect,
+    useState,
 } from "react";
 import {
-  LayoutContext,
-  OpenCobrancaEditDialogProps,
-  OpenCobrancaPixDrawerProps,
-  OpenConfirmationDialogProps,
-  OpenEscolaFormProps,
-  OpenGastoFormProps,
-  OpenPassageiroFormProps,
-  OpenPlanUpgradeDialogProps,
-  OpenVeiculoFormProps
+    LayoutContext,
+    OpenCobrancaEditDialogProps,
+    OpenCobrancaPixDrawerProps,
+    OpenConfirmationDialogProps,
+    OpenEscolaFormProps,
+    OpenGastoFormProps,
+    OpenManualPaymentDialogProps,
+    OpenPassageiroFormProps,
+    OpenPlanUpgradeDialogProps,
+    OpenVeiculoFormProps
 } from "./LayoutContext";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
@@ -141,6 +143,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [cobrancaPixDrawerState, setCobrancaPixDrawerState] = useState<{
     open: boolean;
     props?: OpenCobrancaPixDrawerProps;
+  }>({
+    open: false,
+  });
+
+  const [manualPaymentDialogState, setManualPaymentDialogState] = useState<{
+    open: boolean;
+    props?: OpenManualPaymentDialogProps;
   }>({
     open: false,
   });
@@ -282,6 +291,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openManualPaymentDialog = (props: OpenManualPaymentDialogProps) => {
+    setManualPaymentDialogState({
+      open: true,
+      props,
+    });
+  };
+
   return (
     <LayoutContext.Provider
       value={{
@@ -303,6 +319,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openWhatsappDialog,
         openCobrancaEditDialog,
         openCobrancaPixDrawer,
+        openManualPaymentDialog,
       }}
     >
       {children}
@@ -503,6 +520,28 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           passageiroNome={cobrancaPixDrawerState.props.passageiroNome}
           mes={cobrancaPixDrawerState.props.mes}
           ano={cobrancaPixDrawerState.props.ano}
+        />
+      )}
+
+      {manualPaymentDialogState.open && manualPaymentDialogState.props && (
+        <ManualPaymentDialog
+          isOpen={true}
+          onClose={() =>
+            safeCloseDialog(() =>
+              setManualPaymentDialogState((prev) => ({ ...prev, open: false }))
+            )
+          }
+          cobrancaId={manualPaymentDialogState.props.cobrancaId}
+          passageiroNome={manualPaymentDialogState.props.passageiroNome}
+          responsavelNome={manualPaymentDialogState.props.responsavelNome}
+          valorOriginal={manualPaymentDialogState.props.valorOriginal}
+          status={manualPaymentDialogState.props.status}
+          dataVencimento={manualPaymentDialogState.props.dataVencimento}
+          onPaymentRecorded={() => {
+            manualPaymentDialogState.props?.onPaymentRecorded();
+            // Optional: close dialog on success is handled by the component or we can close here if needed
+            // But usually the component props onClose handles it or the component calls onClose
+          }}
         />
       )}
     </LayoutContext.Provider>

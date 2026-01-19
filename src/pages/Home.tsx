@@ -28,7 +28,7 @@ import { useSession } from "@/hooks/business/useSession";
 import {
   FEATURE_GASTOS,
   FEATURE_LIMITE_PASSAGEIROS,
-  PLANO_ESSENCIAL
+  PLANO_ESSENCIAL,
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
@@ -61,7 +61,14 @@ const Home = () => {
     openWhatsappDialog,
   } = useLayout();
   const { user, loading: isSessionLoading } = useSession();
-  const { state: liveWhatsappStatus, qrCode, isLoading: isWhatsappLoading, instanceName, connect, requestPairingCode } = useWhatsapp();
+  const {
+    state: liveWhatsappStatus,
+    qrCode,
+    isLoading: isWhatsappLoading,
+    instanceName,
+    connect,
+    requestPairingCode,
+  } = useWhatsapp();
 
   // Use Access Control Hook
   const {
@@ -331,61 +338,49 @@ const Home = () => {
             </p>
           </div>
 
-            {/* 
+          {/* 
               Priority Dashboard Alerts (Strict Sequential Order):
               1. PIX Validation (Pending/Failed)
               2. WhatsApp Connection
               3. Plan Alerts (Free Plan)
             */}
-            
-            {profile?.status_chave_pix === 'PENDENTE_VALIDACAO' ? (
-              <section className="mb-4">
-                <DashboardStatusCard
-                  type="pending"
-                  title="Validação PIX em Andamento"
-                  description="Estamos confirmando sua chave com o banco. Isso leva alguns minutos."
-                  actionLabel="Verificar Agora"
-                  onAction={() => openPixKeyDialog()}
-                />
-              </section>
-            ) : profile?.status_chave_pix === 'FALHA_VALIDACAO' ? (
-              <section className="mb-4">
-                <DashboardStatusCard
-                  type="error"
-                  title="Validação PIX Falhou"
-                  description="Não conseguimos confirmar sua chave. Corrija os dados para receber repasses."
-                  actionLabel="Corrigir Chave"
-                  onAction={() => openPixKeyDialog()}
-                />
-              </section>
-            ) : (
-              /* ONLY if PIX is Valid OR Not Registered (Free Plan path) we show other alerts */
-              <>
-                {liveWhatsappStatus === WHATSAPP_STATUS.DISCONNECTED && (
-                  <section className="mb-4">
-                    <DashboardStatusCard
-                      type="error"
-                      title="WhatsApp Desconectado"
-                      description="Sua instância do WhatsApp está desconectada. Clique em reconectar para garantir que as mensagens enviadas."
-                      actionLabel="Reconectar"
-                      onAction={() => openWhatsappDialog()}
-                    />
-                  </section>
-                )}
 
-                {isFreePlan && (
-                  <section className="mb-4">
-                    <DashboardStatusCard
-                      type="pending"
-                      title="Plano Gratuito Ativo"
-                      description="Conheça os benefícios dos outros planos."
-                      actionLabel="Ver Benefícios"
-                      onAction={() => openPlanUpgradeDialog()}
-                    />
-                  </section>
-                )}
-              </>
-            )}
+          {profile?.status_chave_pix === "PENDENTE_VALIDACAO" ? (
+            <section className="mb-4">
+              <DashboardStatusCard
+                type="pending"
+                title="Validação PIX em Andamento"
+                description="Estamos confirmando sua chave com o banco. Isso leva alguns minutos."
+                actionLabel="Verificar Agora"
+                onAction={() => openPixKeyDialog()}
+              />
+            </section>
+          ) : profile?.status_chave_pix === "FALHA_VALIDACAO" ? (
+            <section className="mb-4">
+              <DashboardStatusCard
+                type="error"
+                title="Validação PIX Falhou"
+                description="Não conseguimos confirmar sua chave. Corrija os dados para receber repasses."
+                actionLabel="Corrigir Chave"
+                onAction={() => openPixKeyDialog()}
+              />
+            </section>
+          ) : (
+            /* ONLY if PIX is Valid OR Not Registered (Free Plan path) we show other alerts */
+            <>
+              {liveWhatsappStatus === WHATSAPP_STATUS.DISCONNECTED && (
+                <section className="mb-4">
+                  <DashboardStatusCard
+                    type="error"
+                    title="WhatsApp Desconectado"
+                    description="Sua instância do WhatsApp está desconectada. Clique em reconectar para garantir que as mensagens enviadas."
+                    actionLabel="Reconectar"
+                    onAction={() => openWhatsappDialog()}
+                  />
+                </section>
+              )}
+            </>
+          )}
 
           {/* Onboarding - Primeiros Passos */}
           {showOnboarding && (
@@ -525,7 +520,7 @@ const Home = () => {
             <h2 className="text-lg font-bold text-gray-900 mb-4 px-1">
               Acesso Rápido
             </h2>
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 md:gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-4">
               <ShortcutCard
                 onClick={handleOpenPassageiroDialog}
                 icon={Plus}

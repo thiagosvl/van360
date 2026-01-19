@@ -27,7 +27,7 @@ export function AssinaturaDashboard({
   onRefresh,
 }: AssinaturaDashboardProps) {
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-10">
+    <div className="space-y-6 mx-auto pb-10">
       {/* 1. Header (Status & Primary Action) */}
       <SubscriptionHeader
         plano={plano}

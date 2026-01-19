@@ -16,7 +16,7 @@ import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActi
 // Components - Dialogs
 
 
-import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
+
 
 // Components - Empty & Skeletons
 import { CobrancasFilters } from "@/components/features/cobranca/CobrancasFilters";
@@ -25,20 +25,19 @@ import { ListSkeleton } from "@/components/skeletons";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 
 import {
-  useCobrancas,
-  useDeleteCobranca
+    useCobrancas,
+    useDeleteCobranca
 } from "@/hooks";
 import { useCobrancaActions } from "@/hooks/business/useCobrancaActions";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 // Utils
-import { safeCloseDialog } from "@/utils/dialogUtils";
 import {
-  formatDateToBR,
-  formatPaymentType,
-  getStatusColor,
-  meses
+    formatDateToBR,
+    formatPaymentType,
+    getStatusColor,
+    meses
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 
@@ -52,7 +51,7 @@ import { UnifiedEmptyState } from "@/components/empty";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
-  FEATURE_COBRANCA_AUTOMATICA
+    FEATURE_COBRANCA_AUTOMATICA
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -121,7 +120,8 @@ const Cobrancas = () => {
     openConfirmationDialog, 
     closeConfirmationDialog,
     openCobrancaEditDialog,
-    openCobrancaPixDrawer
+    openCobrancaPixDrawer,
+    openManualPaymentDialog
   } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -159,11 +159,6 @@ const Cobrancas = () => {
 
   const [mesFilter, setMesFilter] = useState(new Date().getMonth() + 1);
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
-
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
-    null
-  );
 
   const { user, loading: isSessionLoading } = useSession();
   const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
@@ -243,9 +238,16 @@ const Cobrancas = () => {
   }, []);
 
   const openPaymentDialog = useCallback((cobranca: Cobranca) => {
-    setSelectedCobranca(cobranca);
-    setPaymentDialogOpen(true);
-  }, []);
+    openManualPaymentDialog({
+      cobrancaId: cobranca.id,
+      passageiroNome: cobranca.passageiro.nome,
+      responsavelNome: cobranca.passageiro.nome_responsavel,
+      valorOriginal: Number(cobranca.valor),
+      status: cobranca.status,
+      dataVencimento: cobranca.data_vencimento,
+      onPaymentRecorded: refetchCobrancas,
+    });
+  }, [openManualPaymentDialog, refetchCobrancas]);
 
   const handlePagarPix = useCallback((cobranca: Cobranca) => {
     openCobrancaPixDrawer({
@@ -825,27 +827,7 @@ const Cobrancas = () => {
           </Tabs>
 
           {/* Dialogs */}
-          {paymentDialogOpen && selectedCobranca && (
-            <ManualPaymentDialog
-              isOpen={paymentDialogOpen}
-              onClose={() => safeCloseDialog(() => setPaymentDialogOpen(false))}
-              cobrancaId={selectedCobranca.id}
-              passageiroNome={selectedCobranca.passageiro.nome}
-              responsavelNome={selectedCobranca.passageiro.nome_responsavel}
-              valorOriginal={Number(selectedCobranca.valor)}
-              status={selectedCobranca.status}
-              dataVencimento={selectedCobranca.data_vencimento}
-              onPaymentRecorded={() =>
-                safeCloseDialog(() => {
-                  refetchCobrancas();
-                  if (!permissions.canUseAutomatedCharges) {
-                     handleUpgrade(FEATURE_COBRANCA_AUTOMATICA,
-                      "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?");
-                  }
-                })
-              }
-            />
-          )}
+
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Processando..." />

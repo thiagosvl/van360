@@ -1,17 +1,17 @@
 import {
-    Suspense,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 
 // React Router
 import { useNavigate, useParams } from "react-router-dom";
 
 // Components - Dialogs
-import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
+import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
 
 // Components - Empty & Skeletons
 import { CarteirinhaSkeleton } from "@/components/skeletons";
@@ -50,18 +50,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useAvailableYears,
-    useCobrancasByPassageiro,
-    useDeleteCobranca,
-    useDeletePassageiro,
-    useDesfazerPagamento,
-    useEnviarNotificacaoCobranca,
-    usePassageiro,
-    usePermissions,
-    useToggleAtivoPassageiro,
-    useToggleNotificacoesCobranca,
-    useUpdateCobranca,
-    useUpdatePassageiro
+  useAvailableYears,
+  useCobrancasByPassageiro,
+  useDeleteCobranca,
+  useDeletePassageiro,
+  useDesfazerPagamento,
+  useEnviarNotificacaoCobranca,
+  usePassageiro,
+  usePermissions,
+  useToggleAtivoPassageiro,
+  useToggleNotificacoesCobranca,
+  useUpdateCobranca,
+  useUpdatePassageiro
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -93,7 +93,8 @@ export default function PassageiroCarteirinha() {
     openVeiculoFormDialog,
     openPassageiroFormDialog,
     openCobrancaEditDialog,
-    openCobrancaPixDrawer
+    openCobrancaPixDrawer,
+    openManualPaymentDialog
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
@@ -117,14 +118,9 @@ export default function PassageiroCarteirinha() {
     enviarNotificacao.isPending ||
     desfazerPagamento.isPending ||
     toggleNotificacoes.isPending;
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
-  const [selectedCobranca, setSelectedCobranca] = useState<Cobranca | null>(
-    null
-  );
   
-
   // State for year filter
   const [yearFilter, setYearFilter] = useState(currentYear);
 
@@ -487,10 +483,17 @@ export default function PassageiroCarteirinha() {
     });
   }, [desfazerPagamento, closeConfirmationDialog]);
 
-  const openPaymentDialog = useCallback((cobranca: Cobranca) => {
-    setSelectedCobranca(cobranca);
-    setPaymentDialogOpen(true);
-  }, []);
+  const openPaymentDialog = (cobranca: Cobranca) => {
+    openManualPaymentDialog({
+      cobrancaId: cobranca.id,
+      passageiroNome: passageiro.nome,
+      responsavelNome: passageiro.nome_responsavel,
+      valorOriginal: Number(cobranca.valor),
+      status: cobranca.status,
+      dataVencimento: cobranca.data_vencimento,
+      onPaymentRecorded: refetchCobrancas,
+    });
+  };
   const handlePaymentRecorded = () => {
     // Invalidação feita automaticamente pelos hooks de mutation
   };
@@ -671,17 +674,12 @@ export default function PassageiroCarteirinha() {
                         });
                       }}
                       onRegistrarPagamento={(cobranca) => {
-                        setSelectedCobranca(cobranca);
-                        setPaymentDialogOpen(true);
+                        openPaymentDialog(cobranca);
                       }}
                       onPagarPix={handlePagarPix}
                       onEnviarNotificacao={handleEnviarNotificacaoClick}
                       onToggleLembretes={handleToggleLembretes}
                       onDesfazerPagamento={handleDesfazerClick}
-                      onExcluirCobranca={handleDeleteCobrancaClick}
-                      onToggleMostrarTodas={() =>
-                        setMostrarTodasCobrancas(!mostrarTodasCobrancas)
-                      }
                       onToggleClick={handleToggleClick}
                       onUpgrade={handleUpgrade}
                     />
@@ -690,37 +688,20 @@ export default function PassageiroCarteirinha() {
               </div>
             </div>
           </div>
-
-          {selectedCobranca && (
-            <ManualPaymentDialog
-              isOpen={paymentDialogOpen}
-              onClose={() => safeCloseDialog(() => setPaymentDialogOpen(false))}
-              cobrancaId={selectedCobranca.id}
-              passageiroNome={passageiro.nome}
-              responsavelNome={passageiro.nome_responsavel}
-              valorOriginal={Number(selectedCobranca.valor)}
-              status={selectedCobranca.status}
-              dataVencimento={selectedCobranca.data_vencimento}
-              onPaymentRecorded={() =>
-                safeCloseDialog(() => {
-                  handlePaymentRecorded();
-                  if (!canUseCobrancaAutomatica) { // Boolean
-                    handleUpgrade(
-                      FEATURE_COBRANCA_AUTOMATICA, 
-                      "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?",
-                      "Cobrança Automática"
-                    );
-                  }
-                })
-              }
-            />
-          )}
-
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Aguarde..." />
 
-
+      <CobrancaDialog
+        isOpen={cobrancaDialogOpen}
+        onClose={() => setCobrancaDialogOpen(false)}
+        passageiroId={passageiro_id || ""}
+        passageiroNome={passageiro?.nome || ""}
+        passageiroResponsavelNome={passageiro?.nome_responsavel || ""}
+        valorCobranca={Number(passageiro?.valor_cobranca || 0)}
+        diaVencimento={Number(passageiro?.dia_vencimento || 10)}
+        onCobrancaAdded={refetchCobrancas}
+      />
     </>
   );
 }

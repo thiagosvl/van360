@@ -1,4 +1,3 @@
-import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { NotificationTimeline } from "@/components/features/cobranca/NotificationTimeline";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
@@ -135,8 +134,8 @@ export default function PassageiroCobranca() {
     passageiro_id: string;
     cobranca_id: string;
   };
-  const { setPageTitle, openCobrancaEditDialog, openCobrancaPixDrawer } = useLayout();
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const { setPageTitle, openCobrancaEditDialog, openCobrancaPixDrawer, openManualPaymentDialog } = useLayout();
+
 
   const { user } = useSession();
   const { plano } = useProfile(user?.id);
@@ -601,7 +600,25 @@ export default function PassageiroCobranca() {
                             "h-12 px-8 rounded-xl font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto min-w-[200px]",
                             paymentButtonClass
                           )}
-                          onClick={() => setPaymentDialogOpen(true)}
+                          onClick={() => openManualPaymentDialog({
+                            cobrancaId: cobrancaTyped.id,
+                            passageiroNome: cobrancaTyped.passageiro.nome,
+                            responsavelNome: cobrancaTyped.passageiro.nome_responsavel,
+                            valorOriginal: Number(cobrancaTyped.valor),
+                            status: cobrancaTyped.status,
+                            dataVencimento: cobrancaTyped.data_vencimento,
+                            onPaymentRecorded: () => {
+                              refetchCobranca();
+                              // Upsell Check
+                              if (!permissions.canUseAutomatedCharges) {
+                                handleUpgrade(
+                                  FEATURE_COBRANCA_AUTOMATICA,
+                                  "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?",
+                                  "Cobrança Automática"
+                                );
+                              }
+                            }
+                          })}
                         >
                           <BadgeCheck className="w-5 h-5 mr-2" />
                           Registrar Pagamento
@@ -769,29 +786,7 @@ export default function PassageiroCobranca() {
                 </motion.div>
               </div>
 
-              {cobrancaTyped && (
-                <ManualPaymentDialog
-                  isOpen={paymentDialogOpen}
-                  onClose={() => setPaymentDialogOpen(false)}
-                  cobrancaId={cobranca_id}
-                  passageiroNome={passageiroCompleto.nome}
-                  responsavelNome={passageiroCompleto.nome_responsavel}
-                  valorOriginal={Number(cobrancaTyped?.valor)}
-                  status={cobrancaTyped?.status}
-                  dataVencimento={cobrancaTyped?.data_vencimento}
-                  onPaymentRecorded={() => {
-                    refetchCobranca();
-                    // Upsell Check
-                    if (!permissions.canUseAutomatedCharges) {
-                      handleUpgrade(
-                        FEATURE_COBRANCA_AUTOMATICA,
-                        "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?",
-                        "Cobrança Automática"
-                      );
-                    }
-                  }}
-                />
-              )}
+
             </div>
           </div>
 

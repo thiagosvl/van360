@@ -163,7 +163,7 @@ export function useDeletePassageiro() {
       const errorMessage = getErrorMessage(error);
       
       if (error?.response?.status === 400 || errorMessage) {
-         toast.error("Não foi possível excluir", {
+         toast.error("passageiro.erro.excluir", {
             description: errorMessage
          });
       } else {

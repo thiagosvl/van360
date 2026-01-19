@@ -229,7 +229,7 @@ export function SubscriptionHeader({
                 : isTrial
                 ? "Ativar Plano Agora"
                 : isFreePlan
-                ? "Trocar de Plano"
+                ? "Contratar um Plano"
                 : isProfissionalPlan
                 ? "Aumentar limite"
                 : "Trocar de Plano"}

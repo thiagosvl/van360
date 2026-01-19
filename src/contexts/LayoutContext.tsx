@@ -1,5 +1,5 @@
 import {
-  PlanUpgradeDialogProps,
+    PlanUpgradeDialogProps,
 } from "@/components/dialogs/PlanUpgradeDialog";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
@@ -7,8 +7,8 @@ import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Veiculo } from "@/types/veiculo";
 import {
-  createContext,
-  useContext,
+    createContext,
+    useContext,
 } from "react";
 
 export type OpenPlanUpgradeDialogProps = Omit<
@@ -74,6 +74,16 @@ export interface OpenCobrancaPixDrawerProps {
   ano?: number;
 }
 
+export interface OpenManualPaymentDialogProps {
+  cobrancaId: string;
+  passageiroNome: string;
+  responsavelNome: string;
+  valorOriginal: number;
+  status: string;
+  dataVencimento: string;
+  onPaymentRecorded: () => void;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -96,6 +106,7 @@ export interface LayoutContextType {
   openWhatsappDialog: (options?: { canClose?: boolean }) => void;
   openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;
   openCobrancaPixDrawer: (props: OpenCobrancaPixDrawerProps) => void;
+  openManualPaymentDialog: (props: OpenManualPaymentDialogProps) => void;
 }
 
 export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
