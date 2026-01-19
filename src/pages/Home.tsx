@@ -378,8 +378,8 @@ const Home = () => {
                     <DashboardStatusCard
                       type="pending"
                       title="Plano Gratuito Ativo"
-                      description="Você está usando a versão gratuita com recursos limitados. Faça o upgrade para automatizar suas cobranças."
-                      actionLabel="Ver Planos"
+                      description="Conheça os benefícios dos outros planos."
+                      actionLabel="Ver Benefícios"
                       onAction={() => openPlanUpgradeDialog()}
                     />
                   </section>

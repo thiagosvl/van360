@@ -1,5 +1,5 @@
 import {
-    PlanUpgradeDialogProps,
+  PlanUpgradeDialogProps,
 } from "@/components/dialogs/PlanUpgradeDialog";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
@@ -7,8 +7,8 @@ import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Veiculo } from "@/types/veiculo";
 import {
-    createContext,
-    useContext,
+  createContext,
+  useContext,
 } from "react";
 
 export type OpenPlanUpgradeDialogProps = Omit<
@@ -106,4 +106,8 @@ export const useLayout = () => {
     throw new Error("useLayout deve ser usado dentro de um LayoutProvider");
   }
   return context;
+};
+
+export const useLayoutSafe = () => {
+  return useContext(LayoutContext);
 };

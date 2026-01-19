@@ -15,7 +15,6 @@ interface AssinaturaDashboardProps {
   };
   cobrancas: any[];
   onPagarClick: (cobranca: any) => void;
-  onCancelClick: () => void;
   onRefresh?: () => void;
 }
 
@@ -25,7 +24,6 @@ export function AssinaturaDashboard({
   metricas,
   cobrancas,
   onPagarClick,
-  onCancelClick,
   onRefresh,
 }: AssinaturaDashboardProps) {
   return (
@@ -98,7 +96,6 @@ export function AssinaturaDashboard({
               )}
             </div>
                 <SubscriptionSettings 
-                  onCancelClick={onCancelClick} 
                   plano={plano} 
                   passageirosAtivos={metricas.passageirosAtivos} 
                 />

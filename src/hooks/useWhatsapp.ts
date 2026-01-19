@@ -2,13 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ConnectionState, WHATSAPP_STATUS } from "../config/constants";
+import { useLayoutSafe } from "../contexts/LayoutContext";
 import { whatsappApi } from "../services/api/whatsapp.api";
 
 import { supabase } from "../integrations/supabase/client";
 import { useProfile } from "./business/useProfile";
 import { useSession } from "./business/useSession";
 
-import { useLayout } from "../contexts/LayoutContext";
 
 export function useWhatsapp(options?: { enablePolling?: boolean }) {
   const queryClient = useQueryClient();
@@ -16,40 +16,42 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
   const pairingCodeRequestInProgressRef = useRef(false); // Prevenir requisições simultâneas
   
   const { user } = useSession();
-  const { isProfissional } = useProfile(user?.id);
+  const { isProfissional, profile } = useProfile(user?.id);
   
   // Safe check for Layout context (in case hook is used outside provider)
-  let isPixKeyDialogOpen = false;
-  try {
-      /* eslint-disable-next-line react-hooks/rules-of-hooks */
-      const layout = useLayout();
-      isPixKeyDialogOpen = layout.isPixKeyDialogOpen;
-  } catch (e) {
-      // Ignore if outside layout
-  }
+  const layout = useLayoutSafe();
+  const isPixKeyDialogOpen = layout?.isPixKeyDialogOpen ?? false;
 
   const [mutationPairingData, setMutationPairingData] = useState<{ code: string, expiresAt: string } | null>(null);
 
   // Realtime listener for connection status
   useEffect(() => {
-    if (!user?.id) return;
+    if (!profile?.id) return;
 
     const channel = supabase
-      .channel("whatsapp_status_changes")
+      .channel(`whatsapp_status_sync_${profile.id}`)
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "UPDATE",
           schema: "public",
           table: "usuarios",
-          filter: `auth_uid=eq.${user.id}`,
+          filter: `id=eq.${profile.id}`,
         },
-        () => {
-          // Refetch imediato com refetchType: "all" para garantir sincronização
-          queryClient.invalidateQueries({ 
-            queryKey: ["whatsapp-status"],
-            refetchType: "all"
-          });
+        (payload) => {
+          // Só invalida se houver mudança REAL no status ou pairing code
+          const oldStatus = payload.old?.whatsapp_status;
+          const newStatus = payload.new?.whatsapp_status;
+          const oldCode = payload.old?.pairing_code;
+          const newCode = payload.new?.pairing_code;
+
+          if (oldStatus !== newStatus || oldCode !== newCode) {
+              console.log("Realtime Status Sync: Atualizando cache.", { oldStatus, newStatus });
+              queryClient.invalidateQueries({ 
+                queryKey: ["whatsapp-status"],
+                refetchType: "all"
+              });
+          }
         }
       )
       .subscribe();
@@ -57,15 +59,15 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, queryClient]);
+  }, [profile?.id, queryClient]);
 
 
   // Consulta de Status
   const { data: statusData, isLoading, refetch } = useQuery({
     queryKey: ["whatsapp-status"],
     queryFn: whatsappApi.getStatus,
-    enabled: !!user?.id && isProfissional && !isPixKeyDialogOpen,
-    staleTime: 3000, 
+    enabled: !!user?.id && !!profile?.id && isProfissional && !isPixKeyDialogOpen,
+    staleTime: 5000, 
     refetchInterval: false, 
     refetchOnWindowFocus: false, // Evita requisições extras ao focar na janela
   });

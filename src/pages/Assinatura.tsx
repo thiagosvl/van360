@@ -12,16 +12,6 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 
 // Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
@@ -35,13 +25,11 @@ import {
     useAssinaturaCobrancas,
     useGerarPixParaCobranca
 } from "@/hooks";
-import { usuarioApi } from "@/services";
 
 // Utils
 import { WhatsappConnect } from "@/components/Whatsapp/WhatsappConnect";
 import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaDialog";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { toast } from "@/utils/notifications/toast";
 
 export default function Assinatura() {
   const { setPageTitle } = useLayout();
@@ -54,7 +42,6 @@ export default function Assinatura() {
   // Hook de permissões
   const { canUseAutomatedCharges: canUseCobrancaAutomatica } = usePermissions();
 
-  const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedCobranca, setSelectedCobranca] = useState<{
@@ -125,61 +112,6 @@ export default function Assinatura() {
     ]);
   };
 
-  const handleAbandonCancelSubscriptionClick = async () => {
-    if (!dataWithCounts || !profile?.id) return;
-
-    setRefreshing(true);
-
-    try {
-      await usuarioApi.desistirCancelarAssinatura(profile.id);
-      window.location.reload();
-    } catch (error: any) {
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  const handleCancelSubscriptionClick = () => {
-    // Mostrar dialog de confirmação
-    setShowCancelDialog(true);
-  };
-
-  const confirmCancelSubscription = async () => {
-    if (!dataWithCounts || !profile?.id) return;
-
-    setRefreshing(true);
-    setShowCancelDialog(false);
-
-    try {
-      await usuarioApi.cancelarAssinatura({
-        usuarioId: profile.id,
-      });
-      window.location.reload();
-    } catch (error: any) {
-      toast.error("assinatura.erro.cancelar", {
-        description: error.message || "Não foi possível cancelar a assinatura.",
-      });
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  // Gerar mensagem de cancelamento baseada no plano atual
-  const getMensagemCancelamento = () => {
-    if (!dataWithCounts?.plano || !plano)
-      return "Tem certeza que deseja cancelar sua assinatura?";
-
-    const planoAtual = dataWithCounts.plano as any;
-    const planoNome = planoAtual.parent?.nome ?? planoAtual.nome;
-
-    if (plano.isProfissionalPlan) {
-      return "Ao cancelar, você perderá funcionaliades avançadas, cobranças automáticas e acesso a relatórios detalhados. Você será migrado para o Plano Gratuito ao final do período contratado.";
-    } else if (plano.isEssentialPlan) {
-      return "Ao cancelar, você perderá passageiros ilimitados, envio de lembretes de cobrança e suporte via WhatsApp. Você será migrado para o Plano Gratuito ao final do período contratado.";
-    }
-
-    return `Ao cancelar sua assinatura do ${planoNome}, você perderá direito a funcionalidades e benefícios do plano. Você será migrado para o Plano Gratuito ao final do período contratado.`;
-  };
 
   const handlePaymentSuccess = async () => {
     setPaymentModalOpen(false);
@@ -224,7 +156,6 @@ export default function Assinatura() {
                   }}
                   cobrancas={dataWithCounts.cobrancas}
                   onPagarClick={handlePagarClick}
-                  onCancelClick={handleCancelSubscriptionClick}
                   onRefresh={pullToRefreshReload}
                 />
                 
@@ -242,26 +173,6 @@ export default function Assinatura() {
         </PullToRefreshWrapper>
         <LoadingOverlay active={refreshing} text="Carregando..." />
 
-        {/* Dialog de Confirmação de Cancelamento */}
-        <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Confirmar cancelamento</AlertDialogTitle>
-              <AlertDialogDescription>
-                {getMensagemCancelamento()}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={confirmCancelSubscription}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                Confirmar cancelamento
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
 
         {selectedCobranca && (
           <PagamentoAssinaturaDialog
