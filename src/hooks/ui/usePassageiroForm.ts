@@ -1,8 +1,8 @@
 import { usePermissions } from "@/hooks/business/usePermissions";
 import {
-  cepSchema,
-  cpfSchema,
-  phoneSchema,
+    cepSchema,
+    cpfSchema,
+    phoneSchema,
 } from "@/schemas/common";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
@@ -42,7 +42,7 @@ export const passageiroSchema = z
 
     valor_cobranca: z.string().min(1, "Campo obrigatório"),
     dia_vencimento: z.string().min(1, "Campo obrigatório"),
-    emitir_cobranca_mes_atual: z.boolean().optional(),
+
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
     enviar_cobranca_automatica: z.boolean().optional(),
@@ -129,7 +129,7 @@ export function usePassageiroForm({
       cpf_responsavel: "",
       valor_cobranca: "",
       dia_vencimento: "",
-      emitir_cobranca_mes_atual: false,
+
       ativo: true,
       enviar_cobranca_automatica:
         canUseCobrancaAutomatica && podeAtivarCobrancaAutomatica,
@@ -176,7 +176,7 @@ export function usePassageiroForm({
             referencia: editingPassageiro.referencia || "",
             escola_id: editingPassageiro.escola_id || "",
             veiculo_id: editingPassageiro.veiculo_id || "",
-            emitir_cobranca_mes_atual: false,
+
             ativo: editingPassageiro.ativo,
             enviar_cobranca_automatica:
               editingPassageiro.enviar_cobranca_automatica || false,
@@ -214,7 +214,7 @@ export function usePassageiroForm({
               )
             : "",
           dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
-          emitir_cobranca_mes_atual: false,
+
           ativo: true,
           enviar_cobranca_automatica:
             canUseCobrancaAutomatica && podeAtivarCobrancaAutomatica,
@@ -260,7 +260,7 @@ export function usePassageiroForm({
           cpf_responsavel: "",
           valor_cobranca: "",
           dia_vencimento: "",
-          emitir_cobranca_mes_atual: false,
+
           ativo: true,
           enviar_cobranca_automatica:
             canUseCobrancaAutomatica && podeAtivarCobrancaAutomatica,

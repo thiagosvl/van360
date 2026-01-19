@@ -36,12 +36,11 @@ export const passageiroApi = {
       .post(`/passageiros`, data)
       .then(res => res.data),
 
-  finalizePreCadastro: (prePassageiroId: string, data: any, usuarioId: string, emitir_cobranca_mes_atual: boolean) =>
+  finalizePreCadastro: (prePassageiroId: string, data: any, usuarioId: string) =>
     apiClient
       .post(`/passageiros/finalizar-pre-cadastro/${prePassageiroId}`, {
         data,
         usuarioId,
-        emitir_cobranca_mes_atual,
       })
       .then(res => res.data),
 };

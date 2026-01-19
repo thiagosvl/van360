@@ -24,6 +24,6 @@ export interface Passageiro {
   observacoes?: string;
   escola?: { nome: string };
   veiculo?: { placa: string };
-  emitir_cobranca_mes_atual?: boolean;
+
   enviar_cobranca_automatica?: boolean;
 }
