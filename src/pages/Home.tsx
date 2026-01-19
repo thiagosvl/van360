@@ -81,7 +81,7 @@ const Home = () => {
   } = usePermissions();
 
   const { limits: planLimits } = usePlanLimits();
-  const { data: systemSummary } = useUsuarioResumo(); // New Unified Hook
+  const { data: systemSummary } = useUsuarioResumo();
 
   const upsellContent = useUpsellContent(plano);
 
@@ -113,24 +113,15 @@ const Home = () => {
     { enabled: !!profile?.id }
   );
 
-  // Escolas e Veículos: Usamos apenas para o create/refresh. As contagens vêm do systemSummary
-  // Podemos manter os refetchs, mas não precisamos das datas para o render principal
-
-  // Estado de loading unificado
   const isInitialLoading = useMemo(() => {
     if (!profile?.id) return true;
     return isLoadingCobrancas || !systemSummary;
   }, [profile?.id, isLoadingCobrancas, systemSummary]);
-
-  // Derived Data
   const cobrancas = cobrancasData?.all || [];
 
   const escolasCount = systemSummary?.contadores.escolas.total ?? 0;
   const veiculosCount = systemSummary?.contadores.veiculos.total ?? 0;
 
-  // Mantemos a lista de passageiros pois ela tem flags (ativo) que podem não estar sincadas
-  // ou usamos o contador do resumo, MAS o Home.tsx usa para filtrar 'passageirosAtivosCount'
-  // O resumo JÁ TEM passageiros ativos.
   const passageirosCount = systemSummary?.contadores.passageiros.total ?? 0;
   const passageirosAtivosCount =
     systemSummary?.contadores.passageiros.ativos ?? 0;
@@ -177,7 +168,7 @@ const Home = () => {
     veiculosCount > 0,
     escolasCount > 0,
     passageirosCount > 0,
-    isProfissional ? hasPixKey : null, // Only count PIX if professional
+    isProfissional ? hasPixKey : null,
   ].filter((step) => step === true).length;
 
   const totalSteps = isProfissional ? 4 : 3;
@@ -337,13 +328,6 @@ const Home = () => {
                 : "Nenhuma pendência hoje"}
             </p>
           </div>
-
-          {/* 
-              Priority Dashboard Alerts (Strict Sequential Order):
-              1. PIX Validation (Pending/Failed)
-              2. WhatsApp Connection
-              3. Plan Alerts (Free Plan)
-            */}
 
           {profile?.status_chave_pix === "PENDENTE_VALIDACAO" ? (
             <section className="mb-4">
