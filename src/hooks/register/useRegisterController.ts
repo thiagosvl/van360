@@ -1,9 +1,10 @@
 import { isPlanoPagoNoAto } from "@/components/features/register";
 import {
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
-  PLANO_PROFISSIONAL,
+    PLANO_ESSENCIAL,
+    PLANO_GRATUITO,
+    PLANO_PROFISSIONAL,
 } from "@/constants";
+import { ROUTES } from "@/constants/routes";
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks";
 import { supabase } from "@/integrations/supabase/client";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
@@ -467,7 +468,7 @@ export function useRegisterController() {
       } else {
         // Garantir propagação da sessão
         await new Promise(resolve => setTimeout(resolve, 500));
-        navigate("/inicio");
+        navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
       }
     } catch (err: any) {
       toast.error("cadastro.erro.criar", {
@@ -569,7 +570,7 @@ export function useRegisterController() {
   const handlePaymentSuccess = async () => {
     const sessionToSet = (window as any).__registerSession;
     if (!sessionToSet) {
-      navigate("/login");
+      navigate(ROUTES.PUBLIC.LOGIN);
       return;
     }
 
@@ -580,7 +581,7 @@ export function useRegisterController() {
 
     if (error) {
       toast.info("cadastro.info.pagamentoConfirmado");
-      navigate("/login");
+      navigate(ROUTES.PUBLIC.LOGIN);
     } else {
        // Aguardar propagação da sessão
        await new Promise(resolve => setTimeout(resolve, 500));

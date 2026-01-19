@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/constants/routes";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +18,7 @@ export default function AppNavbarResponsavel({
   const handleLogout = () => {
     clearAppSession();
 
-    navigate("/login");
+    navigate(ROUTES.PUBLIC.LOGIN);
   };
 
   return (

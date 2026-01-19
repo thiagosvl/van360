@@ -14,6 +14,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { ROUTES } from "@/constants/routes";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { supabase } from "@/integrations/supabase/client";
@@ -106,7 +107,7 @@ export default function AlterarSenhaDialog({
       await new Promise((res) => setTimeout(res, 1500));
 
       await supabase.auth.signOut();
-      window.location.href = "/login";
+      window.location.href = ROUTES.PUBLIC.LOGIN;
     } catch (err: any) {
       toast.error("erro.operacao", {
         description: err.message || "Ocorreu um erro ao tentar alterar a senha.",

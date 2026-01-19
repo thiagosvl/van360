@@ -7,18 +7,15 @@ import {
   useState,
 } from "react";
 
-// React Router
+import { ROUTES } from "@/constants/routes";
 import { useNavigate, useParams } from "react-router-dom";
 
-// Components - Dialogs
 import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
 
-// Components - Empty & Skeletons
 import { CarteirinhaSkeleton } from "@/components/skeletons";
 
 import { lazyLoad } from "@/utils/lazyLoad";
 
-// Components - Features - Carteirinha (Lazy Loaded)
 const CarteirinhaInfo = lazyLoad(() =>
   import("@/components/features/passageiro/carteirinha").then((mod) => ({
     default: mod.CarteirinhaInfo,
@@ -40,14 +37,11 @@ const CarteirinhaResumoFinanceiro = lazyLoad(() =>
   }))
 );
 
-// Components - Navigation
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
-// Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   useAvailableYears,
@@ -61,18 +55,16 @@ import {
   useToggleAtivoPassageiro,
   useToggleNotificacoesCobranca,
   useUpdateCobranca,
-  useUpdatePassageiro
+  useUpdatePassageiro,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useQueryClient } from "@tanstack/react-query";
 
-// Utils
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { toast } from "@/utils/notifications/toast";
 
-// Types
 import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus } from "@/types/enums";
@@ -84,17 +76,15 @@ const COBRANCAS_LIMIT = 3;
 export default function PassageiroCarteirinha() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { 
-    setPageTitle, 
-    openPlanUpgradeDialog, 
-    openConfirmationDialog, 
+  const {
+    setPageTitle,
+    openPlanUpgradeDialog,
+    openConfirmationDialog,
     closeConfirmationDialog,
-    openEscolaFormDialog,
-    openVeiculoFormDialog,
     openPassageiroFormDialog,
     openCobrancaEditDialog,
     openCobrancaPixDrawer,
-    openManualPaymentDialog
+    openManualPaymentDialog,
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
@@ -120,13 +110,8 @@ export default function PassageiroCarteirinha() {
     toggleNotificacoes.isPending;
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
-  
-  // State for year filter
+
   const [yearFilter, setYearFilter] = useState(currentYear);
-
-
-  
-
 
   const [isObservacoesEditing, setIsObservacoesEditing] = useState(false);
   const [obsText, setObsText] = useState("");
@@ -135,41 +120,27 @@ export default function PassageiroCarteirinha() {
   const { user, loading: isSessionLoading } = useSession();
   const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
   const { canUseAutomatedCharges: canUseCobrancaAutomatica } = usePermissions();
-  // const planoProfissionalAtivo = canUseCobrancaAutomatica(plano); // REMOVED
 
-  // Hook para validar franquia (dados já carregados)
-  // Passar user?.id (auth_uid) e profile para evitar chamadas duplicadas
-  // Hook para validar franquia (dados já carregados)
-  // Passar user?.id (auth_uid) e profile para evitar chamadas duplicadas
   const { limits } = usePlanLimits();
 
   const validacaoFranquiaGeral = {
     franquiaContratada: limits.franchise.limit,
     cobrancasEmUso: limits.franchise.used,
-    podeAtivar: limits.franchise.canEnable
+    podeAtivar: limits.franchise.canEnable,
   };
 
-
-
-  const handleUpgradeSuccess = () => {
-    // Backend activates passenger via webhook (using targetPassengerId)
-  };
-
-  const handleUpgrade = useCallback((featureName: string, description?: string, title?: string) => {
-    safeCloseDialog(() => {
-      openPlanUpgradeDialog({
-        feature: featureName,
-        description,
-        title,
+  const handleUpgrade = useCallback(
+    (featureName: string, description?: string, title?: string) => {
+      safeCloseDialog(() => {
+        openPlanUpgradeDialog({
+          feature: featureName,
+          description,
+          title,
+        });
       });
-    });
-  }, [openPlanUpgradeDialog]);
-  
-  // ... (rest of code)
-
-
-
-
+    },
+    [openPlanUpgradeDialog]
+  );
 
   const {
     data: passageiroData,
@@ -183,15 +154,18 @@ export default function PassageiroCarteirinha() {
 
   const passageiro = passageiroData as Passageiro;
 
-  const handlePagarPix = useCallback((cobranca: Cobranca) => {
-    openCobrancaPixDrawer({
-      qrCodePayload: cobranca.qr_code_payload || "",
-      valor: Number(cobranca.valor),
-      passageiroNome: passageiro?.nome || "",
-      mes: cobranca.mes,
-      ano: cobranca.ano,
-    });
-  }, [openCobrancaPixDrawer, passageiro]);
+  const handlePagarPix = useCallback(
+    (cobranca: Cobranca) => {
+      openCobrancaPixDrawer({
+        qrCodePayload: cobranca.qr_code_payload || "",
+        valor: Number(cobranca.valor),
+        passageiroNome: passageiro?.nome || "",
+        mes: cobranca.mes,
+        ano: cobranca.ano,
+      });
+    },
+    [openCobrancaPixDrawer, passageiro]
+  );
 
   const {
     data: cobrancasData,
@@ -219,40 +193,42 @@ export default function PassageiroCarteirinha() {
 
   const availableYears = (availableYearsData || [currentYear]) as string[];
 
-
-
   const loading =
     isSessionLoading ||
     isProfileLoading ||
     isPassageiroLoading ||
     isCobrancasLoading;
 
-  // Validar se o passageiro existe após o carregamento
-  // Se não existir (erro 404 ou dados null), redirecionar para a lista de passageiros
-  // Isso previne acesso a rotas de recursos excluídos via navegação do browser
   useEffect(() => {
     if (!passageiro_id) return;
-    
-    // Verificar se terminou de carregar
+
     if (isPassageiroLoading) return;
 
-    // Verificar se há erro (404 ou outro erro)
-    const isNotFoundError = isPassageiroError && (
-      (passageiroError as any)?.response?.status === 404 ||
-      (passageiroError as any)?.status === 404
-    );
+    const isNotFoundError =
+      isPassageiroError &&
+      ((passageiroError as any)?.response?.status === 404 ||
+        (passageiroError as any)?.status === 404);
 
-    // Se há erro 404 ou dados null/undefined, o recurso não existe
     if (isNotFoundError || (!isPassageiroError && !passageiro)) {
-      // Limpar cache do passageiro e queries relacionadas para evitar acesso futuro
       queryClient.removeQueries({ queryKey: ["passageiro", passageiro_id] });
-      queryClient.removeQueries({ queryKey: ["cobrancas-by-passageiro", passageiro_id] });
-      queryClient.removeQueries({ queryKey: ["available-years", passageiro_id] });
-      
-      // Redirecionar para lista de passageiros
-      navigate("/passageiros", { replace: true });
+      queryClient.removeQueries({
+        queryKey: ["cobrancas-by-passageiro", passageiro_id],
+      });
+      queryClient.removeQueries({
+        queryKey: ["available-years", passageiro_id],
+      });
+
+      navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS, { replace: true });
     }
-  }, [isPassageiroLoading, isPassageiroError, passageiroError, passageiro, passageiro_id, navigate, queryClient]);
+  }, [
+    isPassageiroLoading,
+    isPassageiroError,
+    passageiroError,
+    passageiro,
+    passageiro_id,
+    navigate,
+    queryClient,
+  ]);
 
   useEffect(() => {
     if (isObservacoesEditing && textareaRef.current) {
@@ -285,16 +261,14 @@ export default function PassageiroCarteirinha() {
   }, [availableYears, yearFilter]);
 
   const handlePassageiroFormSuccess = useCallback(() => {
-    // setNovoVeiculoId(null);
-    // setNovaEscolaId(null);
     refetchPassageiro();
   }, [refetchPassageiro]);
 
   const handleEditClick = useCallback(() => {
     openPassageiroFormDialog({
-        mode: "edit",
-        editingPassageiro: passageiro,
-        onSuccess: handlePassageiroFormSuccess
+      mode: "edit",
+      editingPassageiro: passageiro,
+      onSuccess: handlePassageiroFormSuccess,
     });
   }, [openPassageiroFormDialog, passageiro, handlePassageiroFormSuccess]);
 
@@ -321,10 +295,6 @@ export default function PassageiroCarteirinha() {
     }
   };
 
-  const handleCobrancaUpdated = () => {
-    // Invalidação feita automaticamente pelos hooks de mutation
-  };
-
   const handleSaveObservacoes = async () => {
     if (!passageiro_id) return;
 
@@ -344,66 +314,31 @@ export default function PassageiroCarteirinha() {
     );
   };
 
-
-  const handleCobrancaAdded = () => {
-    // Invalidação feita automaticamente pelos hooks de mutation
-  };
-
-  const handleDeleteCobrancaClick = useCallback((cobranca: Cobranca) => {
-    openConfirmationDialog({
-      title: "Excluir cobrança?",
-      description: "Tem certeza que deseja excluir esta cobrança? Essa ação não poderá ser desfeita.",
-      confirmText: "Excluir",
-      variant: "destructive",
-      onConfirm: async () => {
-         try {
-           await deleteCobranca.mutateAsync(cobranca.id);
-           closeConfirmationDialog();
-         } catch (error) {
-           closeConfirmationDialog();
-         }
-      }
-    });
-  }, [deleteCobranca, closeConfirmationDialog]);
-
-
-
   const handleToggleClick = (statusAtual: boolean) => {
     const action = statusAtual ? "desativar" : "ativar";
     openConfirmationDialog({
-       title: action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
-       description: action === "ativar" 
-         ? "O passageiro voltará a aparecer nas listagens ativas e a geração de cobranças será retomada."
-         : "O passageiro ficará inativo e a geração de cobranças será pausada. Você poderá reativá-lo depois.",
-       confirmText: action === "ativar" ? "Reativar" : "Desativar",
-       variant: action === "desativar" ? "warning" : "default",
-       onConfirm: async () => {
-         if (!passageiro || !passageiro_id) return;
-         try {
-             await toggleAtivoPassageiro.mutateAsync({ id: passageiro_id, novoStatus: !passageiro.ativo });
-             closeConfirmationDialog();
-         } catch(error) {
-             closeConfirmationDialog();
-             // Rethrow para ser capturado pelo CarteirinhaInfo se for erro de limite
-             throw error; 
-         }
-       }
-    });
-  };
-
-  const handleReactivateWithoutAutomation = async () => {
-    if (!passageiro || !passageiro_id) return;
-    try {
-        await updatePassageiro.mutateAsync({
+      title:
+        action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
+      description:
+        action === "ativar"
+          ? "O passageiro voltará a aparecer nas listagens ativas e a geração de cobranças será retomada."
+          : "O passageiro ficará inativo e a geração de cobranças será pausada. Você poderá reativá-lo depois.",
+      confirmText: action === "ativar" ? "Reativar" : "Desativar",
+      variant: action === "desativar" ? "warning" : "default",
+      onConfirm: async () => {
+        if (!passageiro || !passageiro_id) return;
+        try {
+          await toggleAtivoPassageiro.mutateAsync({
             id: passageiro_id,
-            data: { ativo: true, enviar_cobranca_automatica: false }
-        });
-        toast.success("passageiro.reativado_sem_automacao", {
-             description: "Passageiro reativado com sucesso. A cobrança automática foi desligada para respeitar o limite do plano." 
-        });
-    } catch (error) {
-        toast.error("Erro ao reativar passageiro.");
-    }
+            novoStatus: !passageiro.ativo,
+          });
+          closeConfirmationDialog();
+        } catch (error) {
+          closeConfirmationDialog();
+          throw error;
+        }
+      },
+    });
   };
 
   const handleToggleLembretes = useCallback(
@@ -421,25 +356,23 @@ export default function PassageiroCarteirinha() {
 
     const novoValor = !passageiro.enviar_cobranca_automatica;
 
-    if (novoValor && canUseCobrancaAutomatica) { // Now boolean from hook
-      // Usar validação já calculada via hook
-      // Passamos false porque se estamos ativando, não está ativo, logo não descontamos.
+    if (novoValor && canUseCobrancaAutomatica) {
       const podeAtivar = limits.franchise.checkAvailability(false);
 
-        if (!podeAtivar) {
-          if (validacaoFranquiaGeral.franquiaContratada === 0) {
-             openPlanUpgradeDialog({
-              feature: FEATURE_COBRANCA_AUTOMATICA,
-              targetPassengerCount: limits.franchise.used + 1,
-            });
-          } else {
-              openPlanUpgradeDialog({
-                feature: FEATURE_COBRANCA_AUTOMATICA,
-                targetPassengerCount: limits.franchise.used + 1,
-              });
-          }
-          return;
+      if (!podeAtivar) {
+        if (validacaoFranquiaGeral.franquiaContratada === 0) {
+          openPlanUpgradeDialog({
+            feature: FEATURE_COBRANCA_AUTOMATICA,
+            targetPassengerCount: limits.franchise.used + 1,
+          });
+        } else {
+          openPlanUpgradeDialog({
+            feature: FEATURE_COBRANCA_AUTOMATICA,
+            targetPassengerCount: limits.franchise.used + 1,
+          });
         }
+        return;
+      }
     }
 
     updatePassageiro.mutate({
@@ -448,40 +381,46 @@ export default function PassageiroCarteirinha() {
     });
   };
 
-
-
-  const handleEnviarNotificacaoClick = useCallback((cobrancaId: string) => {
-    openConfirmationDialog({
-      title: "Enviar cobrança?",
-      description: "A cobrança será enviada para o responsável (WhatsApp ou Email). Confirmar?",
-      confirmText: "Enviar",
-      onConfirm: async () => {
-         try {
-           await enviarNotificacao.mutateAsync(cobrancaId);
-           closeConfirmationDialog();
-         } catch (error) {
+  const handleEnviarNotificacaoClick = useCallback(
+    (cobrancaId: string) => {
+      openConfirmationDialog({
+        title: "Enviar cobrança?",
+        description:
+          "A cobrança será enviada para o responsável (WhatsApp ou Email). Confirmar?",
+        confirmText: "Enviar",
+        onConfirm: async () => {
+          try {
+            await enviarNotificacao.mutateAsync(cobrancaId);
             closeConfirmationDialog();
-         }
-      }
-    });
-  }, [enviarNotificacao, closeConfirmationDialog]);
-
-  const handleDesfazerClick = useCallback((cobrancaId: string) => {
-    openConfirmationDialog({
-      title: "Desfazer pagamento?",
-      description: "O pagamento será removido e a cobrança voltará a ficar pendente. Confirmar?",
-      confirmText: "Desfazer",
-      variant: "warning",
-      onConfirm: async () => {
-         try {
-           await desfazerPagamento.mutateAsync(cobrancaId);
-           closeConfirmationDialog();
-         } catch(error) {
+          } catch (error) {
             closeConfirmationDialog();
-         }
-      }
-    });
-  }, [desfazerPagamento, closeConfirmationDialog]);
+          }
+        },
+      });
+    },
+    [enviarNotificacao, closeConfirmationDialog]
+  );
+
+  const handleDesfazerClick = useCallback(
+    (cobrancaId: string) => {
+      openConfirmationDialog({
+        title: "Desfazer pagamento?",
+        description:
+          "O pagamento será removido e a cobrança voltará a ficar pendente. Confirmar?",
+        confirmText: "Desfazer",
+        variant: "warning",
+        onConfirm: async () => {
+          try {
+            await desfazerPagamento.mutateAsync(cobrancaId);
+            closeConfirmationDialog();
+          } catch (error) {
+            closeConfirmationDialog();
+          }
+        },
+      });
+    },
+    [desfazerPagamento, closeConfirmationDialog]
+  );
 
   const openPaymentDialog = (cobranca: Cobranca) => {
     openManualPaymentDialog({
@@ -494,9 +433,6 @@ export default function PassageiroCarteirinha() {
       onPaymentRecorded: refetchCobrancas,
     });
   };
-  const handlePaymentRecorded = () => {
-    // Invalidação feita automaticamente pelos hooks de mutation
-  };
 
   const yearlySummary = useMemo(() => {
     const hoje = new Date();
@@ -507,10 +443,9 @@ export default function PassageiroCarteirinha() {
           acc.valorPago += Number(c.valor);
           acc.qtdPago++;
         } else {
-          // Cobrança não paga - verificar se está vencida
           const vencimento = new Date(c.data_vencimento + "T00:00:00");
           vencimento.setHours(0, 0, 0, 0);
-          
+
           if (vencimento < hoje) {
             acc.qtdEmAtraso += 1;
             acc.valorEmAtraso += Number(c.valor);
@@ -532,25 +467,24 @@ export default function PassageiroCarteirinha() {
     );
   }, [cobrancas]);
 
-  // Verificar se há cobranças vencidas (não pagas)
   const temCobrancasVencidas = useMemo(() => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     return cobrancas.some(
       (c) =>
-        c.status !== CobrancaStatus.PAGO &&
-        new Date(c.data_vencimento) < hoje
+        c.status !== CobrancaStatus.PAGO && new Date(c.data_vencimento) < hoje
     );
   }, [cobrancas]);
 
-  // Verificar se o recurso não existe e redirecionar antes de renderizar
-  const isNotFoundError = isPassageiroError && (
-    (passageiroError as any)?.response?.status === 404 ||
-    (passageiroError as any)?.status === 404
-  );
-  
-  if (!loading && (isNotFoundError || (!isPassageiroError && !passageiro && passageiro_id))) {
-    // Não renderizar nada enquanto redireciona
+  const isNotFoundError =
+    isPassageiroError &&
+    ((passageiroError as any)?.response?.status === 404 ||
+      (passageiroError as any)?.status === 404);
+
+  if (
+    !loading &&
+    (isNotFoundError || (!isPassageiroError && !passageiro && passageiro_id))
+  ) {
     return null;
   }
 
@@ -597,20 +531,21 @@ export default function PassageiroCarteirinha() {
                       onToggleClick={handleToggleClick}
                       onDeleteClick={() =>
                         openConfirmationDialog({
-                           title: "Excluir passageiro?",
-                           description: "Tem certeza que deseja excluir este passageiro? Essa ação não poderá ser desfeita.",
-                           confirmText: "Excluir",
-                           variant: "destructive",
-                           onConfirm: async () => {
-                             if (!passageiro_id) return;
-                             try {
-                               await deletePassageiro.mutateAsync(passageiro_id);
-                               closeConfirmationDialog();
-                               navigate("/passageiros");
-                             } catch (error) {
-                               closeConfirmationDialog();
-                             }
-                           }
+                          title: "Excluir passageiro?",
+                          description:
+                            "Tem certeza que deseja excluir este passageiro? Essa ação não poderá ser desfeita.",
+                          confirmText: "Excluir",
+                          variant: "destructive",
+                          onConfirm: async () => {
+                            if (!passageiro_id) return;
+                            try {
+                              await deletePassageiro.mutateAsync(passageiro_id);
+                              closeConfirmationDialog();
+                              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS);
+                            } catch (error) {
+                              closeConfirmationDialog();
+                            }
+                          },
                         })
                       }
                       onUpgrade={handleUpgrade}
@@ -665,7 +600,12 @@ export default function PassageiroCarteirinha() {
                       onYearChange={setYearFilter}
                       onOpenCobrancaDialog={() => setCobrancaDialogOpen(true)}
                       onNavigateToCobranca={(id) =>
-                        navigate(`/cobrancas/${id}`)
+                        navigate(
+                          ROUTES.PRIVATE.MOTORISTA.PASSENGER_BILLING.replace(
+                            ":cobranca_id",
+                            id
+                          )
+                        )
                       }
                       onEditCobranca={(cobranca) => {
                         openCobrancaEditDialog({

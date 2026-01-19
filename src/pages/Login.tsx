@@ -3,6 +3,7 @@ import { forwardRef, useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 
 // React Router
+import { ROUTES } from "@/constants/routes";
 import { useNavigate } from "react-router-dom";
 
 // Third-party
@@ -149,7 +150,7 @@ export default function Login() {
 
       const redirectUrl = `${
         import.meta.env.VITE_PUBLIC_APP_DOMAIN
-      }/nova-senha`;
+      }${ROUTES.PUBLIC.NEW_PASSWORD}`;
 
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
         usuario.email,
@@ -191,9 +192,6 @@ export default function Login() {
         return;
       }
 
-      // Garantir limpeza de sessão anterior antes de autenticar
-      // Nota: Não limpamos aqui para não perder estado, mas o Supabase lida com a sessão.
-      // O importante é limpar residuos de Responsavel se houver.
       clearAppSession();
 
       const usuarioData = usuario;
@@ -220,7 +218,6 @@ export default function Login() {
         return;
       }
 
-      // Role extraction from Auth Metadata (Strict V3)
       const role = authData.session?.user?.app_metadata?.role as
         | string
         | undefined;
@@ -228,7 +225,6 @@ export default function Login() {
       if (role) {
         localStorage.setItem("app_role", role);
       }
-      // Garantir que a sessão está ativa e propagada antes de navegar
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -237,13 +233,12 @@ export default function Login() {
         throw new Error("Sessão não foi estabelecida corretamente.");
       }
 
-      // Pequeno delay para garantir que os listeners de auth (useSession nos Gates) capturem a mudança
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       if (role === "admin") {
-        navigate("/admin/dashboard", { replace: true });
+        navigate(ROUTES.PRIVATE.ADMIN.DASHBOARD, { replace: true });
       } else {
-        navigate("/inicio", { replace: true });
+        navigate(ROUTES.PRIVATE.MOTORISTA.HOME, { replace: true });
       }
     } catch (error: any) {
       toast.error("auth.erro.login", {
@@ -274,7 +269,6 @@ export default function Login() {
         return;
       }
 
-      // Limpar qualquer sessão anterior antes de definir a nova
       clearAppSession();
 
       localStorage.setItem("responsavel_cpf", cpf);
@@ -286,9 +280,9 @@ export default function Login() {
         const p = passageiros[0];
         localStorage.setItem("responsavel_id", p.id);
         localStorage.setItem("responsavel_usuario_id", p.usuario_id);
-        navigate("/responsavel/carteirinha");
+        navigate(ROUTES.PRIVATE.RESPONSAVEL.HOME);
       } else {
-        navigate("/responsavel/selecionar", { state: { passageiros } });
+        navigate(ROUTES.PRIVATE.RESPONSAVEL.SELECT, { state: { passageiros } });
       }
     } catch {
       toast.error("auth.erro.login", {
@@ -441,7 +435,7 @@ export default function Login() {
                       Não tem uma conta?{" "}
                       <button
                         type="button"
-                        onClick={() => navigate("/cadastro")}
+                        onClick={() => navigate(ROUTES.PUBLIC.REGISTER)}
                         className="text-blue-500 font-semibold hover:text-blue-600 hover:underline transition-all"
                       >
                         Cadastre-se

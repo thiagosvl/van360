@@ -42,6 +42,7 @@ import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { Veiculo } from "@/types/veiculo";
 
+import { ROUTES } from "@/constants/routes";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { Users2 } from "lucide-react";
@@ -584,7 +585,7 @@ export default function Passageiros() {
 
   const handleHistorico = useCallback(
     (passageiro: Passageiro) => {
-      navigate(`/passageiros/${passageiro.id}`);
+      navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
     },
     [navigate]
   );

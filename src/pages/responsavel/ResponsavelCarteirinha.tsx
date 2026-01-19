@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 // React Router
+import { ROUTES } from "@/constants/routes";
 import { useNavigate } from "react-router-dom";
 
 // Components - Responsavel
@@ -187,7 +188,7 @@ export default function ResponsavelCarteirinha() {
   const carregar = async () => {
     try {
       if (!cpf || !email) {
-        navigate("/login");
+        navigate(ROUTES.PUBLIC.LOGIN);
         return;
       }
 
@@ -195,13 +196,13 @@ export default function ResponsavelCarteirinha() {
       const lista = await responsavelService.loginPorCpfEmail(cpf!, email!);
       if (!lista || lista.length === 0) {
         clearAppSession();
-        navigate("/login");
+        navigate(ROUTES.PUBLIC.LOGIN);
       }
 
       setPassageiros(lista);
 
       if (lista.length > 1 && !passageiroIdStorage) {
-        navigate("/responsavel/selecionar", {
+        navigate(ROUTES.PRIVATE.RESPONSAVEL.SELECT, {
           state: { passageiros: lista },
         });
         return;

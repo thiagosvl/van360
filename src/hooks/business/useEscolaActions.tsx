@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import { ActionItem } from "@/types/actions";
 import { Escola } from "@/types/escola";
 import { Pencil, ToggleLeft, ToggleRight, Trash2, Users } from "lucide-react";
@@ -34,7 +35,7 @@ export function useEscolaActions({
     {
       label: "Ver Passageiros",
       icon: <Users className="h-4 w-4" />,
-      onClick: () => navigate(`/passageiros?escola=${escola.id}`),
+      onClick: () => navigate(`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?escola=${escola.id}`),
       disabled: !escola.passageiros_ativos_count,
       swipeColor: "bg-purple-600",
     },

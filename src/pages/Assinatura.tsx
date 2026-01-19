@@ -41,33 +41,25 @@ export default function Assinatura() {
     valor: string | number;
   } | null>(null);
 
-  // ... (lines 61-115)
-
-  // Usar hooks do React Query
   const { data: cobrancasData = [], refetch: refetchCobrancas } =
     useAssinaturaCobrancas(
       profile?.id ? { usuarioId: profile.id } : undefined,
       { enabled: !!profile?.id }
     );
 
-  // New Unified Hook
   const {
     data: systemSummary,
     isLoading: isSummaryLoading,
     refetch: refetchSummary,
   } = useUsuarioResumo();
 
-  // Hook de Limites (Simplifica extração de quotas)
   const { limits } = usePlanLimits();
 
-  // Calcular dados derivados primeiro para verificar o plano
   const data = useMemo(() => {
     if (!profile?.assinaturas_usuarios?.[0] || !plano || !systemSummary)
       return null;
     const assinatura = profile.assinaturas_usuarios[0];
     const planoData = assinatura.planos;
-    // const usuarioResumo = systemSummary.usuario; // Not needed directly for limits anymore
-    // const contadores = systemSummary.contadores; // Not needed directly for limits anymore
 
     return {
       assinatura: {
@@ -81,7 +73,6 @@ export default function Assinatura() {
     };
   }, [profile, plano, cobrancasData, systemSummary]);
 
-  // Atualizar dados com as contagens (Now redundant as 'data' already has them from systemSummary)
   const dataWithCounts = data;
 
   useEffect(() => {

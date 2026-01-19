@@ -1,39 +1,27 @@
-// React
 import { useCallback, useEffect } from "react";
 
-// Third-party
 import { toast } from "@/utils/notifications/toast";
 
-// Components - Alerts
-
-// Components - UI
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Components - Navigation
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
-// Components - Common
 import { BlurredValue } from "@/components/common/BlurredValue";
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { KPICard } from "@/components/common/KPICard";
 
-// Components - Features
 import { GastosList } from "@/components/features/financeiro/GastosList";
 import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
 
-// Components - Dialogs
-
-// Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import { useDeleteGasto, useFilters, useGastos, useVeiculos } from "@/hooks";
 import { useGastosCalculations } from "@/hooks/business/useGastosCalculations"; // NEW
 import { usePermissions } from "@/hooks/business/usePermissions";
 
-// Utils
 import { FEATURE_GASTOS, PLANO_ESSENCIAL } from "@/constants";
 import { cn } from "@/lib/utils";
 import {
@@ -41,10 +29,8 @@ import {
   MOCK_VEICULOS,
 } from "@/utils/mocks/restrictedData";
 
-// Types
 import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 
-// Icons
 import { UpgradeStickyFooter } from "@/components/common/UpgradeStickyFooter";
 import {
   CalendarIcon,
@@ -80,7 +66,6 @@ export default function Gastos() {
     searchParam: "search",
   });
 
-  // Authorization Hook
   const {
     profile,
     isLoading: isAuthLoading,
@@ -103,7 +88,7 @@ export default function Gastos() {
       veiculoId: veiculoFilter !== "todos" ? veiculoFilter : undefined,
     },
     {
-      enabled: !!profile?.id, // Always fetch data to allow instant unlock if purchased
+      enabled: !!profile?.id,
       onError: () => toast.error("gasto.erro.carregar"),
     }
   );
@@ -113,7 +98,6 @@ export default function Gastos() {
   });
   const veiculos = veiculosData?.list || [];
 
-  // Calculation Hook
   const displayData = useGastosCalculations({
     gastos,
     mesFilter,

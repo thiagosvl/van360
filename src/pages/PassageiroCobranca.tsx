@@ -6,9 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-    FEATURE_COBRANCA_AUTOMATICA
-} from "@/constants";
+import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
+import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useCobranca, useCobrancaNotificacoes } from "@/hooks";
 import { useCobrancaOperations } from "@/hooks/business/useCobrancaActions";
@@ -21,58 +20,56 @@ import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import { CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
-    canSendNotification,
-    canViewReceipt,
-    disableDesfazerPagamento,
-    disableEditarCobranca,
-    disableExcluirCobranca,
-    disableRegistrarPagamento,
-    seForPago,
+  canSendNotification,
+  canViewReceipt,
+  disableDesfazerPagamento,
+  disableEditarCobranca,
+  disableExcluirCobranca,
+  disableRegistrarPagamento,
+  seForPago,
 } from "@/utils/domain/cobranca/disableActions";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
-    formatCobrancaOrigem,
-    formatDateToBR,
-    formatPaymentType,
-    formatarEnderecoCompleto,
-    formatarTelefone,
-    getStatusColor,
-    getStatusText,
-    meses,
+  formatCobrancaOrigem,
+  formatDateToBR,
+  formatPaymentType,
+  formatarEnderecoCompleto,
+  formatarTelefone,
+  getStatusColor,
+  getStatusText,
+  meses,
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-    ArrowRight,
-    BadgeCheck,
-    Bell,
-    BellOff,
-    Calendar,
-    CalendarDays,
-    Car,
-    CheckCircle,
-    CheckCircle2,
-    Copy,
-    CreditCard,
-    History,
-    IdCard,
-    MapPin,
-    Pencil,
-    Phone,
-    QrCode,
-    Receipt,
-    School,
-    Send,
-    Trash2,
-    User,
-    Wallet,
-    XCircle,
+  ArrowRight,
+  BadgeCheck,
+  Bell,
+  BellOff,
+  Calendar,
+  CalendarDays,
+  Car,
+  CheckCircle,
+  CheckCircle2,
+  Copy,
+  CreditCard,
+  History,
+  IdCard,
+  MapPin,
+  Pencil,
+  Phone,
+  QrCode,
+  Receipt,
+  School,
+  Send,
+  Trash2,
+  User,
+  Wallet,
+  XCircle,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
-// --- Components ---
 
 const InfoItem = ({
   icon: Icon,
@@ -134,8 +131,12 @@ export default function PassageiroCobranca() {
     passageiro_id: string;
     cobranca_id: string;
   };
-  const { setPageTitle, openCobrancaEditDialog, openCobrancaPixDrawer, openManualPaymentDialog } = useLayout();
-
+  const {
+    setPageTitle,
+    openCobrancaEditDialog,
+    openCobrancaPixDrawer,
+    openManualPaymentDialog,
+  } = useLayout();
 
   const { user } = useSession();
   const { plano } = useProfile(user?.id);
@@ -144,7 +145,6 @@ export default function PassageiroCobranca() {
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
 
-  // Buscar cobrança usando React Query
   const {
     data: cobrancaData,
     isLoading: isCobrancaLoading,
@@ -165,37 +165,34 @@ export default function PassageiroCobranca() {
 
   const loading = isCobrancaLoading;
 
-  // Validar se a cobrança existe após o carregamento
-  // Se não existir (erro 404 ou dados null), redirecionar para a carteirinha do passageiro
-  // Isso previne acesso a rotas de recursos excluídos via navegação do browser
   useEffect(() => {
     if (!cobranca_id) return;
 
-    // Verificar se terminou de carregar
     if (isCobrancaLoading) return;
 
-    // Verificar se há erro (404 ou outro erro)
     const isNotFoundError =
       isCobrancaError &&
       ((cobrancaError as any)?.response?.status === 404 ||
         (cobrancaError as any)?.status === 404);
 
-    // Se há erro 404 ou dados null/undefined, o recurso não existe
     if (isNotFoundError || (!isCobrancaError && !cobranca)) {
-      // Limpar cache da cobrança para evitar acesso futuro
       queryClient.removeQueries({ queryKey: ["cobranca", cobranca_id] });
       queryClient.removeQueries({
         queryKey: ["cobranca-notificacoes", cobranca_id],
       });
 
-      // Redirecionar para a carteirinha do passageiro se temos o ID
       if (passageiro_id) {
-        navigate(`/passageiros/${passageiro_id}/carteirinha`, {
-          replace: true,
-        });
+        navigate(
+          ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(
+            ":passageiro_id",
+            passageiro_id
+          ),
+          {
+            replace: true,
+          }
+        );
       } else {
-        // Fallback: redirecionar para lista de cobranças
-        navigate("/cobrancas", { replace: true });
+        navigate(ROUTES.PRIVATE.MOTORISTA.BILLING, { replace: true });
       }
     }
   }, [
@@ -231,7 +228,7 @@ export default function PassageiroCobranca() {
     handleUpgrade,
     isActionLoading,
   } = useCobrancaOperations({
-    cobranca: cobranca!, // Asserting non-null because of checks above
+    cobranca: cobranca!,
     plano: plano,
   });
 
@@ -273,7 +270,6 @@ export default function PassageiroCobranca() {
     }
   }, [cobranca, setPageTitle]);
 
-  // Verificar se o recurso não existe e redirecionar antes de renderizar
   const isNotFoundError =
     isCobrancaError &&
     ((cobrancaError as any)?.response?.status === 404 ||
@@ -283,7 +279,6 @@ export default function PassageiroCobranca() {
     !loading &&
     (isNotFoundError || (!isCobrancaError && !cobranca && cobranca_id))
   ) {
-    // Não renderizar nada enquanto redireciona
     return null;
   }
 
@@ -302,7 +297,6 @@ export default function PassageiroCobranca() {
     await refetchCobranca();
   };
 
-  // Status Logic using Utils (DRY)
   const isPago = cobrancaTyped?.status === CobrancaStatus.PAGO;
   const statusText = getStatusText(
     cobrancaTyped?.status,
@@ -313,7 +307,6 @@ export default function PassageiroCobranca() {
     cobrancaTyped?.data_vencimento
   );
 
-  // Header Color Logic derived from status
   let headerBg =
     "bg-gradient-to-r from-blue-100 via-blue-50 to-white border-b border-blue-100";
   let StatusIcon = Wallet;
@@ -321,7 +314,6 @@ export default function PassageiroCobranca() {
     "bg-blue-600 hover:bg-blue-700 text-white shadow-[0_12px_30px_-20px_rgba(37,99,235,0.7)]";
 
   if (isPago) {
-    // Pago: verde
     headerBg =
       "bg-gradient-to-r from-green-100 via-emerald-50 to-white border-b border-green-100";
     StatusIcon = CheckCircle2;
@@ -334,14 +326,12 @@ export default function PassageiroCobranca() {
     paymentButtonClass =
       "bg-red-600 hover:bg-red-700 text-white shadow-[0_12px_30px_-20px_rgba(248,113,113,0.6)]";
   } else if (statusText === "Vence hoje") {
-    // Vence hoje: gradiente laranja para vermelho
     headerBg =
       "bg-gradient-to-r from-white to-red-200 hover:bg-inherit border-b border-red-100";
     StatusIcon = Wallet;
     paymentButtonClass =
       "bg-gradient-to-r from-orange-500 via-red-600 to-red-600 hover:bg-orange-700 text-white shadow-[0_12px_30px_-20px_rgba(251,146,60,0.7)]";
   } else {
-    // A vencer: laranja
     headerBg =
       "bg-gradient-to-r from-orange-100 via-orange-50 to-white border-b border-orange-100";
     StatusIcon = Wallet;
@@ -579,46 +569,54 @@ export default function PassageiroCobranca() {
 
                     {/* Primary Actions */}
                     <div className="flex flex-wrap flex-col sm:flex-row items-center justify-center gap-4 max-w-2xl mx-auto mb-8 w-full">
-                      {cobrancaTyped?.txid_pix && cobrancaTyped?.qr_code_payload && !isPago && (
-                        <Button
-                          className="h-12 px-8 rounded-xl font-bold text-base bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto min-w-[200px]"
-                          onClick={() => openCobrancaPixDrawer({
-                            qrCodePayload: cobrancaTyped.qr_code_payload || "",
-                            valor: Number(cobrancaTyped.valor),
-                            passageiroNome: cobrancaTyped.passageiro.nome,
-                            mes: cobrancaTyped.mes,
-                            ano: cobrancaTyped.ano,
-                          })}
-                        >
-                          <QrCode className="w-5 h-5 mr-2" />
-                          Ver PIX
-                        </Button>
-                      )}
+                      {cobrancaTyped?.txid_pix &&
+                        cobrancaTyped?.qr_code_payload &&
+                        !isPago && (
+                          <Button
+                            className="h-12 px-8 rounded-xl font-bold text-base bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto min-w-[200px]"
+                            onClick={() =>
+                              openCobrancaPixDrawer({
+                                qrCodePayload:
+                                  cobrancaTyped.qr_code_payload || "",
+                                valor: Number(cobrancaTyped.valor),
+                                passageiroNome: cobrancaTyped.passageiro.nome,
+                                mes: cobrancaTyped.mes,
+                                ano: cobrancaTyped.ano,
+                              })
+                            }
+                          >
+                            <QrCode className="w-5 h-5 mr-2" />
+                            Ver PIX
+                          </Button>
+                        )}
                       {!disableRegistrarPagamento(cobrancaTyped) ? (
                         <Button
                           className={cn(
                             "h-12 px-8 rounded-xl font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto min-w-[200px]",
                             paymentButtonClass
                           )}
-                          onClick={() => openManualPaymentDialog({
-                            cobrancaId: cobrancaTyped.id,
-                            passageiroNome: cobrancaTyped.passageiro.nome,
-                            responsavelNome: cobrancaTyped.passageiro.nome_responsavel,
-                            valorOriginal: Number(cobrancaTyped.valor),
-                            status: cobrancaTyped.status,
-                            dataVencimento: cobrancaTyped.data_vencimento,
-                            onPaymentRecorded: () => {
-                              refetchCobranca();
-                              // Upsell Check
-                              if (!permissions.canUseAutomatedCharges) {
-                                handleUpgrade(
-                                  FEATURE_COBRANCA_AUTOMATICA,
-                                  "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?",
-                                  "Cobrança Automática"
-                                );
-                              }
-                            }
-                          })}
+                          onClick={() =>
+                            openManualPaymentDialog({
+                              cobrancaId: cobrancaTyped.id,
+                              passageiroNome: cobrancaTyped.passageiro.nome,
+                              responsavelNome:
+                                cobrancaTyped.passageiro.nome_responsavel,
+                              valorOriginal: Number(cobrancaTyped.valor),
+                              status: cobrancaTyped.status,
+                              dataVencimento: cobrancaTyped.data_vencimento,
+                              onPaymentRecorded: () => {
+                                refetchCobranca();
+                                // Upsell Check
+                                if (!permissions.canUseAutomatedCharges) {
+                                  handleUpgrade(
+                                    FEATURE_COBRANCA_AUTOMATICA,
+                                    "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?",
+                                    "Cobrança Automática"
+                                  );
+                                }
+                              },
+                            })
+                          }
                         >
                           <BadgeCheck className="w-5 h-5 mr-2" />
                           Registrar Pagamento
@@ -785,8 +783,6 @@ export default function PassageiroCobranca() {
                   </Card>
                 </motion.div>
               </div>
-
-
             </div>
           </div>
 

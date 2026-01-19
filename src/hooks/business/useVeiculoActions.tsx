@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import { ActionItem } from "@/types/actions";
 import { Veiculo } from "@/types/veiculo";
 import { Pencil, ToggleLeft, ToggleRight, Trash2, Users } from "lucide-react";
@@ -34,7 +35,7 @@ export function useVeiculoActions({
     {
       label: "Ver Passageiros",
       icon: <Users className="h-4 w-4" />,
-      onClick: () => navigate(`/passageiros?veiculo=${veiculo.id}`),
+      onClick: () => navigate(`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?veiculo=${veiculo.id}`),
       disabled: !veiculo.passageiros_ativos_count,
       swipeColor: "bg-purple-600",
     },

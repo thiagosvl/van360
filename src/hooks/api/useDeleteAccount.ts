@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import { supabase } from "@/integrations/supabase/client";
 import { apiClient } from "@/services/api/client";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
@@ -26,7 +27,7 @@ export const useDeleteAccount = () => {
              clearAppSession();
 
              // 4. Force reload para login
-             window.location.href = "/login";
+             window.location.href = ROUTES.PUBLIC.LOGIN;
         }
     });
 };

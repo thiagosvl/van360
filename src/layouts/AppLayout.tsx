@@ -1,6 +1,7 @@
 
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import { ROUTES } from "@/constants/routes";
 import { LayoutProvider } from "@/contexts/LayoutProvider";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
@@ -50,7 +51,7 @@ export default function AppLayout() {
             <button
               onClick={async () => {
                 await supabase.auth.signOut();
-                window.location.href = "/login";
+                window.location.href = ROUTES.PUBLIC.LOGIN;
               }}
               className="w-full py-2.5 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
@@ -68,7 +69,7 @@ function AutoRedirectToLogin() {
     useEffect(() => {
         const timer = setTimeout(async () => {
              await supabase.auth.signOut();
-             window.location.href = "/login";
+             window.location.href = ROUTES.PUBLIC.LOGIN;
         }, 5000);
         return () => clearTimeout(timer);
     }, []);
@@ -89,7 +90,7 @@ function AutoRedirectToLogin() {
               alt="Van360"
               className="h-12 cursor-pointer"
               title="Van360"
-              onClick={() => navigate("/inicio")}
+              onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.HOME)}
             />
             <div>
               <p className="text-sm font-semibold text-slate-900">

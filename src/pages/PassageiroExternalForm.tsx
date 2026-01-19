@@ -1,41 +1,37 @@
-// React
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-// React Router
+import { ROUTES } from "@/constants/routes";
 import { useNavigate, useParams } from "react-router-dom";
 
-// Third-party
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-// Components - Forms
 import { MoneyInput } from "@/components/forms";
 
-// Components - UI
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 
 // Services
@@ -53,16 +49,16 @@ import { toast } from "@/utils/notifications/toast";
 // Icons
 import { periodos } from "@/utils/formatters";
 import {
-    AlertTriangle,
-    CalendarDays,
-    Car,
-    CheckCircle2,
-    CreditCard,
-    Loader2,
-    School,
-    Sun,
-    User,
-    Wand2,
+  AlertTriangle,
+  CalendarDays,
+  Car,
+  CheckCircle2,
+  CreditCard,
+  Loader2,
+  School,
+  Sun,
+  User,
+  Wand2,
 } from "lucide-react";
 
 import { PassageiroFormEndereco } from "@/components/features/passageiro/form/PassageiroFormEndereco";
@@ -102,7 +98,6 @@ const prePassageiroSchema = z.object({
 type PrePassageiroFormData = z.infer<typeof prePassageiroSchema>;
 
 export default function PassageiroExternalForm() {
-  // Bloquear indexação da página de cadastro externo de passageiro
   useSEO({
     noindex: true,
   });
@@ -159,11 +154,10 @@ export default function PassageiroExternalForm() {
   useEffect(() => {
     const validateMotorista = async () => {
       if (!motoristaId) {
-        navigate("/");
+        navigate(ROUTES.PUBLIC.ROOT);
         return;
       }
 
-      // Buscar dados completos do motorista incluindo assinatura e plano
       const { data, error } = await supabase
         .from("usuarios")
         .select(
@@ -184,13 +178,12 @@ export default function PassageiroExternalForm() {
         toast.error("sistema.erro.linkInvalido", {
           description: "sistema.erro.linkInvalidoDescricao",
         });
-        navigate("/");
+        navigate(ROUTES.PUBLIC.ROOT);
         return;
       }
 
       setMotoristaApelido((data as any).apelido);
 
-      // Validar acesso à funcionalidade
       const accessValidation = validatePrePassageiroAccess(data);
       setHasAccess(accessValidation.hasAccess);
       setAccessReason(accessValidation.reason || null);
@@ -238,7 +231,6 @@ export default function PassageiroExternalForm() {
       });
 
       setSuccess(true);
-      // form.reset(); // Removido para permitir o "Smart Reset" no botão de novo cadastro
     } catch (error: any) {
       toast.error("sistema.erro.enviarDados", {
         description: error.message || "Tente novamente mais tarde.",
@@ -252,13 +244,11 @@ export default function PassageiroExternalForm() {
     const currentValues = form.getValues();
 
     form.reset({
-      // Manter dados do Responsável
       nome_responsavel: currentValues.nome_responsavel,
       email_responsavel: currentValues.email_responsavel,
       cpf_responsavel: currentValues.cpf_responsavel,
       telefone_responsavel: currentValues.telefone_responsavel,
 
-      // Manter dados de Endereço
       cep: currentValues.cep,
       logradouro: currentValues.logradouro,
       numero: currentValues.numero,
@@ -267,24 +257,20 @@ export default function PassageiroExternalForm() {
       estado: currentValues.estado,
       referencia: currentValues.referencia,
 
-      // Zerar dados do Passageiro e Vínculo
       nome: "",
       escola_id: "",
       periodo: "",
       observacoes: "",
 
-      // Zerar dados de Cobrança (pois podem variar)
       valor_cobranca: "",
       dia_vencimento: "",
 
-      // Manter configurações padrão
       emitir_cobranca_mes_atual: false,
       ativo: true,
       enviar_cobranca_automatica: false,
     });
 
     setSuccess(false);
-    // Focar no formulário de passageiro
     setOpenAccordionItems([
       "passageiro",
       "responsavel",
@@ -305,16 +291,14 @@ export default function PassageiroExternalForm() {
   const handleFillMock = () => {
     const currentValues = form.getValues();
 
-    // Auto-pick school if empty and lists are available
     let escolaId = currentValues.escola_id;
     if ((!escolaId || escolaId === "none") && escolasList.length > 0) {
       escolaId = escolasList[Math.floor(Math.random() * escolasList.length)].id;
     }
 
-    // Generate mock data (without vehicle)
     const mockData = mockGenerator.passenger({
       escola_id: escolaId,
-      veiculo_id: undefined, // No vehicle in external form
+      veiculo_id: undefined,
     });
 
     form.reset({
@@ -322,7 +306,6 @@ export default function PassageiroExternalForm() {
       emitir_cobranca_mes_atual: false,
     });
 
-    // Abrir todos os accordions para mostrar os dados preenchidos
     setOpenAccordionItems([
       "passageiro",
       "responsavel",
@@ -408,7 +391,7 @@ export default function PassageiroExternalForm() {
           {/* Header */}
           <div className="bg-blue-600 p-6 sm:p-8 text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('/assets/pattern.png')] opacity-10"></div>
-            
+
             <div className="absolute right-4 top-4 z-20">
               <Button
                 type="button"
@@ -671,8 +654,6 @@ export default function PassageiroExternalForm() {
                   {/* ENDEREÇO E OBSERVAÇÕES */}
                   <PassageiroFormEndereco />
                 </Accordion>
-
-
               </form>
             </Form>
           </div>

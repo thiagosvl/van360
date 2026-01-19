@@ -1,37 +1,30 @@
-// React
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-// React Router
-import { useNavigate } from "react-router-dom";
-
-// Third-party
+import { ROUTES } from "@/constants/routes";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
-// Components - UI
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Lock } from "lucide-react";
 
-// Services
 import { supabase } from "@/integrations/supabase/client";
 
-// Utils
 import { useSEO } from "@/hooks/useSEO";
 import { toast } from "@/utils/notifications/toast";
 
 export default function NovaSenha() {
-  // Bloquear indexação da página de redefinição de senha
   useSEO({
     noindex: true,
   });
@@ -59,7 +52,9 @@ export default function NovaSenha() {
   const handleRedefinir = async (data: z.infer<typeof formSchema>) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.updateUser({ password: data.senha });
+      const { error } = await supabase.auth.updateUser({
+        password: data.senha,
+      });
       setLoading(false);
 
       if (error) {
@@ -80,7 +75,10 @@ export default function NovaSenha() {
         description: "Redirecionando para o sistema...",
       });
 
-      setTimeout(() => navigate("/inicio", { replace: true }), 1200);
+      setTimeout(
+        () => navigate(ROUTES.PRIVATE.MOTORISTA.HOME, { replace: true }),
+        1200
+      );
     } catch (err: any) {
       setLoading(false);
       toast.error("erro.generico", {
@@ -176,7 +174,7 @@ export default function NovaSenha() {
               <div className="text-center mt-6">
                 <button
                   type="button"
-                  onClick={() => navigate("/login")}
+                  onClick={() => navigate(ROUTES.PUBLIC.LOGIN)}
                   className="text-sm text-gray-500 hover:text-blue-600 transition-colors font-medium flex items-center justify-center gap-2 mx-auto"
                 >
                   <ArrowLeft className="h-4 w-4" /> Voltar ao login

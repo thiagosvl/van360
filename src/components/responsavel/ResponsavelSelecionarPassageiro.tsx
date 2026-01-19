@@ -1,5 +1,6 @@
 import AppNavbarResponsavel from "@/components/responsavel/AppNavbarResponsavel";
 import { Card } from "@/components/ui/card";
+import { ROUTES } from "@/constants/routes";
 import { ArrowRight } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -11,7 +12,7 @@ export default function ResponsavelSelecionarPassageiro() {
   const handleSelect = (p: any) => {
     localStorage.setItem("responsavel_id", p.id);
     localStorage.setItem("responsavel_usuario_id", p.usuario_id);
-    navigate("/responsavel/carteirinha");
+    navigate(ROUTES.PRIVATE.RESPONSAVEL.HOME);
   };
 
   return (

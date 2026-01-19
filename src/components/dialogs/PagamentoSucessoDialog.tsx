@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
+import { ROUTES } from "@/constants/routes";
 import { CheckCircle2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -31,7 +32,7 @@ export function PagamentoSucessoDialog({
     if (onIrParaInicio) {
       onIrParaInicio();
     } else {
-      navigate("/inicio");
+      navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
     }
     onClose();
   };
@@ -40,7 +41,7 @@ export function PagamentoSucessoDialog({
     if (onIrParaAssinatura) {
       onIrParaAssinatura();
     } else {
-      navigate("/assinatura");
+      navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION);
     }
     onClose();
   };

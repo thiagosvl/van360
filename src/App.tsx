@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ROUTES } from "@/constants/routes";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/layouts/AppLayout";
 import { toast } from "@/utils/notifications/toast";
@@ -188,7 +189,7 @@ const App = () => {
             <Routes>
             {/* Rotas Públicas */}
             <Route
-              path="/login"
+              path={ROUTES.PUBLIC.LOGIN}
               element={
                 <AppGate>
                   <Login />
@@ -197,7 +198,7 @@ const App = () => {
             />
 
             <Route
-              path="/cadastro"
+              path={ROUTES.PUBLIC.REGISTER}
               element={
                 <AppGate>
                   <Register />
@@ -206,7 +207,7 @@ const App = () => {
             />
 
             <Route
-              path="/nova-senha"
+              path={ROUTES.PUBLIC.NEW_PASSWORD}
               element={
                 <AppGate>
                   <NovaSenha />
@@ -216,16 +217,16 @@ const App = () => {
 
             {/* Rota Pública de pré-cadastro */}
             <Route
-              path="/cadastro-passageiro/:motoristaId"
+              path={ROUTES.PUBLIC.EXTERNAL_PASSENGER_FORM}
               element={<PassageiroExternalForm />}
             />
 
             <Route
-              path="/"
+              path={ROUTES.PUBLIC.ROOT}
               element={
                 Capacitor.isNativePlatform() ? (
                   // App nativo → vai direto para login
-                  <Navigate to="/login" replace />
+                  <Navigate to={ROUTES.PUBLIC.LOGIN} replace />
                 ) : (
                   // Web → mostra página inicial pública
                   <Index />
@@ -235,7 +236,7 @@ const App = () => {
 
             {/* Rota Visão Responsável */}
             <Route
-              path="/responsavel/*"
+              path={ROUTES.PRIVATE.RESPONSAVEL.ROOT}
               element={
                 <ResponsavelGate>
                   <ResponsavelLayout />
@@ -253,22 +254,22 @@ const App = () => {
             >
 
               {/* Motorista */}
-              <Route path="inicio" element={<Home />} />
-              <Route path="assinatura" element={<Assinatura />} />
-              <Route path="passageiros" element={<Passageiros />} />
+              <Route path={ROUTES.PRIVATE.MOTORISTA.HOME} element={<Home />} />
+              <Route path={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION} element={<Assinatura />} />
+              <Route path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS} element={<Passageiros />} />
               <Route
-                path="passageiros/:passageiro_id"
+                path={ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS}
                 element={<PassageiroCarteirinha />}
               />
               <Route
-                path="cobrancas/:cobranca_id"
+                path={ROUTES.PRIVATE.MOTORISTA.PASSENGER_BILLING}
                 element={<PassageiroCobranca />}
               />
-              <Route path="cobrancas" element={<Cobrancas />} />
-              <Route path="escolas" element={<Escolas />} />
-              <Route path="veiculos" element={<Veiculos />} />
-              <Route path="gastos" element={<Gastos />} />
-              <Route path="relatorios" element={<Relatorios />} />
+              <Route path={ROUTES.PRIVATE.MOTORISTA.BILLING} element={<Cobrancas />} />
+              <Route path={ROUTES.PRIVATE.MOTORISTA.SCHOOLS} element={<Escolas />} />
+              <Route path={ROUTES.PRIVATE.MOTORISTA.VEHICLES} element={<Veiculos />} />
+              <Route path={ROUTES.PRIVATE.MOTORISTA.EXPENSES} element={<Gastos />} />
+              <Route path={ROUTES.PRIVATE.MOTORISTA.REPORTS} element={<Relatorios />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

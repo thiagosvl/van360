@@ -1,4 +1,5 @@
 // React
+import { ROUTES } from "@/constants/routes";
 import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -158,7 +159,7 @@ export default function Veiculos() {
      if (openModal === "true") {
          openVeiculoFormDialog({
             onSuccess: () => {
-                 navigate("/inicio", { replace: true });
+                 navigate(ROUTES.PRIVATE.MOTORISTA.HOME, { replace: true });
             }
          });
      }

@@ -2,18 +2,19 @@ import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
 import EditarCadastroDialog from "@/components/dialogs/EditarCadastroDialog";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
+import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -21,16 +22,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
 import {
-    ChevronDown,
-    Key,
-    Lock,
-    LogOut,
-    Menu,
-    Receipt,
-    UserPen,
+  ChevronDown,
+  Key,
+  Lock,
+  LogOut,
+  Menu,
+  Receipt,
+  UserPen,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { redirect, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -56,7 +57,7 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
         data: { session },
       } = await supabase.auth.getSession();
 
-      redirect("/login");
+      window.location.href = ROUTES.PUBLIC.LOGIN;
     } catch (err) {
       // Erro ao encerrar sessão - não crítico, redirecionamento já foi feito
     } finally {
@@ -97,7 +98,7 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
                         className="h-14 cursor-pointer"
                         title="Van360"
                         onClick={() => {
-                          navigate("/inicio");
+                          navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
                           setIsSheetOpen(false);
                         }}
                       />
@@ -132,7 +133,7 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end">
-                <DropdownMenuItem onClick={() => navigate("/assinatura")}>
+                <DropdownMenuItem onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}>
                   <Receipt className="mr-2 h-4 w-4" /> Minha Assinatura
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setOpenEditarCadasto(true)}>

@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import {
   Check,
   CreditCard,
@@ -35,7 +36,6 @@ import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils"
 import { formatCurrency } from "@/utils/formatters/currency";
 import { toast } from "@/utils/notifications/toast";
 
-// New Component Imports
 import { LimitHealthBar } from "@/components/common/LimitHealthBar";
 import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
 import { MiniKPI } from "@/components/features/home/MiniKPI";
@@ -46,8 +46,6 @@ import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { useUpsellContent } from "@/hooks/business/useUpsellContent";
 import { useWhatsapp } from "@/hooks/useWhatsapp";
 import { CobrancaStatus, PixKeyStatus } from "@/types/enums";
-
-// --- Main Component ---
 
 const Home = () => {
   const {
@@ -65,12 +63,8 @@ const Home = () => {
     state: liveWhatsappStatus,
     qrCode,
     isLoading: isWhatsappLoading,
-    instanceName,
-    connect,
-    requestPairingCode,
   } = useWhatsapp();
 
-  // Use Access Control Hook
   const {
     profile,
     isLoading: isProfileLoading,
@@ -126,11 +120,9 @@ const Home = () => {
   const passageirosAtivosCount =
     systemSummary?.contadores.passageiros.ativos ?? 0;
 
-  // Passenger Limit Logic
   const limitePassageiros = limits.passageiros;
   const hasPassengerLimit = limits.hasPassengerLimit;
 
-  // Financial KPIs
   const receitaPrevista = cobrancas.reduce(
     (acc, c) => acc + Number(c.valor || 0),
     0
@@ -145,7 +137,6 @@ const Home = () => {
     0
   );
 
-  // Status Logic
   const latePayments = useMemo(() => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -161,7 +152,6 @@ const Home = () => {
     0
   );
 
-  // Onboarding Logic
   const hasPixKey = !!profile?.chave_pix;
 
   const completedSteps = [
@@ -174,7 +164,6 @@ const Home = () => {
   const totalSteps = isProfissional ? 4 : 3;
   const showOnboarding = completedSteps < totalSteps;
 
-  // Date Context
   const dateContext = useMemo(() => {
     const now = new Date();
     const options: Intl.DateTimeFormatOptions = {
@@ -201,7 +190,6 @@ const Home = () => {
     await Promise.all([refetchCobrancas(), refetchSummary()]);
   };
 
-  // Copy Link Logic
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopyLink = () => {
@@ -216,7 +204,6 @@ const Home = () => {
     }
   };
 
-  // Dialog Handlers
   const handleSuccessFormPassageiro = useCallback(() => {
     setNovoVeiculoId(null);
     setNovaEscolaId(null);
@@ -485,7 +472,7 @@ const Home = () => {
                     latePayments.length != 1 ? "s" : ""
                   }.`}
                   actionLabel="Ver Cobranças"
-                  onAction={() => navigate("/cobrancas")}
+                  onAction={() => navigate(ROUTES.PRIVATE.MOTORISTA.BILLING)}
                 />
               ) : (
                 <DashboardStatusCard
@@ -552,42 +539,42 @@ const Home = () => {
                 </span>
               </div>
               <ShortcutCard
-                to="/passageiros"
+                to={ROUTES.PRIVATE.MOTORISTA.PASSENGERS}
                 icon={Users}
                 label="Passageiros"
                 colorClass="text-blue-600"
                 bgClass="bg-blue-50"
               />
               <ShortcutCard
-                to="/passageiros?tab=solicitacoes"
+                to={`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=solicitacoes`}
                 icon={UserCheck}
                 label="Solicitações"
                 colorClass="text-pink-600"
                 bgClass="bg-pink-50"
               />
               <ShortcutCard
-                to="/gastos"
+                to={ROUTES.PRIVATE.MOTORISTA.EXPENSES}
                 icon={TrendingUp}
                 label="Gastos"
                 colorClass="text-red-600"
                 bgClass="bg-red-50"
               />
               <ShortcutCard
-                to="/relatorios"
+                to={ROUTES.PRIVATE.MOTORISTA.REPORTS}
                 icon={FileText}
                 label="Relatórios"
                 colorClass="text-purple-600"
                 bgClass="bg-purple-50"
               />
               <ShortcutCard
-                to="/cobrancas"
+                to={ROUTES.PRIVATE.MOTORISTA.BILLING}
                 icon={CreditCard}
                 label="Cobranças"
                 colorClass="text-emerald-600"
                 bgClass="bg-emerald-50"
               />
               <ShortcutCard
-                to="/assinatura"
+                to={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}
                 icon={Receipt}
                 label="Minha Assinatura"
                 colorClass="text-yellow-600"

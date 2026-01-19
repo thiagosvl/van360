@@ -1,26 +1,19 @@
-// React
+import { ROUTES } from "@/constants/routes";
 import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-// Components - Dialogs
-
-// Components - Features
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { EscolasList } from "@/components/features/escola/EscolasList";
 import { EscolasToolbar } from "@/components/features/escola/EscolasToolbar";
 
-// Components - Empty & Skeletons
 import { ListSkeleton } from "@/components/skeletons";
 
-// Components - Navigation
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
-// Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
-// Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   useCreateEscola,
@@ -32,14 +25,11 @@ import {
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
-// Utils
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 
-// Types
 import { Escola } from "@/types/escola";
 
-// Icons
 import { GraduationCap } from "lucide-react";
 
 export default function Escolas() {
@@ -142,13 +132,12 @@ export default function Escolas() {
     return filtered;
   }, [escolas, selectedStatus, searchTerm]);
 
-  // Check for openModal param on mount
   useEffect(() => {
     const openModal = searchParams.get("openModal");
     if (openModal === "true") {
       openEscolaFormDialog({
         onSuccess: (escola) => {
-          navigate("/inicio", { replace: true });
+          navigate(ROUTES.PRIVATE.MOTORISTA.HOME, { replace: true });
         },
       });
     }
