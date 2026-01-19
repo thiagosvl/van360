@@ -16,11 +16,11 @@ import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
@@ -30,8 +30,7 @@ import { responsavelService } from "@/services/responsavelService";
 
 // Utils
 import { useSEO } from "@/hooks/useSEO";
-import { clearLoginStorageMotorista } from "@/utils/domain/motorista/motoristaUtils";
-import { clearLoginStorageResponsavel } from "@/utils/domain/responsavel/responsavelUtils";
+import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
 import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 
@@ -192,6 +191,11 @@ export default function Login() {
         return;
       }
 
+      // Garantir limpeza de sessão anterior antes de autenticar
+      // Nota: Não limpamos aqui para não perder estado, mas o Supabase lida com a sessão.
+      // O importante é limpar residuos de Responsavel se houver.
+      clearAppSession();
+
       const usuarioData = usuario;
 
       const { data: authData, error: signInError } =
@@ -224,7 +228,6 @@ export default function Login() {
       if (role) {
         localStorage.setItem("app_role", role);
       }
-      clearLoginStorageResponsavel();
       // Garantir que a sessão está ativa e propagada antes de navegar
       const {
         data: { session },
@@ -271,11 +274,13 @@ export default function Login() {
         return;
       }
 
+      // Limpar qualquer sessão anterior antes de definir a nova
+      clearAppSession();
+
       localStorage.setItem("responsavel_cpf", cpf);
       localStorage.setItem("responsavel_email", email);
       localStorage.setItem("responsavel_is_logged", "true");
 
-      clearLoginStorageMotorista();
 
       if (passageiros.length === 1) {
         const p = passageiros[0];

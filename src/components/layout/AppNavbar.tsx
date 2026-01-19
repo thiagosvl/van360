@@ -19,7 +19,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { clearLoginStorageMotorista } from "@/utils/domain/motorista/motoristaUtils";
+import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
 import {
     ChevronDown,
     Key,
@@ -50,7 +50,7 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
     try {
       await supabase.auth.signOut();
 
-      clearLoginStorageMotorista();
+      clearAppSession();
 
       const {
         data: { session },

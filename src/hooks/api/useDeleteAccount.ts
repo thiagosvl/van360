@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { apiClient } from "@/services/api/client";
-import { clearLoginStorageMotorista } from "@/utils/domain/motorista/motoristaUtils";
+import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const useDeleteAccount = () => {
@@ -23,7 +23,7 @@ export const useDeleteAccount = () => {
              await supabase.auth.signOut();
 
              // 3. Limpar storage local
-             clearLoginStorageMotorista();
+             clearAppSession();
 
              // 4. Force reload para login
              window.location.href = "/login";

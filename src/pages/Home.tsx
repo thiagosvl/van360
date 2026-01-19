@@ -45,7 +45,7 @@ import { WHATSAPP_STATUS } from "@/config/constants";
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { useUpsellContent } from "@/hooks/business/useUpsellContent";
 import { useWhatsapp } from "@/hooks/useWhatsapp";
-import { CobrancaStatus } from "@/types/enums";
+import { CobrancaStatus, PixKeyStatus } from "@/types/enums";
 
 // --- Main Component ---
 
@@ -329,7 +329,7 @@ const Home = () => {
             </p>
           </div>
 
-          {profile?.status_chave_pix === "PENDENTE_VALIDACAO" ? (
+          {profile?.status_chave_pix === PixKeyStatus.PENDENTE_VALIDACAO ? (
             <section className="mb-4">
               <DashboardStatusCard
                 type="pending"
@@ -339,7 +339,7 @@ const Home = () => {
                 onAction={() => openPixKeyDialog()}
               />
             </section>
-          ) : profile?.status_chave_pix === "FALHA_VALIDACAO" ? (
+          ) : profile?.status_chave_pix === PixKeyStatus.FALHA_VALIDACAO ? (
             <section className="mb-4">
               <DashboardStatusCard
                 type="error"

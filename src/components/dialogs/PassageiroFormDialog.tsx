@@ -27,7 +27,7 @@ import { PassageiroFormData } from "@/hooks/ui/usePassageiroForm";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
-import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
+
 import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
@@ -261,18 +261,12 @@ export default function PassengerFormDialog({
       }
     }
 
-    const { emitir_cobranca_mes_atual, ...purePayload } = data;
+    const purePayload = { ...data };
     
     // Sanitização monetária
     if (purePayload.valor_cobranca) {
       purePayload.valor_cobranca = String(moneyToNumber(purePayload.valor_cobranca));
     }
-
-    // Preparar rollback do QuickStart apenas para criações (não para edições)
-    const shouldUpdateQuickStart = !editingPassageiro;
-    const quickStartRollback = shouldUpdateQuickStart
-      ? updateQuickStartStepWithRollback("step_passageiros")
-      : null;
 
     const commonOptions = {
       onSuccess: () => {
@@ -280,9 +274,7 @@ export default function PassengerFormDialog({
         onClose();
       },
       onError: () => {
-        if (quickStartRollback) {
-          quickStartRollback.restore();
-        }
+        // Error handling
       },
     };
 
@@ -292,7 +284,6 @@ export default function PassengerFormDialog({
           prePassageiroId: prePassageiro.id,
           data: {
             ...purePayload,
-            emitir_cobranca_mes_atual,
             usuario_id: prePassageiro.usuario_id,
           },
         },
@@ -312,7 +303,6 @@ export default function PassengerFormDialog({
       createPassageiro.mutate(
         {
           ...purePayload,
-          emitir_cobranca_mes_atual,
           usuario_id: profile.id,
         },
         commonOptions

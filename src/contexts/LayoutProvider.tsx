@@ -6,18 +6,18 @@ import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import PixKeyDialog from "@/components/dialogs/PixKeyDialog";
 import {
-    PlanUpgradeDialog,
+  PlanUpgradeDialog,
 } from "@/components/dialogs/PlanUpgradeDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { WhatsappDialog } from "@/components/dialogs/WhatsappDialog";
 import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
 import {
-    FEATURE_COBRANCA_AUTOMATICA,
-    FEATURE_GASTOS,
-    FEATURE_LIMITE_PASSAGEIROS,
-    FEATURE_NOTIFICACOES,
-    FEATURE_RELATORIOS,
-    PLANO_PROFISSIONAL,
+  FEATURE_COBRANCA_AUTOMATICA,
+  FEATURE_GASTOS,
+  FEATURE_LIMITE_PASSAGEIROS,
+  FEATURE_NOTIFICACOES,
+  FEATURE_RELATORIOS,
+  PLANO_PROFISSIONAL,
 } from "@/constants";
 import { safeCloseDialog } from "@/hooks";
 import { usePixKeyGuard } from "@/hooks/business/usePixKeyGuard";
@@ -25,23 +25,24 @@ import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useWhatsappGuard } from "@/hooks/business/useWhatsappGuard";
+import { PixKeyStatus } from "@/types/enums";
 import {
-    ReactNode,
-    useCallback,
-    useEffect,
-    useState,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useState,
 } from "react";
 import {
-    LayoutContext,
-    OpenCobrancaEditDialogProps,
-    OpenCobrancaPixDrawerProps,
-    OpenConfirmationDialogProps,
-    OpenEscolaFormProps,
-    OpenGastoFormProps,
-    OpenManualPaymentDialogProps,
-    OpenPassageiroFormProps,
-    OpenPlanUpgradeDialogProps,
-    OpenVeiculoFormProps
+  LayoutContext,
+  OpenCobrancaEditDialogProps,
+  OpenCobrancaPixDrawerProps,
+  OpenConfirmationDialogProps,
+  OpenEscolaFormProps,
+  OpenGastoFormProps,
+  OpenManualPaymentDialogProps,
+  OpenPassageiroFormProps,
+  OpenPlanUpgradeDialogProps,
+  OpenVeiculoFormProps
 } from "./LayoutContext";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
@@ -155,7 +156,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   });
 
   // Prioridade de Dialogs: PIX Key > Whatsapp
-  const isPixKeyValid = !!profile?.chave_pix && profile?.status_chave_pix === 'VALIDADA';
+  const isPixKeyValid = !!profile?.chave_pix && profile?.status_chave_pix === PixKeyStatus.VALIDADA;
 
   const handleOpenPixKeyDialog = useCallback(() => {
     setPixKeyDialogState({

@@ -35,7 +35,6 @@ import { responsavelService } from "@/services/responsavelService";
 
 // Utils
 import { seForPago } from "@/utils/domain/cobranca/disableActions";
-import { clearLoginStorageResponsavel } from "@/utils/domain/responsavel/responsavelUtils";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
   formatarEnderecoCompleto,
@@ -52,6 +51,7 @@ import { Cobranca } from "@/types/cobranca";
 
 // Icons
 import { CobrancaStatus } from "@/types/enums";
+import { clearAppSession } from "@/utils/domain";
 import {
   AlertTriangle,
   Car,
@@ -194,7 +194,7 @@ export default function ResponsavelCarteirinha() {
       setRefreshing(true);
       const lista = await responsavelService.loginPorCpfEmail(cpf!, email!);
       if (!lista || lista.length === 0) {
-        clearLoginStorageResponsavel();
+        clearAppSession();
         navigate("/login");
       }
 

@@ -47,3 +47,10 @@ export enum AssinaturaBillingType {
   EXPANSION = "expansion",
   RENEWAL = "renewal",
 }
+
+export enum PixKeyStatus {
+  VALIDADA = "VALIDADA",
+  NAO_CADASTRADA = "NAO_CADASTRADA",
+  FALHA_VALIDACAO = "FALHA_VALIDACAO",
+  PENDENTE_VALIDACAO = "PENDENTE_VALIDACAO"
+}

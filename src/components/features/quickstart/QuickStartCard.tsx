@@ -2,13 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
-  Bus,
-  CheckCircle2,
-  Key,
-  Lock as LockIcon,
-  School,
-  Trophy,
-  User,
+    Bus,
+    CheckCircle2,
+    Key,
+    Lock as LockIcon,
+    School,
+    Trophy,
+    User,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PassengerOnboardingDrawer } from "./PassengerOnboardingDrawer";
@@ -18,7 +18,6 @@ import { PLANO_PROFISSIONAL } from "@/constants";
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { getQuickStartStatus } from "@/utils/domain/quickstart/quickStartUtils";
 
 interface QuickStartCardProps {
   onOpenVeiculoDialog: () => void;
@@ -49,12 +48,10 @@ export const QuickStartCard = ({
 
 
   const steps = useMemo(() => {
-    const localStatus = getQuickStartStatus();
-    
     const defaultSteps = [
       {
         id: 1,
-        done: veiculosCount > 0 || !!localStatus.step_veiculos,
+        done: veiculosCount > 0,
         label: "Cadastrar um Veículo",
         onAction: onOpenVeiculoDialog,
         icon: Bus,
@@ -62,7 +59,7 @@ export const QuickStartCard = ({
       },
       {
         id: 2,
-        done: escolasCount > 0 || !!localStatus.step_escolas,
+        done: escolasCount > 0,
         label: "Cadastrar uma Escola",
         onAction: onOpenEscolaDialog,
         icon: School,
@@ -70,7 +67,7 @@ export const QuickStartCard = ({
       },
       {
         id: 3,
-        done: passageirosCount > 0 || !!localStatus.step_passageiros,
+        done: passageirosCount > 0,
         label: "Cadastrar Primeiro Passageiro",
         onAction: () => setIsPassengerDrawerOpen(true),
         icon: User,
@@ -100,7 +97,6 @@ export const QuickStartCard = ({
     onOpenPixKeyDialog,
     plano,
     profile,
-    // Add dependency on some external trigger if needed, but refetchSummary causes re-render which re-runs useMemo
     systemSummary // Ensure it re-runs when summary updates
   ]);
 

@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { Veiculo } from "@/types/veiculo";
-import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
+
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { Users2 } from "lucide-react";
@@ -551,7 +551,7 @@ export default function Passageiros() {
       cep: endereco.cep,
     };
 
-    const { restore } = updateQuickStartStepWithRollback("step_passageiros");
+
 
     // Verificar se pode ligar cobrança automática
     let enviarCobrancaAutomatica = false;
@@ -569,7 +569,7 @@ export default function Passageiros() {
       },
       {
         onError: () => {
-          restore();
+          // restore(); 
         },
       }
     );

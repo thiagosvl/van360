@@ -1,4 +1,4 @@
-import { STORAGE_KEY_QUICKSTART_STATUS } from "@/constants";
+import { PixKeyStatus } from "@/types/enums";
 import { Usuario } from "@/types/usuario";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -25,13 +25,8 @@ export function usePixKeyGuard({
     // Check only if it's the professional plan
     if (isProfissional) {
       // Parse current storage
-      const storageRaw = localStorage.getItem(STORAGE_KEY_QUICKSTART_STATUS);
-      const storageObj = storageRaw ? JSON.parse(storageRaw) : {};
-      const hasPixKeyLocal = !!storageObj.step_pix;
-      
       const hasPixKeyProfile = !!profile.chave_pix;
-      const isPixKeyValidated = profile.status_chave_pix === 'VALIDADA';
-      const isPendingOrFailed = profile.status_chave_pix === 'PENDENTE_VALIDACAO' || profile.status_chave_pix === 'FALHA_VALIDACAO';
+      const isPixKeyValidated = profile.status_chave_pix === PixKeyStatus.VALIDADA;
 
       // Se tem chave MAS não está validada -> Bloqueia
       // Se NÃO tem chave -> Bloqueia (comportamento antigo, mas reforçado)
@@ -39,13 +34,6 @@ export function usePixKeyGuard({
       const shouldBlock = !hasPixKeyProfile || !isPixKeyValidated;
 
       if (!shouldBlock) {
-          // Se já tem chave E está validada, garante que o storage local saiba
-          if (!hasPixKeyLocal) {
-            localStorage.setItem(STORAGE_KEY_QUICKSTART_STATUS, JSON.stringify({
-                ...storageObj,
-                step_pix: true
-            }));
-          }
           return; 
       }
 

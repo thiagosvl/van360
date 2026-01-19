@@ -134,30 +134,85 @@ export function useDeletePassageiro() {
   return useMutation({
     mutationFn: (id: string) => passageiroApi.deletePassageiro(id),
     onMutate: async (id) => {
+      // 1. Cancelar queries concorrentes
       await queryClient.cancelQueries({ queryKey: ["passageiros"] });
+      await queryClient.cancelQueries({ queryKey: ["usuario-resumo"] });
 
+      // 2. Snapshot dos dados anteriores
       const previousPassageiros = queryClient.getQueriesData({ queryKey: ["passageiros"] });
+      const previousResumo = queryClient.getQueriesData({ queryKey: ["usuario-resumo"] });
 
+      // 3. Encontrar o passageiro para saber status (ativo/automacao) antes de remover
+      let deletedPassageiro: Passageiro | undefined;
+      
+      // Tenta encontrar no cache de lista primeiro
+      for (const [key, data] of previousPassageiros) {
+         if ((data as any)?.list) {
+            const found = (data as any).list.find((p: Passageiro) => p.id === id);
+            if (found) {
+               deletedPassageiro = found;
+               break;
+            }
+         }
+      }
+
+      // Se não achou na lista, tenta query individual (menos provável de estar populada se veio da lista, mas ok)
+      if (!deletedPassageiro) {
+         deletedPassageiro = queryClient.getQueryData(["passageiro", id]);
+      }
+
+      // 4. Atualizar listas de passageiros (Remoção)
       queryClient.setQueriesData({ queryKey: ["passageiros"] }, (old: any) => {
         if (!old) return old;
         if (old.list) {
           return {
             ...old,
             list: old.list.filter((p: Passageiro) => p.id !== id),
-            total: old.total - 1,
+            total: Math.max(0, old.total - 1),
             ativos: old.list.filter((p: Passageiro) => p.id !== id && p.ativo).length,
           };
         }
         return old;
       });
 
-      return { previousPassageiros };
+      // 5. Atualizar Resumo do Usuário (Contadores)
+      if (deletedPassageiro) {
+          queryClient.setQueriesData({ queryKey: ["usuario-resumo"] }, (old: any) => {
+              if (!old || !old.contadores) return old;
+              
+              const wasActive = deletedPassageiro?.ativo;
+              const wasAutomated = deletedPassageiro?.enviar_cobranca_automatica;
+
+              return {
+                  ...old,
+                  contadores: {
+                      ...old.contadores,
+                      passageiros: {
+                          ...old.contadores.passageiros,
+                          total: Math.max(0, old.contadores.passageiros.total - 1),
+                          ativos: wasActive ? Math.max(0, old.contadores.passageiros.ativos - 1) : old.contadores.passageiros.ativos,
+                          inativos: !wasActive ? Math.max(0, old.contadores.passageiros.inativos - 1) : old.contadores.passageiros.inativos,
+                          com_automacao: wasAutomated ? Math.max(0, old.contadores.passageiros.com_automacao - 1) : old.contadores.passageiros.com_automacao,
+                      }
+                  }
+              };
+          });
+      }
+
+      return { previousPassageiros, previousResumo };
     },
     onError: (error: any, variables, context) => {
+      // Rollback Passageiros
       if (context?.previousPassageiros) {
         context.previousPassageiros.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
         });
+      }
+      // Rollback Resumo
+      if (context?.previousResumo) {
+          context.previousResumo.forEach(([queryKey, data]) => {
+            queryClient.setQueryData(queryKey, data);
+          });
       }
       
       const errorMessage = getErrorMessage(error);
@@ -176,12 +231,12 @@ export function useDeletePassageiro() {
       toast.success("passageiro.sucesso.excluido");
     },
     onSettled: (data, error, id) => {
-      // Só invalidar se NÃO houve erro. Se deu erro (ex: validação), nada mudou no server.
+      // Só invalidar se NÃO houve erro.
       if (!error) {
         queryClient.invalidateQueries({ queryKey: ["passageiros"] });
         queryClient.invalidateQueries({ queryKey: ["passageiros-contagem"] });
         
-        // Invalida a query específica do passageiro excluído
+        // Invalida a query específica e remove
         if (id) {
             queryClient.invalidateQueries({ queryKey: ["passageiro", id] });
             queryClient.removeQueries({ queryKey: ["passageiro", id] });

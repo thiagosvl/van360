@@ -1,31 +1,31 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { useSession } from "@/hooks/business/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import { pixKeySchemaRequired } from "@/schemas/pix";
 import { usuarioApi } from "@/services/api/usuario.api";
+import { PixKeyStatus } from "@/types/enums";
 import { TIPOS_CHAVE_PIX_LABEL, TipoChavePix } from "@/types/pix";
 import { cnpjMask, cpfMask as maskCpf, phoneMask as maskPhone } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
@@ -55,7 +55,6 @@ export default function PixKeyDialog({
   onSuccess,
   canClose = true
 }: PixKeyDialogProps) {
-  const { user } = useSession();
   const { profile, refreshProfile, isProfissional } = usePermissions();
   const [isChecking, setIsChecking] = React.useState(false);
   const [overrideStatus, setOverrideStatus] = React.useState(false);
@@ -95,23 +94,9 @@ export default function PixKeyDialog({
   }, [isOpen, profile, form]);
 
   const status = profile?.status_chave_pix;
-  const isPending = status === 'PENDENTE_VALIDACAO';
-  const isFailed = status === 'FALHA_VALIDACAO';
-  const isValid = status === 'VALIDADA'; // Should usually close if validated, but logic here helps
-
-  // REMOVED: Auto-close logic was causing the dialog to close instantaneously for users who already had a valid key.
-  // The user should manually close the dialog or we should only auto-close on *new* validation success.
-  /* 
-  useEffect(() => {
-     if (isOpen && isValid) {
-         const timer = setTimeout(() => {
-            onClose();
-            if (onSuccess) onSuccess();
-         }, 1500); 
-         return () => clearTimeout(timer);
-     }
-  }, [isValid, isOpen, onClose, onSuccess]);
-  */
+  const isPending = status === PixKeyStatus.PENDENTE_VALIDACAO;
+  const isFailed = status === PixKeyStatus.FALHA_VALIDACAO;
+  const isValid = status === PixKeyStatus.VALIDADA;
 
   // Realtime Listener
   useEffect(() => {
@@ -129,7 +114,7 @@ export default function PixKeyDialog({
         },
         (payload) => {
           const newStatus = payload.new.status_chave_pix;
-          if (newStatus === 'VALIDADA' || newStatus === 'FALHA_VALIDACAO') {
+          if (newStatus === PixKeyStatus.VALIDADA || newStatus === PixKeyStatus.FALHA_VALIDACAO) {
             refreshProfile(); // Trigger UI update via global state
           }
         }
@@ -141,9 +126,8 @@ export default function PixKeyDialog({
     };
   }, [isOpen, profile?.id, isValid, refreshProfile]);
 
-  // Plan B: Polling (only while open and pending)
   useEffect(() => {
-    if (!isOpen || !profile?.id || status !== 'PENDENTE_VALIDACAO') return;
+    if (!isOpen || !profile?.id || status !== PixKeyStatus.PENDENTE_VALIDACAO) return;
 
     const interval = setInterval(() => {
         refreshProfile();
@@ -151,7 +135,6 @@ export default function PixKeyDialog({
 
     return () => clearInterval(interval);
   }, [isOpen, profile?.id, status, refreshProfile]);
-
 
   const handleChaveChange = (e: React.ChangeEvent<HTMLInputElement>, fieldChange: (value: string) => void) => {
     let value = e.target.value;
@@ -165,22 +148,6 @@ export default function PixKeyDialog({
     }
     
     fieldChange(value);
-  };
-
-  const updateQuickStartStorage = () => {
-      try {
-          const currentStorage = localStorage.getItem("van360:quickstart_status");
-          let storageObj = currentStorage ? JSON.parse(currentStorage) : {};
-          
-          storageObj = {
-              ...storageObj,
-              step_pix: true
-          };
-          
-          localStorage.setItem("van360:quickstart_status", JSON.stringify(storageObj));
-      } catch (e) {
-          console.error("Falha ao atualizar storage quickstart", e);
-      }
   };
 
   const handleSubmit = async (data: FormData) => {
@@ -223,24 +190,17 @@ export default function PixKeyDialog({
       await refreshProfile();
       setIsChecking(false);
       
-      if (profile?.status_chave_pix === 'VALIDADA') {
+      if (profile?.status_chave_pix === PixKeyStatus.VALIDADA) {
           toast.success("Chave validada com sucesso!");
           if (onSuccess) onSuccess();
           onClose();
-      } else if (profile?.status_chave_pix === 'FALHA_VALIDACAO') {
+      } else if (profile?.status_chave_pix === PixKeyStatus.FALHA_VALIDACAO) {
           toast.error("A validação falhou. Verifique os dados.");
       } else {
           toast.info("Ainda pendente. Aguarde mais um pouco.");
       }
   };
 
-  const handleRetry = () => {
-      setOverrideStatus(true);
-  };
-  
-  // If we are in a pending/failed state but user wants to fix:
-  const showForm = !status || (status !== 'PENDENTE_VALIDACAO' && status !== 'FALHA_VALIDACAO') || overrideStatus;
-  
   // Render Content Logic
   const renderContent = () => {
       if (isPending && !overrideStatus) {

@@ -40,7 +40,7 @@ import { cn } from "@/lib/utils";
 import { cepSchema } from "@/schemas/common"; // Oops, don't import random things.
 import { Escola } from "@/types/escola";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
+
 import { toast } from "@/utils/notifications/toast";
 import { validateEnderecoFields } from "@/utils/validators";
 // Just import cepSchema.
@@ -213,11 +213,7 @@ export default function EscolaFormDialog({
       return;
     }
 
-    // Preparar rollback do QuickStart apenas para criações (não para edições)
-    const shouldUpdateQuickStart = editingEscola == null;
-    const quickStartRollback = shouldUpdateQuickStart
-      ? updateQuickStartStepWithRollback("step_escolas")
-      : null;
+
 
     if (editingEscola == null) {
       createEscola.mutate(
@@ -252,10 +248,7 @@ export default function EscolaFormDialog({
             }
           },
           onError: (error: any) => {
-            // Reverter QuickStart em caso de erro
-            if (quickStartRollback) {
-              quickStartRollback.restore();
-            }
+
 
             if (error?.response?.data?.error?.includes("duplicate key value")) {
               toast.error("escola.erro.criar", {

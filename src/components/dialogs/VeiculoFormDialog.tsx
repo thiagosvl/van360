@@ -23,7 +23,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Veiculo } from "@/types/veiculo";
 import { safeCloseDialog } from "@/utils/dialogUtils";
-import { updateQuickStartStepWithRollback } from "@/utils/domain/quickstart/quickStartUtils";
+
 import {
     aplicarMascaraPlaca,
     validarPlaca,
@@ -139,11 +139,7 @@ export default function VeiculoFormDialog({
       return;
     }
 
-    // Preparar rollback do QuickStart apenas para criações (não para edições)
-    const shouldUpdateQuickStart = editingVeiculo == null;
-    const quickStartRollback = shouldUpdateQuickStart
-      ? updateQuickStartStepWithRollback("step_veiculos")
-      : null;
+
 
     if (editingVeiculo == null) {
       // Criação de veículo
@@ -172,10 +168,7 @@ export default function VeiculoFormDialog({
             }
           },
           onError: (error: any) => {
-            // Reverter QuickStart em caso de erro
-            if (quickStartRollback) {
-              quickStartRollback.restore();
-            }
+
 
             if (error?.response?.data?.error?.includes("duplicate key value")) {
               toast.error("veiculo.erro.criar", {
