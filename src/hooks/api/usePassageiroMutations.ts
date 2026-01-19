@@ -163,7 +163,7 @@ export function useDeletePassageiro() {
       const errorMessage = getErrorMessage(error);
       
       if (error?.response?.status === 400 || errorMessage) {
-         toast.error(errorMessage || "passageiro.erro.excluir", {
+         toast.error("Não foi possível excluir", {
             description: errorMessage
          });
       } else {
@@ -291,8 +291,7 @@ export function useFinalizePreCadastro() {
       passageiroApi.finalizePreCadastro(
         prePassageiroId,
         data,
-        data.usuario_id,
-        data.emitir_cobranca_mes_atual
+        data.usuario_id
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
