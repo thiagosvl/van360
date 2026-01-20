@@ -31,7 +31,7 @@ export function useProfile(uid?: string) {
        console.error("Erro no profile:", error);
        const axiosError = error as any;
        // Desloga se for erro de autenticação (401) ou Proibido/Inativo (403)
-       if (axiosError?.response?.status === 401 || axiosError?.response?.status === 403) {
+       if (axiosError?.response?.status === 401 || axiosError?.response?.status === 403 || axiosError?.response?.status === 404) {
           sessionManager.signOut().catch(() => {});
        }
     }
