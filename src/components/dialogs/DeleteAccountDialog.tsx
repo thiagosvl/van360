@@ -9,19 +9,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDeleteAccount } from "@/hooks/api/useDeleteAccount";
 import { AlertTriangle, Loader2, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface DeleteAccountDialogProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const CONFIRMATION_TEXT = "DELETAR";
+const CONFIRMATION_TEXT = "EXCLUIR";
 
 export default function DeleteAccountDialog({
   isOpen,
   onClose,
 }: DeleteAccountDialogProps) {
+  useEffect(() => {
+    return () => {
+      // Force cleanup of Radix UI styles that might persist on sudden navigation/logout
+      document.body.style.pointerEvents = "";
+      document.body.style.userSelect = "";
+    };
+  }, []);
+
   const [confirmationInfo, setConfirmationInfo] = useState("");
   const { mutate: deleteAccount, isPending } = useDeleteAccount();
 
