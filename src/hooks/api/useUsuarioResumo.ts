@@ -38,6 +38,7 @@ export interface SystemSummary {
       ativos: number;
       inativos: number;
       com_automacao: number;
+      solicitacoes_pendentes: number;
     };
     veiculos: {
       total: number;

@@ -11,6 +11,7 @@ export function useCreatePrePassageiro() {
     mutationFn: (data: any) => prePassageiroApi.createPrePassageiro(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pre-passageiros"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("prePassageiro.sucesso.linkGerado");
     },
     onError: (error: any) => {
@@ -54,6 +55,7 @@ export function useDeletePrePassageiro() {
     onSettled: (data, error) => {
       if (!error) {
         queryClient.invalidateQueries({ queryKey: ["pre-passageiros"] });
+        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       }
     },
   });

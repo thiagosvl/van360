@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { AlertCircle, ArrowRight, CheckCircle2, Wallet } from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle2, UserPlus, Wallet } from "lucide-react";
 
 interface DashboardStatusCardProps {
-  type: "pending" | "success" | "error";
+  type: "pending" | "success" | "error" | "info";
   title: string;
   description: string;
   actionLabel?: string;
@@ -51,6 +51,16 @@ export const DashboardStatusCard = ({
       btnVariant: "destructive",
       btnClass: "bg-red-600 hover:bg-red-700 text-white border-none",
     },
+    info: {
+      bg: "bg-blue-50",
+      border: "border-blue-100",
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-600",
+      titleColor: "text-blue-900",
+      descColor: "text-blue-700",
+      btnVariant: "default",
+      btnClass: "bg-blue-600 hover:bg-blue-700 text-white border-none",
+    },
   };
 
   const style = styles[type];
@@ -80,6 +90,7 @@ export const DashboardStatusCard = ({
             {type === "pending" && <Wallet className="h-5 w-5" />}
             {type === "success" && <CheckCircle2 className="h-5 w-5" />}
             {type === "error" && <AlertCircle className="h-5 w-5" />}
+            {type === "info" && <UserPlus className="h-5 w-5" />}
           </div>
           <div className="flex-1">
             <h3

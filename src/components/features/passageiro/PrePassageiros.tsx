@@ -452,6 +452,7 @@ export default function PrePassageiros({
                         });
                       },
                       isDestructive: true,
+                      swipeColor: "bg-red-600",
                     },
                     {
                       label: "Revisar",

@@ -11,7 +11,7 @@ import {
   UserCheck,
   Users,
   Wallet,
-  Zap
+  Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -122,6 +122,9 @@ const Home = () => {
 
   const passageirosInativosCount =
     systemSummary?.contadores.passageiros.inativos ?? 0;
+
+  const passageirosSolicitacoesCount =
+    systemSummary?.contadores.passageiros.solicitacoes_pendentes ?? 0;
 
   const limitePassageiros = limits.passageiros;
   const hasPassengerLimit = limits.hasPassengerLimit;
@@ -380,12 +383,34 @@ const Home = () => {
             </section>
           )}
 
+          {/* Notificação de Solicitações Pendentes */}
+          {passageirosSolicitacoesCount > 0 && (
+            <section className="mb-4">
+              <DashboardStatusCard
+                type="info"
+                title="Solicitações Pendentes"
+                description={
+                  passageirosSolicitacoesCount === 1
+                    ? "Você tem 1 solicitação de novo passageiro aguardando aprovação."
+                    : `Você tem ${passageirosSolicitacoesCount} solicitações de novos passageiros aguardando aprovação.`
+                }
+                actionLabel="Ver Solicitações"
+                onAction={() =>
+                  navigate(
+                    `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=solicitacoes`,
+                  )
+                }
+              />
+            </section>
+          )}
+
+          {/* Notificação de Cobranças pendentes / em dia */}
           {!showOnboarding && cobrancas.length > 0 && (
             <section>
               {latePayments.length > 0 ? (
                 <DashboardStatusCard
                   type="pending"
-                  title="Atenção"
+                  title="Passageiros em Atraso"
                   description={`Você tem ${formatCurrency(
                     totalEmAtraso,
                   )} em atraso de ${latePayments.length} passageiro${
@@ -418,9 +443,9 @@ const Home = () => {
             {!showOnboarding && (
               <>
                 <MiniKPI
-                  label="Receita Prevista"
+                  label="receita prevista"
                   value={formatCurrency(receitaPrevista)}
-                  subtext={`${cobrancas.length} cobrança${
+                  subtext={`${cobrancas.length} passageiro${
                     cobrancas.length !== 1 ? "s" : ""
                   }`}
                   icon={DollarSign}
@@ -429,9 +454,9 @@ const Home = () => {
                   loading={isProfileLoading}
                 />
                 <MiniKPI
-                  label="A Receber"
+                  label="Pendente"
                   value={formatCurrency(aReceber)}
-                  subtext={`${cobrancasPendentes.length} pendente${
+                  subtext={`${cobrancasPendentes.length} passageiro${
                     cobrancasPendentes.length !== 1 ? "s" : ""
                   }`}
                   icon={Wallet}
