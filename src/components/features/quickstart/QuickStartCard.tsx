@@ -2,13 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
-    Bus,
-    CheckCircle2,
-    Key,
-    Lock as LockIcon,
-    Rocket,
-    School,
-    User
+  Bus,
+  CheckCircle2,
+  Key,
+  Lock as LockIcon,
+  Rocket,
+  School,
+  User
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PassengerOnboardingDrawer } from "./PassengerOnboardingDrawer";
@@ -80,7 +80,7 @@ export const QuickStartCard = ({
       defaultSteps.push({
         id: 4,
         done: !!profile?.chave_pix,
-        label: "Configurar Recebimento (PIX)",
+        label: "Configurar Chave PIX",
         onAction: onOpenPixKeyDialog,
         icon: Key,
         buttonText: "Configurar",

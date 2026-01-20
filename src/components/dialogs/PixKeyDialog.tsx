@@ -30,7 +30,7 @@ import { cnpjMask, cpfMask as maskCpf, phoneMask as maskPhone } from "@/utils/ma
 import { toast } from "@/utils/notifications/toast";
 import { cleanString } from "@/utils/string";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Key, Loader2, X } from "lucide-react";
+import { Check, Key, Lightbulb, Loader2, X } from "lucide-react";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -242,6 +242,17 @@ export default function PixKeyDialog({
 
       return (
           <div className="p-6 bg-white flex-1 overflow-y-auto">
+           <div className="mb-6 bg-blue-50/50 border border-blue-100 rounded-xl p-4 flex gap-3 items-start">
+              <div className="bg-blue-100 p-2 rounded-lg shrink-0">
+                  <Lightbulb className="w-5 h-5 text-blue-600" />
+              </div>
+              <div className="space-y-1">
+                  <h4 className="text-sm font-semibold text-blue-900">Por que cadastrar a chave PIX?</h4>
+                  <p className="text-sm text-blue-800 leading-relaxed">
+                      Ela é necessária para que você receba os pagamentos das mensalidades diretamente na sua conta com total segurança.
+                  </p>
+              </div>
+           </div>
            <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
               <FormField
@@ -381,7 +392,7 @@ export default function PixKeyDialog({
             <Key className="w-6 h-6 text-white" />
           </div>
           <DialogTitle className="text-xl font-bold text-white">
-            Configurar Recebimento
+            Configurar Chave PIX
           </DialogTitle>
         </div>
 
