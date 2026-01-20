@@ -107,7 +107,7 @@ export default function Register() {
         {/* Header */}
         <div className="text-center space-y-2 p-6 pb-0 relative">
           {currentStep === 2 && (
-            <div className="absolute right-6 top-6 z-20">
+            <div className="absolute right-0 sm:right-6 top-10 z-20">
               <Button
                 type="button"
                 variant="ghost"

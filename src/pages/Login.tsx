@@ -282,7 +282,7 @@ export default function Login() {
                 </div>
 
                 <div className="text-center mb-8 relative">
-                  <div className="absolute -right-2 -top-2">
+                  <div className="absolute -right-4 top-9">
                     <Button
                       type="button"
                       variant="ghost"
