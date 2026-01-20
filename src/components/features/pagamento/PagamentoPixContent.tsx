@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useGerarPixParaCobranca } from "@/hooks";
 import { fetchProfile } from "@/hooks/business/useProfile";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/utils/notifications/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Copy, CopyCheck, HelpCircle, Loader2, Smartphone } from "lucide-react";
@@ -265,6 +266,33 @@ export default function PagamentoPixContent({
   useEffect(() => {
     handlePaymentSuccessRef.current = handlePaymentSuccess;
   }, [handlePaymentSuccess]);
+
+  // Realtime Subscription (Restored)
+  useEffect(() => {
+    if (!dadosPagamento?.cobrancaId || paymentConfirmed) return;
+
+    const channel = supabase
+      .channel(`pagamento-pix-${dadosPagamento.cobrancaId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "assinaturas_cobrancas",
+          filter: `id=eq.${dadosPagamento.cobrancaId}`,
+        },
+        async (payload: any) => {
+          if (payload.new?.status === "pago") {
+            handlePaymentSuccessRef.current?.();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [dadosPagamento?.cobrancaId, paymentConfirmed]);
 
   // Monitoramento de pagamento (Polling apenas)
   useEffect(() => {
