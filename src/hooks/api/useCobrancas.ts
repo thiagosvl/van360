@@ -37,7 +37,6 @@ export function useCobrancas(
     queryFn: async () => {
       if (!filters.usuarioId) return [];
 
-      console.log("[useCobrancas] Iniciando requisição /cobrancas");
       const data = await cobrancaApi.listCobrancasWithFilters({
         usuarioId: filters.usuarioId,
         mes: String(filters.mes),

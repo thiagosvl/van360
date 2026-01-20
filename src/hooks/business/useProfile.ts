@@ -7,7 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 
 export async function fetchProfile(uid: string): Promise<Usuario | null> {
-  console.log("[useProfile] Iniciando requisição /me/profile");
   const { data } = await apiClient.get<Usuario>("/me/profile");
   return data;
 }
