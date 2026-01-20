@@ -54,7 +54,6 @@ export function CepInput<T extends FieldValues>({
         updateLoading(true);
         const endereco = await cepService.buscarEndereco(cleanCep);
         if (endereco) {
-          // Preencher campos de endereço se existirem no form
           try {
             if (form.getValues("logradouro" as FieldPath<T>) !== undefined) {
               form.setValue("logradouro" as FieldPath<T>, endereco.logradouro);
@@ -69,11 +68,9 @@ export function CepInput<T extends FieldValues>({
               form.setValue("estado" as FieldPath<T>, endereco.estado);
             }
 
-            // Limpa os erros de validação dos campos preenchidos automaticamente
             // @ts-ignore - Tipagem dinâmica do react-hook-form
             form.clearErrors(["logradouro", "bairro", "cidade", "estado"]);
 
-            // Limpar número e referência para evitar dados incorretos
             if (form.getValues("numero" as FieldPath<T>) !== undefined) {
               form.setValue("numero" as FieldPath<T>, "" as any);
             }
@@ -81,24 +78,18 @@ export function CepInput<T extends FieldValues>({
               form.setValue("referencia" as FieldPath<T>, "" as any);
             }
           } catch {
-            // Campos podem não existir no form, ignorar
           }
 
-          // Callback opcional para customização
           if (onAddressFetched) {
             onAddressFetched(endereco);
           }
 
-          // Focar no próximo campo (padrão: numero) e rolar até ele
           if (nextField) {
             setTimeout(() => {
               form.setFocus(nextField);
               
-              // Tenta encontrar o elemento pelo nome
               const element = document.querySelector(`[name="${nextField}"]`) as HTMLElement;
               if (element) {
-                // Função customizada para rolar apenas o container pai scrollável
-                // Isso evita que o Dialog inteiro role e mostre o fundo azul (bug visual)
                 let parent = element.parentElement;
                 while (parent) {
                   const style = window.getComputedStyle(parent);

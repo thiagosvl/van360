@@ -97,7 +97,6 @@ export default function Login() {
       cpfcnpj: "395.423.918-38",
       senha: "Ogaiht+1",
     });
-    toast.success("validacao.dadosPreenchidos");
   };
 
   const formResponsavel = useForm<z.infer<typeof formResponsavelSchema>>({

@@ -270,7 +270,6 @@ export const messages = {
     campoObrigatorio: "Campo obrigatório.",
     senhasNaoCoincidem: "As senhas não coincidem.",
     formularioComErros: "Corrija os erros no formulário.",
-    dadosPreenchidos: "Campos preenchidos com dados de teste!",
   },
 
   // ========== SISTEMA ==========

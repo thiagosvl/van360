@@ -235,8 +235,6 @@ export default function PassengerFormDialog({
       "endereco",
       "observacoes",
     ]);
-    
-    toast.success("validacao.dadosPreenchidos");
   };
 
   const handleSubmit = async (data: PassageiroFormData) => {

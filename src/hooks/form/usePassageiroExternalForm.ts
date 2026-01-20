@@ -250,8 +250,6 @@ export function usePassageiroExternalForm() {
       "endereco",
       "observacoes",
     ]);
-
-    toast.success("Campos preenchidos com dados de teste!");
   };
 
   return {

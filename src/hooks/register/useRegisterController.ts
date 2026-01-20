@@ -1,8 +1,8 @@
 import { isPlanoPagoNoAto } from "@/components/features/register";
 import {
-    PLANO_ESSENCIAL,
-    PLANO_GRATUITO,
-    PLANO_PROFISSIONAL,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
+  PLANO_PROFISSIONAL,
 } from "@/constants";
 import { ROUTES } from "@/constants/routes";
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks";
@@ -105,7 +105,6 @@ export function useRegisterController() {
       telefone: "(11) 95118-6951",
       senha: "Ogaiht+1",
     });
-    toast.success("Campos preenchidos com dados de teste!");
   };
 
   const selectedPlanoId = form.watch("plano_id");
