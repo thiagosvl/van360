@@ -789,7 +789,7 @@ export default function Passageiros() {
         visible={!!plano?.isFreePlan}
         title="Quer cadastrar todos seus passageiros?"
         description="Remova os limites do plano gratuito."
-        buttonText="Ver Planos"
+        buttonText="Sim, eu quero!"
         onAction={() =>
           openPlanUpgradeDialog({
             feature: FEATURE_LIMITE_PASSAGEIROS,
