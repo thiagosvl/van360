@@ -148,8 +148,6 @@ export default function PixKeyDialog({
       // 2. Immediately update local state to "PENDENTE_VALIDACAO" to trigger the validation screen
       await refreshProfile(); 
 
-      toast.success("Chave salva! Iniciando validação...");
-
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Erro ao salvar chave PIX.";
       toast.error("Falha ao salvar", {
