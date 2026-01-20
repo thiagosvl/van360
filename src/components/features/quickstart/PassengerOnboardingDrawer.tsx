@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { Usuario } from "@/types/usuario";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
-import { Check, Copy, UserPlus, Users } from "lucide-react";
+import { Copy, CopyCheck, UserPlus, Users } from "lucide-react";
 import { useState } from "react";
 
 interface PassengerOnboardingDrawerProps {
@@ -67,7 +67,7 @@ export function PassengerOnboardingDrawer({
           >
             <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0 border border-blue-100 group-hover:scale-105 transition-transform text-blue-600">
               {copied ? (
-                  <Check className="h-5 w-5" />
+                  <CopyCheck className="h-5 w-5" />
               ) : (
                   <Copy className="h-5 w-5" />
               )}

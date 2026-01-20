@@ -1,14 +1,14 @@
 import { ComoFuncionaPixSheet } from "@/components/features/pagamento/ComoFuncionaPixSheet";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { meses } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
-import { CheckCircle2, Copy, HelpCircle, User, X } from "lucide-react";
+import { Copy, CopyCheck, HelpCircle, User, X } from "lucide-react";
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
 
@@ -139,7 +139,7 @@ export function CobrancaPixDrawer({
                 className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 shrink-0"
               >
                 {isCopied ? (
-                  <CheckCircle2 className="h-4 w-4" />
+                  <CopyCheck className="h-4 w-4" />
                 ) : (
                   <Copy className="h-4 w-4" />
                 )}

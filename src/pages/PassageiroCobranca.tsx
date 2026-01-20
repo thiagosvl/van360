@@ -20,53 +20,53 @@ import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import { CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
-    canSendNotification,
-    canViewReceipt,
-    disableDesfazerPagamento,
-    disableEditarCobranca,
-    disableExcluirCobranca,
-    disableRegistrarPagamento,
-    seForPago,
+  canSendNotification,
+  canViewReceipt,
+  disableDesfazerPagamento,
+  disableEditarCobranca,
+  disableExcluirCobranca,
+  disableRegistrarPagamento,
+  seForPago,
 } from "@/utils/domain/cobranca/disableActions";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
-    formatCobrancaOrigem,
-    formatDateToBR,
-    formatPaymentType,
-    formatarEnderecoCompleto,
-    formatarTelefone,
-    getStatusColor,
-    getStatusText,
-    meses,
+  formatCobrancaOrigem,
+  formatDateToBR,
+  formatPaymentType,
+  formatarEnderecoCompleto,
+  formatarTelefone,
+  getStatusColor,
+  getStatusText,
+  meses,
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-    ArrowRight,
-    BadgeCheck,
-    Bell,
-    BellOff,
-    Calendar,
-    CalendarDays,
-    Car,
-    CheckCircle,
-    CheckCircle2,
-    Copy,
-    CreditCard,
-    History,
-    IdCard,
-    MapPin,
-    Pencil,
-    Phone,
-    QrCode,
-    Receipt,
-    School,
-    Send,
-    Trash2,
-    User,
-    Wallet,
-    XCircle,
+  ArrowRight,
+  BadgeCheck,
+  Bell,
+  BellOff,
+  Calendar,
+  CalendarDays,
+  Car,
+  CheckCircle2,
+  Copy,
+  CopyCheck,
+  CreditCard,
+  History,
+  IdCard,
+  MapPin,
+  Pencil,
+  Phone,
+  QrCode,
+  Receipt,
+  School,
+  Send,
+  Trash2,
+  User,
+  Wallet,
+  XCircle
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -416,7 +416,7 @@ export default function PassageiroCobranca() {
                                   title="Copiar telefone"
                                 >
                                   {isCopiedTelefone ? (
-                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    <CopyCheck className="h-4 w-4 text-green-500" />
                                   ) : (
                                     <Copy className="h-4 w-4" />
                                   )}
@@ -443,7 +443,7 @@ export default function PassageiroCobranca() {
                                   title="Copiar endereço"
                                 >
                                   {isCopiedEndereco ? (
-                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    <CopyCheck className="h-4 w-4 text-green-500" />
                                   ) : (
                                     <Copy className="h-4 w-4" />
                                   )}

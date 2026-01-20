@@ -1,17 +1,17 @@
 import { ROUTES } from "@/constants/routes";
 import {
-  Check,
+  Copy,
+  CopyCheck,
   CreditCard,
   DollarSign,
   FileText,
   Plus,
   Receipt,
   TrendingDown,
-  TrendingUp,
   UserCheck,
   Users,
   Wallet,
-  Zap,
+  Zap
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -309,7 +309,7 @@ const Home = () => {
             </p>
             <p className="text-xs text-gray-400 mt-0.5">
               {latePayments.length > 0
-                ? `${latePayments.length} cobrança${
+                ? `${latePayments.length} passageiro${
                     latePayments.length != 1 ? "s" : ""
                   } em atraso`
                 : "Nenhuma pendência hoje"}
@@ -377,6 +377,32 @@ const Home = () => {
                 }
                 onOpenPixKeyDialog={() => openPixKeyDialog()}
               />
+            </section>
+          )}
+
+          {!showOnboarding && cobrancas.length > 0 && (
+            <section>
+              {latePayments.length > 0 ? (
+                <DashboardStatusCard
+                  type="pending"
+                  title="Atenção"
+                  description={`Você tem ${formatCurrency(
+                    totalEmAtraso,
+                  )} em atraso de ${latePayments.length} passageiro${
+                    latePayments.length != 1 ? "s" : ""
+                  }.`}
+                  actionLabel="Ver Cobranças"
+                  onAction={() => navigate(ROUTES.PRIVATE.MOTORISTA.BILLING)}
+                />
+              ) : (
+                <DashboardStatusCard
+                  type="success"
+                  title="Tudo em dia!"
+                  description={`Parabéns! Todas as cobranças vencidas foram pagas. Receita prevista: ${formatCurrency(
+                    receitaPrevista,
+                  )}.`}
+                />
+              )}
             </section>
           )}
 
@@ -463,32 +489,6 @@ const Home = () => {
             )}
           </div>
 
-          {!showOnboarding && cobrancas.length > 0 && (
-            <section>
-              {latePayments.length > 0 ? (
-                <DashboardStatusCard
-                  type="pending"
-                  title="Atenção às Cobranças"
-                  description={`Você tem ${formatCurrency(
-                    totalEmAtraso,
-                  )} em atraso de ${latePayments.length} passageiro${
-                    latePayments.length != 1 ? "s" : ""
-                  }.`}
-                  actionLabel="Ver Cobranças"
-                  onAction={() => navigate(ROUTES.PRIVATE.MOTORISTA.BILLING)}
-                />
-              ) : (
-                <DashboardStatusCard
-                  type="success"
-                  title="Tudo em dia!"
-                  description={`Parabéns! Todas as cobranças vencidas foram pagas. Receita prevista: ${formatCurrency(
-                    receitaPrevista,
-                  )}.`}
-                />
-              )}
-            </section>
-          )}
-
           {/* Acessos Rápidos */}
           <section>
             <h2 className="text-lg font-bold text-gray-900 mb-4 px-1">
@@ -504,7 +504,7 @@ const Home = () => {
               />
               <ShortcutCard
                 onClick={handleOpenGastoDialog}
-                icon={TrendingDown}
+                icon={Plus}
                 label="Registrar Gasto"
                 colorClass="text-red-600"
                 bgClass="bg-red-50"
@@ -525,9 +525,9 @@ const Home = () => {
                   )}
                 >
                   {isCopied ? (
-                    <Check className="h-5 w-5" />
+                    <CopyCheck className="h-5 w-5" />
                   ) : (
-                    <Zap className="h-5 w-5" />
+                    <Copy className="h-5 w-5" />
                   )}
                 </div>
                 <span
@@ -557,7 +557,7 @@ const Home = () => {
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.EXPENSES}
-                icon={TrendingUp}
+                icon={TrendingDown}
                 label="Gastos"
                 colorClass="text-red-600"
                 bgClass="bg-red-50"

@@ -4,10 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { toast } from "@/utils/notifications/toast";
 import {
-  CheckCircle,
   ChevronDown,
   ChevronUp,
   Copy,
+  CopyCheck,
   LinkIcon,
   MessageCircle
 } from "lucide-react";
@@ -147,7 +147,7 @@ export function QuickRegistrationLink({
                 >
                   {isCopied ? (
                     <>
-                      <CheckCircle className="h-4 w-4 mr-2" />
+                      <CopyCheck className="h-4 w-4 mr-2" />
                       Copiado!
                     </>
                   ) : (

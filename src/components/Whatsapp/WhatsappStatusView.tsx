@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WHATSAPP_STATUS } from "@/config/constants";
-import { Check, Loader2, Monitor, Smartphone, Wifi, WifiOff } from "lucide-react";
+import { CopyCheck, Loader2, Monitor, Smartphone, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface WhatsappStatusViewProps {
@@ -317,7 +317,7 @@ export function WhatsappStatusView({
                                     
                                     <div className={`absolute inset-0 bg-blue-600/90 backdrop-blur-sm flex items-center justify-center transition-all duration-300 rounded-[32px] mx-4 ${isCopied ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                                         <div className="flex items-center gap-2 text-white font-bold">
-                                            <Check className="h-5 w-5" />
+                                            <CopyCheck className="h-5 w-5" />
                                             Copiado!
                                         </div>
                                     </div>

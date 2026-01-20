@@ -5,7 +5,7 @@ import { useGerarPixParaCobranca } from "@/hooks";
 import { fetchProfile } from "@/hooks/business/useProfile";
 import { toast } from "@/utils/notifications/toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Copy, HelpCircle, Loader2, Smartphone } from "lucide-react";
+import { CheckCircle2, Copy, CopyCheck, HelpCircle, Loader2, Smartphone } from "lucide-react";
 import QRCode from "qrcode";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -570,7 +570,7 @@ export default function PagamentoPixContent({
                 className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 shrink-0"
               >
                 {isCopied ? (
-                  <CheckCircle2 className="h-4 w-4" />
+                  <CopyCheck className="h-4 w-4" />
                 ) : (
                   <Copy className="h-4 w-4" />
                 )}

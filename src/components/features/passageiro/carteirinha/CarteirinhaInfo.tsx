@@ -17,11 +17,11 @@ import {
   BotOff,
   CalendarDays,
   Car,
-  CheckCircle,
   ChevronDown,
   ChevronUp,
   Clock,
   Copy,
+  CopyCheck,
   CreditCard,
   HeartPulse,
   Lock,
@@ -172,7 +172,7 @@ export const CarteirinhaInfo = ({
             }
           >
             {isCopiedTelefone ? (
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CopyCheck className="h-4 w-4 text-green-500" />
             ) : (
               <Copy className="h-4 w-4" />
             )}
@@ -209,7 +209,7 @@ export const CarteirinhaInfo = ({
               }}
             >
               {isCopiedEndereco ? (
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CopyCheck className="h-4 w-4 text-green-500" />
               ) : (
                 <Copy className="h-4 w-4" />
               )}
