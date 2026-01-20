@@ -6,9 +6,9 @@ import {
     CheckCircle2,
     Key,
     Lock as LockIcon,
+    Rocket,
     School,
-    Trophy,
-    User,
+    User
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PassengerOnboardingDrawer } from "./PassengerOnboardingDrawer";
@@ -115,7 +115,7 @@ export const QuickStartCard = ({
           {/* Header */}
           <div className="flex items-start gap-4 mb-4">
             <div className="h-10 w-10 rounded-full flex items-center justify-center shrink-0 bg-indigo-50 text-indigo-600">
-              <Trophy className="h-5 w-5" />
+              <Rocket className="h-5 w-5" />
             </div>
             <div className="flex-1">
               <h3 className="font-bold text-lg leading-tight text-gray-900">
