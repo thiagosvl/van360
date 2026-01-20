@@ -12,11 +12,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FEATURE_RELATORIOS, PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCobrancas,
-    useEscolas,
-    useGastos,
-    usePassageiros,
-    useVeiculos
+  useCobrancas,
+  useEscolas,
+  useGastos,
+  usePassageiros,
+  useVeiculos
 } from "@/hooks";
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -300,6 +300,7 @@ export default function Relatorios() {
            feature: FEATURE_RELATORIOS,
            defaultTab: PLANO_ESSENCIAL,
         })}
+        storageKey="footer_relatorios_v2"
       />
       
 

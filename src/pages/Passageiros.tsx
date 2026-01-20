@@ -798,6 +798,7 @@ export default function Passageiros() {
             onSuccess: refetchPassageiros,
           })
         }
+        storageKey="footer_passageiros"
       />
 
       <LoadingOverlay active={isActionLoading} text="Processando..." />

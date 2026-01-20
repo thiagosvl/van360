@@ -402,6 +402,7 @@ export default function Gastos() {
             defaultTab: PLANO_ESSENCIAL,
           })
         }
+        storageKey="footer_gastos_v2"
       />
     </>
   );

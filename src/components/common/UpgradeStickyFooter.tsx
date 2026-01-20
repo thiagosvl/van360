@@ -10,7 +10,7 @@ interface UpgradeStickyFooterProps {
   onAction: () => void;
   visible?: boolean;
   className?: string;
-  storageKey?: string; // Optional: Allow different keys for different footers if needed
+  storageKey: string;
 }
 
 export function UpgradeStickyFooter({
@@ -20,7 +20,7 @@ export function UpgradeStickyFooter({
   onAction,
   visible = true,
   className,
-  storageKey = "hide_upgrade_footer_session",
+  storageKey,
 }: UpgradeStickyFooterProps) {
   const [isVisible, setIsVisible] = useState(false);
 
