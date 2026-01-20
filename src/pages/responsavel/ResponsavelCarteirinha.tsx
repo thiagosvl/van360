@@ -1,5 +1,5 @@
 // React
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // React Router
 import { ROUTES } from "@/constants/routes";
@@ -30,8 +30,6 @@ import {
 } from "@/components/ui/select";
 
 // Services
-import { useAvailableYears } from "@/hooks";
-import { supabase } from "@/integrations/supabase/client";
 import { responsavelService } from "@/services/responsavelService";
 
 // Utils
@@ -150,20 +148,7 @@ export default function ResponsavelCarteirinha() {
   const [anoSelecionado, setAnoSelecionado] = useState<number | null>(null);
   const [cobrancas, setCobrancas] = useState<Cobranca[]>([]);
   const [mostrarTodasCobrancas, setMostrarTodasCobrancas] = useState(false);
-
-  // Usar hook para buscar anos disponíveis
-  const {
-    data: anosBrutos = [],
-    refetch: refetchAnos,
-  } = useAvailableYears(selectedPassageiro?.id, {
-    enabled: !!selectedPassageiro?.id,
-  });
-
-  const anos: number[] = useMemo(() => {
-    return Array.from(
-      new Set((anosBrutos as unknown as any[] || []).map((a: any) => Number(a)))
-    ).sort((a: number, b: number) => b - a);
-  }, [anosBrutos]);
+  const [anos, setAnos] = useState<number[]>([]);
 
   const cpf = localStorage.getItem("responsavel_cpf");
   const email = localStorage.getItem("responsavel_email");
@@ -212,22 +197,18 @@ export default function ResponsavelCarteirinha() {
       setSelectedPassageiro(atual);
       localStorage.setItem("responsavel_id", atual.id);
 
+      // Buscar Anos Disponíveis
+      const anosDisponiveis = await responsavelService.getAnosDisponiveis(atual.id);
+      setAnos(anosDisponiveis);
+
       const currentYear = new Date().getFullYear();
-      setAnoSelecionado(currentYear || null);
+      const anoParaBuscar = anosDisponiveis.length > 0 ? anosDisponiveis[0] : currentYear;
+      setAnoSelecionado(anoParaBuscar);
 
-      const anoParaBuscar = anos.length > 0 ? anos[0] : currentYear;
-      const { data, error } = await supabase
-        .from("cobrancas")
-        .select(`*, passageiros:passageiro_id (nome, nome_responsavel)`)
-        .eq("passageiro_id", atual.id)
-        .eq("usuario_id", localStorage.getItem("responsavel_usuario_id"))
-        .eq("ano", anoParaBuscar)
-        .order("mes", { ascending: false });
+      // Buscar Cobranças
+      const cobrancasData = await responsavelService.getCobrancas(atual.id, anoParaBuscar);
+      setCobrancas(cobrancasData || []);
 
-      if (error) {
-        // Erro silencioso - dados já são carregados via hooks
-      }
-      setCobrancas(data || []);
     } catch (err: any) {
       toast.error("cobranca.erro.carregar", {
         description: err.message || "Não foi possível carregar as informações.",
@@ -244,23 +225,20 @@ export default function ResponsavelCarteirinha() {
       setSelectedPassageiro(p);
       localStorage.setItem("responsavel_id", p.id);
       
-      await refetchAnos();
-      setAnoSelecionado(anos.length > 0 ? anos[0] : null);
+      const anosDisponiveis = await responsavelService.getAnosDisponiveis(p.id);
+      setAnos(anosDisponiveis);
 
-      const anoParaBuscar = anos.length > 0 ? anos[0] : null;
+      const anoParaBuscar = anosDisponiveis.length > 0 ? anosDisponiveis[0] : null;
+      setAnoSelecionado(anoParaBuscar);
+      
       if (!anoParaBuscar) {
+        setCobrancas([]);
         setRefreshing(false);
         return;
       }
       
-      const { data, error } = await supabase
-        .from("cobrancas")
-        .select(`*, passageiros:passageiro_id (nome, nome_responsavel)`)
-        .eq("passageiro_id", p.id)
-        .eq("usuario_id", localStorage.getItem("responsavel_usuario_id"))
-        .eq("ano", anoParaBuscar)
-        .order("mes", { ascending: false });
-      setCobrancas(data || []);
+      const cobrancasData = await responsavelService.getCobrancas(p.id, anoParaBuscar);
+      setCobrancas(cobrancasData || []);
     } catch (error: any) {
       toast.error("passageiro.erro.alterar", {
         description: error.message || "Não foi possível concluir a operação.",
@@ -275,14 +253,9 @@ export default function ResponsavelCarteirinha() {
     try {
       setAnoSelecionado(ano);
       if (!selectedPassageiro) return;
-      const { data, error } = await supabase
-        .from("cobrancas")
-        .select(`*, passageiros:passageiro_id (nome, nome_responsavel)`)
-        .eq("passageiro_id", selectedPassageiro.id)
-        .eq("usuario_id", localStorage.getItem("responsavel_usuario_id"))
-        .eq("ano", ano)
-        .order("mes", { ascending: false });
-      setCobrancas(data || []);
+
+      const cobrancasData = await responsavelService.getCobrancas(selectedPassageiro.id, ano);
+      setCobrancas(cobrancasData || []);
     } catch (error: any) {
       toast.error("cobranca.erro.listarAno");
     } finally {

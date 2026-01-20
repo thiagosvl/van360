@@ -10,63 +10,63 @@ import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useCobranca, useCobrancaNotificacoes } from "@/hooks";
-import { useCobrancaOperations } from "@/hooks/business/useCobrancaActions";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useCobrancaOperations } from "@/hooks/ui/useCobrancaActions";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import { CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
-  canSendNotification,
-  canViewReceipt,
-  disableDesfazerPagamento,
-  disableEditarCobranca,
-  disableExcluirCobranca,
-  disableRegistrarPagamento,
-  seForPago,
+    canSendNotification,
+    canViewReceipt,
+    disableDesfazerPagamento,
+    disableEditarCobranca,
+    disableExcluirCobranca,
+    disableRegistrarPagamento,
+    seForPago,
 } from "@/utils/domain/cobranca/disableActions";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
-  formatCobrancaOrigem,
-  formatDateToBR,
-  formatPaymentType,
-  formatarEnderecoCompleto,
-  formatarTelefone,
-  getStatusColor,
-  getStatusText,
-  meses,
+    formatCobrancaOrigem,
+    formatDateToBR,
+    formatPaymentType,
+    formatarEnderecoCompleto,
+    formatarTelefone,
+    getStatusColor,
+    getStatusText,
+    meses,
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowRight,
-  BadgeCheck,
-  Bell,
-  BellOff,
-  Calendar,
-  CalendarDays,
-  Car,
-  CheckCircle,
-  CheckCircle2,
-  Copy,
-  CreditCard,
-  History,
-  IdCard,
-  MapPin,
-  Pencil,
-  Phone,
-  QrCode,
-  Receipt,
-  School,
-  Send,
-  Trash2,
-  User,
-  Wallet,
-  XCircle,
+    ArrowRight,
+    BadgeCheck,
+    Bell,
+    BellOff,
+    Calendar,
+    CalendarDays,
+    Car,
+    CheckCircle,
+    CheckCircle2,
+    Copy,
+    CreditCard,
+    History,
+    IdCard,
+    MapPin,
+    Pencil,
+    Phone,
+    QrCode,
+    Receipt,
+    School,
+    Send,
+    Trash2,
+    User,
+    Wallet,
+    XCircle,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";

@@ -6,9 +6,9 @@ export { useProfile } from "./business/useProfile";
 export { useSession } from "./business/useSession";
 
 // UI hooks
-export { useIsMobile } from "./ui/use-mobile";
 export { safeCloseDialog, useDialogClose } from "./ui/useDialogClose";
 export { useFilters } from "./ui/useFilters";
+export { useIsMobile } from "./ui/useIsMobile";
 export { useLoadingState } from "./ui/useLoadingState";
 export { usePassageiroForm } from "./ui/usePassageiroForm";
 

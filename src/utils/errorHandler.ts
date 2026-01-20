@@ -14,13 +14,18 @@ export function getErrorMessage(
     return error;
   }
   
-  if(error?.response.data.message) {
-    return error?.response?.data?.message;
-  }
+
 
   // Tenta extrair mensagem de erro da resposta da API (Axios)
   // Prioridade alta pois contém a regra de negócio/validação do backend
   const axiosError = error as any; // Cast para any para facilitar acesso seguro
+  
+  // Backend retorna { error: "mensagem" } ?
+  if (axiosError?.response?.data?.error) {
+    return axiosError.response.data.error;
+  }
+
+  // Backend retorna { message: "mensagem" } ?
   if (axiosError?.response?.data?.message) {
     return axiosError.response.data.message;
   }

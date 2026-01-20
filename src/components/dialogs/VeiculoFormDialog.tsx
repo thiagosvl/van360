@@ -1,23 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    useCreateVeiculo,
-    useUpdateVeiculo,
+  useCreateVeiculo,
+  useUpdateVeiculo,
 } from "@/hooks/api/useVeiculoMutations";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -25,8 +25,8 @@ import { Veiculo } from "@/types/veiculo";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 
 import {
-    aplicarMascaraPlaca,
-    validarPlaca,
+  aplicarMascaraPlaca,
+  validarPlaca,
 } from "@/utils/domain/veiculo/placaUtils";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -70,7 +70,7 @@ export default function VeiculoFormDialog({
 }: VeiculoFormDialogProps) {
   const { user } = useSession();
   const { profile: profileFromHook } = useProfile(
-    profileProp ? undefined : isOpen ? user?.id : undefined
+    profileProp ? undefined : isOpen ? user?.id : undefined,
   );
   const profile = profileProp || profileFromHook;
 
@@ -139,8 +139,6 @@ export default function VeiculoFormDialog({
       return;
     }
 
-
-
     if (editingVeiculo == null) {
       // Criação de veículo
       createVeiculo.mutate(
@@ -148,35 +146,39 @@ export default function VeiculoFormDialog({
         {
           onSuccess: (veiculoSalvo) => {
             onSuccess(veiculoSalvo, keepOpen);
-            
+
             if (keepOpen) {
-                form.reset({
-                    placa: "",
-                    marca: "",
-                    modelo: "",
-                    ativo: true,
-                });
-                
-                setTimeout(() => {
-                    form.setFocus("placa");
-                    setKeepOpen(false);
-                }, 100);
+              form.reset({
+                placa: "",
+                marca: "",
+                modelo: "",
+                ativo: true,
+              });
+
+              setTimeout(() => {
+                form.setFocus("placa");
+                setKeepOpen(false);
+              }, 100);
             } else {
-                safeCloseDialog(() => {
-                    onClose();
-                });
-            }
-          },
-          onError: (error: any) => {
-
-
-            if (error?.response?.data?.error?.includes("duplicate key value")) {
-              toast.error("veiculo.erro.criar", {
-                description: "veiculo.erro.placaJaCadastrada",
+              safeCloseDialog(() => {
+                onClose();
               });
             }
           },
-        }
+          onError: (error: any) => {
+            if (error.response?.status === 409) {
+              form.setError("placa", {
+                type: "manual",
+                message: "veiculo.erro.placaJaCadastrada",
+              });
+            } else {
+              toast.error("veiculo.erro.criar", {
+                description:
+                  error?.response?.data?.error || "erro.generico",
+              });
+            }
+          },
+        },
       );
     } else {
       // Atualização de veículo
@@ -187,7 +189,20 @@ export default function VeiculoFormDialog({
             onSuccess(veiculoSalvo);
             safeCloseDialog(onClose);
           },
-        }
+          onError: (error: any) => {
+            if (error.response?.status === 409) {
+              form.setError("placa", {
+                type: "manual",
+                message: "veiculo.erro.placaJaCadastrada",
+              });
+            } else {
+              toast.error("veiculo.erro.atualizar", {
+                description:
+                  error?.response?.data?.error || "erro.generico",
+              });
+            }
+          },
+        },
       );
     }
   };
@@ -321,21 +336,21 @@ export default function VeiculoFormDialog({
               )}
               {allowBatchCreation && !editingVeiculo && (
                 <div className="flex items-center gap-2 px-1 pt-4">
-                    <Checkbox
-                      id="keepOpen"
-                      checked={keepOpen}
-                      onCheckedChange={(checked) =>
-                        setKeepOpen(checked as boolean)
-                      }
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <label
-                      htmlFor="keepOpen"
-                      className="text-sm font-medium text-gray-600 cursor-pointer select-none"
-                    >
-                      Cadastrar outro em seguida
-                    </label>
-                  </div>
+                  <Checkbox
+                    id="keepOpen"
+                    checked={keepOpen}
+                    onCheckedChange={(checked) =>
+                      setKeepOpen(checked as boolean)
+                    }
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <label
+                    htmlFor="keepOpen"
+                    className="text-sm font-medium text-gray-600 cursor-pointer select-none"
+                  >
+                    Cadastrar outro em seguida
+                  </label>
+                </div>
               )}
             </form>
           </Form>

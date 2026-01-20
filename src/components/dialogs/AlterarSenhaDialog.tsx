@@ -1,23 +1,23 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/constants/routes";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/services/api/client";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, KeyRound, Loader2, Lock, X } from "lucide-react";
@@ -70,35 +70,15 @@ export default function AlterarSenhaDialog({
     }
 
     try {
-      const { data: usuario, error: userError } = await supabase
-        .from("usuarios")
-        .select("email")
-        .eq("cpfcnpj", profile.cpfcnpj)
-        .maybeSingle();
-
-      if (userError || !usuario?.email) {
-        throw new Error(
-          "Não foi possível encontrar o e-mail vinculado ao usuário."
-        );
-      }
-
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: usuario.email,
-        password: data.senhaAtual,
+      // Backend validates oldPassword and updates to newPassword
+      const { data: response } = await apiClient.post("/auth/update-password", {
+          oldPassword: data.senhaAtual,
+          password: data.novaSenha
       });
 
-      if (signInError) {
-        toast.error("auth.erro.senhaIncorreta", {
-          description: "A senha atual informada está incorreta.",
-        });
-        return;
+      if (!response.success) {
+          throw new Error(response.message || "Erro ao atualizar senha.");
       }
-
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: data.novaSenha,
-      });
-
-      if (updateError) throw updateError;
 
       toast.success("auth.sucesso.senhaAlterada", {
         description: "Você será desconectado para acessar com a nova senha.",
@@ -106,11 +86,13 @@ export default function AlterarSenhaDialog({
 
       await new Promise((res) => setTimeout(res, 1500));
 
-      await supabase.auth.signOut();
+      // Logout to force re-login
+      await apiClient.post("/auth/logout");
+      
       window.location.href = ROUTES.PUBLIC.LOGIN;
     } catch (err: any) {
       toast.error("erro.operacao", {
-        description: err.message || "Ocorreu um erro ao tentar alterar a senha.",
+        description: err.userMessage || err.message || "Ocorreu um erro ao tentar alterar a senha.",
       });
     }
   };

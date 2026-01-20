@@ -22,7 +22,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { supabase } from "@/integrations/supabase/client";
 import { pixKeySchemaRequired } from "@/schemas/pix";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { PixKeyStatus } from "@/types/enums";
@@ -98,33 +97,7 @@ export default function PixKeyDialog({
   const isFailed = status === PixKeyStatus.FALHA_VALIDACAO;
   const isValid = status === PixKeyStatus.VALIDADA;
 
-  // Realtime Listener
-  useEffect(() => {
-    if (!isOpen || !profile?.id || isValid) return;
 
-    const channel = supabase
-      .channel(`pix-validation-${profile.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'usuarios',
-          filter: `id=eq.${profile.id}`
-        },
-        (payload) => {
-          const newStatus = payload.new.status_chave_pix;
-          if (newStatus === PixKeyStatus.VALIDADA || newStatus === PixKeyStatus.FALHA_VALIDACAO) {
-            refreshProfile(); // Trigger UI update via global state
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [isOpen, profile?.id, isValid, refreshProfile]);
 
   useEffect(() => {
     if (!isOpen || !profile?.id || status !== PixKeyStatus.PENDENTE_VALIDACAO) return;

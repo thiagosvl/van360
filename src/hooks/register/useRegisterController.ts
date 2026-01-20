@@ -6,9 +6,9 @@ import {
 } from "@/constants";
 import { ROUTES } from "@/constants/routes";
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks";
-import { supabase } from "@/integrations/supabase/client";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 import { usuarioApi } from "@/services";
+import { sessionManager } from "@/services/sessionManager";
 import { Plano, SubPlano } from "@/types/plano";
 import { getQuantidadeMinimaPersonalizada } from "@/utils/domain/plano/planoStructureUtils";
 import { toast } from "@/utils/notifications/toast";
@@ -456,10 +456,11 @@ export function useRegisterController() {
 
       if (result?.error) throw new Error(result.error);
 
-      const { error } = await supabase.auth.setSession({
-        access_token: result.session.access_token,
-        refresh_token: result.session.refresh_token,
-      });
+      const { error } = await sessionManager.setSession(
+        result.session.access_token,
+        result.session.refresh_token,
+        result.session.user || result.user
+      );
 
       if (error) {
         toast.error("auth.erro.login", {
@@ -574,10 +575,11 @@ export function useRegisterController() {
       return;
     }
 
-    const { error } = await supabase.auth.setSession({
-      access_token: sessionToSet.access_token,
-      refresh_token: sessionToSet.refresh_token,
-    });
+    const { error } = await sessionManager.setSession(
+      sessionToSet.access_token,
+      sessionToSet.refresh_token,
+      sessionToSet.user
+    );
 
     if (error) {
       toast.info("cadastro.info.pagamentoConfirmado");

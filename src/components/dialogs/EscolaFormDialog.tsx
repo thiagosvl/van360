@@ -1,38 +1,38 @@
 import { CepInput } from "@/components/forms";
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-    useCreateEscola,
-    useUpdateEscola,
+  useCreateEscola,
+  useUpdateEscola,
 } from "@/hooks/api/useEscolaMutations";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -67,7 +67,7 @@ const escolaSchema = z
     const validation = validateEnderecoFields(
       data.cep || "",
       data.logradouro,
-      data.numero
+      data.numero,
     );
 
     // Adiciona erros para cada campo que falhou na validação
@@ -120,7 +120,7 @@ export default function EscolaFormDialog({
   const { user } = useSession();
   // Só chamar useProfile se não receber profile como prop e o dialog estiver aberto
   const { profile: profileFromHook } = useProfile(
-    profileProp ? undefined : isOpen ? user?.id : undefined
+    profileProp ? undefined : isOpen ? user?.id : undefined,
   );
   const profile = profileProp || profileFromHook;
 
@@ -213,8 +213,6 @@ export default function EscolaFormDialog({
       return;
     }
 
-
-
     if (editingEscola == null) {
       createEscola.mutate(
         { usuarioId: profile.id, data },
@@ -248,15 +246,19 @@ export default function EscolaFormDialog({
             }
           },
           onError: (error: any) => {
-
-
-            if (error?.response?.data?.error?.includes("duplicate key value")) {
+            if (error.response?.status === 409) {
+              form.setError("nome", {
+                type: "manual",
+                message: "escola.erro.nomeJaCadastrado",
+              });
+            } else {
               toast.error("escola.erro.criar", {
-                description: "Já existe uma escola cadastrada com esse nome.",
+                description:
+                  error?.response?.data?.error || "erro.generico",
               });
             }
           },
-        }
+        },
       );
     } else {
       updateEscola.mutate(
@@ -266,7 +268,20 @@ export default function EscolaFormDialog({
             onSuccess(escolaSalvo);
             safeCloseDialog(onClose);
           },
-        }
+          onError: (error: any) => {
+            if (error.response?.status === 409) {
+              form.setError("nome", {
+                type: "manual",
+                message: "escola.erro.nomeJaCadastrado",
+              });
+            } else {
+              toast.error("escola.erro.atualizar", {
+                description:
+                  error?.response?.data?.error || "erro.generico",
+              });
+            }
+          },
+        },
       );
     }
   };
@@ -483,7 +498,7 @@ export default function EscolaFormDialog({
                                   <SelectTrigger
                                     className={cn(
                                       "h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
-                                      fieldState.error && "border-red-500"
+                                      fieldState.error && "border-red-500",
                                     )}
                                     aria-invalid={!!fieldState.error}
                                     disabled={isCepLoading}

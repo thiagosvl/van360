@@ -109,6 +109,7 @@ export const messages = {
       atualizarDetalhe: "Não foi possível atualizar a escola.",
       excluirDetalhe: "Não foi possível excluir a escola.",
       alterarStatusDetalhe: "Não foi possível alterar o status.",
+      nomeJaCadastrado: "Já existe uma escola com este nome.",
     },
     sucesso: {
       criada: "Escola cadastrada com sucesso.",
@@ -190,12 +191,14 @@ export const messages = {
       emailNaoEncontrado: "E-mail não encontrado.",
       sessaoExpirada: "Sua sessão expirou. Faça login novamente.",
       naoAutorizado: "Você não está autorizado a acessar esta página.",
+      nenhumPassageiroEncontrado: "Nenhum passageiro foi encontrado vinculado aos dados informados.",
     },
     sucesso: {
       login: "Login realizado com sucesso.",
       logout: "Logout realizado com sucesso.",
       senhaRedefinida: "Senha redefinida com sucesso.",
       senhaAlterada: "Senha alterada com sucesso.",
+      redirecionando: "Redirecionando para o sistema...",
       emailEnviado: "E-mail de redefinição enviado com sucesso.",
     },
     info: {
@@ -253,6 +256,9 @@ export const messages = {
         quantidadeAbaixoMinimo: "A quantidade informada está abaixo do mínimo permitido.",
         cobrancaAutomaticaApenasProfissional: "Cobranças automáticas estão disponíveis apenas no plano Profissional.",
       },
+    sucesso: {
+      limiteExpandido: "Limite expandido! Agora você pode ativar a cobrança automática.",
+    },
     info: {
       limiteAtingido: "Você atingiu o limite do seu plano.",
       upgradeParaCobrancasAutomaticas: "Faça upgrade para o plano Profissional para ativar cobranças automáticas.",
@@ -264,6 +270,7 @@ export const messages = {
     campoObrigatorio: "Campo obrigatório.",
     senhasNaoCoincidem: "As senhas não coincidem.",
     formularioComErros: "Corrija os erros no formulário.",
+    dadosPreenchidos: "Campos preenchidos com dados de teste!",
   },
 
   // ========== SISTEMA ==========
@@ -342,6 +349,7 @@ export type MessageKey =
   | `assinatura.sucesso.${keyof typeof messages.assinatura.sucesso}`
   | `assinatura.info.${keyof typeof messages.assinatura.info}`
   | `plano.erro.${keyof typeof messages.plano.erro}`
+  | `plano.sucesso.${keyof typeof messages.plano.sucesso}`
   | `plano.info.${keyof typeof messages.plano.info}`
   | `validacao.${keyof typeof messages.validacao}`
   | `sistema.erro.${keyof typeof messages.sistema.erro}`

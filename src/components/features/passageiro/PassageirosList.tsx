@@ -4,14 +4,14 @@ import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
-import { usePassageiroActions } from "@/hooks/business/usePassageiroActions";
+import { usePassageiroActions } from "@/hooks/ui/usePassageiroActions";
 import { Passageiro } from "@/types/passageiro";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { formatPeriodo } from "@/utils/formatters";
@@ -64,7 +64,6 @@ const PassageiroActionsMenu = memo(function PassageiroActionsMenu({
 }: { passageiro: Passageiro } & Omit<PassageirosListProps, "passageiros">) {
   const actions = usePassageiroActions({
     passageiro,
-    plano,
     onHistorico,
     onEdit,
     onToggleCobrancaAutomatica,
@@ -92,7 +91,6 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
 >) {
   const actions = usePassageiroActions({
     passageiro,
-    plano,
     onHistorico,
     onEdit,
     onToggleCobrancaAutomatica,

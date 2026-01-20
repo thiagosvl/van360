@@ -9,7 +9,7 @@ interface AppSidebarProps {
   plano?: any;
 }
 
-import { useUpsellContent } from "@/hooks/business/useUpsellContent";
+import { useUpsellContent } from "@/hooks/ui/useUpsellContent";
 
 export function AppSidebar({ role, onLinkClick, plano }: AppSidebarProps) {
   const upsellContent = useUpsellContent(plano);

@@ -2,7 +2,7 @@ import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { useVeiculoActions } from "@/hooks/business/useVeiculoActions";
+import { useVeiculoActions } from "@/hooks/ui/useVeiculoActions";
 import { Veiculo } from "@/types/veiculo";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { Eye, Users2 } from "lucide-react";

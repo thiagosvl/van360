@@ -2,22 +2,22 @@ import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { BlurredValue } from "@/components/common/BlurredValue";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
-import { useGastoActions } from "@/hooks/business/useGastoActions";
+import { useGastoActions } from "@/hooks/ui/useGastoActions";
 import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
 import { formatDateToBR } from "@/utils/formatters";
 import {
-  Bus,
-  Calendar,
-  ClipboardCheck,
-  Cog,
-  Ellipsis,
-  Eye,
-  FileText,
-  Fuel,
-  HelpCircle,
-  Wallet,
-  Wrench,
+    Bus,
+    Calendar,
+    ClipboardCheck,
+    Cog,
+    Ellipsis,
+    Eye,
+    FileText,
+    Fuel,
+    HelpCircle,
+    Wallet,
+    Wrench,
 } from "lucide-react";
 import { memo } from "react";
 

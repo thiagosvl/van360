@@ -43,7 +43,7 @@ import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
 import { WHATSAPP_STATUS } from "@/config/constants";
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
-import { useUpsellContent } from "@/hooks/business/useUpsellContent";
+import { useUpsellContent } from "@/hooks/ui/useUpsellContent";
 import { useWhatsapp } from "@/hooks/useWhatsapp";
 import { CobrancaStatus, PixKeyStatus } from "@/types/enums";
 
@@ -104,7 +104,7 @@ const Home = () => {
     isLoading: isLoadingCobrancas,
   } = useCobrancas(
     { usuarioId: profile?.id, mes: mesAtual, ano: anoAtual },
-    { enabled: !!profile?.id }
+    { enabled: !!profile?.id },
   );
 
   const isInitialLoading = useMemo(() => {
@@ -120,21 +120,24 @@ const Home = () => {
   const passageirosAtivosCount =
     systemSummary?.contadores.passageiros.ativos ?? 0;
 
+  const passageirosInativosCount =
+    systemSummary?.contadores.passageiros.inativos ?? 0;
+
   const limitePassageiros = limits.passageiros;
   const hasPassengerLimit = limits.hasPassengerLimit;
 
   const receitaPrevista = cobrancas.reduce(
     (acc, c) => acc + Number(c.valor || 0),
-    0
+    0,
   );
 
   const cobrancasPendentes = cobrancas.filter(
-    (c) => c.status !== CobrancaStatus.PAGO
+    (c) => c.status !== CobrancaStatus.PAGO,
   );
 
   const aReceber = cobrancasPendentes.reduce(
     (acc, c) => acc + Number(c.valor || 0),
-    0
+    0,
   );
 
   const latePayments = useMemo(() => {
@@ -149,7 +152,7 @@ const Home = () => {
 
   const totalEmAtraso = latePayments.reduce(
     (acc, c) => acc + Number(c.valor || 0),
-    0
+    0,
   );
 
   const hasPixKey = !!profile?.chave_pix;
@@ -207,8 +210,7 @@ const Home = () => {
   const handleSuccessFormPassageiro = useCallback(() => {
     setNovoVeiculoId(null);
     setNovaEscolaId(null);
-    refetchSummary();
-  }, [refetchSummary]);
+  }, []);
 
   const handleOpenPassageiroDialog = useCallback(() => {
     if (
@@ -273,21 +275,19 @@ const Home = () => {
   const handleEscolaCreated = useCallback(
     (novaEscola: any, keepOpen?: boolean) => {
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
-      refetchSummary();
       if (keepOpen) return;
       setNovaEscolaId(novaEscola.id);
     },
-    [queryClient, refetchSummary]
+    [queryClient],
   );
 
   const handleVeiculoCreated = useCallback(
     (novoVeiculo: any, keepOpen?: boolean) => {
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
-      refetchSummary();
       if (keepOpen) return;
       setNovoVeiculoId(novoVeiculo.id);
     },
-    [queryClient, refetchSummary]
+    [queryClient],
   );
 
   if (isSessionLoading || isProfileLoading || isInitialLoading) {
@@ -386,7 +386,7 @@ const Home = () => {
               "grid gap-4",
               showOnboarding
                 ? "grid-cols-1 sm:grid-cols-1"
-                : "grid-cols-1 sm:grid-cols-3"
+                : "grid-cols-1 sm:grid-cols-3",
             )}
           >
             {!showOnboarding && (
@@ -455,6 +455,9 @@ const Home = () => {
                 icon={Users}
                 colorClass="text-blue-600"
                 bgClass="bg-blue-50"
+                subtext={`${passageirosInativosCount} inativo${
+                  passageirosInativosCount !== 1 ? "s" : ""
+                }`}
                 loading={isProfileLoading}
               />
             )}
@@ -467,7 +470,7 @@ const Home = () => {
                   type="pending"
                   title="Atenção às Cobranças"
                   description={`Você tem ${formatCurrency(
-                    totalEmAtraso
+                    totalEmAtraso,
                   )} em atraso de ${latePayments.length} passageiro${
                     latePayments.length != 1 ? "s" : ""
                   }.`}
@@ -479,7 +482,7 @@ const Home = () => {
                   type="success"
                   title="Tudo em dia!"
                   description={`Parabéns! Todas as cobranças vencidas foram pagas. Receita prevista: ${formatCurrency(
-                    receitaPrevista
+                    receitaPrevista,
                   )}.`}
                 />
               )}
@@ -510,7 +513,7 @@ const Home = () => {
                 onClick={handleCopyLink}
                 className={cn(
                   "cursor-pointer group flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all duration-200 hover:border-blue-200 hover:shadow-md h-24 w-full",
-                  isCopied && "border-green-200 bg-green-50"
+                  isCopied && "border-green-200 bg-green-50",
                 )}
               >
                 <div
@@ -518,7 +521,7 @@ const Home = () => {
                     "h-10 w-10 rounded-xl flex items-center justify-center mb-2 transition-all duration-300",
                     isCopied
                       ? "bg-green-100 text-green-600 scale-110"
-                      : "bg-blue-50 text-blue-600 group-hover:scale-110"
+                      : "bg-blue-50 text-blue-600 group-hover:scale-110",
                   )}
                 >
                   {isCopied ? (
@@ -532,7 +535,7 @@ const Home = () => {
                     "text-xs font-semibold text-center leading-tight transition-colors duration-200",
                     isCopied
                       ? "text-green-700"
-                      : "text-gray-700 group-hover:text-blue-700"
+                      : "text-gray-700 group-hover:text-blue-700",
                   )}
                 >
                   {isCopied ? "Copiado!" : "Link de Cadastro"}

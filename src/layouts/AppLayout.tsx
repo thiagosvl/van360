@@ -6,7 +6,8 @@ import { LayoutProvider } from "@/contexts/LayoutProvider";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
 import { useSEO } from "@/hooks/useSEO";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/services/api/client";
+import { clearAppSession } from "@/utils/domain";
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
@@ -50,7 +51,12 @@ export default function AppLayout() {
             </button>
             <button
               onClick={async () => {
-                await supabase.auth.signOut();
+                try {
+                   await apiClient.post("/auth/logout");
+                } catch (e) {
+                   console.error("Erro logout", e);
+                }
+                clearAppSession();
                 window.location.href = ROUTES.PUBLIC.LOGIN;
               }}
               className="w-full py-2.5 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
@@ -68,7 +74,10 @@ export default function AppLayout() {
 function AutoRedirectToLogin() {
     useEffect(() => {
         const timer = setTimeout(async () => {
-             await supabase.auth.signOut();
+             try {
+                await apiClient.post("/auth/logout");
+             } catch (e) { console.error(e); }
+             clearAppSession();
              window.location.href = ROUTES.PUBLIC.LOGIN;
         }, 5000);
         return () => clearTimeout(timer);

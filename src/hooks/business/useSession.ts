@@ -1,19 +1,22 @@
-import { supabase } from "@/integrations/supabase/client";
-import { Session, User } from "@supabase/supabase-js";
+import {
+  AuthUser,
+  Session,
+  sessionManager
+} from "@/services/sessionManager";
 import { useEffect, useRef, useState } from "react";
 
 export function useSession() {
   const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const userRef = useRef<User | null>(null);
+  const userRef = useRef<AuthUser | null>(null);
   const initialLoadDoneRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
 
     async function loadInitial() {
-      const { data } = await supabase.auth.getSession();
+      const { data } = await sessionManager.getSession();
       if (!mounted) return;
       const initialUser = data.session?.user ?? null;
       setSession(data.session);
@@ -26,7 +29,7 @@ export function useSession() {
 
     // Configurar o listener ANTES de carregar a sessão inicial
     // Isso garante que capturamos o evento INITIAL_SESSION corretamente
-    const { data: listener } = supabase.auth.onAuthStateChange(
+    const { data: listener } = sessionManager.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
         

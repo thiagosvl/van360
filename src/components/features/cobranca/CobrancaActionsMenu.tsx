@@ -1,5 +1,5 @@
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
-import { useCobrancaActions } from "@/hooks/business/useCobrancaActions";
+import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 import { Cobranca } from "@/types/cobranca";
 
 interface CobrancaActionsMenuProps {

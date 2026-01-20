@@ -5,37 +5,37 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
-import { useCobrancaActions } from "@/hooks/business/useCobrancaActions";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
-  formatDateToBR,
-  getMesNome,
-  getStatusColor,
-  getStatusText,
+    formatDateToBR,
+    getMesNome,
+    getStatusColor,
+    getStatusText,
 } from "@/utils/formatters";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  AlertTriangle,
-  BellOff,
-  Calendar,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  DollarSign,
-  Eye,
-  Plus,
-  RotateCcw,
+    AlertTriangle,
+    BellOff,
+    Calendar,
+    Check,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    DollarSign,
+    Eye,
+    Plus,
+    RotateCcw,
 } from "lucide-react";
 import { memo, ReactNode, useState } from "react";
 

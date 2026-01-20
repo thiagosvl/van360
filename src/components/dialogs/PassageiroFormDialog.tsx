@@ -1,10 +1,10 @@
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -12,14 +12,14 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_LIMITE_FRANQUIA } from "@/constants";
 import {
-    useBuscarResponsavel,
-    useCreatePassageiro,
-    useEscolasWithFilters,
-    useFinalizePreCadastro,
-    usePassageiroForm,
-    usePermissions,
-    useUpdatePassageiro,
-    useVeiculosWithFilters,
+  useBuscarResponsavel,
+  useCreatePassageiro,
+  useEscolasWithFilters,
+  useFinalizePreCadastro,
+  usePassageiroForm,
+  usePermissions,
+  useUpdatePassageiro,
+  useVeiculosWithFilters,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
@@ -160,7 +160,6 @@ export default function PassengerFormDialog({
     try {
       const responsavel = await buscarResponsavel.mutateAsync({
         cpf,
-        usuarioId: profile.id,
       });
 
       if (responsavel) {
@@ -190,7 +189,7 @@ export default function PassengerFormDialog({
   const handleUpgradeSuccess = () => {
     // Resume action: re-enable check
     form.setValue("enviar_cobranca_automatica", true);
-    toast.success("Limite expandido! Agora você pode ativar a cobrança automática.");
+    toast.success("plano.sucesso.limiteExpandido");
   };
 
   const handleRequestUpgrade = () => {
@@ -237,7 +236,7 @@ export default function PassengerFormDialog({
       "observacoes",
     ]);
     
-    toast.success("Campos preenchidos com dados de teste!");
+    toast.success("validacao.dadosPreenchidos");
   };
 
   const handleSubmit = async (data: PassageiroFormData) => {

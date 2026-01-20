@@ -2,7 +2,7 @@ import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { useEscolaActions } from "@/hooks/business/useEscolaActions";
+import { useEscolaActions } from "@/hooks/ui/useEscolaActions";
 import { Escola } from "@/types/escola";
 import { Eye, Users2 } from "lucide-react";
 import { NavigateFunction } from "react-router-dom";

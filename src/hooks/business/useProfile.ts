@@ -1,28 +1,15 @@
 import { PLANO_ESSENCIAL, PLANO_GRATUITO, PLANO_PROFISSIONAL } from "@/constants";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/services/api/client";
+import { sessionManager } from "@/services/sessionManager";
 import { Usuario } from "@/types/usuario";
 import { getPlanoUsuario } from "@/utils/domain/plano/planoUtils";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 
 export async function fetchProfile(uid: string): Promise<Usuario | null> {
-  const { data, error } = await supabase
-    .from("usuarios")
-    .select(
-      `
-    *,
-    assinaturas_usuarios (
-      *,
-      planos (*, parent:parent_id (*))
-    )
-  `
-    )
-    .eq("auth_uid", uid)
-    .eq("assinaturas_usuarios.ativo", true) // pega só a assinatura vigente
-    .maybeSingle();
-
-  if (error) throw error;
-  return data as Usuario | null;
+  console.log("[useProfile] Iniciando requisição /me/profile");
+  const { data } = await apiClient.get<Usuario>("/me/profile");
+  return data;
 }
 
 
@@ -41,10 +28,21 @@ export function useProfile(uid?: string) {
 
   useEffect(() => {
     if (error) {
-       // Se der erro ao buscar perfil (ex: usuário deletado, 401, etc), desloga
-       supabase.auth.signOut().catch(() => {});
+       console.error("Erro no profile:", error);
+       const axiosError = error as any;
+       // Desloga se for erro de autenticação (401) ou Proibido/Inativo (403)
+       if (axiosError?.response?.status === 401 || axiosError?.response?.status === 403) {
+          sessionManager.signOut().catch(() => {});
+       }
     }
   }, [error]);
+
+  useEffect(() => {
+    // Segurança extra: Se por acaso os dados vierem mas o flag estiver false (redundância)
+    if (data && data.ativo === false) {
+        sessionManager.signOut().catch(() => {});
+    }
+  }, [data]);
 
   const plano = useMemo(() => {
     if (!data) return null;

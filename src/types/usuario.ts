@@ -10,6 +10,7 @@ export interface Usuario {
   chave_pix?: string;
   tipo_chave_pix?: string;
   auth_uid: string;
+  ativo?: boolean; // Flag de segurança (conta bloqueada/ativa)
   
   /** @deprecated Use 'tipo' instead. */
   role?: string;

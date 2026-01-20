@@ -10,16 +10,7 @@ export const usuarioApi = {
   registrarPlanoProfissional: (payload: any) =>
     apiClient.post(`/usuarios/registrar-plano-profissional`, payload).then(res => res.data),
 
-  cancelarAssinatura: (payload: { usuarioId: string }) =>
-    apiClient.delete(
-      `/usuarios/cancelar-assinatura/${payload.usuarioId}`
-    ).then(res => res.data),
 
-  desistirCancelarAssinatura: (usuarioId: string) => {
-    apiClient.patch(
-      `/usuarios/desistir-cancelar-assinatura/${usuarioId}`
-    ).then(res => res.data)
-  },
 
   upgradePlano: (payload: { usuario_id: string; plano_id: string; quantidade_personalizada?: number }) =>
     apiClient.post(`/usuarios/upgrade-plano`, payload).then(res => res.data),

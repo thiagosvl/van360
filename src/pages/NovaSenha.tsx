@@ -9,17 +9,17 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Lock } from "lucide-react";
 
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/services/api/client";
 
 import { useSEO } from "@/hooks/useSEO";
 import { toast } from "@/utils/notifications/toast";
@@ -52,27 +52,21 @@ export default function NovaSenha() {
   const handleRedefinir = async (data: z.infer<typeof formSchema>) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.updateUser({
-        password: data.senha,
+      
+      // We assume the user is already logged in (via magic link/recovery link handling by Supabase Client or manual session)
+      // Actually, when a user clicks the recovery link, Supabase Auto-login works on client-side to set the session.
+      // So 'apiClient' will automatically attach the Bearer token.
+      
+      const { data: response } = await apiClient.post("/auth/update-password", {
+          password: data.senha
       });
+
       setLoading(false);
 
-      if (error) {
-        if (error.code === "same_password") {
-          toast.error("erro.operacao", {
-            description: "A nova senha deve ser diferente da senha atual.",
-          });
-          return;
-        }
-
-        toast.error("erro.operacao", {
-          description: error.message,
-        });
-        return;
-      }
+      if (!response.success) throw new Error(response.message || "Erro desconhecido");
 
       toast.success("auth.sucesso.senhaRedefinida", {
-        description: "Redirecionando para o sistema...",
+        description: "auth.sucesso.redirecionando",
       });
 
       setTimeout(
@@ -81,9 +75,17 @@ export default function NovaSenha() {
       );
     } catch (err: any) {
       setLoading(false);
-      toast.error("erro.generico", {
-        description: err.message || "Tente novamente mais tarde.",
-      });
+      const msg = err.userMessage || err.message || "Tente novamente mais tarde.";
+      
+      if (msg.includes("same_password")) {
+          toast.error("erro.operacao", {
+            description: "A nova senha deve ser diferente da senha atual.",
+          });
+      } else {
+        toast.error("erro.generico", {
+            description: msg,
+        });
+      }
     }
   };
 
