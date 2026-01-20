@@ -5,11 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
@@ -18,24 +18,24 @@ import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
-    formatDateToBR,
-    getMesNome,
-    getStatusColor,
-    getStatusText,
+  formatDateToBR,
+  getMesNome,
+  getStatusColor,
+  getStatusText,
 } from "@/utils/formatters";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-    AlertTriangle,
-    BellOff,
-    Calendar,
-    Check,
-    ChevronDown,
-    ChevronUp,
-    Clock,
-    DollarSign,
-    Eye,
-    Plus,
-    RotateCcw,
+  AlertTriangle,
+  BellOff,
+  Calendar,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  DollarSign,
+  Eye,
+  Plus,
+  RotateCcw,
 } from "lucide-react";
 import { memo, ReactNode, useState } from "react";
 
@@ -204,7 +204,6 @@ export const CarteirinhaCobrancas = ({
         <CardContent className="p-0">
           {cobrancas.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-              {/* Passageiro Inativo */}
               {!passageiro.ativo ? (
                 <>
                   <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mb-4">

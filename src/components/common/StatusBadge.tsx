@@ -3,19 +3,10 @@ import { cn } from "@/lib/utils";
 import { getStatusColor, getStatusText } from "@/utils/formatters";
 
 interface StatusBadgeProps {
-  /**
-   * Status pode ser booleano (Ativo/Inativo) ou string (Pago/Pendente/Atrasado)
-   */
   status: boolean | string;
   
-  /**
-   * Data de vencimento (apenas para status de cobrança)
-   */
   dataVencimento?: string | Date;
 
-  /**
-   * Define explicitamente labels customizadas para true/false
-   */
   trueLabel?: string;
   falseLabel?: string;
 
@@ -26,11 +17,10 @@ export function StatusBadge({
   status,
   dataVencimento,
   trueLabel = "Ativo",
-  falseLabel = "Inativo", // Em alguns contextos pode ser "Desativada" (Escola)
+  falseLabel = "Inativo",
   className,
 }: StatusBadgeProps) {
 
-  // Caso 1: Status Booleano (Ativo / Inativo)
   if (typeof status === "boolean") {
     return status ? (
       <Badge
@@ -55,7 +45,6 @@ export function StatusBadge({
     );
   }
 
-  // Caso 2: Status String (Cobrança)
   const colorClass = getStatusColor(status, dataVencimento ? dataVencimento.toString() : "");
   const text = getStatusText(status, dataVencimento ? dataVencimento.toString() : "");
 

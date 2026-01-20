@@ -41,8 +41,6 @@ export default function ConfirmationDialog({
   
   const showLoading = isLoading || internalLoading;
 
-  // Cleanup effect to ensure body is unlocked when dialog closes
-  // This is a safeguard against race conditions with Drawers/other overlays
   useEffect(() => {
     if (!open) {
       const timer = setTimeout(() => {
