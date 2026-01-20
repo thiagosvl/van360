@@ -27,7 +27,7 @@ export interface SystemSummary {
       is_trial_ativo: boolean;
       dias_restantes_trial: number;
       whatsapp_status: "CONNECTED" | "DISCONNECTED" | "CONNECTING" | "UNKNOWN" | "NOT_FOUND" | null;
-      ultima_fatura: "pendente" | "vencida" | "paga" | "cancelada" | "nenhuma";
+      ultima_fatura: "pago" | "pendente_pagamento" | "cancelada" | null;
       limite_franquia_atingido: boolean;
       pix_key_configurada: boolean;
     };

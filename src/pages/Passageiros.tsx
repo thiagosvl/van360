@@ -88,7 +88,7 @@ export default function Passageiros() {
       newParams.set("tab", value);
       setSearchParams(newParams);
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams],
   );
 
   const {
@@ -161,7 +161,7 @@ export default function Passageiros() {
     {
       enabled: !!profile?.id,
       onError: () => toast.error("escola.erro.carregar"),
-    }
+    },
   );
 
   const { data: veiculosData, refetch: refetchVeiculos } = useVeiculos(
@@ -169,7 +169,7 @@ export default function Passageiros() {
     {
       enabled: !!profile?.id,
       onError: () => toast.error("veiculo.erro.carregar"),
-    }
+    },
   );
 
   const passageiros = useMemo(
@@ -179,7 +179,7 @@ export default function Passageiros() {
           | { list?: Passageiro[]; total?: number; ativos?: number }
           | undefined
       )?.list ?? ([] as Passageiro[]),
-    [passageirosData]
+    [passageirosData],
   );
   const countPassageiros =
     (
@@ -204,7 +204,7 @@ export default function Passageiros() {
             }
           | undefined
       )?.list ?? ([] as (Escola & { passageiros_ativos_count?: number })[]),
-    [escolasData]
+    [escolasData],
   );
   const veiculos = useMemo(
     () =>
@@ -217,7 +217,7 @@ export default function Passageiros() {
             }
           | undefined
       )?.list ?? ([] as (Veiculo & { passageiros_ativos_count?: number })[]),
-    [veiculosData]
+    [veiculosData],
   );
 
   const { limits } = usePlanLimits({
@@ -279,7 +279,7 @@ export default function Passageiros() {
         },
       });
     },
-    [deletePassageiro, closeConfirmationDialog, openConfirmationDialog]
+    [deletePassageiro, closeConfirmationDialog, openConfirmationDialog],
   );
 
   const handleToggleClick = useCallback(
@@ -318,19 +318,23 @@ export default function Passageiros() {
             if (limiteApos > franquiaContratada) {
               openConfirmationDialog({
                 title: "Limite de automação atingido",
-                description: "Sua van digital está cheia no modo automático! Deseja assinar o Plano Profissional agora para manter as cobranças automatizadas ou reativar este passageiro sem a cobrança automática?",
+                description:
+                  "Sua van digital está cheia no modo automático! Deseja assinar o Plano Profissional agora para manter as cobranças automatizadas ou reativar este passageiro sem a cobrança automática?",
                 confirmText: "Ver Planos",
                 cancelText: "Reativar sem cobranças",
                 onConfirm: () => {
-                   closeConfirmationDialog();
-                   openPlanUpgradeDialog({
-                     feature: FEATURE_LIMITE_FRANQUIA,
-                     targetPassengerCount: limiteApos,
-                     onSuccess: () => {
-                        toggleAtivoPassageiro.mutate({ id: p.id, novoStatus: true });
-                        refetchPassageiros();
-                     }
-                   });
+                  closeConfirmationDialog();
+                  openPlanUpgradeDialog({
+                    feature: FEATURE_LIMITE_FRANQUIA,
+                    targetPassengerCount: limiteApos,
+                    onSuccess: () => {
+                      toggleAtivoPassageiro.mutate({
+                        id: p.id,
+                        novoStatus: true,
+                      });
+                      refetchPassageiros();
+                    },
+                  });
                 },
                 onCancel: () => {
                   updatePassageiro.mutate({
@@ -340,7 +344,7 @@ export default function Passageiros() {
                       enviar_cobranca_automatica: false,
                     },
                   });
-                }
+                },
               });
               return;
             }
@@ -365,7 +369,7 @@ export default function Passageiros() {
       openPlanUpgradeDialog,
       updatePassageiro,
       refetchPassageiros,
-    ]
+    ],
   );
 
   const handleToggleCobrancaAutomatica = useCallback(
@@ -374,7 +378,8 @@ export default function Passageiros() {
 
       const novoValor = !passageiro.enviar_cobranca_automatica;
 
-      if (novoValor && limits.franchise.canEnable) {       // Use centralized logic from hook to check availability
+      if (novoValor && limits.franchise.canEnable) {
+        // Use centralized logic from hook to check availability
         // If enabling (novoValor === true), we check availability.
         // We pass 'false' to checkAvailability because if we are enabling, it means it is NOT currently active (so we don't need to subtract from count).
         const podeAtivar = limits.franchise.checkAvailability(false);
@@ -425,7 +430,7 @@ export default function Passageiros() {
       openPlanUpgradeDialog,
       refetchPassageiros,
       limits,
-    ]
+    ],
   );
 
   const handleEdit = useCallback(
@@ -436,7 +441,7 @@ export default function Passageiros() {
         onSuccess: refetchPassageiros,
       });
     },
-    [openPassageiroFormDialog, refetchPassageiros]
+    [openPassageiroFormDialog, refetchPassageiros],
   );
 
   const handleOpenNewDialog = useCallback(() => {
@@ -505,18 +510,10 @@ export default function Passageiros() {
 
     // Double check if we have IDs now
     if (!escolaId || !veiculoId) {
-      // Optimization: If creates failed silently or didn't return ID, try to refetch or just stop.
-      // But let's assume if mutateAsync didn't throw, we are okay-ish,
-      // but we really need IDs for the passenger.
-      if (!escolaId) {
-        // Try to use the first one from refetched list if possible?
-        // Logic is complex without immediate ID.
-        // Let's assume we need them.
-        toast.error(
-          "Não foi possível obter escola/veículo para criação automática."
-        );
-        return;
-      }
+      toast.error(
+        "Não foi possível obter escola/veículo para criação automática.",
+      );
+      return;
     }
 
     const hoje = new Date();
@@ -526,7 +523,6 @@ export default function Passageiros() {
     const nomePassageiro = mockGenerator.name();
     const nomeResponsavel = mockGenerator.name();
     const emailResponsavel = mockGenerator.email(nomeResponsavel);
-    // const telefoneResponsavel = mockGenerator.phone();
     const telefoneResponsavel = "(11) 95118-6951";
     const cpfResponsavel = mockGenerator.cpf();
     const endereco = mockGenerator.address();
@@ -552,12 +548,8 @@ export default function Passageiros() {
       cep: endereco.cep,
     };
 
-
-
-    // Verificar se pode ligar cobrança automática
     let enviarCobrancaAutomatica = false;
     if (canUseCobrancaAutomatica) {
-      // Passa false pois estamos criando um novo, logo "não está habilitado" ainda na contagem
       enviarCobrancaAutomatica = limits.franchise.checkAvailability(false);
     }
 
@@ -570,9 +562,9 @@ export default function Passageiros() {
       },
       {
         onError: () => {
-          // restore(); 
+          // restore();
         },
-      }
+      },
     );
   }, [
     profile?.id,
@@ -585,9 +577,14 @@ export default function Passageiros() {
 
   const handleHistorico = useCallback(
     (passageiro: Passageiro) => {
-      navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
+      navigate(
+        ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(
+          ":passageiro_id",
+          passageiro.id,
+        ),
+      );
     },
-    [navigate]
+    [navigate],
   );
 
   const pullToRefreshReload = useCallback(async () => {
@@ -660,12 +657,11 @@ export default function Passageiros() {
                 </TabsTrigger>
               </TabsList>
             </div>
-
             <TabsContent
               value="passageiros"
               className={cn(
                 "space-y-6 mt-0",
-                isLimitedUser && "pb-20 md:pb-0" // Padding extra para Mobile quando houver sticky footer
+                isLimitedUser && "pb-20 md:pb-0", // Padding extra para Mobile quando houver sticky footer
               )}
             >
               {isLimitedUser && limitePassageiros != null && (
