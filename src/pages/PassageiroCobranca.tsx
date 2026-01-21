@@ -22,7 +22,6 @@ import { Passageiro } from "@/types/passageiro";
 import {
   canSendNotification,
   canViewReceipt,
-  disableDesfazerPagamento,
   disableEditarCobranca,
   disableExcluirCobranca,
   disableRegistrarPagamento,
@@ -66,7 +65,7 @@ import {
   Trash2,
   User,
   Wallet,
-  XCircle
+  XCircle,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -185,11 +184,11 @@ export default function PassageiroCobranca() {
         navigate(
           ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(
             ":passageiro_id",
-            passageiro_id
+            passageiro_id,
           ),
           {
             replace: true,
-          }
+          },
         );
       } else {
         navigate(ROUTES.PRIVATE.MOTORISTA.BILLING, { replace: true });
@@ -239,7 +238,7 @@ export default function PassageiroCobranca() {
       referencia: "",
     };
     const enderecoCompleto = formatarEnderecoCompleto(
-      passageiroSemReferencia as Passageiro
+      passageiroSemReferencia as Passageiro,
     );
     try {
       console.log(enderecoCompleto);
@@ -255,7 +254,7 @@ export default function PassageiroCobranca() {
     if (!passageiroCompleto?.telefone_responsavel) return;
     try {
       await navigator.clipboard.writeText(
-        formatarTelefone(passageiroCompleto.telefone_responsavel)
+        formatarTelefone(passageiroCompleto.telefone_responsavel),
       );
       setIsCopiedTelefone(true);
       setTimeout(() => setIsCopiedTelefone(false), 1000);
@@ -300,11 +299,11 @@ export default function PassageiroCobranca() {
   const isPago = cobrancaTyped?.status === CobrancaStatus.PAGO;
   const statusText = getStatusText(
     cobrancaTyped?.status,
-    cobrancaTyped?.data_vencimento
+    cobrancaTyped?.data_vencimento,
   );
   const statusColorClass = getStatusColor(
     cobrancaTyped?.status,
-    cobrancaTyped?.data_vencimento
+    cobrancaTyped?.data_vencimento,
   );
 
   let headerBg =
@@ -359,7 +358,7 @@ export default function PassageiroCobranca() {
                         "h-24 w-24 rounded-full bg-gray-50 flex items-center justify-center border-4 border-white shadow-sm",
                         passageiroCompleto.ativo
                           ? "ring-2 ring-offset-2 ring-green-500"
-                          : "ring-2 ring-offset-2 ring-red-500"
+                          : "ring-2 ring-offset-2 ring-red-500",
                       )}
                     >
                       <User className="h-10 w-10 text-gray-400" />
@@ -367,7 +366,9 @@ export default function PassageiroCobranca() {
                     <div
                       className={cn(
                         "absolute bottom-1 right-1 h-5 w-5 rounded-full border-2 border-white",
-                        passageiroCompleto.ativo ? "bg-green-500" : "bg-red-500"
+                        passageiroCompleto.ativo
+                          ? "bg-green-500"
+                          : "bg-red-500",
                       )}
                       title={passageiroCompleto.ativo ? "Ativo" : "Desativado"}
                     />
@@ -405,7 +406,7 @@ export default function PassageiroCobranca() {
                               <div className="flex items-center gap-2">
                                 <span className="text-sm">
                                   {formatarTelefone(
-                                    passageiroCompleto.telefone_responsavel
+                                    passageiroCompleto.telefone_responsavel,
                                   )}
                                 </span>
                                 <Button
@@ -495,7 +496,7 @@ export default function PassageiroCobranca() {
                   <div
                     className={cn(
                       "px-6 py-5 flex items-start justify-between relative min-h-[84px]",
-                      headerBg
+                      headerBg,
                     )}
                   >
                     {/* Lado Esquerdo: Referência */}
@@ -520,11 +521,11 @@ export default function PassageiroCobranca() {
                       <span className="text-sm sm:text-base font-bold text-gray-900">
                         {isPago
                           ? formatDateToBR(cobrancaTyped?.data_pagamento).split(
-                              "/"
+                              "/",
                             )[0] +
                             "/" +
                             formatDateToBR(cobrancaTyped?.data_pagamento).split(
-                              "/"
+                              "/",
                             )[1]
                           : `Dia ${
                               cobrancaTyped?.data_vencimento.split("-")[2]
@@ -547,7 +548,7 @@ export default function PassageiroCobranca() {
                       <Badge
                         className={cn(
                           "px-4 py-1.5 mb-3 text-xs font-bold shadow-sm rounded-full border transition-all hover:scale-105 cursor-default",
-                          statusColorClass
+                          statusColorClass,
                         )}
                       >
                         <StatusIcon className="w-3.5 h-3.5 mr-1.5" />
@@ -589,11 +590,11 @@ export default function PassageiroCobranca() {
                             Ver PIX
                           </Button>
                         )}
-                      {!disableRegistrarPagamento(cobrancaTyped) ? (
+                      {!disableRegistrarPagamento(cobrancaTyped) && (
                         <Button
                           className={cn(
                             "h-12 px-8 rounded-xl font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto min-w-[200px]",
-                            paymentButtonClass
+                            paymentButtonClass,
                           )}
                           onClick={() =>
                             openManualPaymentDialog({
@@ -611,7 +612,7 @@ export default function PassageiroCobranca() {
                                   handleUpgrade(
                                     FEATURE_COBRANCA_AUTOMATICA,
                                     "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?",
-                                    "Cobrança Automática"
+                                    "Cobrança Automática",
                                   );
                                 }
                               },
@@ -621,33 +622,37 @@ export default function PassageiroCobranca() {
                           <BadgeCheck className="w-5 h-5 mr-2" />
                           Registrar Pagamento
                         </Button>
-                      ) : disableDesfazerPagamento(cobrancaTyped) ? (
-                        <>
-                          <Button
-                            size="lg"
-                            variant="outline"
-                            className="h-12 px-8 rounded-xl border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 w-full sm:w-auto min-w-[200px]"
-                            onClick={handleDesfazerPagamento}
-                          >
-                            <History className="w-4 h-4 mr-2" />
-                            Desfazer Pagamento
-                          </Button>
-                          <p className="text-muted-foreground text-xs">
-                            Pagamento registrado manualmente.
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <div className="px-6 py-4 rounded-xl bg-green-50 border border-green-100 text-green-800 font-medium text-sm flex items-center justify-center gap-2 w-full">
-                            <CheckCircle2 className="w-5 h-5 text-green-600" />
-                            <span>Pago via cobrança automática</span>
-                          </div>
-                          <p className="text-muted-foreground text-xs">
-                            Não é possível desfazer um pagamento feito via
-                            cobrança automática.
-                          </p>
-                        </>
                       )}
+                      {cobrancaTyped.status === CobrancaStatus.PAGO &&
+                        cobrancaTyped.pagamento_manual && (
+                          <>
+                            <Button
+                              size="lg"
+                              variant="outline"
+                              className="h-12 px-8 rounded-xl border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 w-full sm:w-auto min-w-[200px]"
+                              onClick={handleDesfazerPagamento}
+                            >
+                              <History className="w-4 h-4 mr-2" />
+                              Desfazer Pagamento
+                            </Button>
+                            <p className="text-muted-foreground text-xs">
+                              Pagamento registrado manualmente.
+                            </p>
+                          </>
+                        )}
+                      {cobrancaTyped.status === CobrancaStatus.PAGO &&
+                        !cobrancaTyped.pagamento_manual && (
+                          <>
+                            <div className="px-6 py-4 rounded-xl bg-green-50 border border-green-100 text-green-800 font-medium text-sm flex items-center justify-center gap-2 w-full">
+                              <CheckCircle2 className="w-5 h-5 text-green-600" />
+                              <span>Pago via cobrança automática</span>
+                            </div>
+                            <p className="text-muted-foreground text-xs">
+                              Não é possível desfazer um pagamento feito via
+                              cobrança automática.
+                            </p>
+                          </>
+                        )}
                     </div>
 
                     {/* Secondary Actions - Vertical Stack */}

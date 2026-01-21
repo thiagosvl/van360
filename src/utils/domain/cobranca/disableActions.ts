@@ -9,10 +9,6 @@ export const disableRegistrarPagamento = (cobranca: Cobranca): boolean => {
   return seForPago(cobranca);
 };
 
-export const disableDesfazerPagamento = (cobranca: Cobranca): boolean => {
-  return !seForPago(cobranca) || !cobranca.pagamento_manual;
-};
-
 export const disableExcluirCobranca = (cobranca: Cobranca): boolean => {
   return seForPago(cobranca) && cobranca.pagamento_manual;
 };
