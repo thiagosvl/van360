@@ -13,6 +13,9 @@ export function useEscolas(
   const query = useQuery({
     queryKey: ["escolas", usuarioId],
     enabled: (options?.enabled ?? true) && Boolean(usuarioId),
+    staleTime: 1000 * 60,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
     placeholderData: (previousData) => previousData,
     queryFn: async () => {
       if (!usuarioId) return [];

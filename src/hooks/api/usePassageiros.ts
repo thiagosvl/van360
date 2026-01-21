@@ -45,8 +45,8 @@ export function usePassageiros(
     queryKey: ["passageiros", filters.usuarioId, filterKey],
     enabled: (options?.enabled ?? true) && Boolean(filters.usuarioId),
     staleTime: 1000 * 60,
-    refetchOnMount: false,
-    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
     queryFn: async () => {
       if (!filters.usuarioId) return [];
 

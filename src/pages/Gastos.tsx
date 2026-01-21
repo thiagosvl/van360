@@ -25,19 +25,19 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 import { FEATURE_GASTOS, PLANO_ESSENCIAL } from "@/constants";
 import { cn } from "@/lib/utils";
 import {
-  MOCK_DATA_NO_ACCESS_GASTOS,
-  MOCK_VEICULOS,
+    MOCK_DATA_NO_ACCESS_GASTOS,
+    MOCK_VEICULOS,
 } from "@/utils/mocks/restrictedData";
 
 import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 
 import { UpgradeStickyFooter } from "@/components/common/UpgradeStickyFooter";
 import {
-  CalendarIcon,
-  Lock,
-  TrendingDown,
-  TrendingUp,
-  Wallet,
+    CalendarIcon,
+    Lock,
+    TrendingDown,
+    TrendingUp,
+    Wallet,
 } from "lucide-react";
 
 export default function Gastos() {
@@ -124,10 +124,9 @@ export default function Gastos() {
         gastoToEdit: gasto,
         veiculos: veiculos.map((v) => ({ id: v.id, placa: v.placa })),
         usuarioId: profile?.id,
-        onSuccess: refetchGastos,
       });
     },
-    [openGastoFormDialog, veiculos, profile?.id, refetchGastos]
+    [openGastoFormDialog, veiculos, profile?.id]
   );
 
   const pullToRefreshReload = async () => {

@@ -94,17 +94,9 @@ export function useUpdateCobranca() {
     onSuccess: (_, variables) => {
       // Invalida query específica da cobrança atualizada
       queryClient.invalidateQueries({ queryKey: ["cobranca", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+      queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
       toast.success("cobranca.sucesso.atualizada");
-    },
-    onSettled: (_, error, variables) => {
-      if (!error) {
-        queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
-        queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
-        // Invalida query específica da cobrança (a invalidação genérica ["cobranca"] já cobre todas)
-        if (variables?.id) {
-          queryClient.invalidateQueries({ queryKey: ["cobranca", variables.id] });
-        }
-      }
     },
   });
 }

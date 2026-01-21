@@ -28,12 +28,12 @@ export function useCobrancas(
     queryKey: buildQueryKey(filters),
     enabled: (options?.enabled ?? true) && Boolean(filters.usuarioId),
     // Considera os dados stale imediatamente para garantir refetch quando necessário
-    staleTime: 0,
-    // Sempre refetch quando o componente montar para garantir dados atualizados
-    // Isso é importante porque cobranças podem ter sido atualizadas em outras telas
-    refetchOnMount: "always",
-    // Refetch quando a janela ganhar foco para garantir dados atualizados
-    refetchOnWindowFocus: true,
+    // Dados considerados frescos por 1 minuto para evitar refetch excessivo
+    staleTime: 1000 * 60,
+    // Refetch normal ao montar
+    refetchOnMount: true,
+    // Evita refetch ao focar na janela (como ao fechar um dialog)
+    refetchOnWindowFocus: false,
     queryFn: async () => {
       if (!filters.usuarioId) return [];
 

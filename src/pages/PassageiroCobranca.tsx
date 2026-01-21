@@ -25,7 +25,7 @@ import {
   disableEditarCobranca,
   disableExcluirCobranca,
   disableRegistrarPagamento,
-  seForPago,
+  seForPago
 } from "@/utils/domain/cobranca/disableActions";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
@@ -209,7 +209,7 @@ export default function PassageiroCobranca() {
     if (cobrancaNormalizadaParaEdicao) {
       openCobrancaEditDialog({
         cobranca: cobrancaNormalizadaParaEdicao,
-        onSuccess: refetchCobranca,
+        // onSuccess: refetchCobranca, // Removido pois o hook useUpdateCobranca já invalida as queries automaticamente
       });
     }
   };

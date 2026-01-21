@@ -335,7 +335,6 @@ export default function Passageiros() {
                         id: p.id,
                         novoStatus: true,
                       });
-                      refetchPassageiros();
                     },
                   });
                 },
@@ -412,7 +411,6 @@ export default function Passageiros() {
                   id: passageiro.id,
                   data: { enviar_cobranca_automatica: true },
                 });
-                refetchPassageiros();
               },
             });
           }
@@ -441,10 +439,9 @@ export default function Passageiros() {
       openPassageiroFormDialog({
         mode: "edit",
         editingPassageiro: passageiro,
-        onSuccess: refetchPassageiros,
       });
     },
-    [openPassageiroFormDialog, refetchPassageiros],
+    [openPassageiroFormDialog],
   );
 
   const handleOpenNewDialog = useCallback(() => {
@@ -460,13 +457,12 @@ export default function Passageiros() {
     // Use openPassageiroFormDialog
     openPassageiroFormDialog({
       mode: "create",
-      onSuccess: refetchPassageiros,
     });
   }, [
     isLimitedUser,
     isLimitReached,
     openPlanUpgradeDialog,
-    refetchPassageiros,
+    openPassageiroFormDialog,
   ]);
 
   const handleCadastrarRapido = useCallback(async () => {

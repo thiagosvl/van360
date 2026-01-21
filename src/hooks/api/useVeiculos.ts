@@ -22,6 +22,9 @@ export function useVeiculos(
   >({
     queryKey: ["veiculos", usuarioId],
     enabled: (options?.enabled ?? true) && Boolean(usuarioId),
+    staleTime: 1000 * 60,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
     placeholderData: (previousData) => previousData,
     queryFn: async () => {
       if (!usuarioId) return [];

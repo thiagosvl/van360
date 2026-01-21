@@ -1,9 +1,9 @@
 // React
 import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
 } from "react";
 
 import { ROUTES } from "@/constants/routes";
@@ -23,7 +23,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 import {
-  meses,
+    meses,
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 
@@ -35,9 +35,9 @@ import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import {
-  CheckCircle2,
-  TrendingUp,
-  Wallet,
+    CheckCircle2,
+    TrendingUp,
+    Wallet,
 } from "lucide-react";
 
 
@@ -141,10 +141,9 @@ const Cobrancas = () => {
     (cobranca: Cobranca) => {
       openCobrancaEditDialog({
         cobranca,
-        onSuccess: refetchCobrancas,
       });
     },
-    [openCobrancaEditDialog, refetchCobrancas]
+    [openCobrancaEditDialog]
   );
 
   const handleDeleteCobrancaClick = useCallback(
@@ -159,7 +158,6 @@ const Cobrancas = () => {
           try {
             await deleteCobranca.mutateAsync(cobranca.id);
             closeConfirmationDialog();
-            refetchCobrancas();
           } catch (error) {
             closeConfirmationDialog();
             // Error handled by hook or generic handling
@@ -184,10 +182,10 @@ const Cobrancas = () => {
         valorOriginal: Number(cobranca.valor),
         status: cobranca.status,
         dataVencimento: cobranca.data_vencimento,
-        onPaymentRecorded: refetchCobrancas,
+        onPaymentRecorded: () => {},
       });
     },
-    [openManualPaymentDialog, refetchCobrancas]
+    [openManualPaymentDialog]
   );
 
   const handlePagarPix = useCallback(
@@ -281,7 +279,7 @@ const Cobrancas = () => {
     onRegistrarPagamento: openPaymentDialog,
     onPagarPix: handlePagarPix,
     onExcluirCobranca: handleDeleteCobrancaClick,
-    onActionSuccess: refetchCobrancas,
+    onActionSuccess: () => {},
     onUpgrade: handleUpgrade
   };
 
