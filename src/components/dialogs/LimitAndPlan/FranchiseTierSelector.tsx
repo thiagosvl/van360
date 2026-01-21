@@ -106,7 +106,6 @@ export function FranchiseTierSelector({
         .sort((a, b) => (a?.quantidade || 0) - (b?.quantidade || 0))
         .map((opt, index) => {
           const isSelected = opt?.id === currentTierOption?.id;
-          const isRecommended = index === 0 && salesContext !== "expansion";
 
           return (
             <button
@@ -121,16 +120,6 @@ export function FranchiseTierSelector({
                   : "bg-white border-gray-100 text-gray-400 hover:border-violet-100 hover:bg-violet-50"
               )}
             >
-              {isRecommended && (
-                <span className={cn(
-                  "absolute -top-3 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border shadow-sm",
-                  isSelected 
-                    ? "bg-white text-violet-600 border-violet-100" 
-                    : "bg-emerald-100 text-emerald-700 border-emerald-100"
-                )}>
-                  Ideal
-                </span>
-              )}
 
               <span className={cn("text-[10px] font-bold uppercase tracking-wider mb-1", isSelected ? "text-violet-200" : "text-gray-400")}>
                 {isSelected ? "Selecionado" : "Opção"}
@@ -141,7 +130,8 @@ export function FranchiseTierSelector({
               </span>
               
               <span className={cn("text-[10px] font-bold uppercase tracking-wider", isSelected ? "text-violet-100" : "text-gray-400")}>
-                Vagas
+                Cobranças
+                <br />Mês
               </span>
             </button>
           );
