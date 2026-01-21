@@ -26,6 +26,7 @@ export { usePassageiro } from "./api/usePassageiro";
 export { usePassageiros } from "./api/usePassageiros";
 export { useCalcularPrecoPreview, usePlanos } from "./api/usePlanos";
 export { usePrePassageiros } from "./api/usePrePassageiros";
+export { useUsuarioResumo } from "./api/useUsuarioResumo";
 export { useVeiculos } from "./api/useVeiculos";
 export { useVeiculosWithFilters } from "./api/useVeiculosWithFilters";
 
