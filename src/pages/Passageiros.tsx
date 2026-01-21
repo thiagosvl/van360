@@ -32,6 +32,7 @@ import {
   usePrePassageiros,
   useToggleAtivoPassageiro,
   useUpdatePassageiro,
+  useUsuarioResumo,
   useVeiculos,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
@@ -154,7 +155,13 @@ export default function Passageiros() {
   const { data: prePassageirosData, refetch: refetchPrePassageiros } =
     usePrePassageiros({ usuarioId: profile?.id }, { enabled: !!profile?.id });
 
-  const countPrePassageiros = (prePassageirosData as any[])?.length || 0;
+  const { data: resumo } = useUsuarioResumo();
+
+  const countPrePassageiros =
+    resumo?.contadores.passageiros.solicitacoes_pendentes ?? 0;
+
+  // Also using summary for total passengers if available, otherwise fallback to list length
+  const totalPassageirosResumo = resumo?.contadores.passageiros.total;
 
   const { data: escolasData, refetch: refetchEscolas } = useEscolas(
     profile?.id,
@@ -182,17 +189,13 @@ export default function Passageiros() {
     [passageirosData],
   );
   const countPassageiros =
+    totalPassageirosResumo ??
     (
       passageirosData as
         | { list?: Passageiro[]; total?: number; ativos?: number }
         | undefined
-    )?.total ?? null;
-  const countPassageirosAtivos =
-    (
-      passageirosData as
-        | { list?: Passageiro[]; total?: number; ativos?: number }
-        | undefined
-    )?.ativos ?? null;
+    )?.total ??
+    null;
   const escolas = useMemo(
     () =>
       (

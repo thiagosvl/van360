@@ -75,6 +75,12 @@ export function ProfissionalPlanContent({
               customPrice={customPrice}
               planos={planos}
             />
+            <span className="text-xs text-gray-500 font-medium mt-1 block">
+              Válido até{" "}
+              {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(
+                "pt-BR"
+              )}
+            </span>
           </div>
 
           {/* 3. INFO DINÂMICA: RESUMO FINANCEIRO (Expansão) OU BENEFÍCIOS (Migração) */}
