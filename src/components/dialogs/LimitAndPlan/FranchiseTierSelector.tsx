@@ -89,7 +89,7 @@ export function FranchiseTierSelector({
   }
 
   return (
-    <div className="bg-gray-100 p-1.5 rounded-xl flex flex-wrap justify-center gap-1.5 ring-1 ring-inset ring-black/5">
+    <div className="relative -mx-6 px-6 overflow-x-auto pb-4 pt-1 scrollbar-hide snap-x snap-mandatory flex items-center gap-3">
       {availableOptions
         .sort((a, b) => (a?.quantidade || 0) - (b?.quantidade || 0))
         .map((opt, index) => {
@@ -103,21 +103,29 @@ export function FranchiseTierSelector({
                 if (opt?.id) setSelectedTierId(opt.id);
               }}
               className={cn(
-                "flex-1 min-w-[60px] py-1.5 rounded-lg text-sm font-bold transition-all duration-200 flex flex-col items-center justify-center leading-none gap-0.5",
+                "relative min-w-[100px] h-[72px] rounded-2xl border-2 transition-all duration-300 snap-center flex flex-col items-center justify-center gap-0.5 group",
                 isSelected
-                  ? "bg-white text-violet-700 shadow-sm ring-1 ring-black/5"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50",
-                isRecommended &&
-                  !isSelected &&
-                  "bg-violet-50/50 text-violet-600"
+                  ? "bg-violet-600 border-violet-600 text-white shadow-lg shadow-violet-200 scale-105 z-10"
+                  : "bg-white border-gray-100 text-gray-500 hover:border-violet-200 hover:bg-violet-50"
               )}
             >
-              <span className="text-sm">{opt?.quantidade}</span>
-              {isRecommended && (
-                <span className="text-[8px] font-extrabold uppercase tracking-wideropacity-90">
-                  {salesContext === "upgrade_auto" ? "Toda Frota" : "Ideal"}
+              {isRecommended && !isSelected && (
+                <span className="absolute -top-3 bg-green-100 text-green-700 text-[9px] font-bold px-2 py-0.5 rounded-full border border-green-200 uppercase tracking-wide">
+                  Ideal
                 </span>
               )}
+              {isRecommended && isSelected && (
+                <span className="absolute -top-3 bg-white text-violet-600 text-[9px] font-bold px-2 py-0.5 rounded-full border border-violet-200 uppercase tracking-wide shadow-sm">
+                  Ideal
+                </span>
+              )}
+
+              <span className={cn("text-2xl font-black tracking-tight", isSelected ? "text-white" : "text-gray-900")}>
+                {opt?.quantidade}
+              </span>
+              <span className={cn("text-[10px] font-bold uppercase tracking-wider", isSelected ? "text-violet-100" : "text-gray-400")}>
+                Vagas
+              </span>
             </button>
           );
         })}
@@ -128,10 +136,13 @@ export function FranchiseTierSelector({
           setIsCustomQuantityMode(true);
           setManualQuantity(currentTierOption?.quantidade || 0);
         }}
-        className="px-3 py-2 rounded-lg text-xs font-bold transition-all duration-200 text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-100 flex items-center gap-1 min-w-[60px] justify-center"
+        className="min-w-[80px] h-[72px] rounded-2xl border-2 border-dashed border-gray-200 hover:border-violet-300 hover:bg-violet-50 text-gray-400 hover:text-violet-600 transition-all duration-300 snap-center flex flex-col items-center justify-center gap-1"
       >
-        Outro...
+        <span className="text-xs font-bold">Outro...</span>
       </button>
+      
+      {/* Spacer for right padding in scroll */}
+      <div className="w-2 shrink-0" />
     </div>
   );
 }

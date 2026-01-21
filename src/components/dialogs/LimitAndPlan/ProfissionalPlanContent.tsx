@@ -1,8 +1,7 @@
-import { ChevronRight, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { BenefitItem } from "./BenefitItem";
 import { ExpansionSummary } from "./ExpansionSummary";
 import { FranchiseTierSelector } from "./FranchiseTierSelector";
-import { PriceDisplay } from "./PriceDisplay";
 
 interface ProfissionalPlanContentProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -45,13 +44,16 @@ export function ProfissionalPlanContent({
     <div className="px-6 pt-3 space-y-6 m-0 focus-visible:ring-0 outline-none">
       {availableFranchiseOptions && availableFranchiseOptions.length > 0 ? (
         <>
-          {/* 1. SELETOR (Segmented Control Refined) */}
-          <div className="space-y-2">
-            <div className="text-center">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+          {/* 1. SELETOR (Horizontal Scroll - Mobile First) */}
+          <div className="space-y-3">
+             <div className="flex items-center justify-between px-1">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                 {salesContext === "expansion"
-                  ? "Nova Capacidade Desejada"
-                  : "Tamanho da sua Frota"}
+                  ? "NOVA CAPACIDADE"
+                  : "TAMANHO DA SUA FROTA"}
+              </span>
+              <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                Arraste para o lado
               </span>
             </div>
 
@@ -68,23 +70,10 @@ export function ProfissionalPlanContent({
             />
           </div>
 
-          {/* 2. HERO SECTION (Preço) */}
-          <div className="text-center py-2 space-y-0.5 min-h-[90px] flex flex-col justify-center transition-all duration-300">
-            <PriceDisplay
-              currentTierOption={currentTierOption}
-              customPrice={customPrice}
-              planos={planos}
-            />
-            <span className="text-xs text-gray-500 font-medium mt-1 block">
-              Válido até{" "}
-              {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(
-                "pt-BR"
-              )}
-            </span>
-          </div>
+
 
           {/* 3. INFO DINÂMICA: RESUMO FINANCEIRO (Expansão) OU BENEFÍCIOS (Migração) */}
-          <div className="space-y-4 pt-2">
+          <div className="space-y-6 pt-2">
             {(() => {
               // Cálculo do Preço Selecionado para Prorata
               let price = 0;
@@ -117,27 +106,29 @@ export function ProfissionalPlanContent({
 
               // Visão Padrão (Benefícios)
               return (
-                <div className="space-y-2">
+                <div className="space-y-6">
                   <BenefitItem
                     text={`Cobranças Automáticas para até ${currentTierOption?.quantidade} Passageiros`}
+                    description="Nós cobramos os pais para você todo mês, sem estresse."
                   />
-                  <BenefitItem text="Cadastre quantos passageiros quiser" />
-
-                  <BenefitItem text="Envio automático de Recibos aos pais/responsáveis" />
-                  <BenefitItem text="Relatórios Financeiros" />
+                  <BenefitItem 
+                    text="Cadastros Ilimitados" 
+                    description="Organize toda a sua frota no aplicativo."
+                  />
+                  <BenefitItem 
+                    text="Envio automático de Recibos"
+                    description="Seus clientes recebem comprovantes no WhatsApp."
+                  />
+                 <BenefitItem 
+                    text="Relatórios Financeiros"
+                    description="Saiba exatamente quanto cada van está lucrando."
+                  />
                 </div>
               );
             })()}
           </div>
 
-          {/* Botão Ver Mais Benefícios */}
-          <button
-            onClick={() => setIsBenefitsOpen(true)}
-            className="w-full text-center text-xs font-semibold text-gray-400 hover:text-violet-600 transition-colors flex items-center justify-center gap-1 py-2 mt-2"
-          >
-            Ver todos recursos
-            <ChevronRight className="w-3 h-3" />
-          </button>
+
         </>
       ) : (
         <div className="h-40 flex items-center justify-center flex-col gap-3">
