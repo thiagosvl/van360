@@ -12,6 +12,7 @@ import {
   PLANO_PROFISSIONAL,
 } from "@/constants";
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks/api/usePlanos";
+import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { usePlanUpgrade } from "@/hooks/business/usePlanUpgrade";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -29,9 +30,7 @@ export interface PlanUpgradeDialogProps {
   defaultTab?: "essencial" | "profissional";
   targetPassengerCount?: number;
   onSuccess?: () => void;
-  // Context Feature Flag
   feature?: string;
-  // Custom Override
   title?: string;
   description?: string;
 }
@@ -61,6 +60,12 @@ export function PlanUpgradeDialog({
   // Estados visuais
   const [activeTab, setActiveTab] = useState<string>(defaultTab);
   const [isBenefitsOpen, setIsBenefitsOpen] = useState(false);
+
+
+  // Fetch Summary for Trial Days
+  const { data: resumo } = useUsuarioResumo();
+  const trialDays = resumo?.usuario?.flags?.trial_dias_total ?? 7;
+
 
   // Hook de Upgrade Unificado
   const {
@@ -368,8 +373,8 @@ export function PlanUpgradeDialog({
   // Cores Dinâmicas do Header
   const requestHeaderStyle =
     activeTab === PLANO_ESSENCIAL
-      ? "bg-blue-600"
-      : "bg-gradient-to-r from-purple-700 to-indigo-700";
+    ? "bg-gradient-to-r from-emerald-700 to-emerald-600"
+    : "bg-gradient-to-r from-purple-700 to-indigo-700";
 
   // --- Handlers de Up grade (Wrappers) ---
   const onUpgradeEssencial = () => {
@@ -468,6 +473,29 @@ export function PlanUpgradeDialog({
             currentTierOption={currentTierOption}
             planoAtualSlug={planoAtualSlug}
             salesContext={salesContext}
+            currentPrice={(() => {
+              if (activeTab === PLANO_ESSENCIAL) {
+                if (!planoEssencialData) return null;
+                return planoEssencialData.promocao_ativa
+                  ? Number(planoEssencialData.preco_promocional)
+                  : Number(planoEssencialData.preco);
+              } else {
+                if (currentTierOption?.isCustom && customPrice) {
+                  return customPrice;
+                }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const officialPlan = planos?.find(
+                  (p: any) => p.id === currentTierOption?.id
+                );
+                if (officialPlan) {
+                  return officialPlan.promocao_ativa
+                    ? Number(officialPlan.preco_promocional)
+                    : Number(officialPlan.preco);
+                }
+                return null;
+              }
+            })()}
+            trialDays={trialDays}
           />
         </DialogContent>
       </Dialog>
