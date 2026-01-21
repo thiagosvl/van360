@@ -22,12 +22,10 @@ export const disableEditarCobranca = (cobranca: Cobranca): boolean => {
 };
 
 export const canSendNotification = (cobranca: Cobranca): boolean => {
-  const isPendingOrOverdue = 
+  const isPendingOrOverdue =
     cobranca.status === CobrancaStatus.PENDENTE;
-    
-  const hasPix = !!cobranca.qr_code_payload;
 
-  return isPendingOrOverdue && hasPix;
+  return isPendingOrOverdue;
 };
 
 export const canViewReceipt = (cobranca: Cobranca): boolean => {
