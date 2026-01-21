@@ -39,16 +39,7 @@ export function usePixKeyGuard({
 
       // Se chegamos aqui, PRECISA bloquear/abrir dialog
       
-      // Check if we are on the Home screen ('/inicio' or '/')
-      const isHomePage = location.pathname === '/inicio' || location.pathname === '/';
 
-      if (!isHomePage) {
-          // If not on home, reset the trigger so it can fire again when returning to home
-          if (triggeredPath) {
-              setTriggeredPath(null);
-          }
-          return;
-      }
 
       // Only trigger if we haven't triggered for this specific path check yet
       if (triggeredPath !== location.pathname) {

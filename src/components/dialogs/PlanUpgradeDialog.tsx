@@ -1,4 +1,3 @@
-import { BeneficiosPlanoSheet } from "@/components/features/pagamento/BeneficiosPlanoSheet";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -42,8 +41,6 @@ export function PlanUpgradeDialog({
   targetPassengerCount,
   onSuccess,
   feature,
-  title,
-  description,
 }: PlanUpgradeDialogProps) {
   const { user } = useSession();
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -59,7 +56,7 @@ export function PlanUpgradeDialog({
 
   // Estados visuais
   const [activeTab, setActiveTab] = useState<string>(defaultTab);
-  const [isBenefitsOpen, setIsBenefitsOpen] = useState(false);
+
 
 
   // Fetch Summary for Trial Days
@@ -166,7 +163,7 @@ export function PlanUpgradeDialog({
 
   // Estados para Quantidade Personalizada
   const [isCustomQuantityMode, setIsCustomQuantityMode] = useState(false);
-  const [manualQuantity, setManualQuantity] = useState<number>(0);
+  const [manualQuantity, setManualQuantity] = useState<number | string>("");
 
   useEffect(() => {
     if (open && availableFranchiseOptions.length > 0) {
@@ -177,7 +174,6 @@ export function PlanUpgradeDialog({
           availableFranchiseOptions[0];
         if (recommended) {
           setSelectedTierId(recommended.id);
-          setManualQuantity(recommended.quantidade || 0);
         }
       }
     }
@@ -217,34 +213,59 @@ export function PlanUpgradeDialog({
 
   // --- Lógica de Preço Sob Medida (Robustez) ---
   const [customPrice, setCustomPrice] = useState<number | null>(null);
+  const [isDebouncing, setIsDebouncing] = useState(false);
   const calcularPrecoPreview = useCalcularPrecoPreview();
 
   useEffect(() => {
     if (!open) return;
     if (!currentTierOption) return;
 
-    // Verifica se é um plano oficial (existe na lista de bases ou subs)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const isOfficialPlan = planos.some(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (p: any) => p.id === currentTierOption.id
-    );
+    // Debounce para evitar flood de requisições
+    const timer = setTimeout(() => {
+      setIsDebouncing(false); // Fim do debounce
 
-    // Se for marcado como custom OU se não for um plano oficial (fallback), calculamos o preço
-    // Isso resolve o caso "6 Vagas" que aparece como opção mas não tem ID correspondente na lista de planos
-    if (
-      (currentTierOption.isCustom || !isOfficialPlan) &&
-      currentTierOption.quantidade
-    ) {
-      calcularPrecoPreview.mutate(currentTierOption.quantidade, {
-        onSuccess: (res) => {
-          if (res) setCustomPrice(res.preco);
-        },
-      });
-    } else {
-      setCustomPrice(null);
+      // Verifica se é um plano oficial (existe na lista de bases ou subs)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const isOfficialPlan = planos.some(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (p: any) => p.id === currentTierOption.id
+      );
+
+      // Calcular o máximo das opções padrão para validação (similar ao FranchiseTierSelector)
+      const maxStandardQuantity = Math.max(
+        ...(franchiseOptions || []).map((o) => o.quantidade || 0),
+        0
+      );
+      
+      const qty = Number(currentTierOption.quantidade);
+      const isQuantityValid = !currentTierOption.isCustom || (qty > maxStandardQuantity);
+
+      // Se for marcado como custom OU se não for um plano oficial (fallback), calculamos o preço
+      if (
+        (currentTierOption.isCustom || !isOfficialPlan) &&
+        qty > 0 &&
+        isQuantityValid
+      ) {
+        calcularPrecoPreview.mutate(qty, {
+          onSuccess: (res) => {
+            if (res) setCustomPrice(res.preco);
+          },
+        });
+      } else {
+        setCustomPrice(null);
+      }
+    }, 600); // 600ms debounce
+
+    // Se for custom, ativa estado de debounce visual imediatamente
+    if (currentTierOption.isCustom) {
+      setIsDebouncing(true);
     }
-  }, [currentTierOption, planos, open, calcularPrecoPreview]);
+
+    return () => {
+      clearTimeout(timer);
+      // Nota: Não resetamos isDebouncing aqui para manter o loading visual enquanto o usuário digita
+    };
+  }, [currentTierOption, planos, open, calcularPrecoPreview.mutate, franchiseOptions]);
 
   // --- Lógica de Texto Dinâmico (Alta Conversão) ---
   // Mapeia qual plano resolve cada dor específica
@@ -301,51 +322,7 @@ export function PlanUpgradeDialog({
     }
   }, [feature]);
 
-  // Conteúdo Genérico do Plano (Fallback)
-  const genericContent = useMemo(() => ({
-    essencial: {
-      title: "Organize sua Frota",
-      desc: "Cadastros ilimitados e controle de gastos básico.",
-    },
-    profissional: {
-      title:
-        salesContext === "expansion"
-          ? "Aumente sua Capacidade"
-          : "Automatize sua Cobrança",
-      desc:
-        salesContext === "expansion"
-          ? "Expanda sua franquia para automatizar mais passageiros."
-          : "Cobranças e recibos automáticos, zero dor de cabeça.",
-    },
-  }), [salesContext]);
 
-  // Decide o texto final: Se a aba ativa for a mesma da 'dor', usa o texto específico. Senão, genérico.
-  const displayContent = useMemo(() => {
-    // 1. Custom Override (Highest Priority)
-    if (title && description) {
-      return { title, desc: description };
-    }
-
-    // 2. Feature Context
-    if (specificContent && activeTab === featureTargetPlan) {
-      return {
-        title: specificContent.title,
-        desc: specificContent.desc,
-      };
-    }
-
-    // 3. Generic Fallback
-    return activeTab === PLANO_ESSENCIAL
-      ? genericContent.essencial
-      : genericContent.profissional;
-  }, [
-    activeTab,
-    featureTargetPlan,
-    specificContent,
-    genericContent,
-    title,
-    description,
-  ]);
 
   // Sincronizar Tab padrão
   useEffect(() => {
@@ -370,11 +347,7 @@ export function PlanUpgradeDialog({
     setActiveTab,
   ]);
 
-  // Cores Dinâmicas do Header
-  const requestHeaderStyle =
-    activeTab === PLANO_ESSENCIAL
-    ? "bg-gradient-to-r from-emerald-700 to-emerald-600"
-    : "bg-gradient-to-r from-purple-700 to-indigo-700";
+
 
   // --- Handlers de Up grade (Wrappers) ---
   const onUpgradeEssencial = () => {
@@ -404,8 +377,13 @@ export function PlanUpgradeDialog({
         >
           {/* Header Slim (Fixed) */}
           <PlanUpgradeHeader
-            title={displayContent.title}
-            headerStyle={requestHeaderStyle}
+            title={
+              salesContext === "expansion"
+                ? "Aumente sua Capacidade"
+                : salesContext === "upgrade_auto"
+                ? "Automatize sua Cobrança"
+                : "Escolha seu Plano"
+            }
           />
 
           <Tabs
@@ -414,20 +392,25 @@ export function PlanUpgradeDialog({
             className="w-full flex-1 flex flex-col overflow-hidden"
           >
             {!hideTabs && (
-              <TabsList className="w-full grid grid-cols-2 rounded-none h-14 bg-gray-50 border-b border-gray-100 p-0 shrink-0">
-                <TabsTrigger
-                  value={PLANO_ESSENCIAL}
-                  className="h-full rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 text-gray-500 font-semibold transition-all shadow-none"
-                >
-                  Plano Essencial
-                </TabsTrigger>
-                <TabsTrigger
-                  value={PLANO_PROFISSIONAL}
-                  className="h-full rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-violet-600 data-[state=active]:text-violet-700 text-gray-500 font-semibold transition-all shadow-none"
-                >
-                  Plano Profissional
-                </TabsTrigger>
-              </TabsList>
+              <div className="px-6 pt-4 pb-2">
+                <TabsList className="w-full grid grid-cols-2 h-10 bg-gray-100 p-1 rounded-lg">
+                  <TabsTrigger
+                    value={PLANO_ESSENCIAL}
+                    className="rounded-md text-[13px] font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-900 text-gray-500 shadow-none data-[state=active]:shadow-sm transition-all"
+                  >
+                    Essencial
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value={PLANO_PROFISSIONAL}
+                    className="relative rounded-md text-[13px] font-semibold data-[state=active]:bg-white data-[state=active]:text-gray-900 text-gray-500 shadow-none data-[state=active]:shadow-sm transition-all"
+                  >
+                    Profissional
+                    <span className="absolute -top-3 -right-2 bg-violet-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm border-2 border-white transform rotate-6">
+                      Mais Escolhido
+                    </span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
             )}
 
             {/* Scrollable Content Wrapper */}
@@ -436,8 +419,12 @@ export function PlanUpgradeDialog({
               <TabsContent value={PLANO_ESSENCIAL} className="m-0">
                 <EssencialPlanContent
                   planoEssencialData={planoEssencialData}
-                  setIsBenefitsOpen={setIsBenefitsOpen}
                   setActiveTab={setActiveTab}
+                  customHeadline={
+                    activeTab === featureTargetPlan
+                      ? specificContent?.title
+                      : undefined
+                  }
                 />
               </TabsContent>
 
@@ -452,12 +439,16 @@ export function PlanUpgradeDialog({
                   setManualQuantity={setManualQuantity}
                   selectedTierId={selectedTierId}
                   setSelectedTierId={setSelectedTierId}
-                  currentTierOption={currentTierOption}
+                  currentTierOption={currentTierOption as { quantidade?: number | string } | null}
                   customPrice={customPrice}
                   planos={planos}
                   calculateProrata={calculateProrata}
                   franquiaAtual={franquiaAtual}
-                  setIsBenefitsOpen={setIsBenefitsOpen}
+                  customHeadline={
+                    activeTab === featureTargetPlan
+                      ? specificContent?.desc
+                      : undefined
+                  }
                 />
               </TabsContent>
             </div>
@@ -496,32 +487,12 @@ export function PlanUpgradeDialog({
               }
             })()}
             trialDays={trialDays}
+            isLoadingPrice={isDebouncing || calcularPrecoPreview.isPending}
           />
         </DialogContent>
       </Dialog>
 
-      {/* Sheet de Detalhes */}
-      <BeneficiosPlanoSheet
-        open={isBenefitsOpen}
-        onOpenChange={setIsBenefitsOpen}
-        planName={
-          activeTab === PLANO_ESSENCIAL
-            ? "Plano Essencial"
-            : "Plano Profissional"
-        }
-        benefits={
-          activeTab === PLANO_ESSENCIAL
-            ? planoEssencialData?.beneficios || [
-                "Passageiros Ilimitados",
-                "Suporte WhatsApp",
-              ]
-            : planoProfissionalData?.beneficios || [
-                "Cobrança Automática",
-                "Relatórios Financeiros",
-                "Gestão de Gastos",
-              ]
-        }
-      />
+
 
       {pagamentoDialog && (
         <PagamentoAssinaturaDialog

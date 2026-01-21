@@ -1,6 +1,6 @@
 import {
-    MobileAction,
-    MobileActionItem,
+  MobileAction,
+  MobileActionItem,
 } from "@/components/common/MobileActionItem";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
@@ -8,52 +8,52 @@ import { PrePassengerListSkeleton } from "@/components/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-    FEATURE_LIMITE_FRANQUIA,
-    FEATURE_LIMITE_PASSAGEIROS,
-    PLANO_ESSENCIAL,
-    PLANO_GRATUITO,
+  FEATURE_LIMITE_FRANQUIA,
+  FEATURE_LIMITE_PASSAGEIROS,
+  PLANO_ESSENCIAL,
+  PLANO_GRATUITO,
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreatePrePassageiro,
-    useDeletePrePassageiro,
-    usePassageiros,
-    usePrePassageiros,
+  useCreatePrePassageiro,
+  useDeletePrePassageiro,
+  usePassageiros,
+  usePrePassageiros,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import {
-    formatarTelefone,
-    formatRelativeTime,
-    periodos,
+  formatarTelefone,
+  formatRelativeTime,
+  periodos,
 } from "@/utils/formatters";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import {
-    Clock,
-    Copy,
-    Eye,
-    MoreVertical,
-    Search,
-    Trash2,
-    Users2,
+  Clock,
+  Copy,
+  Eye,
+  MoreVertical,
+  Search,
+  Trash2,
+  Users2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -279,10 +279,7 @@ export default function PrePassageiros({
         </Button>
 
         <QuickRegistrationLink
-          blueTheme
           profile={profile}
-          plano={plano}
-          countPassageiros={countPassageiros}
         />
 
         <div className="space-y-4">

@@ -1,5 +1,4 @@
 import { DialogClose, DialogTitle } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 
 interface PlanUpgradeHeaderProps {
@@ -7,22 +6,15 @@ interface PlanUpgradeHeaderProps {
   headerStyle: string;
 }
 
-export function PlanUpgradeHeader({ title, headerStyle }: PlanUpgradeHeaderProps) {
+export function PlanUpgradeHeader({ title }: { title: string }) {
   return (
-    <div
-      className={cn(
-        "px-5 py-4 text-center relative overflow-hidden transition-colors duration-300 shrink-0 flex items-center justify-center min-h-[60px]",
-        headerStyle
-      )}
-    >
-      <DialogClose className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors z-50 p-2 hover:bg-white/10 rounded-full">
-        <X className="h-6 w-6" />
+    <div className="px-5 py-4 text-center relative shrink-0 flex items-center justify-center min-h-[60px] bg-white border-b border-gray-100">
+      <DialogClose className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-900 transition-colors z-50 p-2 hover:bg-gray-100 rounded-full">
+        <X className="h-5 w-5" />
         <span className="sr-only">Close</span>
       </DialogClose>
 
-      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
-
-      <DialogTitle className="max-[320px]:max-w-[200px] text-xl font-bold text-white relative z-10 leading-tight">
+      <DialogTitle className="text-lg font-bold text-gray-900 relative z-10 leading-tight">
         {title}
       </DialogTitle>
     </div>

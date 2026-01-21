@@ -1,7 +1,9 @@
+import { PLANO_PROFISSIONAL } from "@/constants";
 import { Loader2 } from "lucide-react";
 import { BenefitItem } from "./BenefitItem";
 import { ExpansionSummary } from "./ExpansionSummary";
 import { FranchiseTierSelector } from "./FranchiseTierSelector";
+import { PLAN_BENEFITS } from "./planBenefits";
 
 interface ProfissionalPlanContentProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -9,8 +11,8 @@ interface ProfissionalPlanContentProps {
   salesContext: string;
   isCustomQuantityMode: boolean;
   setIsCustomQuantityMode: (v: boolean) => void;
-  manualQuantity: number;
-  setManualQuantity: (v: number) => void;
+  manualQuantity: number | string;
+  setManualQuantity: (v: number | string) => void;
   selectedTierId: string | number | null;
   setSelectedTierId: (id: string | number | null) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,7 +23,7 @@ interface ProfissionalPlanContentProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   calculateProrata: (price: number) => { valorHoje: number };
   franquiaAtual: number;
-  setIsBenefitsOpen: (open: boolean) => void;
+  customHeadline?: string;
 }
 
 export function ProfissionalPlanContent({
@@ -38,19 +40,28 @@ export function ProfissionalPlanContent({
   planos,
   calculateProrata,
   franquiaAtual,
-  setIsBenefitsOpen,
+  customHeadline,
 }: ProfissionalPlanContentProps) {
   return (
-    <div className="px-6 pt-3 space-y-6 m-0 focus-visible:ring-0 outline-none">
+    <div className="px-6 pt-6 space-y-6 m-0 focus-visible:ring-0 outline-none">
       {availableFranchiseOptions && availableFranchiseOptions.length > 0 ? (
         <>
-          {/* 1. SELETOR (Horizontal Scroll - Mobile First) */}
+          {/* 1. Header (New) */}
+          <div className="space-y-1">
+            <h3 className="text-xl font-bold text-gray-900 leading-tight">
+              {customHeadline || (salesContext === "expansion"
+                ? "Precisa de mais espaço para crescer?"
+                : "Você quer apenas dirigir?")}
+            </h3>
+          </div>
+
+          {/* 2. SELETOR (Horizontal Scroll - Mobile First) */}
           <div className="space-y-3">
              <div className="flex items-center justify-between px-1">
               <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                 {salesContext === "expansion"
                   ? "NOVA CAPACIDADE"
-                  : "TAMANHO DA SUA FROTA"}
+                  : "QUANTIDADE DE PASSAGEIROS"}
               </span>
               <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
                 Arraste para o lado
@@ -107,22 +118,19 @@ export function ProfissionalPlanContent({
               // Visão Padrão (Benefícios)
               return (
                 <div className="space-y-6">
-                  <BenefitItem
-                    text={`Cobranças Automáticas para até ${currentTierOption?.quantidade} Passageiros`}
-                    description="Nós cobramos os pais para você todo mês, sem estresse."
-                  />
-                  <BenefitItem 
-                    text="Cadastros Ilimitados" 
-                    description="Organize toda a sua frota no aplicativo."
-                  />
-                  <BenefitItem 
-                    text="Envio automático de Recibos"
-                    description="Seus clientes recebem comprovantes no WhatsApp."
-                  />
-                 <BenefitItem 
-                    text="Relatórios Financeiros"
-                    description="Saiba exatamente quanto cada van está lucrando."
-                  />
+                  {PLAN_BENEFITS.map((benefit, index) => {
+                    const isIncluded =
+                      benefit.enabled_plans.includes(PLANO_PROFISSIONAL);
+                    return (
+                      <BenefitItem
+                        key={index}
+                        text={benefit.text}
+                        description={benefit.description}
+                        included={isIncluded}
+                        badgeText={benefit.soon ? "Em Breve" : undefined}
+                      />
+                    );
+                  })}
                 </div>
               );
             })()}

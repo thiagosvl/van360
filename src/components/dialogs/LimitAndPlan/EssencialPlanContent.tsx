@@ -1,57 +1,63 @@
-import { PLANO_PROFISSIONAL } from "@/constants";
+import { PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
 import { Zap } from "lucide-react";
 import { BenefitItem } from "./BenefitItem";
+import { PLAN_BENEFITS } from "./planBenefits";
 
 interface EssencialPlanContentProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   planoEssencialData: any;
-  setIsBenefitsOpen: (open: boolean) => void;
   setActiveTab: (tab: string) => void;
+  customHeadline?: string;
 }
 
 export function EssencialPlanContent({
   planoEssencialData,
-  setIsBenefitsOpen,
   setActiveTab,
+  customHeadline,
 }: EssencialPlanContentProps) {
   return (
-    <div className="p-6 space-y-8 m-0 focus-visible:ring-0 outline-none">
+    <div className="p-6 space-y-6 m-0 focus-visible:ring-0 outline-none">
+      {/* 1. Header (New) */}
+      <div className="space-y-1">
+        <h3 className="text-xl font-bold text-gray-900 leading-tight">
+          {customHeadline || "Comece a organizar sua frota hoje mesmo"}
+        </h3>
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider pt-2">
+          CONHEÇA OS BENEFÍCIOS
+        </p>
+      </div>
+
       {/* 2. Benefits List (Standardized) */}
       <div className="space-y-6">
-        <BenefitItem
-          text="Sem limite de passageiros"
-          description="Cadastre quantos alunos precisar, sem restrições."
-        />
-        <BenefitItem
-          text="Organização Completa"
-          description="Tenha controle total da sua gestão escolar e financeira."
-        />
-        <BenefitItem
-          text="Suporte via WhatsApp"
-          description="Tire suas dúvidas diretamente com nosso time de especialistas."
-        />
-        <BenefitItem
-          text="Cobrança Automática"
-          description="Disponível apenas no plano Profissional."
-          included={false}
-        />
+        {PLAN_BENEFITS.map((benefit, index) => {
+          const isIncluded = benefit.enabled_plans.includes(PLANO_ESSENCIAL);
+          return (
+            <BenefitItem
+              key={index}
+              text={benefit.text}
+              description={benefit.description}
+              included={isIncluded}
+              badgeText={benefit.soon ? "Em Breve" : undefined}
+            />
+          );
+        })}
       </div>
 
       {/* 3. Upsell Trigger (Banner Button) - Clean Style */}
       <button
         onClick={() => setActiveTab(PLANO_PROFISSIONAL)}
-        className="w-full group relative overflow-hidden bg-violet-50 hover:bg-violet-100 border border-violet-100 rounded-2xl p-4 transition-all duration-300 text-left"
+        className="w-full group relative overflow-hidden bg-white hover:bg-gray-50 border border-gray-200 hover:border-violet-200 rounded-2xl p-4 transition-all duration-300 text-left shadow-sm hover:shadow-md"
       >
         <div className="relative z-10 flex items-center justify-between gap-4">
           <div className="flex-1">
-            <p className="text-sm font-bold text-violet-900 leading-tight mb-1">
-              Quer automatizar tudo?
+            <p className="text-sm font-bold text-gray-900 leading-tight mb-1">
+              Quer apenas dirigir?
             </p>
-            <p className="text-xs text-violet-600/80 font-medium">
+            <p className="text-xs text-gray-500 group-hover:text-violet-600 transition-colors font-medium">
               Conheça o Plano Profissional <span aria-hidden="true">&rarr;</span>
             </p>
           </div>
-          <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-violet-600 transition-colors">
+          <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-violet-100 flex items-center justify-center text-gray-400 group-hover:text-violet-600 transition-colors">
              <Zap className="w-5 h-5 fill-current" />
           </div>
         </div>

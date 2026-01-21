@@ -353,14 +353,14 @@ export default function PagamentoPixContent({
 
     // Setup Polling
     if (!pollerRef.current && monitorandoRef.current) {
-        // Polling a cada 5 segundos para tentar manter dados frescos
+        // Polling a cada 15 segundos como fallback (prioridade é o Realtime)
          pollerRef.current = setInterval(() => {
             if (!mountedRef.current || !monitorandoRef.current || paymentConfirmed) {
                if (pollerRef.current) clearInterval(pollerRef.current);
                return;
             }
             checkPaymentStatus();
-         }, 5000);
+         }, 15000);
     }
 
     return () => {

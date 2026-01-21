@@ -356,6 +356,27 @@ const Home = () => {
             </>
           )}
 
+          {/* Notificação de Solicitações Pendentes */}
+          {passageirosSolicitacoesCount > 0 && (
+            <section className="mb-4">
+              <DashboardStatusCard
+                type="info"
+                title="Solicitações Pendentes"
+                description={
+                  passageirosSolicitacoesCount === 1
+                    ? "Você tem 1 solicitação de novo passageiro aguardando aprovação."
+                    : `Você tem ${passageirosSolicitacoesCount} solicitações de novos passageiros aguardando aprovação.`
+                }
+                actionLabel="Ver Solicitações"
+                onAction={() =>
+                  navigate(
+                    `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=solicitacoes`,
+                  )
+                }
+              />
+            </section>
+          )}
+
           {/* Onboarding - Primeiros Passos */}
           {showOnboarding && (
             <section>
@@ -379,27 +400,6 @@ const Home = () => {
                   })
                 }
                 onOpenPixKeyDialog={() => openPixKeyDialog()}
-              />
-            </section>
-          )}
-
-          {/* Notificação de Solicitações Pendentes */}
-          {passageirosSolicitacoesCount > 0 && (
-            <section className="mb-4">
-              <DashboardStatusCard
-                type="info"
-                title="Solicitações Pendentes"
-                description={
-                  passageirosSolicitacoesCount === 1
-                    ? "Você tem 1 solicitação de novo passageiro aguardando aprovação."
-                    : `Você tem ${passageirosSolicitacoesCount} solicitações de novos passageiros aguardando aprovação.`
-                }
-                actionLabel="Ver Solicitações"
-                onAction={() =>
-                  navigate(
-                    `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=solicitacoes`,
-                  )
-                }
               />
             </section>
           )}

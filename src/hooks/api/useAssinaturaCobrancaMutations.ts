@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { assinaturaCobrancaApi } from "@/services/api/assinatura-cobranca.api";
 import { toast } from "@/utils/notifications/toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useGerarPixParaCobranca() {
   const queryClient = useQueryClient();
@@ -10,7 +10,6 @@ export function useGerarPixParaCobranca() {
       assinaturaCobrancaApi.gerarPixParaCobranca(cobrancaId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assinatura-cobranca"] });
-      queryClient.invalidateQueries({ queryKey: ["assinatura-cobrancas"] });
     },
     onError: (error: any) => {
       const errorMessage =

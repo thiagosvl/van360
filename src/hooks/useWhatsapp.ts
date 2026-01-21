@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { ConnectionState, WHATSAPP_STATUS } from "../config/constants";
 import { useLayoutSafe } from "../contexts/LayoutContext";
 import { whatsappApi } from "../services/api/whatsapp.api";
+import { PixKeyStatus } from "../types/enums";
 
 import { supabase } from "../integrations/supabase/client";
 import { useProfile } from "./business/useProfile";
@@ -66,7 +67,9 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
   const { data: statusData, isLoading, refetch } = useQuery({
     queryKey: ["whatsapp-status"],
     queryFn: whatsappApi.getStatus,
-    enabled: !!user?.id && !!profile?.id && isProfissional && !isPixKeyDialogOpen,
+    // SÓ busca status se tiver chave PIX validada. Se não tiver, nem tenta.
+    // Isso evita requests de pairing/status rodando no fundo enquanto o dialog de PIX aparece.
+    enabled: !!user?.id && !!profile?.id && isProfissional && !isPixKeyDialogOpen && (profile?.status_chave_pix === PixKeyStatus.VALIDADA),
     staleTime: 5000, 
     refetchInterval: false, 
     refetchOnWindowFocus: false, // Evita requisições extras ao focar na janela
@@ -129,6 +132,11 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
       if (pairingCodeRequestInProgressRef.current) {
         throw new Error("Requisição de código já em progresso. Aguarde...");
       }
+
+      // TRAVA DE SEGURANÇA: Bloqueia fluxo se PIX não estiver validado (redundância)
+      if (profile?.status_chave_pix !== PixKeyStatus.VALIDADA) {
+          throw new Error("Chave PIX não validada. Configure sua chave antes de conectar.");
+      }
       
       pairingCodeRequestInProgressRef.current = true;
       try {
@@ -164,6 +172,9 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
   const pairingCode = mutationPairingData?.code || (statusData as any)?.pairing_code;
   const pairingCodeExpiresAt = mutationPairingData?.expiresAt || (statusData as any)?.pairing_code_expires_at;
 
+  // Permissão de interação: Segue a mesma lógica do query principal
+  const canInteract = !!user?.id && !!profile?.id && isProfissional && !isPixKeyDialogOpen && (profile?.status_chave_pix === PixKeyStatus.VALIDADA);
+
   return {
     state,
     qrCode: localQrCode,
@@ -174,9 +185,11 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
     pairingCode,
     pairingCodeExpiresAt,
     userPhone: (statusData as any)?.telefone || (useProfile(user?.id) as any)?.profile?.telefone,
-    connect: () => connectMutation.mutate(),
-    disconnect: () => disconnectMutation.mutate(),
-    requestPairingCode: pairingCodeMutation.mutateAsync,
+    // Só expõe as funções se tiver permissão de interação. 
+    // Isso evita que a UI tente "auto-corrigir" estados desconhecidos chamando funções que vão falhar.
+    connect: canInteract ? () => connectMutation.mutate() : undefined,
+    disconnect: canInteract ? () => disconnectMutation.mutate() : undefined,
+    requestPairingCode: canInteract ? pairingCodeMutation.mutateAsync : undefined,
     refresh: refetch
   };
 }

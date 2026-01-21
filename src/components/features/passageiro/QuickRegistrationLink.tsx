@@ -15,16 +15,10 @@ import { useState } from "react";
 
 interface QuickRegistrationLinkProps {
   profile: any;
-  plano: any;
-  blueTheme?: boolean;
-  countPassageiros?: number;
 }
 
 export function QuickRegistrationLink({
   profile,
-  plano,
-  blueTheme = false,
-  countPassageiros,
 }: QuickRegistrationLinkProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(() => {
