@@ -26,18 +26,17 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreateVeiculo,
-    useDeleteVeiculo,
-    useFilters,
-    useToggleAtivoVeiculo,
-    useVeiculos,
+  useCreateVeiculo,
+  useDeleteVeiculo,
+  useFilters,
+  useToggleAtivoVeiculo,
+  useVeiculos,
 } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 // Utils
-import { limparPlaca } from "@/utils/domain/veiculo/placaUtils";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 
@@ -107,10 +106,17 @@ export default function Veiculos() {
     data: veiculosData,
     isLoading: isVeiculosLoading,
     refetch: refetchVeiculos,
-  } = useVeiculos(profile?.id, {
-    enabled: !!profile?.id,
-    onError: () => toast.error("veiculo.erro.carregar"),
-  });
+  } = useVeiculos(
+    {
+      usuarioId: profile?.id,
+      search: searchTerm,
+      status: selectedStatus,
+    },
+    {
+      enabled: !!profile?.id,
+      onError: () => toast.error("veiculo.erro.carregar"),
+    }
+  );
 
   const veiculos = useMemo(
     () =>
@@ -129,31 +135,7 @@ export default function Veiculos() {
     setPageTitle("Veículos");
   }, [setPageTitle]);
 
-  const veiculosFiltrados = useMemo(() => {
-    let filtered = veiculos;
-
-    if (selectedStatus !== "todos") {
-      const status = selectedStatus === "ativo";
-      filtered = filtered.filter((veiculo) => veiculo.ativo === status);
-    }
-
-    if (searchTerm) {
-      const lowerCaseSearch = searchTerm.toLowerCase();
-      const cleanSearch = limparPlaca(searchTerm).toLowerCase();
-      
-      filtered = filtered.filter((veiculo) => {
-        const placaMatch = limparPlaca(veiculo.placa)
-          .toLowerCase()
-          .includes(cleanSearch);
-        const marcaMatch = veiculo.marca.toLowerCase().includes(lowerCaseSearch);
-        const modeloMatch = veiculo.modelo.toLowerCase().includes(lowerCaseSearch);
-        
-        return placaMatch || marcaMatch || modeloMatch;
-      });
-    }
-
-    return filtered;
-  }, [veiculos, selectedStatus, searchTerm]);
+  const veiculosFiltrados = veiculos;
 
   // Check for openModal param on mount
   useEffect(() => {

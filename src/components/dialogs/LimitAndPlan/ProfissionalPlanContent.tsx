@@ -23,7 +23,6 @@ interface ProfissionalPlanContentProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   calculateProrata: (price: number) => { valorHoje: number };
   franquiaAtual: number;
-  currentUsage: number;
   customHeadline?: string;
 }
 
@@ -45,7 +44,7 @@ export function ProfissionalPlanContent({
 }: ProfissionalPlanContentProps) {
   return (
     <div className="px-6 pt-6 space-y-6 m-0 focus-visible:ring-0 outline-none">
-      {availableFranchiseOptions && availableFranchiseOptions.length > 0 ? (
+      {(availableFranchiseOptions && availableFranchiseOptions.length > 0) || isCustomQuantityMode ? (
         <>
           {/* 1. Header (New) */}
           <div className="space-y-1">

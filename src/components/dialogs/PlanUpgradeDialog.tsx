@@ -103,7 +103,11 @@ export function PlanUpgradeDialog({
   );
 
   // Definição de passageiros ativos e alvo
-  const passageirosAtivos = profile?.estatisticas?.total_passageiros || 0;
+  const passageirosAtivos =
+    resumo?.contadores?.passageiros?.ativos ??
+    resumo?.contadores?.passageiros?.total ??
+    profile?.estatisticas?.total_passageiros ??
+    0;
 
   // Safety: Garante que sempre buscaremos uma opção MAIOR que a atual se for Profissional
   // Se target não for passado, ou for menor/igual ao limite, forçamos o próximo degrau
@@ -166,18 +170,41 @@ export function PlanUpgradeDialog({
   const [manualQuantity, setManualQuantity] = useState<number | string>("");
 
   useEffect(() => {
-    if (open && availableFranchiseOptions.length > 0) {
-      if (!selectedTierId && !isCustomQuantityMode) {
-        // Tenta achar um recomendado VÁLIDO (dentro dos filtrados)
-        const recommended =
-          availableFranchiseOptions.find((o) => o.recomendado) ||
-          availableFranchiseOptions[0];
-        if (recommended) {
-          setSelectedTierId(recommended.id);
+    if (open) {
+      const hasLoadedPlans = planos.length > 0;
+      const noOptions = availableFranchiseOptions.length === 0;
+
+      // Se carregou planos e E não tem opções válidas -> Auto-switch para Custom
+      if (hasLoadedPlans && noOptions && !isCustomQuantityMode && !franchiseOptions?.length && loading === false) { 
+         // !franchiseOptions?.length check is ambiguous (maybe hook loading?)
+         // Better rely on hasLoadedPlans
+      }
+      
+      if (hasLoadedPlans && noOptions && !isCustomQuantityMode) {
+          // Só ativa se não tivermos filtrado TUDO. Se franchiseOptions estiver vazio pq useUpgradeFranquia não retornou nada, é outra coisa.
+          // Mas availableFranchiseOptions filtra.
+          if (franchiseOptions && franchiseOptions.length > 0) {
+             setIsCustomQuantityMode(true);
+             setManualQuantity(passageirosAtivos + 1);
+             return;
+          }
+      }
+
+      if (availableFranchiseOptions.length > 0) {
+         const isSelectedValid = availableFranchiseOptions.some(o => o.id === selectedTierId);
+
+        if ((!selectedTierId || !isSelectedValid) && !isCustomQuantityMode) {
+          // Tenta achar um recomendado VÁLIDO (dentro dos filtrados)
+          const recommended =
+            availableFranchiseOptions.find((o) => o.recomendado) ||
+            availableFranchiseOptions[0];
+          if (recommended) {
+            setSelectedTierId(recommended.id);
+          }
         }
       }
     }
-  }, [open, availableFranchiseOptions, selectedTierId, isCustomQuantityMode]);
+  }, [open, availableFranchiseOptions, selectedTierId, isCustomQuantityMode, planos, passageirosAtivos, franchiseOptions, loading]);
 
   // Computar a opção visualizada no momento
   const currentTierOption = useMemo(() => {
@@ -433,7 +460,7 @@ export function PlanUpgradeDialog({
                   profissionalPrice={
                     planoProfissionalData?.promocao_ativa
                       ? Number(planoProfissionalData.preco_promocional)
-                      : Number(planoProfissionalData.preco)
+                      : Number(planoProfissionalData?.preco || 0)
                   }
                 />
               </TabsContent>

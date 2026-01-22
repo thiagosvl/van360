@@ -18,13 +18,13 @@ function normalizeFilters(filters: UsePassageirosFilters) {
       filters.escola && filters.escola !== "todas" ? filters.escola : undefined,
     veiculo:
       filters.veiculo && filters.veiculo !== "todos" ? filters.veiculo : undefined,
-    status:
+    ativo:
       filters.status && filters.status !== "todos"
         ? filters.status === "true"
-          ? true
+          ? "true"
           : filters.status === "false"
-          ? false
-          : filters.status
+          ? "false"
+          : undefined
         : undefined,
     periodo:
       filters.periodo && filters.periodo !== "todos" ? filters.periodo : undefined,

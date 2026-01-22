@@ -128,8 +128,8 @@ export function VeiculosToolbar({
                   </SelectTrigger>
                   <SelectContent className="z-[9999]">
                     <SelectItem value="todos">Todos Status</SelectItem>
-                    <SelectItem value="ativo">Ativo</SelectItem>
-                    <SelectItem value="desativado">Desativado</SelectItem>
+                    <SelectItem value="true">Ativo</SelectItem>
+                    <SelectItem value="false">Desativado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -188,8 +188,8 @@ export function VeiculosToolbar({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="todos">Todos</SelectItem>
-                      <SelectItem value="ativo">Ativo</SelectItem>
-                      <SelectItem value="desativado">Desativado</SelectItem>
+                      <SelectItem value="true">Ativo</SelectItem>
+                      <SelectItem value="false">Desativado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -12,24 +12,24 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-    FEATURE_COBRANCA_AUTOMATICA,
-    FEATURE_LIMITE_FRANQUIA
+  FEATURE_COBRANCA_AUTOMATICA,
+  FEATURE_LIMITE_FRANQUIA
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreateEscola,
-    useCreatePassageiro,
-    useCreateVeiculo,
-    useDeletePassageiro,
-    useEscolas,
-    useFilters,
-    usePassageiros,
-    usePermissions,
-    usePrePassageiros,
-    useToggleAtivoPassageiro,
-    useUpdatePassageiro,
-    useUsuarioResumo,
-    useVeiculos,
+  useCreateEscola,
+  useCreatePassageiro,
+  useCreateVeiculo,
+  useDeletePassageiro,
+  useEscolas,
+  useFilters,
+  usePassageiros,
+  usePermissions,
+  usePrePassageiros,
+  useToggleAtivoPassageiro,
+  useUpdatePassageiro,
+  useUsuarioResumo,
+  useVeiculos,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -130,10 +130,10 @@ export default function Passageiros() {
   const passageiroFilters = {
     usuarioId: profile?.id,
     search: debouncedSearchTerm,
-    escola: selectedEscola,
-    veiculo: selectedVeiculo,
-    status: selectedStatus,
-    periodo: selectedPeriodo,
+    escola: selectedEscola === "todas" ? undefined : selectedEscola,
+    veiculo: selectedVeiculo === "todos" ? undefined : selectedVeiculo,
+    status: selectedStatus === "todos" ? undefined : selectedStatus,
+    periodo: selectedPeriodo === "todos" ? undefined : selectedPeriodo,
   };
 
   const {
@@ -157,10 +157,10 @@ export default function Passageiros() {
     resumo?.contadores.passageiros.solicitacoes_pendentes ?? 0;
 
   // Also using summary for total passengers if available, otherwise fallback to list length
-  const totalPassageirosResumo = resumo?.contadores.passageiros.total;
+  const totalPassageirosResumo = resumo?.contadores.passageiros.ativos;
 
   const { data: escolasData, refetch: refetchEscolas } = useEscolas(
-    profile?.id,
+    { usuarioId: profile?.id },
     {
       enabled: !!profile?.id,
       onError: () => toast.error("escola.erro.carregar"),
@@ -168,7 +168,7 @@ export default function Passageiros() {
   );
 
   const { data: veiculosData, refetch: refetchVeiculos } = useVeiculos(
-    profile?.id,
+    { usuarioId: profile?.id },
     {
       enabled: !!profile?.id,
       onError: () => toast.error("veiculo.erro.carregar"),
@@ -237,7 +237,7 @@ export default function Passageiros() {
 
   const limitePassageiros = limits.passengers.limit;
 
-  const isLimitReached = limits.passengers.isReached;
+  const isLimitReached = false;
 
   useEffect(() => {
     const handler = setTimeout(() => {

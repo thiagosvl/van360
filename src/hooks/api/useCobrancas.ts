@@ -8,6 +8,7 @@ export interface UseCobrancasFilters {
   usuarioId?: string;
   mes: number;
   ano: number;
+  search?: string;
 }
 
 const buildQueryKey = (filters: UseCobrancasFilters) => [
@@ -15,6 +16,7 @@ const buildQueryKey = (filters: UseCobrancasFilters) => [
   filters.usuarioId,
   filters.ano,
   filters.mes,
+  filters.search || "",
 ];
 
 export function useCobrancas(
@@ -27,12 +29,8 @@ export function useCobrancas(
   const query = useQuery<Cobranca[], unknown, { all: Cobranca[]; abertas: Cobranca[]; pagas: Cobranca[] }>({
     queryKey: buildQueryKey(filters),
     enabled: (options?.enabled ?? true) && Boolean(filters.usuarioId),
-    // Considera os dados stale imediatamente para garantir refetch quando necessário
-    // Dados considerados frescos por 1 minuto para evitar refetch excessivo
     staleTime: 1000 * 60,
-    // Refetch normal ao montar
     refetchOnMount: true,
-    // Evita refetch ao focar na janela (como ao fechar um dialog)
     refetchOnWindowFocus: false,
     queryFn: async () => {
       if (!filters.usuarioId) return [];
@@ -41,6 +39,7 @@ export function useCobrancas(
         usuarioId: filters.usuarioId,
         mes: String(filters.mes),
         ano: String(filters.ano),
+        search: filters.search?.trim() ? filters.search.trim() : undefined,
       });
 
       return (data as Cobranca[]) ?? [];

@@ -91,10 +91,17 @@ export default function Escolas() {
     data: escolasData,
     isLoading: isEscolasLoading,
     refetch: refetchEscolas,
-  } = useEscolas(profile?.id, {
-    enabled: !!profile?.id,
-    onError: () => toast.error("escola.erro.carregar"),
-  });
+  } = useEscolas(
+    {
+      usuarioId: profile?.id,
+      search: searchTerm,
+      status: selectedStatus,
+    },
+    {
+      enabled: !!profile?.id,
+      onError: () => toast.error("escola.erro.carregar"),
+    }
+  );
 
   const escolas = useMemo(
     () =>
@@ -122,23 +129,7 @@ export default function Escolas() {
     setPageTitle("Escolas");
   }, [countEscolasAtivas, setPageTitle]);
 
-  const escolasFiltradas = useMemo(() => {
-    let filtered = escolas;
-
-    if (selectedStatus !== "todos") {
-      const status = selectedStatus === "ativa";
-      filtered = filtered.filter((escola) => escola.ativo === status);
-    }
-
-    if (searchTerm) {
-      const lowerCaseSearch = searchTerm.toLowerCase();
-      filtered = filtered.filter((escola) =>
-        escola.nome.toLowerCase().includes(lowerCaseSearch)
-      );
-    }
-
-    return filtered;
-  }, [escolas, selectedStatus, searchTerm]);
+  const escolasFiltradas = escolas;
 
   useEffect(() => {
     const openModal = searchParams.get("openModal");

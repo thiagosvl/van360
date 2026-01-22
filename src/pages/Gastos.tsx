@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { toast } from "@/utils/notifications/toast";
 
@@ -57,6 +57,15 @@ export default function Gastos() {
     searchParam: "search",
   });
 
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
   const {
     profile,
     isLoading: isAuthLoading,
@@ -78,6 +87,7 @@ export default function Gastos() {
       ano: anoFilter,
       categoria: categoriaFilter !== "todas" ? categoriaFilter : undefined,
       veiculoId: veiculoFilter !== "todos" ? veiculoFilter : undefined,
+      search: debouncedSearchTerm,
     },
     {
       enabled: !!profile?.id,
@@ -85,7 +95,7 @@ export default function Gastos() {
     }
   );
 
-  const { data: veiculosData } = useVeiculos(profile?.id, {
+  const { data: veiculosData } = useVeiculos({ usuarioId: profile?.id }, {
     enabled: !!profile?.id,
   });
   const veiculos = veiculosData?.list || [];

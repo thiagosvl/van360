@@ -9,6 +9,7 @@ export interface UseGastosFilters {
   ano: number;
   categoria?: string;
   veiculoId?: string;
+  search?: string;
 }
 
 const buildQueryKey = (filters: UseGastosFilters) => [
@@ -18,6 +19,7 @@ const buildQueryKey = (filters: UseGastosFilters) => [
   filters.mes,
   filters.categoria || "todas",
   filters.veiculoId || "todos",
+  filters.search || "",
 ];
 
 export function useGastos(
@@ -31,7 +33,6 @@ export function useGastos(
     queryKey: buildQueryKey(filters),
     enabled: (options?.enabled ?? true) && Boolean(filters.usuarioId),
     placeholderData: keepPreviousData,
-    // Considera os dados stale imediatamente para garantir refetch quando necessário
     staleTime: 1000 * 60,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
@@ -43,6 +44,7 @@ export function useGastos(
         ano: filters.ano.toString(),
         categoria: filters.categoria && filters.categoria !== "todas" ? filters.categoria : undefined,
         veiculoId: filters.veiculoId && filters.veiculoId !== "todos" ? filters.veiculoId : undefined,
+        search: filters.search?.trim() ? filters.search.trim() : undefined,
       });
 
       return (data as Gasto[]) ?? [];

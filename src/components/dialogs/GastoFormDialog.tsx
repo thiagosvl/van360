@@ -80,7 +80,7 @@ export default function GastoFormDialog({
 
   // Se a prop vier vazia, buscamos do hook.
   // Isso permite que o Home.tsx não precise carregar veiculos, mas o Dialog carrega on-demand.
-  const { data: veiculosData } = useVeiculos(usuarioId, {
+  const { data: veiculosData } = useVeiculos({ usuarioId }, {
     enabled: isOpen && veiculosProp.length === 0 && !!usuarioId
   });
 

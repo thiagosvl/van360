@@ -19,7 +19,7 @@ export const cobrancaApi = {
             .get(`/cobrancas/passageiro/${passageiroId}`, { params: { ano } })
             .then(res => res.data),
 
-    listCobrancasWithFilters: (filtros: { mes?: string; ano?: string; passageiroId?: string; usuarioId?: string; status?: string }) =>
+    listCobrancasWithFilters: (filtros: { mes?: string; ano?: string; passageiroId?: string; usuarioId?: string; status?: string; search?: string }) =>
         apiClient
             .get(`/cobrancas`, { params: filtros })
             .then(res => res.data),

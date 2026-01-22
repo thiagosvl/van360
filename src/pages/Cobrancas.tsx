@@ -104,6 +104,15 @@ const Cobrancas = () => {
 
   const [buscaAbertas, setBuscaAbertas] = useState("");
   const [buscaPagas, setBuscaPagas] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+  useEffect(() => {
+    const term = activeTab === "pendentes" ? buscaAbertas : buscaPagas;
+    const handler = setTimeout(() => {
+        setDebouncedSearchTerm(term);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [buscaAbertas, buscaPagas, activeTab]);
 
   const {
     data: cobrancasData,
@@ -114,6 +123,7 @@ const Cobrancas = () => {
       usuarioId: profile?.id,
       mes: mesFilter,
       ano: anoFilter,
+      search: debouncedSearchTerm,
     },
     {
       enabled: !!profile?.id,
@@ -225,26 +235,9 @@ const Cobrancas = () => {
     }
   }, [mesFilter, anoFilter]);
 
-  // Filtering
-  const cobrancasAbertasFiltradas = useMemo(() => {
-    if (!buscaAbertas) return cobrancasAbertas;
-    const searchTerm = buscaAbertas.toLowerCase();
-    return cobrancasAbertas.filter(
-      (c) =>
-        c.passageiro.nome.toLowerCase().includes(searchTerm) ||
-        c.passageiro.nome_responsavel?.toLowerCase().includes(searchTerm)
-    );
-  }, [cobrancasAbertas, buscaAbertas]);
-
-  const cobrancasPagasFiltradas = useMemo(() => {
-    if (!buscaPagas) return cobrancasPagas;
-    const searchTerm = buscaPagas.toLowerCase();
-    return cobrancasPagas.filter(
-      (c) =>
-        c.passageiro.nome.toLowerCase().includes(searchTerm) ||
-        c.passageiro.nome_responsavel?.toLowerCase().includes(searchTerm)
-    );
-  }, [cobrancasPagas, buscaPagas]);
+  // Filtering (Server Side)
+  const cobrancasAbertasFiltradas = cobrancasAbertas;
+  const cobrancasPagasFiltradas = cobrancasPagas;
 
   // KPI Calculations
   const totalAReceber = useMemo(

@@ -108,11 +108,11 @@ export default function Relatorios() {
     { enabled: shouldFetchMetadata }
   );
 
-  const { data: escolasData, refetch: refetchEscolas } = useEscolas(profile?.id, {
+  const { data: escolasData, refetch: refetchEscolas } = useEscolas({ usuarioId: profile?.id }, {
     enabled: shouldFetchMetadata,
   });
 
-  const { data: veiculosData, refetch: refetchVeiculos } = useVeiculos(profile?.id, {
+  const { data: veiculosData, refetch: refetchVeiculos } = useVeiculos({ usuarioId: profile?.id }, {
     enabled: shouldFetchMetadata,
   });
 

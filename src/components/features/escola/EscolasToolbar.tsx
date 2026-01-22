@@ -128,8 +128,8 @@ export function EscolasToolbar({
                   </SelectTrigger>
                   <SelectContent className="z-[9999]">
                     <SelectItem value="todos">Todos Status</SelectItem>
-                    <SelectItem value="ativa">Ativa</SelectItem>
-                    <SelectItem value="desativada">Desativada</SelectItem>
+                    <SelectItem value="true">Ativa</SelectItem>
+                    <SelectItem value="false">Desativada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -188,8 +188,8 @@ export function EscolasToolbar({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="todos">Todos</SelectItem>
-                      <SelectItem value="ativa">Ativa</SelectItem>
-                      <SelectItem value="desativada">Desativada</SelectItem>
+                      <SelectItem value="true">Ativa</SelectItem>
+                      <SelectItem value="false">Desativada</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

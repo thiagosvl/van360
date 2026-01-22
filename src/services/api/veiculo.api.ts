@@ -18,9 +18,9 @@ export const veiculoApi = {
       .get(`/veiculos/usuario/${usuarioId}`, { params: filtros })
       .then(res => res.data),
 
-  listVeiculosComContagemAtivos: (usuarioId: string) =>
+  listVeiculosComContagemAtivos: (usuarioId: string, filtros?: Record<string, any>) =>
     apiClient
-      .get(`/veiculos/usuario/${usuarioId}/com-contagem`)
+      .get(`/veiculos/usuario/${usuarioId}/com-contagem`, { params: filtros })
       .then(res => res.data),
 
   deleteVeiculo: (veiculoId: string) =>

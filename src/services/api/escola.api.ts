@@ -18,9 +18,9 @@ export const escolaApi = {
       .get(`/escolas/usuario/${usuarioId}`, { params: filtros })
       .then(res => res.data),
 
-  listEscolasComContagemAtivos: (usuarioId: string) =>
+  listEscolasComContagemAtivos: (usuarioId: string, filtros?: Record<string, any>) =>
     apiClient
-      .get(`/escolas/usuario/${usuarioId}/com-contagem`)
+      .get(`/escolas/usuario/${usuarioId}/com-contagem`, { params: filtros })
       .then(res => res.data),
 
   deleteEscola: (escolaId: string) =>
