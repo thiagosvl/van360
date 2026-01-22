@@ -2,8 +2,10 @@ import { ComoFuncionaPixSheet } from "@/components/features/pagamento/ComoFuncio
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useGerarPixParaCobranca } from "@/hooks";
-import { fetchProfile } from "@/hooks/business/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { assinaturaCobrancaApi } from "@/services/api/assinatura-cobranca.api";
+import { usuarioApi } from "@/services/api/usuario.api";
+import { AssinaturaCobrancaStatus } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Copy, CopyCheck, HelpCircle, Loader2, Smartphone } from "lucide-react";
@@ -190,10 +192,10 @@ export default function PagamentoPixContent({
       while (tentativa < MAX_TENTATIVAS && !sucesso) {
         try {
           let profileData = null;
-          if (usuarioId) {
+            if (usuarioId) {
             profileData = await queryClient.fetchQuery({
               queryKey: ["profile", usuarioId],
-              queryFn: () => fetchProfile(usuarioId),
+              queryFn: () => usuarioApi.getProfile(usuarioId),
               staleTime: 0,
             });
           } else {
@@ -326,41 +328,34 @@ export default function PagamentoPixContent({
     }
 
     const checkPaymentStatus = async () => {
-      if (!mountedRef.current || !monitorandoRef.current) return;
+      if (!mountedRef.current || !monitorandoRef.current || !dadosPagamento?.cobrancaId) return;
 
-      try {
-        // Consultar Profile para ver se o plano atualizou?
-        // Como removemos o Realtime, vamos assumir que o sistema depende de polling no profile.
-        // Se este for um componente de pagamento de mensalidade avulsa, isso pode não ser suficiente.
-        // Mas o contexto aqui parece ser Plano (Assinatura).
-        
-        // Simulação de verificação:
+        // Fallback: Verificar status via Backend (Polling)
+        try {
+          const data = await assinaturaCobrancaApi.getCobrancaStatus(dadosPagamento.cobrancaId);
+
+          if (data && data.status === AssinaturaCobrancaStatus.PAGO) {
+             handlePaymentSuccessRef.current?.();
+             return;
+          }
+        } catch (err) {
+             // Ignora erros de polling (ex: 404 temporário, rede)
+        }
+
+        // Também invalida profile para garantir sincronia em background
         await queryClient.invalidateQueries({ queryKey: ["profile"] });
-        // Se houvesse endpoint de status de cobrança, chamariamos aqui.
-        // Por hora, se o usuário pagou, ele vai eventualmente clicar em algo ou o polling do profile (se houver mudança de estado global) pegaria.
-        // Mas para fechar o modal SOZINHO, precisamos saber.
-        
-        // Visto que não tenho o endpoint de consulta status, vou invocar o handlePaymentSuccess APENAS se o pai mandar (não vai acontecer aqui),
-        // OU deixar o usuário clicar em "Concluir" caso o profile já tenha atualizado.
-        
-        // Para manter comportamento Automático, precisaríamos de GET /cobrancas/:id/status.
-        // Vou deixar 'checkPaymentStatus' apenas invalidando queries para que se o backend processar (webhook), o frontend atualize.
-        
-      } catch (err) {
-        //
-      }
     };
 
     // Setup Polling
     if (!pollerRef.current && monitorandoRef.current) {
-        // Polling a cada 15 segundos como fallback (prioridade é o Realtime)
+         // Polling a cada 10 segundos como fallback
          pollerRef.current = setInterval(() => {
             if (!mountedRef.current || !monitorandoRef.current || paymentConfirmed) {
                if (pollerRef.current) clearInterval(pollerRef.current);
                return;
             }
             checkPaymentStatus();
-         }, 15000);
+         }, 10000);
     }
 
     return () => {

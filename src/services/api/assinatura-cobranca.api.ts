@@ -15,4 +15,9 @@ export const assinaturaCobrancaApi = {
         apiClient
             .post(`/assinatura-cobrancas/${cobrancaId}/gerar-pix`)
             .then(res => res.data),
+
+    getCobrancaStatus: (cobrancaId: string) =>
+        apiClient
+            .get<{ status: string }>(`/assinatura-cobrancas/${cobrancaId}/status`)
+            .then(res => res.data),
 };
