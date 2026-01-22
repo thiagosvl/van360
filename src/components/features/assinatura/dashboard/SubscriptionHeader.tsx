@@ -20,6 +20,7 @@ interface SubscriptionHeaderProps {
   onPagarClick: () => void;
   passageirosAtivos?: number;
   onRefresh?: () => void;
+  flags?: any;
 }
 
 export function SubscriptionHeader({
@@ -28,6 +29,7 @@ export function SubscriptionHeader({
   onPagarClick,
   passageirosAtivos = 0,
   onRefresh,
+  flags,
 }: SubscriptionHeaderProps) {
   const { openPlanUpgradeDialog } = useLayout();
 
@@ -41,20 +43,15 @@ export function SubscriptionHeader({
   const {
     isProfissionalPlan,
     isEssentialPlan,
-    isTrial,
     isActive,
     isPendente,
     isSuspensa,
   } = planoData || {};
 
+  const isTrial = flags?.is_trial_ativo;
+
   // Trial calculations
-  const trialDaysLeft =
-    isTrial && assinatura?.trial_end_at
-      ? Math.ceil(
-          (new Date(assinatura.trial_end_at).getTime() - new Date().getTime()) /
-            (1000 * 60 * 60 * 24)
-        )
-      : 0;
+  const trialDaysLeft = flags?.dias_restantes_trial ?? 0;
 
   // Status Badge Configuration
   const getStatusConfig = () => {

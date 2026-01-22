@@ -24,6 +24,16 @@ export interface Usuario {
   chave_pix_validada_em?: string;
   nome_titular_pix_validado?: string;
   cpf_cnpj_titular_pix_validado?: string;
+  flags?: {
+      is_trial_ativo: boolean;
+      dias_restantes_trial: number | null;
+      trial_dias_total: number;
+      whatsapp_status: string | null;
+      ultima_fatura: string | null;
+      ultima_fatura_id: string | null;
+      limite_franquia_atingido: boolean;
+      pix_key_configurada: boolean;
+  };
   // Computed/Joined fields
   estatisticas?: {
     total_passageiros: number;

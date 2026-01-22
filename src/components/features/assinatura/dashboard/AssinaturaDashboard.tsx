@@ -16,6 +16,7 @@ interface AssinaturaDashboardProps {
   cobrancas: any[];
   onPagarClick: (cobranca: any) => void;
   onRefresh?: () => void;
+  flags?: any;
 }
 
 export function AssinaturaDashboard({
@@ -25,6 +26,7 @@ export function AssinaturaDashboard({
   cobrancas,
   onPagarClick,
   onRefresh,
+  flags,
 }: AssinaturaDashboardProps) {
   return (
     <div className="space-y-6 mx-auto pb-10">
@@ -34,6 +36,7 @@ export function AssinaturaDashboard({
         assinatura={assinatura}
         passageirosAtivos={metricas.passageirosAtivos}
         onRefresh={onRefresh}
+        flags={flags}
         onPagarClick={() => {
           // Find pending or open modal
           const pendente = cobrancas.find(
@@ -70,7 +73,7 @@ export function AssinaturaDashboard({
                   )}
                 </span>
               </div>
-              {assinatura?.isTrial && assinatura?.trial_end_at && (
+              {flags?.is_trial_ativo && assinatura?.trial_end_at && (
                 <div className="flex justify-between items-center group">
                   <span className="text-gray-500 group-hover:text-gray-700 transition-colors">
                     Período de teste

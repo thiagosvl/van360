@@ -10,7 +10,7 @@ export interface PlanBenefit {
 export const PLAN_BENEFITS: PlanBenefit[] = [
   {
     text: "Cadastro Ilimitado de Passageiros",
-    description: "Cadastre quantos alunos precisar, sem limites.",
+    description: "Cadastre quantos passageiros precisar, sem limites.",
     enabled_plans: [PLANO_ESSENCIAL, PLANO_PROFISSIONAL],
   },
   {
@@ -50,7 +50,7 @@ export const PLAN_BENEFITS: PlanBenefit[] = [
   },
   {
     text: "Roteirização Inteligente",
-    description: "Crie a melhor rota para buscar os alunos.",
+    description: "Crie a melhor rota para buscar os passageiros.",
     enabled_plans: [PLANO_PROFISSIONAL],
     soon: true,
   },

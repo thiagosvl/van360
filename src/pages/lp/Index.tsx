@@ -31,20 +31,15 @@ import {
   DollarSign,
   Headset,
   Heart,
-  Lightbulb,
   Loader2,
   Menu,
   MessageCircle,
-  Shield,
-  Smartphone,
   Star,
   TrendingUp,
-  UserPlus,
   Users,
   Wallet,
   X,
-  XCircle,
-  Zap,
+  XCircle
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -431,7 +426,7 @@ const Index = () => {
                 Receba e Relaxe
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                O pai paga o PIX, o sistema dá baixa automática, a carteirinha do aluno fica verde e você recebe uma notificação. Simples assim.
+                O pai paga o PIX, o sistema dá baixa automática, a carteirinha do passageiro fica verde e você recebe uma notificação. Simples assim.
               </p>
             </div>
           </div>
@@ -943,7 +938,7 @@ const Index = () => {
               className="border-2 border-slate-200 rounded-xl px-4 bg-slate-50/50"
             >
               <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
-                Os pais dos alunos vão gostar disso?
+                Os pais dos passageiros vão gostar disso?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
                 Sim! Eles preferem a organização. Receber uma cobrança clara com
@@ -957,7 +952,7 @@ const Index = () => {
               className="border-2 border-slate-200 rounded-xl px-4 bg-slate-50/50"
             >
               <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
-                Meu negócio é pequeno, só tenho 15 alunos. Vale a pena?
+                Meu negócio é pequeno, só tenho 15 passageiros. Vale a pena?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
                 Com certeza. O tempo que você economiza e a redução da

@@ -144,6 +144,7 @@ export default function Assinatura() {
                   cobrancas={dataWithCounts.cobrancas}
                   onPagarClick={handlePagarClick}
                   onRefresh={pullToRefreshReload}
+                  flags={profile?.flags}
                 />
 
                 <div className="mx-1">

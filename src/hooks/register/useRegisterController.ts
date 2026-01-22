@@ -1,7 +1,7 @@
 import { isPlanoPagoNoAto } from "@/components/features/register";
 import {
-    PLANO_ESSENCIAL,
-    PLANO_PROFISSIONAL,
+  PLANO_ESSENCIAL,
+  PLANO_PROFISSIONAL,
 } from "@/constants";
 import { ROUTES } from "@/constants/routes";
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks";
@@ -464,8 +464,12 @@ export function useRegisterController() {
         navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
       }
     } catch (err: any) {
+      const data = err.response?.data;
+      if (data?.field) {
+        form.setError(data.field as any, { message: data.error });
+      }
       toast.error("cadastro.erro.criar", {
-        description: err.response?.data?.error || err.message || "Ocorreu um problema.",
+        description: data?.error || err.message || "Ocorreu um problema.",
       });
     }
   };
@@ -537,8 +541,12 @@ export function useRegisterController() {
           }
           return true;
         } catch (err: any) {
+          const data = err.response?.data;
+          if (data?.field) {
+            form.setError(data.field as any, { message: data.error });
+          }
           toast.error("cadastro.erro.criar", {
-            description: err.response?.data?.error || "Não foi possível gerar o pagamento.",
+            description: data?.error || "Não foi possível gerar o pagamento.",
           });
           return false;
         } finally {

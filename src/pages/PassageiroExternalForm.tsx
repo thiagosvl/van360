@@ -2,42 +2,42 @@ import { usePassageiroExternalForm } from "@/hooks/form/usePassageiroExternalFor
 
 import { MoneyInput } from "@/components/forms";
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { periodos } from "@/utils/formatters";
 import {
-    AlertTriangle,
-    CalendarDays,
-    Car,
-    CheckCircle2,
-    CreditCard,
-    Loader2,
-    School,
-    Sun,
-    User,
-    Wand2,
+  AlertTriangle,
+  CalendarDays,
+  Car,
+  CheckCircle2,
+  CreditCard,
+  Loader2,
+  School,
+  Sun,
+  User,
+  Wand2,
 } from "lucide-react";
 
 import { PassageiroFormEndereco } from "@/components/features/passageiro/form/PassageiroFormEndereco";
@@ -50,8 +50,6 @@ export default function PassageiroExternalForm() {
     motoristaApelido,
     submitting,
     success,
-    hasAccess,
-    accessReason,
     openAccordionItems,
     setOpenAccordionItems,
     escolasList,
@@ -97,39 +95,8 @@ export default function PassageiroExternalForm() {
     );
   }
 
-  // Exibir aviso se não tiver acesso
-  if (!hasAccess) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white shadow-2xl rounded-3xl p-8 text-center border border-gray-100">
-          <div className="mx-auto bg-orange-100 w-20 h-20 rounded-full flex items-center justify-center mb-6">
-            <AlertTriangle className="w-10 h-10 text-orange-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Funcionalidade Indisponível
-          </h2>
-          <p className="text-gray-600 mb-6 text-base leading-relaxed">
-            {accessReason ||
-              "O motorista não possui acesso a esta funcionalidade."}
-          </p>
-          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6 text-left">
-            <p className="text-sm text-orange-800 font-medium">
-              <strong>O que fazer?</strong>
-            </p>
-            <p className="text-sm text-orange-700 mt-2">
-              Entre em contato com o condutor{" "}
-              <span className="font-semibold">{motoristaApelido}</span> e
-              informe que ele precisa contratar ou regularizar a assinatura para
-              disponibilizar esta funcionalidade.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 py-0 px-0 sm:py-8 sm:px-6 lg:px-8 pb-32">
+    <div className="min-h-screen bg-gray-50 py-0 px-0 sm:pt-8 sm:px-6 lg:px-8 pb-32">
       <div className="max-w-3xl mx-auto">
         <div className="shadow-2xl sm:rounded-3xl overflow-hidden border border-gray-100">
           {/* Header */}
@@ -162,7 +129,7 @@ export default function PassageiroExternalForm() {
               </h1>
               <div className="inline-flex items-center gap-2 bg-blue-700/50 px-4 py-1.5 rounded-full text-blue-100 text-sm font-medium backdrop-blur-sm border border-blue-500/30">
                 <Car className="w-4 h-4" />
-                <span>Condutor: {motoristaApelido}</span>
+                {motoristaApelido}
               </div>
             </div>
           </div>
