@@ -26,14 +26,16 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   CheckCircle2,
+  Clock,
+  CreditCard,
+  DollarSign,
   Headset,
+  Heart,
   Lightbulb,
   Loader2,
   Menu,
   MessageCircle,
-  Quote,
-  Settings,
-  ShieldCheck,
+  Shield,
   Smartphone,
   Star,
   TrendingUp,
@@ -51,8 +53,8 @@ const Index = () => {
   // Permitir indexação da landing page
   useSEO({
     noindex: false,
-    title: "Van360 - Gestão para Transporte Escolar | Você só dirige. Nós cuidamos da burocracia.",
-    description: "Sistema de gestão para transporte escolar. Automatize cobranças, controle passageiros e organize sua frota. Cobrança automática via WhatsApp e baixa automática de PIX.",
+    title: "Van360 - Você dirige. Nós cobramos, confirmamos e organizamos.",
+    description: "Recupere 15+ horas por mês e reduza a inadimplência em até 80%. Automatize cobranças via WhatsApp e baixa de PIX. Teste 21 dias grátis.",
   });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -61,7 +63,7 @@ const Index = () => {
   const [roiMensalidade, setRoiMensalidade] = useState(200);
   const [roiPerdaAnual, setRoiPerdaAnual] = useState(0);
 
-  const CTA_LINK = "/cadastro";
+  const CTA_LINK = "/cadastro?plano=essencial";
   const LOGIN_LINK = "/login";
 
   // Calculate ROI
@@ -89,7 +91,6 @@ const Index = () => {
 
   const getPlanoConfig = (slug: string) => {
     switch (slug) {
-
       case PLANO_ESSENCIAL:
         return {
           buttonText: "Testar 21 dias grátis",
@@ -140,10 +141,10 @@ const Index = () => {
 
             <nav className="hidden md:flex items-center gap-8">
               <a
-                href="#funcionalidades"
+                href="#como-funciona"
                 className="text-sm font-medium text-slate-600 hover:text-blue-700 transition-colors"
               >
-                Funcionalidades
+                Como Funciona
               </a>
               <a
                 href="#depoimentos"
@@ -157,6 +158,12 @@ const Index = () => {
               >
                 Preços
               </a>
+              <a
+                href="#faq"
+                className="text-sm font-medium text-slate-600 hover:text-blue-700 transition-colors"
+              >
+                FAQ
+              </a>
               <div className="flex items-center gap-4 ml-4">
                 <Link
                   to={LOGIN_LINK}
@@ -166,7 +173,7 @@ const Index = () => {
                 </Link>
                 <Link to={CTA_LINK}>
                   <Button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold text-sm px-5 shadow-md hover:shadow-lg transition-all">
-                    Começar Grátis
+                    Testar 21 Dias Grátis
                   </Button>
                 </Link>
               </div>
@@ -188,11 +195,11 @@ const Index = () => {
         {isMenuOpen && (
           <div className="md:hidden border-t bg-white p-4 space-y-4 shadow-xl absolute w-full z-50">
             <a
-              href="#funcionalidades"
+              href="#como-funciona"
               className="block text-base font-medium text-slate-600 py-2"
               onClick={() => setIsMenuOpen(false)}
             >
-              Funcionalidades
+              Como Funciona
             </a>
             <a
               href="#depoimentos"
@@ -208,6 +215,13 @@ const Index = () => {
             >
               Preços
             </a>
+            <a
+              href="#faq"
+              className="block text-base font-medium text-slate-600 py-2"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              FAQ
+            </a>
             <div className="pt-4 border-t flex flex-col gap-3">
               <Link
                 to={LOGIN_LINK}
@@ -218,7 +232,7 @@ const Index = () => {
               </Link>
               <Link to={CTA_LINK} onClick={() => setIsMenuOpen(false)}>
                 <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold text-base h-12 rounded-xl">
-                  Começar Grátis
+                  Testar 21 Dias Grátis
                 </Button>
               </Link>
             </div>
@@ -226,165 +240,65 @@ const Index = () => {
         )}
       </header>
 
-      {/* HERO SECTION (MOBILE OTIMIZADO) */}
-      <section className="md:hidden relative pt-8 pb-16 bg-blue-600 text-white overflow-hidden">
-        <div className="px-4 text-center relative z-10 flex flex-col items-center">
-          <h1 className="text-3xl font-extrabold tracking-tight leading-tight mt-12 mb-3">
-            Você só dirige.
-            <span className="text-yellow-400 block">
-              Nós cuidamos da burocracia.
-            </span>
-          </h1>
-
-          {/* Mobile Mockup */}
-          <div className="relative w-[90%] max-w-[400px] h-[320px] sm:h-[380px] mb-4 mx-auto flex items-center justify-center">
-            <div className="absolute inset-0 rounded-[32px] bg-gradient-to-br from-blue-500/30 to-blue-300/10 blur-2xl"></div>
-            <img
-              src="/assets/lp/mock4.png"
-              alt="App Van360 Mobile"
-              className="h-full w-auto max-w-none drop-shadow-3xl relative z-10 mx-auto"
-            />
-            {/* Notificação */}
-            <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{
-                repeat: Infinity,
-                duration: 5,
-                ease: "easeInOut",
-              }}
-              className="absolute top-[20%] right-[-8%] bg-white p-0 rounded-2xl shadow-2xl border-2 border-green-100 z-30 w-40 flex items-center gap-3"
-            >
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shrink-0 shadow-sm">
-                <span className="text-green-700 font-bold text-sm">R$</span>
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
-                  PIX Recebido
-                </p>
-                <p className="font-extrabold text-slate-900 text-sm">
-                  R$ 350,00
-                </p>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* CTA Principal */}
-          <a href="#precos" className="w-full block max-w-xs relative z-20">
-            <Button
-              size="lg"
-              className="w-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 h-14 text-lg font-bold shadow-xl rounded-xl hover:scale-105 transition-transform"
-            >
-              Ver Planos e Preços
-            </Button>
-          </a>
-
-          <div className="mt-6 flex flex-wrap justify-center gap-4 text-xs text-blue-100 font-medium z-20">
-            <div className="flex items-center gap-1.5">
-              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" /> 4.9/5
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Users className="w-4 h-4" /> +500 Motoristas
-            </div>
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4" /> Seguro
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* HERO SECTION DESKTOP (80% Height Strict) */}
-      <section
-        id="hero-desktop"
-        className="hidden md:flex relative overflow-hidden bg-gradient-to-b from-blue-50 via-white to-slate-50 h-screen min-h-[600px] items-center"
-      >
-        <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-blue-100/40 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 -z-0"></div>
-
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 w-full h-full flex items-center">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 w-full h-full items-center pt-20">
-            {/* Texto (Lado Esquerdo) */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7 }}
-              className="text-left space-y-6 flex flex-col justify-center"
-            >
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-100 text-yellow-800 text-sm font-bold border border-yellow-200 w-fit"
-              >
-                <span>🚐</span> O braço direito do Tio e da Tia escolar
-              </motion.div>
-
-              <h1 className="text-5xl lg:text-6xl xl:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
-                Você só dirige. <br />
-                <span className="text-blue-700 relative inline-block">
-                  Nós cuidamos da burocracia.
-                  <svg
-                    className="absolute w-full h-3 -bottom-2 left-0 text-yellow-400 -z-10"
-                    viewBox="0 0 100 10"
-                    preserveAspectRatio="none"
-                  >
-                    <path
-                      d="M0 5 Q 50 10 100 5"
-                      stroke="currentColor"
-                      strokeWidth="8"
-                      fill="none"
-                    />
-                  </svg>
+      {/* HERO SECTION */}
+      <section className="relative pt-24 md:pt-32 pb-16 md:pb-24 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/assets/lp/grid-pattern.svg')] opacity-10"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Column: Copy */}
+            <div className="text-center lg:text-left">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight mb-6">
+                Você dirige.
+                <span className="block text-yellow-400">
+                  Nós cobramos, confirmamos e organizamos.
                 </span>
               </h1>
-
-              <p className="text-lg text-slate-600 max-w-xl leading-relaxed font-medium">
-                O Van360 cobra os pais no WhatsApp, confirma o pagamento PIX na
-                hora e organiza sua frota. Adeus planilhas e cadernos.
+              <p className="text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed">
+                Recupere <strong>15+ horas por mês</strong> e reduza a inadimplência em até <strong>80%</strong>. O Van360 automatiza a burocracia para você focar no que importa: a segurança dos seus passageiros.
               </p>
 
-              <div className="flex flex-col items-start gap-6 pt-2">
-                <a href="#precos">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+                <Link to={CTA_LINK}>
                   <Button
                     size="lg"
-                    className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 h-14 px-10 text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all rounded-xl"
+                    className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 h-14 text-lg font-bold shadow-xl rounded-xl hover:scale-105 transition-transform w-full sm:w-auto px-8"
                   >
-                    Ver Planos e Preços
+                    Começar meu trial de 21 dias
                   </Button>
-                </a>
+                </Link>
+              </div>
 
-                <div className="flex gap-8 text-sm font-medium text-slate-500">
-                  <div className="flex items-center gap-2">
-                    <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />{" "}
-                    <span>4.9/5 Avaliação</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-blue-600" />{" "}
-                    <span>+500 Motoristas</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="h-5 w-5 text-green-600" />{" "}
-                    <span>Dados Seguros</span>
-                  </div>
+              <p className="text-sm text-blue-200 mb-6">
+                💳 Sem cartão de crédito • ❌ Cancele quando quiser
+              </p>
+
+              {/* Prova Social */}
+              <div className="flex flex-wrap justify-center lg:justify-start gap-6 text-sm text-blue-100 font-medium">
+                <div className="flex items-center gap-2">
+                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                  <span><strong>4.9/5</strong></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  <span><strong>+500</strong> motoristas</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-5 h-5" />
+                  <span><strong>+R$2.5M</strong> processados</span>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
-            {/* Imagem Desktop (Lado Direito) */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              // ADICIONADO: 'flex items-center' para centralizar verticalmente o conteúdo filho
-              className="relative mx-auto lg:ml-auto w-full h-full flex items-center justify-center"
-            >
-              {/* Container da Imagem */}
-              {/* MANTIDO: h-[85vh] para definir o tamanho máximo */}
-              <div className="relative z-10 h-[85vh] w-full flex justify-center items-center">
+            {/* Right Column: Visual */}
+            <div className="relative flex items-center justify-center lg:justify-end">
+              <div className="relative w-full max-w-[400px] h-[400px] md:h-[500px] flex items-center justify-center">
+                <div className="absolute inset-0 rounded-[32px] bg-gradient-to-br from-blue-500/30 to-blue-300/10 blur-3xl"></div>
                 <img
                   src="/assets/lp/mock4.png"
-                  alt="App Van360"
-                  className="h-full w-full object-cover object-center drop-shadow-2xl"
+                  alt="App Van360 Mobile"
+                  className="h-full w-auto max-w-none drop-shadow-3xl relative z-10"
                 />
-
-                {/* Notificação flutuante */}
+                {/* Notificação Animada */}
                 <motion.div
                   animate={{ y: [0, -10, 0] }}
                   transition={{
@@ -392,615 +306,472 @@ const Index = () => {
                     duration: 5,
                     ease: "easeInOut",
                   }}
-                  className="absolute bottom-[3%] -left-[5%] bg-white p-3 rounded-xl shadow-xl border border-slate-100 z-20 w-60"
+                  className="absolute top-[15%] right-[-5%] bg-white p-3 rounded-2xl shadow-2xl border-2 border-green-100 z-30 w-48 flex items-center gap-3"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-green-700 font-bold text-sm">
-                        R$
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
-                        PIX Recebido
-                      </p>
-                      <p className="font-extrabold text-slate-900 text-base">
-                        R$ 350,00
-                      </p>
-                    </div>
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                    <span className="text-green-700 font-bold text-lg">R$</span>
                   </div>
-                </motion.div>
-
-                {/* Floating Notification 2: Cobrança (Ajuste de posição) */}
-                <motion.div
-                  animate={{ y: [0, 10, 0] }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 6,
-                    ease: "easeInOut",
-                    delay: 1,
-                  }}
-                  className="absolute top-[10%] right-[-00%] bg-white p-4 rounded-xl shadow-xl border border-slate-100 z-20 w-64"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
-                      <MessageCircle className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
-                        Cobrança Enviada
-                      </p>
-                      <p className="font-bold text-slate-900 text-sm leading-tight">
-                        "Olá! A mensalidade vence hoje..."
-                      </p>
-                    </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                      PIX Recebido
+                    </p>
+                    <p className="font-extrabold text-slate-900 text-lg">
+                      R$ 350,00
+                    </p>
                   </div>
                 </motion.div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* PAIN POINTS */}
-      <section className="py-12 lg:py-20 bg-white relative z-20 rounded-t-[2rem] -mt-6 md:mt-0 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
+      {/* PROBLEMA SECTION */}
+      <section className="py-16 md:py-24 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-4xl font-extrabold text-slate-900 mb-4">
-              Sua rotina: do caos à{" "}
-              <span className="text-blue-700">tranquilidade</span>.
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
+              Parece familiar? Sua rotina não precisa ser assim.
             </h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Veja como sua vida muda quando você sai do papel e vem para o
-              Van360.
+            <p className="text-xl text-slate-600">
+              Reconhece essas situações? Você não está sozinho.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Card 1 */}
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                <Clock className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
+                Noites Perdidas Cobrando
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                São 22h e você ainda está no WhatsApp, mandando mensagem um por um, conferindo quem pagou e quem ainda não viu a mensagem.
+              </p>
+            </div>
+
+            {/* Card 2 */}
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
+                <DollarSign className="w-8 h-8 text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
+                Dinheiro Deixado na Mesa
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                A inadimplência de 5% parece pouco, mas no fim do ano são milhares de reais que você trabalhou para ganhar e não recebeu. Fora o estresse de cobrar.
+              </p>
+            </div>
+
+            {/* Card 3 */}
+            <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-6">
+                <Heart className="w-8 h-8 text-yellow-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
+                Vergonha e Desgaste
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                Cobrar é desconfortável. Você se sente mal, o pai se sente pressionado e a relação fica desgastada. Parece que você está pedindo um favor, e não recebendo pelo seu trabalho.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* COMO FUNCIONA SECTION */}
+      <section id="como-funciona" className="py-16 md:py-24 bg-slate-50 scroll-mt-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
+              O Van360 trabalha por você, enquanto você dirige.
+            </h2>
+            <p className="text-xl text-slate-600">
+              Simples, rápido e sem complicação. Configure em 5 minutos.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 relative">
+            <div className="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 -z-10 -translate-y-1/2"></div>
+
+            {/* Passo 1 */}
+            <div className="bg-white p-8 rounded-2xl border-2 border-slate-200 shadow-sm flex flex-col items-center text-center relative hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-2xl mb-6 shadow-md">
+                1
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
+                Configure em 5 Minutos
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                Cadastre seus passageiros e defina os valores. Nossa equipe te ajuda no processo, se precisar.
+              </p>
+            </div>
+
+            {/* Passo 2 */}
+            <div className="bg-white p-8 rounded-2xl border-2 border-slate-200 shadow-sm flex flex-col items-center text-center relative hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-2xl mb-6 shadow-md">
+                2
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
+                O Robô Assume a Cobrança
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                O sistema envia as cobranças via WhatsApp, com o PIX, dias antes do vencimento. De forma automática e profissional.
+              </p>
+            </div>
+
+            {/* Passo 3 */}
+            <div className="bg-white p-8 rounded-2xl border-2 border-green-200 shadow-sm flex flex-col items-center text-center relative hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-2xl mb-6 shadow-md">
+                3
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
+                Receba e Relaxe
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                O pai paga o PIX, o sistema dá baixa automática, a carteirinha do aluno fica verde e você recebe uma notificação. Simples assim.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* BENEFÍCIOS SECTION */}
+      <section className="py-16 md:py-24 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
+              Menos burocracia, mais lucro e paz de espírito.
+            </h2>
+            <p className="text-xl text-slate-600">
+              Veja o que você ganha de verdade com o Van360.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {/* The Nightmare */}
-            <div className="bg-slate-50 rounded-2xl p-6 lg:p-8 border border-slate-100 relative">
-              <div className="absolute -top-3 right-6 bg-red-100 text-red-700 px-3 py-1 rounded-full font-bold text-xs uppercase tracking-wider">
-                O PESADELO (ANTES)
-              </div>
-              <div className="space-y-6 mt-2">
-                {[
-                  {
-                    title: "Caderno e Planilhas",
-                    desc: "Anotações perdidas, rasuras e café derramado na lista de quem pagou.",
-                  },
-                  {
-                    title: "Cobrança Constrangedora",
-                    desc: "Ter que cobrar pai atrasado e ficar no vácuo.",
-                  },
-                  {
-                    title: "Trabalhar no escuro",
-                    desc: "Trabalhar o mês todo e não saber se o lucro real pagou a gasolina e a manutenção.",
-                  },
-                ].map((item, i) => (
-                  <div key={i} className="flex gap-4 items-start opacity-80">
-                    <XCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-1" />
-                    <div>
-                      <h3 className="font-bold text-lg text-slate-800">
-                        {item.title}
-                      </h3>
-                      <p className="text-sm text-slate-600">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* The Dream */}
-            <div className="bg-blue-50 rounded-2xl p-6 lg:p-8 border-2 border-blue-100 relative shadow-lg">
-              <div className="absolute -top-3 right-6 bg-blue-600 text-white px-3 py-1 rounded-full font-bold text-xs uppercase tracking-wider">
-                O SONHO (COM VAN360)
-              </div>
-              <div className="space-y-6 mt-2">
-                {[
-                  {
-                    title: "Tudo no Celular",
-                    desc: "Lista de passageiros e pagamentos na palma da mão.",
-                    icon: Smartphone,
-                  },
-                  // Ícone trocado para MessageCircle e texto ajustado
-                  {
-                    title: "Cobrança Automática",
-                    desc: "O Van360 envia a cobrança no WhatsApp. Você não se estressa e recebe mais rápido.",
-                    icon: MessageCircle,
-                  },
-                  {
-                    title: "Lucro Real",
-                    desc: "Relatórios claros de quanto entrou e saiu.",
-                    icon: TrendingUp,
-                  },
-                ].map((item, i) => (
-                  <div key={i} className="flex gap-4 items-start">
-                    <div className="bg-white p-1.5 rounded-lg shadow-sm">
-                      <item.icon className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg text-slate-900">
-                        {item.title}
-                      </h3>
-                      <p className="text-sm text-slate-700">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section className="py-12 bg-slate-50 border-y border-slate-100">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="text-center mb-10">
-            <h3 className="text-2xl font-bold text-slate-900">
-              Como funciona na prática?
-            </h3>
-            <p className="text-slate-600 mt-2">
-              Simples, rápido e sem complicação. Configure em 5 minutos e deixe
-              o Van360 trabalhar.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 relative">
-            <div className="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 -z-10 -translate-y-1/2"></div>
-
-            {[
-              {
-                step: "1",
-                title: "Cadastre",
-                desc: "Registre veículos, escolas e passageiros.",
-                icon: UserPlus,
-                color: "bg-blue-600",
-              },
-              {
-                step: "2",
-                title: "Configure",
-                desc: "Defina valores e vencimentos.",
-                icon: Settings,
-                color: "bg-blue-600",
-              },
-              {
-                step: "3",
-                title: "Automatize",
-                desc: "Nós cobramos e confirmamos o pagamento.",
-                icon: Zap,
-                color: "bg-green-500",
-              },
-            ].map((item, idx) => (
-              <div
-                key={idx}
-                className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center text-center relative"
-              >
-                <div
-                  className={`w-12 h-12 rounded-full ${item.color} text-white flex items-center justify-center font-bold text-lg mb-4 shadow-md`}
-                >
-                  <item.icon className="w-6 h-6" />
+            {/* Benefício 1 */}
+            <div className="bg-blue-50 border-2 border-blue-100 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shrink-0">
+                  <Clock className="w-6 h-6 text-white" />
                 </div>
-                <h4 className="font-bold text-lg text-slate-900 mb-2">
-                  {item.title}
-                </h4>
-                <p className="text-sm text-slate-600">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section
-        id="funcionalidades"
-        className="py-12 lg:py-32 overflow-hidden bg-slate-50 scroll-mt-20"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24 lg:space-y-32">
-          {/* Feature 1: Financeiro */}
-          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-24">
-            <div className="lg:w-1/2 order-2 lg:order-1">
-              <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 transform -rotate-2 hover:rotate-0 transition-transform duration-500">
-                {/* Mockup UI */}
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center border-b pb-4">
-                    <span className="font-bold text-slate-700">
-                      Pagamentos do Mês
-                    </span>
-                    <Badge className="bg-green-100 text-green-700">
-                      Em dia
-                    </Badge>
-                  </div>
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between p-3 bg-slate-50 rounded-xl"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold">
-                          {String.fromCharCode(64 + i)}
-                        </div>
-                        <div>
-                          <p className="font-bold text-slate-800 text-sm">
-                            Mãe do Enzo
-                          </p>
-                          <p className="text-xs text-slate-500">Pago via PIX</p>
-                        </div>
-                      </div>
-                      <span className="font-bold text-green-600">
-                        + R$ 350,00
-                      </span>
-                    </div>
-                  ))}
+                <div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                    Recupere Seu Tempo
+                  </h3>
+                  <p className="text-lg font-bold text-blue-700 mb-3">
+                    Ganhe 15+ horas por mês.
+                  </p>
                 </div>
               </div>
-            </div>
-            <div className="lg:w-1/2 order-1 lg:order-2 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-bold">
-                <Wallet className="w-4 h-4" /> Financeiro Blindado
-              </div>
-              <h3 className="text-4xl lg:text-5xl font-extrabold text-slate-900">
-                Receba enquanto dirige.
-              </h3>
-              <p className="text-xl text-slate-600 leading-relaxed">
-                Pagou, caiu, atualizou: O dinheiro é seu e a carteirinha do
-                passageiro fica verde instantaneamente.
+              <p className="text-slate-700 leading-relaxed mb-3">
+                O tempo que você gastava cobrando, agora você usa para descansar, ficar com a família ou cuidar da sua van.
               </p>
-            </div>
-          </div>
-
-          {/* Feature 2: Organização */}
-          <div className="flex flex-col lg:flex-row-reverse items-center gap-8 lg:gap-24">
-            <div className="lg:w-1/2 order-2 lg:order-1">
-              <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 transform rotate-2 hover:rotate-0 transition-transform duration-500">
-                {/* Mockup UI */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 bg-slate-200 rounded-full"></div>
-                    <div>
-                      <div className="h-4 w-32 bg-slate-200 rounded mb-2"></div>
-                      <div className="h-3 w-24 bg-slate-100 rounded"></div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="h-24 bg-blue-50 rounded-2xl border border-blue-100"></div>
-                    <div className="h-24 bg-blue-50 rounded-2xl border border-blue-100"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="lg:w-1/2 order-1 lg:order-2 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm font-bold">
-                <Users className="w-4 h-4" /> Organização Total
-              </div>
-              <h3 className="text-4xl lg:text-5xl font-extrabold text-slate-900">
-                Tudo na palma da mão.
-              </h3>
-              <p className="text-xl text-slate-600 leading-relaxed">
-                Lista de passageiros, escolas e veículos com acesso instantâneo.
-                Tudo que você precisa em um só lugar.
-              </p>
-            </div>
-          </div>
-
-          {/* Feature 3: Profissionalismo */}
-          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-24">
-            <div className="lg:w-1/2 order-2 lg:order-1">
-              <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 transform -rotate-2 hover:rotate-0 transition-transform duration-500 flex items-center justify-center">
-                <div className="w-full max-w-xs bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-bl-full"></div>
-                  <div className="flex justify-between items-start mb-8">
-                    <Smartphone className="w-8 h-8" />
-                    <span className="font-mono opacity-50">CARTEIRINHA</span>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-4 w-3/4 bg-white/20 rounded"></div>
-                    <div className="h-4 w-1/2 bg-white/20 rounded"></div>
-                  </div>
-                  <div className="mt-8 pt-4 border-t border-white/20 flex justify-between items-center">
-                    <div className="text-xs opacity-70">Van360 Digital</div>
-                    <div className="w-8 h-8 bg-yellow-400 rounded-full"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="lg:w-1/2 order-1 lg:order-2 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-sm font-bold">
-                <Star className="w-4 h-4" /> Profissionalismo
-              </div>
-              <h3 className="text-4xl lg:text-5xl font-extrabold text-slate-900">
-                Impressione os pais.
-              </h3>
-              <p className="text-xl text-slate-600 leading-relaxed">
-                Chega de papelzinho amassado. Ofereça Carteirinha Digital, Link
-                de Cadastro e mostre que seu transporte é coisa séria.
-              </p>
-            </div>
-          </div>
-
-          {/* CTA após Funcionalidades */}
-          <div className="text-center mt-16 lg:mt-24">
-            <p className="text-lg text-slate-600 mb-6 max-w-2xl mx-auto">
-              Toda essa organização cabe no seu bolso e no seu celular.
-            </p>
-            <a href="#precos">
-              <Button
-                size="lg"
-                className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 h-14 px-10 text-lg font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all rounded-xl"
-              >
-                Quero me Profissionalizar
-              </Button>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* SOCIAL PROOF: TESTIMONIALS (AVATARS) */}
-      <section
-        id="depoimentos"
-        className="py-12 lg:py-20 bg-blue-600 text-white scroll-mt-20"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl md:text-5xl font-extrabold mb-4 md:mb-6">
-              Quem usa, não larga mais.
-            </h2>
-            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-              Aprovado por motoristas de todo o Brasil. Veja o que eles dizem:
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {[
-              {
-                name: "Tia Márcia",
-                role: "Transporte Escolar há 15 anos",
-                text: "Nossa, facilitou muito minha vida! Antes eu perdia o domingo cobrando, agora eles fazem tudo. Sobra tempo pra família.",
-                location: "São Paulo, SP",
-                stats: "Economizou 8h/sem",
-                avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-              },
-              {
-                name: "Tio Carlos",
-                role: "Frota com 3 Vans",
-                text: "Eu achava que era difícil mexer, mas é muito simples. Meus motoristas adoraram e os pais elogiam a organização.",
-                location: "Curitiba, PR",
-                stats: "Inadimplência reduzida",
-                avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-              },
-              {
-                name: "Tia Sueli",
-                role: "Iniciante no ramo",
-                text: "Comecei agora e já comecei certo. O Van360 me ajuda a não esquecer nada e passar confiança pros pais. Sem preocupações com inadimplência.",
-                location: "Belo Horizonte, MG",
-                stats: "Mais profissional",
-                avatar: "https://randomuser.me/api/portraits/women/68.jpg",
-              },
-            ].map((item, idx) => (
-              <div
-                key={idx}
-                className="bg-white text-slate-900 p-4 sm:p-6 rounded-2xl shadow-xl relative w-full max-w-full overflow-hidden"
-              >
-                <Quote className="absolute top-3 right-3 sm:top-4 sm:right-4 text-blue-100 w-8 h-8 sm:w-10 sm:h-10" />
-                <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4 pr-8 sm:pr-12">
-                  <img
-                    src={item.avatar}
-                    alt={item.name}
-                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-blue-200 object-cover flex-shrink-0"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold text-base sm:text-lg">{item.name}</p>
-                    <p className="text-xs text-slate-500 flex items-center gap-1">
-                      {item.location}
-                    </p>
-                  </div>
-                </div>
-                <div className="bg-slate-50 p-3 sm:p-4 rounded-xl rounded-tl-none border border-slate-100 mb-3 sm:mb-4">
-                  <p className="text-sm sm:text-base text-slate-700 italic leading-relaxed">"{item.text}"</p>
-                </div>
-                <div className="flex items-center gap-2 text-xs font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full w-fit">
-                  <TrendingUp className="w-3 h-3 flex-shrink-0" /> <span className="whitespace-nowrap">{item.stats}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Prova Social Destaque - Movido para depois dos reviews */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-4 bg-white/10 backdrop-blur-sm rounded-2xl px-4 sm:px-6 py-4 border border-white/20 w-full max-w-2xl mx-auto mt-12 md:mt-16">
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-extrabold">98%</div>
-              <div className="text-xs sm:text-sm text-blue-100">Recomendariam</div>
-            </div>
-            <div className="w-full sm:w-px sm:h-12 h-px bg-white/30"></div>
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-extrabold">4.9/5</div>
-              <div className="text-xs sm:text-sm text-blue-100">Avaliação média</div>
-            </div>
-            <div className="w-full sm:w-px sm:h-12 h-px bg-white/30"></div>
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-extrabold">15h</div>
-              <div className="text-xs sm:text-sm text-blue-100">Economizadas/mês</div>
-            </div>
-          </div>
-
-          {/* CTA após Depoimentos */}
-          <div className="text-center mt-12 md:mt-16">
-            <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Faça parte do grupo de motoristas que dirige tranquilo e recebe em
-              dia.
-            </p>
-            <a href="#precos">
-              <Button
-                size="lg"
-                className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 h-14 px-10 text-lg font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all rounded-xl"
-              >
-                Quero fazer parte
-              </Button>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ROI CALCULATOR */}
-      <section className="py-12 lg:py-20 bg-white border-b border-slate-100">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-slate-50 rounded-3xl shadow-lg border border-slate-200 p-5 sm:p-8 lg:p-12">
-            <div className="text-center mb-8 sm:mb-10">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2 leading-tight">
-                Quanto você perde por mês?
-              </h2>
-              <p className="text-slate-600 text-sm sm:text-base">
-                Faça as contas e veja o prejuízo de continuar no manual.
+              <p className="text-sm text-slate-500 italic">
+                Valor: R$600+/mês (considerando seu tempo)
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
-              <div className="space-y-6 sm:space-y-8">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <Label className="text-base font-bold text-slate-700">
-                      Passageiros
-                    </Label>
-                    <span className="font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg text-sm">
-                      {roiPassageiros[0]}
-                    </span>
-                  </div>
-                  <div className="px-1">
-                    <Slider
-                      value={roiPassageiros}
-                      onValueChange={setRoiPassageiros}
-                      max={100}
-                      step={1}
-                      className="py-2 w-full cursor-pointer"
-                    />
-                  </div>
+            {/* Benefício 2 */}
+            <div className="bg-green-50 border-2 border-green-100 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center shrink-0">
+                  <TrendingUp className="w-6 h-6 text-white" />
                 </div>
-                <div className="space-y-4">
-                  <Label className="text-base font-bold text-slate-700 block">
-                    Mensalidade Média (R$)
-                  </Label>
-                  <Input
-                    type="number"
-                    value={roiMensalidade}
-                    onChange={(e) => setRoiMensalidade(Number(e.target.value))}
-                    className="text-lg font-bold h-12 w-full"
-                  />
+                <div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                    Aumente Seu Faturamento
+                  </h3>
+                  <p className="text-lg font-bold text-green-700 mb-3">
+                    Reduza a inadimplência em até 80%.
+                  </p>
                 </div>
               </div>
+              <p className="text-slate-700 leading-relaxed mb-3">
+                Com cobranças automáticas e lembretes, os pais pagam em dia e você não perde dinheiro.
+              </p>
+              <p className="text-sm text-slate-500 italic">
+                Valor: R$1.200+/ano (para um faturamento de R$10k/mês)
+              </p>
+            </div>
 
-              <div className="bg-red-50 rounded-2xl p-5 sm:p-6 border border-red-100 text-center space-y-2 w-full">
-                <p className="text-red-600 font-medium text-xs sm:text-sm uppercase tracking-wide">
-                  Você pode estar perdendo até
-                </p>
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-red-600 break-words">
-                  {roiPerdaAnual.toLocaleString("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                  })}
-                </p>
-                <p className="text-red-400 text-xs sm:text-sm px-2">
-                  por ano com inadimplência e tempo gasto.
-                </p>
-                <div className="pt-4 w-full">
-                  <a href="#precos" className="block w-full">
-                    <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold h-12 text-sm sm:text-base whitespace-normal">
-                      Parar de perder dinheiro
-                    </Button>
-                  </a>
+            {/* Benefício 3 */}
+            <div className="bg-purple-50 border-2 border-purple-100 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center shrink-0">
+                  <Star className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                    Impressione os Pais
+                  </h3>
+                  <p className="text-lg font-bold text-purple-700 mb-3">
+                    Mostre profissionalismo.
+                  </p>
                 </div>
               </div>
+              <p className="text-slate-700 leading-relaxed mb-3">
+                Com carteirinha digital, link de cadastro e comunicação automática, os pais veem seu serviço com outros olhos e valorizam mais.
+              </p>
+              <p className="text-sm text-slate-500 italic">
+                Valor: Aumento da percepção de valor e fidelização
+              </p>
+            </div>
+
+            {/* Benefício 4 */}
+            <div className="bg-yellow-50 border-2 border-yellow-100 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 bg-yellow-600 rounded-xl flex items-center justify-center shrink-0">
+                  <Wallet className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                    Tenha Controle Total
+                  </h3>
+                  <p className="text-lg font-bold text-yellow-700 mb-3">
+                    Saiba exatamente quanto você lucra.
+                  </p>
+                </div>
+              </div>
+              <p className="text-slate-700 leading-relaxed mb-3">
+                Relatórios claros de faturamento, despesas e inadimplência. Chega de achismos e planilhas complicadas.
+              </p>
+              <p className="text-sm text-slate-500 italic">
+                Valor: Tome decisões baseadas em dados, não em suposições
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* PRICING SECTION */}
-      <section id="precos" className="py-12 lg:py-24 bg-slate-50 scroll-mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
+      {/* DEPOIMENTOS SECTION */}
+      <section id="depoimentos" className="py-16 md:py-24 bg-slate-50 scroll-mt-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
-              Planos que cabem no bolso
+              Mais de 500 motoristas já transformaram sua gestão.
             </h2>
-            <p className="text-lg text-slate-600">
-              Sem fidelidade, sem multas. Cancele quando quiser.
+            <p className="text-xl text-slate-600">
+              Veja o que eles têm a dizer sobre o Van360.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Depoimento 1 */}
+            <div className="bg-white border-2 border-slate-200 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                ))}
+              </div>
+              <p className="text-slate-700 leading-relaxed mb-6 italic">
+                "Eu perdia quase 3 horas por dia cobrando. Hoje, o Van360 faz tudo sozinho. A inadimplência caiu de 10% pra quase zero. Não vivo mais sem."
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-lg">
+                  CA
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900">Carlos Alberto</p>
+                  <p className="text-sm text-slate-500">São Paulo - SP</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Depoimento 2 */}
+            <div className="bg-white border-2 border-slate-200 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                ))}
+              </div>
+              <p className="text-slate-700 leading-relaxed mb-6 italic">
+                "O que mais gostei foi o profissionalismo. Os pais elogiam a organização, a carteirinha digital. Parece que meu negócio subiu de nível."
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 font-bold text-lg">
+                  JS
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900">Joana Silva</p>
+                  <p className="text-sm text-slate-500">Belo Horizonte - MG</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Depoimento 3 */}
+            <div className="bg-white border-2 border-slate-200 rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                ))}
+              </div>
+              <p className="text-slate-700 leading-relaxed mb-6 italic">
+                "No começo eu duvidei, mas em 2 meses eu já tinha recuperado o valor do ano inteiro só com a redução da inadimplência. É um investimento que se paga muito rápido."
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold text-lg">
+                  RS
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900">Ricardo Souza</p>
+                  <p className="text-sm text-slate-500">Rio de Janeiro - RJ</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ANTES E DEPOIS SECTION */}
+      <section className="py-16 md:py-24 bg-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
+              Sua vida antes e depois do Van360.
+            </h2>
+            <p className="text-xl text-slate-600">
+              Veja a transformação que você vai experimentar.
+            </p>
+          </div>
+
+          <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl overflow-hidden shadow-lg">
+            <div className="grid md:grid-cols-2">
+              {/* Antes */}
+              <div className="p-8 bg-red-50 border-r-2 border-slate-200">
+                <h3 className="text-2xl font-bold text-red-700 mb-6 flex items-center gap-2">
+                  <XCircle className="w-7 h-7" />
+                  Antes
+                </h3>
+                <ul className="space-y-4">
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-500 text-xl">❌</span>
+                    <span className="text-slate-700">15h/mês gastas cobrando</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-500 text-xl">❌</span>
+                    <span className="text-slate-700">5-10% de inadimplência</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-500 text-xl">❌</span>
+                    <span className="text-slate-700">Caderninho e planilhas</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-500 text-xl">❌</span>
+                    <span className="text-slate-700">Vergonha de cobrar</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-500 text-xl">❌</span>
+                    <span className="text-slate-700">Estresse e incerteza</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-500 text-xl">❌</span>
+                    <span className="text-slate-700">"Tio da van"</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Depois */}
+              <div className="p-8 bg-green-50">
+                <h3 className="text-2xl font-bold text-green-700 mb-6 flex items-center gap-2">
+                  <CheckCircle2 className="w-7 h-7" />
+                  Depois
+                </h3>
+                <ul className="space-y-4">
+                  <li className="flex items-start gap-3">
+                    <span className="text-green-500 text-xl">✅</span>
+                    <span className="text-slate-700">0h gastas cobrando</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-green-500 text-xl">✅</span>
+                    <span className="text-slate-700">&lt; 1% de inadimplência</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-green-500 text-xl">✅</span>
+                    <span className="text-slate-700">App organizado no celular</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-green-500 text-xl">✅</span>
+                    <span className="text-slate-700">Cobrança automática e profissional</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-green-500 text-xl">✅</span>
+                    <span className="text-slate-700">Paz de espírito e controle total</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-green-500 text-xl">✅</span>
+                    <span className="text-slate-700">Empresário do transporte escolar</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PREÇOS SECTION */}
+      <section id="precos" className="py-16 md:py-24 bg-slate-50 scroll-mt-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
+              Um investimento que se paga sozinho. Escolha seu plano.
+            </h2>
+            <p className="text-xl text-slate-600">
+              Comece com 21 dias grátis. Sem cartão de crédito.
             </p>
           </div>
 
           {isLoadingPlanos ? (
-            <div className="flex justify-center items-center h-64">
-              <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
             </div>
           ) : (
-            <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto items-start">
-              {planosOrdenados.map((plano) => {
+            <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+              {planosOrdenados.map((plano, index) => {
                 const config = getPlanoConfig(plano.slug);
-                const isProfissional = plano.slug === PLANO_PROFISSIONAL;
-                const isEssencial = plano.slug === PLANO_ESSENCIAL;
-
-                let preco =
-                  plano.promocao_ativa && plano.preco_promocional
-                    ? plano.preco_promocional
-                    : plano.preco;
-
-                if (isProfissional) {
-                  const subPlanos = planosDataTyped.sub.filter(
-                    (sub) => sub.parent_id === plano.id
-                  );
-                  if (subPlanos.length > 0) {
-                    const precosSub = subPlanos.map((sub) =>
-                      sub.promocao_ativa && sub.preco_promocional
-                        ? sub.preco_promocional
-                        : sub.preco
-                    );
-                    preco = Math.min(...precosSub);
-                  }
-                }
-
                 return (
                   <motion.div
-                    whileHover={{ y: -5 }}
-                    transition={{ type: "spring", stiffness: 300 }}
                     key={plano.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
                   >
                     <Card
-                      className={`border-2 shadow-md transition-all relative overflow-hidden flex flex-col ${
+                      className={cn(
+                        "relative flex flex-col h-full transition-all duration-300",
                         config.highlight
-                          ? "ring-4 ring-yellow-400 border-yellow-400 shadow-xl z-10 bg-white"
-                          : "border-slate-100 bg-white"
-                      }`}
+                          ? "border-2 border-blue-600 shadow-2xl scale-105"
+                          : "border-2 border-slate-200 hover:shadow-lg"
+                      )}
                     >
-                      <div
-                        className={`text-center py-1.5 font-bold text-xs uppercase tracking-wide ${
-                          config.highlight
-                            ? "bg-yellow-400 text-slate-900"
-                            : "bg-transparent text-white"
-                        }`}
-                      >
-                        {config.badge ?? "x"}
-                      </div>
+                      {config.badge && (
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                          <Badge className="bg-blue-600 text-white px-4 py-1 text-sm font-bold">
+                            {config.badge}
+                          </Badge>
+                        </div>
+                      )}
 
-                      <CardHeader className="pb-4">
-                        <CardTitle className="text-xl font-bold text-slate-900">
+                      <CardHeader className="text-center pb-8 pt-8">
+                        <CardTitle className="text-2xl font-bold text-slate-900 mb-2">
                           {plano.nome}
                         </CardTitle>
-                        <CardDescription className="text-sm">
-                          {plano.descricao_curta}
+                        <CardDescription className="text-base text-slate-600 mb-6">
+                          {plano.slug === PLANO_ESSENCIAL
+                            ? "Para quem quer organizar a casa e ter controle total."
+                            : "Para quem quer automatizar tudo e ter mais tempo e lucro."}
                         </CardDescription>
-                        <div className="mt-4">
+                        <div className="flex items-baseline justify-center gap-2">
+                          {plano.slug === PLANO_ESSENCIAL ? (
                             <>
-                              {isProfissional && (
-                                <span className="text-xs text-slate-500 block font-medium mb-1">
-                                  A partir de
-                                </span>
-                              )}
-                              {isEssencial && (
-                                <span className="text-xs text-slate-500 block font-medium mb-1">
-                                  Por apenas
-                                </span>
-                              )}
                               <span className="text-4xl font-extrabold text-slate-900">
-                                {preco
+                                R${" "}
+                                {plano.preco
                                   .toLocaleString("pt-BR", {
-                                    style: "currency",
-                                    currency: "BRL",
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
                                   })
                                   .replace("R$", "")
                                   .trim()}
@@ -1009,6 +780,19 @@ const Index = () => {
                                 /mês
                               </span>
                             </>
+                          ) : (
+                            <>
+                              <span className="text-slate-600 font-medium text-lg">
+                                A partir de
+                              </span>
+                              <span className="text-4xl font-extrabold text-slate-900">
+                                R$ 107
+                              </span>
+                              <span className="text-slate-500 font-medium text-sm">
+                                /mês
+                              </span>
+                            </>
+                          )}
                         </div>
                       </CardHeader>
 
@@ -1019,11 +803,11 @@ const Index = () => {
                               <div
                                 className={`mt-0.5 p-0.5 rounded-full flex-shrink-0 ${
                                   config.highlight
-                                    ? "bg-yellow-100 text-yellow-700"
+                                    ? "bg-blue-100 text-blue-700"
                                     : "bg-green-100 text-green-700"
                                 }`}
                               >
-                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <CheckCircle2 className="w-4 h-4" />
                               </div>
                               <span className="font-medium leading-snug">
                                 {processarBeneficio(beneficio, plano)}
@@ -1054,151 +838,168 @@ const Index = () => {
             </div>
           )}
 
-          {/* COMPARISON TABLE */}
-          <div className="max-w-5xl mx-auto mt-12">
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4 flex items-center gap-4 shadow-sm">
-              <div className="bg-blue-100 p-2 rounded-full">
-                <Lightbulb className="w-6 h-6 text-blue-600" />
+          {/* ROI Calculator */}
+          <div className="max-w-3xl mx-auto mt-16">
+            <div className="bg-white border-2 border-blue-200 rounded-2xl p-8 shadow-lg">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                  Calcule quanto você está perdendo
+                </h3>
+                <p className="text-slate-600">
+                  Veja o impacto da inadimplência e do tempo perdido no seu negócio.
+                </p>
               </div>
-              <div>
-                <p className="font-bold text-slate-900 text-sm md:text-base">
-                  O Plano Profissional te economiza{" "}
-                  <span className="text-blue-700">15+ horas</span> por mês.
-                </p>
-                <p className="text-xs md:text-sm text-slate-600">
-                  Veja a diferença abaixo e escolha o que faz sentido para você:
-                </p>
+
+              <div className="space-y-6">
+                <div>
+                  <Label className="text-base font-medium text-slate-700 mb-3 block">
+                    Quantos passageiros você tem?
+                  </Label>
+                  <div className="flex items-center gap-4">
+                    <Slider
+                      value={roiPassageiros}
+                      onValueChange={setRoiPassageiros}
+                      min={10}
+                      max={200}
+                      step={5}
+                      className="flex-1"
+                    />
+                    <span className="text-2xl font-bold text-blue-600 w-16 text-right">
+                      {roiPassageiros[0]}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-base font-medium text-slate-700 mb-3 block">
+                    Qual sua mensalidade média?
+                  </Label>
+                  <div className="flex items-center gap-4">
+                    <Input
+                      type="number"
+                      value={roiMensalidade}
+                      onChange={(e) => setRoiMensalidade(Number(e.target.value))}
+                      min={100}
+                      max={800}
+                      className="flex-1 text-lg"
+                    />
+                    <span className="text-slate-600 font-medium">R$</span>
+                  </div>
+                </div>
+
+                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 text-center">
+                  <p className="text-slate-700 mb-2">
+                    Você pode estar perdendo até
+                  </p>
+                  <p className="text-4xl font-extrabold text-red-600 mb-2">
+                    R${" "}
+                    {roiPerdaAnual.toLocaleString("pt-BR", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </p>
+                  <p className="text-slate-600">
+                    por ano com inadimplência e tempo gasto.
+                  </p>
+                  <p className="text-sm text-slate-500 mt-3">
+                    O Van360 recupera esse valor para você.
+                  </p>
+                </div>
               </div>
             </div>
-
-            <Accordion type="single" collapsible>
-              <AccordionItem value="comparison" className="border-none">
-                <AccordionTrigger className="justify-center text-blue-600 font-bold hover:no-underline hover:text-blue-800">
-                  <span className="pr-2">
-                    Ver comparação{" "}
-                    <span className="hidden sm:inline">detalhada</span> dos
-                    planos
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mt-4">
-                    {/* Header Otimizado */}
-                    <div className="grid grid-cols-4 bg-slate-50 p-2 sm:p-4 font-bold text-slate-700 text-[10px] sm:text-sm uppercase tracking-wide border-b-2 border-slate-200 ite                    <div className="grid grid-cols-3 p-2 sm:p-4 border-b border-slate-200 font-semibold text-slate-700 text-xs sm:text-sm">
-                      <div></div>
-                      <div className="text-center">Essencial</div>
-                      <div className="text-center text-blue-700">Profissional</div>
-                    </div>                  {[
-                      // 1. O BÁSICO
-                      {
-                        name: "Limite de Passageiros",
-                        ess: "Ilimitado",
-                        comp: "Ilimitado",
-                      },
-                      {
-                        name: "Quantidade de Veículos",
-                        ess: "Ilimitado",
-                        comp: "Ilimitado",
-                      },
-                      {
-                        name: "Quantidade de Escolas",
-                        ess: "Ilimitado",
-                        comp: "Ilimitado",
-                      },
-                      {
-                        name: "Link para Pais se Cadastrarem",
-                        ess: true,
-                        comp: true,
-                      },
-
-                      // 2. FINANCEIRO
-                      {
-                        name: "Controle de Quem Pagou (Manual)",
-                        ess: true,
-                        comp: true,
-                      },
-                      {
-                        name: "Controle de Gastos e Lucro",
-                        ess: true,
-                        comp: true,
-                      },
-                      {
-                        name: "Relatórios de Faturamento",
-                        ess: true,
-                        comp: true,
-                      },
-
-                      // 3. O ROBÔ (AUTOMAÇÃO)
-                      {
-                        name: "Cobrança Automática no WhatsApp",
-                        ess: false,
-                        comp: true,
-                      },
-                      {
-                        name: "Baixa Automática do PIX",
-                        ess: false,
-                        comp: true,
-                      },
-                      {
-                        name: "Envio de Recibos e Lembretes",
-                        ess: false,
-                        comp: true,
-                      },
-
-                      // 4. AJUDA
-                      {
-                        name: "Atendimento Prioritário (WhatsApp)",
-                        ess: true,
-                        comp: true,
-                      },
-                    ].map((row, idx) => (
-                      <div
-                        key={idx}
-                        className="grid grid-cols-3 p-2 sm:p-4 border-t border-slate-100 items-center text-xs sm:text-sm"
-                      >
-                        <div className="col-span-1 font-medium text-slate-700 text-left px-1 leading-tight">
-                          {row.name}
-                        </div>
-
-                        <div className="text-center flex justify-center">
-                          {typeof row.ess === "boolean" ? (
-                            row.ess ? (
-                              <CheckCircle2 className="text-green-500 w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                            ) : (
-                              <XCircle className="text-slate-300 w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                            )
-                          ) : (
-                            <span className="font-bold text-slate-600">
-                              {row.ess}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Coluna Profissional com destaque sutil */}
-                        <div className="text-center flex justify-center bg-blue-50/30 -my-2 py-2 sm:-my-4 sm:py-4">
-                          {typeof row.comp === "boolean" ? (
-                            row.comp ? (
-                              <CheckCircle2 className="text-green-500 w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                            ) : (
-                              <XCircle className="text-slate-300 w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                            )
-                          ) : (
-                            <span className="font-extrabold text-blue-700">
-                              {row.comp}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
           </div>
         </div>
       </section>
 
-      {/* HUMAN SUPPORT STRIP */}
-      <section className="bg-slate-900 text-white py-8 border-b border-slate-800 selection:bg-blue-700">
+      {/* FAQ SECTION */}
+      <section id="faq" className="py-16 md:py-24 bg-white scroll-mt-20">
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
+              Dúvidas? A gente responde na lata.
+            </h2>
+            <p className="text-xl text-slate-600">
+              As perguntas mais comuns sobre o Van360.
+            </p>
+          </div>
+
+          <Accordion type="single" collapsible className="w-full space-y-3">
+            <AccordionItem
+              value="item-1"
+              className="border-2 border-slate-200 rounded-xl px-4 bg-slate-50/50"
+            >
+              <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
+                É difícil de usar? Vou precisar de um computador?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
+                Não. O Van360 foi feito para ser usado no celular. Em 5 minutos
+                você configura tudo. E se tiver qualquer dúvida, nossa equipe te
+                ajuda pelo WhatsApp.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem
+              value="item-2"
+              className="border-2 border-slate-200 rounded-xl px-4 bg-slate-50/50"
+            >
+              <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
+                Os pais dos alunos vão gostar disso?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
+                Sim! Eles preferem a organização. Receber uma cobrança clara com
+                PIX é mais fácil do que lembrar de pagar em dinheiro ou fazer
+                transferência manual. Mostra que você é um profissional sério.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem
+              value="item-3"
+              className="border-2 border-slate-200 rounded-xl px-4 bg-slate-50/50"
+            >
+              <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
+                Meu negócio é pequeno, só tenho 15 alunos. Vale a pena?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
+                Com certeza. O tempo que você economiza e a redução da
+                inadimplência valem o investimento, não importa o tamanho da sua
+                frota. O Van360 cresce com você.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem
+              value="item-4"
+              className="border-2 border-slate-200 rounded-xl px-4 bg-slate-50/50"
+            >
+              <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
+                Preciso conectar meu WhatsApp? É seguro?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
+                Sim, para o plano Profissional. Usamos a API oficial do WhatsApp
+                de forma 100% segura e não invasiva. O sistema só envia as
+                mensagens de cobrança que você configurar. Não lemos suas
+                conversas pessoais.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem
+              value="item-5"
+              className="border-2 border-slate-200 rounded-xl px-4 bg-slate-50/50"
+            >
+              <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
+                E se eu não gostar? Tem contrato de fidelidade?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
+                Não tem fidelidade. Você pode cancelar quando quiser, sem multa e
+                sem burocracia. Nosso objetivo é que você fique porque está
+                amando, não porque está preso a um contrato.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
+
+      {/* SUPORTE SECTION */}
+      <section className="bg-slate-900 text-white py-8 border-b border-slate-800">
         <div className="max-w-5xl mx-auto px-4 flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left">
           <div className="bg-blue-600 p-3 rounded-full animate-pulse">
             <Headset className="w-6 h-6 text-white" />
@@ -1214,190 +1015,114 @@ const Index = () => {
         </div>
       </section>
 
-      {/* FAQ SECTION */}
-      <section id="faq" className="py-12 lg:py-20 bg-white scroll-mt-20">
-        <div className="max-w-3xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">
-              Perguntas Frequentes
-            </h2>
-            <p className="text-slate-600">
-              Tire suas dúvidas sobre o melhor sistema de gestão para transporte
-              escolar.
-            </p>
-          </div>
-
-          <Accordion type="single" collapsible className="w-full space-y-3">
-            <AccordionItem
-              value="item-1"
-              className="border rounded-lg px-4 bg-slate-50/50"
-            >
-              <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
-                Qual plano é melhor para mim?
-              </AccordionTrigger>
-              <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
-                O <strong>Essencial</strong> organiza sua gestão. O{" "}
-                <strong>Profissional</strong>, alem de organizar, automatiza tudo (cobrança e baixa de
-                PIX) e te dá folga.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem
-              value="item-2"
-              className="border rounded-lg px-4 bg-slate-50/50"
-            >
-              <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
-                Como posso cobrar os pais automaticamente?
-              </AccordionTrigger>
-              <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
-                Com o Van360, você configura o valor e a data de vencimento uma
-                única vez. Nós enviamos o lembrete e o código PIX para o
-                WhatsApp dos pais automaticamente todo mês.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem
-              value="item-3"
-              className="border rounded-lg px-4 bg-slate-50/50"
-            >
-              <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
-                Preciso de internet para usar?
-              </AccordionTrigger>
-              <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
-                Sim, o Van360 precisa de conexão (Wi-Fi ou dados móveis) para
-                processar os pagamentos e enviar as mensagens em tempo real. O
-                Van360 é leve e não consome quase nada do seu plano.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem
-              value="item-4"
-              className="border rounded-lg px-4 bg-slate-50/50"
-            >
-              <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
-                É seguro receber pelo Van360?
-              </AccordionTrigger>
-              <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
-                Totalmente seguro. O pagamento via PIX cai direto na sua conta
-                bancária, sem intermediários segurando seu dinheiro. O Van360
-                apenas identifica que o pagamento foi feito.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem
-              value="item-5"
-              className="border rounded-lg px-4 bg-slate-50/50"
-            >
-              <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
-                Posso mudar de plano depois?
-              </AccordionTrigger>
-              <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
-                Sim! Você pode realizar a troca de plano a qualquer momento pelo
-                próprio painel. Se sua frota crescer, o Van360 cresce com você.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem
-              value="item-6"
-              className="border rounded-lg px-4 bg-slate-50/50"
-            >
-              <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
-                Quanto tempo leva para configurar?
-              </AccordionTrigger>
-              <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
-                Menos de 5 minutos. Você cria sua conta, cadastra sua van e já
-                pode começar a adicionar passageiros. É muito rápido.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem
-              value="item-7"
-              className="border rounded-lg px-4 bg-slate-50/50"
-            >
-              <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
-                Tem fidelidade?
-              </AccordionTrigger>
-              <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
-                Nenhuma. Você pode cancelar a qualquer momento com um clique no
-                seu painel. Sem multas, sem letras miúdas e sem precisar ligar
-                para ninguém.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem
-              value="item-8"
-              className="border rounded-lg px-4 bg-slate-50/50"
-            >
-              <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
-                Preciso de computador?
-              </AccordionTrigger>
-              <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
-                Não! O Van360 foi desenvolvido para rodar 100% no seu celular,
-                tablet ou computador. Você gerencia tudo de onde estiver.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem
-              value="item-9"
-              className="border rounded-lg px-4 bg-slate-50/50"
-            >
-              <AccordionTrigger className="text-left text-base font-bold text-slate-800 hover:no-underline py-4">
-                O dinheiro cai na hora?
-              </AccordionTrigger>
-              <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
-                Sim! O valor pago de cada cobrança cai direto na sua conta
-                cadastrada. O Van360 não segura seu dinheiro em nenhum momento.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      </section>
-
-      {/* CTA FOOTER */}
-      <section className="py-20 bg-slate-900 text-white text-center px-4 relative overflow-hidden selection:bg-blue-700">
+      {/* CTA FINAL */}
+      <section className="py-20 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white text-center px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/assets/lp/grid-pattern.svg')] opacity-10"></div>
         <div className="max-w-4xl mx-auto relative z-10">
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-8">
-            Você só dirige. Nós cuidamos da burocracia.
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-6">
+            Chega de perder tempo e dinheiro.
           </h2>
-          <p className="text-slate-300 text-xl mb-12 max-w-2xl mx-auto">
-            Automatize a rotina, pare de perder tempo no WhatsApp e tenha a
-            sensação de ter um assistente 24h por dia.
+          <p className="text-xl md:text-2xl text-blue-100 mb-12 max-w-2xl mx-auto">
+            Junte-se a mais de 500 motoristas que já estão no controle. Comece
+            seu trial de 21 dias e veja a transformação na sua rotina.
           </p>
-          <Link to={CTA_LINK}>
-            <Button
-              size="lg"
-              className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 text-xl font-bold px-12 h-16 rounded-2xl shadow-2xl hover:scale-105 transition-transform"
-            >
-              Começar Grátis Agora
-            </Button>
-          </Link>
-          <p className="mt-6 text-sm text-slate-500">
-            Não pede cartão de crédito • Cancelamento grátis
-          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+            <Link to={CTA_LINK}>
+              <Button
+                size="lg"
+                className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 text-xl font-bold px-12 h-16 rounded-2xl shadow-2xl hover:scale-105 transition-transform"
+              >
+                Começar meu trial de 21 dias grátis
+              </Button>
+            </Link>
+          </div>
+          <div className="flex flex-wrap justify-center gap-6 text-sm text-blue-200">
+            <div className="flex items-center gap-2">
+              <CreditCard className="w-5 h-5" />
+              <span>Sem cartão de crédito</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <XCircle className="w-5 h-5" />
+              <span>Cancele a qualquer momento</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5" />
+              <span>Suporte humanizado</span>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* FOOTER */}
       <footer className="bg-slate-950 text-slate-400 py-12 border-t border-slate-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-2">
-            <img
-              src="/assets/logo-van360.png"
-              alt="Van360"
-              className="h-8 w-auto opacity-80"
-            />
-            <span className="text-2xl font-bold text-white">Van360</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            {/* Coluna 1: Logo e descrição */}
+            <div className="md:col-span-2">
+              <div className="flex items-center gap-2 mb-4">
+                <img
+                  src="/assets/logo-van360.png"
+                  alt="Van360"
+                  className="h-8 w-auto opacity-80"
+                />
+                <span className="text-2xl font-bold text-white">Van360</span>
+              </div>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                O sistema de gestão completo para motoristas de transporte
+                escolar. Automatize cobranças, organize passageiros e tenha
+                controle total do seu negócio.
+              </p>
+            </div>
+
+            {/* Coluna 2: Links */}
+            <div>
+              <h4 className="text-white font-bold mb-4">Produto</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <a href="#como-funciona" className="hover:text-white transition-colors">
+                    Como Funciona
+                  </a>
+                </li>
+                <li>
+                  <a href="#precos" className="hover:text-white transition-colors">
+                    Preços
+                  </a>
+                </li>
+                <li>
+                  <a href="#depoimentos" className="hover:text-white transition-colors">
+                    Depoimentos
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Coluna 3: Legal */}
+            <div>
+              <h4 className="text-white font-bold mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Termos de Serviço
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Política de Privacidade
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Contato
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-8 text-sm font-medium">
-            <a href="#" className="hover:text-white transition-colors">
-              Termos de Uso
-            </a>
-            <a href="#" className="hover:text-white transition-colors">
-              Política de Privacidade
-            </a>
-            <a href="#" className="hover:text-white transition-colors">
-              Contato
-            </a>
-            <a href="#" className="hover:text-white transition-colors">
-              Blog
-            </a>
-          </div>
-
-          <div className="text-sm opacity-60">
-            © {new Date().getFullYear()} - Van360.
+          <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-sm opacity-60">
+              © {new Date().getFullYear()} Van360. Todos os direitos reservados.
+            </div>
           </div>
         </div>
       </footer>
