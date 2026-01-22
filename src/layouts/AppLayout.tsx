@@ -6,6 +6,7 @@ import { ROUTES } from "@/constants/routes";
 import { LayoutProvider } from "@/contexts/LayoutProvider";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
+import { useSubscriptionStatus } from "@/hooks/business/useSubscriptionStatus";
 import { useSEO } from "@/hooks/useSEO";
 import { apiClient } from "@/services/api/client";
 import { clearAppSession } from "@/utils/domain";
@@ -16,6 +17,9 @@ export default function AppLayout() {
   const { user, loading: loadingSession } = useSession();
   const { profile, isLoading, plano, role } = usePermissions();
   const navigate = useNavigate();
+  
+  // Monitorar status da assinatura e abrir dialogs se necessário
+  useSubscriptionStatus();
 
   // Bloquear indexação de todas as páginas protegidas (área logada)
   useSEO({

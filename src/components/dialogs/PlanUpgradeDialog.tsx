@@ -83,11 +83,12 @@ export function PlanUpgradeDialog({
   const salesContext = useMemo(() => {
     if (isProfissional) return "expansion"; // Já é Pro, quer mais franquia
     if (isEssencial) return "upgrade_auto"; // É Essencial, quer automação
-    return "acquisition"; // É Grátis/Novo, quer assinar
+    return "trial_conversion"; // Novo usuário em trial
   }, [isProfissional, isEssencial]);
 
-  // Se o usuário já é Essencial ou Profissional, escondemos a navegação de tabs e forçamos Profissional
-  const hideTabs = isEssencial || isProfissional;
+  // Tabs apenas durante o Trial. Se já assina, esconde.
+  const isInTrial = profile?.assinatura?.status === 'trial';
+  const hideTabs = (isEssencial && !isInTrial) || isProfissional;
 
   // Extrair franquia atual para base da lógica de target
   const assinatura = profile?.assinatura || profile?.assinaturas_usuarios?.[0];

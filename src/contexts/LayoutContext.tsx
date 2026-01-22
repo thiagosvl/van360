@@ -1,6 +1,8 @@
 import {
     PlanUpgradeDialogProps,
 } from "@/components/dialogs/PlanUpgradeDialog";
+import { SubscriptionExpiredDialogProps } from "@/components/dialogs/SubscriptionExpiredDialog";
+import { TrialExpiredDialogProps } from "@/components/dialogs/TrialExpiredDialog";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
 import { Passageiro } from "@/types/passageiro";
@@ -23,6 +25,16 @@ export type OpenPlanUpgradeDialogProps = Omit<
   targetPassengerCount?: number;
   onSuccess?: () => void;
 };
+
+export type OpenTrialExpiredDialogProps = Omit<
+  TrialExpiredDialogProps,
+  "open" | "onOpenChange"
+>;
+
+export type OpenSubscriptionExpiredDialogProps = Omit<
+  SubscriptionExpiredDialogProps,
+  "open" | "onOpenChange"
+>;
 
 export interface OpenConfirmationDialogProps {
   title: string;
@@ -107,6 +119,10 @@ export interface LayoutContextType {
   openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;
   openCobrancaPixDrawer: (props: OpenCobrancaPixDrawerProps) => void;
   openManualPaymentDialog: (props: OpenManualPaymentDialogProps) => void;
+  openTrialExpiredDialog: (props?: OpenTrialExpiredDialogProps) => void;
+  isTrialExpiredDialogOpen: boolean;
+  openSubscriptionExpiredDialog: (props?: OpenSubscriptionExpiredDialogProps) => void;
+  isSubscriptionExpiredDialogOpen: boolean;
 }
 
 export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);

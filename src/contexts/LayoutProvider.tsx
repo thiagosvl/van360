@@ -8,6 +8,8 @@ import PixKeyDialog from "@/components/dialogs/PixKeyDialog";
 import {
     PlanUpgradeDialog,
 } from "@/components/dialogs/PlanUpgradeDialog";
+import { SubscriptionExpiredDialog } from "@/components/dialogs/SubscriptionExpiredDialog";
+import { TrialExpiredDialog } from "@/components/dialogs/TrialExpiredDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { WhatsappDialog } from "@/components/dialogs/WhatsappDialog";
 import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
@@ -42,6 +44,8 @@ import {
     OpenManualPaymentDialogProps,
     OpenPassageiroFormProps,
     OpenPlanUpgradeDialogProps,
+    OpenSubscriptionExpiredDialogProps,
+    OpenTrialExpiredDialogProps,
     OpenVeiculoFormProps
 } from "./LayoutContext";
 
@@ -63,6 +67,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   }>({
     open: false,
   });
+
+  const [trialExpiredDialogState, setTrialExpiredDialogState] = useState<{
+    open: boolean;
+    props?: OpenTrialExpiredDialogProps;
+  }>({ open: false });
+
+  const [subscriptionExpiredDialogState, setSubscriptionExpiredDialogState] = useState<{
+    open: boolean;
+    props?: OpenSubscriptionExpiredDialogProps;
+  }>({ open: false });
 
   // Confirmation Dialog State
   const [confirmationDialogState, setConfirmationDialogState] = useState<{
@@ -216,6 +230,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openTrialExpiredDialog = (props?: OpenTrialExpiredDialogProps) => {
+    setTrialExpiredDialogState({ open: true, props });
+  };
+
+  const openSubscriptionExpiredDialog = (props?: OpenSubscriptionExpiredDialogProps) => {
+    setSubscriptionExpiredDialogState({ open: true, props });
+  };
+
   const openPixKeyDialog = (options?: {
     onSuccess?: () => void;
     canClose?: boolean;
@@ -306,8 +328,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         setPageTitle,
         pageSubtitle,
         setPageSubtitle,
+        setPageSubtitle,
         openPlanUpgradeDialog,
         isPlanUpgradeDialogOpen: planUpgradeDialogState.open,
+        openTrialExpiredDialog,
+        isTrialExpiredDialogOpen: trialExpiredDialogState.open,
+        openSubscriptionExpiredDialog,
+        isSubscriptionExpiredDialogOpen: subscriptionExpiredDialogState.open,
         openConfirmationDialog,
         closeConfirmationDialog,
         openEscolaFormDialog,
@@ -346,6 +373,38 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           onSuccess={planUpgradeDialogState.props?.onSuccess}
           title={planUpgradeDialogState.props?.title}
           description={planUpgradeDialogState.props?.description}
+        />
+      )}
+
+      {trialExpiredDialogState.open && (
+        <TrialExpiredDialog
+            open={trialExpiredDialogState.open}
+            onOpenChange={(open) => {
+                 if (!open) {
+                    safeCloseDialog(() => {
+                        setTrialExpiredDialogState((prev) => ({ ...prev, open: false }));
+                        trialExpiredDialogState.props?.onSuccess?.();
+                    });
+                 } else {
+                    setTrialExpiredDialogState((prev) => ({ ...prev, open }));
+                 }
+            }}
+        />
+      )}
+
+      {subscriptionExpiredDialogState.open && (
+        <SubscriptionExpiredDialog
+            open={subscriptionExpiredDialogState.open}
+            onOpenChange={(open) => {
+                 if (!open) {
+                    safeCloseDialog(() => {
+                        setSubscriptionExpiredDialogState((prev) => ({ ...prev, open: false }));
+                        subscriptionExpiredDialogState.props?.onSuccess?.();
+                    });
+                 } else {
+                    setSubscriptionExpiredDialogState((prev) => ({ ...prev, open }));
+                 }
+            }}
         />
       )}
 
