@@ -1,8 +1,9 @@
 import { PLANO_PROFISSIONAL } from "@/constants";
 import { Loader2 } from "lucide-react";
-import { BenefitItem } from "./BenefitItem";
+import { AvailableBenefitsList } from "./AvailableBenefitsList";
 import { ExpansionSummary } from "./ExpansionSummary";
 import { FranchiseTierSelector } from "./FranchiseTierSelector";
+import { FutureBenefitsAccordion } from "./FutureBenefitsAccordion";
 import { PLAN_BENEFITS } from "./planBenefits";
 
 interface ProfissionalPlanContentProps {
@@ -24,6 +25,7 @@ interface ProfissionalPlanContentProps {
   calculateProrata: (price: number) => { valorHoje: number };
   franquiaAtual: number;
   customHeadline?: string;
+  isInTrial?: boolean;
 }
 
 export function ProfissionalPlanContent({
@@ -41,18 +43,37 @@ export function ProfissionalPlanContent({
   calculateProrata,
   franquiaAtual,
   customHeadline,
+  isInTrial = false,
 }: ProfissionalPlanContentProps) {
+  // Separar benefícios disponíveis vs em breve
+  const availableBenefits = PLAN_BENEFITS.filter(
+    (b) => b.enabled_plans.includes(PLANO_PROFISSIONAL) && !b.soon
+  );
+  const futureBenefits = PLAN_BENEFITS.filter(
+    (b) => b.enabled_plans.includes(PLANO_PROFISSIONAL) && b.soon
+  );
   return (
     <div className="px-6 pt-6 space-y-6 m-0 focus-visible:ring-0 outline-none">
       {(availableFranchiseOptions && availableFranchiseOptions.length > 0) || isCustomQuantityMode ? (
         <>
-          {/* 1. Header (New) */}
-          <div className="space-y-1">
+          {/* 1. Header Contextualizado */}
+          <div className="space-y-2">
             <h3 className="text-xl font-bold text-gray-900 leading-tight">
-              {customHeadline || (salesContext === "expansion"
-                ? "Precisa de mais espaço para crescer?"
-                : "Você quer apenas dirigir?")}
+              {customHeadline || (
+                salesContext === "expansion"
+                  ? "Precisa de mais espaço para crescer?"
+                  : salesContext === "upgrade_auto"
+                  ? "Pare de cobrar manualmente. Automatize tudo."
+                  : "Você quer apenas dirigir?"
+              )}
             </h3>
+            {salesContext !== "expansion" && (
+              <p className="text-sm text-gray-600">
+                {salesContext === "upgrade_auto"
+                  ? "Reduza inadimplência em 80% e recupere 15+ horas por mês."
+                  : "Automatize cobranças, reduza inadimplência e recupere seu tempo."}
+              </p>
+            )}
           </div>
 
           {/* 2. SELETOR (Horizontal Scroll - Mobile First) */}
@@ -104,22 +125,19 @@ export function ProfissionalPlanContent({
                 );
               }
 
-              // Visão Padrão (Benefícios)
+              // Visão Padrão (Benefícios Separados)
               return (
                 <div className="space-y-6">
-                  {PLAN_BENEFITS.map((benefit, index) => {
-                    const isIncluded =
-                      benefit.enabled_plans.includes(PLANO_PROFISSIONAL);
-                    return (
-                      <BenefitItem
-                        key={index}
-                        text={benefit.text}
-                        description={benefit.description}
-                        included={isIncluded}
-                        badgeText={benefit.soon ? "Em Breve" : undefined}
-                      />
-                    );
-                  })}
+                  {/* Benefícios Disponíveis */}
+                  <AvailableBenefitsList
+                    benefits={availableBenefits}
+                    showSocialProof={isInTrial || salesContext === "upgrade_auto"}
+                  />
+
+                  {/* Benefícios Futuros (Accordion) */}
+                  {futureBenefits.length > 0 && (
+                    <FutureBenefitsAccordion benefits={futureBenefits} />
+                  )}
                 </div>
               );
             })()}

@@ -1,6 +1,7 @@
 import { PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
 import { Zap } from "lucide-react";
-import { BenefitItem } from "./BenefitItem";
+import { AvailableBenefitsList } from "./AvailableBenefitsList";
+import { FutureBenefitsAccordion } from "./FutureBenefitsAccordion";
 import { PLAN_BENEFITS } from "./planBenefits";
 import { UpsellBanner } from "./UpsellBanner";
 
@@ -23,32 +24,39 @@ export function EssencialPlanContent({
   const essencialPrice = planoEssencialData?.promocao_ativa
     ? Number(planoEssencialData.preco_promocional)
     : Number(planoEssencialData.preco);
+
+  // Separar benefícios disponíveis vs em breve
+  const availableBenefits = PLAN_BENEFITS.filter(
+    (b) => b.enabled_plans.includes(PLANO_ESSENCIAL) && !b.soon
+  );
+  const futureBenefits = PLAN_BENEFITS.filter(
+    (b) => b.enabled_plans.includes(PLANO_ESSENCIAL) && b.soon
+  );
+
   return (
     <div className="p-6 space-y-6 m-0 focus-visible:ring-0 outline-none">
-      {/* 1. Header (New) */}
-      <div className="space-y-1">
+      {/* 1. Header Contextualizado */}
+      <div className="space-y-2">
         <h3 className="text-xl font-bold text-gray-900 leading-tight">
-          {customHeadline || "Comece a organizar sua frota hoje mesmo"}
+          {customHeadline || "Organize sua frota e controle financeiro"}
         </h3>
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider pt-2">
-          CONHEÇA OS BENEFÍCIOS
+        <p className="text-sm text-gray-600">
+          Gerencie passageiros, rotas, escolas e despesas em um só lugar.
         </p>
       </div>
 
-      {/* 2. Benefits List (Standardized) */}
+      {/* 2. Benefits List Separados */}
       <div className="space-y-6">
-        {PLAN_BENEFITS.map((benefit, index) => {
-          const isIncluded = benefit.enabled_plans.includes(PLANO_ESSENCIAL);
-          return (
-            <BenefitItem
-              key={index}
-              text={benefit.text}
-              description={benefit.description}
-              included={isIncluded}
-              badgeText={benefit.soon ? "Em Breve" : undefined}
-            />
-          );
-        })}
+        {/* Benefícios Disponíveis */}
+        <AvailableBenefitsList
+          benefits={availableBenefits}
+          showSocialProof={false}
+        />
+
+        {/* Benefícios Futuros (Accordion) */}
+        {futureBenefits.length > 0 && (
+          <FutureBenefitsAccordion benefits={futureBenefits} />
+        )}
       </div>
 
       {/* 3. Upsell Trigger - Contextual */}
