@@ -456,9 +456,10 @@ export function PlanUpgradeDialog({
                   franquiaAtual={franquiaAtual}
                   customHeadline={
                     activeTab === featureTargetPlan
-                      ? specificContent?.desc
+                      ? specificContent?.title
                       : undefined
                   }
+                  isInTrial={isInTrial}
                 />
               </TabsContent>
             </div>
