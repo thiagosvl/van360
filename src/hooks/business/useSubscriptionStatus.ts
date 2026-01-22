@@ -8,9 +8,9 @@ export function useSubscriptionStatus() {
   const { user } = useSession();
   const { profile, plano } = useProfile(user?.id);
   const { 
-    openTrialExpiredDialog, 
+    openPlanUpgradeDialog,
     openSubscriptionExpiredDialog,
-    isTrialExpiredDialogOpen,
+    isPlanUpgradeDialogOpen,
     isSubscriptionExpiredDialogOpen
   } = useLayout();
 
@@ -27,8 +27,12 @@ export function useSubscriptionStatus() {
     
     if (isExpired) {
         if (isTrial) {
-             if (!isTrialExpiredDialogOpen) {
-                 openTrialExpiredDialog();
+             // Trial expirado -> Abre PlanUpgradeDialog na aba do plano escolhido pelo usuário
+             if (!isPlanUpgradeDialogOpen) {
+                 openPlanUpgradeDialog({
+                   defaultTab: plano?.slug, // Respeita a escolha inicial (ancoração de preço)
+                   feature: "trial_conversion",
+                 });
              }
         } else {
              if (!isSubscriptionExpiredDialogOpen) {
@@ -37,5 +41,5 @@ export function useSubscriptionStatus() {
         }
     }
 
-  }, [profile, isTrialExpiredDialogOpen, isSubscriptionExpiredDialogOpen, openTrialExpiredDialog, openSubscriptionExpiredDialog]);
+  }, [profile, plano?.slug, isPlanUpgradeDialogOpen, isSubscriptionExpiredDialogOpen, openPlanUpgradeDialog, openSubscriptionExpiredDialog]);
 }

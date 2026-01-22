@@ -326,9 +326,16 @@ export function PlanUpgradeDialog({
       setIsPaymentVerified(false);
 
       if (isEssencial || isProfissional) {
+        // Usuário já está pagando -> Força Profissional (upgrade ou expansão)
         setActiveTab(PLANO_PROFISSIONAL);
+      } else if (isInTrial) {
+        // Usuário em trial -> Abre na aba do plano que ele escolheu (respeita ancoragem de preço)
+        // Se tiver feature específica, usa o plano alvo da feature
+        // Senão, usa o plano atual da assinatura (ou defaultTab como fallback)
+        const planoAtualDoTrial = plano?.slug || defaultTab;
+        setActiveTab(featureTargetPlan || planoAtualDoTrial);
       } else {
-        // Usa o plano alvo da feature (se houver) ou cai no defaultTab
+        // Fallback: Usa o plano alvo da feature (se houver) ou cai no defaultTab
         setActiveTab(featureTargetPlan || defaultTab);
       }
     }
@@ -336,6 +343,8 @@ export function PlanUpgradeDialog({
     open,
     isEssencial,
     isProfissional,
+    isInTrial,
+    plano?.slug,
     defaultTab,
     featureTargetPlan,
     setIsPaymentVerified,
@@ -419,6 +428,12 @@ export function PlanUpgradeDialog({
                     activeTab === featureTargetPlan
                       ? specificContent?.title
                       : undefined
+                  }
+                  isInTrial={isInTrial}
+                  profissionalPrice={
+                    planoProfissionalData?.promocao_ativa
+                      ? Number(planoProfissionalData.preco_promocional)
+                      : Number(planoProfissionalData.preco)
                   }
                 />
               </TabsContent>

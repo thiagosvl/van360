@@ -3,7 +3,9 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { usePlanUpgrade } from "@/hooks/business/usePlanUpgrade";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { CalendarX, ShieldAlert } from "lucide-react";
+import { useLayout } from "@/contexts/LayoutContext";
+import { PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
+import { CalendarX, ShieldAlert, Sparkles } from "lucide-react";
 import PagamentoAssinaturaDialog from "./PagamentoAssinaturaDialog";
 
 export interface SubscriptionExpiredDialogProps {
@@ -15,6 +17,7 @@ export interface SubscriptionExpiredDialogProps {
 export function SubscriptionExpiredDialog({ open, onOpenChange }: SubscriptionExpiredDialogProps) {
   const { user } = useSession();
   const { profile, plano } = useProfile(user?.id);
+  const { openPlanUpgradeDialog } = useLayout();
 
   const {
     pagamentoDialog,
@@ -76,6 +79,27 @@ export function SubscriptionExpiredDialog({ open, onOpenChange }: SubscriptionEx
           <Button size="lg" className="w-full h-12 text-base font-semibold" onClick={handleRenew}>
             Renovar Assinatura Agora
           </Button>
+
+          {/* Upsell para Profissional se for Essencial */}
+          {plano?.slug === PLANO_ESSENCIAL && (
+            <button
+              onClick={() => {
+                onOpenChange(false);
+                openPlanUpgradeDialog({
+                  defaultTab: PLANO_PROFISSIONAL,
+                  feature: "upgrade_auto",
+                });
+              }}
+              className="w-full text-center py-3 px-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors group"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Sparkles className="w-4 h-4 text-violet-600" />
+                <span className="text-sm font-semibold text-violet-700 group-hover:text-violet-800">
+                  Ou faça upgrade para o Profissional
+                </span>
+              </div>
+            </button>
+          )}
 
           <div className="flex items-center justify-center gap-2 text-sm text-gray-400 pt-2">
              <ShieldAlert className="w-4 h-4" />
