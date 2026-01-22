@@ -12,27 +12,31 @@ export function useProfile(userId?: string) {
     isLoading,
     refetch,
   } = useQuery<Usuario>({
-    queryKey: ["profile", userId],
-    // userId param is mostly ignored for /me/profile but good for caching key differentiation if we ever fetch other profiles
+    queryKey: ["profile"], 
+    // userId is ignored for /me/profile requests as it relies on auth token
     queryFn: () => usuarioApi.getProfile(userId!), 
-    enabled: true, // Always try to fetch if mounted, usually session check handles existence
+    enabled: !!userId, // Only fetch if we have a userId (session loaded), avoids fetching for guest/initial invalid state
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: false,
   });
 
   const refreshProfile = useCallback(async () => {
-    return queryClient.invalidateQueries({ queryKey: ["profile", userId] });
-  }, [queryClient, userId]);
+    return queryClient.invalidateQueries({ queryKey: ["profile"] });
+  }, [queryClient]);
 
   // Plano Helpers
   const planoData = useMemo(() => {
-    if (!profile?.plano) return null;
-    // Combine subscription and plan for the utility
-    // Precisamos garantir que assinatura exista, senão passamos objeto vazio ou null
-    const assinaturaData = profile.assinatura || {};
+    if (!profile) return null;
+
+    // Fallbacks para encontrar a assinatura e o plano
+    const assinatura = profile.assinatura || profile.assinaturas_usuarios?.[0] || {};
+    const planoRef = assinatura.planos || profile.plano;
+
+    if (!planoRef) return null;
+
     return extractPlanoData({ 
-        ...assinaturaData, 
-        planos: profile.plano 
+        ...assinatura, 
+        planos: planoRef 
     });
   }, [profile]);
 

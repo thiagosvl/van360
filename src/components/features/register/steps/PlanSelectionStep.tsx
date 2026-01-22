@@ -50,7 +50,7 @@ export function PlanSelectionStep({
     <section className="space-y-3 sm:space-y-4 md:space-y-5">
       <Form {...form}>
         {!loadingPlanos && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {planosDataTyped.bases.map((plano) => (
               <Suspense
                 key={plano.id}

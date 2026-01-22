@@ -375,7 +375,7 @@ interface UseRelatoriosCalculationsProps {
     const passageirosComAutomatica = passageirosList.filter(
       (p: any) => p.enviar_cobranca_automatica && p.ativo
     ).length;
-    const assinatura = profile?.assinaturas_usuarios?.[0];
+    const assinatura = profile?.assinatura || profile?.assinaturas_usuarios?.[0];
     const limiteAutomatica =
       assinatura?.franquia_contratada_cobrancas ||
       profilePlano?.planoProfissional?.franquia_contratada_cobrancas ||

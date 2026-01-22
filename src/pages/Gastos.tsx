@@ -26,10 +26,10 @@ import { cn } from "@/lib/utils";
 import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 
 import {
-    CalendarIcon,
-    TrendingDown,
-    TrendingUp,
-    Wallet,
+  CalendarIcon,
+  TrendingDown,
+  TrendingUp,
+  Wallet,
 } from "lucide-react";
 
 export default function Gastos() {
@@ -60,6 +60,7 @@ export default function Gastos() {
   const {
     profile,
     isLoading: isAuthLoading,
+    isReadOnly,
   } = usePermissions();
   // Always true now
   const enabledPageActions = true;
@@ -160,7 +161,16 @@ export default function Gastos() {
 
               <KPICard
                 title="Top Categoria"
-                value={displayData.principalCategoriaData?.name || "-"}
+                value={
+                    <span className={cn(
+                        (displayData.principalCategoriaData?.name?.length >= 12)
+                          ? "text-xs sm:text-lg"
+                          : "text-base sm:text-lg",
+                        "font-bold"
+                    )}>
+                        {displayData.principalCategoriaData?.name || "-"}
+                    </span>
+                }
                 icon={TrendingUp}
                 bgClass="bg-orange-50"
                 colorClass="text-orange-600"
@@ -170,12 +180,6 @@ export default function Gastos() {
                       : "0% do total"
                 }
                 countVisible={true}
-                valueClassName={cn(
-                    (displayData.principalCategoriaData?.name?.length >= 12)
-                      ? "text-xs sm:text-lg"
-                      : "text-base sm:text-lg",
-                    "font-bold"
-                )}
               />
 
               <KPICard
@@ -220,8 +224,7 @@ export default function Gastos() {
                       gastos={displayData.gastosFiltrados}
                       onEdit={openDialog}
                       onDelete={handleDelete}
-                      isRestricted={false}
-                      showVisibleValues={true}
+                      isRestricted={isReadOnly}
                       veiculos={veiculos.map((v) => ({
                             id: v.id,
                             placa: v.placa,
@@ -247,8 +250,6 @@ export default function Gastos() {
                                  }
                                : undefined
                            }
-                           onAction={!searchTerm ? () => openDialog() : undefined}
-                           actionLabel={!searchTerm ? "Registrar Gasto" : undefined}
                         />
                       )}
                   </div>

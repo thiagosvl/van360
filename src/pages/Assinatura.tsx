@@ -56,10 +56,12 @@ export default function Assinatura() {
   const { limits } = usePlanLimits();
 
   const data = useMemo(() => {
-    if (!profile?.assinaturas_usuarios?.[0] || !plano || !systemSummary)
+    const assinatura = profile?.assinatura || profile?.assinaturas_usuarios?.[0];
+    
+    if (!assinatura || !plano || !systemSummary)
       return null;
-    const assinatura = profile.assinaturas_usuarios[0];
-    const planoData = assinatura.planos;
+
+    const planoData = assinatura.planos || plano;
 
     return {
       assinatura: {
@@ -100,10 +102,24 @@ export default function Assinatura() {
     }
   };
 
-  if (isSessionLoading || isProfileLoading || !dataWithCounts || !plano) {
+  if (isSessionLoading || isProfileLoading || isSummaryLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
         <p>Carregando informações...</p>
+      </div>
+    );
+  }
+
+  if (!plano || !dataWithCounts) {
+    return (
+      <div className="min-h-screen flex items-center justify-center flex-col gap-4 text-gray-600">
+        <p>Não foi possível carregar os dados da assinatura.</p>
+        <button 
+           onClick={() => window.location.reload()}
+           className="text-blue-600 hover:underline"
+        >
+           Tentar novamente
+        </button>
       </div>
     );
   }

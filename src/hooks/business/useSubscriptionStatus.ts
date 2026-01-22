@@ -1,6 +1,7 @@
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { AssinaturaStatus } from "@/types/enums";
 import { useEffect } from "react";
 
 export function useSubscriptionStatus() {
@@ -16,17 +17,13 @@ export function useSubscriptionStatus() {
   useEffect(() => {
     if (!profile || !profile.assinatura) return;
 
-    const status = profile.assinatura.status;
-    const isTrial = !!profile.assinatura.trial_termina_em; // Or check status === 'trial' if consistent
-    
-    // Check for expiration
-    // Assuming backend sets status to 'canceled', 'expired', or 'inactive' upon expiration
-    // User logic: "status === 'expired'" (Check what backend actually returns)
-    // In `access-control.service.ts` we use `isValidSubscription`.
-    // Valid status: 'active', 'trial'
-    // Invalid: 'canceled', 'expired', 'past_due' (maybe)
+    const status = profile.assinatura.status as AssinaturaStatus;
+    const isTrial = status === AssinaturaStatus.TRIAL || !!profile.assinatura.trial_termina_em;
 
-    const isExpired = ['expired', 'canceled', 'inactive'].includes(status);
+    const isExpired = [
+        AssinaturaStatus.CANCELADA, 
+        AssinaturaStatus.SUSPENSA
+    ].includes(status);
     
     if (isExpired) {
         if (isTrial) {

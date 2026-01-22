@@ -1,5 +1,7 @@
+import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
-import { Crown, X } from "lucide-react";
+import { Crown, Milestone, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface FranchiseOption {
   id?: string | number;
@@ -30,12 +32,41 @@ export function FranchiseTierSelector({
   setSelectedTierId,
   currentTierOption,
 }: FranchiseTierSelectorProps) {
-  
-  // Calcular o máximo das opções padrão para validação
+
+  // Ordenar opções por quantidade
+  const sortedOptions = [...availableOptions].sort(
+    (a, b) => (a?.quantidade || 0) - (b?.quantidade || 0)
+  );
+
+  // Calcular o máximo das opções padrão para validação (Custom mode)
   const maxStandardQuantity = Math.max(
     ...availableOptions.map((o) => o.quantidade || 0),
     0
   );
+
+  // Mapear ID selecionado para índice do slider
+  const selectedIndex = sortedOptions.findIndex(
+    (opt) => opt.id === selectedTierId
+  );
+  
+  // Safe index (fallback to 0)
+  const [sliderValue, setSliderValue] = useState([selectedIndex !== -1 ? selectedIndex : 0]);
+
+  // Sincronizar slider se a seleção externa mudar
+  useEffect(() => {
+    if (selectedIndex !== -1) {
+       setSliderValue([selectedIndex]);
+    }
+  }, [selectedIndex]);
+
+  const handleSliderChange = (val: number[]) => {
+    const newIndex = val[0];
+    setSliderValue([newIndex]);
+    const option = sortedOptions[newIndex];
+    if (option && option.id) {
+       setSelectedTierId(option.id);
+    }
+  };
 
   if (isCustomQuantityMode) {
     const isInvalid = Number(manualQuantity) <= maxStandardQuantity;
@@ -99,60 +130,66 @@ export function FranchiseTierSelector({
       </div>
     );
   }
+  
+  const currentOption = sortedOptions[sliderValue[0]] || sortedOptions[0];
 
   return (
-    <div className="relative -mx-6 px-6 overflow-x-auto pb-4 pt-6 scrollbar-hide snap-x snap-mandatory flex items-center gap-3">
-      {availableOptions
-        .sort((a, b) => (a?.quantidade || 0) - (b?.quantidade || 0))
-        .map((opt, index) => {
-          const isSelected = opt?.id === currentTierOption?.id;
-
-          return (
-            <button
-              key={opt?.id}
-              onClick={() => {
-                if (opt?.id) setSelectedTierId(opt.id);
-              }}
-              className={cn(
-                "relative min-w-[100px] h-[110px] rounded-2xl border-2 transition-all duration-300 snap-center flex flex-col items-center justify-center gap-1 group",
-                isSelected
-                  ? "bg-violet-600 border-violet-600 text-white shadow-xl shadow-violet-200 scale-105 z-10"
-                  : "bg-white border-gray-100 text-gray-400 hover:border-violet-100 hover:bg-violet-50"
-              )}
+    <div className="w-full px-2 py-4">
+       {/* Visualização de Valor */}
+       <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col">
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                    Selecionado
+                </span>
+                <span className="text-4xl font-black text-violet-600 tracking-tighter leading-none">
+                    {currentOption?.quantidade} <span className="text-lg font-bold text-gray-400">passageiros</span>
+                </span>
+            </div>
+            
+            <div 
+                className="cursor-pointer group flex items-center gap-2 bg-violet-50 hover:bg-violet-100 px-3 py-2 rounded-lg transition-colors"
+                onClick={() => {
+                   setIsCustomQuantityMode(true);
+                   setManualQuantity("");
+                }}
             >
+                <div className="bg-white p-1 rounded-full shadow-sm text-violet-600 group-hover:scale-110 transition-transform">
+                    <Milestone className="w-4 h-4" />
+                </div>
+                <div className="text-right">
+                    <span className="block text-[10px] uppercase font-bold text-violet-600 line-clamp-1">
+                        Preciso de Mais
+                    </span>
+                 </div>
+            </div>
+       </div>
 
-              <span className={cn("text-[10px] font-bold uppercase tracking-wider mb-1", isSelected ? "text-violet-200" : "text-gray-400")}>
-                {isSelected ? "Selecionado" : "Opção"}
-              </span>
-
-              <span className={cn("text-4xl font-black tracking-tighter leading-none", isSelected ? "text-white" : "text-gray-900")}>
-                {opt?.quantidade}
-              </span>
-              
-              <span className={cn("text-[10px] font-bold uppercase tracking-wider", isSelected ? "text-violet-100" : "text-gray-400")}>
-                Cobranças
-                <br />Mês
-              </span>
-            </button>
-          );
-        })}
-
-      {/* Botão Outro */}
-      <button
-        onClick={() => {
-          setIsCustomQuantityMode(true);
-          setManualQuantity("");
-        }}
-        className="min-w-[80px] h-[110px] rounded-2xl border-2 border-dashed border-gray-200 hover:border-violet-300 hover:bg-violet-50 text-gray-300 hover:text-violet-600 transition-all duration-300 snap-center flex flex-col items-center justify-center gap-2 group"
-      >
-        <div className="w-8 h-8 rounded-full bg-gray-50 group-hover:bg-violet-100 flex items-center justify-center transition-colors">
-             <span className="text-xl leading-none mb-1">+</span>
-        </div>
-        <span className="text-[10px] font-bold uppercase tracking-wider">MAIS</span>
-      </button>
-      
-      {/* Spacer for right padding in scroll */}
-      <div className="w-2 shrink-0" />
+      {/* Slider */}
+      <div className="px-2">
+         <Slider
+            value={sliderValue}
+            min={0}
+            max={sortedOptions.length - 1}
+            step={1}
+            onValueChange={handleSliderChange}
+            className="cursor-grab active:cursor-grabbing py-4"
+         />
+         <div className="flex justify-between mt-2 px-1">
+            {sortedOptions.map((opt, i) => (
+                <div 
+                    key={opt.id} 
+                    className={cn(
+                        "flex flex-col items-center cursor-pointer transition-colors", 
+                        i === sliderValue[0] ? "text-violet-600 font-bold" : "text-gray-300 hover:text-gray-400"
+                    )}
+                    onClick={() => handleSliderChange([i])}
+                >
+                    <span className="text-xs">|</span>
+                    <span className="text-[10px] mt-1">{opt.quantidade}</span>
+                </div>
+            ))}
+         </div>
+      </div>
     </div>
   );
 }

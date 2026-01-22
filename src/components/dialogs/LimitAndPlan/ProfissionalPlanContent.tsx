@@ -2,6 +2,7 @@ import { PLANO_PROFISSIONAL } from "@/constants";
 import { Loader2 } from "lucide-react";
 import { BenefitItem } from "./BenefitItem";
 import { ExpansionSummary } from "./ExpansionSummary";
+import { FranchiseTierSelector } from "./FranchiseTierSelector";
 import { PLAN_BENEFITS } from "./planBenefits";
 
 interface ProfissionalPlanContentProps {
@@ -57,17 +58,6 @@ export function ProfissionalPlanContent({
 
           {/* 2. SELETOR (Horizontal Scroll - Mobile First) */}
           <div className="space-y-3">
-             <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                {salesContext === "expansion"
-                  ? "NOVA CAPACIDADE"
-                  : "QUANTIDADE DE PASSAGEIROS"}
-              </span>
-              <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                Arraste para o lado
-              </span>
-            </div>
-
             <FranchiseTierSelector
               availableOptions={availableFranchiseOptions}
               salesContext={salesContext}

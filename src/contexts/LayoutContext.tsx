@@ -1,5 +1,5 @@
 import {
-    PlanUpgradeDialogProps,
+  PlanUpgradeDialogProps,
 } from "@/components/dialogs/PlanUpgradeDialog";
 import { SubscriptionExpiredDialogProps } from "@/components/dialogs/SubscriptionExpiredDialog";
 import { TrialExpiredDialogProps } from "@/components/dialogs/TrialExpiredDialog";
@@ -9,8 +9,8 @@ import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Veiculo } from "@/types/veiculo";
 import {
-    createContext,
-    useContext,
+  createContext,
+  useContext,
 } from "react";
 
 export type OpenPlanUpgradeDialogProps = Omit<

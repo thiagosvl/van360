@@ -1,11 +1,10 @@
 import { ActionsDropdown } from "@/components/common/ActionsDropdown";
-import { BlurredValue } from "@/components/common/BlurredValue";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { useGastoActions } from "@/hooks/ui/useGastoActions";
 import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
-import { formatDateToBR } from "@/utils/formatters";
+import { formatCurrency, formatDateToBR } from "@/utils/formatters";
 import {
   Bus,
   Calendar,
@@ -26,7 +25,6 @@ interface GastosListProps {
   onEdit: (gasto: Gasto) => void;
   onDelete: (id: string) => void;
   isRestricted?: boolean;
-  showVisibleValues?: boolean;
   veiculos?: { id: string; placa: string }[];
 }
 
@@ -87,7 +85,6 @@ const GastoMobileCard = memo(function GastoMobileCard({
   onDelete,
   isRestricted,
   veiculos,
-  showVisibleValues,
 }: { gasto: Gasto; index: number } & GastosListProps) {
   const { icon: Icon, color, bg } = getCategoryConfig(gasto.categoria);
 
@@ -135,11 +132,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
             </div>
             {gasto.usuario_id !== "mock" ? (
               <Eye className="h-4 w-4 text-gray-300 absolute right-4 top-4" />
-            ) : (
-              <span className="absolute right-4 py-1 px-3 rounded-xl top-4 bg-orange-400 text-[10px] text-white">
-                Demonstração
-              </span>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -148,11 +141,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
             {gasto.descricao || "Sem descrição"}
           </p>
           <p className="font-bold text-gray-900 text-base">
-            <BlurredValue
-              value={gasto.valor}
-              visible={!isRestricted || showVisibleValues}
-              type="currency"
-            />
+            {formatCurrency(gasto.valor)}
           </p>
         </div>
 
@@ -170,7 +159,6 @@ export function GastosList({
   onEdit,
   onDelete,
   isRestricted = false,
-  showVisibleValues = false,
   veiculos = [],
 }: GastosListProps) {
   const getVeiculoPlaca = (veiculoId?: string | null) => {
@@ -189,7 +177,6 @@ export function GastosList({
           onEdit={onEdit}
           onDelete={onDelete}
           isRestricted={isRestricted}
-          showVisibleValues={true} // Força mostrar valores no mobile também se passado
           veiculos={veiculos}
           gastos={gastos} // Props requirement satisfaction
         />
@@ -276,11 +263,7 @@ export function GastosList({
                   </td>
                   <td className="px-6 py-4 text-right align-middle">
                     <span className="font-bold text-gray-900 text-sm">
-                      <BlurredValue
-                        value={gasto.valor}
-                        visible={!isRestricted || showVisibleValues}
-                        type="currency"
-                      />
+                      {formatCurrency(gasto.valor)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right align-middle">

@@ -64,6 +64,8 @@ export function extractPlanoData(assinatura: any) {
  * Obtém a assinatura mais recente de um usuário
  */
 export function getLatestAssinatura(usuario: any) {
+  if (usuario?.assinatura) return usuario.assinatura;
+
   if (!usuario?.assinaturas_usuarios?.length) return null;
 
   return [...usuario.assinaturas_usuarios].sort(
