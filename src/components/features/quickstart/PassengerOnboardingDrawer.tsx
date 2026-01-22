@@ -43,7 +43,7 @@ export function PassengerOnboardingDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
         side="bottom" 
-        className="h-auto max-h-[90vh] rounded-t-[20px] flex flex-col px-0 bg-gray-50 outline-none"
+        className="h-auto max-h-[90vh] md:max-w-[70vw] lg:max-w-[50vw] mx-auto rounded-t-[20px] flex flex-col px-0 bg-gray-50 outline-none"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <SheetHeader className="text-left px-6 pt-4">

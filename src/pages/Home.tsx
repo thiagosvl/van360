@@ -26,10 +26,7 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
 
-import {
-  FEATURE_GASTOS,
-  PLANO_ESSENCIAL
-} from "@/constants";
+import { FEATURE_GASTOS, PLANO_ESSENCIAL } from "@/constants";
 import { cn } from "@/lib/utils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { formatCurrency } from "@/utils/formatters/currency";
@@ -123,7 +120,6 @@ const Home = () => {
 
   const limitePassageiros = limits.passageiros;
 
-
   const receitaPrevista = cobrancas.reduce(
     (acc, c) => acc + Number(c.valor || 0),
     0,
@@ -215,10 +211,7 @@ const Home = () => {
       mode: "create",
       onSuccess: handleSuccessFormPassageiro,
     });
-  }, [
-    openPassageiroFormDialog,
-    handleSuccessFormPassageiro,
-  ]);
+  }, [openPassageiroFormDialog, handleSuccessFormPassageiro]);
 
   const handleOpenGastoDialog = useCallback(() => {
     const triggerGasto = () => {
@@ -440,18 +433,18 @@ const Home = () => {
               </>
             )}
 
-              <MiniKPI
-                className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative"
-                label="Passageiros Ativos"
-                value={passageirosAtivosCount}
-                icon={Users}
-                colorClass="text-blue-600"
-                bgClass="bg-blue-50"
-                subtext={`${passageirosInativosCount} inativo${
-                  passageirosInativosCount !== 1 ? "s" : ""
-                }`}
-                loading={isProfileLoading}
-              />
+            <MiniKPI
+              className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative"
+              label="Passageiros Ativos"
+              value={passageirosAtivosCount}
+              icon={Users}
+              colorClass="text-blue-600"
+              bgClass="bg-blue-50"
+              subtext={`${passageirosInativosCount} inativo${
+                passageirosInativosCount !== 1 ? "s" : ""
+              }`}
+              loading={isProfileLoading}
+            />
           </div>
 
           {/* Acessos Rápidos */}
