@@ -92,7 +92,7 @@ const Index = () => {
 
       case PLANO_ESSENCIAL:
         return {
-          buttonText: "Testar 7 dias grátis",
+          buttonText: "Testar 21 dias grátis",
           buttonVariant: "outline" as const,
           highlight: false,
           badge: null,
@@ -1083,38 +1083,29 @@ const Index = () => {
                 <AccordionContent>
                   <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mt-4">
                     {/* Header Otimizado */}
-                    <div className="grid grid-cols-4 bg-slate-50 p-2 sm:p-4 font-bold text-slate-700 text-[10px] sm:text-sm uppercase tracking-wide border-b-2 border-slate-200 items-center">
-                      <div className="col-span-1 text-left px-1 text-transparent sm:text-inherit">
-                        Recurso
-                      </div>
-                      <div className="text-center">Grátis</div>
+                    <div className="grid grid-cols-4 bg-slate-50 p-2 sm:p-4 font-bold text-slate-700 text-[10px] sm:text-sm uppercase tracking-wide border-b-2 border-slate-200 ite                    <div className="grid grid-cols-3 p-2 sm:p-4 border-b border-slate-200 font-semibold text-slate-700 text-xs sm:text-sm">
+                      <div></div>
                       <div className="text-center">Essencial</div>
                       <div className="text-center text-blue-700">Profissional</div>
-                    </div>
-
-                    {[
+                    </div>                  {[
                       // 1. O BÁSICO
                       {
                         name: "Limite de Passageiros",
-                        free: "Limitado",
                         ess: "Ilimitado",
                         comp: "Ilimitado",
                       },
                       {
                         name: "Quantidade de Veículos",
-                        free: "Ilimitado",
                         ess: "Ilimitado",
                         comp: "Ilimitado",
                       },
                       {
                         name: "Quantidade de Escolas",
-                        free: "Ilimitado",
                         ess: "Ilimitado",
                         comp: "Ilimitado",
                       },
                       {
                         name: "Link para Pais se Cadastrarem",
-                        free: false,
                         ess: true,
                         comp: true,
                       },
@@ -1122,19 +1113,16 @@ const Index = () => {
                       // 2. FINANCEIRO
                       {
                         name: "Controle de Quem Pagou (Manual)",
-                        free: true,
                         ess: true,
                         comp: true,
                       },
                       {
                         name: "Controle de Gastos e Lucro",
-                        free: false,
                         ess: true,
                         comp: true,
                       },
                       {
                         name: "Relatórios de Faturamento",
-                        free: false,
                         ess: true,
                         comp: true,
                       },
@@ -1142,19 +1130,16 @@ const Index = () => {
                       // 3. O ROBÔ (AUTOMAÇÃO)
                       {
                         name: "Cobrança Automática no WhatsApp",
-                        free: false,
                         ess: false,
                         comp: true,
                       },
                       {
                         name: "Baixa Automática do PIX",
-                        free: false,
                         ess: false,
                         comp: true,
                       },
                       {
                         name: "Envio de Recibos e Lembretes",
-                        free: false,
                         ess: false,
                         comp: true,
                       },
@@ -1162,31 +1147,16 @@ const Index = () => {
                       // 4. AJUDA
                       {
                         name: "Atendimento Prioritário (WhatsApp)",
-                        free: false,
                         ess: true,
                         comp: true,
                       },
                     ].map((row, idx) => (
                       <div
                         key={idx}
-                        className="grid grid-cols-4 p-2 sm:p-4 border-t border-slate-100 items-center text-xs sm:text-sm"
+                        className="grid grid-cols-3 p-2 sm:p-4 border-t border-slate-100 items-center text-xs sm:text-sm"
                       >
                         <div className="col-span-1 font-medium text-slate-700 text-left px-1 leading-tight">
                           {row.name}
-                        </div>
-
-                        <div className="text-center flex justify-center">
-                          {typeof row.free === "boolean" ? (
-                            row.free ? (
-                              <CheckCircle2 className="text-green-500 w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                            ) : (
-                              <XCircle className="text-slate-300 w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                            )
-                          ) : (
-                            <span className="font-bold text-slate-600">
-                              {row.free}
-                            </span>
-                          )}
                         </div>
 
                         <div className="text-center flex justify-center">
