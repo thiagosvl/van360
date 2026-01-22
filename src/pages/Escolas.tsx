@@ -16,12 +16,13 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreateEscola,
-  useDeleteEscola,
-  useEscolas,
-  useFilters,
-  useToggleAtivoEscola,
+    useCreateEscola,
+    useDeleteEscola,
+    useEscolas,
+    useFilters,
+    useToggleAtivoEscola,
 } from "@/hooks";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
@@ -38,7 +39,14 @@ export default function Escolas() {
     openConfirmationDialog,
     closeConfirmationDialog,
     openEscolaFormDialog,
+    openPlanUpgradeDialog, // Added if not available from useLayout destructure? 
+    // Wait, useLayout usually has openPlanUpgradeDialog?
+    // Step 982 (Passageiros) shows: setPageTitle, openPlanUpgradeDialog...
+    // Step 1003 (Escolas) shows: setPageTitle, openConfirmationDialog, closeConfirmationDialog, openEscolaFormDialog.
+    // openPlanUpgradeDialog IS MISSING in destructuring. I must add it.
   } = useLayout();
+  
+  const { isReadOnly } = usePermissions();
   const [searchParams] = useSearchParams();
 
   const deleteEscola = useDeleteEscola();
@@ -145,6 +153,10 @@ export default function Escolas() {
 
   const handleEdit = useCallback(
     (escola: Escola) => {
+      if (isReadOnly) {
+        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        return;
+      }
       openEscolaFormDialog({
         editingEscola: escola,
       });
@@ -154,6 +166,10 @@ export default function Escolas() {
 
   const handleDeleteClick = useCallback(
     (escola: Escola) => {
+      if (isReadOnly) {
+        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        return;
+      }
       if (escola.passageiros_ativos_count > 0) {
         toast.error("escola.erro.excluir", {
           description: "escola.erro.excluirComPassageiros",
@@ -183,6 +199,10 @@ export default function Escolas() {
 
   const handleToggleAtivo = useCallback(
     async (escola: Escola) => {
+      if (isReadOnly) {
+        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        return;
+      }
       if (!profile?.id) return;
 
       const novoStatus = !escola.ativo;
@@ -271,9 +291,13 @@ export default function Escolas() {
                   onClearFilters={clearFilters}
                   hasActiveFilters={hasActiveFilters}
                   onApplyFilters={setFilters}
-                  onRegister={() =>
-                    openEscolaFormDialog({ allowBatchCreation: true })
-                  }
+                  onRegister={() => {
+                    if (isReadOnly) {
+                        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+                        return;
+                    }
+                    openEscolaFormDialog({ allowBatchCreation: true });
+                  }}
                 />
               </div>
 

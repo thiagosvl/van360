@@ -11,7 +11,7 @@ export default function Register() {
   useSEO({
     noindex: false,
     title: "Cadastro - Van360 | Crie sua conta grátis",
-    description: "Cadastre-se no Van360 e comece a gerenciar seu transporte escolar. Planos gratuitos e pagos disponíveis. Sem fidelidade.",
+    description: "Cadastre-se no Van360 e comece a gerenciar seu transporte escolar. Teste grátis. Sem fidelidade.",
   });
 
   const {

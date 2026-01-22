@@ -1,7 +1,6 @@
 import { KPICard } from "@/components/common/KPICard";
 import { LimitHealthBar } from "@/components/common/LimitHealthBar";
 import {
-    PLANO_ESSENCIAL,
     PLANO_PROFISSIONAL
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -21,40 +20,13 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
   const { openPlanUpgradeDialog } = useLayout();
   
   // Source of truth: plano object flags
-  const isFree = plano?.isFreePlan;
+
   const isEssential = plano?.isEssentialPlan;
   const isProfissional = plano?.isProfissionalPlan;
 
   // Renderiza componente de passageiros ativos (Reutilizado EM TODOS)
   const renderPassengerCard = (variant: "success" | "info" | "default") => {
-    // Para plano gratuito, usar LimitHealthBar mas sem a estilização exagerada
-    if (isFree && metricas.limitePassageiros !== null) {
-      return (
-        <div className="h-full">
-          <LimitHealthBar
-            label="Passageiros Ativos"
-            current={metricas.passageirosAtivos}
-            max={metricas.limitePassageiros}
-            description={
-              metricas.passageirosAtivos >= metricas.limitePassageiros
-                ? "Limite atingido."
-                : `${
-                    metricas.limitePassageiros - metricas.passageirosAtivos
-                  } vagas restantes.`
-            }
-            onIncreaseLimit={() =>
-              openPlanUpgradeDialog({
-                feature: "passageiros",
-                defaultTab: PLANO_ESSENCIAL,
-                targetPassengerCount: metricas.passageirosAtivos,
-              })
-            }
-            className="h-full mb-0 bg-white shadow-sm border-gray-100 flex flex-col justify-center"
-            // Remover estilos de borda colorida/opacidade se houver
-          />
-        </div>
-      );
-    }
+
 
     return (
       <KPICard
@@ -96,7 +68,7 @@ export function SubscriptionKPIs({ plano, metricas }: SubscriptionKPIsProps) {
         );
     }
 
-    // Para Gratuito e Essencial: Card de Venda "Cobranças Automáticas"
+    // Para Essencial: Card de Venda "Cobranças Automáticas"
     // Premium & "Chamativo" Polish
     
     // Cálculo de estimativa de economia (simulado base 5min/passageiro)

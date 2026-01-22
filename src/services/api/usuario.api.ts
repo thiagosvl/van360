@@ -1,16 +1,15 @@
+import { Usuario } from "../../types/usuario";
 import { apiClient } from "./client";
 
 export const usuarioApi = {
-  registrarPlanoGratuito: (payload: any) =>
-    apiClient.post(`/usuarios/registrar-plano-gratuito`, payload).then(res => res.data),
+  getProfile: (usuarioId: string) => 
+     apiClient.get<Usuario>(`/me/profile`).then(res => res.data),
 
   registrarPlanoEssencial: (payload: any) =>
     apiClient.post(`/usuarios/registrar-plano-essencial`, payload).then(res => res.data),
 
   registrarPlanoProfissional: (payload: any) =>
     apiClient.post(`/usuarios/registrar-plano-profissional`, payload).then(res => res.data),
-
-
 
   upgradePlano: (payload: { usuario_id: string; plano_id: string; quantidade_personalizada?: number }) =>
     apiClient.post(`/usuarios/upgrade-plano`, payload).then(res => res.data),
@@ -23,8 +22,6 @@ export const usuarioApi = {
 
   criarAssinaturaProfissionalPersonalizado: (payload: { usuario_id: string; quantidade: number }) =>
     apiClient.post(`/usuarios/criar-assinatura-profissional-personalizado`, payload).then(res => res.data),
-
-
 
   atualizarUsuario: (usuarioId: string, payload: {
     nome?: string;

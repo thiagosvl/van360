@@ -2,7 +2,6 @@ import { PLANO_PROFISSIONAL } from "@/constants";
 import { Loader2 } from "lucide-react";
 import { BenefitItem } from "./BenefitItem";
 import { ExpansionSummary } from "./ExpansionSummary";
-import { FranchiseTierSelector } from "./FranchiseTierSelector";
 import { PLAN_BENEFITS } from "./planBenefits";
 
 interface ProfissionalPlanContentProps {
@@ -23,6 +22,7 @@ interface ProfissionalPlanContentProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   calculateProrata: (price: number) => { valorHoje: number };
   franquiaAtual: number;
+  currentUsage: number;
   customHeadline?: string;
 }
 

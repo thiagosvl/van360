@@ -1,10 +1,10 @@
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -12,14 +12,14 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_LIMITE_FRANQUIA } from "@/constants";
 import {
-  useBuscarResponsavel,
-  useCreatePassageiro,
-  useEscolasWithFilters,
-  useFinalizePreCadastro,
-  usePassageiroForm,
-  usePermissions,
-  useUpdatePassageiro,
-  useVeiculosWithFilters,
+    useBuscarResponsavel,
+    useCreatePassageiro,
+    useEscolasWithFilters,
+    useFinalizePreCadastro,
+    usePassageiroForm,
+    usePermissions,
+    useUpdatePassageiro,
+    useVeiculosWithFilters,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
@@ -48,7 +48,6 @@ type PlanoUsuario = {
   isValidTrial: boolean;
   isActive: boolean;
   isValidPlan: boolean;
-  isFreePlan: boolean;
   isProfissionalPlan: boolean;
   isEssentialPlan: boolean;
 } | null;

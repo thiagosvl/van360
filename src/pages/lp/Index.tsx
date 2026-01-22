@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { PLANO_ESSENCIAL, PLANO_GRATUITO, PLANO_PROFISSIONAL } from "@/constants";
+import { PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
 import { usePlanos } from "@/hooks";
 import { useSEO } from "@/hooks/useSEO";
 import { cn } from "@/lib/utils";
@@ -83,19 +83,13 @@ const Index = () => {
     | undefined) ?? { bases: [], sub: [] };
 
   const planosOrdenados = planosDataTyped.bases.sort((a, b) => {
-    const order = [PLANO_GRATUITO, PLANO_ESSENCIAL, PLANO_PROFISSIONAL];
+    const order = [PLANO_ESSENCIAL, PLANO_PROFISSIONAL];
     return order.indexOf(a.slug) - order.indexOf(b.slug);
   });
 
   const getPlanoConfig = (slug: string) => {
     switch (slug) {
-      case PLANO_GRATUITO:
-        return {
-          buttonText: "Começar Grátis",
-          buttonVariant: "ghost" as const,
-          highlight: false,
-          badge: null,
-        };
+
       case PLANO_ESSENCIAL:
         return {
           buttonText: "Testar 7 dias grátis",
@@ -939,7 +933,6 @@ const Index = () => {
               {planosOrdenados.map((plano) => {
                 const config = getPlanoConfig(plano.slug);
                 const isProfissional = plano.slug === PLANO_PROFISSIONAL;
-                const isGratuito = plano.slug === PLANO_GRATUITO;
                 const isEssencial = plano.slug === PLANO_ESSENCIAL;
 
                 let preco =
@@ -992,16 +985,6 @@ const Index = () => {
                           {plano.descricao_curta}
                         </CardDescription>
                         <div className="mt-4">
-                          {isGratuito ? (
-                            <>
-                              <span className="text-4xl font-extrabold text-slate-900">
-                                R$ 0
-                              </span>
-                              <span className="text-slate-500 font-medium text-sm">
-                                /mês
-                              </span>
-                            </>
-                          ) : (
                             <>
                               {isProfissional && (
                                 <span className="text-xs text-slate-500 block font-medium mb-1">
@@ -1026,7 +1009,6 @@ const Index = () => {
                                 /mês
                               </span>
                             </>
-                          )}
                         </div>
                       </CardHeader>
 
@@ -1284,9 +1266,8 @@ const Index = () => {
                 Qual plano é melhor para mim?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
-                O <strong>Gratuito</strong> é para testar. O{" "}
-                <strong>Essencial</strong> organiza sua gestão. O{" "}
-                <strong>Profissional</strong> automatiza tudo (cobrança e baixa de
+                O <strong>Essencial</strong> organiza sua gestão. O{" "}
+                <strong>Profissional</strong>, alem de organizar, automatiza tudo (cobrança e baixa de
                 PIX) e te dá folga.
               </AccordionContent>
             </AccordionItem>

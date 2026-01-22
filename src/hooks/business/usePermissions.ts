@@ -14,7 +14,6 @@ export function usePermissions() {
     plano, 
     isLoading, 
     refreshProfile,
-    isGratuito,
     isEssencial,
     isProfissional,
 } = useProfile(user?.id);
@@ -25,7 +24,7 @@ export function usePermissions() {
   // NEW: Use backend source of truth for features
   const { data: summary, isLoading: isSummaryLoading } = useUsuarioResumo();
 
-  const isFreePlan = isGratuito;
+
 
   // Regras de Visualização (Páginas/Módulos)
   // Agora usamos a flag 'gestao_gastos' que vem do backend
@@ -61,10 +60,10 @@ export function usePermissions() {
     canCreateCobranca,
 
     // State
-    isFreePlan,
-    isGratuito,
+
     isEssencial,
     isProfissional,
+    isReadOnly: plano?.isReadOnly ?? false,
     
     // Raw Data (Use com cautela, prefira as flags acima)
     plano,

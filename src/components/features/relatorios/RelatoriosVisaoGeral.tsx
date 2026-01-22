@@ -1,16 +1,14 @@
-import { BlurredValue } from "@/components/common/BlurredValue";
 import { KPICard } from "@/components/common/KPICard";
-import { LockOverlay } from "@/components/common/LockOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import {
-  AlertTriangle,
-  ArrowDownCircle,
-  ArrowUpCircle,
-  Percent,
-  Users,
-  Wallet
+    AlertTriangle,
+    ArrowDownCircle,
+    ArrowUpCircle,
+    Percent,
+    Users,
+    Wallet
 } from "lucide-react";
 
 interface RelatoriosVisaoGeralProps {
@@ -30,15 +28,8 @@ interface RelatoriosVisaoGeralProps {
 
 export const RelatoriosVisaoGeral = ({
   dados,
-  hasAccess,
 }: RelatoriosVisaoGeralProps) => {
   const lucroPositivo = dados.lucroEstimado >= 0;
-
-  // Helper for Progress Bars in No-Access State
-  const getProgressValue = (realValue: number) => {
-    if (hasAccess) return realValue;
-    return 50; // Fixed visual percentage for "teaser" look
-  };
 
   return (
     <div className="space-y-4 mt-0">
@@ -50,20 +41,16 @@ export const RelatoriosVisaoGeral = ({
           bgClass={lucroPositivo ? "bg-emerald-50" : "bg-red-50"}
           colorClass={lucroPositivo ? "text-emerald-600" : "text-red-600"}
           value={
-            <BlurredValue
-              value={dados.lucroEstimado}
-              visible={hasAccess}
-              type="currency"
-              className={cn(
-                "font-bold tracking-tight", // KPICard handles size, but we can override
+             <span className={cn(
+                "font-bold tracking-tight",
                 lucroPositivo ? "text-emerald-600" : "text-red-600"
-              )}
-            />
+              )}>
+               {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.lucroEstimado)}
+             </span>
           }
           countText="Entradas - Saídas do mês"
-          countVisible={hasAccess}
+          countVisible={true}
           className="md:col-span-1"
-          restricted={!hasAccess}
         />
 
         {/* Atrasos */}
@@ -73,26 +60,17 @@ export const RelatoriosVisaoGeral = ({
           bgClass="bg-red-50"
           colorClass="text-red-600"
           value={
-            <BlurredValue
-              value={dados.atrasos.valor}
-              visible={hasAccess}
-              type="currency"
-              className="font-bold tracking-tight text-red-600"
-            />
+             <span className="font-bold tracking-tight text-red-600">
+               {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.atrasos.valor)}
+             </span>
           }
           countText={
             <div className="inline-flex items-center gap-1.5 bg-red-50 px-2.5 py-1 rounded-md text-red-700">
-                <BlurredValue
-                  value={dados.atrasos.passageiros}
-                  visible={hasAccess}
-                  type="number"
-                />{" "}
-                passageiros
+                {dados.atrasos.passageiros} passageiros
             </div>
           }
-          countVisible={hasAccess}
+          countVisible={true}
           className="md:col-span-1"
-          restricted={!hasAccess}
         />
       </div>
 
@@ -104,16 +82,9 @@ export const RelatoriosVisaoGeral = ({
           icon={Users}
           bgClass="bg-orange-50"
           colorClass="text-orange-500"
-          value={
-              <BlurredValue
-                value={dados.custoPorPassageiro}
-                visible={hasAccess}
-                type="currency"
-              />
-          }
+          value={new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.custoPorPassageiro)}
           countText="Média de custo por assento ocupado"
-          countVisible={hasAccess}
-          restricted={!hasAccess}
+          countVisible={true}
         />
 
         {/* Taxa de Recebimento */}
@@ -124,16 +95,11 @@ export const RelatoriosVisaoGeral = ({
             colorClass="text-emerald-500"
             value={
                 <span className="text-emerald-600">
-                    <BlurredValue
-                      value={dados.taxaRecebimento}
-                      visible={hasAccess}
-                      type="percent"
-                    />
+                    {dados.taxaRecebimento}%
                 </span>
             }
             countText="do previsto"
-            countVisible={hasAccess}
-            restricted={!hasAccess}
+            countVisible={true}
         />
       </div>
 
@@ -162,15 +128,11 @@ export const RelatoriosVisaoGeral = ({
                       Entradas
                     </span>
                     <span className="font-bold text-gray-900 text-base">
-                      <BlurredValue
-                        value={dados.recebido}
-                        visible={hasAccess}
-                        type="currency"
-                      />
+                      {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.recebido)}
                     </span>
                   </div>
                   <Progress
-                    value={getProgressValue(percentualEntradas)}
+                    value={percentualEntradas}
                     className="h-3 bg-gray-100 rounded-full"
                     indicatorClassName="bg-emerald-500 rounded-full"
                   />
@@ -182,15 +144,11 @@ export const RelatoriosVisaoGeral = ({
                       Saídas
                     </span>
                     <span className="font-bold text-gray-900 text-base">
-                      <BlurredValue
-                        value={dados.gasto}
-                        visible={hasAccess}
-                        type="currency"
-                      />
+                       {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.gasto)}
                     </span>
                   </div>
                   <Progress
-                    value={getProgressValue(percentualSaidas)}
+                    value={percentualSaidas}
                     className="h-3 bg-gray-100 rounded-full"
                     indicatorClassName="bg-red-500 rounded-full"
                   />
@@ -198,9 +156,6 @@ export const RelatoriosVisaoGeral = ({
               </>
             );
           })()}
-          {!hasAccess && (
-            <LockOverlay className="bottom-1.5 right-4" />
-          )}
         </CardContent>
       </Card>
     </div>

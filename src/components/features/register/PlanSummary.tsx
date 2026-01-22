@@ -1,4 +1,4 @@
-import { PLANO_ESSENCIAL, PLANO_GRATUITO, PLANO_PROFISSIONAL } from "@/constants";
+import { PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
 import { Plano, SubPlano } from "@/types/plano";
 import { CheckCircle2 } from "lucide-react";
 
@@ -37,8 +37,7 @@ export const PlanSummary = ({
     if (plano.slug === PLANO_ESSENCIAL)
       return `Gestão ilimitada + ${plano.trial_days} dias grátis`;
 
-    // Plano Gratuito: Mais curto e direto
-    return "Recursos limitados. Ideal para testar.";
+    return "Gestão escolar completa";
   };
 
   return (
@@ -65,12 +64,10 @@ export const PlanSummary = ({
           mas para 320px é melhor garantir que ele não esmague o texto */}
       <div className="flex items-baseline gap-1 self-end sm:self-auto pl-11 sm:pl-0">
         <span className="text-sm font-bold text-gray-900">
-          {plano.slug === PLANO_GRATUITO
-            ? "R$ 0"
-            : preco.toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })}
+          {preco.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}
         </span>
         <span className="text-[10px] text-gray-500 uppercase font-medium">
           /mês

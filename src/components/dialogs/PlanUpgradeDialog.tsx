@@ -4,7 +4,6 @@ import {
   FEATURE_COBRANCA_AUTOMATICA,
   FEATURE_GASTOS,
   FEATURE_LIMITE_FRANQUIA,
-  FEATURE_LIMITE_PASSAGEIROS,
   FEATURE_NOTIFICACOES,
   FEATURE_RELATORIOS,
   PLANO_ESSENCIAL,
@@ -272,7 +271,6 @@ export function PlanUpgradeDialog({
   const featureTargetPlan = useMemo(() => {
     switch (feature) {
       case FEATURE_GASTOS:
-      case FEATURE_LIMITE_PASSAGEIROS:
       case FEATURE_RELATORIOS:
         return PLANO_ESSENCIAL;
       case FEATURE_COBRANCA_AUTOMATICA:
@@ -292,11 +290,7 @@ export function PlanUpgradeDialog({
           title: "Controle Seus Gastos",
           desc: "Gerencie abastecimentos e manutenções com o Plano Essencial.",
         };
-      case FEATURE_LIMITE_PASSAGEIROS:
-        return {
-          title: "Limite de Passageiros Atingido",
-          desc: "Libere cadastros ilimitados migrando para o Plano Essencial.",
-        };
+
       case FEATURE_COBRANCA_AUTOMATICA:
         return {
           title: "Pare de Cobrar Manualmente",

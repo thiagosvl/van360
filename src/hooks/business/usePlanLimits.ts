@@ -12,20 +12,16 @@ export function usePlanLimits({ currentPassengerCount }: UsePlanLimitsProps = {}
   const limites = plano?.limites;
   const contadores = systemSummary?.contadores;
 
-  // --- Passenger Limits ---
-  const passengerLimit = limites?.passageiros_max ?? null;
+  // --- Passenger Limits (REMOVED: All plans are unlimited now) ---
+  const passengerLimit = null;
   const usedPassengers = contadores?.passageiros.ativos ?? 0;
   
   // If currentPassengerCount is provided (optimistic UI), use it. Otherwise use backend data.
-  // Note: Backend 'passageiros_restantes' is authoritative, but for simulations we might need math.
   const currentUsed = currentPassengerCount !== undefined ? currentPassengerCount : usedPassengers;
   
-  const remainingPassengers = passengerLimit !== null 
-    ? Math.max(0, passengerLimit - currentUsed) 
-    : null;
+  const remainingPassengers = null;
 
-  const hasPassengerLimit = passengerLimit !== null;
-  const isPassengerLimitReached = hasPassengerLimit && (remainingPassengers !== null && remainingPassengers <= 0);
+
 
   // --- Franchise/Billing Automation Limits ---
   const franchiseLimit = limites?.franquia_cobranca_max ?? 0;
@@ -44,21 +40,9 @@ export function usePlanLimits({ currentPassengerCount }: UsePlanLimitsProps = {}
                       // But the goal is to decouple. Let's see if this breaks anything.
     limits: {
       passengers: {
-        limit: passengerLimit,
+        limit: null,
         used: currentUsed,
-        remaining: remainingPassengers,
-        hasLimit: hasPassengerLimit,
-        isReached: isPassengerLimitReached,
-        checkAvailability: (simulateAddition = false) => {
-            if (!hasPassengerLimit) return true;
-            const current = remainingPassengers ?? 0;
-            return simulateAddition ? current > 1 : current > 0; 
-            // Logic fix: if remaining is 0, I cannot add. If simulateAddition (adding +1), I need at least 1 remaining.
-            // If I am just checking state, remaining >= 0 is "ok" (not negative).
-            // But "checkAvailability" usually means "Can I add?".
-            // Let's standarize: 
-            // current > 0 -> Have space.
-        }
+        remaining: null,
       },
       franchise: {
         limit: franchiseLimit,

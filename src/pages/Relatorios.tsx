@@ -7,7 +7,6 @@ import { RelatoriosOperacional } from "@/components/features/relatorios/Relatori
 import { RelatoriosSaidas } from "@/components/features/relatorios/RelatoriosSaidas";
 import { RelatoriosVisaoGeral } from "@/components/features/relatorios/RelatoriosVisaoGeral";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FEATURE_RELATORIOS, PLANO_ESSENCIAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -23,7 +22,6 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useRelatoriosCalculations } from "@/hooks/business/useRelatoriosCalculations";
 import { useSession } from "@/hooks/business/useSession";
-import { Lock } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -64,17 +62,15 @@ export default function Relatorios() {
   const { user } = useSession();
   
   // Use Access Control Hook
-  const { profile, plano: profilePlano, canViewModuleRelatorios, isFreePlan } = usePermissions();
+  const { profile, plano: profilePlano, canViewModuleRelatorios } = usePermissions();
   const { limits: planLimits } = usePlanLimits();
 
   const permissions = {
-      canViewRelatorios: canViewModuleRelatorios,
-      isFreePlan
+      canViewRelatorios: canViewModuleRelatorios
   };
     
   const limits = {
-      passageiros: planLimits.passengers.limit,
-      hasPassengerLimit: planLimits.passengers.hasLimit
+      passageiros: planLimits.passengers.limit
   };
 
   const [mes, setMes] = useState(new Date().getMonth() + 1);
@@ -82,7 +78,7 @@ export default function Relatorios() {
 
 
   // Access Logic
-  const hasAccess = permissions.canViewRelatorios;
+  const hasAccess = true;
 
   // Buscar dados reais - SEMPRE (para instant unlock e background blur)
   const shouldFetchFinancials = !!profile?.id;
@@ -190,34 +186,7 @@ export default function Relatorios() {
       </div>
 
       {/* Desktop Alert Banner for No Access */}
-      {!hasAccess && (
-        <div className="hidden md:flex bg-amber-50 border border-amber-200 rounded-xl p-4 items-center justify-between shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-amber-100 rounded-full text-amber-700">
-              <Lock className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-amber-900">
-                Você sabe o lucro exato da sua van?
-              </p>
-              <p className="text-xs text-amber-700">
-                Libere o acesso agora e veja seus números reais de faturamento e
-                despesas.
-              </p>
-            </div>
-          </div>
-          <Button
-            onClick={() => openPlanUpgradeDialog({
-                feature: FEATURE_RELATORIOS,
-                defaultTab: PLANO_ESSENCIAL,
-            })}
-            size="sm"
-            className="bg-amber-600 hover:bg-amber-700 text-white border-none shadow-none"
-          >
-            Ver meu Lucro Real
-          </Button>
-        </div>
-      )}
+
 
       {/* Main Content */}
       <Tabs 
@@ -283,7 +252,6 @@ export default function Relatorios() {
             dados={dadosOperacional.operacional}
             automacao={dadosOperacional.automacao}
             hasAccess={hasAccess}
-            isFreePlan={isFreePlan}
             limits={limits}
             IsProfissionalPlan={!!profilePlano?.isProfissionalPlan}
           />

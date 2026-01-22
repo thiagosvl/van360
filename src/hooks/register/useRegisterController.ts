@@ -1,8 +1,7 @@
 import { isPlanoPagoNoAto } from "@/components/features/register";
 import {
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
-  PLANO_PROFISSIONAL,
+    PLANO_ESSENCIAL,
+    PLANO_PROFISSIONAL,
 } from "@/constants";
 import { ROUTES } from "@/constants/routes";
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks";
@@ -153,7 +152,7 @@ export function useRegisterController() {
         const planoEncontrado = planosDataTyped.bases.find(p => p.slug === planoParam);
         if (planoEncontrado) {
           form.setValue("plano_id", planoEncontrado.id, { shouldValidate: true });
-          if (planoParam === PLANO_GRATUITO || planoParam === PLANO_ESSENCIAL) {
+          if (planoParam === PLANO_ESSENCIAL) {
             setCurrentStep(2);
           }
         }
@@ -436,13 +435,7 @@ export function useRegisterController() {
     if (!selectedPlano) return;
     try {
       let result;
-      if (selectedPlano.slug === PLANO_GRATUITO) {
-        result = await usuarioApi.registrarPlanoGratuito({
-          ...data,
-          plano_id: selectedPlano.id,
-          sub_plano_id: selectedSubPlanoId,
-        });
-      } else if (selectedPlano.slug === PLANO_ESSENCIAL) {
+      if (selectedPlano.slug === PLANO_ESSENCIAL) {
         result = await usuarioApi.registrarPlanoEssencial({
           ...data,
           plano_id: selectedPlano.id,

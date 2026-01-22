@@ -11,7 +11,6 @@ import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import {
   PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
   PLANO_PROFISSIONAL,
   QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO,
 } from "@/constants";
@@ -76,7 +75,6 @@ export const PlanoCard = ({
   autoAdvanceOnSubPlanoSelect = true,
 }: PlanoCardProps) => {
   const isProfissional = plano.slug === PLANO_PROFISSIONAL;
-  const isGratuito = plano.slug === PLANO_GRATUITO;
   const isEssencial = plano.slug === PLANO_ESSENCIAL;
 
   // Estado local para controlar se o personalizado foi clicado e se o slider está expandido
@@ -251,8 +249,6 @@ export const PlanoCard = ({
         return null;
       case PLANO_PROFISSIONAL:
         return { text: "Mais Popular" };
-      case PLANO_GRATUITO:
-        return null;
       default:
         return null;
     }
@@ -316,11 +312,8 @@ export const PlanoCard = ({
 
   // Função para obter o prefixo das features
   const getFeaturesPrefix = () => {
-    if (isGratuito) {
-      return "Este plano inclui:";
-    }
     if (isEssencial) {
-      return "Tudo do Gratuito, mais:";
+      return "Principais recursos:";
     }
     if (isProfissional) {
       return "Tudo do Essencial, mais:";
@@ -350,9 +343,6 @@ export const PlanoCard = ({
     }
     
     // Textos padrão apenas quando não há actionLabel (página /cadastro)
-    if (isGratuito) {
-      return "Escolher Plano";
-    }
     if (isEssencial) {
       return "Testar 7 dias grátis";
     }
@@ -396,24 +386,7 @@ export const PlanoCard = ({
 
         {/* 3. Preço */}
         <div className="mb-4">
-          {isGratuito && (
-            <>
-              <div className="text-sm text-gray-600 mb-1">
-                <span>Para quem está começando.</span>
-              </div>
-              <span className="text-3xl font-extrabold text-gray-900">
-                R$ 0
-              </span>
-              <div className="text-xs text-gray-500 mt-1">
-                Grátis para sempre.{" "}
-                <span className="font-medium text-gray-700">
-                  Com restrições de uso.
-                </span>
-              </div>
-            </>
-          )}
-
-          {!isGratuito && !isProfissional && (
+          {!isProfissional && (
             <>
               {plano.promocao_ativa && plano.preco_promocional ? (
                 <>
@@ -751,8 +724,6 @@ export const PlanoCard = ({
                 // Caso contrário, usar variants padrão (página /cadastro)
                 actionButtonClassName
                   ? "default" // Variant padrão, className customizado vai sobrescrever estilos
-                  : isGratuito
-                  ? "ghost"
                   : isEssencial
                   ? "outline"
                   : "default"
@@ -763,8 +734,6 @@ export const PlanoCard = ({
                 // Prioridade: actionButtonClassName (quando fornecido) > estilos padrão por plano
                 actionButtonClassName
                   ? actionButtonClassName
-                  : isGratuito
-                  ? "text-primary hover:text-blue-700 hover:border-2 hover:border-blue-600 hover:bg-gray-50"
                   : isEssencial
                   ? "border-2 bg-white text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
                   : "bg-blue-600 hover:bg-blue-700 text-white"

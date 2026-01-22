@@ -53,7 +53,7 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
             plano_id: planoEssencialId
          });
       } else {
-         // Se estiver no gratuito -> Upgrade
+         // Se estiver em trial ou ativação -> Upgrade
          result = await usuarioApi.upgradePlano({
             usuario_id: profile.id,
             plano_id: planoEssencialId,

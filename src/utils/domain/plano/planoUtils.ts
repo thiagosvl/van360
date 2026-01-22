@@ -1,6 +1,5 @@
 import {
   PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
   PLANO_PROFISSIONAL
 } from "@/constants";
 import { AssinaturaCobrancaStatus, AssinaturaStatus } from "@/types/enums";
@@ -16,7 +15,7 @@ export function extractPlanoData(assinatura: any) {
 
   const agora = new Date();
 
-  const isFreePlan = slugBase === PLANO_GRATUITO;
+
   const isProfissionalPlan = slugBase === PLANO_PROFISSIONAL;
   const isEssentialPlan = slugBase === PLANO_ESSENCIAL;
 
@@ -52,7 +51,7 @@ export function extractPlanoData(assinatura: any) {
     isValidTrial,
     isActive,
     isValidPlan,
-    isFreePlan,
+
     isProfissionalPlan,
     isEssentialPlan,
     isPendente: assinatura.status === AssinaturaStatus.PENDENTE_PAGAMENTO,
@@ -97,11 +96,8 @@ export function getPlanoUsuario(usuario: any) {
  * Valida se o usuário tem acesso à funcionalidade de solicitação de passageiros (pre-passageiro)
  * 
  * Regras:
- * - Pode usar: Qualquer plano ativo (Gratuito, Essencial trial/ativo, Profissional ativo)
+ * - Pode usar: Qualquer plano ativo (Essencial trial/ativo, Profissional ativo)
  * - Não pode usar: Apenas se a assinatura não estiver ativa (suspensa ou cancelada)
- * 
- * Nota: A funcionalidade está disponível para todos os planos ativos para maximizar o uso
- * e aumentar as chances de conversão de usuários do plano gratuito.
  */
 export function hasPrePassageiroAccess(planoData: ReturnType<typeof extractPlanoData>): {
   hasAccess: boolean;
@@ -138,22 +134,9 @@ export function hasPrePassageiroAccess(planoData: ReturnType<typeof extractPlano
   // };
 }
 
-/**
- * Valida se o usuário tem acesso aos relatórios
- * 
- * Regras:
- * - Plano Profissional (qualquer status válido) OU
- * - Plano Essencial ativo OU
- * - Trial válido
- */
 export function hasRelatoriosAccess(planoData: ReturnType<typeof extractPlanoData>): boolean {
   if (!planoData) return false;
-
-  return (
-    planoData.isProfissionalPlan ||
-    (planoData.isEssentialPlan && planoData.isActive) ||
-    (planoData.isTrial && planoData.isValidTrial)
-  );
+  return planoData.isValidPlan;
 }
 
 /**

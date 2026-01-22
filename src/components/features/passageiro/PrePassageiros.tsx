@@ -23,12 +23,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  FEATURE_LIMITE_FRANQUIA,
-  FEATURE_LIMITE_PASSAGEIROS,
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
-} from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   useCreatePrePassageiro,
@@ -36,7 +30,6 @@ import {
   usePassageiros,
   usePrePassageiros,
 } from "@/hooks";
-import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import {
@@ -106,14 +99,7 @@ export default function PrePassageiros({
 
   const loading = isPrePassageirosLoading || isPrePassageirosFetching;
 
-  // --- Lógica de Limite (centralizada no hook) ---
-  const { limits } = usePlanLimits({
-    currentPassengerCount: countPassageiros,
-  });
 
-  const isLimitedUser = plano?.isFreePlan ?? false;
-  const isLimitReached = limits.passengers.isReached;
-  // -------------------------------------------------------
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -170,24 +156,7 @@ export default function PrePassageiros({
   };
 
   const handleFinalizeClick = (prePassageiro: PrePassageiro) => {
-    // Verificar se é plano gratuito E limite atingido
-    const isFreePlan = plano?.slug === PLANO_GRATUITO;
-    if (isLimitedUser && isLimitReached) {
-      if (isFreePlan) {
-        openPlanUpgradeDialog({
-          feature: FEATURE_LIMITE_PASSAGEIROS,
-          defaultTab: PLANO_ESSENCIAL,
-          targetPassengerCount: countPassageiros + 1,
-        });
-      } else {
-        // Se for plano pago, abre dialogo de aumentar franquia
-        openPlanUpgradeDialog({
-          feature: FEATURE_LIMITE_FRANQUIA,
-          targetPassengerCount: countPassageiros + 1,
-        });
-      }
-      return;
-    }
+
 
     openPassageiroFormDialog({
         mode: "finalize",

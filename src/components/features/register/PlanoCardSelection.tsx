@@ -4,10 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import {
-  PLANO_ESSENCIAL,
-  PLANO_GRATUITO,
-  PLANO_PROFISSIONAL,
-  QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO,
+    PLANO_ESSENCIAL,
+    PLANO_PROFISSIONAL,
+    QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO,
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Plano, SubPlano } from "@/types/plano";
@@ -53,7 +52,6 @@ export const PlanoCardSelection = ({
   cardClassName,
 }: PlanoCardSelectionProps) => {
   const isProfissional = plano.slug === PLANO_PROFISSIONAL;
-  const isGratuito = plano.slug === PLANO_GRATUITO;
   const isEssencial = plano.slug === PLANO_ESSENCIAL;
 
   // Estado local para controlar se o personalizado foi clicado e se o slider está expandido
@@ -394,7 +392,6 @@ export const PlanoCardSelection = ({
 
   const getButtonText = () => {
     if (isSelected) return "Escolher Plano";
-    if (isGratuito) return "Selecionar Grátis";
     if (isEssencial) return "Selecionar Essencial";
     if (isProfissional) return "Selecionar Profissional";
     return "Selecionar";
@@ -457,14 +454,6 @@ export const PlanoCardSelection = ({
 
         {/* Preço */}
         <div className="mb-5">
-          {isGratuito ? (
-            <div className="flex items-baseline">
-              <span className="text-3xl font-extrabold text-gray-900">
-                R$ 0
-              </span>
-              <span className="text-gray-500 ml-1 text-sm">/mês</span>
-            </div>
-          ) : (
             <div>
               {plano.promocao_ativa && (plano.slug === PLANO_PROFISSIONAL || plano.preco_promocional) && !quantidadePersonalizada && (
                 <div className="text-xs text-gray-400 line-through mt-0.5">
@@ -496,7 +485,6 @@ export const PlanoCardSelection = ({
                 <span className="text-gray-500 ml-1 text-sm">/mês</span>
               </div>
             </div>
-          )}
         </div>
 
         {/* Seletor de Quantidade (Apenas Profissional e Selecionado) */}

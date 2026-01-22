@@ -1,7 +1,6 @@
 import {
     FEATURE_COBRANCA_AUTOMATICA,
     FEATURE_LIMITE_FRANQUIA,
-    FEATURE_LIMITE_PASSAGEIROS,
     PLANO_ESSENCIAL,
     PLANO_PROFISSIONAL
 } from "@/constants";
@@ -13,25 +12,11 @@ export const useUpsellContent = (plano?: any) => {
 
   const content = useMemo(() => {
     // Source of truth: plano object already has these flags calculated by extractPlanoData
-    const isFree = plano?.isFreePlan;
+
     const isEssencial = plano?.isEssentialPlan;
     const isProfissional = plano?.isProfissionalPlan;
 
-    if (isFree) {
-      return {
-        title: "Cresça sem limites 🚀",
-        description:
-          "Cadastre quantos passageiros quiser e tenha controle total das suas finanças.",
-        buttonText: "Quero mais recursos →",
-        action: () =>
-          openPlanUpgradeDialog({
-            feature: FEATURE_LIMITE_PASSAGEIROS,
-            defaultTab: PLANO_ESSENCIAL,
-          }),
-        check: true,
-        variant: "free_to_essential",
-      };
-    }
+
 
     if (isEssencial) {
       return {

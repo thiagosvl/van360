@@ -28,15 +28,13 @@ import { useSession } from "@/hooks/business/useSession";
 
 import {
   FEATURE_GASTOS,
-  FEATURE_LIMITE_PASSAGEIROS,
-  PLANO_ESSENCIAL,
+  PLANO_ESSENCIAL
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { toast } from "@/utils/notifications/toast";
 
-import { LimitHealthBar } from "@/components/common/LimitHealthBar";
 import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
 import { MiniKPI } from "@/components/features/home/MiniKPI";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
@@ -69,7 +67,6 @@ const Home = () => {
     profile,
     isLoading: isProfileLoading,
     plano,
-    isFreePlan,
     isProfissional,
     canViewModuleGastos,
   } = usePermissions();
@@ -80,13 +77,11 @@ const Home = () => {
   const upsellContent = useUpsellContent(plano);
 
   const permissions = {
-    isFreePlan,
     canViewGastos: canViewModuleGastos,
   };
 
   const limits = {
     passageiros: planLimits.passengers.limit,
-    hasPassengerLimit: planLimits.passengers.hasLimit,
   };
 
   const navigate = useNavigate();
@@ -127,7 +122,7 @@ const Home = () => {
     systemSummary?.contadores.passageiros.solicitacoes_pendentes ?? 0;
 
   const limitePassageiros = limits.passageiros;
-  const hasPassengerLimit = limits.hasPassengerLimit;
+
 
   const receitaPrevista = cobrancas.reduce(
     (acc, c) => acc + Number(c.valor || 0),
@@ -216,36 +211,13 @@ const Home = () => {
   }, []);
 
   const handleOpenPassageiroDialog = useCallback(() => {
-    if (
-      permissions.isFreePlan &&
-      hasPassengerLimit &&
-      passageirosCount >= limits.passageiros
-    ) {
-      openPlanUpgradeDialog({
-        feature: FEATURE_LIMITE_PASSAGEIROS,
-        defaultTab: PLANO_ESSENCIAL,
-        targetPassengerCount: passageirosAtivosCount,
-        onSuccess: () =>
-          openPassageiroFormDialog({
-            mode: "create",
-            onSuccess: handleSuccessFormPassageiro,
-          }),
-      });
-      return;
-    }
     openPassageiroFormDialog({
       mode: "create",
       onSuccess: handleSuccessFormPassageiro,
     });
   }, [
-    permissions.isFreePlan,
-    limits.passageiros,
-    passageirosCount,
     openPassageiroFormDialog,
     handleSuccessFormPassageiro,
-    hasPassengerLimit,
-    openPlanUpgradeDialog,
-    passageirosAtivosCount,
   ]);
 
   const handleOpenGastoDialog = useCallback(() => {
@@ -340,7 +312,6 @@ const Home = () => {
               />
             </section>
           ) : (
-            /* ONLY if PIX is Valid OR Not Registered (Free Plan path) we show other alerts */
             <>
               {liveWhatsappStatus === WHATSAPP_STATUS.DISCONNECTED && (
                 <section className="mb-4">
@@ -468,37 +439,7 @@ const Home = () => {
                 />
               </>
             )}
-            {hasPassengerLimit ? (
-              <div className="sm:col-span-1">
-                <LimitHealthBar
-                  current={passageirosCount}
-                  max={Number(limitePassageiros)}
-                  description={
-                    Number(limitePassageiros) - passageirosCount <= 0
-                      ? "Limite atingido."
-                      : `${Number(limitePassageiros) - passageirosCount} ${
-                          Number(limitePassageiros) - passageirosCount === 1
-                            ? "vaga restante"
-                            : "vagas restantes"
-                        }.`
-                  }
-                  onIncreaseLimit={() =>
-                    openPlanUpgradeDialog({
-                      feature: FEATURE_LIMITE_PASSAGEIROS,
-                      defaultTab: PLANO_ESSENCIAL,
-                      targetPassengerCount: passageirosAtivosCount,
-                      onSuccess: () =>
-                        openPassageiroFormDialog({
-                          mode: "create",
-                          onSuccess: handleSuccessFormPassageiro,
-                        }),
-                    })
-                  }
-                  label="Passageiros Ativos"
-                  className="mb-0"
-                />
-              </div>
-            ) : (
+
               <MiniKPI
                 className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative"
                 label="Passageiros Ativos"
@@ -511,7 +452,6 @@ const Home = () => {
                 }`}
                 loading={isProfileLoading}
               />
-            )}
           </div>
 
           {/* Acessos Rápidos */}

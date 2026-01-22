@@ -1,5 +1,3 @@
-import { BlurredValue } from "@/components/common/BlurredValue";
-import { LockOverlay } from "@/components/common/LockOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { BarChart3, ChevronDown, ChevronRight, TrendingDown } from "lucide-react";
@@ -39,7 +37,6 @@ interface RelatoriosSaidasProps {
 
 export const RelatoriosSaidas = ({
   dados,
-  hasAccess,
 }: RelatoriosSaidasProps) => {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
@@ -69,23 +66,11 @@ export const RelatoriosSaidas = ({
           </CardHeader>
           <CardContent className="px-6 pb-6 relative">
             <div className="text-3xl font-bold text-gray-900">
-              <BlurredValue
-                value={dados.total}
-                visible={hasAccess}
-                type="currency"
-              />
+               {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.total)}
             </div>
-            <p
-              className={cn(
-                "text-xs text-gray-400 mt-1",
-                !hasAccess && "blur-sm select-none"
-              )}
-            >
+            <p className="text-xs text-gray-400 mt-1">
               Acumulado no mês
             </p>
-            {!hasAccess && (
-                <LockOverlay className="bottom-4 right-7" />
-            )}
           </CardContent>
         </Card>
 
@@ -101,13 +86,8 @@ export const RelatoriosSaidas = ({
           <CardContent className="px-6 pb-6 relative">
             <div className="flex items-center gap-2">
               <div className="text-3xl font-bold text-gray-900">
-                <BlurredValue
-                  value={dados.margemOperacional}
-                  visible={hasAccess}
-                  type="percent"
-                />
+                 {dados.margemOperacional}%
               </div>
-              {hasAccess && (
                 <span
                   className={cn(
                     "text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wide",
@@ -124,19 +104,10 @@ export const RelatoriosSaidas = ({
                     ? "Atenção"
                     : "Crítico"}
                 </span>
-              )}
             </div>
-            <p
-              className={cn(
-                "text-xs text-gray-400 mt-1",
-                !hasAccess && "blur-sm select-none"
-              )}
-            >
+            <p className="text-xs text-gray-400 mt-1">
               Quanto sobra de cada real
             </p>
-            {!hasAccess && (
-                <LockOverlay className="bottom-4 right-7" />
-            )}
           </CardContent>
         </Card>
       </div>
@@ -183,27 +154,11 @@ export const RelatoriosSaidas = ({
                         </span>
                         <span className="text-xs text-gray-500 flex items-center gap-1">
                           <span className="font-bold text-gray-900">
-                            <BlurredValue
-                              value={cat.valor}
-                              visible={hasAccess}
-                              type="currency"
-                            />
+                             {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cat.valor)}
                           </span>
                           <span>•</span>
                           <span>
-                            <BlurredValue
-                              value={cat.count}
-                              visible={hasAccess}
-                              type="number"
-                            />{" "}
-                            <span
-                              className={cn(
-                                "text-xs text-gray-400 mt-1",
-                                !hasAccess && "blur-sm select-none"
-                              )}
-                            >
-                              {cat.count === 1 ? "registro" : "registros"}
-                            </span>
+                            {cat.count} <span className="text-gray-400 font-normal">registro{cat.count === 1 ? "" : "s"}</span>
                           </span>
                         </span>
                       </div>
@@ -235,16 +190,9 @@ export const RelatoriosSaidas = ({
                                      </div>
                                      <div className="text-right">
                                          <div className="text-sm font-medium text-gray-900">
-                                            <BlurredValue
-                                                value={v.valor}
-                                                visible={hasAccess}
-                                                type="currency"
-                                            />
+                                            {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v.valor)}
                                          </div>
-                                         <div className={cn(
-                                            "text-[10px] text-gray-400",
-                                            !hasAccess && "blur-sm select-none"
-                                         )}>
+                                         <div className="text-[10px] text-gray-400">
                                             {v.count} registro{v.count === 1 ? "" : "s"}
                                          </div>
                                      </div>
@@ -257,47 +205,12 @@ export const RelatoriosSaidas = ({
               );
             })}
             
-            {/* Restricted Empty State: Dummy List */}
-            {dados.topCategorias.length === 0 && !hasAccess && (
-               <div className="space-y-4 opacity-50 blur-[2px] select-none pointer-events-none" aria-hidden="true">
-                   {[
-                       { name: "Combustível", val: "R$ 1.250,00", count: "8 registros", bg: "bg-orange-100", text: "text-orange-600", Icon: TrendingDown },
-                       { name: "Manutenção", val: "R$ 450,00", count: "2 registros", bg: "bg-blue-100", text: "text-blue-600", Icon: BarChart3 },
-                       { name: "Alimentação", val: "R$ 120,00", count: "4 registros", bg: "bg-purple-100", text: "text-purple-600", Icon: TrendingDown }
-                   ].map((item, i) => (
-                       <div key={i} className="rounded-xl bg-gray-50 border border-gray-100 overflow-hidden">
-                           <div className="flex items-center justify-between p-3">
-                                <div className="flex items-center gap-3">
-                                  <div className={cn("h-10 w-10 rounded-full flex items-center justify-center shrink-0", item.bg, item.text)}>
-                                    <item.Icon className="h-5 w-5" />
-                                  </div>
-                                  <div className="flex flex-col">
-                                    <span className="font-medium text-gray-900">{item.name}</span>
-                                    <span className="text-xs text-gray-500 flex items-center gap-1">
-                                      <span className="font-bold text-gray-900">{item.val}</span>
-                                      <span>•</span>
-                                      <span>{item.count}</span>
-                                    </span>
-                                  </div>
-                                </div>
-                                <div className="text-gray-400">
-                                    <ChevronRight className="h-5 w-5" />
-                                </div>
-                           </div>
-                       </div>
-                   ))}
-               </div>
-            )}
-
-            {dados.topCategorias.length === 0 && hasAccess && (
+            {dados.topCategorias.length === 0 && (
               <div className="text-center py-8 text-gray-400 text-sm">
                 Nenhuma despesa registrada neste mês.
               </div>
             )}
-
-            {!hasAccess && (
-                <LockOverlay className="bottom-4 right-7" />
-            )}
+           
           </div>
         </CardContent>
       </Card>
@@ -324,35 +237,21 @@ export const RelatoriosSaidas = ({
                        {v.placa !== "-" && <span className="text-xs text-gray-500 font-normal">{v.nome}</span>}
                     </div>
                     <span className="font-bold text-gray-900">
-                      <BlurredValue
-                        value={v.valor}
-                        visible={hasAccess}
-                        type="currency"
-                      />
+                       {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v.valor)}
                     </span>
                   </div>
                   <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-blue-500 rounded-full"
-                      style={{ width: `${hasAccess ? v.percentual : 50}%` }}
+                      style={{ width: `${v.percentual}%` }}
                     />
                   </div>
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>
-                      <BlurredValue
-                        value={v.count}
-                        visible={hasAccess}
-                        type="number"
-                      />{" "}
-                      registro{v.count === 1 ? "" : "s"}
+                      {v.count} registro{v.count === 1 ? "" : "s"}
                     </span>
                     <span>
-                      <BlurredValue
-                        value={v.percentual}
-                        visible={hasAccess}
-                        type="percent"
-                      />{" "}
-                      do total
+                      {v.percentual}% do total
                     </span>
                   </div>
                 </div>

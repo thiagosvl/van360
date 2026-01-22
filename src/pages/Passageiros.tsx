@@ -1,7 +1,5 @@
 // Imports updated
-import { UpgradeStickyFooter } from "@/components/common/UpgradeStickyFooter";
 
-import { LimitHealthBar } from "@/components/common/LimitHealthBar";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PassageirosList } from "@/components/features/passageiro/PassageirosList";
 import { PassageirosToolbar } from "@/components/features/passageiro/PassageirosToolbar";
@@ -14,26 +12,24 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  FEATURE_COBRANCA_AUTOMATICA,
-  FEATURE_LIMITE_FRANQUIA,
-  FEATURE_LIMITE_PASSAGEIROS,
-  PLANO_ESSENCIAL,
+    FEATURE_COBRANCA_AUTOMATICA,
+    FEATURE_LIMITE_FRANQUIA
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreateEscola,
-  useCreatePassageiro,
-  useCreateVeiculo,
-  useDeletePassageiro,
-  useEscolas,
-  useFilters,
-  usePassageiros,
-  usePermissions,
-  usePrePassageiros,
-  useToggleAtivoPassageiro,
-  useUpdatePassageiro,
-  useUsuarioResumo,
-  useVeiculos,
+    useCreateEscola,
+    useCreatePassageiro,
+    useCreateVeiculo,
+    useDeletePassageiro,
+    useEscolas,
+    useFilters,
+    usePassageiros,
+    usePermissions,
+    usePrePassageiros,
+    useToggleAtivoPassageiro,
+    useUpdatePassageiro,
+    useUsuarioResumo,
+    useVeiculos,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -59,7 +55,7 @@ export default function Passageiros() {
     openPassageiroFormDialog,
   } = useLayout();
 
-  const { canUseAutomatedCharges: canUseCobrancaAutomatica } = usePermissions();
+  const { canUseAutomatedCharges: canUseCobrancaAutomatica, isReadOnly } = usePermissions();
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -240,7 +236,7 @@ export default function Passageiros() {
   }, [openPlanUpgradeDialog]);
 
   const limitePassageiros = limits.passengers.limit;
-  const isLimitedUser = plano?.isFreePlan ?? false;
+
   const isLimitReached = limits.passengers.isReached;
 
   useEffect(() => {
@@ -266,6 +262,10 @@ export default function Passageiros() {
 
   const handleDeleteClick = useCallback(
     (passageiro: Passageiro) => {
+      if (isReadOnly) {
+        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        return;
+      }
       openConfirmationDialog({
         title: "Excluir passageiro?",
         description:
@@ -287,6 +287,10 @@ export default function Passageiros() {
 
   const handleToggleClick = useCallback(
     (passageiro: Passageiro) => {
+      if (isReadOnly) {
+        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        return;
+      }
       const action = passageiro.ativo ? "desativar" : "ativar";
 
       openConfirmationDialog({
@@ -436,6 +440,10 @@ export default function Passageiros() {
 
   const handleEdit = useCallback(
     (passageiro: Passageiro) => {
+      if (isReadOnly) {
+        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        return;
+      }
       openPassageiroFormDialog({
         mode: "edit",
         editingPassageiro: passageiro,
@@ -445,23 +453,15 @@ export default function Passageiros() {
   );
 
   const handleOpenNewDialog = useCallback(() => {
-    if (isLimitedUser && isLimitReached) {
-      openPlanUpgradeDialog({
-        feature: FEATURE_LIMITE_PASSAGEIROS,
-        targetPassengerCount: (countPassageiros || 0) + 1,
-        onSuccess: refetchPassageiros,
-      });
-      return;
+    if (isReadOnly) {
+        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        return;
     }
-
     // Use openPassageiroFormDialog
     openPassageiroFormDialog({
       mode: "create",
     });
   }, [
-    isLimitedUser,
-    isLimitReached,
-    openPlanUpgradeDialog,
     openPassageiroFormDialog,
   ]);
 
@@ -660,33 +660,10 @@ export default function Passageiros() {
               value="passageiros"
               className={cn(
                 "space-y-6 mt-0",
-                isLimitedUser && "pb-20 md:pb-0", // Padding extra para Mobile quando houver sticky footer
+                "space-y-6 mt-0",
               )}
             >
-              {isLimitedUser && limitePassageiros != null && (
-                <LimitHealthBar
-                  current={countPassageiros || 0}
-                  max={limitePassageiros}
-                  label="Passageiros Ativos"
-                  description={
-                    countPassageiros >= limitePassageiros
-                      ? "Limite atingido."
-                      : `${limitePassageiros - countPassageiros} ${
-                          limitePassageiros - countPassageiros === 1
-                            ? "vaga restante"
-                            : "vagas restantes"
-                        }.`
-                  }
-                  onIncreaseLimit={() =>
-                    openPlanUpgradeDialog({
-                      feature: "passageiros", // Or constant
-                      defaultTab: PLANO_ESSENCIAL,
-                      targetPassengerCount: countPassageiros || 0,
-                    })
-                  }
-                  hideBelowThreshold={75} // Só exibe se uso >= 75% para evitar ansiedade prematura
-                />
-              )}
+
 
               <Card className="border-none shadow-none bg-transparent">
                 <CardHeader className="p-0">
@@ -772,7 +749,7 @@ export default function Passageiros() {
 
             <TabsContent
               value="solicitacoes"
-              className={cn("mt-0", isLimitedUser && "pb-20 md:pb-0")}
+              className={cn("mt-0")}
             >
               <PrePassageiros
                 onFinalizeNewPrePassageiro={async () => Promise.resolve()}
@@ -784,21 +761,7 @@ export default function Passageiros() {
           </Tabs>
         </div>
       </PullToRefreshWrapper>
-      <UpgradeStickyFooter
-        visible={!!plano?.isFreePlan}
-        title="Quer cadastrar todos seus passageiros?"
-        description="Remova os limites do plano gratuito."
-        buttonText="Sim, eu quero!"
-        onAction={() =>
-          openPlanUpgradeDialog({
-            feature: FEATURE_LIMITE_PASSAGEIROS,
-            defaultTab: PLANO_ESSENCIAL,
-            targetPassengerCount: (countPassageiros || 0) + 1,
-            onSuccess: refetchPassageiros,
-          })
-        }
-        storageKey="footer_passageiros"
-      />
+
 
       <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>

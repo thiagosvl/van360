@@ -99,7 +99,7 @@ export function useUpgradeFranquia({
 
   // --- Lógica de Cálculo Financeiro (Prorata) ---
   const calculateProrata = (novoValorMensal: number): ProrataResult => {
-    // Se o valor atual é zero (Plano Gratuito ou Trial), cobra o valor cheio imediatamente
+    // Se o valor atual é zero (Trial), cobra o valor cheio imediatamente
     // Efetivamente inicia um novo ciclo de faturamento
     if (valorAtualMensal <= 0) {
       return {

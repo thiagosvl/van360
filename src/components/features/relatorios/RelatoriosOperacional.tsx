@@ -1,16 +1,13 @@
-import { BlurredValue } from "@/components/common/BlurredValue";
 import { LimitHealthBar } from "@/components/common/LimitHealthBar";
-import { LockOverlay } from "@/components/common/LockOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
-    FEATURE_LIMITE_PASSAGEIROS,
+    FEATURE_RELATORIOS,
     PLANO_ESSENCIAL,
     PLANO_PROFISSIONAL,
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
-import { cn } from "@/lib/utils";
 import { Users } from "lucide-react";
 
 interface RelatoriosOperacionalProps {
@@ -39,7 +36,6 @@ interface RelatoriosOperacionalProps {
     limite: number;
   };
   hasAccess: boolean;
-  isFreePlan: boolean;
   limits: {
     passageiros: number | null;
   };
@@ -50,8 +46,6 @@ export const RelatoriosOperacional = ({
   dados,
   automacao,
   hasAccess,
-  isFreePlan,
-  limits,
   IsProfissionalPlan,
 }: RelatoriosOperacionalProps) => {
   const { openPlanUpgradeDialog } = useLayout();
@@ -59,30 +53,6 @@ export const RelatoriosOperacional = ({
   return (
     <div className="space-y-4 mt-0">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {isFreePlan ? (
-          <LimitHealthBar
-            current={dados.passageirosCount}
-            max={limits.passageiros || 0}
-            label="Passageiros"
-            description={
-              limits.passageiros - dados.passageirosAtivosCount <= 0
-                ? "Limite atingido."
-                : `${limits.passageiros - dados.passageirosAtivosCount} ${
-                    limits.passageiros - dados.passageirosAtivosCount === 1
-                      ? "vaga restante"
-                      : "vagas restantes"
-                  }.`
-            }
-            onIncreaseLimit={() =>
-              openPlanUpgradeDialog({
-                feature: FEATURE_LIMITE_PASSAGEIROS,
-                defaultTab: PLANO_ESSENCIAL,
-                targetPassengerCount: dados.passageirosAtivosCount,
-              })
-            }
-            className="mb-0"
-          />
-        ) : (
           <Card className="border-none shadow-sm rounded-2xl bg-white relative overflow-hidden">
             <CardHeader className="pb-0 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -94,17 +64,10 @@ export const RelatoriosOperacional = ({
             </CardHeader>
             <CardContent className="px-6 pb-6">
               <h3 className="text-xl md:text-2xl font-bold text-gray-900 leading-none">
-                <BlurredValue
-                  value={dados.passageirosAtivosCount}
-                  visible={true} // Always visible count, or should check hasAccess? User said "Exibir alguns dados reais".
-                  type="number"
-                />
+                {dados.passageirosAtivosCount}
               </h3>
             </CardContent>
-            {/* Lock Overlay */}
-            {!hasAccess && <LockOverlay />}
           </Card>
-        )}
 
         {/* Automação (Cobranças Automáticas) */}
         {IsProfissionalPlan ? (
@@ -181,24 +144,11 @@ export const RelatoriosOperacional = ({
                   </span>
                   <div className="text-right">
                     <div className="text-xs text-gray-500">
-                      <BlurredValue
-                        value={escola.valor}
-                        visible={hasAccess}
-                        type="currency"
-                      />
+                        {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(escola.valor)}
                     </div>
                     <div className="font-semibold text-gray-900">
-                      <BlurredValue
-                        value={escola.passageiros}
-                        visible={hasAccess}
-                        type="number"
-                      />{" "}
-                      <span
-                        className={cn(
-                          "text-xs text-gray-400 mt-1",
-                          !hasAccess && "blur-sm select-none"
-                        )}
-                      >
+                      {escola.passageiros}{" "}
+                      <span className="text-xs text-gray-400 mt-1">
                         {escola.passageiros === 1
                           ? "passageiro"
                           : "passageiros"}
@@ -223,7 +173,7 @@ export const RelatoriosOperacional = ({
                 Nenhuma escola vinculada.
               </p>
             )}
-            {!hasAccess && <LockOverlay className="top-0 right-7" />}
+
           </CardContent>
         </Card>
 
@@ -243,24 +193,11 @@ export const RelatoriosOperacional = ({
                   </span>
                   <div className="text-right">
                     <div className="text-xs text-gray-500">
-                      <BlurredValue
-                        value={periodo.valor}
-                        visible={hasAccess}
-                        type="currency"
-                      />
+                        {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(periodo.valor)}
                     </div>
                     <div className="font-semibold text-gray-900">
-                      <BlurredValue
-                        value={periodo.passageiros}
-                        visible={hasAccess}
-                        type="number"
-                      />{" "}
-                      <span
-                        className={cn(
-                          "text-xs text-gray-400 mt-1",
-                          !hasAccess && "blur-sm select-none"
-                        )}
-                      >
+                      {periodo.passageiros}{" "}
+                      <span className="text-xs text-gray-400 mt-1">
                         {periodo.passageiros === 1
                           ? "passageiro"
                           : "passageiros"}
@@ -280,7 +217,7 @@ export const RelatoriosOperacional = ({
                 Nenhum dado por período.
               </p>
             )}
-            {!hasAccess && <LockOverlay className="top-0 right-7" />}
+
           </CardContent>
         </Card>
 
@@ -299,17 +236,8 @@ export const RelatoriosOperacional = ({
                     {veiculo.placa}
                   </span>
                   <div className="font-semibold text-gray-900">
-                    <BlurredValue
-                      value={veiculo.passageiros}
-                      visible={hasAccess}
-                      type="number"
-                    />{" "}
-                    <span
-                      className={cn(
-                        "text-xs text-gray-400 mt-1",
-                        !hasAccess && "blur-sm select-none"
-                      )}
-                    >
+                    {veiculo.passageiros}{" "}
+                    <span className="text-xs text-gray-400 mt-1">
                       {veiculo.passageiros === 1 ? "passageiro" : "passageiros"}
                     </span>
                   </div>
@@ -326,7 +254,7 @@ export const RelatoriosOperacional = ({
                 Nenhum veículo cadastrado.
               </p>
             )}
-            {!hasAccess && <LockOverlay className="top-0 right-7" />}
+
           </CardContent>
         </Card>
       </div>

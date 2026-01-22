@@ -1,4 +1,5 @@
 
+import { GlobalExpiryBanner } from "@/components/common/GlobalExpiryBanner";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { ROUTES } from "@/constants/routes";
@@ -90,6 +91,7 @@ function AutoRedirectToLogin() {
   return (
     <LayoutProvider>
       <div className="min-h-screen bg-gray-50">
+        <GlobalExpiryBanner />
         <AppNavbar plano={plano} role={currentRole} />
 
         <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-gray-100 bg-white">

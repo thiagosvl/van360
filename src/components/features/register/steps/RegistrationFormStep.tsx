@@ -1,7 +1,7 @@
 import { TermosUsoDialog } from "@/components/features/register/TermosUsoDialog";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { PLANO_ESSENCIAL, PLANO_GRATUITO } from "@/constants";
+import { PLANO_ESSENCIAL } from "@/constants";
 import { RegisterFormData } from "@/schemas/registerSchema";
 import { Plano } from "@/types/plano";
 import { lazyLoad } from "@/utils/lazyLoad";
@@ -39,11 +39,7 @@ export function RegistrationFormStep({
       };
     }
 
-    if (selectedPlano?.slug === PLANO_GRATUITO) {
-      return {
-        text: "Criar conta grátis",
-      };
-    }
+
 
     if (selectedPlano?.slug === PLANO_ESSENCIAL) {
       return {

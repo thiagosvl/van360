@@ -10,9 +10,8 @@ import { extractPlanoData } from "@/utils/domain/plano/planoUtils";
 import {
   AlertTriangle,
   CheckCircle,
-  CreditCard,
   Crown,
-  XCircle,
+  XCircle
 } from "lucide-react";
 
 interface SubscriptionHeaderProps {
@@ -40,7 +39,6 @@ export function SubscriptionHeader({
   const planoData = extractPlanoData({ ...assinatura, planos: plano });
 
   const {
-    isFreePlan,
     isProfissionalPlan,
     isEssentialPlan,
     isTrial,
@@ -96,14 +94,6 @@ export function SubscriptionHeader({
           : "Tudo certo com seu plano.",
       };
 
-    if (isFreePlan)
-      return {
-        color: "bg-gray-100 text-gray-800 border-gray-200",
-        icon: CheckCircle,
-        text: "Gratuito", // Badge text for Free
-        description: "Funcionalidades limitadas.",
-      };
-
     return {
       color: "bg-gray-100 text-gray-800 border-gray-200",
       icon: CheckCircle,
@@ -124,10 +114,6 @@ export function SubscriptionHeader({
       onPagarClick();
       return;
     }
-    if (isFreePlan) {
-      openPlanUpgradeDialog({ feature: "outros", onClose: onRefresh });
-      return;
-    }
     if (isProfissionalPlan) {
       openPlanUpgradeDialog({
         feature: FEATURE_LIMITE_FRANQUIA,
@@ -146,7 +132,7 @@ export function SubscriptionHeader({
   return (
     <Card className="border-none shadow-md bg-white overflow-visible relative mt-2">
         {/* Status Badge - Absolute Position (Sticker Style) */}
-        {(!isFreePlan || isSuspensa || isPendente || isTrial) && (
+        {(isSuspensa || isPendente || isTrial) && (
           <div className="absolute -top-2 right-2 z-10">
             <Badge
               variant="outline"
@@ -168,8 +154,6 @@ export function SubscriptionHeader({
               ? "bg-red-500"
               : isTrial
               ? "bg-yellow-500"
-              : isFreePlan
-              ? "bg-gray-400"
               : "bg-green-500"
           )}
         />
@@ -184,16 +168,10 @@ export function SubscriptionHeader({
                   ? "bg-red-50 text-red-600"
                   : isTrial
                   ? "bg-yellow-50 text-yellow-600"
-                  : isFreePlan
-                  ? "bg-gray-100 text-gray-600"
                   : "bg-green-50 text-green-600"
               )}
             >
-              {isFreePlan ? (
-                <CreditCard className="w-8 h-8" />
-              ) : (
                 <Crown className="w-8 h-8" />
-              )}
             </div>
 
             <div className="space-y-1">
@@ -219,7 +197,7 @@ export function SubscriptionHeader({
                   ? "bg-red-600 hover:bg-red-700 text-white"
                   : isTrial
                   ? "bg-yellow-500 hover:bg-yellow-600 text-white"
-                  : isFreePlan || isEssentialPlan
+                  : isEssentialPlan
                   ? "bg-blue-600 hover:bg-blue-700 text-white"
                   : "bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300"
               )}
@@ -228,8 +206,6 @@ export function SubscriptionHeader({
                 ? "Regularizar Pagamento"
                 : isTrial
                 ? "Ativar Plano Agora"
-                : isFreePlan
-                ? "Contratar um Plano"
                 : isProfissionalPlan
                 ? "Aumentar limite"
                 : "Trocar de Plano"}

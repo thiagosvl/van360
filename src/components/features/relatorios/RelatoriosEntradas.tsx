@@ -1,5 +1,3 @@
-import { BlurredValue } from "@/components/common/BlurredValue";
-import { LockOverlay } from "@/components/common/LockOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -21,13 +19,7 @@ interface RelatoriosEntradasProps {
 
 export const RelatoriosEntradas = ({
   dados,
-  hasAccess,
 }: RelatoriosEntradasProps) => {
-  // Helper for Progress Bars in No-Access State
-  const getProgressValue = (realValue: number) => {
-    if (hasAccess) return realValue;
-    return 50; // Fixed visual percentage for "teaser" look
-  };
 
   return (
     <div className="space-y-4 mt-0">
@@ -43,23 +35,11 @@ export const RelatoriosEntradas = ({
           </CardHeader>
           <CardContent className="px-6 pb-6 relative">
             <div className="text-3xl font-bold text-gray-900">
-              <BlurredValue
-                value={dados.realizado}
-                visible={hasAccess}
-                type="currency"
-              />
+              {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.realizado)}
             </div>
-            <p
-              className={cn(
-                "text-xs text-gray-400 mt-1",
-                !hasAccess && "blur-sm select-none"
-              )}
-            >
+            <p className="text-xs text-gray-400 mt-1">
               Total recebido no mês
             </p>
-            {!hasAccess && (
-                <LockOverlay className="bottom-4 right-7" />
-            )}
           </CardContent>
         </Card>
 
@@ -74,23 +54,11 @@ export const RelatoriosEntradas = ({
           </CardHeader>
           <CardContent className="px-6 pb-6 relative">
             <div className="text-3xl font-bold text-gray-900">
-              <BlurredValue
-                value={dados.ticketMedio}
-                visible={hasAccess}
-                type="currency"
-              />
+               {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.ticketMedio)}
             </div>
-            <p
-              className={cn(
-                "text-xs text-gray-400 mt-1",
-                !hasAccess && "blur-sm select-none"
-              )}
-            >
+            <p className="text-xs text-gray-400 mt-1">
               Valor médio por passageiro
             </p>
-             {!hasAccess && (
-                <LockOverlay className="bottom-4 right-7" />
-            )}
           </CardContent>
         </Card>
       </div>
@@ -112,56 +80,26 @@ export const RelatoriosEntradas = ({
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-gray-900">
-                      <BlurredValue
-                        value={forma.valor}
-                        visible={hasAccess}
-                        type="currency"
-                      />
+                       {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(forma.valor)}
                     </span>
                     <span className="text-gray-400 text-xs w-10 text-right">
-                      <BlurredValue
-                        value={forma.percentual}
-                        visible={hasAccess}
-                        type="percent"
-                      />
+                       {forma.percentual}%
                     </span>
                   </div>
                 </div>
                 <Progress
-                  value={getProgressValue(forma.percentual)}
+                  value={forma.percentual}
                   className="h-2 bg-gray-100 rounded-full"
                   indicatorClassName={cn(forma.color, "rounded-full")}
                 />
               </div>
             ))}
-            
-            {/* Restricted Empty State: Show Dummy Data to tempt user */}
-            {dados.formasPagamento.length === 0 && !hasAccess && (
-               <div className="space-y-4 opacity-50 blur-[2px] select-none pointer-events-none" aria-hidden="true">
-                  {[1, 2, 3].map((i) => (
-                      <div key={i} className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                            <span className="font-medium text-gray-700">Pagamento {i}</span>
-                            <div className="flex items-center gap-2">
-                                <span className="font-bold text-gray-900">R$ 150,00</span>
-                                <span className="text-gray-400 text-xs w-10 text-right">33%</span>
-                            </div>
-                        </div>
-                        <Progress value={40} className="h-2 bg-gray-100 rounded-full" indicatorClassName="bg-gray-400 rounded-full" />
-                      </div>
-                  ))}
-               </div>
-            )}
 
-            {dados.formasPagamento.length === 0 && hasAccess && (
+            {dados.formasPagamento.length === 0 && (
               <div className="text-center py-8 text-gray-400 text-sm">
                 Nenhum pagamento registrado neste mês.
               </div>
             )}
-            
-     {!hasAccess && (
-        <LockOverlay className="bottom-2 right-7" />
-     )}
           </div>
         </CardContent>
       </Card>

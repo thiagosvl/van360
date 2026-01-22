@@ -32,6 +32,7 @@ import {
     useToggleAtivoVeiculo,
     useVeiculos,
 } from "@/hooks";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
@@ -47,7 +48,8 @@ import { Veiculo } from "@/types/veiculo";
 import { Car } from "lucide-react";
 
 export default function Veiculos() {
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openVeiculoFormDialog } = useLayout();
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openVeiculoFormDialog, openPlanUpgradeDialog } = useLayout();
+  const { isReadOnly } = usePermissions();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const deleteVeiculo = useDeleteVeiculo();
@@ -166,12 +168,20 @@ export default function Veiculos() {
   }, [searchParams, openVeiculoFormDialog, navigate]);
 
   const handleEdit = useCallback((veiculo: Veiculo) => {
+    if (isReadOnly) {
+        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        return;
+    }
     openVeiculoFormDialog({
         editingVeiculo: veiculo
     });
   }, [openVeiculoFormDialog]);
 
   const handleDeleteClick = useCallback((veiculo: Veiculo) => {
+    if (isReadOnly) {
+        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        return;
+    }
     if (veiculo.passageiros_ativos_count > 0) {
       toast.error("veiculo.erro.excluir", {
         description: "veiculo.erro.excluirComPassageiros",
@@ -197,6 +207,10 @@ export default function Veiculos() {
 
   const handleToggleAtivo = useCallback(
     async (veiculo: Veiculo) => {
+      if (isReadOnly) {
+        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        return;
+      }
       if (!profile?.id) return;
 
       const novoStatus = !veiculo.ativo;
@@ -270,7 +284,13 @@ export default function Veiculos() {
                   onClearFilters={clearFilters}
                   hasActiveFilters={hasActiveFilters}
                   onApplyFilters={setFilters}
-                  onRegister={() => openVeiculoFormDialog({ allowBatchCreation: true })}
+                  onRegister={() => {
+                    if (isReadOnly) {
+                        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+                        return;
+                    }
+                    openVeiculoFormDialog({ allowBatchCreation: true });
+                  }}
                 />
               </div>
 

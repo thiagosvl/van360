@@ -1,62 +1,58 @@
-import { PLANO_ESSENCIAL, PLANO_GRATUITO, PLANO_PROFISSIONAL } from "@/constants";
-import { apiClient } from "@/services/api/client";
-import { sessionManager } from "@/services/sessionManager";
-import { Usuario } from "@/types/usuario";
-import { getPlanoUsuario } from "@/utils/domain/plano/planoUtils";
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
+import { usuarioApi } from "../../services/api/usuario.api";
+import { Usuario } from "../../types/usuario";
+import { extractPlanoData } from "../../utils/domain/plano/planoUtils";
 
-export async function fetchProfile(uid: string): Promise<Usuario | null> {
-  const { data } = await apiClient.get<Usuario>("/me/profile");
-  return data;
-}
+export function useProfile(userId?: string) {
+  const queryClient = useQueryClient();
 
-
-export function useProfile(uid?: string) {
-  const { data, error, isLoading, refetch } = useQuery({
-    queryKey: uid ? ["profile", uid] : ["profile"],
-    queryFn: () => {
-      if (!uid) return null;
-      return fetchProfile(uid);
-    },
-    enabled: !!uid,
-    staleTime: 5000, // 5s de "deduping" (semelhante ao SWR), depois revalida. Otimiza navegação com validação frequente.
-    refetchOnWindowFocus: true, // Revalida ao trocar de aba (essencial para segurança/logout)
-    retry: false, 
+  const {
+    data: profile,
+    isLoading,
+    refetch,
+  } = useQuery<Usuario>({
+    queryKey: ["profile", userId],
+    // userId param is mostly ignored for /me/profile but good for caching key differentiation if we ever fetch other profiles
+    queryFn: () => usuarioApi.getProfile(userId!), 
+    enabled: true, // Always try to fetch if mounted, usually session check handles existence
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: false,
   });
 
-  useEffect(() => {
-    if (error) {
-       console.error("Erro no profile:", error);
-       const axiosError = error as any;
-       // Desloga se for erro de autenticação (401) ou Proibido/Inativo (403)
-       if (axiosError?.response?.status === 401 || axiosError?.response?.status === 403 || axiosError?.response?.status === 404) {
-          sessionManager.signOut().catch(() => {});
-       }
-    }
-  }, [error]);
+  const refreshProfile = useCallback(async () => {
+    return queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+  }, [queryClient, userId]);
 
-  useEffect(() => {
-    // Segurança extra: Se por acaso os dados vierem mas o flag estiver false (redundância)
-    if (data && data.ativo === false) {
-        sessionManager.signOut().catch(() => {});
-    }
-  }, [data]);
+  // Plano Helpers
+  const planoData = useMemo(() => {
+    if (!profile?.plano) return null;
+    // Combine subscription and plan for the utility
+    // Precisamos garantir que assinatura exista, senão passamos objeto vazio ou null
+    const assinaturaData = profile.assinatura || {};
+    return extractPlanoData({ 
+        ...assinaturaData, 
+        planos: profile.plano 
+    });
+  }, [profile]);
 
-  const plano = useMemo(() => {
-    if (!data) return null;
-    return getPlanoUsuario(data);
-  }, [data]);
+  const isReadOnly = planoData ? !planoData.isValidPlan : false;
 
   return {
-    profile: data,
-    plano,
-    isGratuito: plano?.slug === PLANO_GRATUITO,
-    isEssencial: plano?.slug === PLANO_ESSENCIAL,
-    isProfissional: plano?.slug === PLANO_PROFISSIONAL,
-
-    error,
+    profile,
+    plano: planoData
+      ? {
+          ...planoData,
+          isReadOnly
+        }
+      : null,
     isLoading,
-    refreshProfile: refetch, // Mantém compatibilidade com assinatura anterior
+    isAuthenticated: !!profile,
+    refreshProfile,
+    
+    // Direct Access (Compatibility Wrappers)
+    isEssencial: planoData?.isEssentialPlan ?? false,
+    isProfissional: planoData?.isProfissionalPlan ?? false,
+    isReadOnly: !!planoData && isReadOnly,
   };
 }
