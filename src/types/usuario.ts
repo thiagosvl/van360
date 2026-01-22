@@ -27,6 +27,7 @@ export interface Usuario {
   flags?: {
       is_trial_ativo: boolean;
       dias_restantes_trial: number | null;
+      dias_restantes_assinatura: number | null;
       trial_dias_total: number;
       whatsapp_status: string | null;
       ultima_fatura: string | null;

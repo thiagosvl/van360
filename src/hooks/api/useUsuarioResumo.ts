@@ -25,10 +25,12 @@ export interface SystemSummary {
     };
     flags: {
       is_trial_ativo: boolean;
-      dias_restantes_trial: number;
+      dias_restantes_trial: number | null;
+      dias_restantes_assinatura: number | null;
       trial_dias_total: number;
-      whatsapp_status: "CONNECTED" | "DISCONNECTED" | "CONNECTING" | "UNKNOWN" | "NOT_FOUND" | null;
-      ultima_fatura: "pago" | "pendente_pagamento" | "cancelada" | null;
+      whatsapp_status: string | null;
+      ultima_fatura: string | null;
+      ultima_fatura_id: string | null;
       limite_franquia_atingido: boolean;
       pix_key_configurada: boolean;
     };

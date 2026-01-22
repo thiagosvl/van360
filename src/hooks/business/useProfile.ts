@@ -18,6 +18,7 @@ export function useProfile(userId?: string) {
     enabled: !!userId, // Only fetch if we have a userId (session loaded), avoids fetching for guest/initial invalid state
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: false,
+    refetchOnWindowFocus: true,
   });
 
   const refreshProfile = useCallback(async () => {
