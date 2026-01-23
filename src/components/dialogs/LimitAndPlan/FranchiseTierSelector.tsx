@@ -19,6 +19,7 @@ interface FranchiseTierSelectorProps {
   selectedTierId: string | number | null;
   setSelectedTierId: (id: string | number | null) => void;
   currentTierOption: FranchiseOption | null;
+  minAllowedQuantity: number;
 }
 
 export function FranchiseTierSelector({
@@ -31,17 +32,12 @@ export function FranchiseTierSelector({
   selectedTierId,
   setSelectedTierId,
   currentTierOption,
+  minAllowedQuantity,
 }: FranchiseTierSelectorProps) {
 
   // Ordenar opções por quantidade
   const sortedOptions = [...availableOptions].sort(
     (a, b) => (a?.quantidade || 0) - (b?.quantidade || 0)
-  );
-
-  // Calcular o máximo das opções padrão para validação (Custom mode)
-  const maxStandardQuantity = Math.max(
-    ...availableOptions.map((o) => o.quantidade || 0),
-    0
   );
 
   // Mapear ID selecionado para índice do slider
@@ -69,7 +65,7 @@ export function FranchiseTierSelector({
   };
 
   if (isCustomQuantityMode) {
-    const isInvalid = Number(manualQuantity) <= maxStandardQuantity;
+    const isInvalid = Number(manualQuantity) < minAllowedQuantity;
 
     return (
       <div className="bg-white p-3 rounded-xl border-2 border-violet-100 shadow-sm flex items-center gap-3 animate-in fade-in zoom-in-95 duration-200">
@@ -89,7 +85,7 @@ export function FranchiseTierSelector({
           </div>
           {isInvalid && (
             <span className="text-[10px] text-red-500 font-bold block mt-1 animate-in slide-in-from-top-1">
-              Mínimo: {maxStandardQuantity + 1}
+              Mínimo: {minAllowedQuantity}
             </span>
           )}
         </div>
@@ -109,7 +105,12 @@ export function FranchiseTierSelector({
     return (
       <div
         className="bg-violet-50 border border-violet-200 rounded-xl p-3 flex items-center justify-between shadow-sm group cursor-pointer hover:border-violet-300 transition-all"
-        onClick={() => setIsCustomQuantityMode(true)}
+        onClick={() => {
+            setIsCustomQuantityMode(true);
+            if (currentTierOption?.quantidade) {
+                 setManualQuantity(currentTierOption.quantidade);
+            }
+        }}
       >
         <div className="flex items-center gap-3">
           <Crown className="w-6 h-6 text-violet-600 fill-current" />

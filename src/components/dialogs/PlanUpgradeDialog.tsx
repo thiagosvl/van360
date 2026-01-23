@@ -1,13 +1,13 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  FEATURE_COBRANCA_AUTOMATICA,
-  FEATURE_GASTOS,
-  FEATURE_LIMITE_FRANQUIA,
-  FEATURE_NOTIFICACOES,
-  FEATURE_RELATORIOS,
-  PLANO_ESSENCIAL,
-  PLANO_PROFISSIONAL,
+    FEATURE_COBRANCA_AUTOMATICA,
+    FEATURE_GASTOS,
+    FEATURE_LIMITE_FRANQUIA,
+    FEATURE_NOTIFICACOES,
+    FEATURE_RELATORIOS,
+    PLANO_ESSENCIAL,
+    PLANO_PROFISSIONAL,
 } from "@/constants";
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks/api/usePlanos";
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
@@ -259,13 +259,12 @@ export function PlanUpgradeDialog({
       );
 
       // Calcular o máximo das opções padrão para validação (similar ao FranchiseTierSelector)
-      const maxStandardQuantity = Math.max(
-        ...(franchiseOptions || []).map((o) => o.quantidade || 0),
-        0
-      );
+      // Calcular o máximo das opções padrão para validação (similar ao FranchiseTierSelector)
+      // REFATORADO: Usar passageirosAtivos como mínimo absoluto
+      const minAllowed = passageirosAtivos;
       
       const qty = Number(currentTierOption.quantidade);
-      const isQuantityValid = !currentTierOption.isCustom || (qty > maxStandardQuantity);
+      const isQuantityValid = !currentTierOption.isCustom || (qty >= minAllowed);
 
       // Se for marcado como custom OU se não for um plano oficial (fallback), calculamos o preço
       if (

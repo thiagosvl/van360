@@ -474,7 +474,6 @@ export default function Passageiros() {
     try {
       if (!escolaId) {
         const fakeEscola = { ...mockGenerator.escola() };
-        // fakeEscola.nome = ... (removed mutation)
 
         const novaEscola = await createEscola.mutateAsync({
           usuarioId: profile.id,

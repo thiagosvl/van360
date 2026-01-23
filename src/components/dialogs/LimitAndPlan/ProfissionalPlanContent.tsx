@@ -26,6 +26,7 @@ interface ProfissionalPlanContentProps {
   franquiaAtual: number;
   customHeadline?: string;
   isInTrial?: boolean;
+  minAllowedQuantity: number;
 }
 
 export function ProfissionalPlanContent({
@@ -44,6 +45,7 @@ export function ProfissionalPlanContent({
   franquiaAtual,
   customHeadline,
   isInTrial = false,
+  minAllowedQuantity,
 }: ProfissionalPlanContentProps) {
   // Separar benefícios disponíveis vs em breve
   const availableBenefits = PLAN_BENEFITS.filter(
@@ -88,6 +90,7 @@ export function ProfissionalPlanContent({
               selectedTierId={selectedTierId}
               setSelectedTierId={setSelectedTierId}
               currentTierOption={currentTierOption}
+              minAllowedQuantity={minAllowedQuantity}
             />
           </div>
 
