@@ -138,41 +138,78 @@ export function FranchiseTierSelector({
   }
 
   const currentOption = sortedOptions[sliderValue[0]] || sortedOptions[0];
+  const currentQuantity = currentOption?.quantidade || 0;
+
+  // Sincronizar input com slider
+  const [inputValue, setInputValue] = useState(String(currentQuantity));
+
+  useEffect(() => {
+    setInputValue(String(currentQuantity));
+  }, [currentQuantity]);
+
+  // Handler para input manual
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+
+    const numValue = Number(value);
+    if (!isNaN(numValue) && numValue > 0) {
+      // Encontrar tier mais próximo
+      const nearestIndex = sortedOptions.reduce((closest, opt, idx) => {
+        const currentDiff = Math.abs((opt.quantidade || 0) - numValue);
+        const closestDiff = Math.abs((sortedOptions[closest].quantidade || 0) - numValue);
+        return currentDiff < closestDiff ? idx : closest;
+      }, 0);
+
+      // Se o valor está exatamente em um tier, seleciona ele
+      const exactMatch = sortedOptions.find(opt => opt.quantidade === numValue);
+      if (exactMatch) {
+        const exactIndex = sortedOptions.indexOf(exactMatch);
+        setSliderValue([exactIndex]);
+        if (exactMatch.id) {
+          setSelectedTierId(exactMatch.id);
+        }
+      } else {
+        // Se não está em um tier, move slider para o mais próximo
+        setSliderValue([nearestIndex]);
+      }
+    }
+  };
+
+  // Handler para blur do input (quando usuário sai do campo)
+  const handleInputBlur = () => {
+    const numValue = Number(inputValue);
+    
+    // Se valor é válido mas não está em um tier, ativa modo custom
+    if (!isNaN(numValue) && numValue >= minAllowedQuantity) {
+      const exactMatch = sortedOptions.find(opt => opt.quantidade === numValue);
+      if (!exactMatch) {
+        setIsCustomQuantityMode(true);
+        setManualQuantity(numValue);
+      }
+    } else if (numValue < minAllowedQuantity) {
+      // Se menor que mínimo, reseta para o valor atual do slider
+      setInputValue(String(currentQuantity));
+    }
+  };
 
   return (
     <div className="w-full px-2 py-4">
       {/* Visualização de Valor */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex flex-col">
           <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
             Selecionado
           </span>
           <span className="text-4xl font-black text-violet-600 tracking-tighter leading-none">
-            {currentOption?.quantidade}{" "}
+            {currentQuantity}{" "}
             <span className="text-lg font-bold text-gray-400">passageiros</span>
           </span>
-        </div>
-
-        <div
-          className="cursor-pointer group flex items-center gap-2 bg-violet-50 hover:bg-violet-100 px-3 py-2 rounded-lg transition-colors"
-          onClick={() => {
-            setIsCustomQuantityMode(true);
-            setManualQuantity("");
-          }}
-        >
-          <div className="bg-white p-1 rounded-full shadow-sm text-violet-600 group-hover:scale-110 transition-transform">
-            <Milestone className="w-4 h-4" />
-          </div>
-          <div className="text-right">
-            <span className="block text-[10px] uppercase font-bold text-violet-600 line-clamp-1">
-              Preciso de Mais
-            </span>
-          </div>
         </div>
       </div>
 
       {/* Slider */}
-      <div className="px-2">
+      <div className="px-2 mb-6">
         <Slider
           value={sliderValue}
           min={0}
@@ -197,6 +234,56 @@ export function FranchiseTierSelector({
               <span className="text-[10px] mt-1">{opt.quantidade}</span>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Separador */}
+      <div className="relative mb-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-200"></div>
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-white px-3 text-gray-500 font-semibold tracking-wider">
+            ou
+          </span>
+        </div>
+      </div>
+
+      {/* Input Field */}
+      <div className="space-y-3">
+        <label className="text-sm font-semibold text-gray-700 block">
+          Digite uma quantidade específica:
+        </label>
+        <div className="relative">
+          <input
+            type="number"
+            inputMode="numeric"
+            value={inputValue}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+            min={minAllowedQuantity}
+            className={cn(
+              "w-full px-4 py-3 text-lg font-bold rounded-xl border-2 transition-all",
+              "focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500",
+              Number(inputValue) >= minAllowedQuantity
+                ? "border-gray-200 text-gray-900"
+                : "border-red-200 text-red-500"
+            )}
+            placeholder="Ex: 25"
+          />
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium pointer-events-none">
+            passageiros
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">
+            Mínimo: <strong>{minAllowedQuantity}</strong> passageiros
+          </span>
+          {Number(inputValue) >= minAllowedQuantity && !sortedOptions.find(opt => opt.quantidade === Number(inputValue)) && (
+            <span className="text-xs text-blue-600 font-semibold">
+              • Quantidade personalizada
+            </span>
+          )}
         </div>
       </div>
     </div>
