@@ -16,9 +16,10 @@ export function useProfile(userId?: string) {
     // userId is ignored for /me/profile requests as it relies on auth token
     queryFn: () => usuarioApi.getProfile(userId!), 
     enabled: !!userId, // Only fetch if we have a userId (session loaded), avoids fetching for guest/initial invalid state
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 30, // 30 seconds (Market Standard: Balance between cache and security)
     retry: false,
     refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   const refreshProfile = useCallback(async () => {

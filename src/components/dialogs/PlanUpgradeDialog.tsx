@@ -59,8 +59,14 @@ export function PlanUpgradeDialog({
 
 
   // Fetch Summary for Trial Days
-  const { data: resumo } = useUsuarioResumo();
-  const trialDays = resumo?.usuario?.flags?.trial_dias_total ?? 7;
+  const { data: resumo, refetch: refetchResumo } = useUsuarioResumo();
+  const trialDays = resumo?.usuario?.flags?.trial_dias_total;
+
+  useEffect(() => {
+    if (open) {
+      refetchResumo();
+    }
+  }, [open, refetchResumo]);
 
 
   // Hook de Upgrade Unificado
@@ -99,15 +105,12 @@ export function PlanUpgradeDialog({
 
   // Robustez: Tenta pegar 'preco_aplicado' (novo padrão) ou 'valor' (velho padrão)
   const valorAtual = Number(
-    assinatura?.preco_aplicado ?? assinatura?.valor ?? 0
+    assinatura?.preco_aplicado ?? assinatura?.valor
   );
 
   // Definição de passageiros ativos e alvo
   const passageirosAtivos =
-    resumo?.contadores?.passageiros?.ativos ??
-    resumo?.contadores?.passageiros?.total ??
-    profile?.estatisticas?.total_passageiros ??
-    0;
+    resumo?.contadores?.passageiros?.ativos;
 
   // Safety: Garante que sempre buscaremos uma opção MAIOR que a atual se for Profissional
   // Se target não for passado, ou for menor/igual ao limite, forçamos o próximo degrau
@@ -126,6 +129,25 @@ export function PlanUpgradeDialog({
     valorAtualMensal: valorAtual,
     dataVencimento: profile?.assinatura?.data_vencimento,
   });
+
+  // Determinar o Mínimo Permitido
+  // Determinar o Mínimo Permitido
+  const minAllowedQuantity = useMemo(() => {
+    // 1. Encontrar maior tier padrão
+    const standardTiers = franchiseOptions?.filter(o => !o.isCustom) || [];
+    const maxStandardTier = Math.max(...standardTiers.map(o => o.quantidade || 0), 0);
+    const current = passageirosAtivos ?? 0;
+
+    // Cenário A: Se a frota cabe nos tiers (ex: tem 3, tiers vão até 30),
+    // o "Preciso de mais" só deve permitir acima de 30.
+    if (current <= maxStandardTier) {
+       return maxStandardTier + 1;
+    }
+    
+    // Cenário B: Se a frota já é maior que o maior tier (ex: tem 35, tier max 30),
+    // o mínimo é a frota atual.
+    return current;
+  }, [franchiseOptions, passageirosAtivos]);
 
   // Encontrar dados reais dos planos
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -260,11 +282,10 @@ export function PlanUpgradeDialog({
 
       // Calcular o máximo das opções padrão para validação (similar ao FranchiseTierSelector)
       // Calcular o máximo das opções padrão para validação (similar ao FranchiseTierSelector)
-      // REFATORADO: Usar passageirosAtivos como mínimo absoluto
-      const minAllowed = passageirosAtivos;
-      
+      // REFATORADO: Usar Mínimo Calculado (Prop)
+      // Garante consistência entre o aviso visual e o bloqueio lógico
       const qty = Number(currentTierOption.quantidade);
-      const isQuantityValid = !currentTierOption.isCustom || (qty >= minAllowed);
+      const isQuantityValid = !currentTierOption.isCustom || (qty >= minAllowedQuantity);
 
       // Se for marcado como custom OU se não for um plano oficial (fallback), calculamos o preço
       if (
@@ -485,6 +506,7 @@ export function PlanUpgradeDialog({
                       ? specificContent?.title
                       : undefined
                   }
+                  minAllowedQuantity={minAllowedQuantity}
                   isInTrial={isInTrial}
                 />
               </TabsContent>

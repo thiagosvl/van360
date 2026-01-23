@@ -10,6 +10,7 @@ import {
     TableRow
 } from "@/components/ui/table";
 import { AssinaturaCobrancaStatus } from "@/types/enums";
+import { formatDate } from "@/utils/formatters/date";
 import { Calendar, Receipt } from "lucide-react";
 
 interface SubscriptionHistoryProps {
@@ -70,7 +71,7 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
                         <div className="flex items-center gap-1.5 mt-0.5">
                              <Calendar className="w-3 h-3 text-gray-400" />
                              <span className="text-xs text-gray-500">
-                                Venc. {new Date(cobranca.data_vencimento).toLocaleDateString("pt-BR")}
+                                Venc. {formatDate(cobranca.data_vencimento).toLocaleDateString("pt-BR")}
                              </span>
                         </div>
                     </div>
@@ -152,7 +153,7 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
                                                 {cobranca.descricao || `Assinatura - ${getMonthYear(cobranca.data_vencimento)}`}
                                             </span>
                                             <span className="text-xs text-gray-500">
-                                                Vencimento: {new Date(cobranca.data_vencimento).toLocaleDateString("pt-BR")}
+                                                Vencimento: {formatDate(cobranca.data_vencimento).toLocaleDateString("pt-BR")}
                                             </span>
                                         </div>
                                     </TableCell>
@@ -195,5 +196,3 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
     </div>
   );
 }
-
-

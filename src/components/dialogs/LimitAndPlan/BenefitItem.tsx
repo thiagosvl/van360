@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Check, X } from "lucide-react";
+import { Check, Hourglass, X } from "lucide-react";
 
 interface BenefitItemProps {
   text: string;
@@ -21,6 +21,8 @@ export function BenefitItem({
     ? "bg-emerald-50 text-emerald-600"
     : "bg-red-50 text-red-500";
 
+  const isFuture = badgeText === "Em Breve";
+
   return (
     <div className="flex items-start gap-3.5">
       {/* Ícone - Mobile First (maior e mais visível) */}
@@ -31,7 +33,11 @@ export function BenefitItem({
         )}
       >
         {included ? (
-          <Check className="w-4.5 h-4.5 sm:w-4 sm:h-4" strokeWidth={2.5} />
+          isFuture ? (
+            <Hourglass className="w-4.5 h-4.5 sm:w-4 sm:h-4" strokeWidth={2.5} />
+          ) : (
+            <Check className="w-4.5 h-4.5 sm:w-4 sm:h-4" strokeWidth={2.5} />
+          )
         ) : (
           <X className="w-4.5 h-4.5 sm:w-4 sm:h-4" strokeWidth={2.5} />
         )}

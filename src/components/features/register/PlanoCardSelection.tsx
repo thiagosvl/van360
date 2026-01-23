@@ -4,9 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import {
-    PLANO_ESSENCIAL,
-    PLANO_PROFISSIONAL,
-    QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO,
+  PLANO_ESSENCIAL,
+  PLANO_PROFISSIONAL,
+  QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO,
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Plano, SubPlano } from "@/types/plano";

@@ -35,11 +35,6 @@ export interface Usuario {
       limite_franquia_atingido: boolean;
       pix_key_configurada: boolean;
   };
-  // Computed/Joined fields
-  estatisticas?: {
-    total_passageiros: number;
-    [key: string]: any;
-  };
   plano?: any;
   assinatura?: any;
 }

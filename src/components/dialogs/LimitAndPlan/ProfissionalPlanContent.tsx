@@ -63,19 +63,19 @@ export function ProfissionalPlanContent({
             <h3 className="text-xl font-bold text-gray-900 leading-tight">
               {customHeadline || (
                 salesContext === "expansion"
-                  ? "Precisa de mais espaço para crescer?"
+                  ? "Aumente sua Capacidade"
                   : salesContext === "upgrade_auto"
                   ? "Pare de cobrar manualmente. Automatize tudo."
                   : "Você quer apenas dirigir?"
               )}
             </h3>
-            {salesContext !== "expansion" && (
-              <p className="text-sm text-gray-600">
-                {salesContext === "upgrade_auto"
-                  ? "Reduza inadimplência em 80% e recupere 15+ horas por mês."
-                  : "Automatize cobranças, reduza inadimplência e recupere seu tempo."}
-              </p>
-            )}
+            <p className="text-sm text-gray-600">
+              {salesContext === "expansion"
+                ? "Ajuste o limite de passageiros da sua franquia de cobrança."
+                : salesContext === "upgrade_auto"
+                ? "Reduza inadimplência em 80% e recupere 15+ horas por mês."
+                : "Automatize cobranças, reduza inadimplência e recupere seu tempo."}
+            </p>
           </div>
 
           {/* 2. SELETOR (Horizontal Scroll - Mobile First) */}

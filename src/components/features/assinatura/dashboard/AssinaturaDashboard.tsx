@@ -1,7 +1,6 @@
 import { AssinaturaCobrancaStatus } from "@/types/enums";
 import { SubscriptionHeader } from "./SubscriptionHeader";
 import { SubscriptionHistory } from "./SubscriptionHistory";
-import { SubscriptionKPIs } from "./SubscriptionKPIs";
 import { SubscriptionSettings } from "./SubscriptionSettings";
 
 interface AssinaturaDashboardProps {
@@ -40,7 +39,7 @@ export function AssinaturaDashboard({
         onPagarClick={() => {
           // Find pending or open modal
           const pendente = cobrancas.find(
-            (c) => c.status === AssinaturaCobrancaStatus.PENDENTE_PAGAMENTO
+            (c) => c.status === AssinaturaCobrancaStatus.PENDENTE_PAGAMENTO,
           );
           if (pendente) onPagarClick(pendente);
           else onPagarClick(null);
@@ -59,7 +58,9 @@ export function AssinaturaDashboard({
 
         {/* Sidebar: Settings/Cancel */}
         <div className="lg:col-span-1 space-y-4">
-        <h3 className="text-lg font-bold text-gray-900 px-1">Sua Assinatura</h3>
+          <h3 className="text-lg font-bold text-gray-900 px-1">
+            Sua Assinatura
+          </h3>
           <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
             <div className="space-y-4 text-sm mb-6">
               <div className="flex justify-between items-center group">
@@ -69,7 +70,7 @@ export function AssinaturaDashboard({
                 <span className="font-medium text-gray-700">
                   {Number(assinatura.preco_aplicado || 0).toLocaleString(
                     "pt-BR",
-                    { style: "currency", currency: "BRL" }
+                    { style: "currency", currency: "BRL" },
                   )}
                 </span>
               </div>
@@ -79,12 +80,24 @@ export function AssinaturaDashboard({
                     Período de teste
                   </span>
                   <span className="font-medium text-gray-700">
-                    Até {new Date(assinatura.trial_end_at).toLocaleDateString(
-                      "pt-BR"
+                    Até{" "}
+                    {new Date(assinatura.trial_end_at).toLocaleDateString(
+                      "pt-BR",
                     )}
                   </span>
                 </div>
               )}
+              {flags?.is_trial_ativo &&
+                flags?.dias_restantes_trial !== undefined && (
+                  <div className="flex justify-between items-center group">
+                    <span className="text-gray-500 group-hover:text-gray-700 transition-colors">
+                      Dias restantes
+                    </span>
+                    <span className="font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">
+                      {flags.dias_restantes_trial} dias
+                    </span>
+                  </div>
+                )}
               {assinatura?.vigencia_fim && (
                 <div className="flex justify-between items-center group">
                   <span className="text-gray-500 group-hover:text-gray-700 transition-colors">
@@ -92,22 +105,19 @@ export function AssinaturaDashboard({
                   </span>
                   <span className="font-medium text-gray-700">
                     {new Date(assinatura.vigencia_fim).toLocaleDateString(
-                      "pt-BR"
+                      "pt-BR",
                     )}
                   </span>
                 </div>
               )}
             </div>
-                <SubscriptionSettings 
-                  plano={plano} 
-                  passageirosAtivos={metricas.passageirosAtivos} 
-                />
+            <SubscriptionSettings
+              plano={plano}
+              passageirosAtivos={metricas.passageirosAtivos}
+            />
           </div>
         </div>
       </div>
-
-      {/* 3. KPIs Strategy (Moved to bottom) */}
-      <SubscriptionKPIs plano={plano} metricas={metricas} />
     </div>
   );
 }

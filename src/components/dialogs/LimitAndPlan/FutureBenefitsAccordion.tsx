@@ -40,7 +40,7 @@ export function FutureBenefitsAccordion({ benefits }: FutureBenefitsAccordionPro
               {benefits.length} recursos em desenvolvimento
             </p>
             <p className="text-xs text-gray-500">
-              {isExpanded ? "Ocultar roadmap" : "Ver o que vem por aí"}
+              {isExpanded ? "Ocultar" : "Ver o que vem por aí"}
             </p>
           </div>
         </div>
