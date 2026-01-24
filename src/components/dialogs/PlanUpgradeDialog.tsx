@@ -1,19 +1,21 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-    FEATURE_COBRANCA_AUTOMATICA,
-    FEATURE_GASTOS,
-    FEATURE_LIMITE_FRANQUIA,
-    FEATURE_NOTIFICACOES,
-    FEATURE_RELATORIOS,
-    PLANO_ESSENCIAL,
-    PLANO_PROFISSIONAL,
+  FEATURE_COBRANCA_AUTOMATICA,
+  FEATURE_GASTOS,
+  FEATURE_LIMITE_FRANQUIA,
+  FEATURE_NOTIFICACOES,
+  FEATURE_RELATORIOS,
+  PLANO_ESSENCIAL,
+  PLANO_PROFISSIONAL,
 } from "@/constants";
-import { useCalcularPrecoPreview, usePlanos } from "@/hooks/api/usePlanos";
+import { usePlanos } from "@/hooks/api/usePlanos";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { usePlanUpgrade } from "@/hooks/business/usePlanUpgrade";
 import { useSession } from "@/hooks/business/useSession";
 import { useUpgradeFranquia } from "@/hooks/business/useUpgradeFranquia";
+import { useCustomPricePreview } from "@/hooks/ui/useCustomPricePreview";
+import { PlanSalesContext } from "@/types/enums";
 import { useEffect, useMemo, useState } from "react";
 import { EssencialPlanContent } from "./LimitAndPlan/EssencialPlanContent";
 import { FooterActions } from "./LimitAndPlan/FooterActions";
@@ -42,19 +44,23 @@ export function PlanUpgradeDialog({
 }: PlanUpgradeDialogProps) {
   const { user } = useSession();
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  const { profile, plano, is_essencial, is_profissional, summary: resumo, refreshProfile: refetchResumo } = usePermissions();
+  const {
+    profile,
+    plano,
+    is_essencial,
+    is_profissional,
+    summary: resumo,
+    refreshProfile: refetchResumo,
+  } = usePermissions();
 
-  // API Data
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   const { data: planosData } = usePlanos({ ativo: "true" }) as any;
-  // Combine bases and subs to ensure we can find all plans by ID
+  
   const planos = useMemo(() => {
     return [...(planosData?.bases || []), ...(planosData?.sub || [])];
   }, [planosData]);
 
-  // Estados visuais
   const [activeTab, setActiveTab] = useState<string>(defaultTab);
-
   const trialDays = resumo?.usuario?.flags?.trial_dias_total;
 
   useEffect(() => {
@@ -63,8 +69,6 @@ export function PlanUpgradeDialog({
     }
   }, [open, refetchResumo]);
 
-
-  // Hook de Upgrade Unificado
   const {
     loading,
     pagamentoDialog,
@@ -77,47 +81,34 @@ export function PlanUpgradeDialog({
     onOpenChange,
   });
 
-  // Dados do Usuário
   const planoAtualSlug = plano?.slug;
 
-  // --- Contexto de Venda (Sales Context) ---
   const salesContext = useMemo(() => {
-    if (is_profissional) return "expansion"; // Já é Pro, quer mais franquia
-    if (is_essencial) return "upgrade_auto"; // É Essencial, quer automação
-    return "trial_conversion"; // Novo usuário em trial
+    if (is_profissional) return PlanSalesContext.EXPANSION;
+    if (is_essencial) return PlanSalesContext.UPGRADE_AUTO;
+    return PlanSalesContext.TRIAL_CONVERSION;
   }, [is_profissional, is_essencial]);
 
-  // Tabs apenas durante o Trial. Se já assina, esconde.
-  const isInTrial = profile?.assinatura?.status === 'trial';
+  const isInTrial = profile?.assinatura?.status === "trial";
   const hideTabs = (is_essencial && !isInTrial) || is_profissional;
 
-  // Extrair franquia atual para base da lógica de target
   const assinatura = profile?.assinatura || profile?.assinaturas_usuarios?.[0];
   const franquiaAtual =
     assinatura?.franquia_cobrancas_mes ||
     assinatura?.franquia_contratada_cobrancas ||
     0;
 
-  // Robustez: Tenta pegar 'preco_aplicado' (novo padrão) ou 'valor' (velho padrão)
-  const valorAtual = Number(
-    assinatura?.preco_aplicado ?? assinatura?.valor
-  );
+  const valorAtual = Number(assinatura?.preco_aplicado ?? assinatura?.valor);
+  const passageirosAtivos = resumo?.contadores?.passageiros?.ativos;
 
-  // Definição de passageiros ativos e alvo
-  const passageirosAtivos =
-    resumo?.contadores?.passageiros?.ativos;
-
-  // Safety: Garante que sempre buscaremos uma opção MAIOR que a atual se for Profissional
-  // Se target não for passado, ou for menor/igual ao limite, forçamos o próximo degrau
-  let effectiveTarget =
-    targetPassengerCount ??
-    (passageirosAtivos > franquiaAtual ? passageirosAtivos : franquiaAtual + 1);
+  const targetFromProps = targetPassengerCount ?? 0;
+  const targetFromAtivos = (passageirosAtivos || 0) + 1;
+  let effectiveTarget = Math.max(targetFromProps, targetFromAtivos);
 
   if (is_profissional && effectiveTarget <= franquiaAtual) {
     effectiveTarget = franquiaAtual + 1;
   }
 
-  // Hook de Franquia
   const { options: franchiseOptions, calculateProrata } = useUpgradeFranquia({
     franquiaContratada: franquiaAtual,
     totalPassageiros: effectiveTarget,
@@ -125,64 +116,48 @@ export function PlanUpgradeDialog({
     dataVencimento: profile?.assinatura?.data_vencimento,
   });
 
-  // Determinar o Mínimo Permitido
-  // Determinar o Mínimo Permitido
   const minAllowedQuantity = useMemo(() => {
-    // 1. Encontrar maior tier padrão
-    const standardTiers = franchiseOptions?.filter(o => !o.isCustom) || [];
-    const maxStandardTier = Math.max(...standardTiers.map(o => o.quantidade || 0), 0);
+    const standardTiers = franchiseOptions?.filter((o) => !o.isCustom) || [];
+    const maxStandardTier = Math.max(
+      ...standardTiers.map((o) => o.quantidade || 0),
+      0,
+    );
     const current = passageirosAtivos ?? 0;
 
-    // Cenário A: Se a frota cabe nos tiers (ex: tem 3, tiers vão até 30),
-    // o "Preciso de mais" só deve permitir acima de 30.
     if (current <= maxStandardTier) {
-       return maxStandardTier + 1;
+      return maxStandardTier + 1;
     }
-    
-    // Cenário B: Se a frota já é maior que o maior tier (ex: tem 35, tier max 30),
-    // o mínimo é a frota atual.
+
     return current;
   }, [franchiseOptions, passageirosAtivos]);
 
-  // Encontrar dados reais dos planos
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   const planoEssencialData = planos.find(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (p: any) => p.slug === PLANO_ESSENCIAL
+    (p: any) => p.slug === PLANO_ESSENCIAL,
   );
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   const planoProfissionalData = planos.find(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (p: any) => p.slug === PLANO_PROFISSIONAL
+    (p: any) => p.slug === PLANO_PROFISSIONAL,
   );
 
   const availableFranchiseOptions = useMemo(() => {
     if (!franchiseOptions) return [];
 
-    return franchiseOptions.filter((opt) => {
+    const filtered = franchiseOptions.filter((opt) => {
       const quantidade = opt.quantidade || 0;
-
-      // 1. A capacidade do plano PRECISA comportar a frota atual (ou o alvo)
-      // Isso evita que um motorista com 50 passageiros compre o plano de 25
-      const requiredCapacity = targetPassengerCount ?? passageirosAtivos;
-      if (quantidade < requiredCapacity) {
-        return false;
-      }
-
-      // 2. Se já é Profissional (Upgrade/Expansão), só mostra planos MAIORES que o atual
-      if (is_profissional && quantidade <= franquiaAtual) {
-        return false;
-      }
+      const requiredCapacity = effectiveTarget;
+      
+      if (quantidade < requiredCapacity) return false;
+      if (is_profissional && quantidade <= franquiaAtual) return false;
 
       return true;
     });
-  }, [franchiseOptions, passageirosAtivos, is_profissional, franquiaAtual, targetPassengerCount]);
+
+    return filtered;
+  }, [franchiseOptions, effectiveTarget, is_profissional, franquiaAtual]);
 
   const [selectedTierId, setSelectedTierId] = useState<number | string | null>(
-    null
+    null,
   );
 
-  // Estados para Quantidade Personalizada
   const [isCustomQuantityMode, setIsCustomQuantityMode] = useState(false);
   const [manualQuantity, setManualQuantity] = useState<number | string>("");
 
@@ -191,27 +166,30 @@ export function PlanUpgradeDialog({
       const hasLoadedPlans = planos.length > 0;
       const noOptions = availableFranchiseOptions.length === 0;
 
-      // Se carregou planos e E não tem opções válidas -> Auto-switch para Custom
-      if (hasLoadedPlans && noOptions && !isCustomQuantityMode && !franchiseOptions?.length && loading === false) { 
-         // !franchiseOptions?.length check is ambiguous (maybe hook loading?)
-         // Better rely on hasLoadedPlans
+      if (
+        hasLoadedPlans &&
+        noOptions &&
+        !isCustomQuantityMode &&
+        !franchiseOptions?.length &&
+        loading === false
+      ) {
+         // Empty block preserved logic
       }
-      
+
       if (hasLoadedPlans && noOptions && !isCustomQuantityMode) {
-          // Só ativa se não tivermos filtrado TUDO. Se franchiseOptions estiver vazio pq useUpgradeFranquia não retornou nada, é outra coisa.
-          // Mas availableFranchiseOptions filtra.
-          if (franchiseOptions && franchiseOptions.length > 0) {
-             setIsCustomQuantityMode(true);
-             setManualQuantity(passageirosAtivos + 1);
-             return;
-          }
+        if (franchiseOptions && franchiseOptions.length > 0) {
+          setIsCustomQuantityMode(true);
+          setManualQuantity(passageirosAtivos + 1);
+          return;
+        }
       }
 
       if (availableFranchiseOptions.length > 0) {
-         const isSelectedValid = availableFranchiseOptions.some(o => o.id === selectedTierId);
+        const isSelectedValid = availableFranchiseOptions.some(
+          (o) => o.id === selectedTierId,
+        );
 
         if ((!selectedTierId || !isSelectedValid) && !isCustomQuantityMode) {
-          // Tenta achar um recomendado VÁLIDO (dentro dos filtrados)
           const recommended =
             availableFranchiseOptions.find((o) => o.recomendado) ||
             availableFranchiseOptions[0];
@@ -221,10 +199,28 @@ export function PlanUpgradeDialog({
         }
       }
     }
-  }, [open, availableFranchiseOptions, selectedTierId, isCustomQuantityMode, planos, passageirosAtivos, franchiseOptions, loading]);
+  }, [
+    open,
+    availableFranchiseOptions,
+    selectedTierId,
+    isCustomQuantityMode,
+    planos,
+    passageirosAtivos,
+    franchiseOptions,
+    loading,
+  ]);
 
-  // Computar a opção visualizada no momento
   const currentTierOption = useMemo(() => {
+    // 1. Prioritize official selection (SNAP result)
+    // If user types "4" and it snaps to "5", we want to sell "5", even if input shows "4"
+    if (selectedTierId) {
+      const selected = availableFranchiseOptions.find(
+        (o) => o.id === selectedTierId,
+      );
+      if (selected) return selected;
+    }
+
+    // 2. Fallback to custom manual mode (e.g. value > max tier)
     if (isCustomQuantityMode) {
       return {
         id: "custom_manual",
@@ -238,15 +234,6 @@ export function PlanUpgradeDialog({
     if (!availableFranchiseOptions || availableFranchiseOptions.length === 0)
       return null;
 
-    // Tenta encontrar o selecionado
-    if (selectedTierId) {
-      const selected = availableFranchiseOptions.find(
-        (o) => o.id === selectedTierId
-      );
-      if (selected) return selected;
-    }
-
-    // Fallback para o primeiro
     return availableFranchiseOptions[0] || null;
   }, [
     selectedTierId,
@@ -255,62 +242,21 @@ export function PlanUpgradeDialog({
     manualQuantity,
   ]);
 
-  // --- Lógica de Preço Sob Medida (Robustez) ---
-  const [customPrice, setCustomPrice] = useState<number | null>(null);
-  const [isDebouncing, setIsDebouncing] = useState(false);
-  const calcularPrecoPreview = useCalcularPrecoPreview();
+  const {
+    customPrice,
+    isDebouncing,
+    isLoading: isLoadingPrice,
+  } = useCustomPricePreview({
+    currentTierOption: currentTierOption as {
+      id: string | number;
+      quantidade: number | string;
+      isCustom?: boolean;
+    } | null,
+    planos,
+    open,
+    minAllowedQuantity,
+  });
 
-  useEffect(() => {
-    if (!open) return;
-    if (!currentTierOption) return;
-
-    // Debounce para evitar flood de requisições
-    const timer = setTimeout(() => {
-      setIsDebouncing(false); // Fim do debounce
-
-      // Verifica se é um plano oficial (existe na lista de bases ou subs)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const isOfficialPlan = planos.some(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (p: any) => p.id === currentTierOption.id
-      );
-
-      // Calcular o máximo das opções padrão para validação (similar ao FranchiseTierSelector)
-      // Calcular o máximo das opções padrão para validação (similar ao FranchiseTierSelector)
-      // REFATORADO: Usar Mínimo Calculado (Prop)
-      // Garante consistência entre o aviso visual e o bloqueio lógico
-      const qty = Number(currentTierOption.quantidade);
-      const isQuantityValid = !currentTierOption.isCustom || (qty >= minAllowedQuantity);
-
-      // Se for marcado como custom OU se não for um plano oficial (fallback), calculamos o preço
-      if (
-        (currentTierOption.isCustom || !isOfficialPlan) &&
-        qty > 0 &&
-        isQuantityValid
-      ) {
-        calcularPrecoPreview.mutate(qty, {
-          onSuccess: (res) => {
-            if (res) setCustomPrice(res.preco);
-          },
-        });
-      } else {
-        setCustomPrice(null);
-      }
-    }, 600); // 600ms debounce
-
-    // Se for custom, ativa estado de debounce visual imediatamente
-    if (currentTierOption.isCustom) {
-      setIsDebouncing(true);
-    }
-
-    return () => {
-      clearTimeout(timer);
-      // Nota: Não resetamos isDebouncing aqui para manter o loading visual enquanto o usuário digita
-    };
-  }, [currentTierOption, planos, open, calcularPrecoPreview.mutate, franchiseOptions]);
-
-  // --- Lógica de Texto Dinâmico (Alta Conversão) ---
-  // Mapeia qual plano resolve cada dor específica
   const featureTargetPlan = useMemo(() => {
     switch (feature) {
       case FEATURE_GASTOS:
@@ -325,7 +271,6 @@ export function PlanUpgradeDialog({
     }
   }, [feature, defaultTab]);
 
-  // Conteúdo Específico da Dor (Trigger)
   const specificContent = useMemo(() => {
     switch (feature) {
       case FEATURE_GASTOS:
@@ -359,25 +304,16 @@ export function PlanUpgradeDialog({
     }
   }, [feature]);
 
-
-
-  // Sincronizar Tab padrão
   useEffect(() => {
     if (open) {
-      // Reset states on open
       setIsPaymentVerified(false);
 
       if (is_essencial || is_profissional) {
-        // Usuário já está pagando -> Força Profissional (upgrade ou expansão)
         setActiveTab(PLANO_PROFISSIONAL);
       } else if (isInTrial) {
-        // Usuário em trial -> Abre na aba do plano que ele escolheu (respeita ancoragem de preço)
-        // Se tiver feature específica, usa o plano alvo da feature
-        // Senão, usa o plano atual da assinatura (ou defaultTab como fallback)
         const planoAtualDoTrial = plano?.slug || defaultTab;
         setActiveTab(featureTargetPlan || planoAtualDoTrial);
       } else {
-        // Fallback: Usa o plano alvo da feature (se houver) ou cai no defaultTab
         setActiveTab(featureTargetPlan || defaultTab);
       }
     }
@@ -393,17 +329,12 @@ export function PlanUpgradeDialog({
     setActiveTab,
   ]);
 
-
-
-  // --- Handlers de Up grade (Wrappers) ---
   const onUpgradeEssencial = () => {
     handleUpgradeEssencial(planoEssencialData?.id);
   };
 
   const onUpgradeProfissional = () => {
-    // Usa a opção selecionada visualmente
     const targetPlan = currentTierOption;
-    // Se for custom, o ID injeatado é fictício ("custom_enterprise"), então usamos o ID do plano base
     const targetId = targetPlan?.isCustom
       ? planoProfissionalData?.id
       : targetPlan?.id || planoProfissionalData?.id;
@@ -420,17 +351,22 @@ export function PlanUpgradeDialog({
           className="w-full max-w-lg p-0 gap-0 bg-white h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-none shadow-2xl"
           onOpenAutoFocus={(e) => e.preventDefault()}
           hideCloseButton
+          aria-describedby="plan-upgrade-description"
         >
-          {/* Header Slim (Fixed) */}
           <PlanUpgradeHeader
             title={
-              salesContext === "expansion"
+              salesContext === PlanSalesContext.EXPANSION
                 ? "Aumente sua Capacidade"
-                : salesContext === "upgrade_auto"
-                ? "Automatize sua Cobrança"
-                : "Escolha seu Plano"
+                : salesContext === PlanSalesContext.UPGRADE_AUTO
+                  ? "Automatize sua Cobrança"
+                  : "Escolha seu Plano"
             }
           />
+          <div className="sr-only">
+            <span id="plan-upgrade-description">
+              Selecione um plano para atualizar sua assinatura
+            </span>
+          </div>
 
           <Tabs
             value={activeTab}
@@ -459,9 +395,7 @@ export function PlanUpgradeDialog({
               </div>
             )}
 
-            {/* Scrollable Content Wrapper */}
             <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
-              {/* Conteúdo Essencial */}
               <TabsContent value={PLANO_ESSENCIAL} className="m-0">
                 <EssencialPlanContent
                   planoEssencialData={planoEssencialData}
@@ -480,7 +414,6 @@ export function PlanUpgradeDialog({
                 />
               </TabsContent>
 
-              {/* Conteúdo Profissional */}
               <TabsContent value={PLANO_PROFISSIONAL} className="m-0">
                 <ProfissionalPlanContent
                   availableFranchiseOptions={availableFranchiseOptions}
@@ -491,7 +424,9 @@ export function PlanUpgradeDialog({
                   setManualQuantity={setManualQuantity}
                   selectedTierId={selectedTierId}
                   setSelectedTierId={setSelectedTierId}
-                  currentTierOption={currentTierOption as { quantidade?: number | string } | null}
+                  currentTierOption={
+                    currentTierOption as { quantidade?: number | string } | null
+                  }
                   customPrice={customPrice}
                   planos={planos}
                   calculateProrata={calculateProrata}
@@ -508,7 +443,6 @@ export function PlanUpgradeDialog({
             </div>
           </Tabs>
 
-          {/* Footer Fixo (Actions) */}
           <FooterActions
             activeTab={activeTab}
             loading={loading}
@@ -530,7 +464,7 @@ export function PlanUpgradeDialog({
                 }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const officialPlan = planos?.find(
-                  (p: any) => p.id === currentTierOption?.id
+                  (p: any) => p.id === currentTierOption?.id,
                 );
                 if (officialPlan) {
                   return officialPlan.promocao_ativa
@@ -541,12 +475,10 @@ export function PlanUpgradeDialog({
               }
             })()}
             trialDays={trialDays}
-            isLoadingPrice={isDebouncing || calcularPrecoPreview.isPending}
+            isLoadingPrice={isDebouncing || isLoadingPrice}
           />
         </DialogContent>
       </Dialog>
-
-
 
       {pagamentoDialog && (
         <PagamentoAssinaturaDialog

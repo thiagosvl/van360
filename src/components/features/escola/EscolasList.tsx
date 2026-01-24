@@ -81,7 +81,7 @@ export function EscolasList({
                 Escola
               </th>
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Passageiros Ativos
+                Quantidade Passageiros
               </th>
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Status
@@ -116,8 +116,8 @@ export function EscolasList({
                   <td className="px-6 py-4 align-middle">
                     <div className="flex items-center gap-1.5">
                       <Users2 className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm font-semibold text-gray-700">
-                        {escola.passageiros_ativos_count || 0}
+                      <span className="text-sm text-muted-foreground">
+                        {escola.passageiros_ativos_count || 0} ativos
                       </span>
                     </div>
                   </td>

@@ -68,3 +68,11 @@ export enum PassageiroFormModes {
   EDIT = "edit",
   FINALIZE = "finalize"
 }
+
+export enum PlanSalesContext {
+  UPGRADE = "upgrade",
+  REGISTER = "register",
+  EXPANSION = "expansion",
+  UPGRADE_AUTO = "upgrade_auto",
+  TRIAL_CONVERSION = "trial_conversion"
+}

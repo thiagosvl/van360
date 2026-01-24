@@ -10,6 +10,7 @@ Este documento serve como referência única de verdade para a arquitetura do pr
 - **Constantes > Magic Strings:** **PROIBIDO** usar strings ou números soltos para definir status, tipos ou regras de negócio. Use os `ENUMS` definidos em `src/types/enums.ts` ou constantes em `src/constants`.
 - **Mensagens Centralizadas:** Para feedback ao usuário (Toasts, Erros de Validação), **NUNCA** use strings hardcoded. Use sempre as mensagens centralizadas em `src/constants/messages.ts` (ex: `toast.error("veiculo.erro.criar")`). O helper do toast já traduz a chave automaticamente.
 - **Separação de Responsabilidades:** Mantenha a lógica separada da UI. Componentes devem ser focados em apresentação.
+- **Código Limpo > Comentários:** O código deve ser autoexplicativo (nomes claros de funções e variáveis). **EVITE** comentários explicativos ("// Faz X"). Use comentários apenas em casos extremos de complexidade ou hacks necessários, e avise explicitamente no PR/Chat se o fizer. O excesso de comentários polui a base de código.
 
 ---
 

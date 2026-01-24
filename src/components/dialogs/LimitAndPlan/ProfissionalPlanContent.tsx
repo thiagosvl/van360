@@ -1,12 +1,17 @@
-import { PLANO_PROFISSIONAL } from "@/constants";
+import { PlanCapacitySelector } from "@/components/common/PlanCapacitySelector";
+import {
+  PLANO_PROFISSIONAL,
+  QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO,
+} from "@/constants";
 import { Loader2 } from "lucide-react";
+import { useCallback, useMemo } from "react";
 import { AvailableBenefitsList } from "./AvailableBenefitsList";
 import { ExpansionSummary } from "./ExpansionSummary";
-import { FranchiseTierSelector } from "./FranchiseTierSelector";
 import { FutureBenefitsAccordion } from "./FutureBenefitsAccordion";
 import { PLAN_BENEFITS } from "./planBenefits";
 
 interface ProfissionalPlanContentProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   availableFranchiseOptions: any[];
   salesContext: string;
@@ -21,7 +26,6 @@ interface ProfissionalPlanContentProps {
   customPrice: number | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   planos: any[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   calculateProrata: (price: number) => { valorHoje: number };
   franquiaAtual: number;
   customHeadline?: string;
@@ -47,13 +51,45 @@ export function ProfissionalPlanContent({
   isInTrial = false,
   minAllowedQuantity,
 }: ProfissionalPlanContentProps) {
-  // Separar benefícios disponíveis vs em breve
   const availableBenefits = PLAN_BENEFITS.filter(
     (b) => b.enabled_plans.includes(PLANO_PROFISSIONAL) && !b.soon
   );
   const futureBenefits = PLAN_BENEFITS.filter(
     (b) => b.enabled_plans.includes(PLANO_PROFISSIONAL) && b.soon
   );
+
+  // Memoize options (prevent loop)
+  const capacityOptions = useMemo(() => availableFranchiseOptions.map((opt) => ({
+    id: opt.id || `temp_${opt.quantidade}`,
+    quantity: opt.quantidade || 0,
+    isCustom: opt.isCustom,
+    label: opt.label,
+  })), [availableFranchiseOptions]);
+
+  // Stable handlers (prevent loop)
+  const handleSelectOption = useCallback((id: string | number | undefined, source?: 'click' | 'snap') => {
+      if (id === undefined) {
+        if (selectedTierId) setSelectedTierId(null);
+      } else {
+        if (selectedTierId !== id) {
+          setSelectedTierId(id);
+          
+          // Only close custom mode interactions if user manually clicked a tier
+          // For 'snap' (typing), we keep the input/custom mode active
+          if (source !== 'snap') {
+             setIsCustomQuantityMode(false);
+          }
+        }
+      }
+  }, [selectedTierId, setSelectedTierId, setIsCustomQuantityMode]);
+
+  const handleCustomChange = useCallback((val: string) => {
+      setManualQuantity(val);
+      if (val && !isCustomQuantityMode) {
+        setIsCustomQuantityMode(true);
+      }
+  }, [setManualQuantity, isCustomQuantityMode, setIsCustomQuantityMode]);
+
   return (
     <div className="px-6 pt-6 space-y-6 m-0 focus-visible:ring-0 outline-none">
       {(availableFranchiseOptions && availableFranchiseOptions.length > 0) || isCustomQuantityMode ? (
@@ -79,18 +115,16 @@ export function ProfissionalPlanContent({
           </div>
 
           {/* 2. SELETOR (Horizontal Scroll - Mobile First) */}
-          <div className="space-y-3">
-            <FranchiseTierSelector
-              availableOptions={availableFranchiseOptions}
-              salesContext={salesContext}
-              isCustomQuantityMode={isCustomQuantityMode}
-              setIsCustomQuantityMode={setIsCustomQuantityMode}
-              manualQuantity={manualQuantity}
-              setManualQuantity={setManualQuantity}
-              selectedTierId={selectedTierId}
-              setSelectedTierId={setSelectedTierId}
-              currentTierOption={currentTierOption}
-              minAllowedQuantity={minAllowedQuantity}
+          <div className="space-y-3 px-1 py-2">
+            <PlanCapacitySelector
+              options={capacityOptions}
+              selectedOptionId={selectedTierId}
+              onSelectOption={handleSelectOption}
+              customQuantity={manualQuantity}
+              onCustomQuantityChange={handleCustomChange}
+              minCustomQuantity={minAllowedQuantity}
+              maxCustomQuantity={QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO}
+              salesContext={salesContext as any}
             />
           </div>
 

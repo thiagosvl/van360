@@ -1,19 +1,19 @@
+import { PlanCapacitySelector } from "@/components/common/PlanCapacitySelector";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Slider } from "@/components/ui/slider";
 import {
   PLANO_ESSENCIAL,
   PLANO_PROFISSIONAL,
   QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO,
 } from "@/constants";
 import { cn } from "@/lib/utils";
+import { PlanSalesContext } from "@/types/enums";
 import { Plano, SubPlano } from "@/types/plano";
 import { getMaiorSubplanoProfissional } from "@/utils/domain/plano/planoStructureUtils";
 import { toast } from "@/utils/notifications/toast";
 import { Check, Loader2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface PlanoCardSelectionProps {
   plano: Plano;
@@ -59,17 +59,16 @@ export const PlanoCardSelection = ({
   const [inputValue, setInputValue] = useState(quantidadePersonalizada);
   const [isTyping, setIsTyping] = useState(false);
 
-  // Sub-planos do Profissional
-  const subPlanosProfissional = isProfissional
+  // Filters
+  const subPlanosProfissional = useMemo(() => isProfissional
     ? subPlanos.filter((s) => s.parent_id === plano.id)
-    : [];
+    : [], [isProfissional, subPlanos, plano.id]);
 
-  // Ordenar sub-planos por franquia (menor para maior)
+  // Sorters
   const subPlanosOrdenados = [...subPlanosProfissional].sort(
     (a, b) => a.franquia_cobrancas_mes - b.franquia_cobrancas_mes
   );
 
-  // Obter maior sub-plano para calcular mínimo do slider
   const maiorSubplano = isProfissional
     ? getMaiorSubplanoProfissional([plano], subPlanosProfissional)
     : null;
@@ -77,15 +76,19 @@ export const PlanoCardSelection = ({
     ? maiorSubplano.franquia_cobrancas_mes + 1
     : 0;
 
-  // Sync prop to local state
   useEffect(() => {
     if (!isTyping) {
+      // Prevent clearing input if we have a tier selected and the custom section is active
+      // This allows the input to show the "snapped" value (e.g. 8) even if the prop is technically empty
+      if (selectedSubPlanoId && personalizadoClicado && quantidadePersonalizada === "" && inputValue !== "") {
+           return;
+      }
       setInputValue(quantidadePersonalizada);
     }
-  }, [quantidadePersonalizada, isTyping]);
+  }, [quantidadePersonalizada, isTyping, selectedSubPlanoId, personalizadoClicado, inputValue, subPlanosProfissional]);
 
   // Handler (Commiter) for changes
-  const handleQuantidadeChange = (value: string) => {
+  const handleQuantidadeChange = useMemo(() => (value: string) => {
     const numericValue = value.replace(/\D/g, "");
 
     if (numericValue.length > 4) {
@@ -93,8 +96,10 @@ export const PlanoCardSelection = ({
     }
 
     const numValue = numericValue === "" ? 0 : Number(numericValue);
+    console.log('[PlanoCardSelection] handleQuantidadeChange EXEC:', numValue);
 
     if (numValue > QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO) {
+      console.log('[PlanoCardSelection] numValue > QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO:', numValue > QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO);
       return;
     }
 
@@ -103,69 +108,92 @@ export const PlanoCardSelection = ({
         onSelect(plano.id);
       }
 
-      // Limpar sub-plano quando o usuário começar a digitar quantidade personalizada
-      if (selectedSubPlanoId && numericValue !== "") {
-        onSubPlanoSelect?.(undefined);
-      }
+      // REMOVED redundancy: Let PlanCapacitySelector debounce handle deselection
+      // if (selectedSubPlanoId && numericValue !== "") {
+      //   onSubPlanoSelect?.(undefined);
+      // }
 
-      onQuantidadePersonalizadaChange?.(numericValue);
+      const valToSend = numericValue === "" ? "0" : numericValue;
+      onQuantidadePersonalizadaChange?.(valToSend);
     }
-  };
+  }, [isSelected, onSelect, plano.id, selectedSubPlanoId, onSubPlanoSelect, onQuantidadePersonalizadaChange]);
 
-  // Debounce Effect
   useEffect(() => {
     if (!isTyping) return;
 
     const timer = setTimeout(() => {
-      const numericValue = Number(inputValue);
       let finalValue = inputValue;
 
-      // Auto-correct to minimum
-      // Só corrige se tiver algo digitado, não estiver vazio (se vazio, assume 0 ou deixa limpar)
-      // Mas o requisito diz "valor digitado inferior ao minimo", assumindo que user digitou algo válido
-      if (inputValue !== "" && numericValue < quantidadeMinimaSlider) {
-        finalValue = String(quantidadeMinimaSlider);
-        setInputValue(finalValue);
-      }
-
       handleQuantidadeChange(finalValue);
-      setIsTyping(false);
-    }, 500);
+      
+      // Only exit typing mode if value is present. 
+      // If empty, we stay in typing mode to prevent Parent from reverting us to a default value (e.g. 9) logic loop.
+      if (finalValue !== "") {
+         setIsTyping(false);
+      }
+    }, 900);
 
     return () => clearTimeout(timer);
   }, [inputValue, isTyping, quantidadeMinimaSlider, handleQuantidadeChange]); // TODO: handleQuantidadeChange must be stable or use ref but it depends on props. Warning?
 
+  // Handler para seleção de personalizado
+  const handlePersonalizadoSelect = useCallback(() => {
+    onSelect(plano.id);
+    setPersonalizadoClicado(true);
+    setSliderExpandido(false); // Inicialmente oculto
+
+    if (selectedSubPlanoId) {
+      onSubPlanoSelect?.(undefined);
+    }
+
+    setTimeout(() => {
+      const input = document.getElementById(
+        `quantidade-personalizada-${plano.id}`
+      );
+      input?.focus();
+    }, 0);
+  }, [onSelect, plano.id, selectedSubPlanoId, onSubPlanoSelect]);
+
   // Handler for Local Input
-  const handleLocalInputChange = (value: string) => {
+  const handleLocalInputChange = useCallback((value: string, immediate = false) => {
     const numericValue = value.replace(/\D/g, "");
     if (numericValue.length > 4) return;
     const numValue = Number(numericValue);
     if (numValue > QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO) return;
 
     setInputValue(numericValue);
-    setIsTyping(true);
+    const valToSend = numericValue === "" ? "0" : numericValue;
+    onQuantidadePersonalizadaChange?.(valToSend); // Update prop immediately
+
+    if (immediate) {
+      setIsTyping(false);
+      handleQuantidadeChange(numericValue);
+    } else {
+      setIsTyping(true);
+    }
 
     if (!isSelected) {
       onSelect(plano.id);
     }
-    if (selectedSubPlanoId && numericValue !== "") {
-      onSubPlanoSelect?.(undefined);
+    if (!isSelected) {
+      onSelect(plano.id);
     }
+    // REMOVED: let debounce handle deselect
+    // if (selectedSubPlanoId && numericValue !== "") {
+    //   onSubPlanoSelect?.(undefined);
+    // }
     if (!personalizadoClicado) {
       handlePersonalizadoSelect();
     }
-  };
+  }, [isSelected, onSelect, plano.id, selectedSubPlanoId, onSubPlanoSelect, personalizadoClicado, handlePersonalizadoSelect, handleQuantidadeChange, onQuantidadePersonalizadaChange]);
 
-  // Determinar qual opção está selecionada (sub-plano ou personalizado)
   const opcaoSelecionada = selectedSubPlanoId
     ? selectedSubPlanoId
     : quantidadePersonalizada || personalizadoClicado
     ? "personalizado"
     : null;
 
-  // Obter quantidade mínima
   const quantidadeMinima = getQuantidadeMinima?.() ?? null;
-  // Usar quantidadeMinimaSlider se disponível (maior sub-plano + 1), senão usar quantidadeMinima
   const quantidadeMinimaParaValidacao =
     isProfissional && quantidadeMinimaSlider > 0
       ? quantidadeMinimaSlider
@@ -181,17 +209,57 @@ export const PlanoCardSelection = ({
     quantidadeDigitada > 0 &&
     quantidadeDigitada >= quantidadeMinimaParaValidacao;
 
-  // Handler para seleção de sub-plano via pill
-  const handleSubPlanoSelect = (subPlanoId: string) => {
-    onSelect(plano.id);
+  // Re-entrancy lock to prevent feedback loops during sync
+  const isSyncingRef = useRef(false);
 
-    setPersonalizadoClicado(false);
-    setSliderExpandido(false);
+  // Handler para seleção de sub-plano via pill
+  const handleSubPlanoSelect = useCallback((subPlanoId: string, source?: 'click' | 'snap') => {
+    // If it's a snap event (validation), check lock and block re-entrancy
+    if (source === 'snap') {
+       if (isSyncingRef.current) return;
+    }
+
+    if (!isSelected) {
+       onSelect(plano.id);
+    }
+
+    setPersonalizadoClicado(true);
+    // setSliderExpandido(false); // REMOVED: Keep expanded
     onSubPlanoSelect?.(subPlanoId);
-    onQuantidadePersonalizadaChange?.("");
-    setIsTyping(false); // Reset typing
-    setInputValue(""); // Clear input
-  };
+    
+    // If source is 'snap', we preserve the input as is and do NOT sync/clear
+    if (source === 'snap') return;
+
+    // Stop typing mode immediately to prevent race conditions with pending debounces
+    setIsTyping(false);
+    
+    // Sync local input visually to match the tier (Only for Clicks)
+    if (onQuantidadePersonalizadaChange) {
+       // Find the quantity of the selected subplan
+       const sp = subPlanosProfissional.find(s => s.id === subPlanoId);
+       if (sp) {
+          isSyncingRef.current = true;
+          setInputValue(String(sp.franquia_cobrancas_mes));
+          // Release lock after render
+          setTimeout(() => { isSyncingRef.current = false; }, 0);
+       }
+    } else {
+        onQuantidadePersonalizadaChange?.("");
+        setInputValue("");
+    }
+  }, [onSelect, plano.id, onSubPlanoSelect, onQuantidadePersonalizadaChange, subPlanosProfissional, isSelected]);
+
+  // Memoize the callback passed to PlanCapacitySelector to prevent re-render loops
+  const handleCapacitySelectorSelect = useCallback((id: string | number | undefined, source?: 'click' | 'snap') => {
+       if (id) {
+          handleSubPlanoSelect(String(id), source);
+       } else {
+          // Se id for undefined/null, significa que limpou a seleção (ex: entrou em custom)
+          if (selectedSubPlanoId) {
+             onSubPlanoSelect?.(undefined);
+          }
+       }
+  }, [handleSubPlanoSelect, onSubPlanoSelect]);
 
   // NOTE: removed original handleQuantidadeChange definition from here since I moved it up
 
@@ -217,22 +285,7 @@ export const PlanoCardSelection = ({
   }, [isSelected, isProfissional, quantidadePersonalizada, sliderExpandido]);
 
   // Handler para seleção de personalizado
-  const handlePersonalizadoSelect = () => {
-    onSelect(plano.id);
-    setPersonalizadoClicado(true);
-    setSliderExpandido(false); // Inicialmente oculto
 
-    if (selectedSubPlanoId) {
-      onSubPlanoSelect?.(undefined);
-    }
-
-    setTimeout(() => {
-      const input = document.getElementById(
-        `quantidade-personalizada-${plano.id}`
-      );
-      input?.focus();
-    }, 0);
-  };
 
   // Handler para expandir slider
   const handleExpandirSlider = () => {
@@ -287,11 +340,6 @@ export const PlanoCardSelection = ({
         );
       }
 
-      if (quantidadePersonalizada) {
-        if (!isQuantidadeValida) return null;
-        if (precoCalculadoPreview !== null) return precoCalculadoPreview;
-        return null;
-      }
       if (selectedSubPlanoId) {
         const subPlano = subPlanosProfissional.find(
           (s) => s.id === selectedSubPlanoId
@@ -302,6 +350,18 @@ export const PlanoCardSelection = ({
             : subPlano.preco;
         }
       }
+
+      if (quantidadePersonalizada) {
+        if (!isQuantidadeValida) return null;
+        if (precoCalculadoPreview !== null) return precoCalculadoPreview;
+        return null;
+      }
+      // If we are selected but NO subplan (and not custom matching), it means we are in the "Empty Input" state
+      // (e.g. user selected custom then cleared it). Should show "R$ --" or similar to indicate pending input.
+      if (isSelected && !selectedSubPlanoId && quantidadePersonalizada === "") {
+        return null;
+      }
+
       return Math.min(
         ...(subPlanosProfissional.map((s) =>
           Number(s.promocao_ativa ? s.preco_promocional : s.preco)
@@ -323,7 +383,6 @@ export const PlanoCardSelection = ({
     plano,
   ]);
 
-  // Preço original (sem promoção)
   const precoOriginal = useMemo(() => {
     if (isProfissional) {
       if (selectedSubPlanoId) {
@@ -338,7 +397,6 @@ export const PlanoCardSelection = ({
     return plano.preco;
   }, [isProfissional, selectedSubPlanoId, subPlanosProfissional, plano.preco]);
 
-  // Função para substituir placeholders nos benefícios
   const processarBeneficio = (beneficio: string): string => {
     if (beneficio.includes("{{LIMITE_PASSAGEIROS}}")) {
       return beneficio.replace(
@@ -349,7 +407,6 @@ export const PlanoCardSelection = ({
     return beneficio;
   };
 
-  // Estilos específicos para cada plano (Dabang Style - Radio Behavior)
   const getCardStyles = () => {
     const baseStyles = "cursor-pointer transition-all duration-300 relative";
 
@@ -395,6 +452,14 @@ export const PlanoCardSelection = ({
     if (isProfissional) return "Selecionar Profissional";
     return "Selecionar";
   };
+
+  // Memoize options to prevent infinite loops in PlanCapacitySelector useEffect
+  const capacityOptions = useMemo(() => subPlanosProfissional.map(sp => ({
+    id: sp.id,
+    quantity: sp.franquia_cobrancas_mes,
+    label: sp.nome,
+    isCustom: false
+  })), [subPlanosProfissional]);
 
   return (
     <div
@@ -467,18 +532,19 @@ export const PlanoCardSelection = ({
                 <span className="text-xs text-gray-500 mr-1">R$</span>
                 {/* Loader aparece se estiver calculando OU se for personalizado e não tiver preço ainda */}
                 {isSelected &&
-                (isCalculandoPreco ||
+                (isCalculandoPreco || 
+                  (isTyping && quantidadePersonalizada !== "0" && quantidadePersonalizada !== "") ||
                   (isProfissional &&
-                    quantidadePersonalizada &&
+                    quantidadePersonalizada && quantidadePersonalizada !== "0" &&
                     isQuantidadeValida &&
                     !precoCalculadoPreview)) ? (
                   <Skeleton className="h-9 w-24 mx-1" />
                 ) : (
                   <span className="text-3xl font-extrabold text-gray-900">
-                    {precoExibido?.toLocaleString("pt-BR", {
+                    {precoExibido !== null ? precoExibido.toLocaleString("pt-BR", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
-                    })}
+                    }) : "--"}
                   </span>
                 )}
                 <span className="text-gray-500 ml-1 text-sm">/mês</span>
@@ -486,95 +552,37 @@ export const PlanoCardSelection = ({
             </div>
         </div>
 
-        {/* Seletor de Quantidade (Apenas Profissional e Selecionado) */}
+        {/* Seletor de Quantidade (Apenas Profissional e Selecionado) - Refatorado para usar componente compartilhado */}
         {isProfissional && isSelected && (
           <div
             onClick={(e) => e.stopPropagation()}
-            className="mb-5 space-y-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm animate-in fade-in slide-in-from-top-2"
+            className="mb-5 bg-white p-3 rounded-xl border border-gray-100 shadow-sm animate-in fade-in slide-in-from-top-2"
           >
-            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">
-              Passageiros com cobrança
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              {subPlanosOrdenados.map((subPlano) => {
-                const isSubSelecionado = selectedSubPlanoId === subPlano.id;
-                return (
-                  <button
-                    key={subPlano.id}
-                    type="button"
-                    onClick={() => handleSubPlanoSelect(subPlano.id)}
-                    className={cn(
-                      "px-1 py-2 rounded-lg text-sm font-medium transition-all border",
-                      isSubSelecionado
-                        ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                        : "bg-gray-50 text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600"
-                    )}
-                  >
-                    {subPlano.franquia_cobrancas_mes}
-                  </button>
-                );
-              })}
-            </div>
-
-            {!sliderExpandido && subPlanosOrdenados.length > 0 && (
-              <button
-                type="button"
-                onClick={handleExpandirSlider}
-                className="text-xs text-blue-600 hover:text-blue-700 underline font-medium w-full text-center mt-1"
-              >
-                Preciso de mais passageiros
-              </button>
-            )}
-
-            {sliderExpandido && (
-              <div
-                id={`custom-quantity-section-${plano.id}`}
-                className="mt-2 pt-2 border-t border-gray-100"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-gray-600">
-                    Personalizado:
-                  </span>
-                  <span className="text-base font-bold text-blue-600">
-                    {inputValue || "0"}
-                  </span>
-                </div>
-
-                <Slider
-                  value={[
-                    inputValue ? parseInt(inputValue) : quantidadeMinimaSlider,
-                  ]}
-                  min={quantidadeMinimaSlider}
-                  max={QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO}
-                  step={10}
-                  onValueChange={(value) => {
-                    const newValue = String(value[0]);
-                    handleQuantidadeChange(newValue);
-                    if (!personalizadoClicado) {
-                      handlePersonalizadoSelect();
-                    }
-                  }}
-                  className="w-full mb-3"
-                />
-
-                <div className="flex items-center gap-2 pt-3">
-                  <Input
-                    id={`quantidade-personalizada-${plano.id}`}
-                    type="number"
-                    min={quantidadeMinimaSlider}
-                    max={QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO}
-                    value={inputValue}
-                    onChange={(e) => {
-                      handleLocalInputChange(e.target.value);
-                    }}
-                    onFocus={handleInputFocus}
-                    className="h-8 text-sm text-center bg-gray-50"
-                    placeholder="Qtd."
-                  />
-                </div>
-              </div>
-            )}
+             <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">
+               Quantidade de passageiros
+             </div>
+             
+             <PlanCapacitySelector
+                options={subPlanosOrdenados.map(s => ({
+                  id: s.id,
+                  quantity: s.franquia_cobrancas_mes,
+                  isCustom: false
+                }))}
+                selectedOptionId={selectedSubPlanoId ?? null}
+                onSelectOption={(id, source) => {
+                   if (id) {
+                      handleSubPlanoSelect(String(id), source);
+                   } else {
+                      // Se id for undefined/null, significa que limpou a seleção (ex: entrou em custom)
+                      onSubPlanoSelect?.(undefined);
+                   }
+                }}
+                customQuantity={inputValue}
+                onCustomQuantityChange={handleLocalInputChange}
+                minCustomQuantity={quantidadeMinimaSlider}
+                maxCustomQuantity={QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO}
+                salesContext={PlanSalesContext.REGISTER}
+             />
           </div>
         )}
 
@@ -648,11 +656,11 @@ export const PlanoCardSelection = ({
               onSelect(plano.id);
               onAvancarStep?.();
             }}
-            disabled={isCalculandoPreco}
+            disabled={isCalculandoPreco || (isProfissional && opcaoSelecionada === "personalizado" && !isQuantidadeValida)}
             className={cn(
               "w-full py-5 text-sm uppercase tracking-wide font-bold transition-all rounded-xl",
               getButtonStyles(),
-              isCalculandoPreco && "opacity-70 cursor-wait"
+              (isCalculandoPreco || (isProfissional && opcaoSelecionada === "personalizado" && !isQuantidadeValida)) && "opacity-70 cursor-not-allowed"
             )}
           >
             {isCalculandoPreco ? (

@@ -12,6 +12,7 @@ export function useCreateCobranca() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       // Invalida anos disponíveis (pode ter mudado após criar cobrança)
       queryClient.invalidateQueries({ queryKey: ["available-years"] });
       toast.success("cobranca.sucesso.criada");
@@ -51,6 +52,7 @@ export function useUpdateCobranca() {
       queryClient.invalidateQueries({ queryKey: ["cobranca", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("cobranca.sucesso.atualizada");
     },
   });
@@ -77,6 +79,7 @@ export function useDeleteCobranca() {
       }
       
       queryClient.invalidateQueries({ queryKey: ["available-years"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 }
@@ -104,7 +107,8 @@ export function useDesfazerPagamento() {
       // Invalida todas as queries de cobranças por passageiro (incluindo as com passageiroId e ano)
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"], refetchType: "active" });
       // Invalida query específica da cobrança para garantir refetch se necessário
-      queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["cobranca-notificacoes", cobrancaId], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("cobranca.sucesso.pagamentoDesfeito");
     },
     onError: (error: any) => {
@@ -140,6 +144,7 @@ export function useRegistrarPagamentoManual() {
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"], refetchType: "active" });
       // Invalida query específica da cobrança para garantir refetch se necessário
       queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("cobranca.sucesso.pagamentoRegistrado");
     },
     onError: (error: any) => {

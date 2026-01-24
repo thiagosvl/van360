@@ -88,7 +88,7 @@ export function VeiculosList({
                 Veículo
               </th>
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Passageiros Ativos
+                Quantidade Passageiros
               </th>
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Status
@@ -122,7 +122,7 @@ export function VeiculosList({
                   </td>
                   <td className="px-6 py-4 align-middle">
                     <div className="flex flex-col">
-                      <span className="font-medium text-sm text-gray-900">
+                      <span className="text-sm">
                         {veiculo.marca} {veiculo.modelo}
                       </span>
                     </div>
@@ -130,7 +130,7 @@ export function VeiculosList({
                   <td className="px-6 py-4 align-middle">
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Users2 className="w-4 h-4" />
-                      {veiculo.passageiros_ativos_count}
+                      {veiculo.passageiros_ativos_count} ativos
                     </div>
                   </td>
                   <td className="px-6 py-4 align-middle">
