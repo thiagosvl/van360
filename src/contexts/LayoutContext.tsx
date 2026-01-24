@@ -28,7 +28,9 @@ export type OpenPlanUpgradeDialogProps = Omit<
 export type OpenSubscriptionExpiredDialogProps = Omit<
   SubscriptionExpiredDialogProps,
   "open" | "onOpenChange"
->;
+> & {
+    onSuccess?: () => void;
+};
 
 export interface OpenConfirmationDialogProps {
   title: string;
@@ -42,7 +44,7 @@ export interface OpenConfirmationDialogProps {
 }
 
 export interface OpenPassageiroFormProps {
-  onSuccess?: () => void;
+  onSuccess?: (passageiro?: Passageiro) => void;
   editingPassageiro?: Passageiro | null;
   mode?: "create" | "edit" | "finalize";
   prePassageiro?: PrePassageiro | null;
@@ -90,6 +92,11 @@ export interface OpenManualPaymentDialogProps {
   onPaymentRecorded: () => void;
 }
 
+export interface OpenFirstChargeDialogProps {
+  passageiro: Passageiro;
+  onSuccess?: () => void;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -113,6 +120,8 @@ export interface LayoutContextType {
   openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;
   openCobrancaPixDrawer: (props: OpenCobrancaPixDrawerProps) => void;
   openManualPaymentDialog: (props: OpenManualPaymentDialogProps) => void;
+  openFirstChargeDialog: (props: OpenFirstChargeDialogProps) => void;
+  isFirstChargeDialogOpen: boolean;
   openSubscriptionExpiredDialog: (props?: OpenSubscriptionExpiredDialogProps) => void;
   isSubscriptionExpiredDialogOpen: boolean;
 }

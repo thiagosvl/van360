@@ -52,17 +52,16 @@ import { useEffect, useState } from "react";
 
 export default function PrePassageiros({
   onFinalizeNewPrePassageiro,
-  refreshKey,
   profile,
   plano,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const {
-    openPlanUpgradeDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
-    openPassageiroFormDialog
+    openPassageiroFormDialog,
+    openFirstChargeDialog,
   } = useLayout();
 
   const createPrePassageiro = useCreatePrePassageiro();
@@ -84,12 +83,12 @@ export default function PrePassageiros({
     {
       enabled: !!profile?.id,
       onError: () => toast.error("erro.carregar"),
-    }
+    },
   );
 
   const { data: passageirosData } = usePassageiros(
     { usuarioId: profile?.id },
-    { enabled: !!profile?.id }
+    { enabled: !!profile?.id },
   );
 
   const prePassageiros =
@@ -99,8 +98,6 @@ export default function PrePassageiros({
 
   const loading = isPrePassageirosLoading || isPrePassageirosFetching;
 
-
-
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
@@ -108,11 +105,7 @@ export default function PrePassageiros({
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  useEffect(() => {
-    if (refreshKey !== undefined) {
-      refetchPrePassageiros();
-    }
-  }, [refreshKey, refetchPrePassageiros]);
+
 
   const handleCadastrarRapidoLink = async () => {
     if (!profile?.id) {
@@ -148,7 +141,7 @@ export default function PrePassageiros({
       estado: endereco.estado,
       cep: endereco.cep,
       referencia: `Perto do ${endereco.bairro}`,
-      valor_cobranca: valorInString,
+      valor_cobranca: valor, // Agora enviando o número real
       dia_vencimento: hoje.getDate(),
     };
 
@@ -156,12 +149,15 @@ export default function PrePassageiros({
   };
 
   const handleFinalizeClick = (prePassageiro: PrePassageiro) => {
-
-
     openPassageiroFormDialog({
-        mode: "finalize",
-        prePassageiro,
-        onSuccess: onFinalizeNewPrePassageiro
+      mode: "finalize",
+      prePassageiro,
+      onSuccess: (passageiro) => {
+        if (onFinalizeNewPrePassageiro) onFinalizeNewPrePassageiro();
+        if (passageiro) {
+          openFirstChargeDialog({ passageiro });
+        }
+      },
     });
   };
 
@@ -247,9 +243,7 @@ export default function PrePassageiros({
           GERAR PRÉ-CADASTRO FAKE
         </Button>
 
-        <QuickRegistrationLink
-          profile={profile}
-        />
+        <QuickRegistrationLink profile={profile} />
 
         <div className="space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -294,7 +288,7 @@ export default function PrePassageiros({
                       onClick: () => {
                         if (!profile?.id) return;
                         navigator.clipboard.writeText(
-                          buildPrepassageiroLink(profile.id)
+                          buildPrepassageiroLink(profile.id),
                         );
                         toast.success("Link copiado!", {
                           description: "Envie para os pais.",
@@ -354,7 +348,7 @@ export default function PrePassageiros({
                         <TableCell className="py-4">
                           <span className="text-sm text-gray-500">
                             {formatarTelefone(
-                              prePassageiro.telefone_responsavel
+                              prePassageiro.telefone_responsavel,
                             )}
                           </span>
                         </TableCell>
@@ -407,7 +401,7 @@ export default function PrePassageiros({
                             if (prePassageiro.id) {
                               try {
                                 await deletePrePassageiro.mutateAsync(
-                                  prePassageiro.id
+                                  prePassageiro.id,
                                 );
                                 closeConfirmationDialog();
                               } catch (error) {

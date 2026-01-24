@@ -185,8 +185,10 @@ export const generatePeriodo = (): string => {
  * Gera um dia de vencimento aleatório (comum)
  */
 export const generateVencimento = (): string => {
-  const dias = ["05", "10", "15", "20"];
-  return dias[randomNumber(0, dias.length - 1)];
+  const dias = ["5", "10", "15", "20"];
+  const dia = dias[randomNumber(0, dias.length - 1)];
+
+  return dia;
 };
 
 /**

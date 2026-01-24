@@ -25,11 +25,10 @@ import {
   useFilters,
   usePassageiros,
   usePermissions,
-  usePrePassageiros,
   useToggleAtivoPassageiro,
   useUpdatePassageiro,
   useUsuarioResumo,
-  useVeiculos,
+  useVeiculos
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -53,6 +52,7 @@ export default function Passageiros() {
     openConfirmationDialog,
     closeConfirmationDialog,
     openPassageiroFormDialog,
+    openFirstChargeDialog,
   } = useLayout();
 
   const { canUseAutomatedCharges: canUseCobrancaAutomatica, isReadOnly } = usePermissions();
@@ -108,7 +108,6 @@ export default function Passageiros() {
   });
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
   const { user, loading: isSessionLoading } = useSession();
   const { profile, isLoading: isProfileLoading, plano } = useProfile(user?.id);
@@ -147,9 +146,6 @@ export default function Passageiros() {
         description: "passageiro.erro.carregarDetalhe",
       }),
   });
-
-  const { data: prePassageirosData, refetch: refetchPrePassageiros } =
-    usePrePassageiros({ usuarioId: profile?.id }, { enabled: !!profile?.id });
 
   const { data: resumo } = useUsuarioResumo();
 
@@ -255,7 +251,7 @@ export default function Passageiros() {
     if (openModal === "true") {
       openPassageiroFormDialog({
         mode: "create",
-        onSuccess: refetchPassageiros,
+        onSuccess: () => { refetchPassageiros(); },
       });
     }
   }, [searchParams, refetchPassageiros, openPassageiroFormDialog]);
@@ -460,9 +456,19 @@ export default function Passageiros() {
     // Use openPassageiroFormDialog
     openPassageiroFormDialog({
       mode: "create",
+      onSuccess: (passageiro) => {
+         refetchPassageiros();
+         if (passageiro) {
+             openFirstChargeDialog({ passageiro: passageiro });
+         }
+      }
     });
   }, [
     openPassageiroFormDialog,
+    openFirstChargeDialog,
+    refetchPassageiros,
+    isReadOnly,
+    openPlanUpgradeDialog
   ]);
 
   const handleCadastrarRapido = useCallback(async () => {
@@ -590,14 +596,11 @@ export default function Passageiros() {
       refetchPassageiros(),
       refetchEscolas(),
       refetchVeiculos(),
-      refetchPrePassageiros(),
     ]);
-    setRefreshKey((prev) => prev + 1);
   }, [
     refetchPassageiros,
     refetchEscolas,
     refetchVeiculos,
-    refetchPrePassageiros,
   ]);
 
   if (isProfileLoading || !profile) {
@@ -751,8 +754,8 @@ export default function Passageiros() {
               className={cn("mt-0")}
             >
               <PrePassageiros
-                onFinalizeNewPrePassageiro={async () => Promise.resolve()}
-                refreshKey={refreshKey}
+                onFinalizeNewPrePassageiro={async () => {
+                }}
                 profile={profile}
                 plano={plano}
               />

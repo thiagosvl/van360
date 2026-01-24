@@ -1,5 +1,4 @@
 import { passageiroApi } from "@/services/api/passageiro.api";
-import { Passageiro } from "@/types/passageiro";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,9 +8,8 @@ export function useCreatePassageiro() {
 
   return useMutation({
     mutationFn: (data: any) => passageiroApi.createPassageiro(data),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
-      queryClient.invalidateQueries({ queryKey: ["passageiros-contagem"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
@@ -33,53 +31,7 @@ export function useUpdatePassageiro() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       passageiroApi.updatePassageiro(id, data),
-    onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({ queryKey: ["passageiros"] });
-      await queryClient.cancelQueries({ queryKey: ["passageiro", id] });
-
-      const previousPassageiros = queryClient.getQueriesData({ queryKey: ["passageiros"] });
-      const previousPassageiro = queryClient.getQueryData(["passageiro", id]) as Passageiro | undefined;
-
-      // Armazenar valores anteriores de escola_id e veiculo_id para comparar depois
-      const previousEscolaId = previousPassageiro?.escola_id;
-      const previousVeiculoId = previousPassageiro?.veiculo_id;
-      const newEscolaId = data.escola_id;
-      const newVeiculoId = data.veiculo_id;
-
-      queryClient.setQueriesData({ queryKey: ["passageiros"] }, (old: any) => {
-        if (!old) return old;
-        if (old.list) {
-          return {
-            ...old,
-            list: old.list.map((p: Passageiro) => (p.id === id ? { ...p, ...data } : p)),
-          };
-        }
-        return old;
-      });
-
-      queryClient.setQueryData(["passageiro", id], (old: any) => {
-        if (!old) return old;
-        return { ...old, ...data };
-      });
-
-      return { 
-        previousPassageiros, 
-        previousPassageiro,
-        previousEscolaId,
-        previousVeiculoId,
-        newEscolaId,
-        newVeiculoId,
-      };
-    },
-    onError: (error: any, variables, context) => {
-      if (context?.previousPassageiros) {
-        context.previousPassageiros.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
-      if (context?.previousPassageiro) {
-        queryClient.setQueryData(["passageiro", variables.id], context.previousPassageiro);
-      }
+    onError: (error: any, variables) => {
       toast.error("passageiro.erro.atualizar", {
         description: getErrorMessage(error, "passageiro.erro.atualizarDetalhe"),
       });
@@ -100,29 +52,21 @@ export function useUpdatePassageiro() {
       } else {
         toast.success("passageiro.sucesso.atualizado");
       }
-    },
-    onSettled: (data, error, variables, context) => {
-      if (!error) {
-        // Sempre invalidar queries de passageiros e cobranças
-        queryClient.invalidateQueries({ queryKey: ["passageiros"] });
-        queryClient.invalidateQueries({ queryKey: ["passageiros-contagem"] });
-        queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
-        queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
-        queryClient.invalidateQueries({ queryKey: ["cobranca"] });
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
-        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
 
-        // Invalidar escolas/veículos apenas se houve mudança de escola/veículo
-        // Isso evita requisições desnecessárias quando apenas outros campos são editados
-        const escolaIdChanged = context?.previousEscolaId !== context?.newEscolaId;
-        const veiculoIdChanged = context?.previousVeiculoId !== context?.newVeiculoId;
+      // Invalidações globais
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+      queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+      queryClient.invalidateQueries({ queryKey: ["cobranca"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
 
-        if (escolaIdChanged) {
-          queryClient.invalidateQueries({ queryKey: ["escolas"] });
-        }
-        if (veiculoIdChanged) {
-          queryClient.invalidateQueries({ queryKey: ["veiculos"] });
-        }
+      // Se payload tem escola_id ou veiculo_id, invalidamos as listas para atualizar a contagem
+      if (variables.data?.escola_id !== undefined) {
+         queryClient.invalidateQueries({ queryKey: ["escolas"] });
+      }
+      if (variables.data?.veiculo_id !== undefined) {
+         queryClient.invalidateQueries({ queryKey: ["veiculos"] });
       }
     },
   });
@@ -133,88 +77,7 @@ export function useDeletePassageiro() {
 
   return useMutation({
     mutationFn: (id: string) => passageiroApi.deletePassageiro(id),
-    onMutate: async (id) => {
-      // 1. Cancelar queries concorrentes
-      await queryClient.cancelQueries({ queryKey: ["passageiros"] });
-      await queryClient.cancelQueries({ queryKey: ["usuario-resumo"] });
-
-      // 2. Snapshot dos dados anteriores
-      const previousPassageiros = queryClient.getQueriesData({ queryKey: ["passageiros"] });
-      const previousResumo = queryClient.getQueriesData({ queryKey: ["usuario-resumo"] });
-
-      // 3. Encontrar o passageiro para saber status (ativo/automacao) antes de remover
-      let deletedPassageiro: Passageiro | undefined;
-      
-      // Tenta encontrar no cache de lista primeiro
-      for (const [key, data] of previousPassageiros) {
-         if ((data as any)?.list) {
-            const found = (data as any).list.find((p: Passageiro) => p.id === id);
-            if (found) {
-               deletedPassageiro = found;
-               break;
-            }
-         }
-      }
-
-      // Se não achou na lista, tenta query individual (menos provável de estar populada se veio da lista, mas ok)
-      if (!deletedPassageiro) {
-         deletedPassageiro = queryClient.getQueryData(["passageiro", id]);
-      }
-
-      // 4. Atualizar listas de passageiros (Remoção)
-      queryClient.setQueriesData({ queryKey: ["passageiros"] }, (old: any) => {
-        if (!old) return old;
-        if (old.list) {
-          return {
-            ...old,
-            list: old.list.filter((p: Passageiro) => p.id !== id),
-            total: Math.max(0, old.total - 1),
-            ativos: old.list.filter((p: Passageiro) => p.id !== id && p.ativo).length,
-          };
-        }
-        return old;
-      });
-
-      // 5. Atualizar Resumo do Usuário (Contadores)
-      if (deletedPassageiro) {
-          queryClient.setQueriesData({ queryKey: ["usuario-resumo"] }, (old: any) => {
-              if (!old || !old.contadores) return old;
-              
-              const wasActive = deletedPassageiro?.ativo;
-              const wasAutomated = deletedPassageiro?.enviar_cobranca_automatica;
-
-              return {
-                  ...old,
-                  contadores: {
-                      ...old.contadores,
-                      passageiros: {
-                          ...old.contadores.passageiros,
-                          total: Math.max(0, old.contadores.passageiros.total - 1),
-                          ativos: wasActive ? Math.max(0, old.contadores.passageiros.ativos - 1) : old.contadores.passageiros.ativos,
-                          inativos: !wasActive ? Math.max(0, old.contadores.passageiros.inativos - 1) : old.contadores.passageiros.inativos,
-                          com_automacao: wasAutomated ? Math.max(0, old.contadores.passageiros.com_automacao - 1) : old.contadores.passageiros.com_automacao,
-                      }
-                  }
-              };
-          });
-      }
-
-      return { previousPassageiros, previousResumo };
-    },
-    onError: (error: any, variables, context) => {
-      // Rollback Passageiros
-      if (context?.previousPassageiros) {
-        context.previousPassageiros.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
-      // Rollback Resumo
-      if (context?.previousResumo) {
-          context.previousResumo.forEach(([queryKey, data]) => {
-            queryClient.setQueryData(queryKey, data);
-          });
-      }
-      
+    onError: (error: any) => {
       const errorMessage = getErrorMessage(error);
       
       if (error?.response?.status === 400 || errorMessage) {
@@ -229,27 +92,13 @@ export function useDeletePassageiro() {
     },
     onSuccess: () => {
       toast.success("passageiro.sucesso.excluido");
-    },
-    onSettled: (data, error, id) => {
-      // Só invalidar se NÃO houve erro.
-      if (!error) {
-        queryClient.invalidateQueries({ queryKey: ["passageiros"] });
-        queryClient.invalidateQueries({ queryKey: ["passageiros-contagem"] });
-        
-        // Invalida a query específica e remove
-        if (id) {
-            queryClient.invalidateQueries({ queryKey: ["passageiro", id] });
-            queryClient.removeQueries({ queryKey: ["passageiro", id] });
-            queryClient.removeQueries({ queryKey: ["cobrancas-by-passageiro", id] });
-            queryClient.removeQueries({ queryKey: ["available-years", id] });
-        }
-        
-        queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
-        queryClient.invalidateQueries({ queryKey: ["escolas"] });
-        queryClient.invalidateQueries({ queryKey: ["veiculos"] });
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
-        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-      }
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+      
+      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+      queryClient.invalidateQueries({ queryKey: ["escolas"] });
+      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 }
@@ -260,46 +109,7 @@ export function useToggleAtivoPassageiro() {
   return useMutation({
     mutationFn: ({ id, novoStatus }: { id: string; novoStatus: boolean }) =>
       passageiroApi.toggleAtivo(id, novoStatus),
-    onMutate: async ({ id, novoStatus }) => {
-      await queryClient.cancelQueries({ queryKey: ["passageiros"] });
-      await queryClient.cancelQueries({ queryKey: ["passageiro", id] });
-
-      const previousPassageiros = queryClient.getQueriesData({ queryKey: ["passageiros"] });
-      const previousPassageiro = queryClient.getQueryData(["passageiro", id]);
-
-      queryClient.setQueriesData({ queryKey: ["passageiros"] }, (old: any) => {
-        if (!old) return old;
-        if (old.list) {
-          return {
-            ...old,
-            list: old.list.map((p: Passageiro) =>
-              p.id === id ? { ...p, ativo: novoStatus } : p
-            ),
-            ativos: old.list.filter((p: Passageiro) => {
-              if (p.id === id) return novoStatus;
-              return p.ativo;
-            }).length,
-          };
-        }
-        return old;
-      });
-
-      queryClient.setQueryData(["passageiro", id], (old: any) => {
-        if (!old) return old;
-        return { ...old, ativo: novoStatus };
-      });
-
-      return { previousPassageiros, previousPassageiro };
-    },
-    onError: (error: any, variables, context) => {
-      if (context?.previousPassageiros) {
-        context.previousPassageiros.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
-      if (context?.previousPassageiro) {
-        queryClient.setQueryData(["passageiro", variables.id], context.previousPassageiro);
-      }
+    onError: (error: any, variables) => {
       toast.error(
         variables.novoStatus ? "passageiro.erro.ativar" : "passageiro.erro.desativar",
         {
@@ -311,23 +121,15 @@ export function useToggleAtivoPassageiro() {
       toast.success(
         variables.novoStatus ? "passageiro.sucesso.ativado" : "passageiro.sucesso.desativado"
       );
-    },
-    onSettled: (data, error, variables) => {
-      if (!error) {
-        // Sempre invalidar queries de passageiros e cobranças
-        queryClient.invalidateQueries({ queryKey: ["passageiros"] });
-        queryClient.invalidateQueries({ queryKey: ["passageiros-contagem"] });
-        queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
-        queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
-        queryClient.invalidateQueries({ queryKey: ["cobranca"] });
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
-        
-        // Quando toggle de ativo, a contagem de passageiros nas escolas/veículos muda
-        // então precisamos invalidar essas queries
-        queryClient.invalidateQueries({ queryKey: ["escolas"] });
-        queryClient.invalidateQueries({ queryKey: ["veiculos"] });
-        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-      }
+      queryClient.invalidateQueries({ queryKey: ["passageiros"] });
+      queryClient.invalidateQueries({ queryKey: ["passageiro", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+      queryClient.invalidateQueries({ queryKey: ["cobranca"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      
+      queryClient.invalidateQueries({ queryKey: ["escolas"] });
+      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 }
@@ -348,9 +150,8 @@ export function useFinalizePreCadastro() {
         data,
         data.usuario_id
       ),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
-      queryClient.invalidateQueries({ queryKey: ["passageiros-contagem"] });
       queryClient.invalidateQueries({ queryKey: ["pre-passageiros"] });
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });

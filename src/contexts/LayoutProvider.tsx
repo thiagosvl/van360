@@ -1,24 +1,25 @@
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
+import FirstChargeDialog from "@/components/dialogs/FirstChargeDialog";
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import PixKeyDialog from "@/components/dialogs/PixKeyDialog";
 import {
-    PlanUpgradeDialog,
+  PlanUpgradeDialog,
 } from "@/components/dialogs/PlanUpgradeDialog";
 import { SubscriptionExpiredDialog } from "@/components/dialogs/SubscriptionExpiredDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { WhatsappDialog } from "@/components/dialogs/WhatsappDialog";
 import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
 import {
-    FEATURE_COBRANCA_AUTOMATICA,
-    FEATURE_GASTOS,
-    FEATURE_LIMITE_PASSAGEIROS,
-    FEATURE_NOTIFICACOES,
-    FEATURE_RELATORIOS,
-    PLANO_PROFISSIONAL,
+  FEATURE_COBRANCA_AUTOMATICA,
+  FEATURE_GASTOS,
+  FEATURE_LIMITE_PASSAGEIROS,
+  FEATURE_NOTIFICACOES,
+  FEATURE_RELATORIOS,
+  PLANO_PROFISSIONAL,
 } from "@/constants";
 import { safeCloseDialog } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
@@ -28,23 +29,24 @@ import { usePixKeyGuard } from "@/hooks/ui/usePixKeyGuard";
 import { useWhatsappGuard } from "@/hooks/ui/useWhatsappGuard";
 import { PixKeyStatus } from "@/types/enums";
 import {
-    ReactNode,
-    useCallback,
-    useEffect,
-    useState,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useState,
 } from "react";
 import {
-    LayoutContext,
-    OpenCobrancaEditDialogProps,
-    OpenCobrancaPixDrawerProps,
-    OpenConfirmationDialogProps,
-    OpenEscolaFormProps,
-    OpenGastoFormProps,
-    OpenManualPaymentDialogProps,
-    OpenPassageiroFormProps,
-    OpenPlanUpgradeDialogProps,
-    OpenSubscriptionExpiredDialogProps,
-    OpenVeiculoFormProps
+  LayoutContext,
+  OpenCobrancaEditDialogProps,
+  OpenCobrancaPixDrawerProps,
+  OpenConfirmationDialogProps,
+  OpenEscolaFormProps,
+  OpenFirstChargeDialogProps,
+  OpenGastoFormProps,
+  OpenManualPaymentDialogProps,
+  OpenPassageiroFormProps,
+  OpenPlanUpgradeDialogProps,
+  OpenSubscriptionExpiredDialogProps,
+  OpenVeiculoFormProps
 } from "./LayoutContext";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
@@ -158,6 +160,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [manualPaymentDialogState, setManualPaymentDialogState] = useState<{
     open: boolean;
     props?: OpenManualPaymentDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [firstChargeDialogState, setFirstChargeDialogState] = useState<{
+    open: boolean;
+    props?: OpenFirstChargeDialogProps;
   }>({
     open: false,
   });
@@ -312,13 +321,19 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const openFirstChargeDialog = (props: OpenFirstChargeDialogProps) => {
+    setFirstChargeDialogState({
+      open: true,
+      props,
+    });
+  };
+
   return (
     <LayoutContext.Provider
       value={{
         pageTitle,
         setPageTitle,
         pageSubtitle,
-        setPageSubtitle,
         setPageSubtitle,
         openPlanUpgradeDialog,
         isPlanUpgradeDialogOpen: planUpgradeDialogState.open,
@@ -337,6 +352,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openCobrancaEditDialog,
         openCobrancaPixDrawer,
         openManualPaymentDialog,
+        openFirstChargeDialog,
+        isFirstChargeDialogOpen: firstChargeDialogState.open,
       }}
     >
       {children}
@@ -458,9 +475,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
                 setPassageiroFormDialogState((prev) => ({ ...prev, open: false }))
             )
           }
-          onSuccess={() => {
+          onSuccess={(data) => {
             setPassageiroFormDialogState((prev) => ({ ...prev, open: false }));
-            passageiroFormDialogState.props?.onSuccess?.();
+            passageiroFormDialogState.props?.onSuccess?.(data);
           }}
           editingPassageiro={
             passageiroFormDialogState.props?.editingPassageiro || null
@@ -577,6 +594,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             // Optional: close dialog on success is handled by the component or we can close here if needed
             // But usually the component props onClose handles it or the component calls onClose
           }}
+        />
+      )}
+
+      {firstChargeDialogState.open && firstChargeDialogState.props && (
+        <FirstChargeDialog
+            isOpen={true}
+            onClose={() => {
+                setFirstChargeDialogState(prev => ({ ...prev, open: false }));
+                firstChargeDialogState.props?.onSuccess?.();
+            }}
+            passageiro={firstChargeDialogState.props.passageiro}
         />
       )}
     </LayoutContext.Provider>

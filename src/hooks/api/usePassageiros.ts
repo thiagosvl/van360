@@ -1,6 +1,7 @@
 import { passageiroApi } from "@/services/api/passageiro.api";
 import { Passageiro } from "@/types/passageiro";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 export interface UsePassageirosFilters {
   usuarioId?: string;
@@ -41,7 +42,7 @@ export function usePassageiros(
   const normalizedFilters = normalizeFilters(filters);
   const filterKey = JSON.stringify(normalizedFilters);
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ["passageiros", filters.usuarioId, filterKey],
     enabled: (options?.enabled ?? true) && Boolean(filters.usuarioId),
     staleTime: 1000 * 60,
@@ -72,5 +73,13 @@ export function usePassageiros(
       };
     },
   });
+
+  useEffect(() => {
+    if (query.error && options?.onError) {
+      options.onError(query.error);
+    }
+  }, [query.error, options]);
+
+  return query;
 }
 

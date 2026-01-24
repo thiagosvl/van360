@@ -2,61 +2,40 @@ import {
   PLANO_ESSENCIAL,
   PLANO_PROFISSIONAL
 } from "@/constants";
-import { AssinaturaCobrancaStatus, AssinaturaStatus } from "@/types/enums";
 
 /**
- * Extrai e normaliza os dados do plano a partir de uma assinatura
+ * Extrai e normaliza os dados do plano a partir de uma assinatura.
+ * O frontend agora é um passthrough das flags calculadas no backend.
  */
-export function extractPlanoData(assinatura: any) {
-  if (!assinatura?.planos) return null;
+export function extractPlanoData(assinatura: any, backendFlags?: any) {
+  if (!assinatura?.planos && !backendFlags) return null;
 
-  const plano = assinatura.planos;
+  const plano = assinatura?.planos || {};
   const slugBase = plano.parent?.slug ?? plano.slug;
-
-  const agora = new Date();
-
-
-  const isProfissionalPlan = slugBase === PLANO_PROFISSIONAL;
-  const isEssentialPlan = slugBase === PLANO_ESSENCIAL;
-
-  const isTrial = assinatura.status === AssinaturaStatus.TRIAL;
-
-  const isValidTrial =
-    isTrial &&
-    assinatura.trial_end_at &&
-    new Date(assinatura.trial_end_at) >= agora;
-
-  const isActive =
-    assinatura.status === AssinaturaStatus.ATIVA && assinatura.ativo;
-
-  const isCanceled = assinatura.status === AssinaturaCobrancaStatus.CANCELADA;
-
-  const isValidCanceled =
-    isCanceled &&
-    assinatura.vigencia_fim &&
-    new Date(assinatura.vigencia_fim) >= agora;
-
-  const isValidPlan = isActive || isValidTrial || isValidCanceled;
-
   const nome = plano.parent?.nome ?? plano.nome;
+
+  // Priorizar as flags que vieram do backend (seja via parâmetro ou no próprio objeto)
+  const f = backendFlags || assinatura?.flags || {};
 
   return {
     slug: slugBase,
     nome,
-    status: assinatura.status,
-    trial_end_at: assinatura.trial_end_at,
-    ativo: assinatura.ativo,
+    status: assinatura?.status,
+    trial_end_at: assinatura?.trial_end_at,
+    ativo: assinatura?.ativo,
     planoProfissional: plano,
-    isTrial,
-    isValidTrial,
-    isActive,
-    isValidPlan,
 
-    isProfissionalPlan,
-    isEssentialPlan,
-    isPendente: assinatura.status === AssinaturaStatus.PENDENTE_PAGAMENTO,
-    isSuspensa: assinatura.status === AssinaturaStatus.SUSPENSA,
-    isCanceled,
+    // Backend Aligned Flags (Passthrough)
+    is_trial_ativo: f.is_trial_ativo ?? false,
+    is_trial_valido: f.is_trial_valido ?? false,
+    is_plano_valido: f.is_plano_valido ?? false,
+    is_read_only: f.is_read_only ?? false,
+    is_ativo: f.is_ativo ?? false,
+    is_pendente: f.is_pendente ?? false,
+    is_suspensa: f.is_suspensa ?? false,
+    is_cancelada: f.is_cancelada ?? false,
+    is_profissional: f.is_profissional ?? (slugBase === PLANO_PROFISSIONAL),
+    is_essencial: f.is_essencial ?? (slugBase === PLANO_ESSENCIAL),
   };
 }
 
@@ -92,100 +71,4 @@ export function getPlanoUsuario(usuario: any) {
   if (!assinatura) return null;
 
   return extractPlanoData(assinatura);
-}
-
-/**
- * Valida se o usuário tem acesso à funcionalidade de solicitação de passageiros (pre-passageiro)
- * 
- * Regras:
- * - Pode usar: Qualquer plano ativo (Essencial trial/ativo, Profissional ativo)
- * - Não pode usar: Apenas se a assinatura não estiver ativa (suspensa ou cancelada)
- */
-export function hasPrePassageiroAccess(planoData: ReturnType<typeof extractPlanoData>): {
-  hasAccess: boolean;
-  reason?: string;
-} {
-  if (!planoData) {
-    return {
-      hasAccess: false,
-      reason: "O motorista não possui uma assinatura ativa no momento.",
-    };
-  }
-
-  return {
-    hasAccess: true
-  }
-
-  // Verificar se o plano está ativo (isValidPlan considera ativo, trial válido ou cancelado válido)
-  // if (planoData.isValidPlan) {
-  //   return { hasAccess: true };
-  // }
-
-  // Se não está ativo, verificar o motivo específico
-  // if (planoData.isTrial && !planoData.isValidTrial) {
-  //   return {
-  //     hasAccess: false,
-  //     reason: "O período de testes do motorista expirou.",
-  //   };
-  // }
-
-  // Assinatura suspensa ou cancelada
-  // return {
-  //   hasAccess: false,
-  //   reason: "A assinatura do motorista está suspensa ou cancelada. É necessário regularizar para reativar o acesso.",
-  // };
-}
-
-export function hasRelatoriosAccess(planoData: ReturnType<typeof extractPlanoData>): boolean {
-  if (!planoData) return false;
-  return planoData.isValidPlan;
-}
-
-/**
- * Verifica se a assinatura está pendente de pagamento
- */
-export function isSubscriptionPending(assinatura: any): boolean {
-  if (!assinatura) return false;
-
-  const isPendentePagamento =
-    assinatura.status === AssinaturaCobrancaStatus.PENDENTE_PAGAMENTO &&
-    assinatura.ativo === true;
-
-  const isTrial =
-    assinatura.status === AssinaturaStatus.TRIAL &&
-    assinatura.ativo === true;
-
-  return isPendentePagamento || isTrial;
-}
-
-/**
- * Calcula informações detalhadas sobre o trial
- */
-export function calculateTrialInfo(assinatura: any) {
-  if (!assinatura) return { isValidTrial: false, isTrialExpirado: false, diasRestantes: null };
-
-  const isTrial = assinatura.status === AssinaturaStatus.TRIAL && assinatura.ativo === true;
-
-  const agora = new Date();
-  const trialEndAt = assinatura.trial_end_at
-    ? new Date(assinatura.trial_end_at)
-    : null;
-
-  const isValidTrial = isTrial && trialEndAt && trialEndAt >= agora;
-  const isTrialExpirado = isTrial && trialEndAt && trialEndAt < agora;
-
-  let diasRestantes: number | null = null;
-  if (isValidTrial && trialEndAt) {
-    const diffTime = trialEndAt.getTime() - agora.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    diasRestantes = Math.max(0, diffDays);
-  }
-
-  return {
-    isTrial,
-    isValidTrial: !!isValidTrial,
-    isTrialExpirado: !!isTrialExpirado,
-    diasRestantes,
-    trialEndAt
-  };
 }

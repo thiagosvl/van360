@@ -9,10 +9,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
-import { useCobranca, useCobrancaNotificacoes } from "@/hooks";
-import { usePermissions } from "@/hooks/business/usePermissions";
-import { useProfile } from "@/hooks/business/useProfile";
-import { useSession } from "@/hooks/business/useSession";
+import {
+  useCobranca,
+  useCobrancaNotificacoes,
+  useDeleteCobranca,
+  usePermissions,
+  useProfile,
+  useSession
+} from "@/hooks";
 import { useCobrancaOperations } from "@/hooks/ui/useCobrancaActions";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
@@ -25,7 +29,7 @@ import {
   disableEditarCobranca,
   disableExcluirCobranca,
   disableRegistrarPagamento,
-  seForPago
+  seForPago,
 } from "@/utils/domain/cobranca/disableActions";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
@@ -126,15 +130,17 @@ export default function PassageiroCobranca() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const params = useParams();
-  const { passageiro_id, cobranca_id } = params as {
-    passageiro_id: string;
+  const { cobranca_id } = params as {
     cobranca_id: string;
   };
+
   const {
     setPageTitle,
     openCobrancaEditDialog,
     openCobrancaPixDrawer,
     openManualPaymentDialog,
+    openConfirmationDialog,
+    closeConfirmationDialog,
   } = useLayout();
 
   const { user } = useSession();
@@ -144,6 +150,9 @@ export default function PassageiroCobranca() {
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
 
+  const [isDeleting, setIsDeleting] = useState(false);
+  const deleteCobranca = useDeleteCobranca();
+
   const {
     data: cobrancaData,
     isLoading: isCobrancaLoading,
@@ -151,11 +160,11 @@ export default function PassageiroCobranca() {
     error: cobrancaError,
     refetch: refetchCobranca,
   } = useCobranca(cobranca_id, {
-    enabled: !!cobranca_id,
+    enabled: !!cobranca_id && !isDeleting,
   });
 
   const { data: notificacoesData } = useCobrancaNotificacoes(cobranca_id, {
-    enabled: !!cobranca_id,
+    enabled: !!cobranca_id && !isDeleting,
   });
 
   const cobranca = cobrancaData as Cobranca | null;
@@ -168,6 +177,7 @@ export default function PassageiroCobranca() {
     if (!cobranca_id) return;
 
     if (isCobrancaLoading) return;
+    if (isDeleting) return; // Fix: Prevent race condition during deletion
 
     const isNotFoundError =
       isCobrancaError &&
@@ -180,11 +190,11 @@ export default function PassageiroCobranca() {
         queryKey: ["cobranca-notificacoes", cobranca_id],
       });
 
-      if (passageiro_id) {
+      if (cobranca?.passageiro_id) {
         navigate(
           ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(
             ":passageiro_id",
-            passageiro_id,
+            cobranca.passageiro_id,
           ),
           {
             replace: true,
@@ -200,16 +210,15 @@ export default function PassageiroCobranca() {
     cobrancaError,
     cobranca,
     cobranca_id,
-    passageiro_id,
     navigate,
     queryClient,
+    isDeleting, // Add dependency
   ]);
 
   const handleEditCobrancaClick = () => {
     if (cobrancaNormalizadaParaEdicao) {
       openCobrancaEditDialog({
         cobranca: cobrancaNormalizadaParaEdicao,
-        // onSuccess: refetchCobranca, // Removido pois o hook useUpdateCobranca já invalida as queries automaticamente
       });
     }
   };
@@ -219,17 +228,69 @@ export default function PassageiroCobranca() {
     return cobranca;
   }, [cobranca]);
 
+
+
   const {
     handleToggleLembretes,
     handleEnviarNotificacao,
     handleDesfazerPagamento,
-    handleDeleteCobranca,
+    // handleDeleteCobranca, // We overlap this one
     handleUpgrade,
-    isActionLoading,
+    isActionLoading: originalIsActionLoading,
   } = useCobrancaOperations({
     cobranca: cobranca!,
     plano: plano,
   });
+
+  const isActionLoading = originalIsActionLoading || isDeleting;
+
+  // Wrapper para adicionar navegação após exclusão
+  const handleDeleteCobranca = async () => {
+    if (!cobranca) return;
+    
+    // Captura o ID antes da mutação pois o objeto pode ser limpo do cache (Success -> removeQueries)
+    const passageiroIdCapturado = cobranca.passageiro_id;
+    console.log("[DeleteFlow] Iniciando exclusão de cobrança:", cobranca.id);
+    console.log("[DeleteFlow] Contexto capturado - passageiro_id:", passageiroIdCapturado);
+    
+    openConfirmationDialog({
+      title: "Excluir cobrança?",
+      description: "Tem certeza que deseja excluir esta cobrança? Essa ação não poderá ser desfeita.",
+      confirmText: "Excluir",
+      variant: "destructive",
+      onConfirm: async () => {
+         setIsDeleting(true);
+         try {
+            console.log("[DeleteFlow] Executando mutação...");
+            await deleteCobranca.mutateAsync(cobranca.id);
+            console.log("[DeleteFlow] Mutação concluída.");
+            
+            closeConfirmationDialog();
+
+            // Lógica solicitada: Tenta VOLTAR (-1). Se não houver histórico, usa condicional.
+            if (window.history.length > 2) { 
+              console.log("[DeleteFlow] Navegando para histórico anterior (-1)");
+              navigate(-1);
+            } else if (passageiroIdCapturado) {
+              console.log("[DeleteFlow] Redirecionando para Detalhes do Passageiro:", passageiroIdCapturado);
+              navigate(
+                ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(
+                  ":passageiro_id",
+                  passageiroIdCapturado,
+                ),
+                { replace: true }
+              );
+            } else {
+              console.log("[DeleteFlow] Redirecionando para Lista Geral de Cobranças");
+              navigate(ROUTES.PRIVATE.MOTORISTA.BILLING, { replace: true });
+            }
+         } catch (error) {
+            console.error("[DeleteFlow] Erro durante o fluxo:", error);
+            setIsDeleting(false);
+         }
+      }
+    });
+  };
 
   const handleCopyEndereco = async () => {
     if (!passageiroCompleto) return;
@@ -635,7 +696,7 @@ export default function PassageiroCobranca() {
                               <History className="w-4 h-4 mr-2" />
                               Desfazer Pagamento
                             </Button>
-                            <p className="text-muted-foreground text-xs">
+                            <p className="text-muted-foreground w-full text-xs">
                               Pagamento registrado manualmente.
                             </p>
                           </>

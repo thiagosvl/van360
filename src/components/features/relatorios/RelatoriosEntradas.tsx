@@ -83,7 +83,7 @@ export const RelatoriosEntradas = ({
                        {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(forma.valor)}
                     </span>
                     <span className="text-gray-400 text-xs w-10 text-right">
-                       {forma.percentual}%
+                       {Math.round(forma.percentual)}%
                     </span>
                   </div>
                 </div>

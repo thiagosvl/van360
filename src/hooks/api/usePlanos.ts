@@ -1,6 +1,7 @@
 import { planoApi } from "@/services/api/plano.api";
 import { Plano, SubPlano } from "@/types/plano";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 export function usePlanos(
   filtros?: Record<string, string>,
@@ -9,7 +10,7 @@ export function usePlanos(
     onError?: (error: unknown) => void;
   }
 ) {
-  return useQuery<{ bases: Plano[]; sub: SubPlano[] }>({
+  const query = useQuery<{ bases: Plano[]; sub: SubPlano[] }>({
     queryKey: ["planos", filtros],
     enabled: options?.enabled ?? true,
     queryFn: async () => {
@@ -18,9 +19,16 @@ export function usePlanos(
       const sub = (data as any[]).filter((p: any) => p.tipo === "sub") as SubPlano[];
       return { bases, sub };
     },
-    onError: options?.onError,
     staleTime: 1000 * 60 * 10, // 10 minutos de cache
   });
+
+  useEffect(() => {
+    if (query.error && options?.onError) {
+      options.onError(query.error);
+    }
+  }, [query.error, options]);
+
+  return query;
 }
 
 export function useCalcularPrecoPreview() {

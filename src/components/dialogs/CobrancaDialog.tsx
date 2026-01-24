@@ -1,18 +1,18 @@
 import { CobrancaFormContent } from "@/components/forms/cobranca/CobrancaForm";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import {
-  Loader2,
-  PlusCircle,
-  User,
-  X
+    Loader2,
+    PlusCircle,
+    User,
+    X
 } from "lucide-react";
 
 interface CobrancaDialogProps {
@@ -23,7 +23,7 @@ interface CobrancaDialogProps {
   passageiroResponsavelNome: string;
   valorCobranca: number;
   diaVencimento: number;
-  onCobrancaAdded: () => void;
+  onCobrancaAdded?: () => void;
 }
 
 export default function CobrancaDialog({
@@ -47,7 +47,9 @@ export default function CobrancaDialog({
     diaVencimento,
     valor: valorCobranca,
     onSuccess: () => {
-        onCobrancaAdded();
+        if (onCobrancaAdded) {
+           onCobrancaAdded();
+        }
         onClose();
     },
   });

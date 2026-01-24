@@ -39,7 +39,6 @@ export const gastoApi = {
       veiculo_id: data.veiculo_id,
     }
 
-    console.log('payload', payload);
 
     return apiClient
       .put(`/gastos/${gastoId}`, payload)

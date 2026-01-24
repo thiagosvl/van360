@@ -1,5 +1,4 @@
 import { veiculoApi } from "@/services/api/veiculo.api";
-import { Veiculo } from "@/types/veiculo";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -49,43 +48,16 @@ export function useUpdateVeiculo() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       veiculoApi.updateVeiculo(id, data),
-    onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({ queryKey: ["veiculos"] });
-
-      const previousVeiculos = queryClient.getQueriesData({ queryKey: ["veiculos"] });
-
-      queryClient.setQueriesData({ queryKey: ["veiculos"] }, (old: any) => {
-        if (!old) return old;
-        if (old.list) {
-          return {
-            ...old,
-            list: old.list.map((v: Veiculo) => (v.id === id ? { ...v, ...data } : v)),
-          };
-        }
-        return old;
-      });
-
-      return { previousVeiculos };
-    },
-    onError: (error: any, variables, context) => {
-      if (context?.previousVeiculos) {
-        context.previousVeiculos.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
+    onError: (error: any) => {
       toast.error("veiculo.erro.atualizar", {
         description: getErrorMessage(error, "veiculo.erro.atualizarDetalhe"),
       });
     },
     onSuccess: () => {
       toast.success("veiculo.sucesso.atualizado");
-    },
-    onSettled: (data, error) => {
-      if (!error) {
-        queryClient.invalidateQueries({ queryKey: ["veiculos"] });
-        queryClient.invalidateQueries({ queryKey: ["veiculos-form"] });
-        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-      }
+      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["veiculos-form"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 }
@@ -95,45 +67,16 @@ export function useDeleteVeiculo() {
 
   return useMutation({
     mutationFn: (id: string) => veiculoApi.deleteVeiculo(id),
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ["veiculos"] });
-
-      const previousVeiculos = queryClient.getQueriesData({ queryKey: ["veiculos"] });
-
-      queryClient.setQueriesData({ queryKey: ["veiculos"] }, (old: any) => {
-        if (!old) return old;
-        if (old.list) {
-          return {
-            ...old,
-            list: old.list.filter((v: Veiculo) => v.id !== id),
-            total: old.total - 1,
-            ativos: old.list.filter((v: Veiculo) => v.id !== id && v.ativo).length,
-          };
-        }
-        return old;
-      });
-
-      return { previousVeiculos };
-    },
-    onError: (error: any, variables, context) => {
-      if (context?.previousVeiculos) {
-        context.previousVeiculos.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
+    onError: (error: any) => {
       toast.error("veiculo.erro.excluir", {
         description: getErrorMessage(error, "veiculo.erro.excluirDetalhe"),
       });
     },
     onSuccess: () => {
       toast.success("veiculo.sucesso.excluido");
-    },
-    onSettled: (data, error) => {
-      if (!error) {
-        queryClient.invalidateQueries({ queryKey: ["veiculos"] });
-        queryClient.invalidateQueries({ queryKey: ["veiculos-form"] });
-        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-      }
+      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["veiculos-form"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 }
@@ -144,36 +87,7 @@ export function useToggleAtivoVeiculo() {
   return useMutation({
     mutationFn: ({ id, novoStatus }: { id: string; novoStatus: boolean }) =>
       veiculoApi.updateVeiculo(id, { ativo: novoStatus }),
-    onMutate: async ({ id, novoStatus }) => {
-      await queryClient.cancelQueries({ queryKey: ["veiculos"] });
-
-      const previousVeiculos = queryClient.getQueriesData({ queryKey: ["veiculos"] });
-
-      queryClient.setQueriesData({ queryKey: ["veiculos"] }, (old: any) => {
-        if (!old) return old;
-        if (old.list) {
-          return {
-            ...old,
-            list: old.list.map((v: Veiculo) =>
-              v.id === id ? { ...v, ativo: novoStatus } : v
-            ),
-            ativos: old.list.filter((v: Veiculo) => {
-              if (v.id === id) return novoStatus;
-              return v.ativo;
-            }).length,
-          };
-        }
-        return old;
-      });
-
-      return { previousVeiculos };
-    },
-    onError: (error: any, variables, context) => {
-      if (context?.previousVeiculos) {
-        context.previousVeiculos.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
+    onError: (error: any) => {
       toast.error("veiculo.erro.alterarStatus", {
         description: getErrorMessage(error, "veiculo.erro.alterarStatusDetalhe"),
       });
@@ -182,13 +96,9 @@ export function useToggleAtivoVeiculo() {
       toast.success(
         variables.novoStatus ? "veiculo.sucesso.ativado" : "veiculo.sucesso.desativado"
       );
-    },
-    onSettled: (data, error) => {
-      if (!error) {
-        queryClient.invalidateQueries({ queryKey: ["veiculos"] });
-        queryClient.invalidateQueries({ queryKey: ["veiculos-form"] });
-        queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-      }
+      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+      queryClient.invalidateQueries({ queryKey: ["veiculos-form"] });
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
     },
   });
 }

@@ -41,52 +41,7 @@ export function useUpdateCobranca() {
   return useMutation({
     mutationFn: ({ id, data, cobrancaOriginal }: { id: string; data: any; cobrancaOriginal?: any }) =>
       cobrancaApi.updateCobranca(id, data, cobrancaOriginal),
-    onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({ queryKey: ["cobrancas"] });
-      await queryClient.cancelQueries({ queryKey: ["cobrancas-by-passageiro"] });
-
-      const previousCobrancas = queryClient.getQueriesData({ queryKey: ["cobrancas"] });
-      const previousCobrancasByPassageiro = queryClient.getQueriesData({ queryKey: ["cobrancas-by-passageiro"] });
-
-      queryClient.setQueriesData({ queryKey: ["cobrancas"] }, (old: any) => {
-        if (!old) return old;
-        const updated = { ...old };
-        if (updated.all) {
-          updated.all = updated.all.map((c: Cobranca) =>
-            c.id === id ? { ...c, ...data } : c
-          );
-        }
-        if (updated.abertas) {
-          updated.abertas = updated.abertas.map((c: Cobranca) =>
-            c.id === id ? { ...c, ...data } : c
-          );
-        }
-        if (updated.pagas) {
-          updated.pagas = updated.pagas.map((c: Cobranca) =>
-            c.id === id ? { ...c, ...data } : c
-          );
-        }
-        return updated;
-      });
-
-      queryClient.setQueriesData({ queryKey: ["cobrancas-by-passageiro"] }, (old: any) => {
-        if (!old) return old;
-        return old.map((c: Cobranca) => (c.id === id ? { ...c, ...data } : c));
-      });
-
-      return { previousCobrancas, previousCobrancasByPassageiro };
-    },
-    onError: (error: any, variables, context) => {
-      if (context?.previousCobrancas) {
-        context.previousCobrancas.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
-      if (context?.previousCobrancasByPassageiro) {
-        context.previousCobrancasByPassageiro.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
+    onError: (error: any) => {
       toast.error("cobranca.erro.atualizar", {
         description: getErrorMessage(error, "cobranca.erro.atualizarDetalhe"),
       });
@@ -106,66 +61,22 @@ export function useDeleteCobranca() {
 
   return useMutation({
     mutationFn: (id: string) => cobrancaApi.deleteCobranca(id),
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ["cobrancas"] });
-      await queryClient.cancelQueries({ queryKey: ["cobrancas-by-passageiro"] });
-
-      const previousCobrancas = queryClient.getQueriesData({ queryKey: ["cobrancas"] });
-      const previousCobrancasByPassageiro = queryClient.getQueriesData({ queryKey: ["cobrancas-by-passageiro"] });
-
-      queryClient.setQueriesData({ queryKey: ["cobrancas"] }, (old: any) => {
-        if (!old) return old;
-        const updated = { ...old };
-        if (updated.all) {
-          updated.all = updated.all.filter((c: Cobranca) => c.id !== id);
-        }
-        if (updated.abertas) {
-          updated.abertas = updated.abertas.filter((c: Cobranca) => c.id !== id);
-        }
-        if (updated.pagas) {
-          updated.pagas = updated.pagas.filter((c: Cobranca) => c.id !== id);
-        }
-        return updated;
-      });
-
-      queryClient.setQueriesData({ queryKey: ["cobrancas-by-passageiro"] }, (old: any) => {
-        if (!old) return old;
-        return old.filter((c: Cobranca) => c.id !== id);
-      });
-
-      return { previousCobrancas, previousCobrancasByPassageiro };
-    },
-    onError: (error: any, variables, context) => {
-      if (context?.previousCobrancas) {
-        context.previousCobrancas.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
-      if (context?.previousCobrancasByPassageiro) {
-        context.previousCobrancasByPassageiro.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
+    onError: (error: any) => {
       toast.error("cobranca.erro.excluir", {
         description: getErrorMessage(error, "cobranca.erro.excluirDetalhe"),
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       toast.success("cobranca.sucesso.excluida");
-    },
-    onSettled: (data, error, id) => {
-      if (!error) {
-        queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
-        queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
-        // Invalida a query específica da cobrança excluída para garantir que não seja mais acessível
-        if (id) {
-            queryClient.invalidateQueries({ queryKey: ["cobranca", id] });
-            // Remove do cache para evitar acesso após exclusão
-            queryClient.removeQueries({ queryKey: ["cobranca", id] });
-        }
-        // Invalida anos disponíveis (pode ter mudado após excluir cobrança)
-        queryClient.invalidateQueries({ queryKey: ["available-years"] });
+      
+      queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
+      queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
+      
+      if (id) {
+          queryClient.removeQueries({ queryKey: ["cobranca", id] });
       }
+      
+      queryClient.invalidateQueries({ queryKey: ["available-years"] });
     },
   });
 }

@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
-    FEATURE_RELATORIOS,
-    PLANO_ESSENCIAL,
-    PLANO_PROFISSIONAL,
+  FEATURE_RELATORIOS,
+  PLANO_ESSENCIAL,
+  PLANO_PROFISSIONAL,
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { Users } from "lucide-react";
@@ -35,7 +35,6 @@ interface RelatoriosOperacionalProps {
     envios: number;
     limite: number;
   };
-  hasAccess: boolean;
   limits: {
     passageiros: number | null;
   };
@@ -45,7 +44,6 @@ interface RelatoriosOperacionalProps {
 export const RelatoriosOperacional = ({
   dados,
   automacao,
-  hasAccess,
   IsProfissionalPlan,
 }: RelatoriosOperacionalProps) => {
   const { openPlanUpgradeDialog } = useLayout();

@@ -30,13 +30,11 @@ const pagesItems = [
         title: "Gastos",
         href: "/gastos",
         icon: Wallet,
-        featureFlag: "gestao_gastos",
     },
     {
         title: "Relatórios",
         href: "/relatorios",
         icon: ChartArea,
-        featureFlag: "relatorios_financeiros",
     },
     {
         title: "Minha Assinatura",

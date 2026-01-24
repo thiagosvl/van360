@@ -45,7 +45,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       key={isMobile ? "mobile" : "desktop"}
       theme={theme as ToasterProps["theme"]}
       className="toaster group !z-[99999]"
-      position={isMobile ? "bottom-center" : "top-right"}
+      position={isMobile ? "top-center" : "top-right"}
       toastOptions={toastStyles}
       // Permitir arrastar para os lados para fechar, além de baixo/cima
       swipeDirections={['left', 'right', 'bottom', 'top']} 

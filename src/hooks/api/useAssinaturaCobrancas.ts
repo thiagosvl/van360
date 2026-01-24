@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { assinaturaCobrancaApi } from "@/services/api/assinatura-cobranca.api";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 export function useAssinaturaCobrancas(
   filtros?: Record<string, string>,
@@ -8,15 +9,22 @@ export function useAssinaturaCobrancas(
     onError?: (error: unknown) => void;
   }
 ) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["assinatura-cobrancas", filtros],
     enabled: options?.enabled ?? true,
     queryFn: async () => {
       const data = await assinaturaCobrancaApi.listAssinaturaCobrancas(filtros);
       return (data as any[]) ?? [];
     },
-    onError: options?.onError,
   });
+
+  useEffect(() => {
+    if (query.error && options?.onError) {
+      options.onError(query.error);
+    }
+  }, [query.error, options]);
+
+  return query;
 }
 
 export function useAssinaturaCobranca(
@@ -26,7 +34,7 @@ export function useAssinaturaCobranca(
     onError?: (error: unknown) => void;
   }
 ) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["assinatura-cobranca", cobrancaId],
     enabled: (options?.enabled ?? true) && Boolean(cobrancaId),
     queryFn: async () => {
@@ -34,7 +42,14 @@ export function useAssinaturaCobranca(
       const data = await assinaturaCobrancaApi.getAssinaturaCobranca(cobrancaId);
       return data ?? null;
     },
-    onError: options?.onError,
   });
+
+  useEffect(() => {
+    if (query.error && options?.onError) {
+      options.onError(query.error);
+    }
+  }, [query.error, options]);
+
+  return query;
 }
 

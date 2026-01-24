@@ -1,12 +1,23 @@
 import { CobrancaStatus } from "@/types/enums";
+import { moneyToNumber } from "@/utils/masks";
 import { apiClient } from "./client";
 
 export const cobrancaApi = {
-    createCobranca: (data: any) =>
-        apiClient.post(`/cobrancas`, data).then(res => res.data),
+    createCobranca: (data: any) => {
+        const payload = {
+            ...data,
+            valor: moneyToNumber(data.valor),
+        };
+        return apiClient.post(`/cobrancas`, payload).then(res => res.data);
+    },
 
-    updateCobranca: (id: string, data: any, cobrancaOriginal?: any) =>
-        apiClient.put(`/cobrancas/${id}`, { data, cobrancaOriginal }).then(res => res.data),
+    updateCobranca: (id: string, data: any, cobrancaOriginal?: any) => {
+        const cleanedData = {
+            ...data,
+            valor: data.valor !== undefined ? moneyToNumber(data.valor) : undefined,
+        };
+        return apiClient.put(`/cobrancas/${id}`, { data: cleanedData, cobrancaOriginal }).then(res => res.data);
+    },
 
     deleteCobranca: (id: string) =>
         apiClient.delete(`/cobrancas/${id}`).then(res => res.data),
@@ -31,12 +42,12 @@ export const cobrancaApi = {
     desfazerPagamento: (cobrancaId: string) =>
         apiClient.post(`/cobrancas/${cobrancaId}/desfazer-pagamento-manual`).then(res => res.data),
 
-    registrarPagamentoManual: (cobrancaId: string, data) => {
+    registrarPagamentoManual: (cobrancaId: string, data: any) => {
         return cobrancaApi.updateCobranca(cobrancaId, {
             status: CobrancaStatus.PAGO,
             data_pagamento: data.data_pagamento,
             tipo_pagamento: data.tipo_pagamento,
-            valor_pago: data.valor_pago,
+            valor_pago: moneyToNumber(data.valor_pago),
             pagamento_manual: true,
         });
     },

@@ -1,7 +1,6 @@
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { AssinaturaStatus } from "@/types/enums";
 import { useEffect } from "react";
 
 export function useSubscriptionStatus() {
@@ -17,13 +16,8 @@ export function useSubscriptionStatus() {
   useEffect(() => {
     if (!profile || !profile.assinatura) return;
 
-    const status = profile.assinatura.status as AssinaturaStatus;
-    const isTrial = status === AssinaturaStatus.TRIAL || !!profile.assinatura.trial_termina_em;
-
-    const isExpired = [
-        AssinaturaStatus.CANCELADA, 
-        AssinaturaStatus.SUSPENSA
-    ].includes(status);
+    const isTrial = plano?.is_trial_ativo;
+    const isExpired = plano?.is_suspensa || plano?.is_cancelada;
     
     if (isExpired) {
         if (isTrial) {

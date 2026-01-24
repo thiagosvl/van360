@@ -1,10 +1,10 @@
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -12,14 +12,14 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_LIMITE_FRANQUIA } from "@/constants";
 import {
-    useBuscarResponsavel,
-    useCreatePassageiro,
-    useEscolasWithFilters,
-    useFinalizePreCadastro,
-    usePassageiroForm,
-    usePermissions,
-    useUpdatePassageiro,
-    useVeiculosWithFilters,
+  useBuscarResponsavel,
+  useCreatePassageiro,
+  useEscolasWithFilters,
+  useFinalizePreCadastro,
+  usePassageiroForm,
+  usePermissions,
+  useUpdatePassageiro,
+  useVeiculosWithFilters,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
@@ -44,12 +44,11 @@ type PlanoUsuario = {
   trial_end_at: string | null;
   ativo: boolean;
   planoProfissional: any;
-  isTrial: boolean;
-  isValidTrial: boolean;
-  isActive: boolean;
-  isValidPlan: boolean;
-  isProfissionalPlan: boolean;
-  isEssentialPlan: boolean;
+  is_trial_ativo: boolean;
+  is_trial_valido: boolean;
+  is_ativo: boolean;
+  is_profissional: boolean;
+  is_essencial: boolean;
 } | null;
 
 interface PassengerFormDialogProps {
@@ -58,12 +57,7 @@ interface PassengerFormDialogProps {
   editingPassageiro: Passageiro | null;
   mode?: "create" | "edit" | "finalize";
   prePassageiro?: PrePassageiro | null;
-  onSuccess: () => void;
-  // Props removed as they are now handled by LayoutContext
-  // onCreateEscola?: () => void;
-  // onCreateVeiculo?: () => void;
-  // novaEscolaId?: string | null;
-  // novoVeiculoId?: string | null;
+  onSuccess: (passageiro?: any) => void;
   profile: Usuario | null | undefined;
   plano: PlanoUsuario;
 }
@@ -265,8 +259,10 @@ export default function PassengerFormDialog({
     }
 
     const commonOptions = {
-      onSuccess: () => {
-        onSuccess();
+      onSuccess: (data?: any) => {
+        console.log('data', data);
+        // @ts-ignore
+        onSuccess(data);
         onClose();
       },
       onError: () => {

@@ -1,13 +1,13 @@
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { periodos as periodosConstants } from "@/utils/formatters/constants";
 import {
-    ClipboardCheck,
-    Cog,
-    FileText,
-    Fuel,
-    HelpCircle,
-    Wallet,
-    Wrench,
+  ClipboardCheck,
+  Cog,
+  FileText,
+  Fuel,
+  HelpCircle,
+  Wallet,
+  Wrench,
 } from "lucide-react";
 import { useMemo } from "react";
 
@@ -56,7 +56,7 @@ export const FORMAS_PAGAMENTO_LABELS: Record<
 
 
 interface UseRelatoriosCalculationsProps {
-  hasAccess: boolean;
+  hasAccess?: boolean;
   cobrancasData: any;
   gastosData: any[];
   passageirosData: any;
@@ -64,10 +64,25 @@ interface UseRelatoriosCalculationsProps {
   veiculosData: any;
   profilePlano: any;
   profile: any;
+  financeiro?: {
+    receita: {
+      realizada: number;
+      prevista: number;
+      taxa_recebimento: number;
+    };
+    saidas: {
+      total: number;
+      margem_operacional: number;
+    };
+    atrasos: {
+      valor: number;
+      count: number;
+    };
+    ticket_medio: number;
+  };
 }
 
   export const useRelatoriosCalculations = ({
-  hasAccess,
   cobrancasData,
   gastosData,
   passageirosData,
@@ -75,6 +90,7 @@ interface UseRelatoriosCalculationsProps {
   veiculosData,
   profilePlano,
   profile,
+  financeiro,
 }: UseRelatoriosCalculationsProps) => {
   const dados = useMemo(() => {
     // 1. Safe guards for optional data
@@ -89,11 +105,11 @@ interface UseRelatoriosCalculationsProps {
     // --- FINANCIAL CALCULATIONS (Depend on hasAccess implicitly via empty arrays above) ---
 
     // Visão Geral
-    const recebido = cobrancasPagas.reduce(
+    const recebido = financeiro?.receita.realizada ?? cobrancasPagas.reduce(
       (acc: number, c: any) => acc + Number(c.valor || 0),
       0
     );
-    const gasto = gastos.reduce((acc: number, g: any) => acc + Number(g.valor || 0), 0);
+    const gasto = financeiro?.saidas.total ?? gastos.reduce((acc: number, g: any) => acc + Number(g.valor || 0), 0);
     const lucroEstimado = recebido - gasto;
 
     // Atrasos
@@ -102,10 +118,11 @@ interface UseRelatoriosCalculationsProps {
       const vencimento = new Date(c.data_vencimento);
       return vencimento < hoje;
     });
-    const valorAtrasos = atrasos.reduce(
+    const valorAtrasos = financeiro?.atrasos.valor ?? atrasos.reduce(
       (acc: number, c: any) => acc + Number(c.valor || 0),
       0
     );
+    const atrasosCount = financeiro?.atrasos.count ?? atrasos.length;
 
     // Taxa de Recebimento
     const totalPrevisto = cobrancas.reduce(
@@ -113,7 +130,7 @@ interface UseRelatoriosCalculationsProps {
       0
     );
     const taxaRecebimento =
-      totalPrevisto > 0 ? (recebido / totalPrevisto) * 100 : 0;
+      financeiro?.receita.taxa_recebimento ?? (totalPrevisto > 0 ? (recebido / totalPrevisto) * 100 : 0);
 
     // Passageiros
     const passageirosCount = passageirosList.length;
@@ -128,7 +145,7 @@ interface UseRelatoriosCalculationsProps {
       .size;
     const passageirosPagos = new Set(cobrancasPagas.map((c: any) => c.passageiro_id))
       .size;
-    const ticketMedio = passageirosPagos > 0 ? recebido / passageirosPagos : 0;
+    const ticketMedio = financeiro?.ticket_medio ?? (passageirosPagos > 0 ? recebido / passageirosPagos : 0);
 
     // Formas de pagamento
     const formasPagamentoMap: Record<string, { valor: number; count: number }> = {};
@@ -165,7 +182,7 @@ interface UseRelatoriosCalculationsProps {
     ).size;
     const mediaDiaria = diasComGastos > 0 ? gasto / diasComGastos : 0;
     const margemOperacional =
-      recebido > 0 ? ((recebido - gasto) / recebido) * 100 : 0;
+      financeiro?.saidas.margem_operacional ?? (recebido > 0 ? ((recebido - gasto) / recebido) * 100 : 0);
 
     // Categorias de gastos
     const veiculosMap: Record<
@@ -389,7 +406,7 @@ interface UseRelatoriosCalculationsProps {
         custoPorPassageiro,
         atrasos: {
           valor: valorAtrasos,
-          passageiros: atrasos.length,
+          passageiros: atrasosCount,
         },
         taxaRecebimento,
       },
@@ -426,7 +443,6 @@ interface UseRelatoriosCalculationsProps {
       },
     };
   }, [
-    hasAccess,
     cobrancasData,
     gastosData,
     passageirosData,

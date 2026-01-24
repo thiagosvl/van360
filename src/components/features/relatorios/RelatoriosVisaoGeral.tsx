@@ -3,12 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import {
-    AlertTriangle,
-    ArrowDownCircle,
-    ArrowUpCircle,
-    Percent,
-    Users,
-    Wallet
+  AlertTriangle,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Percent,
+  Users,
+  Wallet
 } from "lucide-react";
 
 interface RelatoriosVisaoGeralProps {
@@ -23,7 +23,6 @@ interface RelatoriosVisaoGeralProps {
     recebido: number;
     gasto: number;
   };
-  hasAccess: boolean;
 }
 
 export const RelatoriosVisaoGeral = ({
@@ -95,7 +94,7 @@ export const RelatoriosVisaoGeral = ({
             colorClass="text-emerald-500"
             value={
                 <span className="text-emerald-600">
-                    {dados.taxaRecebimento}%
+                    {Math.round(dados.taxaRecebimento)}%
                 </span>
             }
             countText="do previsto"

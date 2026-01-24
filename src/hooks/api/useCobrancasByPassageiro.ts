@@ -1,19 +1,18 @@
-import { useQuery } from "@tanstack/react-query";
 import { cobrancaApi } from "@/services/api/cobranca.api";
 import { Cobranca } from "@/types/cobranca";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 export function useCobrancasByPassageiro(
   passageiroId?: string,
   ano?: string,
   options?: {
     enabled?: boolean;
-    onError?: (error: unknown) => void;
   }
 ) {
   return useQuery({
     queryKey: ["cobrancas-by-passageiro", passageiroId, ano],
     enabled: (options?.enabled ?? true) && Boolean(passageiroId),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     // Sempre refetch quando o componente montar para garantir dados atualizados
     // Isso é importante porque cobranças podem ter sido atualizadas em outras telas
     refetchOnMount: "always",
@@ -22,7 +21,6 @@ export function useCobrancasByPassageiro(
       const data = await cobrancaApi.listCobrancasByPassageiro(passageiroId, ano);
       return (data as Cobranca[]) ?? [];
     },
-    onError: options?.onError,
   });
 }
 

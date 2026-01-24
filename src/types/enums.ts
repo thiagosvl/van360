@@ -54,3 +54,11 @@ export enum PixKeyStatus {
   FALHA_VALIDACAO = "FALHA_VALIDACAO",
   PENDENTE_VALIDACAO = "PENDENTE_VALIDACAO"
 }
+
+export enum CobrancaTipoPagamento {
+  DINHEIRO = "dinheiro",
+  PIX = "pix",
+  TRANSFERENCIA = "transferencia",
+  BOLETO = "boleto",
+  CARTAO = "cartao"
+}

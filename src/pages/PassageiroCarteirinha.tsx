@@ -19,22 +19,22 @@ import { lazyLoad } from "@/utils/lazyLoad";
 const CarteirinhaInfo = lazyLoad(() =>
   import("@/components/features/passageiro/carteirinha").then((mod) => ({
     default: mod.CarteirinhaInfo,
-  }))
+  })),
 );
 const CarteirinhaCobrancas = lazyLoad(() =>
   import("@/components/features/passageiro/carteirinha").then((mod) => ({
     default: mod.CarteirinhaCobrancas,
-  }))
+  })),
 );
 const CarteirinhaObservacoes = lazyLoad(() =>
   import("@/components/features/passageiro/carteirinha").then((mod) => ({
     default: mod.CarteirinhaObservacoes,
-  }))
+  })),
 );
 const CarteirinhaResumoFinanceiro = lazyLoad(() =>
   import("@/components/features/passageiro/carteirinha").then((mod) => ({
     default: mod.CarteirinhaResumoFinanceiro,
-  }))
+  })),
 );
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
@@ -89,6 +89,7 @@ export default function PassageiroCarteirinha() {
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
   const [cobrancaDialogOpen, setCobrancaDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
@@ -107,7 +108,9 @@ export default function PassageiroCarteirinha() {
     deleteCobranca.isPending ||
     enviarNotificacao.isPending ||
     desfazerPagamento.isPending ||
-    toggleNotificacoes.isPending;
+    toggleNotificacoes.isPending ||
+    isDeleting;
+
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
 
@@ -139,7 +142,7 @@ export default function PassageiroCarteirinha() {
         });
       });
     },
-    [openPlanUpgradeDialog]
+    [openPlanUpgradeDialog],
   );
 
   const {
@@ -164,7 +167,7 @@ export default function PassageiroCarteirinha() {
         ano: cobranca.ano,
       });
     },
-    [openCobrancaPixDrawer, passageiro]
+    [openCobrancaPixDrawer, passageiro],
   );
 
   const {
@@ -172,24 +175,20 @@ export default function PassageiroCarteirinha() {
     isLoading: isCobrancasLoading,
     isFetching: isCobrancasFetching,
     refetch: refetchCobrancas,
+    isError: isCobrancasError,
   } = useCobrancasByPassageiro(passageiro_id, yearFilter, {
     enabled: !!passageiro_id,
-    onError: () =>
-      toast.error("cobranca.erro.buscarHistorico", {
-        description: "Não foi possível concluir a operação.",
-      }),
   });
 
   const cobrancas = (cobrancasData || []) as Cobranca[];
 
-  const { data: availableYearsData, refetch: refetchAvailableYears } =
-    useAvailableYears(passageiro_id, {
-      enabled: !!passageiro_id,
-      onError: () =>
-        toast.error("cobranca.erro.buscarAnos", {
-          description: "Não foi possível concluir a operação.",
-        }),
-    });
+  const {
+    data: availableYearsData,
+    refetch: refetchAvailableYears,
+    isError: isAvailableYearsError,
+  } = useAvailableYears(passageiro_id, {
+    enabled: !!passageiro_id,
+  });
 
   const availableYears = (availableYearsData || [currentYear]) as string[];
 
@@ -200,9 +199,26 @@ export default function PassageiroCarteirinha() {
     isCobrancasLoading;
 
   useEffect(() => {
+    if (isAvailableYearsError) {
+      toast.error("cobranca.erro.buscarAnos", {
+        description: "Não foi possível concluir a operação.",
+      });
+    }
+  }, [isAvailableYearsError]);
+
+  useEffect(() => {
+    if (isCobrancasError) {
+      toast.error("cobranca.erro.buscarHistorico", {
+        description: "Não foi possível concluir a operação.",
+      });
+    }
+  }, [isCobrancasError]);
+
+  useEffect(() => {
     if (!passageiro_id) return;
 
     if (isPassageiroLoading) return;
+    if (isDeleting) return;
 
     const isNotFoundError =
       isPassageiroError &&
@@ -228,6 +244,7 @@ export default function PassageiroCarteirinha() {
     passageiro_id,
     navigate,
     queryClient,
+    isDeleting,
   ]);
 
   useEffect(() => {
@@ -310,7 +327,7 @@ export default function PassageiroCarteirinha() {
         onError: () => {
           setObsText(passageiro?.observacoes || "");
         },
-      }
+      },
     );
   };
 
@@ -348,7 +365,7 @@ export default function PassageiroCarteirinha() {
         desativar: !cobranca.desativar_lembretes,
       });
     },
-    [toggleNotificacoes]
+    [toggleNotificacoes],
   );
 
   const handleToggleCobrancaAutomatica = async () => {
@@ -398,7 +415,7 @@ export default function PassageiroCarteirinha() {
         },
       });
     },
-    [enviarNotificacao, closeConfirmationDialog]
+    [enviarNotificacao, closeConfirmationDialog],
   );
 
   const handleDesfazerClick = useCallback(
@@ -419,7 +436,7 @@ export default function PassageiroCarteirinha() {
         },
       });
     },
-    [desfazerPagamento, closeConfirmationDialog]
+    [desfazerPagamento, closeConfirmationDialog],
   );
 
   const openPaymentDialog = (cobranca: Cobranca) => {
@@ -463,7 +480,7 @@ export default function PassageiroCarteirinha() {
         valorPendente: 0,
         qtdEmAtraso: 0,
         valorEmAtraso: 0,
-      }
+      },
     );
   }, [cobrancas]);
 
@@ -472,7 +489,7 @@ export default function PassageiroCarteirinha() {
     hoje.setHours(0, 0, 0, 0);
     return cobrancas.some(
       (c) =>
-        c.status !== CobrancaStatus.PAGO && new Date(c.data_vencimento) < hoje
+        c.status !== CobrancaStatus.PAGO && new Date(c.data_vencimento) < hoje,
     );
   }, [cobrancas]);
 
@@ -538,12 +555,14 @@ export default function PassageiroCarteirinha() {
                           variant: "destructive",
                           onConfirm: async () => {
                             if (!passageiro_id) return;
+                            setIsDeleting(true);
                             try {
                               await deletePassageiro.mutateAsync(passageiro_id);
                               closeConfirmationDialog();
                               navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS);
                             } catch (error) {
-                              closeConfirmationDialog();
+                            } finally {
+                              setIsDeleting(false);
                             }
                           },
                         })
@@ -603,8 +622,8 @@ export default function PassageiroCarteirinha() {
                         navigate(
                           ROUTES.PRIVATE.MOTORISTA.PASSENGER_BILLING.replace(
                             ":cobranca_id",
-                            id
-                          )
+                            id,
+                          ),
                         )
                       }
                       onEditCobranca={(cobranca) => {
@@ -640,7 +659,7 @@ export default function PassageiroCarteirinha() {
         passageiroResponsavelNome={passageiro?.nome_responsavel || ""}
         valorCobranca={Number(passageiro?.valor_cobranca || 0)}
         diaVencimento={Number(passageiro?.dia_vencimento || 10)}
-        onCobrancaAdded={refetchCobrancas}
+        // onCobrancaAdded={refetchCobrancas} // Removed to avoid double fetch
       />
     </>
   );

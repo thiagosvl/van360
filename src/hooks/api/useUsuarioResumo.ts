@@ -1,5 +1,4 @@
-import { useProfile } from "@/hooks/business/useProfile";
-import { useSession } from "@/hooks/business/useSession";
+import { AssinaturaCobrancaStatus } from "@/types/enums";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "../../services/api/client";
 
@@ -10,29 +9,35 @@ export interface SystemSummary {
       slug: string;
       nome: string;
       status: string;
+      trial_end_at?: string;
       limites: {
-        passageiros_max: number | null;
-        passageiros_restantes: number | null;
         franquia_cobranca_max: number;
         franquia_cobranca_restante: number;
       };
       funcionalidades: {
         cobranca_automatica: boolean;
         notificacoes_whatsapp: boolean;
-        relatorios_financeiros: boolean;
-        gestao_gastos: boolean;
       };
     };
     flags: {
       is_trial_ativo: boolean;
+      is_trial_valido: boolean;
       dias_restantes_trial: number | null;
       dias_restantes_assinatura: number | null;
       trial_dias_total: number;
       whatsapp_status: string | null;
-      ultima_fatura: string | null;
+      ultima_fatura: AssinaturaCobrancaStatus | null;
       ultima_fatura_id: string | null;
       limite_franquia_atingido: boolean;
       pix_key_configurada: boolean;
+      is_plano_valido: boolean;
+      is_read_only: boolean;
+      is_ativo: boolean;
+      is_pendente: boolean;
+      is_suspensa: boolean;
+      is_cancelada: boolean;
+      is_profissional: boolean;
+      is_essencial: boolean;
     };
   };
   contadores: {
@@ -47,31 +52,43 @@ export interface SystemSummary {
       total: number;
       ativos: number;
       inativos: number;
-      com_automacao: number;
     };
     escolas: {
       total: number;
       ativos: number;
       inativos: number;
-      com_automacao: number;
     };
+  };
+  financeiro?: {
+    receita: {
+      realizada: number;
+      prevista: number;
+      taxa_recebimento: number;
+    };
+    saidas: {
+      total: number;
+      margem_operacional: number;
+    };
+    atrasos: {
+      valor: number;
+      count: number;
+    };
+    ticket_medio: number;
   };
 }
 
-export const useUsuarioResumo = () => {
-  const { user } = useSession();
-  const { profile } = useProfile(user?.id);
-
+export const useUsuarioResumo = (usuarioId?: string, params?: { mes?: number; ano?: number }) => {
   return useQuery<SystemSummary>({
-    queryKey: ["usuario-resumo", profile?.id],
+    queryKey: ["usuario-resumo", usuarioId, params?.mes, params?.ano],
     queryFn: async () => {
-      if (!profile?.id) throw new Error("Perfil de usuário não carregado");
+      if (!usuarioId) throw new Error("ID de usuário necessário para o resumo");
 
-      // Agora usamos o profile.id (ID Público) compatível com o backend
-      const response = await apiClient.get<SystemSummary>(`/usuarios/${profile.id}/resumo`);
+      const response = await apiClient.get<SystemSummary>(`/usuarios/${usuarioId}/resumo`, {
+        params
+      });
       return response.data;
     },
-    enabled: !!profile?.id,
+    enabled: !!usuarioId,
     staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
 };

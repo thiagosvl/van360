@@ -51,7 +51,7 @@ export default function Assinatura() {
     data: systemSummary,
     isLoading: isSummaryLoading,
     refetch: refetchSummary,
-  } = useUsuarioResumo();
+  } = useUsuarioResumo(profile?.id);
 
   const { limits } = usePlanLimits();
 
@@ -66,7 +66,7 @@ export default function Assinatura() {
     return {
       assinatura: {
         ...assinatura,
-        isTrial: plano.isTrial,
+        isTrial: plano.is_trial_ativo,
       },
       plano: {
         ...planoData,
@@ -148,7 +148,7 @@ export default function Assinatura() {
                 />
 
                 <div className="mx-1">
-                  {plano.isProfissionalPlan && (
+                  {plano?.is_profissional && (
                     <>
                       <h2 className="text-lg font-semibold text-gray-800 mb-3 pl-1">
                         Integrações

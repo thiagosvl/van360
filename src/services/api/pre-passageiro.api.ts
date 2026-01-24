@@ -1,4 +1,5 @@
 import { PrePassageiro } from "@/types/prePassageiro";
+import { moneyToNumber } from "@/utils/masks";
 import { apiClient } from "./client";
 
 export const prePassageiroApi = {
@@ -7,10 +8,15 @@ export const prePassageiroApi = {
       .get<PrePassageiro[]>(`/pre-passageiros/usuario/${usuarioId}`, { params: { search } })
       .then(res => res.data),
 
-  createPrePassageiro: (payload) =>
-    apiClient
-      .post(`/pre-passageiros`, payload)
-      .then(res => res.data),
+  createPrePassageiro: (payload: any) => {
+    const cleanedPayload = {
+      ...payload,
+      valor_cobranca: moneyToNumber(payload.valor_cobranca),
+    };
+    return apiClient
+      .post(`/pre-passageiros`, cleanedPayload)
+      .then(res => res.data);
+  },
 
   deletePrePassageiro: (id: string) =>
     apiClient

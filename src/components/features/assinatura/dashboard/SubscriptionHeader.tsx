@@ -6,7 +6,6 @@ import {
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { cn } from "@/lib/utils";
-import { extractPlanoData } from "@/utils/domain/plano/planoUtils";
 import {
   AlertTriangle,
   CheckCircle,
@@ -33,20 +32,13 @@ export function SubscriptionHeader({
 }: SubscriptionHeaderProps) {
   const { openPlanUpgradeDialog } = useLayout();
 
-  // 1. Centralized Logic via planoUtils
-  // Note: we construct a mock object because extractPlanoData expects { planos: ... } usually found in subscription
-  // But here 'plano' is passed separately. We can just reconstruct or check if 'assinatura' already has it.
-  // Assinatura usually has 'planos' inside if filtered correctly, but let's be safe and use the 'plano' prop.
-  // Actually, extractPlanoData is perfect if we pass { ...assinatura, planos: plano }.
-  const planoData = extractPlanoData({ ...assinatura, planos: plano });
-
   const {
-    isProfissionalPlan,
-    isEssentialPlan,
-    isActive,
-    isPendente,
-    isSuspensa,
-  } = planoData || {};
+    is_profissional: isProfissionalPlan,
+    is_essencial: isEssentialPlan,
+    is_ativo: isActive,
+    is_pendente: isPendente,
+    is_suspensa: isSuspensa,
+  } = plano || {};
 
   const isTrial = flags?.is_trial_ativo;
 

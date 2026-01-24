@@ -10,7 +10,6 @@ import { useSEO } from "@/hooks/useSEO";
 import { cepSchema, cpfSchema, phoneSchema } from "@/schemas/common";
 import { apiClient } from "@/services/api/client";
 import { prePassageiroApi } from "@/services/api/pre-passageiro.api";
-import { validatePrePassageiroAccess } from "@/utils/domain/motorista/accessValidation";
 import { moneyToNumber } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
@@ -58,8 +57,6 @@ export function usePassageiroExternalForm() {
   const [motoristaApelido, setMotoristaApelido] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [hasAccess, setHasAccess] = useState(false);
-  const [accessReason, setAccessReason] = useState<string | null>(null);
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "passageiro",
     "responsavel",
@@ -120,10 +117,6 @@ export function usePassageiroExternalForm() {
       }
 
       setMotoristaApelido((data as any).apelido);
-
-      const accessValidation = validatePrePassageiroAccess(data);
-      setHasAccess(accessValidation.hasAccess);
-      setAccessReason(accessValidation.reason || null);
 
       setLoading(false);
     };
@@ -258,8 +251,6 @@ export function usePassageiroExternalForm() {
     motoristaApelido,
     submitting,
     success,
-    hasAccess,
-    accessReason,
     openAccordionItems,
     setOpenAccordionItems,
     escolasList,

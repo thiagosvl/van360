@@ -1,6 +1,6 @@
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
-import { Crown, Milestone, X } from "lucide-react";
+import { Crown, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface FranchiseOption {
@@ -277,7 +277,7 @@ export function FranchiseTierSelector({
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-500">
-            Mínimo: <strong>{minAllowedQuantity}</strong> passageiros
+            Mínimo personalizado: <strong>{minAllowedQuantity}</strong>
           </span>
           {Number(inputValue) >= minAllowedQuantity && !sortedOptions.find(opt => opt.quantidade === Number(inputValue)) && (
             <span className="text-xs text-blue-600 font-semibold">

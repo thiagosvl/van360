@@ -1,3 +1,5 @@
+import { moneyToNumber } from "@/utils/masks";
+import { cleanString } from "@/utils/string";
 import { apiClient } from "./client";
 
 export const passageiroApi = {
@@ -26,21 +28,60 @@ export const passageiroApi = {
       .patch(`/passageiros/${passageiroId}/toggle-ativo`, { novoStatus })
       .then(res => res.data),
 
-  updatePassageiro: (passageiroId: string, data: any) =>
-    apiClient
-      .put(`/passageiros/${passageiroId}`, data)
-      .then(res => res.data),
+  updatePassageiro: (passageiroId: string, data: any) => {
+    const payload = {
+      ...data,
+      valor_cobranca: moneyToNumber(data.valor_cobranca),
+      nome: cleanString(data.nome),
+      nome_responsavel: cleanString(data.nome_responsavel),
+      email_responsavel: cleanString(data.email_responsavel),
+      endereco: cleanString(data.endereco),
+      bairro: cleanString(data.bairro),
+      complemento: cleanString(data.complemento),
+      observacoes: cleanString(data.observacoes),
+    };
 
-  createPassageiro: (data: any) =>
-    apiClient
-      .post(`/passageiros`, data)
-      .then(res => res.data),
+    return apiClient
+      .put(`/passageiros/${passageiroId}`, payload)
+      .then(res => res.data);
+  },
 
-  finalizePreCadastro: (prePassageiroId: string, data: any, usuarioId: string) =>
-    apiClient
+  createPassageiro: (data: any) => {
+    const payload = {
+      ...data,
+      valor_cobranca: moneyToNumber(data.valor_cobranca),
+      nome: cleanString(data.nome),
+      nome_responsavel: cleanString(data.nome_responsavel),
+      email_responsavel: cleanString(data.email_responsavel),
+      endereco: cleanString(data.endereco),
+      bairro: cleanString(data.bairro),
+      complemento: cleanString(data.complemento),
+      observacoes: cleanString(data.observacoes),
+    };
+
+    return apiClient
+      .post(`/passageiros`, payload)
+      .then(res => res.data);
+  },
+
+  finalizePreCadastro: (prePassageiroId: string, data: any, usuarioId: string) => {
+    const payload = {
+      ...data,
+      valor_cobranca: moneyToNumber(data.valor_cobranca),
+      nome: cleanString(data.nome),
+      nome_responsavel: cleanString(data.nome_responsavel),
+      email_responsavel: cleanString(data.email_responsavel),
+      endereco: cleanString(data.endereco),
+      bairro: cleanString(data.bairro),
+      complemento: cleanString(data.complemento),
+      observacoes: cleanString(data.observacoes),
+    };
+
+    return apiClient
       .post(`/passageiros/finalizar-pre-cadastro/${prePassageiroId}`, {
-        data,
+        data: payload,
         usuarioId,
       })
-      .then(res => res.data),
+      .then(res => res.data);
+  },
 };

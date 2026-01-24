@@ -32,7 +32,6 @@ interface RelatoriosSaidasProps {
     veiculosCount?: number;
     temGastosVinculados?: boolean;
   };
-  hasAccess: boolean;
 }
 
 export const RelatoriosSaidas = ({
@@ -86,7 +85,7 @@ export const RelatoriosSaidas = ({
           <CardContent className="px-6 pb-6 relative">
             <div className="flex items-center gap-2">
               <div className="text-3xl font-bold text-gray-900">
-                 {dados.margemOperacional}%
+                 {Math.round(dados.margemOperacional)}%
               </div>
                 <span
                   className={cn(
@@ -251,7 +250,7 @@ export const RelatoriosSaidas = ({
                       {v.count} registro{v.count === 1 ? "" : "s"}
                     </span>
                     <span>
-                      {v.percentual}% do total
+                      {Math.round(v.percentual)}% do total
                     </span>
                   </div>
                 </div>

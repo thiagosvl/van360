@@ -12,12 +12,17 @@ export const phoneMask = (value: string): string => {
   return value;
 };
 
-export const moneyMask = (value: string): string => {
-  if (!value) return '';
+export const moneyMask = (value: string | number): string => {
+  if (value === undefined || value === null) return '';
   
-  let numericValue = value.replace(/\D/g, '');
+  // Se for número, formatamos como se fosse a entrada do usuário (sem pontos/vírgulas)
+  const stringValue = typeof value === 'number' 
+    ? Math.round(value * 100).toString() 
+    : value.toString();
+    
+  let numericValue = stringValue.replace(/\D/g, '');
   
-  if (numericValue.length === 1) {
+  if (numericValue && numericValue.length === 1) {
     numericValue = '0' + numericValue;
   }
   
@@ -31,7 +36,8 @@ export const moneyMask = (value: string): string => {
   });
 };
 
-export const moneyToNumber = (value: string): number => {
+export const moneyToNumber = (value: string | number): number => {
+  if (typeof value === 'number') return value;
   if (!value) return 0;
   
   const numericString = value

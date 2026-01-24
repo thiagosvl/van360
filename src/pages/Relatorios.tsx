@@ -62,11 +62,11 @@ export default function Relatorios() {
   const { user } = useSession();
   
   // Use Access Control Hook
-  const { profile, plano: profilePlano, canViewModuleRelatorios } = usePermissions();
+  const { profile, plano: profilePlano } = usePermissions();
   const { limits: planLimits } = usePlanLimits();
 
   const permissions = {
-      canViewRelatorios: canViewModuleRelatorios
+      canViewRelatorios: true // Liberado geral conforme novas regras do resumo
   };
     
   const limits = {
@@ -77,12 +77,7 @@ export default function Relatorios() {
   const [ano, setAno] = useState(new Date().getFullYear());
 
 
-  // Access Logic
-  const hasAccess = true;
-
-  // Buscar dados reais - SEMPRE (para instant unlock e background blur)
   const shouldFetchFinancials = !!profile?.id;
-  // Metadados (escolas, veículos, passageiros) busca sempre para exibir listas
   const shouldFetchMetadata = !!profile?.id;
 
   const { data: cobrancasData, refetch: refetchCobrancas } = useCobrancas(
@@ -116,9 +111,21 @@ export default function Relatorios() {
     enabled: shouldFetchMetadata,
   });
 
+  // Buscar resumo do sistema (incluindo dados financeiros calculados e acesso)
+  const { 
+    data: systemSummary, 
+    refetch: refetchSummary,
+    isLoading: isLoadingSummary 
+  } = useUsuarioResumo(profile?.id, { mes, ano });
+
+  // Regra de Acesso: Usar flag do backend como mestre
+  const hasAccess = systemSummary?.usuario.flags.is_plano_valido ?? true;
+  const countAutomacao = systemSummary?.contadores.passageiros.com_automacao ?? 0;
+
   // Calcular dados reais
   const dados = useRelatoriosCalculations({
     hasAccess,
+    financeiro: systemSummary?.financeiro,
     cobrancasData,
     gastosData,
     passageirosData,
@@ -139,12 +146,7 @@ export default function Relatorios() {
 
 // ... (removed import)
 
-  // Buscar contagem precisa de automação (mesma lógica da Assinatura)
-  const { data: systemSummary, refetch: refetchSummary } = useUsuarioResumo();
-  const countAutomacao = systemSummary?.contadores.passageiros.com_automacao ?? 0;
-
   const pullToRefreshReload = async () => {
-    if (!hasAccess) return;
     await Promise.all([
       refetchCobrancas(),
       refetchGastos(),
@@ -181,7 +183,6 @@ export default function Relatorios() {
           mes={mes}
           ano={ano}
           onNavigate={handleNavigate}
-          disabled={!hasAccess}
         />
       </div>
 
@@ -229,7 +230,6 @@ export default function Relatorios() {
         <TabsContent value="visao-geral">
           <RelatoriosVisaoGeral
             dados={dados.visaoGeral}
-            hasAccess={hasAccess}
           />
         </TabsContent>
 
@@ -237,13 +237,12 @@ export default function Relatorios() {
         <TabsContent value="entradas">
           <RelatoriosEntradas
             dados={dados.entradas}
-            hasAccess={hasAccess}
           />
         </TabsContent>
 
         {/* Aba 3: Saídas */}
         <TabsContent value="saidas">
-          <RelatoriosSaidas dados={dados.saidas} hasAccess={hasAccess} />
+          <RelatoriosSaidas dados={dados.saidas} />
         </TabsContent>
 
         {/* Aba 4: Operacional */}
@@ -251,16 +250,14 @@ export default function Relatorios() {
           <RelatoriosOperacional
             dados={dadosOperacional.operacional}
             automacao={dadosOperacional.automacao}
-            hasAccess={hasAccess}
             limits={limits}
-            IsProfissionalPlan={!!profilePlano?.isProfissionalPlan}
+            IsProfissionalPlan={!!profilePlano?.is_profissional}
           />
         </TabsContent>
       </Tabs>
       </PullToRefreshWrapper>
       {/* Mobile Sticky Footer for No Access */}
       <UpgradeStickyFooter
-        visible={!hasAccess}
         title="Você sabe o lucro exato da sua van?"
         description="Veja seus números reais."
         buttonText="Ver meu Lucro Real"

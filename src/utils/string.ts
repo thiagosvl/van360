@@ -1,5 +1,6 @@
-export function cleanString(str: string, capitalize = false) {
+export function cleanString(str: any, capitalize = false) {
   if (!str) return "";
+  if (typeof str !== "string") return str;
 
   let cleaned = str.trim().replace(/\s+/g, " ");
 
