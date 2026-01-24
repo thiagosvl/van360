@@ -1,23 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  useCreateVeiculo,
-  useUpdateVeiculo,
+    useCreateVeiculo,
+    useUpdateVeiculo,
 } from "@/hooks/api/useVeiculoMutations";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -25,12 +25,13 @@ import { Veiculo } from "@/types/veiculo";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 
 import {
-  aplicarMascaraPlaca,
-  validarPlaca,
+    aplicarMascaraPlaca,
+    validarPlaca,
 } from "@/utils/domain/veiculo/placaUtils";
+import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Car, Hash, Loader2, Tag, X } from "lucide-react";
+import { Car, Hash, Loader2, Tag, Wand2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -124,6 +125,16 @@ export default function VeiculoFormDialog({
     toast.error("validacao.formularioComErros");
   };
 
+  const handleFillMock = () => {
+    const mockData = mockGenerator.veiculo();
+    form.reset({
+      placa: mockData.placa,
+      marca: mockData.marca,
+      modelo: mockData.modelo,
+      ativo: mockData.ativo ?? true,
+    });
+  };
+
   const handleSubmit = async (data: VeiculoFormData) => {
     if (!profile?.id) return;
 
@@ -215,6 +226,18 @@ export default function VeiculoFormDialog({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
+          <div className="absolute left-4 top-4 flex gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
+              onClick={handleFillMock}
+              title="Preencher com dados fictícios"
+            >
+              <Wand2 className="h-5 w-5" />
+            </Button>
+          </div>
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
             <X className="h-6 w-6" />
             <span className="sr-only">Close</span>

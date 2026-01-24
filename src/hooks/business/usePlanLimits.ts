@@ -1,11 +1,11 @@
-import { useUsuarioResumo } from "../api/useUsuarioResumo";
+import { usePermissions } from "./usePermissions";
 
 interface UsePlanLimitsProps {
   currentPassengerCount?: number;
 }
 
 export function usePlanLimits({ currentPassengerCount }: UsePlanLimitsProps = {}) {
-  const { data: systemSummary, isLoading } = useUsuarioResumo();
+  const { summary: systemSummary, isLoading } = usePermissions();
 
   const usuario = systemSummary?.usuario;
   const plano = usuario?.plano;

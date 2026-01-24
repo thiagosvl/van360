@@ -1,29 +1,30 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { useCreateCobranca } from "@/hooks/api/useCobrancaMutations";
 import { cn } from "@/lib/utils";
 import { CobrancaOrigem, CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
+import { useQueryClient } from "@tanstack/react-query";
 import {
-    AlertCircle,
-    ArrowLeft,
-    CheckCircle2,
-    CreditCard,
-    Loader2,
-    Send,
-    Wallet,
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle2,
+  CreditCard,
+  Loader2,
+  Send,
+  Wallet,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -56,6 +57,7 @@ export default function FirstChargeDialog({
   );
 
   const createCobranca = useCreateCobranca();
+  const queryClient = useQueryClient();
 
   const currentMonthName = new Date().toLocaleString("pt-BR", {
     month: "long",
@@ -159,6 +161,9 @@ export default function FirstChargeDialog({
       } else {
         toast.success("Cobrança criada com sucesso!");
       }
+
+      // Invalidar resumo para atualizar KPIs na Home
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
 
       onClose();
     } catch (err) {

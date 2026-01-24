@@ -27,7 +27,6 @@ interface PlanoCardProps {
   subPlanos: SubPlano[];
   isSelected: boolean;
   onSelect: (planoId: string) => void;
-  // Props para o plano Profissional
   selectedSubPlanoId?: string | null;
   quantidadePersonalizada?: string;
   onSubPlanoSelect?: (subPlanoId: string | undefined) => void;
@@ -59,7 +58,6 @@ export const PlanoCard = ({
   onSubPlanoSelect,
   onQuantidadePersonalizadaChange,
   precoCalculadoPreview = null,
-  valorPorCobranca = null,
   isCalculandoPreco = false,
   getQuantidadeMinima,
   onQuantidadePersonalizadaConfirm,
@@ -72,7 +70,6 @@ export const PlanoCard = ({
   actionButtonClassName,
   onAction,
   hideActionButton = false,
-  autoAdvanceOnSubPlanoSelect = true,
 }: PlanoCardProps) => {
   const isProfissional = plano.slug === PLANO_PROFISSIONAL;
   const isEssencial = plano.slug === PLANO_ESSENCIAL;
@@ -90,9 +87,6 @@ export const PlanoCard = ({
   const subPlanosOrdenados = [...subPlanosProfissional].sort(
     (a, b) => a.franquia_cobrancas_mes - b.franquia_cobrancas_mes
   );
-
-  // Obter menor sub-plano (para seleção automática)
-  const menorSubplano = subPlanosOrdenados[0] || null;
 
   // Obter maior sub-plano para calcular mínimo do slider
   const maiorSubplano = isProfissional

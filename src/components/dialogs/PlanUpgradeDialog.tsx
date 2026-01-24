@@ -10,9 +10,8 @@ import {
     PLANO_PROFISSIONAL,
 } from "@/constants";
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks/api/usePlanos";
-import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { usePlanUpgrade } from "@/hooks/business/usePlanUpgrade";
-import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useUpgradeFranquia } from "@/hooks/business/useUpgradeFranquia";
 import { useEffect, useMemo, useState } from "react";
@@ -43,7 +42,7 @@ export function PlanUpgradeDialog({
 }: PlanUpgradeDialogProps) {
   const { user } = useSession();
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  const { profile, plano, isEssencial, isProfissional } = useProfile(user?.id);
+  const { profile, plano, is_essencial, is_profissional, summary: resumo, refreshProfile: refetchResumo } = usePermissions();
 
   // API Data
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -56,10 +55,6 @@ export function PlanUpgradeDialog({
   // Estados visuais
   const [activeTab, setActiveTab] = useState<string>(defaultTab);
 
-
-
-  // Fetch Summary for Trial Days
-  const { data: resumo, refetch: refetchResumo } = useUsuarioResumo();
   const trialDays = resumo?.usuario?.flags?.trial_dias_total;
 
   useEffect(() => {
@@ -87,14 +82,14 @@ export function PlanUpgradeDialog({
 
   // --- Contexto de Venda (Sales Context) ---
   const salesContext = useMemo(() => {
-    if (isProfissional) return "expansion"; // Já é Pro, quer mais franquia
-    if (isEssencial) return "upgrade_auto"; // É Essencial, quer automação
+    if (is_profissional) return "expansion"; // Já é Pro, quer mais franquia
+    if (is_essencial) return "upgrade_auto"; // É Essencial, quer automação
     return "trial_conversion"; // Novo usuário em trial
-  }, [isProfissional, isEssencial]);
+  }, [is_profissional, is_essencial]);
 
   // Tabs apenas durante o Trial. Se já assina, esconde.
   const isInTrial = profile?.assinatura?.status === 'trial';
-  const hideTabs = (isEssencial && !isInTrial) || isProfissional;
+  const hideTabs = (is_essencial && !isInTrial) || is_profissional;
 
   // Extrair franquia atual para base da lógica de target
   const assinatura = profile?.assinatura || profile?.assinaturas_usuarios?.[0];
@@ -118,7 +113,7 @@ export function PlanUpgradeDialog({
     targetPassengerCount ??
     (passageirosAtivos > franquiaAtual ? passageirosAtivos : franquiaAtual + 1);
 
-  if (isProfissional && effectiveTarget <= franquiaAtual) {
+  if (is_profissional && effectiveTarget <= franquiaAtual) {
     effectiveTarget = franquiaAtual + 1;
   }
 
@@ -175,13 +170,13 @@ export function PlanUpgradeDialog({
       }
 
       // 2. Se já é Profissional (Upgrade/Expansão), só mostra planos MAIORES que o atual
-      if (isProfissional && quantidade <= franquiaAtual) {
+      if (is_profissional && quantidade <= franquiaAtual) {
         return false;
       }
 
       return true;
     });
-  }, [franchiseOptions, passageirosAtivos, isProfissional, franquiaAtual, targetPassengerCount]);
+  }, [franchiseOptions, passageirosAtivos, is_profissional, franquiaAtual, targetPassengerCount]);
 
   const [selectedTierId, setSelectedTierId] = useState<number | string | null>(
     null
@@ -372,7 +367,7 @@ export function PlanUpgradeDialog({
       // Reset states on open
       setIsPaymentVerified(false);
 
-      if (isEssencial || isProfissional) {
+      if (is_essencial || is_profissional) {
         // Usuário já está pagando -> Força Profissional (upgrade ou expansão)
         setActiveTab(PLANO_PROFISSIONAL);
       } else if (isInTrial) {
@@ -388,8 +383,8 @@ export function PlanUpgradeDialog({
     }
   }, [
     open,
-    isEssencial,
-    isProfissional,
+    is_essencial,
+    is_profissional,
     isInTrial,
     plano?.slug,
     defaultTab,

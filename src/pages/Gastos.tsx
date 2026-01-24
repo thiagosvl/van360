@@ -71,8 +71,6 @@ export default function Gastos() {
     isLoading: isAuthLoading,
     isReadOnly,
   } = usePermissions();
-  // Always true now
-  const enabledPageActions = true;
   const loadingActions = isAuthLoading;
 
   const {
@@ -105,7 +103,6 @@ export default function Gastos() {
     mesFilter,
     anoFilter,
     searchTerm,
-    enabledPageActions,
     loadingActions,
   });
 

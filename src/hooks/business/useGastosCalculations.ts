@@ -1,5 +1,4 @@
 import { Gasto } from "@/types/gasto";
-import { MOCK_DATA_NO_ACCESS_GASTOS } from "@/utils/mocks/restrictedData";
 import { useMemo } from "react";
 
 
@@ -9,7 +8,6 @@ interface UseGastosCalculationsProps {
   mesFilter: number;
   anoFilter: number;
   searchTerm?: string;
-  enabledPageActions: boolean;
   loadingActions: boolean;
 }
 
@@ -18,7 +16,6 @@ export const useGastosCalculations = ({
   mesFilter,
   anoFilter,
   searchTerm,
-  enabledPageActions,
   loadingActions,
 }: UseGastosCalculationsProps) => {
   const gastosFiltrados = useMemo(() => {
@@ -54,8 +51,8 @@ export const useGastosCalculations = ({
     const principal =
       gastosArray.length > 0 && Object.keys(gastosPorCategoria).length > 0
         ? Object.entries(gastosPorCategoria).reduce((a, b) =>
-            a[1].total > b[1].total ? a : b
-          )
+          a[1].total > b[1].total ? a : b
+        )
         : null;
 
     // Calculate Daily Average
@@ -87,18 +84,17 @@ export const useGastosCalculations = ({
       totalGasto: isNaN(total) ? 0 : total,
       principalCategoriaData: principal
         ? {
-            name: principal[0] || "-",
-            value: isNaN(principal[1].total) ? 0 : principal[1].total,
-            percentage: isNaN(topCatPercentage) ? 0 : topCatPercentage,
-          }
+          name: principal[0] || "-",
+          value: isNaN(principal[1].total) ? 0 : principal[1].total,
+          percentage: isNaN(topCatPercentage) ? 0 : topCatPercentage,
+        }
         : null,
       mediaDiaria: isNaN(media) ? 0 : media,
     };
   }, [gastos, mesFilter, anoFilter]);
 
-  // Use mock data ONLY if explicitly restricted and not loading
+  // Use real data if not loading
   const displayData = useMemo(() => {
-    // Se ainda está carregando permissões, mostra "vazio" (esqueleto vai cobrir) ou real (se já tiver)
     if (loadingActions)
       return {
         totalGasto: 0,
@@ -107,25 +103,13 @@ export const useGastosCalculations = ({
         gastosFiltrados: [],
       };
 
-    if (enabledPageActions) {
-      return {
-        totalGasto,
-        principalCategoriaData,
-        mediaDiaria,
-        gastosFiltrados,
-      };
-    }
-
-    // Se NÃO tem permissão, aí sim mostra mock
     return {
-      totalGasto: MOCK_DATA_NO_ACCESS_GASTOS.totalGasto,
-      principalCategoriaData:
-        MOCK_DATA_NO_ACCESS_GASTOS.principalCategoriaData,
-      mediaDiaria: MOCK_DATA_NO_ACCESS_GASTOS.mediaDiaria,
-      gastosFiltrados: MOCK_DATA_NO_ACCESS_GASTOS.gastos as Gasto[],
+      totalGasto,
+      principalCategoriaData,
+      mediaDiaria,
+      gastosFiltrados,
     };
   }, [
-    enabledPageActions,
     loadingActions,
     totalGasto,
     principalCategoriaData,

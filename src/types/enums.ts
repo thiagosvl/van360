@@ -62,3 +62,9 @@ export enum CobrancaTipoPagamento {
   BOLETO = "boleto",
   CARTAO = "cartao"
 }
+
+export enum PassageiroFormModes {
+  CREATE = "create",
+  EDIT = "edit",
+  FINALIZE = "finalize"
+}

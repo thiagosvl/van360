@@ -30,6 +30,7 @@ import {
   usePassageiros,
   usePrePassageiros,
 } from "@/hooks";
+import { PassageiroFormModes } from "@/types/enums";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import {
@@ -150,7 +151,7 @@ export default function PrePassageiros({
 
   const handleFinalizeClick = (prePassageiro: PrePassageiro) => {
     openPassageiroFormDialog({
-      mode: "finalize",
+      mode: PassageiroFormModes.FINALIZE,
       prePassageiro,
       onSuccess: (passageiro) => {
         if (onFinalizeNewPrePassageiro) onFinalizeNewPrePassageiro();

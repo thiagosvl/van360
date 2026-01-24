@@ -11,7 +11,6 @@ export function useProfile(userId?: string) {
   const {
     data: profile,
     isLoading,
-    refetch,
   } = useQuery<Usuario>({
     queryKey: ["profile"], 
     queryFn: () => usuarioApi.getProfile(userId!), 
@@ -40,6 +39,8 @@ export function useProfile(userId?: string) {
             nome: p.nome,
             status: p.status,
             trial_end_at: p.trial_end_at,
+            ativo: profile.assinatura?.ativo || profile.assinaturas_usuarios?.[0]?.ativo || false,
+            planoProfissional: profile.assinatura?.planos || profile.plano,
             ...f
         };
     }
@@ -59,8 +60,6 @@ export function useProfile(userId?: string) {
     return fallbackData;
   }, [profile, summary]);
 
-  const is_read_only = planoData?.is_read_only;
-
   return {
     profile,
     summary,
@@ -69,8 +68,9 @@ export function useProfile(userId?: string) {
     isAuthenticated: !!profile,
     refreshProfile,
     
-    isEssencial: planoData?.is_essencial ?? false,
-    isProfissional: planoData?.is_profissional ?? false,
-    isReadOnly: is_read_only,
+    // Standardized properties (snake_case)
+    is_essencial: planoData?.is_essencial ?? false,
+    is_profissional: planoData?.is_profissional ?? false,
+    is_read_only: planoData?.is_read_only,
   };
 }

@@ -27,18 +27,16 @@ import {
   usePermissions,
   useToggleAtivoPassageiro,
   useUpdatePassageiro,
-  useUsuarioResumo,
   useVeiculos
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
-import { useProfile } from "@/hooks/business/useProfile";
-import { useSession } from "@/hooks/business/useSession";
 import { cn } from "@/lib/utils";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { Veiculo } from "@/types/veiculo";
 
 import { ROUTES } from "@/constants/routes";
+import { PassageiroFormModes } from "@/types/enums";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { Users2 } from "lucide-react";
@@ -55,7 +53,14 @@ export default function Passageiros() {
     openFirstChargeDialog,
   } = useLayout();
 
-  const { canUseAutomatedCharges: canUseCobrancaAutomatica, isReadOnly } = usePermissions();
+  const { 
+    canUseAutomatedCharges: canUseCobrancaAutomatica, 
+    isReadOnly,
+    profile, 
+    isLoading: isProfileLoading, 
+    plano,
+    summary: resumo
+  } = usePermissions();
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -109,8 +114,6 @@ export default function Passageiros() {
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const navigate = useNavigate();
-  const { user, loading: isSessionLoading } = useSession();
-  const { profile, isLoading: isProfileLoading, plano } = useProfile(user?.id);
 
   const createPassageiro = useCreatePassageiro();
   const createEscola = useCreateEscola();
@@ -147,7 +150,6 @@ export default function Passageiros() {
       }),
   });
 
-  const { data: resumo } = useUsuarioResumo();
 
   const countPrePassageiros =
     resumo?.contadores.passageiros.solicitacoes_pendentes ?? 0;
@@ -250,7 +252,7 @@ export default function Passageiros() {
     const openModal = searchParams.get("openModal");
     if (openModal === "true") {
       openPassageiroFormDialog({
-        mode: "create",
+        mode: PassageiroFormModes.CREATE,
         onSuccess: () => { refetchPassageiros(); },
       });
     }
@@ -381,18 +383,13 @@ export default function Passageiros() {
       const novoValor = !passageiro.enviar_cobranca_automatica;
 
       if (novoValor && limits.franchise.canEnable) {
-        // Use centralized logic from hook to check availability
-        // If enabling (novoValor === true), we check availability.
-        // We pass 'false' to checkAvailability because if we are enabling, it means it is NOT currently active (so we don't need to subtract from count).
         const podeAtivar = limits.franchise.checkAvailability(false);
 
         if (!podeAtivar) {
-          // Se franquia contratada for 0, usa a mensagem de upgrade/primeira ativação
           if (validacaoFranquiaGeral.franquiaContratada === 0) {
             openPlanUpgradeDialog({
               feature: FEATURE_COBRANCA_AUTOMATICA,
               onSuccess: () => {
-                // Resume action: Enable auto-billing
                 updatePassageiro.mutate({
                   id: passageiro.id,
                   data: { enviar_cobranca_automatica: true },
@@ -401,12 +398,10 @@ export default function Passageiros() {
               },
             });
           } else {
-            // Caso contrário, usa a lógica padrão de limite atingido
             openPlanUpgradeDialog({
               feature: FEATURE_LIMITE_FRANQUIA,
               targetPassengerCount: limits.franchise.used + 1,
               onSuccess: () => {
-                // Resume action: Enable auto-billing
                 updatePassageiro.mutate({
                   id: passageiro.id,
                   data: { enviar_cobranca_automatica: true },
@@ -441,7 +436,7 @@ export default function Passageiros() {
         return;
       }
       openPassageiroFormDialog({
-        mode: "edit",
+        mode: PassageiroFormModes.EDIT,
         editingPassageiro: passageiro,
       });
     },
@@ -453,9 +448,8 @@ export default function Passageiros() {
         openPlanUpgradeDialog({ feature: "READ_ONLY" });
         return;
     }
-    // Use openPassageiroFormDialog
     openPassageiroFormDialog({
-      mode: "create",
+      mode: PassageiroFormModes.CREATE,
       onSuccess: (passageiro) => {
          refetchPassageiros();
          if (passageiro) {
@@ -566,7 +560,6 @@ export default function Passageiros() {
       },
       {
         onError: () => {
-          // restore();
         },
       },
     );

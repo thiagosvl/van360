@@ -27,7 +27,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { usePixKeyGuard } from "@/hooks/ui/usePixKeyGuard";
 import { useWhatsappGuard } from "@/hooks/ui/useWhatsappGuard";
-import { PixKeyStatus } from "@/types/enums";
+import { PassageiroFormModes, PixKeyStatus } from "@/types/enums";
 import {
   ReactNode,
   useCallback,
@@ -116,7 +116,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useSession();
   const {
     profile,
-    isProfissional,
+    is_profissional,
     isLoading: isProfileLoading,
     plano,
   } = useProfile(user?.id);
@@ -183,7 +183,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 
   usePixKeyGuard({
     profile,
-    isProfissional: !!isProfissional,
+    isProfissional: !!is_profissional,
     isLoading: isProfileLoading,
     onShouldOpen: handleOpenPixKeyDialog,
   });
@@ -198,7 +198,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 
   // Global Check for Whatsapp (Professional Plan)
   useWhatsappGuard({
-    isProfissional: !!isProfissional,
+    isProfissional: !!is_profissional,
     isLoading: isProfileLoading,
     onShouldOpen: handleOpenWhatsappDialog,
     isPixKeyDialogOpen: pixKeyDialogState.open,
@@ -482,10 +482,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           editingPassageiro={
             passageiroFormDialogState.props?.editingPassageiro || null
           }
-          mode={passageiroFormDialogState.props?.mode || "create"}
+          mode={passageiroFormDialogState.props?.mode || PassageiroFormModes.CREATE}
           prePassageiro={passageiroFormDialogState.props?.prePassageiro}
           profile={profile}
-          plano={plano}
+          plano={plano as any}
         />
       )}
 

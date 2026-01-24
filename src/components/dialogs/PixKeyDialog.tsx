@@ -54,7 +54,7 @@ export default function PixKeyDialog({
   onSuccess,
   canClose = true
 }: PixKeyDialogProps) {
-  const { profile, refreshProfile, isProfissional } = usePermissions();
+  const { profile, refreshProfile } = usePermissions();
   const [isChecking, setIsChecking] = React.useState(false);
   const [overrideStatus, setOverrideStatus] = React.useState(false);
 

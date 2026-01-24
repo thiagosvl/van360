@@ -21,26 +21,24 @@ import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useLayout } from "@/contexts/LayoutContext";
-import { useCobrancas } from "@/hooks/api/useCobrancas";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useSession } from "@/hooks/business/useSession";
 
-import { FEATURE_GASTOS, PLANO_ESSENCIAL } from "@/constants";
 import { cn } from "@/lib/utils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { formatCurrency } from "@/utils/formatters/currency";
-import { toast } from "@/utils/notifications/toast";
 
 import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
 import { MiniKPI } from "@/components/features/home/MiniKPI";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
 import { WHATSAPP_STATUS } from "@/config/constants";
-import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { useUpsellContent } from "@/hooks/ui/useUpsellContent";
 import { useWhatsapp } from "@/hooks/useWhatsapp";
-import { CobrancaStatus, PixKeyStatus } from "@/types/enums";
+import {
+  PassageiroFormModes,
+  PixKeyStatus
+} from "@/types/enums";
 
 const Home = () => {
   const {
@@ -52,11 +50,11 @@ const Home = () => {
     openPassageiroFormDialog,
     openGastoFormDialog,
     openWhatsappDialog,
+    openFirstChargeDialog,
   } = useLayout();
-  const { user, loading: isSessionLoading } = useSession();
+  const { loading: isSessionLoading } = useSession();
   const {
     state: liveWhatsappStatus,
-    qrCode,
     isLoading: isWhatsappLoading,
   } = useWhatsapp();
 
@@ -64,90 +62,30 @@ const Home = () => {
     profile,
     isLoading: isProfileLoading,
     plano,
-    isProfissional,
-    canViewModuleGastos,
+    is_profissional,
+    summary: systemSummary,
   } = usePermissions();
 
-  const { limits: planLimits } = usePlanLimits();
-  const { data: systemSummary } = useUsuarioResumo();
-
   const upsellContent = useUpsellContent(plano);
-
-  const permissions = {
-    canViewGastos: canViewModuleGastos,
-  };
-
-  const limits = {
-    passageiros: planLimits.passengers.limit,
-  };
 
   const navigate = useNavigate();
 
   const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
   const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
 
-  const mesAtual = new Date().getMonth() + 1;
-  const anoAtual = new Date().getFullYear();
+  // Financial metrics from summary
+  const receitaPrevista = systemSummary?.financeiro?.receita?.prevista ?? 0;
+  const aReceber = systemSummary?.financeiro?.receita?.pendente ?? 0;
+  const totalEmAtraso = systemSummary?.financeiro?.atrasos?.valor ?? 0;
+  const countAtrasos = systemSummary?.financeiro?.atrasos?.count ?? 0;
 
-  // Queries
-  const {
-    data: cobrancasData,
-    refetch: refetchCobrancas,
-    isLoading: isLoadingCobrancas,
-  } = useCobrancas(
-    { usuarioId: profile?.id, mes: mesAtual, ano: anoAtual },
-    { enabled: !!profile?.id },
-  );
-
-  const isInitialLoading = useMemo(() => {
-    if (!profile?.id) return true;
-    return isLoadingCobrancas || !systemSummary;
-  }, [profile?.id, isLoadingCobrancas, systemSummary]);
-  const cobrancas = cobrancasData?.all || [];
-
-  const escolasCount = systemSummary?.contadores.escolas.total ?? 0;
-  const veiculosCount = systemSummary?.contadores.veiculos.total ?? 0;
-
-  const passageirosCount = systemSummary?.contadores.passageiros.total ?? 0;
-  const passageirosAtivosCount =
-    systemSummary?.contadores.passageiros.ativos ?? 0;
-
-  const passageirosInativosCount =
-    systemSummary?.contadores.passageiros.inativos ?? 0;
-
-  const passageirosSolicitacoesCount =
-    systemSummary?.contadores.passageiros.solicitacoes_pendentes ?? 0;
-
-  const limitePassageiros = limits.passageiros;
-
-  const receitaPrevista = cobrancas.reduce(
-    (acc, c) => acc + Number(c.valor || 0),
-    0,
-  );
-
-  const cobrancasPendentes = cobrancas.filter(
-    (c) => c.status !== CobrancaStatus.PAGO,
-  );
-
-  const aReceber = cobrancasPendentes.reduce(
-    (acc, c) => acc + Number(c.valor || 0),
-    0,
-  );
-
-  const latePayments = useMemo(() => {
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    return cobrancas.filter((c) => {
-      if (c.status === CobrancaStatus.PAGO) return false;
-      const vencimento = new Date(c.data_vencimento);
-      return vencimento < hoje;
-    });
-  }, [cobrancas]);
-
-  const totalEmAtraso = latePayments.reduce(
-    (acc, c) => acc + Number(c.valor || 0),
-    0,
-  );
+  // Counters from summary
+  const escolasCount = systemSummary?.contadores?.escolas?.total ?? 0;
+  const veiculosCount = systemSummary?.contadores?.veiculos?.total ?? 0;
+  const passageirosCount = systemSummary?.contadores?.passageiros?.total ?? 0;
+  const passageirosAtivosCount = systemSummary?.contadores?.passageiros?.ativos ?? 0;
+  const passageirosInativosCount = systemSummary?.contadores?.passageiros?.inativos ?? 0;
+  const passageirosSolicitacoesCount = systemSummary?.contadores?.passageiros?.solicitacoes_pendentes ?? 0;
 
   const hasPixKey = !!profile?.chave_pix;
 
@@ -155,10 +93,10 @@ const Home = () => {
     veiculosCount > 0,
     escolasCount > 0,
     passageirosCount > 0,
-    isProfissional ? hasPixKey : null,
+    is_profissional ? hasPixKey : null,
   ].filter((step) => step === true).length;
 
-  const totalSteps = isProfissional ? 4 : 3;
+  const totalSteps = is_profissional ? 4 : 3;
   const showOnboarding = completedSteps < totalSteps;
 
   const dateContext = useMemo(() => {
@@ -180,11 +118,11 @@ const Home = () => {
     }
   }, [profile?.apelido, setPageTitle]);
 
-  const { refetch: refetchSummary } = useUsuarioResumo();
+  const { refreshProfile: refetchSummary } = usePermissions();
   const queryClient = useQueryClient();
 
   const handlePullToRefresh = async () => {
-    await Promise.all([refetchCobrancas(), refetchSummary()]);
+    await Promise.all([refetchSummary()]);
   };
 
   const [isCopied, setIsCopied] = useState(false);
@@ -201,14 +139,17 @@ const Home = () => {
     }
   };
 
-  const handleSuccessFormPassageiro = useCallback(() => {
+  const handleSuccessFormPassageiro = useCallback((passageiro?: any) => {
     setNovoVeiculoId(null);
     setNovaEscolaId(null);
-  }, []);
+    if (passageiro) {
+      openFirstChargeDialog({ passageiro });
+    }
+  }, [openFirstChargeDialog]);
 
   const handleOpenPassageiroDialog = useCallback(() => {
     openPassageiroFormDialog({
-      mode: "create",
+      mode: PassageiroFormModes.CREATE,
       onSuccess: handleSuccessFormPassageiro,
     });
   }, [openPassageiroFormDialog, handleSuccessFormPassageiro]);
@@ -216,29 +157,12 @@ const Home = () => {
   const handleOpenGastoDialog = useCallback(() => {
     const triggerGasto = () => {
       openGastoFormDialog({
-        onSuccess: () => {
-          toast.success("Gasto registrado com sucesso!");
-          refetchCobrancas();
-        },
+        onSuccess: () => {},
       });
     };
 
-    if (!permissions.canViewGastos) {
-      openPlanUpgradeDialog({
-        feature: FEATURE_GASTOS,
-        defaultTab: PLANO_ESSENCIAL,
-        onSuccess: triggerGasto,
-      });
-      return;
-    }
-
     triggerGasto();
-  }, [
-    permissions.canViewGastos,
-    openPlanUpgradeDialog,
-    openGastoFormDialog,
-    refetchCobrancas,
-  ]);
+  }, [openPlanUpgradeDialog, openGastoFormDialog]);
 
   const handleEscolaCreated = useCallback(
     (novaEscola: any, keepOpen?: boolean) => {
@@ -258,7 +182,7 @@ const Home = () => {
     [queryClient],
   );
 
-  if (isSessionLoading || isProfileLoading || isInitialLoading) {
+  if (isSessionLoading || isProfileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -269,16 +193,16 @@ const Home = () => {
   return (
     <>
       <PullToRefreshWrapper onRefresh={handlePullToRefresh}>
-        <div className="space-y-6 pb-20">
+        <div className="space-y-6">
           {/* Header Contextual */}
           <div className="px-1">
             <p className="text-sm text-gray-500 capitalize font-medium">
               {dateContext}
             </p>
             <p className="text-xs text-gray-400 mt-0.5">
-              {latePayments.length > 0
-                ? `${latePayments.length} passageiro${
-                    latePayments.length != 1 ? "s" : ""
+              {countAtrasos > 0
+                ? `${countAtrasos} passageiro${
+                    countAtrasos != 1 ? "s" : ""
                   } em atraso`
                 : "Nenhuma pendência hoje"}
             </p>
@@ -359,8 +283,10 @@ const Home = () => {
                 }
                 onOpenPassageiroDialog={() =>
                   openPassageiroFormDialog({
-                    mode: "create",
-                    onSuccess: handleSuccessFormPassageiro,
+                    mode: PassageiroFormModes.CREATE,
+                    onSuccess: (passageiro) => {
+                      handleSuccessFormPassageiro(passageiro);
+                    },
                   })
                 }
                 onOpenPixKeyDialog={() => openPixKeyDialog()}
@@ -369,16 +295,16 @@ const Home = () => {
           )}
 
           {/* Notificação de Cobranças pendentes / em dia */}
-          {!showOnboarding && cobrancas.length > 0 && (
+          {!showOnboarding && systemSummary?.financeiro && receitaPrevista > 0 && (
             <section>
-              {latePayments.length > 0 ? (
+              {countAtrasos > 0 ? (
                 <DashboardStatusCard
                   type="pending"
                   title="Passageiros em Atraso"
                   description={`Você tem ${formatCurrency(
                     totalEmAtraso,
-                  )} em atraso de ${latePayments.length} passageiro${
-                    latePayments.length != 1 ? "s" : ""
+                  )} em atraso de ${countAtrasos} passageiro${
+                    countAtrasos != 1 ? "s" : ""
                   }.`}
                   actionLabel="Ver Cobranças"
                   onAction={() => navigate(ROUTES.PRIVATE.MOTORISTA.BILLING)}
@@ -409,9 +335,6 @@ const Home = () => {
                 <MiniKPI
                   label="receita prevista"
                   value={formatCurrency(receitaPrevista)}
-                  subtext={`${cobrancas.length} passageiro${
-                    cobrancas.length !== 1 ? "s" : ""
-                  }`}
                   icon={DollarSign}
                   colorClass="text-emerald-600"
                   bgClass="bg-emerald-50"
@@ -420,9 +343,6 @@ const Home = () => {
                 <MiniKPI
                   label="Pendente"
                   value={formatCurrency(aReceber)}
-                  subtext={`${cobrancasPendentes.length} passageiro${
-                    cobrancasPendentes.length !== 1 ? "s" : ""
-                  }`}
                   icon={Wallet}
                   colorClass={
                     aReceber > 0 ? "text-orange-600" : "text-gray-400"

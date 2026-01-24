@@ -16,6 +16,8 @@ export function extractPlanoData(assinatura: any, backendFlags?: any) {
 
   // Priorizar as flags que vieram do backend (seja via parâmetro ou no próprio objeto)
   const f = backendFlags || assinatura?.flags || {};
+  const is_profissional = f.is_profissional ?? (slugBase === PLANO_PROFISSIONAL);
+  const is_essencial = f.is_essencial ?? (slugBase === PLANO_ESSENCIAL);
 
   return {
     slug: slugBase,
@@ -34,8 +36,8 @@ export function extractPlanoData(assinatura: any, backendFlags?: any) {
     is_pendente: f.is_pendente ?? false,
     is_suspensa: f.is_suspensa ?? false,
     is_cancelada: f.is_cancelada ?? false,
-    is_profissional: f.is_profissional ?? (slugBase === PLANO_PROFISSIONAL),
-    is_essencial: f.is_essencial ?? (slugBase === PLANO_ESSENCIAL),
+    is_profissional,
+    is_essencial,
   };
 }
 

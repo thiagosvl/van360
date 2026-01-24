@@ -14,7 +14,6 @@ interface RelatoriosEntradasProps {
       color: string;
     }[];
   };
-  hasAccess: boolean;
 }
 
 export const RelatoriosEntradas = ({

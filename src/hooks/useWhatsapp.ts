@@ -17,7 +17,7 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
   const pairingCodeRequestInProgressRef = useRef(false); // Prevenir requisições simultâneas
   
   const { user } = useSession();
-  const { isProfissional, profile } = useProfile(user?.id);
+  const { is_profissional, profile } = useProfile(user?.id);
   
   // Safe check for Layout context (in case hook is used outside provider)
   const layout = useLayoutSafe();
@@ -69,7 +69,7 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
     queryFn: whatsappApi.getStatus,
     // SÓ busca status se tiver chave PIX validada. Se não tiver, nem tenta.
     // Isso evita requests de pairing/status rodando no fundo enquanto o dialog de PIX aparece.
-    enabled: !!user?.id && !!profile?.id && isProfissional && !isPixKeyDialogOpen && (profile?.status_chave_pix === PixKeyStatus.VALIDADA),
+    enabled: !!user?.id && !!profile?.id && is_profissional && !isPixKeyDialogOpen && (profile?.status_chave_pix === PixKeyStatus.VALIDADA),
     staleTime: 5000, 
     refetchInterval: false, 
     refetchOnWindowFocus: false, // Evita requisições extras ao focar na janela
@@ -173,7 +173,7 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
   const pairingCodeExpiresAt = mutationPairingData?.expiresAt || (statusData as any)?.pairing_code_expires_at;
 
   // Permissão de interação: Segue a mesma lógica do query principal
-  const canInteract = !!user?.id && !!profile?.id && isProfissional && !isPixKeyDialogOpen && (profile?.status_chave_pix === PixKeyStatus.VALIDADA);
+  const canInteract = !!user?.id && !!profile?.id && is_profissional && !isPixKeyDialogOpen && (profile?.status_chave_pix === PixKeyStatus.VALIDADA);
 
   return {
     state,

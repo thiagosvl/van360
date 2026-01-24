@@ -1,9 +1,10 @@
 import { usePermissions } from "@/hooks/business/usePermissions";
 import {
-    cepSchema,
-    cpfSchema,
-    phoneSchema,
+  cepSchema,
+  cpfSchema,
+  phoneSchema,
 } from "@/schemas/common";
+import { PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { cepMask, cpfMask, moneyMask, phoneMask } from "@/utils/masks";
@@ -82,7 +83,7 @@ export type PassageiroFormData = z.infer<typeof passageiroSchema>;
 
 interface UsePassageiroFormProps {
   isOpen: boolean;
-  mode?: "create" | "edit" | "finalize";
+  mode?: PassageiroFormModes;
   editingPassageiro: Passageiro | null;
   prePassageiro?: PrePassageiro | null;
   plano: any;
@@ -140,11 +141,9 @@ export function usePassageiroForm({
     try {
       setRefreshing(true);
 
-      const isFinalizeMode = mode === "finalize" && prePassageiro;
+      const isFinalizeMode = mode === PassageiroFormModes.FINALIZE && prePassageiro;
 
-      if (editingPassageiro && mode === "edit") {
-        // Aguardar um pouco para os dados serem carregados pelos hooks (lists)
-        // Isso mantem o comportamento original
+      if (editingPassageiro && mode === PassageiroFormModes.EDIT) {
         await new Promise((r) => setTimeout(r, 200));
         await new Promise((r) => requestAnimationFrame(r));
 

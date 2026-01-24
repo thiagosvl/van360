@@ -206,8 +206,55 @@ export const mockGenerator = {
   phone: generatePhone,
   cep: generateCEP,
   address: generateAddress,
-  escola: () => escolas[randomNumber(0, escolas.length - 1)],
-  veiculo: () => veiculos[randomNumber(0, veiculos.length - 1)],
+  escola: () => {
+    const escolaBase = escolas[randomNumber(0, escolas.length - 1)];
+    // Add random suffix to avoid duplicates
+    const suffix = randomNumber(1, 999);
+    return {
+      ...escolaBase,
+      nome: `${escolaBase.nome} ${suffix}`,
+      ativo: true,
+    };
+  },
+  veiculo: () => {
+    const veiculoBase = veiculos[randomNumber(0, veiculos.length - 1)];
+    // Generate unique placa
+    const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "U", "V", "X", "Z"];
+    const randomLetter = () => letters[randomNumber(0, letters.length - 1)];
+    const placa = `${randomLetter()}${randomLetter()}${randomLetter()}-${randomNumber(1, 9)}${randomLetter()}${randomNumber(1, 9)}${randomNumber(1, 9)}`;
+    return {
+      placa,
+      marca: veiculoBase.marca,
+      modelo: veiculoBase.modelo,
+      ativo: true,
+    };
+  },
+  gasto: (overrides?: { veiculo_id?: string }) => {
+    const categorias = ["Combustível", "Manutenção", "Salário", "Vistorias", "Documentação", "Administrativa", "Outros"];
+    const descricoes = [
+      "Abastecimento semanal",
+      "Troca de óleo",
+      "Lavagem completa",
+      "Revisão preventiva",
+      "Conserto de pneu",
+      "Taxa de vistoria",
+      "Seguro mensal",
+      "Limpeza interna",
+    ];
+    const valor = randomNumber(50, 500);
+    const hoje = new Date();
+    const diasAtras = randomNumber(0, 30);
+    const data = new Date(hoje.getTime() - diasAtras * 24 * 60 * 60 * 1000);
+    
+    return {
+      valor: `R$ ${valor},00`,
+      data,
+      categoria: categorias[randomNumber(0, categorias.length - 1)],
+      descricao: descricoes[randomNumber(0, descricoes.length - 1)],
+      veiculo_id: overrides?.veiculo_id || "none",
+      ...overrides,
+    };
+  },
   passenger: (overrides?: any) => {
     const name = generateName();
     const address = generateAddress();

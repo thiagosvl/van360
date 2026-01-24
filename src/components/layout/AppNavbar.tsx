@@ -2,17 +2,17 @@ import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
 import EditarCadastroDialog from "@/components/dialogs/EditarCadastroDialog";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -22,13 +22,13 @@ import { apiClient } from "@/services/api/client";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
 import {
-    ChevronDown,
-    Key,
-    Lock,
-    LogOut,
-    Menu,
-    Receipt,
-    UserPen,
+  ChevronDown,
+  Key,
+  Lock,
+  LogOut,
+  Menu,
+  Receipt,
+  UserPen,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -42,7 +42,7 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const navigate = useNavigate();
   const { user } = useSession();
-  const { profile, isProfissional } = useProfile(user?.id);
+  const { profile, is_profissional } = useProfile(user?.id);
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -137,7 +137,7 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
                 <DropdownMenuItem onClick={() => setOpenEditarCadasto(true)}>
                   <UserPen className="mr-2 h-4 w-4" /> Editar Perfil
                 </DropdownMenuItem>
-                {isProfissional && (
+                {is_profissional && (
                   <DropdownMenuItem onClick={() => openPixKeyDialog({ canClose: true })}>
                     <Key className="mr-2 h-4 w-4" /> Alterar Chave PIX
                   </DropdownMenuItem>

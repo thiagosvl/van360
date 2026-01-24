@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
+import { useLayout } from "@/contexts/LayoutContext";
 import { usePlanUpgrade } from "@/hooks/business/usePlanUpgrade";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { useLayout } from "@/contexts/LayoutContext";
-import { PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
 import { CalendarX, ShieldAlert, Sparkles } from "lucide-react";
 import PagamentoAssinaturaDialog from "./PagamentoAssinaturaDialog";
 
@@ -39,9 +39,9 @@ export function SubscriptionExpiredDialog({ open, onOpenChange }: SubscriptionEx
       // Se era Essencial: handleUpgradeEssencial(plano.id)
       // Se era Profissional: handleUpgradeProfissional(plano.id)
       
-      if (plano?.isEssencial) {
+      if (plano?.is_essencial) {
            handleUpgradeEssencial(plano.id);
-      } else if (plano?.isProfissional) {
+      } else if (plano?.is_profissional) {
            handleUpgradeProfissional(plano.id);
       } else {
            // Fallback, talvez abrir tela de planos?

@@ -44,7 +44,6 @@ export const PlanoCardSelection = ({
   onSubPlanoSelect,
   onQuantidadePersonalizadaChange,
   precoCalculadoPreview = null,
-  valorPorCobranca = null,
   isCalculandoPreco = false,
   getQuantidadeMinima,
   onQuantidadePersonalizadaConfirm,

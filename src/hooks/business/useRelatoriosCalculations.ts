@@ -439,7 +439,6 @@ interface UseRelatoriosCalculationsProps {
       automacao: {
         envios: passageirosComAutomatica,
         limite: limiteAutomatica,
-        tempoEconomizado: `${Math.round(passageirosComAutomatica * 0.08)}h`,
       },
     };
   }, [

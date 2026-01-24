@@ -39,7 +39,6 @@ import { InfoItem } from "./InfoItem";
 
 interface CarteirinhaInfoProps {
   passageiro: Passageiro;
-  plano?: { IsProfissionalPlan?: boolean } | null;
   temCobrancasVencidas?: boolean;
   isCopiedEndereco: boolean;
   isCopiedTelefone: boolean;
@@ -49,15 +48,11 @@ interface CarteirinhaInfoProps {
   onToggleClick: (statusAtual: boolean) => void;
   onDeleteClick: () => void;
   onUpgrade: (featureName: string, description: string) => void;
-  // Previously used for the local dialog, now triggered via global dialog but we keep the prop signature if needed or we can pass logic.
-  // Actually, we can just call it directly in the confirm dialog callback.
-  // But since onReactivateWithoutAutomation was passed from parent, we need it.
   onReactivateWithoutAutomation?: () => Promise<void>; 
 }
 
 export const CarteirinhaInfo = ({
   passageiro,
-  plano,
   temCobrancasVencidas = false,
   isCopiedEndereco,
   isCopiedTelefone,
@@ -72,28 +67,21 @@ export const CarteirinhaInfo = ({
   const [mostrarMaisInfo, setMostrarMaisInfo] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   
-  // Hooks
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const { canUseAutomatedCharges: hasCobrancaAutomaticaAccess } = usePermissions();
-  // Pass current count (optional) or let it use SWR cache. 
-  // We just need to check availability.
   const { limits } = usePlanLimits();
 
   const handleToggleClickInternal = async () => {
       const isReactivating = !passageiro.ativo;
       
-      // Se for reativação E tiver cobrança automática habilitada E usuário tiver acesso à feature
-      // Precisamos checar se vai estourar a franquia
       if (
           isReactivating && 
           passageiro.enviar_cobranca_automatica && 
           hasCobrancaAutomaticaAccess
       ) {
-          // Check availability passing 'false' because we are NOT already active in the count (since we are inactive now)
           const canEnable = limits.franchise.checkAvailability(false);
 
           if (!canEnable) {
-              // Proactive handling: Limit Reached
               openConfirmationDialog({
                   title: "Limite de Automação Atingido",
                   description: "Você atingiu o limite de cobranças automáticas do seu plano.\n\nPara reativar este passageiro, você pode aumentar seu limite ou reativar sem a automação.",
@@ -115,21 +103,17 @@ export const CarteirinhaInfo = ({
           }
       }
 
-      // Default behavior (no limit issue or deactivating)
       try {
           await onToggleClick(passageiro.ativo);
       } catch (error: any) {
-         // Fallback error handling if needed, but proactive check should cover it.
           throw error;
       }
   };
 
   const handleCobrancaAutomaticaClick = () => {
     if (hasCobrancaAutomaticaAccess) {
-      // Usuário tem permissão: executa a ação normal
       onToggleCobrancaAutomatica();
     } else {
-      // Usuário não tem permissão: chama função de upgrade do pai
       onUpgrade(
         "Cobrança Automática",
         "A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Profissional."
@@ -149,7 +133,6 @@ export const CarteirinhaInfo = ({
     }
   };
 
-  // Informações adicionais (ocultas por padrão)
   const infoAdicionais = [
     {
       icon: Phone,

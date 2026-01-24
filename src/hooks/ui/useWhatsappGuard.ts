@@ -12,21 +12,15 @@ interface UseWhatsappGuardProps {
 
 export function useWhatsappGuard({ isProfissional, onShouldOpen, isLoading, isPixKeyDialogOpen: isPixKeyDialogOpenProp }: UseWhatsappGuardProps) {
     const { state, isLoading: isWhatsappLoading, isFetched, isInitialLoading } = useWhatsapp();
-    const layout = useLayoutSafe(); // Helper to avoid crash
+    const layout = useLayoutSafe();
     const isPixKeyDialogOpen = isPixKeyDialogOpenProp ?? layout?.isPixKeyDialogOpen ?? false;
 
-    // Efeito para gatilho
     useEffect(() => {
-        // Se ainda está carregando o perfil ou se é o carregamento INICIAL do WhatsApp, esperamos.
-        // O isInitialLoading garante que não abriremos o dialog baseados no estado 'UNKNOWN' inicial.
-        // E NÃO abrimos se o PIX estiver aberto (Prioridade máxima).
         if (isLoading || isInitialLoading || !isFetched || isPixKeyDialogOpen) return;
         if (!isProfissional) return;
 
-        // Se checagem concluiu e status é desconectado/fechado ou conectando (precisa de QR)
         const isConnected = state === WHATSAPP_STATUS.CONNECTED || state === WHATSAPP_STATUS.OPEN || state === WHATSAPP_STATUS.PAIRED;
         
-        // Se NÃO estiver conectado, e NÃO estiver em processo de transição (CONNECTING), deve abrir.
         if (!isConnected && state !== WHATSAPP_STATUS.CONNECTING && state !== WHATSAPP_STATUS.CONNECTING_EVO) {
             onShouldOpen();
         }

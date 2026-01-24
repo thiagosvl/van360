@@ -1,8 +1,8 @@
 import {
-    FEATURE_COBRANCA_AUTOMATICA,
-    FEATURE_LIMITE_FRANQUIA,
-    PLANO_ESSENCIAL,
-    PLANO_PROFISSIONAL
+  FEATURE_COBRANCA_AUTOMATICA,
+  FEATURE_LIMITE_FRANQUIA,
+  PLANO_ESSENCIAL,
+  PLANO_PROFISSIONAL
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useMemo } from "react";
@@ -11,14 +11,8 @@ export const useUpsellContent = (plano?: any) => {
   const { openPlanUpgradeDialog } = useLayout();
 
   const content = useMemo(() => {
-    // Source of truth: plano object already has these flags calculated by extractPlanoData
 
-    const isEssencial = plano?.isEssentialPlan;
-    const isProfissional = plano?.isProfissionalPlan;
-
-
-
-    if (isEssencial) {
+    if (plano?.is_essencial) {
       return {
         title: "Automatize sua rotina ⚡",
         description:
@@ -34,7 +28,7 @@ export const useUpsellContent = (plano?: any) => {
       };
     }
 
-    if (isProfissional) {
+    if (plano?.is_profissional) {
       return {
         title: "Máxima eficiência 🎯",
         description:
@@ -49,13 +43,12 @@ export const useUpsellContent = (plano?: any) => {
       };
     }
 
-    // Default fallback (e.g. for unknown plans or admin)
     return {
       title: "Eleve seu negócio 🚀",
       description: "Acesse recursos exclusivos e profissionalize sua gestão.",
       buttonText: "Conhecer planos",
       action: () => openPlanUpgradeDialog({ defaultTab: PLANO_ESSENCIAL }),
-      check: false, // Don't verify/show by default if unknown
+      check: false,
       variant: "default",
     };
   }, [plano, openPlanUpgradeDialog]);

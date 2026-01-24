@@ -63,6 +63,7 @@ export interface SystemSummary {
     receita: {
       realizada: number;
       prevista: number;
+      pendente: number;
       taxa_recebimento: number;
     };
     saidas: {

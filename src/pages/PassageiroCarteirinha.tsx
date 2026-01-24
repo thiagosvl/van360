@@ -67,7 +67,7 @@ import { toast } from "@/utils/notifications/toast";
 
 import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { Cobranca } from "@/types/cobranca";
-import { CobrancaStatus } from "@/types/enums";
+import { CobrancaStatus, PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 
 const currentYear = new Date().getFullYear().toString();
@@ -283,7 +283,7 @@ export default function PassageiroCarteirinha() {
 
   const handleEditClick = useCallback(() => {
     openPassageiroFormDialog({
-      mode: "edit",
+      mode: PassageiroFormModes.EDIT,
       editingPassageiro: passageiro,
       onSuccess: handlePassageiroFormSuccess,
     });

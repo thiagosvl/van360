@@ -2,6 +2,7 @@ import {
   PlanUpgradeDialogProps,
 } from "@/components/dialogs/PlanUpgradeDialog";
 import { SubscriptionExpiredDialogProps } from "@/components/dialogs/SubscriptionExpiredDialog";
+import { PassageiroFormModes } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
 import { Passageiro } from "@/types/passageiro";
@@ -46,7 +47,7 @@ export interface OpenConfirmationDialogProps {
 export interface OpenPassageiroFormProps {
   onSuccess?: (passageiro?: Passageiro) => void;
   editingPassageiro?: Passageiro | null;
-  mode?: "create" | "edit" | "finalize";
+  mode?: PassageiroFormModes;
   prePassageiro?: PrePassageiro | null;
 }
 

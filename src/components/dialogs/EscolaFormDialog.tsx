@@ -1,38 +1,38 @@
 import { CepInput } from "@/components/forms";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  useCreateEscola,
-  useUpdateEscola,
+    useCreateEscola,
+    useUpdateEscola,
 } from "@/hooks/api/useEscolaMutations";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -45,8 +45,9 @@ import { toast } from "@/utils/notifications/toast";
 import { validateEnderecoFields } from "@/utils/validators";
 // Just import cepSchema.
 // And remove cepSchema from validators import.
+import { mockGenerator } from "@/utils/mocks/generator";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, Loader2, MapPin, X } from "lucide-react";
+import { Building2, Loader2, MapPin, Wand2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -198,6 +199,22 @@ export default function EscolaFormDialog({
     setOpenAccordionItems(["dados-escola", "endereco"]);
   };
 
+  const handleFillMock = () => {
+    const mockData = mockGenerator.escola();
+    form.reset({
+      nome: mockData.nome,
+      logradouro: mockData.logradouro,
+      numero: mockData.numero,
+      bairro: mockData.bairro,
+      cidade: mockData.cidade,
+      estado: mockData.estado,
+      cep: mockData.cep,
+      referencia: mockData.referencia || "",
+      ativo: mockData.ativo ?? true,
+    });
+    setOpenAccordionItems(["dados-escola", "endereco"]);
+  };
+
   const handleSubmit = async (data: EscolaFormData) => {
     if (!profile?.id) return;
 
@@ -295,6 +312,18 @@ export default function EscolaFormDialog({
           hideCloseButton
         >
           <div className="bg-blue-600 p-4 text-center relative shrink-0">
+            <div className="absolute left-4 top-4 flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
+                onClick={handleFillMock}
+                title="Preencher com dados fictícios"
+              >
+                <Wand2 className="h-5 w-5" />
+              </Button>
+            </div>
             <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
               <X className="h-6 w-6" />
               <span className="sr-only">Close</span>

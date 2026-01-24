@@ -10,7 +10,7 @@ import { Form } from "@/components/ui/form";
 import { useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
-import { CobrancaStatus } from "@/types/enums";
+import { CobrancaStatus, PassageiroFormModes } from "@/types/enums";
 import { getStatusColor, getStatusText } from "@/utils/formatters";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -45,7 +45,7 @@ export default function CobrancaEditDialog({
   if (!cobranca) return null;
 
   const { form, onSubmit, isSubmitting } = useCobrancaForm({
-    mode: "edit",
+    mode: PassageiroFormModes.EDIT,
     cobranca,
     onSuccess: () => {
       onCobrancaUpdated();
@@ -139,7 +139,7 @@ export default function CobrancaEditDialog({
           <Form {...form}>
             <CobrancaFormContent
               form={form}
-              mode="edit"
+              mode={PassageiroFormModes.EDIT}
               cobranca={cobranca}
               onCancel={onClose}
               hideButtons={true}

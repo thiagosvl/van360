@@ -22,12 +22,12 @@ import {
   useVeiculosWithFilters,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
-import { useSession } from "@/hooks/business/useSession";
 import { PassageiroFormData } from "@/hooks/ui/usePassageiroForm";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
 
+import { PassageiroFormModes } from "@/types/enums";
 import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
@@ -47,6 +47,9 @@ type PlanoUsuario = {
   is_trial_ativo: boolean;
   is_trial_valido: boolean;
   is_ativo: boolean;
+  is_pendente?: boolean;
+  is_suspensa?: boolean;
+  is_cancelada?: boolean;
   is_profissional: boolean;
   is_essencial: boolean;
 } | null;
@@ -55,7 +58,7 @@ interface PassengerFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
   editingPassageiro: Passageiro | null;
-  mode?: "create" | "edit" | "finalize";
+  mode?: PassageiroFormModes;
   prePassageiro?: PrePassageiro | null;
   onSuccess: (passageiro?: any) => void;
   profile: Usuario | null | undefined;
@@ -72,7 +75,6 @@ export default function PassengerFormDialog({
   profile,
   plano,
 }: PassengerFormDialogProps) {
-  const { user } = useSession();
   const { openPlanUpgradeDialog } = useLayout();
 
   const createPassageiro = useCreatePassageiro();
@@ -97,16 +99,16 @@ export default function PassengerFormDialog({
 
   // Determine includeId for lists based on mode
   const includeEscolaId =
-    mode === "edit"
+    mode === PassageiroFormModes.EDIT
       ? editingPassageiro?.escola_id
-      : mode === "finalize"
+      : mode === PassageiroFormModes.FINALIZE
       ? prePassageiro?.escola_id
       : undefined;
 
   const includeVeiculoId =
-    mode === "edit"
+    mode === PassageiroFormModes.EDIT
       ? editingPassageiro?.veiculo_id
-      : mode === "finalize"
+      : mode === PassageiroFormModes.FINALIZE
       ? prePassageiro?.veiculo_id
       : undefined;
 
@@ -147,7 +149,7 @@ export default function PassengerFormDialog({
   const buscarResponsavel = useBuscarResponsavel();
 
   const handleSearchResponsavel = async (cpf: string) => {
-    if (mode === "edit" || mode === "finalize") return;
+    if (mode === PassageiroFormModes.EDIT || mode === PassageiroFormModes.FINALIZE) return;
     if (cpf.length !== 11 || !profile?.id) return;
 
     try {
@@ -260,8 +262,6 @@ export default function PassengerFormDialog({
 
     const commonOptions = {
       onSuccess: (data?: any) => {
-        console.log('data', data);
-        // @ts-ignore
         onSuccess(data);
         onClose();
       },
@@ -270,7 +270,7 @@ export default function PassengerFormDialog({
       },
     };
 
-    if (mode === "finalize" && prePassageiro) {
+    if (mode === PassageiroFormModes.FINALIZE && prePassageiro) {
       finalizePreCadastro.mutate(
         {
           prePassageiroId: prePassageiro.id,
@@ -349,9 +349,9 @@ export default function PassengerFormDialog({
               <User className="w-5 h-5 text-white" />
             </div>
             <DialogTitle className="text-xl font-bold text-white">
-              {mode === "edit"
+              {mode === PassageiroFormModes.EDIT
                 ? "Editar Passageiro"
-                : mode === "finalize"
+                : mode === PassageiroFormModes.FINALIZE
                 ? "Confirmar Cadastro"
                 : "Novo Passageiro"}
             </DialogTitle>
@@ -413,7 +413,7 @@ export default function PassengerFormDialog({
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Salvando...
                 </>
-              ) : mode === "finalize" ? (
+              ) : mode === PassageiroFormModes.FINALIZE ? (
                 "Confirmar"
               ) : (
                 "Salvar"

@@ -58,7 +58,7 @@ export default function EditarCadastroDialog({
   const { user } = useSession();
   const { openPixKeyDialog } = useLayout();
   // Usar usePermissions para acesso centralizado às flags de plano
-  const { profile, isLoading, refreshProfile, isProfissional } = usePermissions();
+  const { profile, isLoading, refreshProfile, is_profissional } = usePermissions();
   
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "dados-pessoais",
@@ -87,13 +87,13 @@ export default function EditarCadastroDialog({
         email: profile.email || "",
       });
       // Abre ambas as sections se já tiver dados e for profissional
-      if (isProfissional) {
+      if (is_profissional) {
         setOpenAccordionItems(["dados-pessoais", "dados-recebimento"]);
       } else {
         setOpenAccordionItems(["dados-pessoais"]);
       }
     }
-  }, [profile, form, isProfissional]);
+  }, [profile, form, is_profissional]);
 
   const handleSubmit = async (data: FormData) => {
     try {

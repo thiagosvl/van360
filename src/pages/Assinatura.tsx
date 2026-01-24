@@ -1,38 +1,23 @@
-// React
-import { useEffect, useMemo, useState } from "react";
-
-// React Router
-
-// Components - Features
-import { AssinaturaDashboard } from "@/components/features/assinatura/dashboard/AssinaturaDashboard";
-
-// Components - Navigation
-import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-
-// Components - UI
-import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
-
-// Hooks
-import { useLayout } from "@/contexts/LayoutContext";
-import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
-import { usePlanLimits } from "@/hooks/business/usePlanLimits";
-import { useProfile } from "@/hooks/business/useProfile";
-import { useSession } from "@/hooks/business/useSession";
-
-// Services
-import { useAssinaturaCobrancas } from "@/hooks";
-
-// Utils
-import { WhatsappConnect } from "@/components/Whatsapp/WhatsappConnect";
 import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaDialog";
+import { AssinaturaDashboard } from "@/components/features/assinatura/dashboard/AssinaturaDashboard";
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
+import { WhatsappConnect } from "@/components/Whatsapp/WhatsappConnect";
+import { useLayout } from "@/contexts/LayoutContext";
+import { useAssinaturaCobrancas } from "@/hooks/api/useAssinaturaCobrancas";
 import { usePermissions } from "@/hooks/business/usePermissions";
+import { usePlanLimits } from "@/hooks/business/usePlanLimits";
+import { useEffect, useMemo, useState } from "react";
 
 export default function Assinatura() {
   const { setPageTitle } = useLayout();
-  const { user, loading: isSessionLoading } = useSession();
-  const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
-  // Hook de permissões
-  const { canUseAutomatedCharges: canUseCobrancaAutomatica } = usePermissions();
+  const { 
+    profile, 
+    plano, 
+    isLoading,
+    summary: systemSummary,
+    refreshProfile: refetchSummary
+  } = usePermissions();
 
   const [refreshing, setRefreshing] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -46,12 +31,6 @@ export default function Assinatura() {
       profile?.id ? { usuarioId: profile.id } : undefined,
       { enabled: !!profile?.id }
     );
-
-  const {
-    data: systemSummary,
-    isLoading: isSummaryLoading,
-    refetch: refetchSummary,
-  } = useUsuarioResumo(profile?.id);
 
   const { limits } = usePlanLimits();
 
@@ -84,7 +63,7 @@ export default function Assinatura() {
   const pullToRefreshReload = async () => {
     await Promise.all([
       refetchCobrancas(),
-      ...(canUseCobrancaAutomatica ? [refetchSummary()] : []),
+      refetchSummary(),
     ]);
   };
 
@@ -102,81 +81,67 @@ export default function Assinatura() {
     }
   };
 
-  if (isSessionLoading || isProfileLoading || isSummaryLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
-        <p>Carregando informações...</p>
+        <LoadingOverlay
+          active={true}
+          text="Carregando dados da conta..."
+        />
       </div>
     );
   }
 
-  if (!plano || !dataWithCounts) {
-    return (
-      <div className="min-h-screen flex items-center justify-center flex-col gap-4 text-gray-600">
-        <p>Não foi possível carregar os dados da assinatura.</p>
-        <button 
-           onClick={() => window.location.reload()}
-           className="text-blue-600 hover:underline"
-        >
-           Tentar novamente
-        </button>
-      </div>
-    );
-  }
+  if (!data) return null;
 
   return (
     <>
-      <div className="relative min-h-screen pb-20 space-y-6 bg-gray-50/50">
-        <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-          <div className="space-y-6 md:p-6 ">
-            {/* Dashboard Unificado */}
-            {dataWithCounts && (
-              <div className="">
-                <AssinaturaDashboard
-                  plano={plano}
-                  assinatura={dataWithCounts.assinatura}
-                  metricas={{
-                    passageirosAtivos: limits.passengers.used,
-                    limitePassageiros: limits.passengers.limit,
-                    cobrancasEmUso: limits.franchise.used,
-                    franquiaContratada: limits.franchise.limit,
-                  }}
-                  cobrancas={dataWithCounts.cobrancas}
-                  onPagarClick={handlePagarClick}
-                  onRefresh={pullToRefreshReload}
-                  flags={systemSummary?.usuario?.flags}
-                />
+      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
+        <div className="pb-24">
+          <AssinaturaDashboard
+            plano={plano}
+            assinatura={data.assinatura}
+            metricas={{
+              passageirosAtivos: limits.passengers.used,
+              limitePassageiros: limits.passengers.limit,
+              cobrancasEmUso: limits.franchise.used,
+              franquiaContratada: limits.franchise.limit,
+            }}
+            cobrancas={data.cobrancas}
+            onPagarClick={handlePagarClick}
+            onRefresh={pullToRefreshReload}
+            flags={systemSummary?.usuario?.flags}
+          />
 
-                <div className="mx-1">
-                  {plano?.is_profissional && (
-                    <>
-                      <h2 className="text-lg font-semibold text-gray-800 mb-3 pl-1">
-                        Integrações
-                      </h2>
-                      <WhatsappConnect />
-                    </>
-                  )}
-                </div>
-              </div>
+          <div className="mx-1">
+            {plano?.is_profissional && (
+              <>
+                <h2 className="text-lg font-semibold text-gray-800 mb-3 pl-1">
+                  Integrações
+                </h2>
+                <WhatsappConnect />
+              </>
             )}
           </div>
-        </PullToRefreshWrapper>
-        <LoadingOverlay active={refreshing} text="Carregando..." />
+        </div>
+      </PullToRefreshWrapper>
 
-        {selectedCobranca && (
-          <PagamentoAssinaturaDialog
-            isOpen={paymentModalOpen}
-            onClose={() => {
-              setPaymentModalOpen(false);
-              setSelectedCobranca(null);
-            }}
-            cobrancaId={selectedCobranca.id}
-            valor={Number(selectedCobranca.valor)}
-            onPaymentSuccess={handlePaymentSuccess}
-            usuarioId={user?.id}
-          />
-        )}
-      </div>
+      {paymentModalOpen && selectedCobranca && (
+        <PagamentoAssinaturaDialog
+          isOpen={paymentModalOpen}
+          onClose={() => {
+            setPaymentModalOpen(false);
+            setSelectedCobranca(null);
+          }}
+          cobrancaId={selectedCobranca.id}
+          valor={Number(selectedCobranca.valor)}
+          nomePlano={data.plano?.nome}
+          quantidadePassageiros={data.assinatura?.franquia_cobrancas_mes}
+          usuarioId={profile?.id}
+          onPaymentVerified={handlePaymentSuccess}
+          initialData={selectedCobranca as any}
+        />
+      )}
     </>
   );
 }

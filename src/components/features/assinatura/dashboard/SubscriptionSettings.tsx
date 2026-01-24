@@ -2,9 +2,9 @@ import { Button } from "@/components/ui/button";
 import { FEATURE_LIMITE_PASSAGEIROS, PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    ChevronRight,
-    RefreshCw,
-    Zap
+  ChevronRight,
+  RefreshCw,
+  Zap
 } from "lucide-react";
 
 interface SubscriptionSettingsProps {
@@ -18,8 +18,7 @@ export function SubscriptionSettings({
 }: SubscriptionSettingsProps) {
   const { openPlanUpgradeDialog } = useLayout();
 
-  const isProfissional =
-    plano?.slug === PLANO_PROFISSIONAL || plano?.parent?.slug === PLANO_PROFISSIONAL;
+  const isProfissional = plano?.is_profissional;
 
   return (
     <>

@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
+import { mockGenerator } from "@/utils/mocks/generator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -41,6 +42,7 @@ import {
     CalendarIcon,
     Tag,
     TrendingDown,
+    Wand2,
     X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -153,6 +155,22 @@ export default function GastoFormDialog({
     }
   };
 
+  const handleFillMock = () => {
+    // Pick a random vehicle if available
+    let veiculoId = "none";
+    if (veiculos.length > 0) {
+      veiculoId = veiculos[Math.floor(Math.random() * veiculos.length)].id;
+    }
+    const mockData = mockGenerator.gasto({ veiculo_id: veiculoId });
+    form.reset({
+      valor: mockData.valor,
+      data: mockData.data,
+      categoria: mockData.categoria,
+      descricao: mockData.descricao,
+      veiculo_id: mockData.veiculo_id,
+    });
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent
@@ -161,6 +179,18 @@ export default function GastoFormDialog({
         hideCloseButton
       >
         <div className="bg-blue-600 p-4 text-center relative shrink-0">
+          <div className="absolute left-4 top-4 flex gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
+              onClick={handleFillMock}
+              title="Preencher com dados fictícios"
+            >
+              <Wand2 className="h-5 w-5" />
+            </Button>
+          </div>
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
             <X className="h-6 w-6" />
             <span className="sr-only">Close</span>

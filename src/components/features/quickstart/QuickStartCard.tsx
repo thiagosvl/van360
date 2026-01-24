@@ -2,22 +2,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
-  Bus,
-  CheckCircle2,
-  Key,
-  Lock as LockIcon,
-  Rocket,
-  School,
-  User
+    Bus,
+    CheckCircle2,
+    Key,
+    Lock as LockIcon,
+    Rocket,
+    School,
+    User
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PassengerOnboardingDrawer } from "./PassengerOnboardingDrawer";
 
 // Hooks
 import { PLANO_PROFISSIONAL } from "@/constants";
-import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
-import { useProfile } from "@/hooks/business/useProfile";
-import { useSession } from "@/hooks/business/useSession";
+import { usePermissions } from "@/hooks/business/usePermissions";
 
 interface QuickStartCardProps {
   onOpenVeiculoDialog: () => void;
@@ -32,9 +30,7 @@ export const QuickStartCard = ({
   onOpenPassageiroDialog,
   onOpenPixKeyDialog,
 }: QuickStartCardProps) => {
-  const { user } = useSession();
-  const { profile, plano } = useProfile(user?.id);
-  const { data: systemSummary, isLoading: isSummaryLoading } = useUsuarioResumo();
+  const { profile, plano, summary: systemSummary, isLoading: isSummaryLoading } = usePermissions();
 
   const loading = isSummaryLoading;
 
