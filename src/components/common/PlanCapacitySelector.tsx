@@ -62,7 +62,6 @@ export function PlanCapacitySelector({
        }
 
        const val = Number(customQuantity);
-       console.log('[PlanCapacitySelector] Debounce FIRE:', { val, customQuantity });
        
        // Snap Logic: If value is within tier range, snap to nearest tier
        if (sortedOptions.length > 0) {
@@ -87,7 +86,6 @@ export function PlanCapacitySelector({
                 return;
              }
           } else {
-             console.log('[PlanCapacitySelector] Value > Max Tier, deselecting option');
              // If value is greater than max tier, DESELECT any active tier
              // This ensures we are in pure custom mode
              if (selectedOptionId) {

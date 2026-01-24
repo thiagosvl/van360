@@ -96,10 +96,8 @@ export const PlanoCardSelection = ({
     }
 
     const numValue = numericValue === "" ? 0 : Number(numericValue);
-    console.log('[PlanoCardSelection] handleQuantidadeChange EXEC:', numValue);
 
     if (numValue > QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO) {
-      console.log('[PlanoCardSelection] numValue > QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO:', numValue > QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO);
       return;
     }
 
