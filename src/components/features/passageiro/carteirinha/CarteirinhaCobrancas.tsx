@@ -79,6 +79,8 @@ const CobrancaMobileItemWrapper = memo(
     onEditarCobranca,
     onRegistrarPagamento,
     onPagarPix,
+    onExcluirCobranca,
+    onDesfazerPagamento,
     onVerRecibo,
     showHint,
   }: {
@@ -90,6 +92,8 @@ const CobrancaMobileItemWrapper = memo(
     onEditarCobranca: () => void;
     onRegistrarPagamento: () => void;
     onPagarPix: () => void;
+    onExcluirCobranca: () => void;
+    onDesfazerPagamento: () => void;
     onVerRecibo?: () => void;
     showHint?: boolean;
   }) => {
@@ -101,6 +105,8 @@ const CobrancaMobileItemWrapper = memo(
       onEditarCobranca,
       onRegistrarPagamento,
       onPagarPix,
+      onExcluirCobranca,
+      onDesfazerPagamento,
       onVerRecibo,
     });
 
@@ -129,6 +135,8 @@ export const CarteirinhaCobrancas = ({
   onToggleClick,
   limiteCobrancasMobile = COBRANCAS_LIMIT_DEFAULT,
   onUpgrade,
+  onExcluirCobranca,
+  onDesfazerPagamento,
 }: CarteirinhaCobrancasProps) => {
   const cobrancasMobile = mostrarTodasCobrancas
     ? cobrancas
@@ -335,6 +343,8 @@ export const CarteirinhaCobrancas = ({
                               onRegistrarPagamento(cobranca)
                             }
                             onPagarPix={() => onPagarPix(cobranca)}
+                            onExcluirCobranca={() => onExcluirCobranca(cobranca)}
+                            onDesfazerPagamento={() => onDesfazerPagamento(cobranca?.id)}
                             showHint={index === 0}
                           >
                             <div
@@ -527,6 +537,8 @@ export const CarteirinhaCobrancas = ({
                                 cobranca?.recibo_url &&
                                 setReceiptUrl(cobranca?.recibo_url)
                               }
+                              onExcluirCobranca={() => onExcluirCobranca(cobranca)}
+                              onDesfazerPagamento={() => onDesfazerPagamento(cobranca?.id)}
                             />
                           </td>
                         </motion.tr>

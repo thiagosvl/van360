@@ -42,6 +42,7 @@ interface CobrancasListProps {
   onRegistrarPagamento: (cobranca: Cobranca) => void;
   onPagarPix: (cobranca: Cobranca) => void;
   onExcluirCobranca: (cobranca: Cobranca) => void;
+  onDesfazerPagamento?: (cobranca: Cobranca) => void;
   onActionSuccess: () => void;
   onUpgrade: (feature: string, description?: string) => void;
 }
@@ -58,6 +59,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   onRegistrarPagamento,
   onPagarPix,
   onExcluirCobranca,
+  onDesfazerPagamento,
   onActionSuccess,
   onUpgrade,
 }: {
@@ -85,6 +87,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
                 onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
                 onPagarPix: () => onPagarPix(cobranca),
                 onExcluirCobranca: () => onExcluirCobranca(cobranca),
+                onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca) : undefined,
                 onActionSuccess,
                 onUpgrade,
             }}
@@ -398,6 +401,7 @@ export function CobrancasList({
                     onActionSuccess={props.onActionSuccess}
                     onUpgrade={props.onUpgrade}
                     onExcluirCobranca={() => props.onExcluirCobranca(cobranca)}
+                    onDesfazerPagamento={props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined}
                   />
                 </TableCell>
               </TableRow>

@@ -5,9 +5,7 @@ import {
 } from "@/constants";
 import { Loader2 } from "lucide-react";
 import { useCallback, useMemo } from "react";
-import { AvailableBenefitsList } from "./AvailableBenefitsList";
-import { ExpansionSummary } from "./ExpansionSummary";
-import { FutureBenefitsAccordion } from "./FutureBenefitsAccordion";
+import { BenefitsSheetTrigger } from "./BenefitsSheetTrigger";
 import { PLAN_BENEFITS } from "./planBenefits";
 
 interface ProfissionalPlanContentProps {
@@ -151,36 +149,18 @@ export function ProfissionalPlanContent({
 
               const prorata = calculateProrata(price);
 
-              if (salesContext === "expansion") {
-                return (
-                  <ExpansionSummary
-                    currentLimit={franquiaAtual}
-                    newLimit={currentTierOption?.quantidade || 0}
-                    nextMonthlyPrice={price}
-                    proRataAmount={prorata.valorHoje}
-                  />
-                );
-              }
-
               // Visão Padrão (Benefícios Separados)
               return (
-                <div className="space-y-6">
-                  {/* Benefícios Disponíveis */}
-                  <AvailableBenefitsList
-                    benefits={availableBenefits}
+                <div className="space-y-4">
+                  <BenefitsSheetTrigger
+                    availableBenefits={availableBenefits}
+                    futureBenefits={futureBenefits}
                     showSocialProof={isInTrial || salesContext === "upgrade_auto"}
                   />
-
-                  {/* Benefícios Futuros (Accordion) */}
-                  {futureBenefits.length > 0 && (
-                    <FutureBenefitsAccordion benefits={futureBenefits} />
-                  )}
                 </div>
               );
             })()}
           </div>
-
-
         </>
       ) : (
         <div className="h-40 flex items-center justify-center flex-col gap-3">

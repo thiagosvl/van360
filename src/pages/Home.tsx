@@ -119,11 +119,10 @@ const Home = () => {
     }
   }, [profile?.apelido, setPageTitle]);
 
-  const { refreshProfile: refetchSummary } = usePermissions();
   const queryClient = useQueryClient();
 
   const handlePullToRefresh = async () => {
-    await Promise.all([refetchSummary()]);
+    await Promise.all([queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] })]);
   };
 
   const [isCopied, setIsCopied] = useState(false);

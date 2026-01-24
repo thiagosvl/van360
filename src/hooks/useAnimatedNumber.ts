@@ -19,11 +19,11 @@ export function useAnimatedNumber(
       return;
     }
 
-    // Reseta para 0 quando o valor alvo muda
-    setAnimatedValue(0);
+    // NÃO reseta para 0 quando o valor alvo muda para evitar flicker
+    // setAnimatedValue(0); 
 
     const startTime = Date.now();
-    const startValue = 0;
+    const startValue = animatedValue; // Começa do valor ATUAL
 
     const animate = () => {
       const now = Date.now();

@@ -49,6 +49,7 @@ export const CobrancaActionsMenu = ({
     onVerRecibo,
     onActionSuccess,
     onExcluirCobranca,
+    onDesfazerPagamento,
   });
   const triggerClassName = variant === "mobile" ? "h-8 w-8 shrink-0 -mr-2 -mt-1" : "h-8 w-8 p-0";
 

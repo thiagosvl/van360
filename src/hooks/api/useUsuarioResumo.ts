@@ -90,6 +90,6 @@ export const useUsuarioResumo = (usuarioId?: string, params?: { mes?: number; an
       return response.data;
     },
     enabled: !!usuarioId,
-    staleTime: 1000 * 60 * 5, // 5 minutes cache
+    staleTime: 0, // Always stale for fresh metrics
   });
 };

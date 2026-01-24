@@ -3,6 +3,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus } from "@/types/enums";
+import { calculateSafeDueDate } from "@/utils/dateUtils";
 import {
   parseCurrencyToNumber
 } from "@/utils/formatters";
@@ -134,11 +135,11 @@ export function useCobrancaForm({
     const today = new Date();
     const currentMonth = (today.getMonth() + 1).toString();
     const currentYear = today.getFullYear().toString();
-    // Vencimento inicial
-    const vencimentoInicial = new Date(
-        today.getFullYear(),
+    // Vencimento inicial seguro
+    const vencimentoInicial = calculateSafeDueDate(
+        diaVencimento,
         today.getMonth(),
-        diaVencimento
+        today.getFullYear()
     );
 
     return {

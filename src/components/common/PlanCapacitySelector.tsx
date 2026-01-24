@@ -179,6 +179,9 @@ export function PlanCapacitySelector({
                   : "bg-gray-50 text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600"
               )}
             >
+              <span className={cn("text-[10px] uppercase", isSelected ? "text-blue-100" : "text-gray-400")}>
+                Até
+              </span>
               <span className="font-bold text-lg leading-none">{opt.quantity}</span>
               <span className={cn("text-[10px] uppercase", isSelected ? "text-blue-100" : "text-gray-400")}>
                 passageiros

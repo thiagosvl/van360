@@ -16,7 +16,7 @@ import { useCreateCobranca } from "@/hooks/api/useCobrancaMutations";
 import { cn } from "@/lib/utils";
 import { CobrancaOrigem, CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
-import { useQueryClient } from "@tanstack/react-query";
+import { calculateSafeDueDate } from "@/utils/dateUtils";
 import {
   AlertCircle,
   ArrowLeft,
@@ -51,13 +51,11 @@ export default function FirstChargeDialog({
     null,
   );
   const [paymentMethod, setPaymentMethod] = useState<string>("");
-  const [sendNotification, setSendNotification] = useState(true);
   const [customValue, setCustomValue] = useState<string>(
     passageiro.valor_cobranca ? String(passageiro.valor_cobranca) : "",
   );
 
   const createCobranca = useCreateCobranca();
-  const queryClient = useQueryClient();
 
   const currentMonthName = new Date().toLocaleString("pt-BR", {
     month: "long",
@@ -119,7 +117,16 @@ export default function FirstChargeDialog({
     generatePixAndNotify: boolean,
   ) => {
     const today = new Date();
-    const vencimento = today.toISOString().split("T")[0]; // Hoje
+    
+    // Usar utilitário padronizado para garantir data válida
+    const vencimentoDate = calculateSafeDueDate(
+        passageiro.dia_vencimento || today.getDate(),
+        today.getMonth(),
+        today.getFullYear()
+    );
+
+    // Formatar YYYY-MM-DD para o payload
+    const vencimento = vencimentoDate.toISOString().split("T")[0];
 
     try {
       // valor sanitization
@@ -162,9 +169,6 @@ export default function FirstChargeDialog({
         toast.success("Cobrança criada com sucesso!");
       }
 
-      // Invalidar resumo para atualizar KPIs na Home
-      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-
       onClose();
     } catch (err) {
       console.error(err);
@@ -206,7 +210,7 @@ export default function FirstChargeDialog({
                 </div>
                 <div className="space-y-1">
                   <p className="text-gray-600 font-medium leading-relaxed max-w-[240px] mx-auto">
-                    Deseja registrar o pagamento deste mês no histórico
+                    Deseja registrar a cobrança deste mês no histórico
                     financeiro?
                   </p>
                 </div>
@@ -218,7 +222,7 @@ export default function FirstChargeDialog({
                   className="h-14 rounded-2xl font-bold gap-2 text-base shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <CheckCircle2 className="w-5 h-5" />
-                  Sim, registrar pagamento
+                  Sim, registrar cobrança
                 </Button>
                 <Button
                   variant="ghost"

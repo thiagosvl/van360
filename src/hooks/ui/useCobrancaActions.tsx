@@ -16,10 +16,10 @@ import {
   canSendNotification,
   canViewReceipt,
   disableEditarCobranca,
+  disableExcluirCobranca,
   disableRegistrarPagamento,
   seForPago
 } from "@/utils/domain/cobranca/disableActions";
-
 import {
   Bell,
   BellOff,
@@ -28,6 +28,7 @@ import {
   FilePen,
   QrCode,
   Receipt,
+  RotateCcw,
   Send,
   Trash2,
   User
@@ -203,6 +204,7 @@ export interface UseCobrancaActionsProps extends UseCobrancaOperationsProps {
   onEditarCobranca?: () => void;
   onRegistrarPagamento?: () => void;
   onPagarPix?: () => void;
+  onDesfazerPagamento?: () => void;
 }
 
 export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[] {
@@ -238,6 +240,16 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         icon: <Receipt className="h-4 w-4" />,
         onClick: props.onVerRecibo,
         swipeColor: "bg-blue-600",
+      });
+    }
+
+    // 0.1 Desfazer Pagamento (Se pago e manual)
+    if (isPago && cobranca.pagamento_manual) {
+      actions.push({
+        label: "Desfazer Pagamento",
+        icon: <RotateCcw className="h-4 w-4" />,
+        onClick: props.onDesfazerPagamento || handleDesfazerPagamento,
+        swipeColor: "bg-amber-500",
       });
     }
 
@@ -334,8 +346,8 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // 7. Excluir (Se não pago)
-    if (!isPago) {
+    // 7. Excluir (Usando regra de disable)
+    if (!disableExcluirCobranca(cobranca)) {
       actions.push({
         label: "Excluir",
         icon: <Trash2 className="h-4 w-4 text-red-600" />,
@@ -359,6 +371,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     handleDesfazerPagamento,
     handleDeleteCobranca,
     props.onVerRecibo,
-    props.onExcluirCobranca
+    props.onExcluirCobranca,
+    props.onDesfazerPagamento
   ]);
 }

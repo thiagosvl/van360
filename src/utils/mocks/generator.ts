@@ -1,6 +1,4 @@
-/**
- * Utilitário para gerar dados fictícios brasileiros para testes e desenvolvimento.
- */
+import { CATEGORIAS_GASTOS } from "@/types/gasto";
 
 // Listas de dados para geração aleatória
 const nomes = [
@@ -230,7 +228,6 @@ export const mockGenerator = {
     };
   },
   gasto: (overrides?: { veiculo_id?: string }) => {
-    const categorias = ["Combustível", "Manutenção", "Salário", "Vistorias", "Documentação", "Administrativa", "Outros"];
     const descricoes = [
       "Abastecimento semanal",
       "Troca de óleo",
@@ -249,7 +246,7 @@ export const mockGenerator = {
     return {
       valor: `R$ ${valor},00`,
       data,
-      categoria: categorias[randomNumber(0, categorias.length - 1)],
+      categoria: CATEGORIAS_GASTOS[randomNumber(0, CATEGORIAS_GASTOS.length - 1)],
       descricao: descricoes[randomNumber(0, descricoes.length - 1)],
       veiculo_id: overrides?.veiculo_id || "none",
       ...overrides,

@@ -13,7 +13,7 @@ import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   FEATURE_COBRANCA_AUTOMATICA,
-  FEATURE_LIMITE_FRANQUIA
+  FEATURE_LIMITE_FRANQUIA,
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
@@ -27,7 +27,7 @@ import {
   usePermissions,
   useToggleAtivoPassageiro,
   useUpdatePassageiro,
-  useVeiculos
+  useVeiculos,
 } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { cn } from "@/lib/utils";
@@ -53,13 +53,13 @@ export default function Passageiros() {
     openFirstChargeDialog,
   } = useLayout();
 
-  const { 
-    canUseAutomatedCharges: canUseCobrancaAutomatica, 
-    isReadOnly,
-    profile, 
-    isLoading: isProfileLoading, 
+  const {
+    canUseAutomatedCharges: canUseCobrancaAutomatica,
+    is_read_only: isReadOnly,
+    profile,
+    isLoading: isProfileLoading,
     plano,
-    summary: resumo
+    summary: resumo,
   } = usePermissions();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -150,11 +150,9 @@ export default function Passageiros() {
       }),
   });
 
-
   const countPrePassageiros =
     resumo?.contadores.passageiros.solicitacoes_pendentes ?? 0;
 
-  // Also using summary for total passengers if available, otherwise fallback to list length
   const totalPassageirosResumo = resumo?.contadores.passageiros.ativos;
 
   const { data: escolasData, refetch: refetchEscolas } = useEscolas(
@@ -253,7 +251,9 @@ export default function Passageiros() {
     if (openModal === "true") {
       openPassageiroFormDialog({
         mode: PassageiroFormModes.CREATE,
-        onSuccess: () => { refetchPassageiros(); },
+        onSuccess: () => {
+          refetchPassageiros();
+        },
       });
     }
   }, [searchParams, refetchPassageiros, openPassageiroFormDialog]);
@@ -445,24 +445,24 @@ export default function Passageiros() {
 
   const handleOpenNewDialog = useCallback(() => {
     if (isReadOnly) {
-        openPlanUpgradeDialog({ feature: "READ_ONLY" });
-        return;
+      openPlanUpgradeDialog({ feature: "READ_ONLY" });
+      return;
     }
     openPassageiroFormDialog({
       mode: PassageiroFormModes.CREATE,
       onSuccess: (passageiro) => {
-         refetchPassageiros();
-         if (passageiro) {
-             openFirstChargeDialog({ passageiro: passageiro });
-         }
-      }
+        refetchPassageiros();
+        if (passageiro) {
+          openFirstChargeDialog({ passageiro: passageiro });
+        }
+      },
     });
   }, [
     openPassageiroFormDialog,
     openFirstChargeDialog,
     refetchPassageiros,
     isReadOnly,
-    openPlanUpgradeDialog
+    openPlanUpgradeDialog,
   ]);
 
   const handleCadastrarRapido = useCallback(async () => {
@@ -559,8 +559,7 @@ export default function Passageiros() {
         enviar_cobranca_automatica: enviarCobrancaAutomatica,
       },
       {
-        onError: () => {
-        },
+        onError: () => {},
       },
     );
   }, [
@@ -590,11 +589,7 @@ export default function Passageiros() {
       refetchEscolas(),
       refetchVeiculos(),
     ]);
-  }, [
-    refetchPassageiros,
-    refetchEscolas,
-    refetchVeiculos,
-  ]);
+  }, [refetchPassageiros, refetchEscolas, refetchVeiculos]);
 
   if (isProfileLoading || !profile) {
     return (
@@ -653,13 +648,8 @@ export default function Passageiros() {
             </div>
             <TabsContent
               value="passageiros"
-              className={cn(
-                "space-y-6 mt-0",
-                "space-y-6 mt-0",
-              )}
+              className={cn("space-y-6 mt-0", "space-y-6 mt-0")}
             >
-
-
               <Card className="border-none shadow-none bg-transparent">
                 <CardHeader className="p-0">
                   <div className="flex justify-end mb-4 md:hidden">
@@ -742,13 +732,9 @@ export default function Passageiros() {
               </Card>
             </TabsContent>
 
-            <TabsContent
-              value="solicitacoes"
-              className={cn("mt-0")}
-            >
+            <TabsContent value="solicitacoes" className={cn("mt-0")}>
               <PrePassageiros
-                onFinalizeNewPrePassageiro={async () => {
-                }}
+                onFinalizeNewPrePassageiro={async () => {}}
                 profile={profile}
                 plano={plano}
               />
@@ -756,7 +742,6 @@ export default function Passageiros() {
           </Tabs>
         </div>
       </PullToRefreshWrapper>
-
 
       <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>

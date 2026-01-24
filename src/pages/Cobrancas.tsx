@@ -1,9 +1,9 @@
 // React
 import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
 } from "react";
 
 import { ROUTES } from "@/constants/routes";
@@ -23,7 +23,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 import {
-    meses,
+  meses,
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 
@@ -35,13 +35,14 @@ import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import {
-    CheckCircle2,
-    TrendingUp,
-    Wallet,
+  CheckCircle2,
+  TrendingUp,
+  Wallet,
 } from "lucide-react";
 
 
 const Cobrancas = () => {
+
   const {
     setPageTitle,
     openPlanUpgradeDialog,
@@ -52,6 +53,8 @@ const Cobrancas = () => {
     openManualPaymentDialog,
   } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
+
+
 
   const deleteCobranca = useDeleteCobranca();
   const isActionLoading = deleteCobranca.isPending;
@@ -128,11 +131,13 @@ const Cobrancas = () => {
     {
       enabled: !!profile?.id,
       onError: (error) => {
+        console.error("Erro ao carregar cobranças:", error); // Keep error log
         toast.error("cobranca.erro.carregar");
-        console.error(error);
       },
     }
   );
+
+
 
   const cobrancasAbertas = useMemo(
     () => cobrancasData?.abertas ?? [],
@@ -143,6 +148,8 @@ const Cobrancas = () => {
     [cobrancasData]
   );
   const isInitialLoading = isCobrancasLoading && !cobrancasData;
+
+
 
   const navigate = useNavigate();
 

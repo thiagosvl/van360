@@ -1,5 +1,4 @@
 import { cobrancaApi } from "@/services/api/cobranca.api";
-import { Cobranca } from "@/types/cobranca";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -90,18 +89,6 @@ export function useDesfazerPagamento() {
   return useMutation({
     mutationFn: (cobrancaId: string) => cobrancaApi.desfazerPagamento(cobrancaId),
     onSuccess: (updatedCobranca, cobrancaId) => {
-      // Atualiza o cache da cobrança específica imediatamente, fazendo merge com dados existentes
-      queryClient.setQueryData(["cobranca", cobrancaId], (old: Cobranca | undefined) => {
-        if (!old) return updatedCobranca;
-        // Faz merge mantendo os dados existentes (como passageiros) e atualizando apenas os campos modificados
-        return {
-          ...old,
-          ...updatedCobranca,
-          // Preserva passageiro se não vier na resposta
-          passageiro: updatedCobranca.passageiro || old.passageiro,
-        } as Cobranca;
-      });
-      
       // Invalida todas as queries de cobranças (incluindo as com filtros) para refetch
       queryClient.invalidateQueries({ queryKey: ["cobrancas"], refetchType: "active" });
       // Invalida todas as queries de cobranças por passageiro (incluindo as com passageiroId e ano)
@@ -126,18 +113,6 @@ export function useRegistrarPagamentoManual() {
     mutationFn: ({ cobrancaId, data }: { cobrancaId: string; data: any }) =>
       cobrancaApi.registrarPagamentoManual(cobrancaId, data),
     onSuccess: (updatedCobranca, { cobrancaId }) => {
-      // Atualiza o cache da cobrança específica imediatamente, fazendo merge com dados existentes
-      queryClient.setQueryData(["cobranca", cobrancaId], (old: Cobranca | undefined) => {
-        if (!old) return updatedCobranca;
-        // Faz merge mantendo os dados existentes (como passageiros) e atualizando apenas os campos modificados
-        return {
-          ...old,
-          ...updatedCobranca,
-          // Preserva passageiro se não vier na resposta
-          passageiro: updatedCobranca.passageiro || old.passageiro,
-        } as Cobranca;
-      });
-      
       // Invalida todas as queries de cobranças (incluindo as com filtros) para refetch
       queryClient.invalidateQueries({ queryKey: ["cobrancas"], refetchType: "active" });
       // Invalida todas as queries de cobranças por passageiro (incluindo as com passageiroId e ano)
@@ -147,6 +122,7 @@ export function useRegistrarPagamentoManual() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("cobranca.sucesso.pagamentoRegistrado");
     },
+
     onError: (error: any) => {
       toast.error("cobranca.erro.registrarPagamento", {
         description: getErrorMessage(error, "cobranca.erro.registrarPagamentoDetalhe"),

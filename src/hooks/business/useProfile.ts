@@ -15,7 +15,7 @@ export function useProfile(userId?: string) {
     queryKey: ["profile"], 
     queryFn: () => usuarioApi.getProfile(userId!), 
     enabled: !!userId,
-    staleTime: 1000 * 30,
+    staleTime: 0, // Always stale to ensure fresh data on focus
     retry: false,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
