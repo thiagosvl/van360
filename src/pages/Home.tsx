@@ -295,7 +295,7 @@ const Home = () => {
           )}
 
           {/* Notificação de Cobranças pendentes / em dia */}
-          {!showOnboarding && systemSummary?.financeiro && receitaPrevista > 0 && (
+          {!showOnboarding && receitaPrevista > 0 && (
             <section>
               {countAtrasos > 0 ? (
                 <DashboardStatusCard
@@ -313,9 +313,7 @@ const Home = () => {
                 <DashboardStatusCard
                   type="success"
                   title="Tudo em dia!"
-                  description={`Parabéns! Todas as cobranças vencidas foram pagas. Receita prevista: ${formatCurrency(
-                    receitaPrevista,
-                  )}.`}
+                  description={`Parabéns! Todas as cobranças vencidas do mês foram pagas.`}
                 />
               )}
             </section>

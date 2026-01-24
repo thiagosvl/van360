@@ -49,6 +49,16 @@ export function FranchiseTierSelector({
     selectedIndex !== -1 ? selectedIndex : 0,
   ]);
 
+  const currentOption = sortedOptions[sliderValue[0]] || sortedOptions[0];
+  const currentQuantity = currentOption?.quantidade || 0;
+
+  // Sincronizar input com slider
+  const [inputValue, setInputValue] = useState(String(currentQuantity));
+
+  useEffect(() => {
+    setInputValue(String(currentQuantity));
+  }, [currentQuantity]);
+
   // Sincronizar slider se a seleção externa mudar
   useEffect(() => {
     if (selectedIndex !== -1) {
@@ -137,15 +147,7 @@ export function FranchiseTierSelector({
     );
   }
 
-  const currentOption = sortedOptions[sliderValue[0]] || sortedOptions[0];
-  const currentQuantity = currentOption?.quantidade || 0;
 
-  // Sincronizar input com slider
-  const [inputValue, setInputValue] = useState(String(currentQuantity));
-
-  useEffect(() => {
-    setInputValue(String(currentQuantity));
-  }, [currentQuantity]);
 
   // Handler para input manual
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
