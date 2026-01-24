@@ -292,7 +292,7 @@ export function CobrancasList({
                         Data Pagamento
                     </TableHead>
                      <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Forma
+                        Forma de Pagamento
                     </TableHead>
                   </>
               )}
