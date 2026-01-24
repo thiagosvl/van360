@@ -39,6 +39,7 @@ import {
   PassageiroFormModes,
   PixKeyStatus
 } from "@/types/enums";
+import { getMesNome } from "@/utils/formatters";
 
 const Home = () => {
   const {
@@ -305,15 +306,15 @@ const Home = () => {
                     totalEmAtraso,
                   )} em atraso de ${countAtrasos} passageiro${
                     countAtrasos != 1 ? "s" : ""
-                  }.`}
+                  } referente ao mês de ${getMesNome(new Date().getMonth() + 1)}.`}
                   actionLabel="Ver Cobranças"
                   onAction={() => navigate(ROUTES.PRIVATE.MOTORISTA.BILLING)}
                 />
               ) : (
                 <DashboardStatusCard
                   type="success"
-                  title="Tudo em dia!"
-                  description={`Parabéns! Todas as cobranças vencidas do mês foram pagas.`}
+                  title={`Cobranças de ${getMesNome(new Date().getMonth() + 1)} em dia!`}
+                  description={`Todas as cobranças vencidas do mês foram pagas.`}
                 />
               )}
             </section>
