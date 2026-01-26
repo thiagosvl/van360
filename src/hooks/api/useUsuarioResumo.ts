@@ -25,7 +25,7 @@ export interface SystemSummary {
       dias_restantes_trial: number | null;
       dias_restantes_assinatura: number | null;
       trial_dias_total: number;
-      whatsapp_status: string | null;
+
       ultima_fatura: AssinaturaCobrancaStatus | null;
       ultima_fatura_id: string | null;
       limite_franquia_atingido: boolean;

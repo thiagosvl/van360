@@ -7,46 +7,44 @@ import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import PixKeyDialog from "@/components/dialogs/PixKeyDialog";
 import {
-  PlanUpgradeDialog,
+    PlanUpgradeDialog,
 } from "@/components/dialogs/PlanUpgradeDialog";
 import { SubscriptionExpiredDialog } from "@/components/dialogs/SubscriptionExpiredDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
-import { WhatsappDialog } from "@/components/dialogs/WhatsappDialog";
 import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
 import {
-  FEATURE_COBRANCA_AUTOMATICA,
-  FEATURE_GASTOS,
-  FEATURE_LIMITE_PASSAGEIROS,
-  FEATURE_NOTIFICACOES,
-  FEATURE_RELATORIOS,
-  PLANO_PROFISSIONAL,
+    FEATURE_COBRANCA_AUTOMATICA,
+    FEATURE_GASTOS,
+    FEATURE_LIMITE_PASSAGEIROS,
+    FEATURE_NOTIFICACOES,
+    FEATURE_RELATORIOS,
+    PLANO_PROFISSIONAL,
 } from "@/constants";
 import { safeCloseDialog } from "@/hooks";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { usePixKeyGuard } from "@/hooks/ui/usePixKeyGuard";
-import { useWhatsappGuard } from "@/hooks/ui/useWhatsappGuard";
 import { PassageiroFormModes, PixKeyStatus } from "@/types/enums";
 import {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useState,
+    ReactNode,
+    useCallback,
+    useEffect,
+    useState,
 } from "react";
 import {
-  LayoutContext,
-  OpenCobrancaEditDialogProps,
-  OpenCobrancaPixDrawerProps,
-  OpenConfirmationDialogProps,
-  OpenEscolaFormProps,
-  OpenFirstChargeDialogProps,
-  OpenGastoFormProps,
-  OpenManualPaymentDialogProps,
-  OpenPassageiroFormProps,
-  OpenPlanUpgradeDialogProps,
-  OpenSubscriptionExpiredDialogProps,
-  OpenVeiculoFormProps
+    LayoutContext,
+    OpenCobrancaEditDialogProps,
+    OpenCobrancaPixDrawerProps,
+    OpenConfirmationDialogProps,
+    OpenEscolaFormProps,
+    OpenFirstChargeDialogProps,
+    OpenGastoFormProps,
+    OpenManualPaymentDialogProps,
+    OpenPassageiroFormProps,
+    OpenPlanUpgradeDialogProps,
+    OpenSubscriptionExpiredDialogProps,
+    OpenVeiculoFormProps
 } from "./LayoutContext";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
@@ -134,14 +132,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     canClose: true,
   });
 
-  const [whatsappDialogState, setWhatsappDialogState] = useState<{
-    open: boolean;
-    canClose?: boolean;
-    userPhone?: string;
-  }>({
-    open: false,
-    canClose: true,
-  });
+
 
   const [cobrancaEditDialogState, setCobrancaEditDialogState] = useState<{
     open: boolean;
@@ -188,21 +179,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     onShouldOpen: handleOpenPixKeyDialog,
   });
 
-  const handleOpenWhatsappDialog = useCallback(() => {
-    // SÓ abre Whatsapp se a chave PIX já estiver validada E o dialog de PIX estiver fechado.
-    // PIX tem prioridade máxima no plano Profissional.
-    if (isPixKeyValid && !pixKeyDialogState.open) {
-      setWhatsappDialogState({ open: true, canClose: false, userPhone: profile?.telefone });
-    }
-  }, [isPixKeyValid, pixKeyDialogState.open, profile?.telefone]);
+
 
   // Global Check for Whatsapp (Professional Plan)
-  useWhatsappGuard({
-    isProfissional: !!is_profissional,
-    isLoading: isProfileLoading,
-    onShouldOpen: handleOpenWhatsappDialog,
-    isPixKeyDialogOpen: pixKeyDialogState.open,
-  });
+  // Global WhatsApp Check Removed - Global Instance Active
 
 
   const openPlanUpgradeDialog = (props?: OpenPlanUpgradeDialogProps) => {
@@ -292,13 +272,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const openWhatsappDialog = (options?: { canClose?: boolean, userPhone?: string }) => {
-    setWhatsappDialogState({
-      open: true,
-      canClose: options?.canClose ?? true,
-      userPhone: options?.userPhone || profile?.telefone
-    });
-  };
+
 
   const openCobrancaEditDialog = (props: OpenCobrancaEditDialogProps) => {
     setCobrancaEditDialogState({
@@ -348,7 +322,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openPixKeyDialog,
         closePixKeyDialog,
         isPixKeyDialogOpen: pixKeyDialogState.open,
-        openWhatsappDialog,
+
         openCobrancaEditDialog,
         openCobrancaPixDrawer,
         openManualPaymentDialog,
@@ -526,18 +500,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
-      {whatsappDialogState.open && (
-        <WhatsappDialog
-          isOpen={true}
-          onClose={() =>
-            safeCloseDialog(() => 
-                setWhatsappDialogState((prev) => ({ ...prev, open: false }))
-            )
-          }
-          canClose={whatsappDialogState.canClose}
-          userPhone={whatsappDialogState.userPhone}
-        />
-      )}
+
 
       {cobrancaEditDialogState.open && cobrancaEditDialogState.props && (
         <CobrancaEditDialog

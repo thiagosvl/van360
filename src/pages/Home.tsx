@@ -1,17 +1,17 @@
 import { ROUTES } from "@/constants/routes";
 import {
-  Copy,
-  CopyCheck,
-  CreditCard,
-  DollarSign,
-  FileText,
-  Plus,
-  Receipt,
-  TrendingDown,
-  UserCheck,
-  Users,
-  Wallet,
-  Zap,
+    Copy,
+    CopyCheck,
+    CreditCard,
+    DollarSign,
+    FileText,
+    Plus,
+    Receipt,
+    TrendingDown,
+    UserCheck,
+    Users,
+    Wallet,
+    Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -32,12 +32,10 @@ import { DashboardStatusCard } from "@/components/features/home/DashboardStatusC
 import { MiniKPI } from "@/components/features/home/MiniKPI";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
-import { WHATSAPP_STATUS } from "@/config/constants";
 import { useUpsellContent } from "@/hooks/ui/useUpsellContent";
-import { useWhatsapp } from "@/hooks/useWhatsapp";
 import {
-  PassageiroFormModes,
-  PixKeyStatus
+    PassageiroFormModes,
+    PixKeyStatus
 } from "@/types/enums";
 import { getMesNome } from "@/utils/formatters";
 
@@ -50,14 +48,10 @@ const Home = () => {
     openVeiculoFormDialog,
     openPassageiroFormDialog,
     openGastoFormDialog,
-    openWhatsappDialog,
     openFirstChargeDialog,
   } = useLayout();
   const { loading: isSessionLoading } = useSession();
-  const {
-    state: liveWhatsappStatus,
-    isLoading: isWhatsappLoading,
-  } = useWhatsapp();
+  /* WhatsApp Global Mode Active */
 
   const {
     profile,
@@ -227,23 +221,8 @@ const Home = () => {
                 actionLabel="Corrigir Chave"
                 onAction={() => openPixKeyDialog()}
               />
-            </section>
-          ) : (
-            <>
-              {liveWhatsappStatus === WHATSAPP_STATUS.DISCONNECTED && (
-                <section className="mb-4">
-                  <DashboardStatusCard
-                    type="error"
-                    title="WhatsApp Desconectado"
-                    description="Sua instância do WhatsApp está desconectada. Clique em reconectar para garantir que as mensagens enviadas."
-                    actionLabel="Reconectar"
-                    onAction={() => openWhatsappDialog()}
-                  />
-                </section>
-              )}
-            </>
-          )}
-
+              </section>
+          ) : null}
           {/* Notificação de Solicitações Pendentes */}
           {passageirosSolicitacoesCount > 0 && (
             <section className="mb-4">

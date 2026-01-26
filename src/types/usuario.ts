@@ -1,4 +1,4 @@
-import { UserType, WhatsappStatus } from "./enums";
+import { UserType } from "./enums";
 
 export interface Usuario {
   id: string;
@@ -15,7 +15,7 @@ export interface Usuario {
   /** @deprecated Use 'tipo' instead. */
   role?: string;
   tipo?: UserType;
-  whatsapp_status?: WhatsappStatus;
+
 
   created_at: string;
   updated_at: string;

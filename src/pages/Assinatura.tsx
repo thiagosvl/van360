@@ -2,7 +2,6 @@ import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaD
 import { AssinaturaDashboard } from "@/components/features/assinatura/dashboard/AssinaturaDashboard";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
-import { WhatsappConnect } from "@/components/Whatsapp/WhatsappConnect";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useAssinaturaCobrancas } from "@/hooks/api/useAssinaturaCobrancas";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -116,7 +115,7 @@ export default function Assinatura() {
                 <h2 className="text-lg font-semibold text-gray-800 mb-3 pl-1">
                   Integrações
                 </h2>
-                <WhatsappConnect />
+                {/* WhatsApp Connection Removed - Global Instance Active */}
               </>
             )}
           </div>

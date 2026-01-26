@@ -1,5 +1,5 @@
 import {
-  PlanUpgradeDialogProps,
+    PlanUpgradeDialogProps,
 } from "@/components/dialogs/PlanUpgradeDialog";
 import { SubscriptionExpiredDialogProps } from "@/components/dialogs/SubscriptionExpiredDialog";
 import { PassageiroFormModes } from "@/types/enums";
@@ -9,8 +9,8 @@ import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Veiculo } from "@/types/veiculo";
 import {
-  createContext,
-  useContext,
+    createContext,
+    useContext,
 } from "react";
 
 export type OpenPlanUpgradeDialogProps = Omit<
@@ -117,7 +117,6 @@ export interface LayoutContextType {
   }) => void;
   closePixKeyDialog: () => void;
   isPixKeyDialogOpen: boolean;
-  openWhatsappDialog: (options?: { canClose?: boolean }) => void;
   openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;
   openCobrancaPixDrawer: (props: OpenCobrancaPixDrawerProps) => void;
   openManualPaymentDialog: (props: OpenManualPaymentDialogProps) => void;
