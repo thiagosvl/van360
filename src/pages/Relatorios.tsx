@@ -123,12 +123,8 @@ export default function Relatorios() {
     isLoading: isLoadingSummary,
   } = useUsuarioResumo(profile?.id, { mes, ano });
 
-  // Regra de Acesso: Usar flag do backend como mestre
-  const hasAccess = systemSummary?.usuario.flags.is_plano_valido ?? true;
-
   // Calcular dados detalhados (breakdowns que ainda não estão no resumo)
   const dados = useRelatoriosCalculations({
-    hasAccess,
     financeiro: systemSummary?.financeiro,
     cobrancasData,
     gastosData,
