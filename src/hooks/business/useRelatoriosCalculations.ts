@@ -11,11 +11,6 @@ import {
 } from "lucide-react";
 import { useMemo } from "react";
 
-// Types needed for the hook
-// (Assuming these types are inferred in the original file, we might need to define them or rely on inference)
-// For now, using 'any' for incoming data types if strict types aren't readily available, 
-// but maintaining the structure is key.
-
 export const CATEGORIA_ICONS: Record<
   string,
   { icon: any; color: string; bg: string }

@@ -13,8 +13,6 @@ export function useCobrancasByPassageiro(
     queryKey: ["cobrancas-by-passageiro", passageiroId, ano],
     enabled: (options?.enabled ?? true) && Boolean(passageiroId),
     placeholderData: keepPreviousData,
-    // Sempre refetch quando o componente montar para garantir dados atualizados
-    // Isso é importante porque cobranças podem ter sido atualizadas em outras telas
     refetchOnMount: "always",
     queryFn: async () => {
       if (!passageiroId) return [];
