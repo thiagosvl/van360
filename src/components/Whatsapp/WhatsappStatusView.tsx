@@ -105,18 +105,11 @@ export function WhatsappStatusView({
             const remaining = calculateTimeLeft();
             setTimeLeft(remaining);
 
-            // AUTO-RENEWAL STRATEGY (Updated based on Manus IA):
-            // A Evolution API RENOVA o Pairing Code automaticamente e envia webhook.
-            // O Frontend deve ser PASSIVO e aguardar o webhook.
-            // Só forçamos uma nova requisição se o ciclo parecer ter morrido (ex: 20s após expiração sem novidades).
-            
             const now = Date.now();
             const expiry = pairingCodeExpiresAt ? new Date(pairingCodeExpiresAt).getTime() : 0;
             const secondsPastExpiry = (now - expiry) / 1000;
 
             if (secondsPastExpiry > 45 && activeTab === 'mobile' && !isRequestingCode && !isConnected) {
-                // Failsafe: Se passou muito tempo após expiração e nada chegou, forçamos nova geração
-                // 45s é suficiente para a Evolution API renovar o código e o Webhook chegar
                 console.log("Auto-renew failsafe triggered", { secondsPastExpiry });
                 handleAutoRenew();
             }

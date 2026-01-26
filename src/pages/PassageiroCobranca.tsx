@@ -250,9 +250,6 @@ export default function PassageiroCobranca() {
     
     // Captura o ID antes da mutação pois o objeto pode ser limpo do cache (Success -> removeQueries)
     const passageiroIdCapturado = cobranca.passageiro_id;
-    console.log("[DeleteFlow] Iniciando exclusão de cobrança:", cobranca.id);
-    console.log("[DeleteFlow] Contexto capturado - passageiro_id:", passageiroIdCapturado);
-    
     openConfirmationDialog({
       title: "Excluir cobrança?",
       description: "Tem certeza que deseja excluir esta cobrança? Essa ação não poderá ser desfeita.",
@@ -261,18 +258,14 @@ export default function PassageiroCobranca() {
       onConfirm: async () => {
          setIsDeleting(true);
          try {
-            console.log("[DeleteFlow] Executando mutação...");
             await deleteCobranca.mutateAsync(cobranca.id);
-            console.log("[DeleteFlow] Mutação concluída.");
             
             closeConfirmationDialog();
 
             // Lógica solicitada: Tenta VOLTAR (-1). Se não houver histórico, usa condicional.
             if (window.history.length > 2) { 
-              console.log("[DeleteFlow] Navegando para histórico anterior (-1)");
               navigate(-1);
             } else if (passageiroIdCapturado) {
-              console.log("[DeleteFlow] Redirecionando para Detalhes do Passageiro:", passageiroIdCapturado);
               navigate(
                 ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(
                   ":passageiro_id",
@@ -281,7 +274,6 @@ export default function PassageiroCobranca() {
                 { replace: true }
               );
             } else {
-              console.log("[DeleteFlow] Redirecionando para Lista Geral de Cobranças");
               navigate(ROUTES.PRIVATE.MOTORISTA.BILLING, { replace: true });
             }
          } catch (error) {
@@ -302,7 +294,6 @@ export default function PassageiroCobranca() {
       passageiroSemReferencia as Passageiro,
     );
     try {
-      console.log(enderecoCompleto);
       await navigator.clipboard.writeText(enderecoCompleto);
       setIsCopiedEndereco(true);
       setTimeout(() => setIsCopiedEndereco(false), 1000);

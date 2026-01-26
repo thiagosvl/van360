@@ -11,7 +11,6 @@ export const useDeleteAccount = () => {
 
     return useMutation({
         mutationFn: async () => {
-            console.log('Solicitando exclusão de conta via Backend...');
             if (!user?.id) throw new Error("Usuário não autenticado");
 
             // Substituído RPC direto por chamada ao Backend para garantir limpeza do Whatsapp
