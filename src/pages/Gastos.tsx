@@ -183,7 +183,7 @@ export default function Gastos() {
                 colorClass="text-orange-600"
                 countText={
                     displayData.principalCategoriaData
-                      ? `${displayData.principalCategoriaData.percentage}% do total`
+                      ? `${Number(displayData.principalCategoriaData.percentage).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% do total`
                       : "0% do total"
                 }
                 countVisible={true}
