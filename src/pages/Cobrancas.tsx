@@ -352,7 +352,7 @@ const Cobrancas = () => {
               canUseAutomatedCharges={permissions.canUseAutomatedCharges}
               activeTab={activeTab}
             />
-
+  
             {/* Content: Pendentes */}
             <TabsContent value="pendentes" className="mt-0">
                <CobrancasList
