@@ -51,7 +51,6 @@ export const FORMAS_PAGAMENTO_LABELS: Record<
 
 
 interface UseRelatoriosCalculationsProps {
-  hasAccess?: boolean;
   cobrancasData: any;
   gastosData: any[];
   passageirosData: any;
@@ -96,8 +95,6 @@ interface UseRelatoriosCalculationsProps {
     const passageirosList = passageirosData?.list || [];
     const escolasList = (escolasData as any)?.list || [];
     const veiculosListFull = (veiculosData as any)?.list || [];
-
-    // --- FINANCIAL CALCULATIONS (Depend on hasAccess implicitly via empty arrays above) ---
 
     // Visão Geral
     const recebido = financeiro?.receita.realizada ?? cobrancasPagas.reduce(
