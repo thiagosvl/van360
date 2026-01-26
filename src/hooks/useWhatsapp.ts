@@ -93,8 +93,12 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
 
   // Mutation: Connect
   const connectMutation = useMutation({
-    mutationFn: whatsappApi.connect,
+    mutationFn: async () => {
+        console.log("[WhatsApp] Iniciando conexão...");
+        return await whatsappApi.connect();
+    },
     onSuccess: (data) => {
+        console.log("[WhatsApp] Conexão iniciada com sucesso.", { state: data.instance?.state, hasQr: !!data.qrcode?.base64 });
         if (data.qrcode?.base64) {
             setLocalQrCode(data.qrcode.base64);
             toast.info("Escaneie o QR Code para conectar.");
@@ -105,6 +109,7 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
         }
     },
     onError: (error: any) => {
+        console.error("[WhatsApp] Erro na conexão:", error);
         const errorMsg = error?.response?.data?.error || error?.message || "Erro desconhecido";
         toast.error("Erro ao iniciar conexão: " + errorMsg);
     }
@@ -112,13 +117,18 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
 
   // Mutation: Disconnect
   const disconnectMutation = useMutation({
-    mutationFn: whatsappApi.disconnect,
+    mutationFn: async () => {
+        console.log("[WhatsApp] Solicitando desconexão...");
+        return await whatsappApi.disconnect();
+    },
     onSuccess: () => {
+        console.log("[WhatsApp] Desconectado com sucesso.");
         toast.success("Desconectado com sucesso.");
         setLocalQrCode(null);
         queryClient.invalidateQueries({ queryKey: ["whatsapp-status"] });
     },
     onError: (error: any) => {
+        console.error("[WhatsApp] Erro ao desconectar:", error);
         const errorMsg = error?.response?.data?.error || error?.message || "Erro desconhecido";
         toast.error("Erro ao desconectar: " + errorMsg);
     }
@@ -130,14 +140,17 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
     mutationFn: async () => {
       // Se já há uma requisição em progresso, não fazer outra
       if (pairingCodeRequestInProgressRef.current) {
+        console.warn("[WhatsApp] Requisição de Pairing Code ignorada (já em progresso)");
         throw new Error("Requisição de código já em progresso. Aguarde...");
       }
 
       // TRAVA DE SEGURANÇA: Bloqueia fluxo se PIX não estiver validado (redundância)
       if (profile?.status_chave_pix !== PixKeyStatus.VALIDADA) {
+          console.warn("[WhatsApp] Tentativa de conexão sem Chave Pix validada");
           throw new Error("Chave PIX não validada. Configure sua chave antes de conectar.");
       }
       
+      console.log("[WhatsApp] Solicitando Pairing Code...");
       pairingCodeRequestInProgressRef.current = true;
       try {
         return await whatsappApi.requestPairingCode();
@@ -146,6 +159,7 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
       }
     },
     onSuccess: (data: any) => {
+        console.log("[WhatsApp] Pairing Code recebido:", data);
         if (data.pairingCode?.code) {
             setLocalQrCode(null);
             // Buffer local para exibição instantânea antes do Realtime/Refetch
@@ -163,6 +177,7 @@ export function useWhatsapp(options?: { enablePolling?: boolean }) {
         return data; 
     },
     onError: (error: any) => {
+        console.error("[WhatsApp] Erro ao obter Pairing Code:", error);
         const msg = error?.response?.data?.error || error?.message || "Erro desconhecido";
         toast.error("Erro ao gerar código: " + msg);
     }

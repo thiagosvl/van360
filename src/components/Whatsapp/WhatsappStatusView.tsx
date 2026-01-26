@@ -282,10 +282,6 @@ export function WhatsappStatusView({
 
                         {/* ACTION SECTION */}
                         <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100/50 flex flex-col items-center text-center gap-4">
-                            <div className="space-y-1">
-                                <p className="text-sm font-semibold text-blue-900">Já seguiu os passos acima?</p>
-                                <p className="text-xs text-blue-700/70 max-w-[240px]">Ao clicar em gerar, você terá 60 segundos para digitar o código no seu WhatsApp.</p>
-                            </div>
                             <Button 
                                 onClick={handleAutoRenew}
                                 className="w-full max-w-xs bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200"
