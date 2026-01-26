@@ -13,8 +13,8 @@ import { AutomaticChargesPrompt } from "@/components/alerts/AutomaticChargesProm
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { KPICard } from "@/components/common/KPICard";
 
-import { CobrancasFilters } from "@/components/features/cobranca/CobrancasFilters";
 import { CobrancasList } from "@/components/features/cobranca/CobrancasList";
+import { CobrancasToolbar } from "@/components/features/cobranca/CobrancasToolbar";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 
 import { useCobrancas, useDeleteCobranca } from "@/hooks";
@@ -341,15 +341,16 @@ const Cobrancas = () => {
             onValueChange={handleTabChange}
             className="w-full"
           >
-            <CobrancasFilters
+            <CobrancasToolbar
               onUpgrade={handleUpgrade}
-              plano={plano}
               buscaAbertas={buscaAbertas}
               setBuscaAbertas={setBuscaAbertas}
               buscaPagas={buscaPagas}
               setBuscaPagas={setBuscaPagas}
               countAbertas={cobrancasAbertas.length}
               countPagas={cobrancasPagas.length}
+              canUseAutomatedCharges={permissions.canUseAutomatedCharges}
+              activeTab={activeTab}
             />
 
             {/* Content: Pendentes */}

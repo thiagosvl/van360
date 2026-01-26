@@ -54,9 +54,11 @@ export function GastosToolbar({
   const [isMobile, setIsMobile] = useState(false);
   const [open, setOpen] = useState(false);
 
-  // Temporary state for mobile sheet
-  const [tempCategoria, setTempCategoria] = useState(categoriaFilter);
-  const [tempVeiculo, setTempVeiculo] = useState(veiculoFilter);
+  // Unified temporary state for mobile sheet
+  const [tempFilters, setTempFilters] = useState({
+    categoria: categoriaFilter,
+    veiculo: veiculoFilter,
+  });
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -65,30 +67,35 @@ export function GastosToolbar({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // Sync temp filters only when sheet opens to avoid race conditions
   useEffect(() => {
     if (open) {
-      setTempCategoria(categoriaFilter);
-      setTempVeiculo(veiculoFilter);
+      setTempFilters({
+        categoria: categoriaFilter,
+        veiculo: veiculoFilter,
+      });
     }
   }, [open, categoriaFilter, veiculoFilter]);
 
   const handleApplyFilters = () => {
     if (onApplyFilters) {
       onApplyFilters({
-        categoria: tempCategoria,
-        veiculo: tempVeiculo
+        categoria: tempFilters.categoria,
+        veiculo: tempFilters.veiculo,
       });
     } else {
-      // Fallback for individual updates (though onApplyFilters is preferred)
-      onCategoriaChange(tempCategoria);
-      onVeiculoChange(tempVeiculo);
+      // Fallback
+      onCategoriaChange(tempFilters.categoria);
+      onVeiculoChange(tempFilters.veiculo);
     }
     setOpen(false);
   };
 
   const handleClearMobileFilters = () => {
-    setTempCategoria("todas");
-    setTempVeiculo("todos");
+    setTempFilters({
+      categoria: "todas",
+      veiculo: "todos",
+    });
   };
 
   const handleClearDesktopFilters = () => {
@@ -102,7 +109,10 @@ export function GastosToolbar({
     <div className="space-y-4">
       <div className="space-y-2">
         <Label>Categoria</Label>
-        <Select value={tempCategoria} onValueChange={setTempCategoria}>
+        <Select 
+          value={tempFilters.categoria} 
+          onValueChange={(val) => setTempFilters(prev => ({ ...prev, categoria: val }))}
+        >
           <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200">
             <SelectValue placeholder="Todas" />
           </SelectTrigger>
@@ -119,7 +129,10 @@ export function GastosToolbar({
 
       <div className="space-y-2">
         <Label>Veículo</Label>
-        <Select value={tempVeiculo} onValueChange={setTempVeiculo}>
+        <Select 
+          value={tempFilters.veiculo} 
+          onValueChange={(val) => setTempFilters(prev => ({ ...prev, veiculo: val }))}
+        >
           <SelectTrigger className="h-11 rounded-xl bg-white border-gray-200">
             <SelectValue placeholder="Todos os Veículos" />
           </SelectTrigger>
