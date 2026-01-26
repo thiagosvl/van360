@@ -56,7 +56,6 @@ class SessionManager {
   }
 
   async getSession(): Promise<{ data: { session: Session } }> {
-    // console.log("[SessionManager] getSession called. Current session:", this.currentSession ? "EXISTS" : "NULL");
     return { data: { session: this.currentSession } };
   }
 
