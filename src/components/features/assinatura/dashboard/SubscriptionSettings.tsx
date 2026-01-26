@@ -56,7 +56,7 @@ export function SubscriptionSettings({
             </div>
             <div className="flex flex-col gap-0.5">
               <span className="text-sm font-medium text-gray-900 leading-none">
-                {isProfissional ? "Aumentar Limite" : "Trocar de Plano"}
+                {isProfissional ? "Aumentar Limite" : "Contratar Plano Profissional"}
               </span>
               <span className="text-xs text-gray-500 font-normal">
                 {isProfissional

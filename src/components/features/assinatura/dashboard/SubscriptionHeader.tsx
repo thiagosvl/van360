@@ -197,7 +197,7 @@ export function SubscriptionHeader({
                 ? "Ativar Plano Agora"
                 : isProfissionalPlan
                 ? "Aumentar limite"
-                : "Trocar de Plano"}
+                : "Contratar Plano Profissional"}
             </Button>
           </div>
         </CardContent>
