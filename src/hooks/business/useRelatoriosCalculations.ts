@@ -48,8 +48,6 @@ export const FORMAS_PAGAMENTO_LABELS: Record<
   boleto: { label: "Boleto", color: "bg-purple-500" },
 };
 
-
-
 interface UseRelatoriosCalculationsProps {
   cobrancasData: any;
   gastosData: any[];
@@ -76,7 +74,7 @@ interface UseRelatoriosCalculationsProps {
   };
 }
 
-  export const useRelatoriosCalculations = ({
+export const useRelatoriosCalculations = ({
   cobrancasData,
   gastosData,
   passageirosData,
@@ -181,7 +179,7 @@ interface UseRelatoriosCalculationsProps {
       string,
       { nome: string; placa: string; marca: string; modelo: string }
     > = {};
-    
+
     veiculosListFull.forEach((v: any) => {
       veiculosMap[v.id] = {
         nome: `${v.marca} ${v.modelo}`,
@@ -193,14 +191,14 @@ interface UseRelatoriosCalculationsProps {
 
     const categoriasMap: Record<
       string,
-      { 
-          valor: number; 
-          count: number; 
-          nome: string; 
-          veiculos: Record<string, { valor: number; count: number }>;
+      {
+        valor: number;
+        count: number;
+        nome: string;
+        veiculos: Record<string, { valor: number; count: number }>;
       }
     > = {};
-    
+
     gastos.forEach((g: any) => {
       const cat = g.categoria || "Outros";
       const veiculoId = g.veiculo_id || "outros";
@@ -213,7 +211,7 @@ interface UseRelatoriosCalculationsProps {
       categoriasMap[cat].count += 1;
 
       if (!categoriasMap[cat].veiculos[veiculoId]) {
-          categoriasMap[cat].veiculos[veiculoId] = { valor: 0, count: 0 };
+        categoriasMap[cat].veiculos[veiculoId] = { valor: 0, count: 0 };
       }
       categoriasMap[cat].veiculos[veiculoId].valor += valor;
       categoriasMap[cat].veiculos[veiculoId].count += 1;
@@ -224,18 +222,18 @@ interface UseRelatoriosCalculationsProps {
       .map((cat) => {
         const iconData = CATEGORIA_ICONS[cat.nome] || CATEGORIA_ICONS.Outros;
         const veiculos = Object.entries(cat.veiculos).map(([vId, data]) => {
-             const info = veiculosMap[vId] || { nome: "Geral / Sem vínculo", placa: "-" };
-             return {
-                 id: vId,
-                 nome: info.nome,
-                 placa: info.placa,
-                 valor: data.valor,
-                 count: data.count
-             };
+          const info = veiculosMap[vId] || { nome: "Geral / Sem vínculo", placa: "-" };
+          return {
+            id: vId,
+            nome: info.nome,
+            placa: info.placa,
+            valor: data.valor,
+            count: data.count
+          };
         }).sort((a, b) => {
-             if (a.id === "outros" || a.placa === "-") return 1;
-             if (b.id === "outros" || b.placa === "-") return -1;
-             return b.valor - a.valor;
+          if (a.id === "outros" || a.placa === "-") return 1;
+          if (b.id === "outros" || b.placa === "-") return -1;
+          return b.valor - a.valor;
         });
 
         return {
@@ -280,9 +278,9 @@ interface UseRelatoriosCalculationsProps {
         };
       })
       .sort((a, b) => {
-          if (a.veiculoId === "outros" || a.placa === "-") return 1;
-          if (b.veiculoId === "outros" || b.placa === "-") return -1;
-          return b.valor - a.valor;
+        if (a.veiculoId === "outros" || a.placa === "-") return 1;
+        if (b.veiculoId === "outros" || b.placa === "-") return -1;
+        return b.valor - a.valor;
       });
 
     const temGastosVinculados = gastosPorVeiculo.some(
@@ -311,8 +309,8 @@ interface UseRelatoriosCalculationsProps {
           percentual:
             totalPassageirosPorEscola > 0
               ? ((e.passageiros_ativos_count || 0) /
-                  totalPassageirosPorEscola) *
-                100
+                totalPassageirosPorEscola) *
+              100
               : 0,
         };
       })
@@ -341,8 +339,8 @@ interface UseRelatoriosCalculationsProps {
           percentual:
             totalPassageirosPorVeiculo > 0
               ? ((v.passageiros_ativos_count || 0) /
-                  totalPassageirosPorVeiculo) *
-                100
+                totalPassageirosPorVeiculo) *
+              100
               : 0,
         };
       })
