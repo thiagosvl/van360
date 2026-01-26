@@ -1,5 +1,5 @@
 import { ROUTES } from "@/constants/routes";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
@@ -16,11 +16,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreateEscola,
-    useDeleteEscola,
-    useEscolas,
-    useFilters,
-    useToggleAtivoEscola,
+  useCreateEscola,
+  useDeleteEscola,
+  useEscolas,
+  useFilters,
+  useToggleAtivoEscola,
 } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -39,14 +39,10 @@ export default function Escolas() {
     openConfirmationDialog,
     closeConfirmationDialog,
     openEscolaFormDialog,
-    openPlanUpgradeDialog, // Added if not available from useLayout destructure? 
-    // Wait, useLayout usually has openPlanUpgradeDialog?
-    // Step 982 (Passageiros) shows: setPageTitle, openPlanUpgradeDialog...
-    // Step 1003 (Escolas) shows: setPageTitle, openConfirmationDialog, closeConfirmationDialog, openEscolaFormDialog.
-    // openPlanUpgradeDialog IS MISSING in destructuring. I must add it.
+    openPlanUpgradeDialog,
   } = useLayout();
   
-  const { isReadOnly } = usePermissions();
+  const { is_read_only } = usePermissions();
   const [searchParams] = useSearchParams();
 
   const deleteEscola = useDeleteEscola();
@@ -87,6 +83,15 @@ export default function Escolas() {
     }
   }, [profile?.id, createEscola]);
 
+  /* Debounce Logic */
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
   const {
     data: escolasData,
     isLoading: isEscolasLoading,
@@ -94,7 +99,7 @@ export default function Escolas() {
   } = useEscolas(
     {
       usuarioId: profile?.id,
-      search: searchTerm,
+      search: debouncedSearchTerm,
       status: selectedStatus,
     },
     {
@@ -144,7 +149,7 @@ export default function Escolas() {
 
   const handleEdit = useCallback(
     (escola: Escola) => {
-      if (isReadOnly) {
+      if (is_read_only) {
         openPlanUpgradeDialog({ feature: "READ_ONLY" });
         return;
       }
@@ -157,7 +162,7 @@ export default function Escolas() {
 
   const handleDeleteClick = useCallback(
     (escola: Escola) => {
-      if (isReadOnly) {
+      if (is_read_only) {
         openPlanUpgradeDialog({ feature: "READ_ONLY" });
         return;
       }
@@ -190,7 +195,7 @@ export default function Escolas() {
 
   const handleToggleAtivo = useCallback(
     async (escola: Escola) => {
-      if (isReadOnly) {
+      if (is_read_only) {
         openPlanUpgradeDialog({ feature: "READ_ONLY" });
         return;
       }
@@ -283,7 +288,7 @@ export default function Escolas() {
                   hasActiveFilters={hasActiveFilters}
                   onApplyFilters={setFilters}
                   onRegister={() => {
-                    if (isReadOnly) {
+                    if (is_read_only) {
                         openPlanUpgradeDialog({ feature: "READ_ONLY" });
                         return;
                     }

@@ -6,17 +6,13 @@ interface UseGastoActionsProps {
   gasto: Gasto;
   onEdit: (gasto: Gasto) => void;
   onDelete: (id: string) => void;
-  isRestricted?: boolean;
 }
 
 export function useGastoActions({
   gasto,
   onEdit,
   onDelete,
-  isRestricted = false,
 }: UseGastoActionsProps): ActionItem[] {
-  if (isRestricted) return [];
-
   return [
     {
       label: "Editar",

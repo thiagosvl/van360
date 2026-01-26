@@ -1,6 +1,6 @@
 // React
 import { ROUTES } from "@/constants/routes";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 // Components - Dialogs
@@ -48,7 +48,7 @@ import { Car } from "lucide-react";
 
 export default function Veiculos() {
   const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openVeiculoFormDialog, openPlanUpgradeDialog } = useLayout();
-  const { isReadOnly } = usePermissions();
+  const { is_read_only } = usePermissions();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const deleteVeiculo = useDeleteVeiculo();
@@ -102,6 +102,15 @@ export default function Veiculos() {
     }
   }, [profile?.id, createVeiculo]);
 
+  /* Debounce Logic */
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
   const {
     data: veiculosData,
     isLoading: isVeiculosLoading,
@@ -109,7 +118,7 @@ export default function Veiculos() {
   } = useVeiculos(
     {
       usuarioId: profile?.id,
-      search: searchTerm,
+      search: debouncedSearchTerm,
       status: selectedStatus,
     },
     {
@@ -150,7 +159,7 @@ export default function Veiculos() {
   }, [searchParams, openVeiculoFormDialog, navigate]);
 
   const handleEdit = useCallback((veiculo: Veiculo) => {
-    if (isReadOnly) {
+    if (is_read_only) {
         openPlanUpgradeDialog({ feature: "READ_ONLY" });
         return;
     }
@@ -160,7 +169,7 @@ export default function Veiculos() {
   }, [openVeiculoFormDialog]);
 
   const handleDeleteClick = useCallback((veiculo: Veiculo) => {
-    if (isReadOnly) {
+    if (is_read_only) {
         openPlanUpgradeDialog({ feature: "READ_ONLY" });
         return;
     }
@@ -189,7 +198,7 @@ export default function Veiculos() {
 
   const handleToggleAtivo = useCallback(
     async (veiculo: Veiculo) => {
-      if (isReadOnly) {
+      if (is_read_only) {
         openPlanUpgradeDialog({ feature: "READ_ONLY" });
         return;
       }
@@ -267,7 +276,7 @@ export default function Veiculos() {
                   hasActiveFilters={hasActiveFilters}
                   onApplyFilters={setFilters}
                   onRegister={() => {
-                    if (isReadOnly) {
+                    if (is_read_only) {
                         openPlanUpgradeDialog({ feature: "READ_ONLY" });
                         return;
                     }

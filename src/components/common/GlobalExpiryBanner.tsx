@@ -8,7 +8,7 @@ import { Lock } from "lucide-react";
 import { useState } from "react";
 
 export function GlobalExpiryBanner() {
-  const { plano, isReadOnly, isLoading, profile } = usePermissions();
+  const { plano, is_read_only, isLoading, profile } = usePermissions();
   const { openPlanUpgradeDialog } = useLayout();
   const [loadingPay, setLoadingPay] = useState(false);
 
@@ -54,7 +54,7 @@ export function GlobalExpiryBanner() {
   if (isLoading || !plano) return null;
 
   // 1. Read Only (Expired/Inactive)
-  if (isReadOnly) {
+  if (is_read_only) {
     return (
       <div className="bg-red-600 text-white px-4 py-3 shadow-md relative z-50 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
         <div className="flex items-center gap-3">

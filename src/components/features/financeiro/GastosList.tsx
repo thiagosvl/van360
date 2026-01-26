@@ -24,7 +24,6 @@ interface GastosListProps {
   gastos: Gasto[];
   onEdit: (gasto: Gasto) => void;
   onDelete: (id: string) => void;
-  isRestricted?: boolean;
   veiculos?: { id: string; placa: string }[];
 }
 
@@ -69,13 +68,12 @@ const GastoActionsMenu = memo(function GastoActionsMenu({
   gasto,
   onEdit,
   onDelete,
-  isRestricted,
 }: { gasto: Gasto } & Pick<
   GastosListProps,
-  "onEdit" | "onDelete" | "isRestricted"
+  "onEdit" | "onDelete"
 >) {
-  const actions = useGastoActions({ gasto, onEdit, onDelete, isRestricted });
-  return <ActionsDropdown actions={actions} disabled={isRestricted} />;
+  const actions = useGastoActions({ gasto, onEdit, onDelete });
+  return <ActionsDropdown actions={actions} />;
 });
 
 const GastoMobileCard = memo(function GastoMobileCard({
@@ -83,7 +81,6 @@ const GastoMobileCard = memo(function GastoMobileCard({
   index,
   onEdit,
   onDelete,
-  isRestricted,
   veiculos,
 }: { gasto: Gasto; index: number } & GastosListProps) {
   const { icon: Icon, color, bg } = getCategoryConfig(gasto.categoria);
@@ -94,15 +91,15 @@ const GastoMobileCard = memo(function GastoMobileCard({
   };
   const placa = getVeiculoPlaca(gasto.veiculo_id);
 
-  const actions = useGastoActions({ gasto, onEdit, onDelete, isRestricted });
+  const actions = useGastoActions({ gasto, onEdit, onDelete });
 
   return (
     <MobileActionItem actions={actions as any} showHint={index === 0}>
       <div
-        onClick={() => !isRestricted && onEdit(gasto)}
+        onClick={() => onEdit(gasto)}
         className={cn(
           "bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 transition-transform",
-          isRestricted ? "" : "active:scale-[0.99]"
+          "active:scale-[0.99]"
         )}
       >
         <div className="flex items-start justify-between gap-3 mb-2">
@@ -158,7 +155,6 @@ export function GastosList({
   gastos,
   onEdit,
   onDelete,
-  isRestricted = false,
   veiculos = [],
 }: GastosListProps) {
   const getVeiculoPlaca = (veiculoId?: string | null) => {
@@ -176,7 +172,6 @@ export function GastosList({
           index={index}
           onEdit={onEdit}
           onDelete={onDelete}
-          isRestricted={isRestricted}
           veiculos={veiculos}
           gastos={gastos} // Props requirement satisfaction
         />
@@ -218,12 +213,10 @@ export function GastosList({
               return (
                 <tr
                   key={gasto.id}
-                  onClick={() => !isRestricted && onEdit(gasto)}
+                  onClick={() => onEdit(gasto)}
                   className={cn(
                     "border-b border-gray-50 last:border-0 transition-colors",
-                    isRestricted
-                      ? "cursor-default"
-                      : "hover:bg-gray-50/80 cursor-pointer"
+                    "hover:bg-gray-50/80 cursor-pointer"
                   )}
                 >
                   <td className="py-4 pl-6 align-middle">
@@ -271,7 +264,6 @@ export function GastosList({
                       gasto={gasto}
                       onEdit={onEdit}
                       onDelete={onDelete}
-                      isRestricted={isRestricted}
                     />
                   </td>
                 </tr>

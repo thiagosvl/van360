@@ -55,7 +55,7 @@ export default function Passageiros() {
 
   const {
     canUseAutomatedCharges: canUseCobrancaAutomatica,
-    is_read_only: isReadOnly,
+    is_read_only,
     profile,
     isLoading: isProfileLoading,
     plano,
@@ -260,7 +260,7 @@ export default function Passageiros() {
 
   const handleDeleteClick = useCallback(
     (passageiro: Passageiro) => {
-      if (isReadOnly) {
+      if (is_read_only) {
         openPlanUpgradeDialog({ feature: "READ_ONLY" });
         return;
       }
@@ -285,7 +285,7 @@ export default function Passageiros() {
 
   const handleToggleClick = useCallback(
     (passageiro: Passageiro) => {
-      if (isReadOnly) {
+      if (is_read_only) {
         openPlanUpgradeDialog({ feature: "READ_ONLY" });
         return;
       }
@@ -431,7 +431,7 @@ export default function Passageiros() {
 
   const handleEdit = useCallback(
     (passageiro: Passageiro) => {
-      if (isReadOnly) {
+      if (is_read_only) {
         openPlanUpgradeDialog({ feature: "READ_ONLY" });
         return;
       }
@@ -444,7 +444,7 @@ export default function Passageiros() {
   );
 
   const handleOpenNewDialog = useCallback(() => {
-    if (isReadOnly) {
+    if (is_read_only) {
       openPlanUpgradeDialog({ feature: "READ_ONLY" });
       return;
     }
@@ -461,7 +461,7 @@ export default function Passageiros() {
     openPassageiroFormDialog,
     openFirstChargeDialog,
     refetchPassageiros,
-    isReadOnly,
+    is_read_only,
     openPlanUpgradeDialog,
   ]);
 

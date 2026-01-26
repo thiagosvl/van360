@@ -69,7 +69,7 @@ export default function Gastos() {
   const {
     profile,
     isLoading: isAuthLoading,
-    isReadOnly,
+    is_read_only,
   } = usePermissions();
   const loadingActions = isAuthLoading;
 
@@ -231,7 +231,6 @@ export default function Gastos() {
                       gastos={displayData.gastosFiltrados}
                       onEdit={openDialog}
                       onDelete={handleDelete}
-                      isRestricted={isReadOnly}
                       veiculos={veiculos.map((v) => ({
                             id: v.id,
                             placa: v.placa,
