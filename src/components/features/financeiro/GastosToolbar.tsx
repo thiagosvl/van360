@@ -30,6 +30,7 @@ interface GastosToolbarProps {
   veiculoFilter: string;
   onVeiculoChange: (value: string) => void;
   onRegistrarGasto: () => void;
+  onApplyFilters?: (filters: { categoria: string; veiculo: string }) => void;
   categorias: string[];
   veiculos: { id: string; placa: string }[];
   disabled?: boolean;
@@ -43,6 +44,7 @@ export function GastosToolbar({
   veiculoFilter,
   onVeiculoChange,
   onRegistrarGasto,
+  onApplyFilters,
   categorias,
   veiculos,
   disabled,
@@ -71,8 +73,16 @@ export function GastosToolbar({
   }, [open, categoriaFilter, veiculoFilter]);
 
   const handleApplyFilters = () => {
-    onCategoriaChange(tempCategoria);
-    onVeiculoChange(tempVeiculo);
+    if (onApplyFilters) {
+      onApplyFilters({
+        categoria: tempCategoria,
+        veiculo: tempVeiculo
+      });
+    } else {
+      // Fallback for individual updates (though onApplyFilters is preferred)
+      onCategoriaChange(tempCategoria);
+      onVeiculoChange(tempVeiculo);
+    }
     setOpen(false);
   };
 

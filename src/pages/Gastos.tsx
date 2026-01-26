@@ -49,6 +49,7 @@ export default function Gastos() {
     setSelectedCategoria,
     selectedVeiculo: veiculoFilter = "todos",
     setSelectedVeiculo,
+    setFilters
   } = useFilters({
     mesParam: "mes",
     anoParam: "ano",
@@ -215,6 +216,12 @@ export default function Gastos() {
                   onVeiculoChange={(val) =>
                     setSelectedVeiculo && setSelectedVeiculo(val)
                   }
+                  onApplyFilters={(filters) => {
+                     setFilters({
+                        categoria: filters.categoria,
+                        veiculo: filters.veiculo
+                     });
+                  }}
                   onRegistrarGasto={() => openDialog()}
                   categorias={CATEGORIAS_GASTOS}
                   veiculos={veiculos.map((v) => ({ id: v.id, placa: v.placa }))}
