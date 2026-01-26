@@ -1,20 +1,12 @@
 import { usePermissions } from "./usePermissions";
 
-interface UsePlanLimitsProps {
-  currentPassengerCount?: number;
-}
-
-export function usePlanLimits({ currentPassengerCount }: UsePlanLimitsProps = {}) {
+export function usePlanLimits() {
   const { summary: systemSummary, isLoading } = usePermissions();
 
   const usuario = systemSummary?.usuario;
   const plano = usuario?.plano;
   const limites = plano?.limites;
   const contadores = systemSummary?.contadores;
-
-  const usedPassengers = contadores?.passageiros.ativos ?? 0;
-
-  const currentUsed = currentPassengerCount !== undefined ? currentPassengerCount : usedPassengers;
 
   const franchiseLimit = limites?.franquia_cobranca_max ?? 0;
   const usedFranchise = contadores?.passageiros.com_automacao ?? 0;
@@ -27,11 +19,6 @@ export function usePlanLimits({ currentPassengerCount }: UsePlanLimitsProps = {}
     plano,
     profile: usuario,
     limits: {
-      passengers: {
-        limit: null,
-        used: currentUsed,
-        remaining: null,
-      },
       franchise: {
         limit: franchiseLimit,
         used: usedFranchise,

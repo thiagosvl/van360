@@ -54,8 +54,6 @@ export default function Assinatura() {
     };
   }, [profile, plano, cobrancasData, systemSummary]);
 
-  const dataWithCounts = data;
-
   useEffect(() => {
     setPageTitle("Minha Assinatura");
   }, [setPageTitle]);
@@ -102,8 +100,7 @@ export default function Assinatura() {
             plano={plano}
             assinatura={data.assinatura}
             metricas={{
-              passageirosAtivos: limits.passengers.used,
-              limitePassageiros: limits.passengers.limit,
+              passageirosAtivos: systemSummary?.contadores?.passageiros?.ativos ?? 0,
               cobrancasEmUso: limits.franchise.used,
               franquiaContratada: limits.franchise.limit,
             }}

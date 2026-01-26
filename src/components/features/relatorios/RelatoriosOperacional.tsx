@@ -35,9 +35,6 @@ interface RelatoriosOperacionalProps {
     envios: number;
     limite: number;
   };
-  limits: {
-    passageiros: number | null;
-  };
   IsProfissionalPlan: boolean;
 }
 

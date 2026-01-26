@@ -8,7 +8,6 @@ interface AssinaturaDashboardProps {
   assinatura: any;
   metricas: {
     passageirosAtivos: number;
-    limitePassageiros: number | null;
     cobrancasEmUso: number;
     franquiaContratada: number;
   };

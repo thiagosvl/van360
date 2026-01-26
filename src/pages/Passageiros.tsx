@@ -215,9 +215,7 @@ export default function Passageiros() {
     [veiculosData],
   );
 
-  const { limits } = usePlanLimits({
-    currentPassengerCount: countPassageiros ?? 0,
-  });
+  const { limits } = usePlanLimits();
 
   const validacaoFranquiaGeral = {
     franquiaContratada: limits.franchise.limit,
@@ -231,9 +229,6 @@ export default function Passageiros() {
     });
   }, [openPlanUpgradeDialog]);
 
-  const limitePassageiros = limits.passengers.limit;
-
-  const isLimitReached = false;
 
   useEffect(() => {
     const handler = setTimeout(() => {
