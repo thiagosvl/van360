@@ -15,9 +15,9 @@ export function useProfile(userId?: string) {
     queryKey: ["profile"], 
     queryFn: () => usuarioApi.getProfile(userId!), 
     enabled: !!userId,
-    staleTime: 0, // Always stale to ensure fresh data on focus
+    staleTime: 5000, // 5 seconds buffer to prevent duplicates
     retry: false,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: true,     
     refetchOnMount: true,
   });
 
@@ -25,7 +25,7 @@ export function useProfile(userId?: string) {
     return queryClient.invalidateQueries({ queryKey: ["profile"] });
   }, [queryClient]);
 
-  const { data: summary } = useUsuarioResumo(profile?.id);
+  const { data: summary } = useUsuarioResumo(profile?.id, undefined, { staleTime: 5000 });
 
   const planoData = useMemo(() => {
     if (!profile) return null;

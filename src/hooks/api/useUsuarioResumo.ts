@@ -78,18 +78,31 @@ export interface SystemSummary {
   };
 }
 
-export const useUsuarioResumo = (usuarioId?: string, params?: { mes?: number; ano?: number }) => {
+export const useUsuarioResumo = (
+  usuarioId?: string,
+  params?: { mes?: number; ano?: number },
+  options?: { staleTime?: number; refetchOnMount?: boolean | "always" }
+) => {
+  const currentMes = new Date().getMonth() + 1;
+  const currentAno = new Date().getFullYear();
+
+  const mes = params?.mes ?? currentMes;
+  const ano = params?.ano ?? currentAno;
+
+  const queryKey = ["usuario-resumo", usuarioId, mes, ano];
+
   return useQuery<SystemSummary>({
-    queryKey: ["usuario-resumo", usuarioId, params?.mes, params?.ano],
+    queryKey,
     queryFn: async () => {
       if (!usuarioId) throw new Error("ID de usuário necessário para o resumo");
 
       const response = await apiClient.get<SystemSummary>(`/usuarios/${usuarioId}/resumo`, {
-        params
+        params: { mes, ano }
       });
       return response.data;
     },
     enabled: !!usuarioId,
-    staleTime: 0, // Always stale for fresh metrics
+    staleTime: options?.staleTime ?? 5000, // 5 seconds buffer to prevent duplicates on mount
+    refetchOnMount: options?.refetchOnMount, 
   });
 };
