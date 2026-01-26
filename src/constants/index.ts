@@ -12,4 +12,4 @@ export const FEATURE_LIMITE_FRANQUIA = "limite_franquia";
 export const FEATURE_LIMITE_PASSAGEIROS = "limite_passageiros";
 
 export const QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO = 500; 
-export const BASE_DOMAIN = typeof window !== "undefined" ? window.location.origin : ""; 
+export const BASE_DOMAIN = import.meta.env.VITE_PUBLIC_APP_DOMAIN || (typeof window !== "undefined" ? window.location.origin : ""); 
