@@ -40,18 +40,18 @@ export function SubscriptionHeader({
     is_suspensa: isSuspensa,
   } = plano || {};
 
-  const isTrial = flags?.is_trial_ativo;
+  const is_trial = flags?.is_trial_ativo;
 
   // Trial calculations
   const trialDaysLeft = flags?.dias_restantes_trial ?? 0;
 
   // Status Badge Configuration
   const getStatusConfig = () => {
-    if (isTrial) {
+    if (is_trial) {
       return {
         color: "bg-yellow-100 text-yellow-800 border-yellow-200",
         icon: AlertTriangle,
-        text: `Teste Grátis (${trialDaysLeft} dias)`,
+        text: `Teste Grátis (${trialDaysLeft} dias ${trialDaysLeft > 1 ? "restantes" : "restante"})`,
         description: `O período de teste termina em ${new Date(assinatura.trial_end_at).toLocaleDateString(
               "pt-BR"
             )}.`,
@@ -99,7 +99,7 @@ export function SubscriptionHeader({
       onPagarClick();
       return;
     }
-    if (isTrial) {
+    if (is_trial) {
       onPagarClick();
       return;
     }
@@ -121,7 +121,7 @@ export function SubscriptionHeader({
   return (
     <Card className="border-none shadow-md bg-white overflow-visible relative mt-2">
         {/* Status Badge - Absolute Position (Sticker Style) */}
-        {(isSuspensa || isPendente || isTrial) && (
+        {(isSuspensa || isPendente || is_trial) && (
           <div className="absolute -top-2 right-2 z-10">
             <Badge
               variant="outline"
@@ -141,7 +141,7 @@ export function SubscriptionHeader({
             "absolute top-0 left-0 w-1.5 h-full rounded-l-xl",
             isPendente || isSuspensa
               ? "bg-red-500"
-              : isTrial
+              : is_trial
               ? "bg-yellow-500"
               : "bg-green-500"
           )}
@@ -155,7 +155,7 @@ export function SubscriptionHeader({
                 "p-3 rounded-2xl flex items-center justify-center shadow-sm",
                 isPendente || isSuspensa
                   ? "bg-red-50 text-red-600"
-                  : isTrial
+                  : is_trial
                   ? "bg-yellow-50 text-yellow-600"
                   : "bg-green-50 text-green-600"
               )}
@@ -184,7 +184,7 @@ export function SubscriptionHeader({
                 "w-full md:w-auto font-semibold shadow-md transition-all hover:scale-[1.02]",
                 isPendente || isSuspensa
                   ? "bg-red-600 hover:bg-red-700 text-white"
-                  : isTrial
+                  : is_trial
                   ? "bg-yellow-500 hover:bg-yellow-600 text-white"
                   : isEssentialPlan
                   ? "bg-blue-600 hover:bg-blue-700 text-white"
@@ -193,7 +193,7 @@ export function SubscriptionHeader({
             >
               {isPendente || isSuspensa
                 ? "Regularizar Pagamento"
-                : isTrial
+                : is_trial
                 ? "Ativar Plano Agora"
                 : isProfissionalPlan
                 ? "Aumentar limite"

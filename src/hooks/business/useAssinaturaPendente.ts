@@ -19,11 +19,11 @@ export function useAssinaturaPendente(userIdOrProfile?: string | any) {
   // Se temos o plano do useProfile, ele já está consolidado com o resumo
   const {
     is_pendente: isPendente,
-    is_trial_ativo: isTrial,
+    is_trial_ativo,
     is_trial_valido: isValidTrial,
   } = (fetchedPlano as any) || {};
 
-  const isTrialExpirado = isTrial && !isValidTrial;
+  const isTrialExpirado = is_trial_ativo && !isValidTrial;
 
   // Dias restantes vem direto do resumo se disponível
   const diasRestantes = summary?.usuario.flags.dias_restantes_trial ?? null;
@@ -35,7 +35,7 @@ export function useAssinaturaPendente(userIdOrProfile?: string | any) {
   return {
     isPendente: !!isPendente,
     assinaturaId: assinatura?.id,
-    isTrial: !!isTrial,
+    isTrial: !!is_trial_ativo,
     isValidTrial: !!isValidTrial,
     isTrialExpirado,
     isPendentePagamento: !!isPendentePagamento,

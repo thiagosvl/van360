@@ -54,7 +54,7 @@ export function SubscriptionHistory({ cobrancas, onPagarClick }: SubscriptionHis
   };
 
   const sortedCobrancas = [...cobrancas].sort((a, b) => 
-     new Date(b.data_vencimento).getTime() - new Date(a.data_vencimento).getTime()
+     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
   const MobileCard = ({ cobranca }: { cobranca: any }) => {
