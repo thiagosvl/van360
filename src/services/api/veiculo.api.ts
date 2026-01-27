@@ -1,5 +1,7 @@
 import { apiClient } from "./client";
 
+const endpointBase = "/veiculos";
+
 export const veiculoApi = {
   createVeiculo: (usuarioId: string, data: any) => {
     const payload = {
@@ -9,27 +11,27 @@ export const veiculoApi = {
     }
 
     return apiClient
-      .post(`/veiculos`, payload)
+      .post(`${endpointBase}`, payload)
       .then(res => res.data);
   },
 
   listVeiculos: (usuarioId: string, filtros?: Record<string, string>) =>
     apiClient
-      .get(`/veiculos/usuario/${usuarioId}`, { params: filtros })
+      .get(`${endpointBase}/usuario/${usuarioId}`, { params: filtros })
       .then(res => res.data),
 
   listVeiculosComContagemAtivos: (usuarioId: string, filtros?: Record<string, any>) =>
     apiClient
-      .get(`/veiculos/usuario/${usuarioId}/com-contagem`, { params: filtros })
+      .get(`${endpointBase}/usuario/${usuarioId}/com-contagem`, { params: filtros })
       .then(res => res.data),
 
   deleteVeiculo: (veiculoId: string) =>
     apiClient
-      .delete(`/veiculos/${veiculoId}`)
+      .delete(`${endpointBase}/${veiculoId}`)
       .then(res => res.data),
 
   updateVeiculo: (veiculoId: string, data: any) =>
     apiClient
-      .put(`/veiculos/${veiculoId}`, data)
+      .put(`${endpointBase}/${veiculoId}`, data)
       .then(res => res.data),
 };

@@ -1,5 +1,7 @@
 import { apiClient } from "./client";
 
+const endpointBase = "/escolas";
+
 export const escolaApi = {
   createEscola: (usuarioId: string, data: any) => {
     const payload = {
@@ -9,27 +11,27 @@ export const escolaApi = {
     }
 
     return apiClient
-      .post(`/escolas`, payload)
+      .post(`${endpointBase}`, payload)
       .then(res => res.data);
   },
 
   listEscolas: (usuarioId: string, filtros?: Record<string, string>) =>
     apiClient
-      .get(`/escolas/usuario/${usuarioId}`, { params: filtros })
+      .get(`${endpointBase}/usuario/${usuarioId}`, { params: filtros })
       .then(res => res.data),
 
   listEscolasComContagemAtivos: (usuarioId: string, filtros?: Record<string, any>) =>
     apiClient
-      .get(`/escolas/usuario/${usuarioId}/com-contagem`, { params: filtros })
+      .get(`${endpointBase}/usuario/${usuarioId}/com-contagem`, { params: filtros })
       .then(res => res.data),
 
   deleteEscola: (escolaId: string) =>
     apiClient
-      .delete(`/escolas/${escolaId}`)
+      .delete(`${endpointBase}/${escolaId}`)
       .then(res => res.data),
 
   updateEscola: (escolaId: string, data: any) =>
     apiClient
-      .put(`/escolas/${escolaId}`, data)
+      .put(`${endpointBase}/${escolaId}`, data)
       .then(res => res.data),
 };

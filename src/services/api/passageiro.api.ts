@@ -2,30 +2,32 @@ import { moneyToNumber } from "@/utils/masks";
 import { cleanString } from "@/utils/string";
 import { apiClient } from "./client";
 
+const endpointBase = "/passageiros";
+
 export const passageiroApi = {
   listPassageiros: (usuarioId: string, filtros?: Record<string, any>) =>
     apiClient
-      .get(`/passageiros/usuario/${usuarioId}`, { params: filtros })
+      .get(`${endpointBase}/usuario/${usuarioId}`, { params: filtros })
       .then(res => res.data),
 
   getPassageiro: (passageiroId: string) =>
     apiClient
-      .get(`/passageiros/${passageiroId}`)
+      .get(`${endpointBase}/${passageiroId}`)
       .then(res => res.data),
 
   deletePassageiro: (passageiroId: string) =>
     apiClient
-      .delete(`/passageiros/${passageiroId}`)
+      .delete(`${endpointBase}/${passageiroId}`)
       .then(res => res.data),
 
   getNumeroCobrancas: (passageiroId: string) =>
     apiClient
-      .get(`/passageiros/${passageiroId}/numero-cobrancas`)
+      .get(`${endpointBase}/${passageiroId}/numero-cobrancas`)
       .then(res => res.data.numeroCobrancas),
 
   toggleAtivo: (passageiroId: string, novoStatus: boolean) =>
     apiClient
-      .patch(`/passageiros/${passageiroId}/toggle-ativo`, { novoStatus })
+      .patch(`${endpointBase}/${passageiroId}/toggle-ativo`, { novoStatus })
       .then(res => res.data),
 
   updatePassageiro: (passageiroId: string, data: any) => {
@@ -42,7 +44,7 @@ export const passageiroApi = {
     };
 
     return apiClient
-      .put(`/passageiros/${passageiroId}`, payload)
+      .put(`${endpointBase}/${passageiroId}`, payload)
       .then(res => res.data);
   },
 
@@ -60,7 +62,7 @@ export const passageiroApi = {
     };
 
     return apiClient
-      .post(`/passageiros`, payload)
+      .post(`${endpointBase}`, payload)
       .then(res => res.data);
   },
 
@@ -78,7 +80,7 @@ export const passageiroApi = {
     };
 
     return apiClient
-      .post(`/passageiros/finalizar-pre-cadastro/${prePassageiroId}`, {
+      .post(`${endpointBase}/finalizar-pre-cadastro/${prePassageiroId}`, {
         data: payload,
         usuarioId,
       })

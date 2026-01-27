@@ -3,6 +3,8 @@ import { moneyToNumber } from "@/utils/masks";
 import { cleanString } from "@/utils/string";
 import { apiClient } from "./client";
 
+const endpointBase = "/gastos";
+
 export const gastoApi = {
   createGasto: (usuarioId: string, data: any) => {
     const payload = {
@@ -15,18 +17,18 @@ export const gastoApi = {
     }
 
     return apiClient
-      .post(`/gastos`, payload)
+      .post(`${endpointBase}`, payload)
       .then(res => res.data);
   },
 
   listGastos: (usuarioId: string, filtros?: Record<string, string | undefined>) =>
     apiClient
-      .get(`/gastos/usuario/${usuarioId}`, { params: filtros })
+      .get(`${endpointBase}/usuario/${usuarioId}`, { params: filtros })
       .then(res => res.data),
 
   deleteGasto: (gastoId: string) =>
     apiClient
-      .delete(`/gastos/${gastoId}`)
+      .delete(`${endpointBase}/${gastoId}`)
       .then(res => res.data),
 
   updateGasto: (gastoId: string, data: any) => {
@@ -41,7 +43,7 @@ export const gastoApi = {
 
 
     return apiClient
-      .put(`/gastos/${gastoId}`, payload)
+      .put(`${endpointBase}/${gastoId}`, payload)
       .then(res => res.data);
   }
 };

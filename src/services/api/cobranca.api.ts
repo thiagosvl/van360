@@ -2,13 +2,15 @@ import { CobrancaStatus } from "@/types/enums";
 import { moneyToNumber } from "@/utils/masks";
 import { apiClient } from "./client";
 
+const endpointBase = "/cobrancas";
+
 export const cobrancaApi = {
     createCobranca: (data: any) => {
         const payload = {
             ...data,
             valor: moneyToNumber(data.valor),
         };
-        return apiClient.post(`/cobrancas`, payload).then(res => res.data);
+        return apiClient.post(`${endpointBase}`, payload).then(res => res.data);
     },
 
     updateCobranca: (id: string, data: any, cobrancaOriginal?: any) => {
@@ -16,31 +18,31 @@ export const cobrancaApi = {
             ...data,
             valor: data.valor !== undefined ? moneyToNumber(data.valor) : undefined,
         };
-        return apiClient.put(`/cobrancas/${id}`, { data: cleanedData, cobrancaOriginal }).then(res => res.data);
+        return apiClient.put(`${endpointBase}/${id}`, { data: cleanedData, cobrancaOriginal }).then(res => res.data);
     },
 
     deleteCobranca: (id: string) =>
-        apiClient.delete(`/cobrancas/${id}`).then(res => res.data),
+        apiClient.delete(`${endpointBase}/${id}`).then(res => res.data),
 
     getCobranca: (id: string) =>
-        apiClient.get(`/cobrancas/${id}`).then(res => res.data),
+        apiClient.get(`${endpointBase}/${id}`).then(res => res.data),
 
     listCobrancasByPassageiro: (passageiroId: string, ano?: string) =>
         apiClient
-            .get(`/cobrancas/passageiro/${passageiroId}`, { params: { ano } })
+            .get(`${endpointBase}/passageiro/${passageiroId}`, { params: { ano } })
             .then(res => res.data),
 
     listCobrancasWithFilters: (filtros: { mes?: string; ano?: string; passageiroId?: string; usuarioId?: string; status?: string; search?: string }) =>
         apiClient
-            .get(`/cobrancas`, { params: filtros })
+            .get(`${endpointBase}`, { params: filtros })
             .then(res => res.data),
 
     countByPassageiro: (passageiroId: string) =>
-        apiClient.get(`/cobrancas/passageiro/${passageiroId}/count`).then(res => res.data.count),
+        apiClient.get(`${endpointBase}/passageiro/${passageiroId}/count`).then(res => res.data.count),
 
 
     desfazerPagamento: (cobrancaId: string) =>
-        apiClient.post(`/cobrancas/${cobrancaId}/desfazer-pagamento-manual`).then(res => res.data),
+        apiClient.post(`${endpointBase}/${cobrancaId}/desfazer-pagamento-manual`).then(res => res.data),
 
     registrarPagamentoManual: (cobrancaId: string, data: any) => {
         return cobrancaApi.updateCobranca(cobrancaId, {
@@ -54,12 +56,12 @@ export const cobrancaApi = {
 
     fetchAvailableYears: (passageiroId: string) =>
         apiClient
-            .get(`/cobrancas/passageiro/${passageiroId}/anos-disponiveis`)
+            .get(`${endpointBase}/passageiro/${passageiroId}/anos-disponiveis`)
             .then(res => res.data),
 
     fetchNotificacoesByCobrancaId: (cobrancaId: string) =>
         apiClient
-            .get(`/cobrancas/${cobrancaId}/notificacoes`)
+            .get(`${endpointBase}/${cobrancaId}/notificacoes`)
             .then(res => res.data),
 
     enviarNotificacaoByCobrancaId: (cobrancaId: string) => {
@@ -71,13 +73,13 @@ export const cobrancaApi = {
         };
 
         return apiClient
-            .post(`/cobrancas/${cobrancaId}/notificacoes`, payload)
+            .post(`${endpointBase}/${cobrancaId}/notificacoes`, payload)
             .then(res => res.data);
     },
 
     toggleNotificacoes: (passageiroId: string, novoStatus: boolean) =>
         apiClient
-            .patch(`/cobrancas/${passageiroId}/toggle-notificacoes`, { novoStatus })
+            .patch(`${endpointBase}/${passageiroId}/toggle-notificacoes`, { novoStatus })
             .then(res => res.data),
 
 };
