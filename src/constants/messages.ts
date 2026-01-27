@@ -265,6 +265,22 @@ export const messages = {
     },
   },
 
+  // ========== PIX ==========
+  pix: {
+    erro: {
+      falhaSalvar: "Falha ao salvar",
+      erroAoSalvar: "Erro ao salvar chave PIX.",
+      validacaoFalhou: "A validação falhou. Verifique os dados.",
+    },
+    sucesso: {
+      validada: "Chave validada com sucesso!",
+    },
+    info: {
+      pendente: "Ainda pendente. Aguarde mais um pouco.",
+      jaValidada: "Esta chave já está validada e atualizada.",
+    }
+  },
+
   // ========== VALIDAÇÕES ==========
   validacao: {
     campoObrigatorio: "Campo obrigatório.",

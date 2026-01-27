@@ -7,44 +7,43 @@ import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import PixKeyDialog from "@/components/dialogs/PixKeyDialog";
 import {
-    PlanUpgradeDialog,
+  PlanUpgradeDialog,
 } from "@/components/dialogs/PlanUpgradeDialog";
 import { SubscriptionExpiredDialog } from "@/components/dialogs/SubscriptionExpiredDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
 import {
-    FEATURE_COBRANCA_AUTOMATICA,
-    FEATURE_GASTOS,
-    FEATURE_LIMITE_PASSAGEIROS,
-    FEATURE_NOTIFICACOES,
-    FEATURE_RELATORIOS,
-    PLANO_PROFISSIONAL,
+  FEATURE_COBRANCA_AUTOMATICA,
+  FEATURE_GASTOS,
+  FEATURE_LIMITE_PASSAGEIROS,
+  FEATURE_NOTIFICACOES,
+  FEATURE_RELATORIOS,
+  PLANO_PROFISSIONAL,
 } from "@/constants";
 import { safeCloseDialog } from "@/hooks";
-import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { usePixKeyGuard } from "@/hooks/ui/usePixKeyGuard";
 import { PassageiroFormModes, PixKeyStatus } from "@/types/enums";
 import {
-    ReactNode,
-    useCallback,
-    useEffect,
-    useState,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useState,
 } from "react";
 import {
-    LayoutContext,
-    OpenCobrancaEditDialogProps,
-    OpenCobrancaPixDrawerProps,
-    OpenConfirmationDialogProps,
-    OpenEscolaFormProps,
-    OpenFirstChargeDialogProps,
-    OpenGastoFormProps,
-    OpenManualPaymentDialogProps,
-    OpenPassageiroFormProps,
-    OpenPlanUpgradeDialogProps,
-    OpenSubscriptionExpiredDialogProps,
-    OpenVeiculoFormProps
+  LayoutContext,
+  OpenCobrancaEditDialogProps,
+  OpenCobrancaPixDrawerProps,
+  OpenConfirmationDialogProps,
+  OpenEscolaFormProps,
+  OpenFirstChargeDialogProps,
+  OpenGastoFormProps,
+  OpenManualPaymentDialogProps,
+  OpenPassageiroFormProps,
+  OpenPlanUpgradeDialogProps,
+  OpenSubscriptionExpiredDialogProps,
+  OpenVeiculoFormProps
 } from "./LayoutContext";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
@@ -118,9 +117,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     isLoading: isProfileLoading,
     plano,
   } = useProfile(user?.id);
-
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  const { limits } = usePlanLimits();
 
   // Dialog States (Global)
   const [pixKeyDialogState, setPixKeyDialogState] = useState<{
