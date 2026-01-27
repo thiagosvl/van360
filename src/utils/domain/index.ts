@@ -9,7 +9,6 @@ export * from "./responsavel/responsavelUtils";
 // Veículo
 export * from "./veiculo/placaUtils";
 
-// Cobrança
 export * from "./cobranca/disableActions";
 
 // Pages

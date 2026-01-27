@@ -1,24 +1,24 @@
 import { MoneyInput } from "@/components/forms";
 import {
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
@@ -55,7 +55,7 @@ export function PassageiroFormFinanceiro({
           <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
             <CreditCard className="w-5 h-5" />
           </div>
-          Cobrança
+          Mensalidade
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-6 pb-6 pt-2 space-y-4">

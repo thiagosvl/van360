@@ -97,8 +97,8 @@ export const CarteirinhaResumoFinanceiro = ({
               <div className="text-xs text-green-600 mt-1 font-medium">
                 {`${
                   yearlySummary.qtdPago === 1
-                    ? "1 cobrança"
-                    : `${yearlySummary.qtdPago} cobranças`
+                    ? "1 mensalidade"
+                    : `${yearlySummary.qtdPago} mensalidades`
                 }`}
               </div>
             </motion.div>
@@ -124,8 +124,8 @@ export const CarteirinhaResumoFinanceiro = ({
               <div className="text-xs text-orange-800 mt-1 font-medium">
                 {`${
                   yearlySummary.qtdPendente === 1
-                    ? "1 cobrança"
-                    : `${yearlySummary.qtdPendente} cobranças`
+                    ? "1 mensalidade"
+                    : `${yearlySummary.qtdPendente} mensalidades`
                 }`}
               </div>
             </motion.div>
@@ -151,8 +151,8 @@ export const CarteirinhaResumoFinanceiro = ({
               <div className="text-xs text-red-600 mt-1 font-medium">
                 {`${
                   yearlySummary.qtdEmAtraso === 1
-                    ? "1 cobrança"
-                    : `${yearlySummary.qtdEmAtraso} cobranças`
+                    ? "1 mensalidade"
+                    : `${yearlySummary.qtdEmAtraso} mensalidades`
                 }`}
               </div>
             </motion.div>

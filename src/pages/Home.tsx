@@ -1,17 +1,17 @@
 import { ROUTES } from "@/constants/routes";
 import {
-    Copy,
-    CopyCheck,
-    CreditCard,
-    DollarSign,
-    FileText,
-    Plus,
-    Receipt,
-    TrendingDown,
-    UserCheck,
-    Users,
-    Wallet,
-    Zap,
+  Copy,
+  CopyCheck,
+  CreditCard,
+  DollarSign,
+  FileText,
+  Plus,
+  Receipt,
+  TrendingDown,
+  UserCheck,
+  Users,
+  Wallet,
+  Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -34,8 +34,8 @@ import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
 import { useUpsellContent } from "@/hooks/ui/useUpsellContent";
 import {
-    PassageiroFormModes,
-    PixKeyStatus
+  PassageiroFormModes,
+  PixKeyStatus
 } from "@/types/enums";
 import { getMesNome } from "@/utils/formatters";
 
@@ -273,7 +273,7 @@ const Home = () => {
             </section>
           )}
 
-          {/* Notificação de Cobranças pendentes / em dia */}
+          {/* Notificação de Mensalidades pendentes / em dia */}
           {!showOnboarding && receitaPrevista > 0 && (
             <section>
               {countAtrasos > 0 ? (
@@ -285,14 +285,14 @@ const Home = () => {
                   )} em atraso de ${countAtrasos} passageiro${
                     countAtrasos != 1 ? "s" : ""
                   } referente ao mês de ${getMesNome(new Date().getMonth() + 1)}.`}
-                  actionLabel="Ver Cobranças"
+                  actionLabel="Ver Mensalidades"
                   onAction={() => navigate(ROUTES.PRIVATE.MOTORISTA.BILLING)}
                 />
               ) : (
                 <DashboardStatusCard
                   type="success"
-                  title={`Cobranças de ${getMesNome(new Date().getMonth() + 1)} em dia!`}
-                  description={`Todas as cobranças vencidas do mês foram pagas.`}
+                  title={`Mensalidades de ${getMesNome(new Date().getMonth() + 1)} em dia!`}
+                  description={`Todas as mensalidades vencidas do mês foram pagas.`}
                 />
               )}
             </section>
@@ -427,7 +427,7 @@ const Home = () => {
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.BILLING}
                 icon={CreditCard}
-                label="Cobranças"
+                label="Mensalidades"
                 colorClass="text-emerald-600"
                 bgClass="bg-emerald-50"
               />

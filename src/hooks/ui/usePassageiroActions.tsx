@@ -56,7 +56,6 @@ export function usePassageiroActions({
     },
   ];
 
-  // Lógica de Cobrança Automática
   if (passageiro.enviar_cobranca_automatica) {
     if (hasCobrancaAutomaticaAccess) {
       actions.push({

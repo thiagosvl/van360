@@ -234,7 +234,7 @@ export function CobrancaFormContent({
                         required
                         disabled={shouldDisableValue}
                         inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 transition-all"
-                        label="Valor da Cobrança"
+                        label="Valor da Mensalidade"
                     />
                 )}
             />
@@ -315,7 +315,7 @@ export function CobrancaFormContent({
                             </FormControl>
                             <div className="flex-1 space-y-1 leading-none">
                                 <FormLabel className="cursor-pointer font-medium text-gray-700 m-0 mt-0 w-full block">
-                                    Esta cobrança já foi paga?
+                                    Esta mensalidade já foi paga?
                                 </FormLabel>
                             </div>
                         </div>
@@ -431,7 +431,7 @@ export function CobrancaFormContent({
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
                             </>
-                        ) : mode === "create" ? "Criar Cobrança" : "Salvar Alterações"}
+                        ) : mode === "create" ? "Registrar Mensalidade" : "Salvar Alterações"}
                     </Button>
                 </div>
             )}

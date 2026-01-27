@@ -100,10 +100,10 @@ export function useCobrancaOperations({
       return;
     }
     openConfirmationDialog({
-      title: "Enviar cobrança?",
+      title: "Cobrar via WhatsApp",
       description:
         "A cobrança será enviada para o responsável via WhatsApp. Confirmar?",
-      confirmText: "Enviar",
+      confirmText: "Confirmar",
       onConfirm: async () => {
         try {
           await enviarNotificacao.mutateAsync(cobranca.id);
@@ -133,7 +133,7 @@ export function useCobrancaOperations({
     openConfirmationDialog({
       title: "Desfazer pagamento?",
       description:
-        "O pagamento será removido e a cobrança voltará a ficar pendente. Confirmar?",
+        "O pagamento será removido e a mensalidade voltará a ficar pendente. Confirmar?",
       variant: "warning",
       confirmText: "Desfazer",
       onConfirm: async () => {
@@ -157,9 +157,9 @@ export function useCobrancaOperations({
 
   const handleDeleteCobranca = useCallback(async () => {
     openConfirmationDialog({
-      title: "Excluir cobrança?",
+      title: "Excluir mensalidade?",
       description:
-        "Tem certeza que deseja excluir esta cobrança? Essa ação não poderá ser desfeita.",
+        "Tem certeza que deseja excluir esta mensalidade? Essa ação não poderá ser desfeita.",
       variant: "destructive",
       confirmText: "Excluir",
       onConfirm: async () => {
@@ -298,11 +298,11 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // 4. Enviar Cobrança
+    // 4. Enviar Mensalidade
     const canSend = canSendNotification(cobranca);
     if (canSend) {
       actions.push({
-        label: "Enviar Cobrança",
+        label: "Cobrar via WhatsApp",
         icon: <Send className="h-4 w-4" />,
         onClick: handleEnviarNotificacao,
         swipeColor: "bg-emerald-500",

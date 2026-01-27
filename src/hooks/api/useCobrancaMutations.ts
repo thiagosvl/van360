@@ -12,7 +12,6 @@ export function useCreateCobranca() {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
-      // Invalida anos disponíveis (pode ter mudado após criar cobrança)
       queryClient.invalidateQueries({ queryKey: ["available-years"] });
       toast.success("cobranca.sucesso.criada");
     },
@@ -47,7 +46,6 @@ export function useUpdateCobranca() {
       });
     },
     onSuccess: (_, variables) => {
-      // Invalida query específica da cobrança atualizada
       queryClient.invalidateQueries({ queryKey: ["cobranca", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
@@ -89,11 +87,8 @@ export function useDesfazerPagamento() {
   return useMutation({
     mutationFn: (cobrancaId: string) => cobrancaApi.desfazerPagamento(cobrancaId),
     onSuccess: (updatedCobranca, cobrancaId) => {
-      // Invalida todas as queries de cobranças (incluindo as com filtros) para refetch
       queryClient.invalidateQueries({ queryKey: ["cobrancas"], refetchType: "active" });
-      // Invalida todas as queries de cobranças por passageiro (incluindo as com passageiroId e ano)
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"], refetchType: "active" });
-      // Invalida query específica da cobrança para garantir refetch se necessário
       queryClient.invalidateQueries({ queryKey: ["cobranca-notificacoes", cobrancaId], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("cobranca.sucesso.pagamentoDesfeito");
@@ -113,11 +108,8 @@ export function useRegistrarPagamentoManual() {
     mutationFn: ({ cobrancaId, data }: { cobrancaId: string; data: any }) =>
       cobrancaApi.registrarPagamentoManual(cobrancaId, data),
     onSuccess: (updatedCobranca, { cobrancaId }) => {
-      // Invalida todas as queries de cobranças (incluindo as com filtros) para refetch
       queryClient.invalidateQueries({ queryKey: ["cobrancas"], refetchType: "active" });
-      // Invalida todas as queries de cobranças por passageiro (incluindo as com passageiroId e ano)
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"], refetchType: "active" });
-      // Invalida query específica da cobrança para garantir refetch se necessário
       queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("cobranca.sucesso.pagamentoRegistrado");
@@ -137,12 +129,9 @@ export function useEnviarNotificacaoCobranca() {
   return useMutation({
     mutationFn: (cobrancaId: string) => cobrancaApi.enviarNotificacaoByCobrancaId(cobrancaId),
     onSuccess: (_, cobrancaId) => {
-      // Invalida todas as queries de cobranças para atualizar listas
       queryClient.invalidateQueries({ queryKey: ["cobrancas"], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"], refetchType: "active" });
-      // Invalida query específica da cobrança para atualizar detalhes
       queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId], refetchType: "active" });
-      // Invalida notificações da cobrança para atualizar histórico
       queryClient.invalidateQueries({ queryKey: ["cobranca-notificacoes", cobrancaId], refetchType: "active" });
       toast.success("cobranca.sucesso.notificacaoEnviada");
     },
@@ -161,12 +150,9 @@ export function useToggleNotificacoesCobranca() {
     mutationFn: ({ cobrancaId, desativar }: { cobrancaId: string; desativar: boolean }) =>
       cobrancaApi.toggleNotificacoes(cobrancaId, desativar),
     onSuccess: (data, variables) => {
-      // Invalida todas as queries de cobranças para atualizar listas
       queryClient.invalidateQueries({ queryKey: ["cobrancas"], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"], refetchType: "active" });
-      // Invalida query específica da cobrança para atualizar detalhes
       queryClient.invalidateQueries({ queryKey: ["cobranca", variables.cobrancaId], refetchType: "active" });
-      // Invalida notificações da cobrança para atualizar histórico (pode ter mudado o estado)
       queryClient.invalidateQueries({ queryKey: ["cobranca-notificacoes", variables.cobrancaId], refetchType: "active" });
       toast.success(
         variables.desativar

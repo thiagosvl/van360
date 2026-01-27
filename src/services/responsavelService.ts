@@ -26,7 +26,7 @@ export const responsavelService = {
           });
           return data || [];
       } catch (error) {
-          console.error("Erro ao buscar cobranças", error);
+          console.error("Erro ao buscar mensalidades", error);
           throw error;
       }
   },

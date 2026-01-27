@@ -251,8 +251,8 @@ export default function PassageiroCobranca() {
     // Captura o ID antes da mutação pois o objeto pode ser limpo do cache (Success -> removeQueries)
     const passageiroIdCapturado = cobranca.passageiro_id;
     openConfirmationDialog({
-      title: "Excluir cobrança?",
-      description: "Tem certeza que deseja excluir esta cobrança? Essa ação não poderá ser desfeita.",
+      title: "Excluir mensalidade?",
+      description: "Tem certeza que deseja excluir esta mensalidade? Essa ação não poderá ser desfeita.",
       confirmText: "Excluir",
       variant: "destructive",
       onConfirm: async () => {
@@ -317,7 +317,7 @@ export default function PassageiroCobranca() {
 
   useEffect(() => {
     if (cobranca) {
-      setPageTitle(`Cobrança de ${cobranca.passageiro.nome.split(" ")[0]}`);
+      setPageTitle(`Mensalidade de ${cobranca.passageiro.nome.split(" ")[0]}`);
     }
   }, [cobranca, setPageTitle]);
 
@@ -590,7 +590,7 @@ export default function PassageiroCobranca() {
                   {cobrancaTyped?.desativar_lembretes && !isPago && (
                     <div className="bg-orange-50 border-b border-orange-100 px-6 py-2 flex items-center justify-center gap-2 text-xs font-medium text-orange-700 animate-in fade-in slide-in-from-top-2">
                       <BellOff className="w-3.5 h-3.5 text-orange-700" />
-                      <span>Notificações desativadas para esta cobrança.</span>
+                      <span>Notificações desativadas para esta mensalidade.</span>
                     </div>
                   )}
 
@@ -717,7 +717,7 @@ export default function PassageiroCobranca() {
                         onClick={handleEditCobrancaClick}
                         disabled={disableEditarCobranca(cobrancaTyped)}
                       >
-                        <Pencil className="w-3.5 h-3.5 mr-2" /> Editar Cobrança
+                        <Pencil className="w-3.5 h-3.5 mr-2" /> Editar
                       </Button>
 
                       <Button
@@ -727,7 +727,7 @@ export default function PassageiroCobranca() {
                         disabled={!canSendNotification(cobrancaTyped)}
                         onClick={handleEnviarNotificacao}
                       >
-                        <Send className="w-3.5 h-3.5 mr-2" /> Enviar Cobrança
+                        <Send className="w-3.5 h-3.5 mr-2" /> Cobrar via WhatsApp
                       </Button>
 
                       {canViewReceipt(cobrancaTyped) && (
@@ -775,7 +775,7 @@ export default function PassageiroCobranca() {
                         disabled={disableExcluirCobranca(cobrancaTyped)}
                         onClick={handleDeleteCobranca}
                       >
-                        <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir cobrança
+                        <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir mensalidade
                       </Button>
                     </div>
                   </div>
@@ -806,7 +806,7 @@ export default function PassageiroCobranca() {
                             ? formatDateToBR(cobrancaTyped?.data_pagamento)
                             : "—"}
                         </InfoItem>
-                        <InfoItem icon={ArrowRight} label="Origem da Cobrança">
+                        <InfoItem icon={ArrowRight} label="Origem da Mensalidade">
                           {formatCobrancaOrigem(cobrancaTyped?.origem)}
                         </InfoItem>
                       </div>

@@ -167,7 +167,7 @@ export const CarteirinhaCobrancas = ({
           >
             <div className="flex items-center gap-2">
               <CardTitle className="text-lg font-bold text-gray-900">
-                Cobranças
+                Mensalidades
               </CardTitle>
             </div>
             <div
@@ -201,7 +201,7 @@ export const CarteirinhaCobrancas = ({
                   availableYears.length > 1 ? "flex-1 md:flex-none" : ""
                 )}
                 onClick={onOpenCobrancaDialog}
-                title={"Registrar cobrança manualmente"}
+                title={"Registrar mensalidade manualmente"}
               >
                 <Plus className="w-4 h-4" />
                 <span>Registrar</span>
@@ -221,8 +221,8 @@ export const CarteirinhaCobrancas = ({
                     Passageiro desativado
                   </h3>
                   <p className="text-sm text-gray-600 mt-1 max-w-sm mx-auto mb-6">
-                    Não é possível gerar cobranças para passageiros desativados.
-                    Para voltar a registrar cobranças, reative o cadastro do
+                    Não é possível registrar mensalidades para passageiros desativados.
+                    Para voltar a registrar mensalidades, reative o cadastro do
                     passageiro.
                   </p>
                   <Button
@@ -241,20 +241,20 @@ export const CarteirinhaCobrancas = ({
                     <DollarSign className="w-8 h-8 text-gray-300" />
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Nenhuma cobrança encontrada
+                    Nenhuma mensalidade encontrada
                   </h3>
                   {geraCobrancasAutomaticas ? (
                     <>
                       <p className="text-sm text-gray-600 mt-1 max-w-sm mx-auto mb-6">
-                        A cobrança do próximo mês será gerada automaticamente.
-                        Você também pode registrar cobranças manualmente.
+                        A mensalidade do próximo mês será gerada automaticamente.
+                        Você também pode registrar mensalidades manualmente.
                       </p>
                     </>
                   ) : (
                     <>
                       <p className="text-sm text-gray-500 mt-1 max-w-xs mx-auto mb-6">
-                        Não há registros de cobranças para o ano de {yearFilter}
-                        . Você pode registrar cobranças manualmente.
+                        Não há registros de mensalidades para o ano de {yearFilter}
+                        . Você pode registrar mensalidades manualmente.
                       </p>
                     </>
                   )}
@@ -264,7 +264,7 @@ export const CarteirinhaCobrancas = ({
                     onClick={onOpenCobrancaDialog}
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Registrar Cobrança
+                    Registrar Mensalidade
                   </Button>
                 </>
               )}

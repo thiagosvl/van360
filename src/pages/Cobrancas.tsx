@@ -131,7 +131,7 @@ const Cobrancas = () => {
     {
       enabled: !!profile?.id,
       onError: (error) => {
-        console.error("Erro ao carregar cobranças:", error); // Keep error log
+        console.error("Erro ao carregar mensalidades:", error); // Keep error log
         toast.error("cobranca.erro.carregar");
       },
     }
@@ -166,9 +166,9 @@ const Cobrancas = () => {
   const handleDeleteCobrancaClick = useCallback(
     (cobranca: Cobranca) => {
       openConfirmationDialog({
-        title: "Excluir cobrança?",
+        title: "Excluir mensalidade?",
         description:
-          "Tem certeza que deseja excluir esta cobrança? Essa ação não poderá ser desfeita.",
+          "Tem certeza que deseja excluir esta mensalidade? Essa ação não poderá ser desfeita.",
         confirmText: "Excluir",
         variant: "destructive",
         onConfirm: async () => {
@@ -232,7 +232,7 @@ const Cobrancas = () => {
 
   // Effects
   useEffect(() => {
-    setPageTitle("Cobranças");
+    setPageTitle("Mensalidades");
   }, [setPageTitle]);
 
   useEffect(() => {

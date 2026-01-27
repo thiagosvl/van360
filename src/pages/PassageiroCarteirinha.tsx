@@ -338,8 +338,8 @@ export default function PassageiroCarteirinha() {
         action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
       description:
         action === "ativar"
-          ? "O passageiro voltará a aparecer nas listagens ativas e a geração de cobranças será retomada."
-          : "O passageiro ficará inativo e a geração de cobranças será pausada. Você poderá reativá-lo depois.",
+          ? "O passageiro voltará a aparecer nas listagens ativas e a geração de mensalidades será retomada."
+          : "O passageiro ficará inativo e a geração de mensalidades será pausada. Você poderá reativá-lo depois.",
       confirmText: action === "ativar" ? "Reativar" : "Desativar",
       variant: action === "desativar" ? "warning" : "default",
       onConfirm: async () => {
@@ -401,10 +401,10 @@ export default function PassageiroCarteirinha() {
   const handleEnviarNotificacaoClick = useCallback(
     (cobrancaId: string) => {
       openConfirmationDialog({
-        title: "Enviar cobrança?",
+        title: "Cobrar via WhatsApp",
         description:
           "A cobrança será enviada para o responsável (WhatsApp ou Email). Confirmar?",
-        confirmText: "Enviar",
+        confirmText: "Confirmar",
         onConfirm: async () => {
           try {
             await enviarNotificacao.mutateAsync(cobrancaId);
@@ -423,7 +423,7 @@ export default function PassageiroCarteirinha() {
       openConfirmationDialog({
         title: "Desfazer pagamento?",
         description:
-          "O pagamento será removido e a cobrança voltará a ficar pendente. Confirmar?",
+          "O pagamento será removido e a mensalidade voltará a ficar pendente. Confirmar?",
         confirmText: "Desfazer",
         variant: "warning",
         onConfirm: async () => {
@@ -592,7 +592,7 @@ export default function PassageiroCarteirinha() {
                 </div>
               </div>
 
-              {/* Coluna Direita: Financeiro e Cobranças */}
+              {/* Coluna Direita: Financeiro e Mensalidades */}
               <div className="contents lg:block lg:col-span-8 lg:space-y-6">
                 <div className="order-3 lg:order-none">
                   <Suspense

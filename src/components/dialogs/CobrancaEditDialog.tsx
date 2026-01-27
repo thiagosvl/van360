@@ -70,7 +70,7 @@ export default function CobrancaEditDialog({
             <Pencil className="w-5 h-5 text-white" />
           </div>
           <DialogTitle className="text-xl font-bold text-white">
-            Edição de Cobrança
+            Edição de Mensalidade
           </DialogTitle>
         </div>
 
@@ -128,7 +128,7 @@ export default function CobrancaEditDialog({
                 </p>
                 {cobranca?.data_envio_ultima_notificacao && (
                   <p className="text-amber-800 font-semibold mt-1 text-xs underline">
-                    Como já foi enviada, você precisará reenviar a cobrança ao
+                    Como já foi enviada, você precisará reenviar a cobrança da mensalidade ao
                     responsável!
                   </p>
                 )}

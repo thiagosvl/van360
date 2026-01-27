@@ -228,7 +228,7 @@ export function CobrancasList({
             <UnifiedEmptyState
             icon={Wallet}
             title="Nenhum resultado"
-            description="Nenhuma cobrança encontrada com este filtro de busca."
+            description="Nenhuma mensalidade encontrada com este filtro de busca."
             />
         );
     }
@@ -237,8 +237,8 @@ export function CobrancasList({
          return (
              <UnifiedEmptyState
                icon={Wallet}
-               title="Nenhuma cobrança pendente"
-               description={`Não há cobranças pendentes para ${meses[mesFilter - 1]}.`}
+               title="Nenhuma mensalidade pendente"
+               description={`Não há mensalidades pendentes para ${meses[mesFilter - 1]}.`}
              />
          );
     } else {

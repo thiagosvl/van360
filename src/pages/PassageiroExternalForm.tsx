@@ -291,7 +291,7 @@ export default function PassageiroExternalForm() {
                   {/* DADOS DO RESPONSÁVEL */}
                   <PassageiroFormResponsavel />
 
-                  {/* COBRANÇA */}
+                  {/* MENSALIDADE */}
                   <AccordionItem
                     value="cobranca"
                     className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm"
@@ -301,7 +301,7 @@ export default function PassageiroExternalForm() {
                         <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
                           <CreditCard className="w-5 h-5" />
                         </div>
-                        Cobrança
+                        Mensalidade
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-6 pb-6 pt-2">

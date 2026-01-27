@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getMessage } from "@/constants/messages";
 import { useCreateCobranca } from "@/hooks/api/useCobrancaMutations";
 import { cn } from "@/lib/utils";
 import { CobrancaOrigem, CobrancaStatus } from "@/types/enums";
@@ -102,7 +103,7 @@ export default function FirstChargeDialog({
     // 3. PAYMENT METHOD (PAID)
     if (step === "PAYMENT_METHOD") {
       if (!paymentMethod) {
-        toast.error("Selecione uma forma de pagamento");
+        toast.error(getMessage("cobranca.erro.selecioneFormaPagamento"));
         return;
       }
       await submitCobranca(CobrancaStatus.PAGO, false);
@@ -164,9 +165,9 @@ export default function FirstChargeDialog({
       await createCobranca.mutateAsync(payload);
 
       if (generatePixAndNotify) {
-        toast.success("Cobrança criada e enviada com sucesso!");
+        toast.success(getMessage("cobranca.erro.criarEnviada"));
       } else {
-        toast.success("Cobrança criada com sucesso!");
+        toast.success(getMessage("cobranca.erro.criarSucesso"));
       }
 
       onClose();
@@ -210,7 +211,7 @@ export default function FirstChargeDialog({
                 </div>
                 <div className="space-y-1">
                   <p className="text-gray-600 font-medium leading-relaxed max-w-[240px] mx-auto">
-                    Deseja registrar a cobrança deste mês no histórico
+                    Deseja registrar a mensalidade deste mês no histórico
                     financeiro?
                   </p>
                 </div>
@@ -222,7 +223,7 @@ export default function FirstChargeDialog({
                   className="h-14 rounded-2xl font-bold gap-2 text-base shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <CheckCircle2 className="w-5 h-5" />
-                  Sim, registrar cobrança
+                  Sim, registrar mensalidade
                 </Button>
                 <Button
                   variant="ghost"
@@ -283,7 +284,7 @@ export default function FirstChargeDialog({
                       Não, ainda vai pagar
                     </span>
                     <span className="text-gray-500 font-medium group-hover:text-orange-600/80 transition-colors">
-                      Gerar cobrança pendente
+                      Gerar mensalidade pendente
                     </span>
                   </div>
                 </Button>
@@ -364,7 +365,7 @@ export default function FirstChargeDialog({
                 </div>
                 <div className="space-y-1">
                   <h4 className="font-bold text-xl text-gray-900">
-                    Enviar Cobrança Agora?
+                    Enviar cobrança via WhatsApp?
                   </h4>
                   <p className="text-gray-500 leading-relaxed max-w-[260px]">
                     Este passageiro tem cobrança automática. Deseja enviar a

@@ -205,7 +205,7 @@ export default function ResponsavelCarteirinha() {
       const anoParaBuscar = anosDisponiveis.length > 0 ? anosDisponiveis[0] : currentYear;
       setAnoSelecionado(anoParaBuscar);
 
-      // Buscar Cobranças
+      // Buscar Mensalidades
       const cobrancasData = await responsavelService.getCobrancas(atual.id, anoParaBuscar);
       setCobrancas(cobrancasData || []);
 
@@ -334,12 +334,12 @@ export default function ResponsavelCarteirinha() {
           )}
           <div className="space-y-6">
             <div className="flex flex-col gap-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:items-start">
-              {/* Cobranças */}
+              {/* Mensalidades */}
               <div className="order-1 lg:order-2 lg:col-span-2 lg:row-start-1 lg:h-full">
                 <Card className="h-full">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">Cobranças</CardTitle>
+                      <CardTitle className="text-lg">Mensalidades</CardTitle>
                       <div className="flex items-center gap-2">
                         <label className="text-xs text-muted-foreground hidden sm:block">
                           Ano:
@@ -493,7 +493,7 @@ export default function ResponsavelCarteirinha() {
                             >
                               {mostrarTodasCobrancas
                                 ? "Ver menos"
-                                : `Ver todas as ${cobrancas.length} cobranças`}
+                                : `Ver todas as ${cobrancas.length} mensalidades`}
                             </Button>
                           </div>
                         )}
@@ -505,10 +505,10 @@ export default function ResponsavelCarteirinha() {
                             <Alert className="bg-sky-50 border-sky-200 text-sky-900 p-3 md:p-4 rounded-xl gap-3 shadow-sm">
                               <Info className="h-5 w-5 text-sky-500 mt-0.5" />
                               <AlertTitle className="text-sky-900 text-sm font-semibold">
-                                Nenhuma cobrança... ainda!
+                                Nenhuma mensalidade... ainda!
                               </AlertTitle>
                               <AlertDescription className="text-sky-800 text-sm leading-relaxed">
-                                Não se preocupe! A primeira cobrança aparecerá
+                                Não se preocupe! A primeira mensalidade aparecerá
                                 aqui <strong>no início do próximo mês</strong>,
                                 com o vencimento para o dia programado.
                               </AlertDescription>
@@ -521,7 +521,7 @@ export default function ResponsavelCarteirinha() {
                               Cadastro desativado
                             </AlertTitle>
                             <AlertDescription className="text-red-800 text-sm leading-relaxed">
-                              Ação realizada pelo condutor. Nenhuma cobrança
+                              Ação realizada pelo condutor. Nenhuma mensalidade
                               será gerada enquanto o cadastro estiver
                               desativado.
                             </AlertDescription>

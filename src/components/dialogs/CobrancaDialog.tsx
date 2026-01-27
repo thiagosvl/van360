@@ -1,18 +1,18 @@
 import { CobrancaFormContent } from "@/components/forms/cobranca/CobrancaForm";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import {
-    Loader2,
-    PlusCircle,
-    User,
-    X
+  Loader2,
+  PlusCircle,
+  User,
+  X
 } from "lucide-react";
 
 interface CobrancaDialogProps {
@@ -71,7 +71,7 @@ export default function CobrancaDialog({
             <PlusCircle className="w-5 h-5 text-white" />
           </div>
           <DialogTitle className="text-xl font-bold text-white">
-            Registrar Cobrança
+            Registrar Mensalidades
           </DialogTitle>
         </div>
 
@@ -116,10 +116,10 @@ export default function CobrancaDialog({
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Criando...
+                Registrando...
               </>
             ) : (
-              "Criar Cobrança"
+              "Registrar Mensalidade"
             )}
           </Button>
         </div>
