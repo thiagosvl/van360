@@ -105,10 +105,10 @@ export default function CobrancaEditDialog({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-gray-900 leading-tight">
-                  {cobranca?.passageiro.nome}
+                  {cobranca?.passageiro?.nome}
                 </p>
                 <p className="text-xs text-gray-500 leading-tight mt-0.5">
-                  {cobranca?.passageiro.nome_responsavel}
+                  {cobranca?.passageiro?.nome_responsavel}
                 </p>
               </div>
             </div>
