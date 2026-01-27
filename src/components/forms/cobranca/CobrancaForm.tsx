@@ -25,6 +25,7 @@ import {
 import { CobrancaFormData, useCobrancaForm } from "@/hooks/form/useCobrancaForm";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
+import { calculateSafeDueDate } from "@/utils/dateUtils";
 import {
     anos,
     tiposPagamento,
@@ -70,7 +71,7 @@ export function CobrancaFormContent({
     form,
     mode,
     cobranca,
-    diaVencimento = 10,
+    diaVencimento,
     hideButtons = false,
     onCancel,
     isSubmitting = false,
@@ -112,16 +113,12 @@ export function CobrancaFormContent({
     // Sync Data Vencimento when Mes/Ano changes in Create Mode
     useEffect(() => {
         if (mode === "create" && mesSelecionado && anoSelecionado) {
-            const novaData = new Date(
-                parseInt(anoSelecionado),
+            const novaData = calculateSafeDueDate(
+                diaVencimento,
                 parseInt(mesSelecionado) - 1,
-                diaVencimento
+                parseInt(anoSelecionado)
             );
             
-            // Ajuste simples para manter mês
-            if (novaData.getMonth() !== parseInt(mesSelecionado) - 1) {
-                novaData.setDate(0); 
-            }
             form.setValue("data_vencimento", novaData, { shouldValidate: true });
 
             // Validação de pagamentos futuros
@@ -132,7 +129,6 @@ export function CobrancaFormContent({
             }
         }
     }, [mode, mesSelecionado, anoSelecionado, diaVencimento, form]);
-
 
     // --- Logic for Edit Mode ---
     const isPagamentoManual = cobranca?.pagamento_manual;

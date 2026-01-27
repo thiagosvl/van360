@@ -98,6 +98,7 @@ export default function CobrancaDialog({
                 <CobrancaFormContent
                     form={form}
                     mode="create"
+                    diaVencimento={diaVencimento}
                     hideButtons={true}
                 />
             </form>
