@@ -427,22 +427,6 @@ export default function PagamentoPixContent({
                 <span className="font-bold">{redirectSeconds}s</span>...
               </p>
             )}
-
-            {quantidadePassageiros !== undefined &&
-              quantidadePassageiros > 0 && (
-                <div className="w-full p-6 bg-white rounded-2xl border border-emerald-100 shadow-sm mb-6">
-                  <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2">
-                    Franquia Atualizada
-                  </p>
-                  <p className="text-sm font-bold text-emerald-900 leading-snug">
-                    Você agora pode ativar a Cobrança Automática para até{" "}
-                    <span className="text-emerald-600">
-                      {quantidadePassageiros} passageiros
-                    </span>
-                    .
-                  </p>
-                </div>
-              )}
           </div>
         </div>
 
@@ -457,20 +441,6 @@ export default function PagamentoPixContent({
               className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/10"
             >
               Começar a usar agora
-            </Button>
-          )}
-
-          {context === "register" && onIrParaAssinatura && (
-            <Button
-              onClick={() => {
-                onIrParaAssinatura();
-                if (onPaymentSuccess) setTimeout(onPaymentSuccess, 0);
-                else if (onClose) setTimeout(onClose, 0);
-              }}
-              variant="ghost"
-              className="w-full h-10 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium"
-            >
-              Ver detalhes da minha assinatura
             </Button>
           )}
 

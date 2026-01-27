@@ -6,6 +6,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { X } from "lucide-react";
+import { useState } from "react";
 
 interface PagamentoAssinaturaDialogProps {
   isOpen: boolean;
@@ -47,11 +48,25 @@ export default function PagamentoAssinaturaDialog({
   // but PagamentoPixContent handles its own cleanup on unmount/prop change.
   // However, the Dialog's onOpenChange triggers onClose, which should be sufficient.
 
+  // Estado local para controlar se o pagamento foi confirmado
+  // Se confirmado, bloqueamos o fechamento " acidental" (X ou fora) para obrigar o redirect
+  const [isConfirmed, setIsConfirmed] = useState(false);
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose(false)}>
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        // Se estiver confirmado, impede o fechamento via onOpenChange (ESC ou Backdrops que vazem)
+        if (isConfirmed && !open) return;
+        !open && onClose(false)
+      }}
+    >
       <DialogContent
         className="w-full max-w-md p-0 gap-0 bg-white h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => {
+           if (isConfirmed) e.preventDefault();
+        }}
         onOpenAutoFocus={(e) => e.preventDefault()}
         hideCloseButton
       >
@@ -59,11 +74,13 @@ export default function PagamentoAssinaturaDialog({
           ASSINATURA
         </DialogTitle>
         
-        {/* Botão fechar flutuante */}
-        <DialogClose className="absolute right-4 top-4 z-50 text-gray-400 hover:text-gray-600 transition-colors bg-white/50 backdrop-blur-sm rounded-full p-1 border border-gray-100/50">
-          <X className="h-5 w-5" />
-          <span className="sr-only">Fechar</span>
-        </DialogClose>
+        {/* Botão fechar flutuante - Só exibe se NÃO estiver confirmado */}
+        {!isConfirmed && (
+          <DialogClose className="absolute right-4 top-4 z-50 text-gray-400 hover:text-gray-600 transition-colors bg-white/50 backdrop-blur-sm rounded-full p-1 border border-gray-100/50">
+            <X className="h-5 w-5" />
+            <span className="sr-only">Fechar</span>
+          </DialogClose>
+        )}
 
         <div className="flex-1 overflow-hidden flex flex-col">
           <PagamentoPixContent
@@ -75,7 +92,10 @@ export default function PagamentoAssinaturaDialog({
             quantidadePassageiros={quantidadePassageiros}
             onIrParaInicio={onIrParaInicio}
             onIrParaAssinatura={onIrParaAssinatura}
-            onPaymentVerified={onPaymentVerified}
+            onPaymentVerified={() => {
+              setIsConfirmed(true);
+              if (onPaymentVerified) onPaymentVerified();
+            }}
             context={context}
             initialData={initialData}
             valor={valor}
