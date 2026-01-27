@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { meses } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
-import { Copy, CopyCheck, HelpCircle, User, X } from "lucide-react";
+import { AlertTriangle, Copy, CopyCheck, HelpCircle, X } from "lucide-react";
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
 
@@ -90,8 +90,8 @@ export function CobrancaPixDrawer({
             <div className="relative mb-4 mt-4 shrink-0">
               {/* Crachá de Responsável */}
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[11px] font-bold uppercase tracking-wider border border-amber-100 shadow-sm mb-1">
-                <User className="w-4 h-4" />
-                Envie Para o Responsável Pagar
+                <AlertTriangle className="w-4 h-4" />
+                ATENÇÃO: O Responsável é quem deve pagar
               </div>
             </div>
 
