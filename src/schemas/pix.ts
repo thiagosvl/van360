@@ -40,8 +40,10 @@ export const pixKeyRefinement = (data: { tipo_chave_pix?: TipoChavePix | null; c
              ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Telefone inválido", path: ["chave_pix"] });
          }
     } else if (data.tipo_chave_pix === TipoChavePix.ALEATORIA) {
-         if (data.chave_pix.length < 32) {
-             ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Chave aleatória inválida", path: ["chave_pix"] });
+         // Remove dashes/spaces to check real length
+         const cleanKey = data.chave_pix.replace(/[^a-zA-Z0-9]/g, '');
+         if (cleanKey.length !== 32) {
+             ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Chave aleatória inválida (deve ter 32 caracteres)", path: ["chave_pix"] });
          }
     }
 };

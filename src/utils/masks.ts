@@ -82,3 +82,21 @@ export const cpfCnpjMask = (value: string): string => {
   const numericValue = value.replace(/\D/g, "");
   return numericValue.length <= 11 ? cpfMask(value) : cnpjMask(value);
 };
+
+export const evpMask = (value: string): string => {
+  if (!value) return value;
+  
+  // Remove non-alphanumeric
+  const cleanValue = value.replace(/[^a-zA-Z0-9]/g, '');
+  
+  // Limit to 32 chars
+  const limitedValue = cleanValue.slice(0, 32);
+  
+  // 8-4-4-4-12 format
+  // Capture groups: (8) (4) (4) (4) (12)
+  return limitedValue
+    .replace(/^([a-zA-Z0-9]{8})([a-zA-Z0-9])/, '$1-$2')
+    .replace(/^([a-zA-Z0-9]{8})-([a-zA-Z0-9]{4})([a-zA-Z0-9])/, '$1-$2-$3')
+    .replace(/^([a-zA-Z0-9]{8})-([a-zA-Z0-9]{4})-([a-zA-Z0-9]{4})([a-zA-Z0-9])/, '$1-$2-$3-$4')
+    .replace(/^([a-zA-Z0-9]{8})-([a-zA-Z0-9]{4})-([a-zA-Z0-9]{4})-([a-zA-Z0-9]{4})([a-zA-Z0-9])/, '$1-$2-$3-$4-$5');
+};

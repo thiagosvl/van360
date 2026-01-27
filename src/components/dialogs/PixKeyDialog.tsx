@@ -1,25 +1,25 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { getMessage } from "@/constants/messages";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -27,7 +27,9 @@ import { pixKeySchemaRequired } from "@/schemas/pix";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { PixKeyStatus } from "@/types/enums";
 import { TIPOS_CHAVE_PIX_LABEL, TipoChavePix } from "@/types/pix";
-import { cnpjMask, cpfMask as maskCpf, phoneMask as maskPhone } from "@/utils/masks";
+import { cnpjMask, evpMask, cpfMask as maskCpf, phoneMask as maskPhone } from "@/utils/masks";
+
+
 import { toast } from "@/utils/notifications/toast";
 import { cleanString } from "@/utils/string";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -75,6 +77,7 @@ export default function PixKeyDialog({
              if (type === TipoChavePix.CPF) initialValue = maskCpf(initialValue);
              else if (type === TipoChavePix.CNPJ) initialValue = cnpjMask(initialValue);
              else if (type === TipoChavePix.TELEFONE) initialValue = maskPhone(initialValue);
+             else if (type === TipoChavePix.ALEATORIA) initialValue = evpMask(initialValue);
 
              form.reset({
                  tipo_chave_pix: type,
@@ -123,6 +126,7 @@ export default function PixKeyDialog({
     if (tipoSelecionado === TipoChavePix.CPF) value = maskCpf(value);
     else if (tipoSelecionado === TipoChavePix.CNPJ) value = cnpjMask(value);
     else if (tipoSelecionado === TipoChavePix.TELEFONE) value = maskPhone(value);
+    else if (tipoSelecionado === TipoChavePix.ALEATORIA) value = evpMask(value);
     fieldChange(value);
   };
 
@@ -132,8 +136,8 @@ export default function PixKeyDialog({
       let chavePixLimpa = data.chave_pix;
       const tipo = data.tipo_chave_pix;
 
-      if ([TipoChavePix.CPF, TipoChavePix.CNPJ, TipoChavePix.TELEFONE].includes(tipo)) {
-          chavePixLimpa = chavePixLimpa.replace(/\D/g, "");
+      if ([TipoChavePix.CPF, TipoChavePix.CNPJ, TipoChavePix.TELEFONE, TipoChavePix.ALEATORIA].includes(tipo)) {
+          chavePixLimpa = chavePixLimpa.replace(/[^a-zA-Z0-9]/g, "");
       } else {
           chavePixLimpa = cleanString(chavePixLimpa);
       }
