@@ -10,6 +10,9 @@ import { useSEO } from "@/hooks/useSEO";
 import { cepSchema, cpfSchema, phoneSchema } from "@/schemas/common";
 import { apiClient } from "@/services/api/client";
 import { prePassageiroApi } from "@/services/api/pre-passageiro.api";
+import {
+    parseCurrencyToNumber
+} from "@/utils/formatters";
 import { moneyToNumber } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
@@ -36,7 +39,12 @@ const prePassageiroSchema = z.object({
   escola_id: z.string().optional(),
   periodo: z.string().optional(),
 
-  valor_cobranca: z.string().optional(),
+  valor_cobranca: z
+    .string()
+    .optional()
+    .refine((val) => !val || parseCurrencyToNumber(val) >= 1, {
+      message: "O valor deve ser no mínimo R$ 1,00",
+    }),
   dia_vencimento: z.string().optional(),
   emitir_cobranca_mes_atual: z.boolean().optional(),
   enviar_cobranca_automatica: z.boolean().optional(),

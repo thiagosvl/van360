@@ -30,7 +30,7 @@ import {
     anos,
     tiposPagamento,
 } from "@/utils/formatters";
-import { endOfMonth, format, startOfMonth } from "date-fns";
+import { endOfMonth, format, startOfDay, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
     AlertTriangle,
@@ -280,6 +280,7 @@ export function CobrancaFormContent({
                                                 setOpenCalendarVencimento(false);
                                             }
                                         }}
+                                        disabled={(date) => date < startOfDay(new Date())}
                                         defaultMonth={cobrancaMesAnoDate}
                                         fromMonth={startOfMonth(cobrancaMesAnoDate)}
                                         toMonth={endOfMonth(cobrancaMesAnoDate)}
