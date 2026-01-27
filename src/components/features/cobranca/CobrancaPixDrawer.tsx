@@ -69,9 +69,7 @@ export function CobrancaPixDrawer({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="w-full max-w-md p-0 gap-0 bg-white h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
-        onInteractOutside={(e) => e.preventDefault()}
         onOpenAutoFocus={(e) => e.preventDefault()}
-        hideCloseButton
       >
         <DialogTitle className="sr-only">
           Pagamento PIX - {passageiroNome}

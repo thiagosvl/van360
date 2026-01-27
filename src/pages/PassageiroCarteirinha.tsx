@@ -440,6 +440,27 @@ export default function PassageiroCarteirinha() {
     },
     [desfazerPagamento, closeConfirmationDialog],
   );
+  
+  const handleExcluirCobranca = useCallback(
+    (cobranca: Cobranca) => {
+      openConfirmationDialog({
+        title: "Excluir mensalidade?",
+        description:
+          "Tem certeza que deseja excluir esta mensalidade? Essa ação não poderá ser desfeita.",
+        confirmText: "Excluir",
+        variant: "destructive",
+        onConfirm: async () => {
+          try {
+            await deleteCobranca.mutateAsync(cobranca.id);
+            closeConfirmationDialog();
+          } catch (error) {
+            closeConfirmationDialog();
+          }
+        },
+      });
+    },
+    [deleteCobranca, closeConfirmationDialog],
+  );
 
   const openPaymentDialog = (cobranca: Cobranca) => {
     openManualPaymentDialog({
@@ -641,6 +662,7 @@ export default function PassageiroCarteirinha() {
                       onEnviarNotificacao={handleEnviarNotificacaoClick}
                       onToggleLembretes={handleToggleLembretes}
                       onDesfazerPagamento={handleDesfazerClick}
+                      onExcluirCobranca={handleExcluirCobranca}
                       onToggleClick={handleToggleClick}
                       onUpgrade={handleUpgrade}
                     />
