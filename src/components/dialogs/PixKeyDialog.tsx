@@ -55,7 +55,6 @@ export default function PixKeyDialog({
   canClose = true
 }: PixKeyDialogProps) {
   const { profile, refreshProfile } = usePermissions();
-  const [isChecking, setIsChecking] = React.useState(false);
   const [overrideStatus, setOverrideStatus] = React.useState(false);
 
   const form = useForm<FormData>({
@@ -167,22 +166,6 @@ export default function PixKeyDialog({
     }
   };
 
-  const handleCheckStatus = async () => {
-      setIsChecking(true);
-      await refreshProfile();
-      setIsChecking(false);
-      
-      if (profile?.status_chave_pix === PixKeyStatus.VALIDADA) {
-          toast.success(getMessage("pix.sucesso.validada"));
-          if (onSuccess) onSuccess();
-          onClose();
-      } else if (profile?.status_chave_pix === PixKeyStatus.FALHA_VALIDACAO) {
-          toast.error(getMessage("pix.erro.validacaoFalhou"));
-      } else {
-          toast.info(getMessage("pix.info.pendente"));
-      }
-  };
-
   const renderStatusBanner = () => {
     if (isPending && !overrideStatus) {
       return (
@@ -256,11 +239,10 @@ export default function PixKeyDialog({
 
         {showPendingAction && (
           <Button 
-            className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold"
-            onClick={handleCheckStatus}
-            disabled={isChecking}
+            className="flex-1 h-12 rounded-xl bg-blue-100 text-blue-600 font-bold cursor-default hover:bg-blue-100"
+            disabled
           >
-            {isChecking ? <Loader2 className="w-5 h-5 animate-spin mr-2"/> : "Verificar Status"}
+            <Loader2 className="w-5 h-5 animate-spin mr-2"/> Aguardando Validação
           </Button>
         )}
 
@@ -332,7 +314,21 @@ export default function PixKeyDialog({
                         disabled={isPending && !overrideStatus} 
                         onValueChange={(val) => {
                             field.onChange(val);
-                            form.setValue("chave_pix", "");
+                            
+                            // Lógica de preenchimento automático
+                            if (!profile?.chave_pix) {
+                                // Cadastro novo -> preenche com dados do perfil se disponíveis
+                                let autoValue = "";
+                                if (val === TipoChavePix.CPF) autoValue = maskCpf(profile?.cpfcnpj || "");
+                                else if (val === TipoChavePix.TELEFONE) autoValue = maskPhone(profile?.telefone || "");
+                                else if (val === TipoChavePix.EMAIL) autoValue = profile?.email || "";
+                                
+                                form.setValue("chave_pix", autoValue);
+                            } else {
+                                // Edição -> limpa o campo para o usuário digitar
+                                form.setValue("chave_pix", "");
+                            }
+                            
                             form.clearErrors("chave_pix");
                             setOverrideStatus(true); // Editando
                         }} 
