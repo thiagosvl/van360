@@ -37,8 +37,9 @@ export function useFranchiseGate(): UseFranchiseGateReturn {
              openConfirmationDialog({
                 title: "Limite de automação atingido",
                 description: "Sua van digital está cheia no modo automático! Deseja assinar o Plano Profissional agora para manter as cobranças automatizadas ou reativar este passageiro sem a cobrança automática?",
-                confirmText: "Ver Planos",
+                confirmText: "Aumentar Limite",
                 cancelText: "Reativar sem cobranças",
+                allowClose: true,
                 onConfirm: () => {
                     closeConfirmationDialog();
                     openPlanUpgradeDialog({

@@ -102,7 +102,7 @@ export function PlanUpgradeDialog({
   const passageirosAtivos = resumo?.contadores?.passageiros?.ativos;
 
   const targetFromProps = targetPassengerCount ?? 0;
-  const targetFromAtivos = (passageirosAtivos || 0) + 1;
+  const targetFromAtivos = passageirosAtivos || 0;
   let effectiveTarget = Math.max(targetFromProps, targetFromAtivos);
 
   if (is_profissional && effectiveTarget <= franquiaAtual) {

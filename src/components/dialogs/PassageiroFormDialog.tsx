@@ -1,10 +1,10 @@
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -12,14 +12,14 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_LIMITE_FRANQUIA } from "@/constants";
 import {
-    useBuscarResponsavel,
-    useCreatePassageiro,
-    useEscolasWithFilters,
-    useFinalizePreCadastro,
-    usePassageiroForm,
-    usePermissions,
-    useUpdatePassageiro,
-    useVeiculosWithFilters,
+  useBuscarResponsavel,
+  useCreatePassageiro,
+  useEscolasWithFilters,
+  useFinalizePreCadastro,
+  usePassageiroForm,
+  usePermissions,
+  useUpdatePassageiro,
+  useVeiculosWithFilters,
 } from "@/hooks";
 import { useFranchiseGate } from "@/hooks/business/useFranchiseGate";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
@@ -90,7 +90,7 @@ export default function PassengerFormDialog({
     !!editingPassageiro?.enviar_cobranca_automatica
   );
 
-  const { canUseAutomatedCharges: hasCobrancaAutomaticaAccess } = usePermissions();
+  const { canUseAutomatedCharges: hasCobrancaAutomaticaAccess, summary } = usePermissions();
   
   const validacaoFranquia = {
     franquiaContratada: limits.franchise.limit,
@@ -195,9 +195,14 @@ export default function PassengerFormDialog({
       feature = FEATURE_COBRANCA_AUTOMATICA;
     } 
 
+    const passageirosAtivos = summary?.contadores?.passageiros?.ativos || 0;
+    const targetCount = (mode === PassageiroFormModes.CREATE || mode === PassageiroFormModes.FINALIZE)
+      ? passageirosAtivos + 1
+      : passageirosAtivos;
+
     openPlanUpgradeDialog({
         feature,
-        targetPassengerCount: limits.franchise.used + 1,
+        targetPassengerCount: targetCount,
         onSuccess: handleUpgradeSuccess
     });
   };

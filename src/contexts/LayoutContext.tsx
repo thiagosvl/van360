@@ -42,6 +42,7 @@ export interface OpenConfirmationDialogProps {
   variant?: "default" | "destructive" | "warning" | "success";
   isLoading?: boolean;
   onCancel?: () => void;
+  allowClose?: boolean;
 }
 
 export interface OpenPassageiroFormProps {
