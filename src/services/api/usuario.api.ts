@@ -5,7 +5,7 @@ const endpointBase = "/usuarios";
 
 export const usuarioApi = {
   getProfile: (usuarioId: string) => 
-     apiClient.get<Usuario>(`${endpointBase}/me/profile`).then(res => res.data),
+     apiClient.get<Usuario>(`/me/profile`).then(res => res.data),
 
   registrarPlanoEssencial: (payload: any) =>
     apiClient.post(`${endpointBase}/registrar-plano-essencial`, payload).then(res => res.data),
