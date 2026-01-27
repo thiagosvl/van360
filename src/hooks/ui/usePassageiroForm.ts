@@ -1,13 +1,13 @@
 import { usePermissions } from "@/hooks/business/usePermissions";
 import {
-  cepSchema,
-  cpfSchema,
-  phoneSchema,
+    cepSchema,
+    cpfSchema,
+    phoneSchema,
 } from "@/schemas/common";
 import { PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
-import { cepMask, cpfMask, moneyMask, phoneMask } from "@/utils/masks";
+import { cepMask, cpfMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
 import { validateEnderecoFields } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useState } from "react";
@@ -41,7 +41,13 @@ export const passageiroSchema = z
     cpf_responsavel: cpfSchema,
     telefone_responsavel: phoneSchema,
 
-    valor_cobranca: z.string().min(1, "Campo obrigatório"),
+    valor_cobranca: z
+      .string()
+      .min(1, "Campo obrigatório")
+      .refine((val) => {
+        const num = moneyToNumber(val);
+        return num >= 1;
+      }, "O valor deve ser no mínimo R$ 1,00"),
     dia_vencimento: z.string().min(1, "Campo obrigatório"),
 
     ativo: z.boolean().optional(),

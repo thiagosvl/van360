@@ -5,11 +5,11 @@ import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus } from "@/types/enums";
 import { calculateSafeDueDate } from "@/utils/dateUtils";
 import {
-  parseCurrencyToNumber
+    parseCurrencyToNumber
 } from "@/utils/formatters";
 import {
-  moneyMask,
-  moneyToNumber,
+    moneyMask,
+    moneyToNumber,
 } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,8 +25,8 @@ export const cobrancaSchema = z
     valor: z
       .string()
       .min(1, "Campo obrigatório")
-      .refine((val) => parseCurrencyToNumber(val) > 0, {
-        message: "O valor deve ser maior que 0",
+      .refine((val) => parseCurrencyToNumber(val) >= 1, {
+        message: "O valor deve ser no mínimo R$ 1,00",
       }),
     data_vencimento: z.date({
       required_error: "A data de vencimento é obrigatória.",
