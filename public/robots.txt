@@ -8,7 +8,7 @@ Allow: /cadastro
 Disallow: /inicio
 Disallow: /assinatura
 Disallow: /passageiros
-Disallow: /cobrancas
+Disallow: /mensalidades
 Disallow: /escolas
 Disallow: /veiculos
 Disallow: /gastos

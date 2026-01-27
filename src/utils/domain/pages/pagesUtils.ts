@@ -7,8 +7,8 @@ const pagesItems = [
         icon: LayoutDashboard,
     },
     {
-        title: "Cobranças",
-        href: "/cobrancas",
+        title: "Mensalidades",
+        href: "/mensalidades",
         icon: CreditCard,
     },
     {
