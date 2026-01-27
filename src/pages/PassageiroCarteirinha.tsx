@@ -61,11 +61,11 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { useFranchiseGate } from "@/hooks/business/useFranchiseGate";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { toast } from "@/utils/notifications/toast";
 
-import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus, PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
@@ -331,6 +331,9 @@ export default function PassageiroCarteirinha() {
     );
   };
 
+  /* New Hook Usage */
+  const { validateActivation, validateAutomationToggle } = useFranchiseGate();
+
   const handleToggleClick = (statusAtual: boolean) => {
     const action = statusAtual ? "desativar" : "ativar";
     openConfirmationDialog({
@@ -344,16 +347,32 @@ export default function PassageiroCarteirinha() {
       variant: action === "desativar" ? "warning" : "default",
       onConfirm: async () => {
         if (!passageiro || !passageiro_id) return;
-        try {
-          await toggleAtivoPassageiro.mutateAsync({
-            id: passageiro_id,
-            novoStatus: !passageiro.ativo,
-          });
-          closeConfirmationDialog();
-        } catch (error) {
-          closeConfirmationDialog();
-          throw error;
-        }
+        
+        validateActivation(
+            passageiro,
+            async () => {
+                try {
+                    await toggleAtivoPassageiro.mutateAsync({
+                        id: passageiro_id,
+                        novoStatus: !passageiro.ativo,
+                    });
+                    closeConfirmationDialog();
+                } catch (error) {
+                    closeConfirmationDialog();
+                    throw error;
+                }
+            },
+            async () => {
+               // Fallback: Activate but without automation
+               try {
+                   await updatePassageiro.mutateAsync({
+                     id: passageiro.id,
+                     data: { ativo: true, enviar_cobranca_automatica: false }
+                   });
+                   closeConfirmationDialog();
+               } catch(e) { closeConfirmationDialog(); }
+            }
+        );
       },
     });
   };
@@ -373,28 +392,11 @@ export default function PassageiroCarteirinha() {
 
     const novoValor = !passageiro.enviar_cobranca_automatica;
 
-    if (novoValor && canUseCobrancaAutomatica) {
-      const podeAtivar = limits.franchise.checkAvailability(false);
-
-      if (!podeAtivar) {
-        if (validacaoFranquiaGeral.franquiaContratada === 0) {
-          openPlanUpgradeDialog({
-            feature: FEATURE_COBRANCA_AUTOMATICA,
-            targetPassengerCount: limits.franchise.used + 1,
-          });
-        } else {
-          openPlanUpgradeDialog({
-            feature: FEATURE_COBRANCA_AUTOMATICA,
-            targetPassengerCount: limits.franchise.used + 1,
-          });
-        }
-        return;
-      }
-    }
-
-    updatePassageiro.mutate({
-      id: passageiro_id,
-      data: { enviar_cobranca_automatica: novoValor },
+    validateAutomationToggle(passageiro, novoValor, () => {
+        updatePassageiro.mutate({
+          id: passageiro_id,
+          data: { enviar_cobranca_automatica: novoValor },
+        });
     });
   };
 

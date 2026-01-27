@@ -1,3 +1,4 @@
+import { FEATURE_TRIAL_CONVERSION } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -25,7 +26,7 @@ export function useSubscriptionStatus() {
              if (!isPlanUpgradeDialogOpen) {
                  openPlanUpgradeDialog({
                    defaultTab: plano?.slug, // Respeita a escolha inicial (ancoração de preço)
-                   feature: "trial_conversion",
+                   feature: FEATURE_TRIAL_CONVERSION,
                  });
              }
         } else {

@@ -1,12 +1,6 @@
-import { LimitHealthBar } from "@/components/common/LimitHealthBar";
-import { Button } from "@/components/ui/button";
+import { AutomationPlanCard } from "@/components/common/AutomationPlanCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import {
-  FEATURE_RELATORIOS,
-  PLANO_ESSENCIAL,
-  PLANO_PROFISSIONAL,
-} from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { Users } from "lucide-react";
 
@@ -65,61 +59,12 @@ export const RelatoriosOperacional = ({
           </Card>
 
         {/* Automação (Cobranças Automáticas) */}
-        {IsProfissionalPlan ? (
-          <Card className="border-none shadow-sm rounded-2xl overflow-hidden relative p-0">
-            <CardContent className="p-0 h-full">
-              <LimitHealthBar
-                current={automacao.envios}
-                max={automacao.limite}
-                label="Passageiros no Automático"
-                description={
-                  automacao.envios >= automacao.limite
-                    ? "Limite atingido."
-                    : `${automacao.limite - automacao.envios} ${
-                        automacao.limite - automacao.envios === 1
-                          ? "vaga restante"
-                          : "vagas restantes"
-                      }.`
-                }
-                className="h-full mb-0 border-0 shadow-none bg-white"
-                onIncreaseLimit={() =>
-                  openPlanUpgradeDialog({
-                    feature: "automacao",
-                    defaultTab: PLANO_PROFISSIONAL,
-                    targetPassengerCount: dados.passageirosAtivosCount,
-                  })
-                }
-              />
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-500 to-purple-500 text-white shadow-lg">
-            <CardContent className="p-4 flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="text-sm font-semibold">Automatize sua rotina</p>
-                </div>
-                <p className="text-xs text-white/80">
-                  Deixe a cobrança com a gente! Recebimento automático e baixa
-                  instantânea.
-                </p>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="mt-4 px-5 rounded-full border-white/30 bg-white/20 text-white hover:bg-white/30 font-semibold"
-                  onClick={() =>
-                    openPlanUpgradeDialog({
-                      feature: FEATURE_RELATORIOS,
-                      defaultTab: PLANO_ESSENCIAL,
-                    })
-                  }
-                >
-                  Quero Automação Total →
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        <AutomationPlanCard
+          usage={automacao.envios}
+          limit={automacao.limite}
+          isProfessional={IsProfissionalPlan}
+          activePassengersCount={dados.passageirosAtivosCount}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

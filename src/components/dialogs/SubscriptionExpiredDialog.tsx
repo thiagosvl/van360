@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
+import { FEATURE_UPGRADE_AUTO, PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePlanUpgrade } from "@/hooks/business/usePlanUpgrade";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -22,7 +22,7 @@ export function SubscriptionExpiredDialog({ open, onOpenChange }: SubscriptionEx
   const {
     pagamentoDialog,
     setIsPaymentVerified,
-    handleUpgradeEssencial, // Usado como "Renovar" genérico se mapear ID
+    handleUpgradeEssencial,
     handleUpgradeProfissional,
     handleClosePayment,
   } = usePlanUpgrade({
@@ -40,9 +40,9 @@ export function SubscriptionExpiredDialog({ open, onOpenChange }: SubscriptionEx
       // Se era Profissional: handleUpgradeProfissional(plano.id)
       
       if (plano?.is_essencial) {
-           handleUpgradeEssencial(plano.id);
+           handleUpgradeEssencial((plano as any)?.id);
       } else if (plano?.is_profissional) {
-           handleUpgradeProfissional(plano.id);
+           handleUpgradeProfissional((plano as any)?.id);
       } else {
            // Fallback, talvez abrir tela de planos?
            // Por enquanto, assumir essencial
@@ -87,7 +87,7 @@ export function SubscriptionExpiredDialog({ open, onOpenChange }: SubscriptionEx
                 onOpenChange(false);
                 openPlanUpgradeDialog({
                   defaultTab: PLANO_PROFISSIONAL,
-                  feature: "upgrade_auto",
+                  feature: FEATURE_UPGRADE_AUTO,
                 });
               }}
               className="w-full text-center py-3 px-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors group"

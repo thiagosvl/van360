@@ -12,8 +12,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  FEATURE_COBRANCA_AUTOMATICA,
-  FEATURE_LIMITE_FRANQUIA,
+  FEATURE_COBRANCA_AUTOMATICA
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
@@ -29,6 +28,7 @@ import {
   useUpdatePassageiro,
   useVeiculos,
 } from "@/hooks";
+import { useFranchiseGate } from "@/hooks/business/useFranchiseGate";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { cn } from "@/lib/utils";
 import { Escola } from "@/types/escola";
@@ -278,6 +278,11 @@ export default function Passageiros() {
     [deletePassageiro, closeConfirmationDialog, openConfirmationDialog],
   );
 
+  /* 
+   * NEW HOOK USAGE
+   */
+  const { validateActivation, validateAutomationToggle } = useFranchiseGate();
+
   const handleToggleClick = useCallback(
     (passageiro: Passageiro) => {
       if (is_read_only) {
@@ -293,81 +298,49 @@ export default function Passageiros() {
             : "Desativar passageiro?",
         description:
           action === "ativar"
-            ? "O passageiro voltará a aparecer nas listagens ativas e a geração de cobranças será retomada."
-            : "O passageiro ficará inativo e a geração de cobranças será pausada. Você poderá reativá-lo depois.",
+            ? "O passageiro voltará a aparecer nas listagens ativas e a geração de mensalidades será retomada."
+            : "O passageiro ficará inativo e a geração de mensalidades será pausada. Você poderá reativá-lo depois.",
         confirmText: action === "ativar" ? "Reativar" : "Desativar",
         variant: action === "ativar" ? "success" : "warning",
         onConfirm: async () => {
-          // Logic from handleToggleConfirm
-          const p = passageiro;
-          if (!p) return;
-
-          const novoStatus = !p.ativo;
-
-          if (
-            novoStatus &&
-            canUseCobrancaAutomatica &&
-            p.enviar_cobranca_automatica
-          ) {
-            const franquiaContratada =
-              validacaoFranquiaGeral.franquiaContratada;
-            const cobrancasEmUso = validacaoFranquiaGeral.cobrancasEmUso;
-
-            const limiteApos = cobrancasEmUso + 1;
-
-            if (limiteApos > franquiaContratada) {
-              openConfirmationDialog({
-                title: "Limite de automação atingido",
-                description:
-                  "Sua van digital está cheia no modo automático! Deseja assinar o Plano Profissional agora para manter as cobranças automatizadas ou reativar este passageiro sem a cobrança automática?",
-                confirmText: "Ver Planos",
-                cancelText: "Reativar sem cobranças",
-                onConfirm: () => {
+          // Use centralized validation
+          validateActivation(
+            passageiro, 
+            async () => {
+               // Success Callback (Execute Action)
+               try {
+                  await toggleAtivoPassageiro.mutateAsync({ id: passageiro.id, novoStatus: !passageiro.ativo });
                   closeConfirmationDialog();
-                  openPlanUpgradeDialog({
-                    feature: FEATURE_LIMITE_FRANQUIA,
-                    targetPassengerCount: limiteApos,
-                    onSuccess: () => {
-                      toggleAtivoPassageiro.mutate({
-                        id: p.id,
-                        novoStatus: true,
-                      });
-                    },
-                  });
-                },
-                onCancel: () => {
-                  updatePassageiro.mutate({
-                    id: p.id,
-                    data: {
-                      ativo: true,
-                      enviar_cobranca_automatica: false,
-                    },
-                  });
-                },
-              });
-              return;
+               } catch (error) {
+                  console.error(error);
+                  closeConfirmationDialog();
+               }
+            },
+            async () => {
+              // Cancel/Fallback Callback (Reativar sem automação)
+              try {
+                await updatePassageiro.mutateAsync({
+                  id: passageiro.id,
+                  data: {
+                    ativo: true,
+                    enviar_cobranca_automatica: false,
+                  },
+                });
+                closeConfirmationDialog();
+              } catch(e) { console.error(e); closeConfirmationDialog(); }
             }
-          }
-
-          try {
-            await toggleAtivoPassageiro.mutateAsync({ id: p.id, novoStatus });
-            closeConfirmationDialog();
-          } catch (error) {
-            console.error(error);
-            closeConfirmationDialog();
-          }
+          );
         },
       });
     },
     [
       openConfirmationDialog,
       closeConfirmationDialog,
-      plano,
-      validacaoFranquiaGeral,
       toggleAtivoPassageiro,
       openPlanUpgradeDialog,
       updatePassageiro,
-      refetchPassageiros,
+      validateActivation, 
+      is_read_only
     ],
   );
 
@@ -377,50 +350,18 @@ export default function Passageiros() {
 
       const novoValor = !passageiro.enviar_cobranca_automatica;
 
-      if (novoValor && limits.franchise.canEnable) {
-        const podeAtivar = limits.franchise.checkAvailability(false);
-
-        if (!podeAtivar) {
-          if (validacaoFranquiaGeral.franquiaContratada === 0) {
-            openPlanUpgradeDialog({
-              feature: FEATURE_COBRANCA_AUTOMATICA,
-              onSuccess: () => {
-                updatePassageiro.mutate({
-                  id: passageiro.id,
-                  data: { enviar_cobranca_automatica: true },
-                });
-                refetchPassageiros();
-              },
-            });
-          } else {
-            openPlanUpgradeDialog({
-              feature: FEATURE_LIMITE_FRANQUIA,
-              targetPassengerCount: limits.franchise.used + 1,
-              onSuccess: () => {
-                updatePassageiro.mutate({
-                  id: passageiro.id,
-                  data: { enviar_cobranca_automatica: true },
-                });
-              },
-            });
-          }
-          return;
-        }
-      }
-
-      updatePassageiro.mutate({
-        id: passageiro.id,
-        data: { enviar_cobranca_automatica: novoValor },
+      validateAutomationToggle(passageiro, novoValor, () => {
+          updatePassageiro.mutate({
+            id: passageiro.id,
+            data: { enviar_cobranca_automatica: novoValor },
+          });
       });
     },
     [
       profile?.id,
-      plano,
       updatePassageiro,
-      validacaoFranquiaGeral,
-      openPlanUpgradeDialog,
-      refetchPassageiros,
-      limits,
+      validateAutomationToggle,
+      refetchPassageiros
     ],
   );
 

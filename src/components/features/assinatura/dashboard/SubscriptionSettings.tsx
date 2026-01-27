@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { FEATURE_LIMITE_PASSAGEIROS, PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
+import { FEATURE_LIMITE_PASSAGEIROS, FEATURE_UPGRADE_AUTOMACAO, PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
   ChevronRight,
@@ -34,7 +34,7 @@ export function SubscriptionSettings({
           onClick={() =>
             isProfissional
               ? openPlanUpgradeDialog({
-                  feature: "automacao",
+                  feature: FEATURE_UPGRADE_AUTOMACAO,
                   defaultTab: PLANO_PROFISSIONAL,
                   targetPassengerCount: passageirosAtivos,
                 })

@@ -1,3 +1,4 @@
+import { AutomationPlanCard } from "@/components/common/AutomationPlanCard";
 import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaDialog";
 import { AssinaturaDashboard } from "@/components/features/assinatura/dashboard/AssinaturaDashboard";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
@@ -10,12 +11,12 @@ import { useEffect, useMemo, useState } from "react";
 
 export default function Assinatura() {
   const { setPageTitle } = useLayout();
-  const { 
-    profile, 
-    plano, 
+  const {
+    profile,
+    plano,
     isLoading,
     summary: systemSummary,
-    refreshProfile: refetchSummary
+    refreshProfile: refetchSummary,
   } = usePermissions();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -28,16 +29,16 @@ export default function Assinatura() {
   const { data: cobrancasData = [], refetch: refetchCobrancas } =
     useAssinaturaCobrancas(
       profile?.id ? { usuarioId: profile.id } : undefined,
-      { enabled: !!profile?.id }
+      { enabled: !!profile?.id },
     );
 
   const { limits } = usePlanLimits();
 
   const data = useMemo(() => {
-    const assinatura = profile?.assinatura || profile?.assinaturas_usuarios?.[0];
-    
-    if (!assinatura || !plano || !systemSummary)
-      return null;
+    const assinatura =
+      profile?.assinatura || profile?.assinaturas_usuarios?.[0];
+
+    if (!assinatura || !plano || !systemSummary) return null;
 
     const planoData = assinatura.planos || plano;
 
@@ -58,10 +59,7 @@ export default function Assinatura() {
   }, [setPageTitle]);
 
   const pullToRefreshReload = async () => {
-    await Promise.all([
-      refetchCobrancas(),
-      refetchSummary(),
-    ]);
+    await Promise.all([refetchCobrancas(), refetchSummary()]);
   };
 
   const handlePaymentSuccess = async () => {
@@ -81,10 +79,7 @@ export default function Assinatura() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
-        <LoadingOverlay
-          active={true}
-          text="Carregando dados da conta..."
-        />
+        <LoadingOverlay active={true} text="Carregando dados da conta..." />
       </div>
     );
   }
@@ -99,7 +94,8 @@ export default function Assinatura() {
             plano={plano}
             assinatura={data.assinatura}
             metricas={{
-              passageirosAtivos: systemSummary?.contadores?.passageiros?.ativos ?? 0,
+              passageirosAtivos:
+                systemSummary?.contadores?.passageiros?.ativos ?? 0,
               cobrancasEmUso: limits.franchise.used,
               franquiaContratada: limits.franchise.limit,
             }}
@@ -109,15 +105,18 @@ export default function Assinatura() {
             flags={systemSummary?.usuario?.flags}
           />
 
-          <div className="mx-1">
-            {plano?.is_profissional && (
-              <>
-                <h2 className="text-lg font-semibold text-gray-800 mb-3 pl-1">
-                  Integrações
-                </h2>
-                {/* WhatsApp Connection Removed - Global Instance Active */}
-              </>
-            )}
+          <div className="">
+            <h2 className="text-lg font-semibold text-gray-800 mb-3 pl-1">
+              Automação
+            </h2>
+            <AutomationPlanCard
+              usage={limits.franchise.used}
+              limit={limits.franchise.limit}
+              isProfessional={!!plano?.is_profissional}
+              activePassengersCount={
+                systemSummary?.contadores?.passageiros?.ativos ?? 0
+              }
+            />
           </div>
         </div>
       </PullToRefreshWrapper>

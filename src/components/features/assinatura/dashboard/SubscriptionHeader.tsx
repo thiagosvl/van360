@@ -2,7 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  FEATURE_LIMITE_FRANQUIA
+  FEATURE_LIMITE_FRANQUIA,
+  FEATURE_OUTROS
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { cn } from "@/lib/utils";
@@ -111,7 +112,7 @@ export function SubscriptionHeader({
       });
     } else {
       openPlanUpgradeDialog({
-        feature: "outros",
+        feature: FEATURE_OUTROS,
         targetPassengerCount: passageirosAtivos,
         onClose: onRefresh,
       }); // Upgrade from Essential

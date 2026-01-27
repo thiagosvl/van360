@@ -1,10 +1,10 @@
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -12,15 +12,16 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_LIMITE_FRANQUIA } from "@/constants";
 import {
-  useBuscarResponsavel,
-  useCreatePassageiro,
-  useEscolasWithFilters,
-  useFinalizePreCadastro,
-  usePassageiroForm,
-  usePermissions,
-  useUpdatePassageiro,
-  useVeiculosWithFilters,
+    useBuscarResponsavel,
+    useCreatePassageiro,
+    useEscolasWithFilters,
+    useFinalizePreCadastro,
+    usePassageiroForm,
+    usePermissions,
+    useUpdatePassageiro,
+    useVeiculosWithFilters,
 } from "@/hooks";
+import { useFranchiseGate } from "@/hooks/business/useFranchiseGate";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { PassageiroFormData } from "@/hooks/ui/usePassageiroForm";
 import { Passageiro } from "@/types/passageiro";
@@ -232,6 +233,9 @@ export default function PassengerFormDialog({
     ]);
   };
 
+  // useFranchiseGate
+  const { validateAutomationToggle } = useFranchiseGate();
+
   const handleSubmit = async (data: PassageiroFormData) => {
     if (!profile?.id) return;
 
@@ -239,66 +243,69 @@ export default function PassengerFormDialog({
       editingPassageiro?.enviar_cobranca_automatica || false;
     const novoValorEnviarCobranca = data.enviar_cobranca_automatica || false;
 
+    // Função interna para processar o salvamento após validação
+    const processSubmit = () => {
+        const purePayload = { ...data };
+        
+        // Sanitização monetária
+        if (purePayload.valor_cobranca) {
+          purePayload.valor_cobranca = String(moneyToNumber(purePayload.valor_cobranca));
+        }
+    
+        const commonOptions = {
+          onSuccess: (data?: any) => {
+            onSuccess(data);
+            onClose();
+          },
+          onError: () => {
+            // Error handling
+          },
+        };
+    
+        if (mode === PassageiroFormModes.FINALIZE && prePassageiro) {
+          finalizePreCadastro.mutate(
+            {
+              prePassageiroId: prePassageiro.id,
+              data: {
+                ...purePayload,
+                usuario_id: prePassageiro.usuario_id,
+              },
+            },
+            commonOptions
+          );
+        } else if (editingPassageiro) {
+          updatePassageiro.mutate(
+            {
+              id: editingPassageiro.id,
+              data: purePayload,
+            },
+            {
+              onSuccess: commonOptions.onSuccess,
+            }
+          );
+        } else {
+          createPassageiro.mutate(
+            {
+              ...purePayload,
+              usuario_id: profile.id,
+            },
+            commonOptions
+          );
+        }
+    };
+
+    // Verificar se está ativando automação
     if (
       novoValorEnviarCobranca &&
       !valorAtualEnviarCobranca &&
       hasCobrancaAutomaticaAccess
     ) {
-      // Usar validação já calculada via hook
-      if (!validacaoFranquia.podeAtivar) {
-        handleRequestUpgrade();
-        // Reverter o valor do campo para false enquanto o upgrade não é feito
-        form.setValue("enviar_cobranca_automatica", false);
-        return;
-      }
-    }
-
-    const purePayload = { ...data };
-    
-    // Sanitização monetária
-    if (purePayload.valor_cobranca) {
-      purePayload.valor_cobranca = String(moneyToNumber(purePayload.valor_cobranca));
-    }
-
-    const commonOptions = {
-      onSuccess: (data?: any) => {
-        onSuccess(data);
-        onClose();
-      },
-      onError: () => {
-        // Error handling
-      },
-    };
-
-    if (mode === PassageiroFormModes.FINALIZE && prePassageiro) {
-      finalizePreCadastro.mutate(
-        {
-          prePassageiroId: prePassageiro.id,
-          data: {
-            ...purePayload,
-            usuario_id: prePassageiro.usuario_id,
-          },
-        },
-        commonOptions
-      );
-    } else if (editingPassageiro) {
-      updatePassageiro.mutate(
-        {
-          id: editingPassageiro.id,
-          data: purePayload,
-        },
-        {
-          onSuccess: commonOptions.onSuccess,
-        }
-      );
+       validateAutomationToggle(editingPassageiro, true, processSubmit);
+       // Reverter visualmente caso o usuário feche o modal de upgrade sem sucesso?
+       // O hook não tem um "onCancel". Se o usuário fechar o modal, o form fica com "true" marcado mas não salva.
+       // Se clicar em salvar de novo, abre o modal de novo. Aceitável.
     } else {
-      createPassageiro.mutate(
-        {
-          ...purePayload,
-          usuario_id: profile.id,
-        },
-        commonOptions
-      );
+       processSubmit();
     }
   };
 

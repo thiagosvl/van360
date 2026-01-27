@@ -31,17 +31,16 @@ export const passageiroApi = {
       .then(res => res.data),
 
   updatePassageiro: (passageiroId: string, data: any) => {
-    const payload = {
-      ...data,
-      valor_cobranca: moneyToNumber(data.valor_cobranca),
-      nome: cleanString(data.nome),
-      nome_responsavel: cleanString(data.nome_responsavel),
-      email_responsavel: cleanString(data.email_responsavel),
-      endereco: cleanString(data.endereco),
-      bairro: cleanString(data.bairro),
-      complemento: cleanString(data.complemento),
-      observacoes: cleanString(data.observacoes),
-    };
+    const payload: any = { ...data };
+
+    if (data.valor_cobranca !== undefined) payload.valor_cobranca = moneyToNumber(data.valor_cobranca);
+    if (data.nome !== undefined) payload.nome = cleanString(data.nome);
+    if (data.nome_responsavel !== undefined) payload.nome_responsavel = cleanString(data.nome_responsavel);
+    if (data.email_responsavel !== undefined) payload.email_responsavel = cleanString(data.email_responsavel);
+    if (data.endereco !== undefined) payload.endereco = cleanString(data.endereco);
+    if (data.bairro !== undefined) payload.bairro = cleanString(data.bairro);
+    if (data.complemento !== undefined) payload.complemento = cleanString(data.complemento);
+    if (data.observacoes !== undefined) payload.observacoes = cleanString(data.observacoes);
 
     return apiClient
       .put(`${endpointBase}/${passageiroId}`, payload)
