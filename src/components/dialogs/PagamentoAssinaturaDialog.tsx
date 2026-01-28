@@ -1,9 +1,9 @@
 import PagamentoPixContent from "@/components/features/pagamento/PagamentoPixContent";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 import { useState } from "react";
@@ -24,7 +24,7 @@ interface PagamentoAssinaturaDialogProps {
   initialData?: {
     qrCodePayload: string;
     location: string;
-    inter_txid: string;
+    gateway_txid: string;
     cobrancaId: string;
   };
 }

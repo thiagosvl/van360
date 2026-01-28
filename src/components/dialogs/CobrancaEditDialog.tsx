@@ -1,10 +1,10 @@
 import { CobrancaFormContent } from "@/components/forms/cobranca/CobrancaForm";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { useCobrancaForm } from "@/hooks/form/useCobrancaForm";
@@ -115,7 +115,7 @@ export default function CobrancaEditDialog({
           </div>
 
           {/* Alerta de PIX */}
-          {cobranca?.txid_pix && (
+          {cobranca?.gateway_txid && (
             <div className="mb-6 p-3 bg-amber-50 rounded-lg border border-amber-200 flex items-start gap-3">
               <div className="shrink-0 mt-0.5">
                 <AlertTriangle className="h-4 w-4 text-amber-600" />

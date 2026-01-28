@@ -26,7 +26,7 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
     initialData?: {
       qrCodePayload: string;
       location: string;
-      inter_txid: string;
+      gateway_txid: string;
       cobrancaId: string;
     };
   } | null>(null);
@@ -70,7 +70,7 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
           initialData: {
             qrCodePayload: result.qrCodePayload,
             location: result.location,
-            inter_txid: result.inter_txid,
+            gateway_txid: result.gateway_txid,
             cobrancaId: String(result.cobrancaId)
           }
         });
@@ -148,7 +148,7 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
           initialData: {
             qrCodePayload: result.qrCodePayload,
             location: result.location,
-            inter_txid: result.inter_txid,
+            gateway_txid: result.gateway_txid,
             cobrancaId: String(result.cobrancaId)
           }
         });

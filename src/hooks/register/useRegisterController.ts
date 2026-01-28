@@ -1,7 +1,7 @@
 import { isPlanoPagoNoAto } from "@/components/features/register";
 import {
-  PLANO_ESSENCIAL,
-  PLANO_PROFISSIONAL,
+    PLANO_ESSENCIAL,
+    PLANO_PROFISSIONAL,
 } from "@/constants";
 import { ROUTES } from "@/constants/routes";
 import { useCalcularPrecoPreview, usePlanos } from "@/hooks";
@@ -30,7 +30,7 @@ export function useRegisterController() {
     initialData?: {
       qrCodePayload: string;
       location: string;
-      inter_txid: string;
+      gateway_txid: string;
       cobrancaId: string;
     };
   } | null>(null);
@@ -526,7 +526,7 @@ export function useRegisterController() {
               initialData: {
                 qrCodePayload: qrCode,
                 location: location,
-                inter_txid: result.inter_txid,
+                gateway_txid: result.gateway_txid,
                 cobrancaId: String(result.cobrancaId)
               }
             });

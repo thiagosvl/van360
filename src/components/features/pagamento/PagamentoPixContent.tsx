@@ -26,7 +26,7 @@ interface PagamentoPixContentProps {
   initialData?: {
     qrCodePayload: string;
     location: string;
-    inter_txid: string;
+    gateway_txid: string;
     cobrancaId: string;
   };
   valor: number;
@@ -51,7 +51,7 @@ export default function PagamentoPixContent({
   const [dadosPagamento, setDadosPagamento] = useState<{
     qrCodePayload: string;
     location: string;
-    inter_txid: string;
+    gateway_txid: string;
     cobrancaId: string;
   } | null>(null);
   const [qrCodeImage, setQrCodeImage] = useState<string | null>(null);

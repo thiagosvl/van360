@@ -1,37 +1,37 @@
 import {
-  FEATURE_COBRANCA_AUTOMATICA,
-  FEATURE_NOTIFICACOES
+    FEATURE_COBRANCA_AUTOMATICA,
+    FEATURE_NOTIFICACOES
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useDeleteCobranca,
-  useDesfazerPagamento,
-  useEnviarNotificacaoCobranca,
-  usePermissions,
-  useToggleNotificacoesCobranca
+    useDeleteCobranca,
+    useDesfazerPagamento,
+    useEnviarNotificacaoCobranca,
+    usePermissions,
+    useToggleNotificacoesCobranca
 } from "@/hooks";
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
 import {
-  canSendNotification,
-  canViewReceipt,
-  disableEditarCobranca,
-  disableExcluirCobranca,
-  disableRegistrarPagamento,
-  seForPago
+    canSendNotification,
+    canViewReceipt,
+    disableEditarCobranca,
+    disableExcluirCobranca,
+    disableRegistrarPagamento,
+    seForPago
 } from "@/utils/domain/cobranca/disableActions";
 import {
-  Bell,
-  BellOff,
-  CheckCircle2,
-  DollarSign,
-  FilePen,
-  QrCode,
-  Receipt,
-  RotateCcw,
-  Send,
-  Trash2,
-  User
+    Bell,
+    BellOff,
+    CheckCircle2,
+    DollarSign,
+    FilePen,
+    QrCode,
+    Receipt,
+    RotateCcw,
+    Send,
+    Trash2,
+    User
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
@@ -276,7 +276,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    if (!isPago && cobranca.txid_pix && cobranca.qr_code_payload && onPagarPix) {
+    if (!isPago && cobranca.gateway_txid && cobranca.qr_code_payload && onPagarPix) {
       actions.push({
         label: "Ver PIX",
         icon: <QrCode className="h-4 w-4" />,

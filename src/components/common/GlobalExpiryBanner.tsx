@@ -40,7 +40,7 @@ export function GlobalExpiryBanner() {
             initialData: {
                 qrCodePayload: cobranca.qr_code_payload,
                 location: "", 
-                inter_txid: "",
+                gateway_txid: "",
                 cobrancaId: cobranca.id
             }
         });
