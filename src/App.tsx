@@ -40,11 +40,13 @@ const Passageiros = lazyLoad(() => import("./pages/Passageiros"));
 const PassageiroCarteirinha = lazyLoad(() => import("./pages/PassageiroCarteirinha"));
 const PassageiroCobranca = lazyLoad(() => import("./pages/PassageiroCobranca"));
 const PassageiroExternalForm = lazyLoad(() => import("./pages/PassageiroExternalForm"));
+const AssinarContrato = lazyLoad(() => import("./pages/AssinarContrato"));
 const Cobrancas = lazyLoad(() => import("./pages/Cobrancas"));
 const Escolas = lazyLoad(() => import("./pages/Escolas"));
 const Veiculos = lazyLoad(() => import("./pages/Veiculos"));
 const Gastos = lazyLoad(() => import("./pages/Gastos"));
 const Relatorios = lazyLoad(() => import("./pages/Relatorios"));
+const Contratos = lazyLoad(() => import("./pages/Contratos"));
 const NotFound = lazyLoad(() => import("./pages/NotFound"));
 
 import { queryClient } from "@/services/queryClient";
@@ -198,6 +200,12 @@ const App = () => {
               element={<PassageiroExternalForm />}
             />
 
+            {/* Rota Pública de assinatura de contrato */}
+            <Route
+              path="/assinar/:token"
+              element={<AssinarContrato />}
+            />
+
             <Route
               path={ROUTES.PUBLIC.ROOT}
               element={
@@ -247,6 +255,7 @@ const App = () => {
               <Route path={ROUTES.PRIVATE.MOTORISTA.VEHICLES} element={<Veiculos />} />
               <Route path={ROUTES.PRIVATE.MOTORISTA.EXPENSES} element={<Gastos />} />
               <Route path={ROUTES.PRIVATE.MOTORISTA.REPORTS} element={<Relatorios />} />
+              <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACTS} element={<Contratos />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

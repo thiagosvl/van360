@@ -26,6 +26,7 @@ export const ROUTES = {
       VEHICLES: "/veiculos",
       EXPENSES: "/gastos",
       REPORTS: "/relatorios",
+      CONTRACTS: "/contratos",
     }
   }
 } as const;
