@@ -722,12 +722,11 @@ export default function PassageiroCarteirinha() {
       <CobrancaDialog
         isOpen={cobrancaDialogOpen}
         onClose={() => setCobrancaDialogOpen(false)}
-        passageiroId={passageiro_id || ""}
-        passageiroNome={passageiro?.nome || ""}
-        passageiroResponsavelNome={passageiro?.nome_responsavel || ""}
-        valorCobranca={Number(passageiro?.valor_cobranca || 0)}
-        diaVencimento={Number(passageiro?.dia_vencimento || 10)}
-        // onCobrancaAdded={refetchCobrancas} // Removed to avoid double fetch
+        passageiroId={passageiro_id}
+        passageiroNome={passageiro?.nome}
+        passageiroResponsavelNome={passageiro?.nome_responsavel}
+        valorCobranca={Number(passageiro?.valor_cobranca)}
+        diaVencimento={Number(passageiro?.dia_vencimento)}
       />
     </>
   );
