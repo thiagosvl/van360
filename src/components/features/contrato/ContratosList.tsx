@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useLayout } from "@/contexts/LayoutContext";
 import { useContratoActions } from "@/hooks/ui/useContratoActions";
 import { cn } from "@/lib/utils";
 import { ContratoStatus } from "@/types/enums";
@@ -141,6 +142,22 @@ export const ContratosList = memo(function ContratosList({
   busca,
   ...actions
 }: ContratosListProps) {
+  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
+
+  const handleReenviarNotificacao = (id: string) => {
+    openConfirmationDialog({
+      title: "Reenviar Contrato?",
+      description:
+        "O responsável do passageiro receberá o link para assinatura no WhatsApp. Deseja continuar?",
+      confirmText: "Reenviar",
+      variant: "default",
+      onConfirm: () => {
+        actions.onReenviarNotificacao(id);
+        closeConfirmationDialog();
+      },
+    });
+  };
+
   const getEmptyState = () => {
     if (busca) {
       return (
@@ -194,6 +211,7 @@ export const ContratosList = memo(function ContratosList({
           index={index}
           activeTab={activeTab}
           {...actions}
+          onReenviarNotificacao={handleReenviarNotificacao}
         />
       )}
     >
@@ -266,6 +284,7 @@ export const ContratosList = memo(function ContratosList({
                     tipo={item.tipo}
                     status={item.status}
                     {...actions}
+                    onReenviarNotificacao={handleReenviarNotificacao}
                   />
                 </TableCell>
               </TableRow>
