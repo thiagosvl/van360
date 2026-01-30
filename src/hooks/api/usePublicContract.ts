@@ -2,7 +2,7 @@ import { apiClient } from '@/services/api/client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-export type ContratoStatus = 'pendente' | 'assinado' | 'cancelado';
+export type ContratoStatus = 'pendente' | 'assinado' | 'substituido';
 
 export interface PublicContract {
   id: string;

@@ -80,8 +80,6 @@ export enum PlanSalesContext {
 export enum ContratoStatus {
   PENDENTE = "pendente",
   ASSINADO = "assinado",
-  CANCELADO = "cancelado",
-  EXPIRADO = "expirado",
   SUBSTITUIDO = "substituido"
 }
 

@@ -34,17 +34,15 @@ export default function Contratos() {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, any> = {
-      pendente: 'default',
+      pendente: 'destructive',
       assinado: 'success',
-      cancelado: 'destructive',
-      expirado: 'secondary',
+      substituido: 'default',
     };
 
     const labels: Record<string, string> = {
       [ContratoStatus.PENDENTE]: 'Pendente',
       [ContratoStatus.ASSINADO]: 'Assinado',
-      [ContratoStatus.CANCELADO]: 'Cancelado',
-      [ContratoStatus.EXPIRADO]: 'Expirado',
+      [ContratoStatus.SUBSTITUIDO]: 'Substituído',
     };
 
     return <Badge variant={variants[status] || 'default'}>{labels[status] || status}</Badge>;
