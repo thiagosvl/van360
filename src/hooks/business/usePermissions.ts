@@ -17,6 +17,8 @@ export function usePermissions() {
     is_essencial,
     is_profissional,
     is_read_only,
+    isError,
+    error
   } = useProfile(user?.id);
 
   // Role extraction: Prioritize database (source of truth) -> fallback to auth metadata
@@ -40,6 +42,8 @@ export function usePermissions() {
     role,
     profile,
     summary,
-    refreshProfile
+    refreshProfile,
+    isError,
+    error
   };
 }

@@ -64,6 +64,39 @@ export function isValidCEPFormat(cep: string | undefined | null): boolean {
 }
 
 /**
+ * Valida se uma data está no formato DD/MM/YYYY e é uma data válida e não futura
+ */
+export function isValidDateBr(dateString: string | undefined | null): boolean {
+  if (!dateString) return false;
+  
+  const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+  if (!regex.test(dateString)) return false;
+
+  const [day, month, year] = dateString.split('/').map(Number);
+  
+  if (month < 1 || month > 12) return false;
+  if (day < 1 || day > 31) return false;
+  if (year < 1900) return false;
+
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+      return false;
+  }
+
+  // Future check: date cannot be in the future (today is valid)
+  // Normalize to start of day for accurate comparison vs today
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  
+  // Also normalize input date? The input date implies 00:00:00 local time usually.
+  // Actually, new Date(y, m-1, d) creates local time 00:00:00.
+  // So direct comparison is fine, but cleaner to zero out time of 'today' as above.
+  if (date > today) return false;
+
+  return true;
+}
+
+/**
  * Valida se um telefone tem o formato válido (11 dígitos após remover caracteres não numéricos)
  */
 export function isValidPhoneFormat(phone: string | undefined | null): boolean {

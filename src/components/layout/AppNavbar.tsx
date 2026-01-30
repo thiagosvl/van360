@@ -51,7 +51,7 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
     try {
       await apiClient.post("/auth/logout");
 
-      clearAppSession();
+      clearAppSession(true);
 
       // No need to get session, as we just cleared it.
       

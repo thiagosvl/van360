@@ -24,4 +24,5 @@ export interface PrePassageiro {
     veiculo_id: string | null;
     valor_cobranca: number | null;
     dia_vencimento: number | null;
+    genero?: string; // Novo campo
 }

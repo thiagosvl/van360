@@ -1,5 +1,6 @@
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
+import ContractSetupDialog from "@/components/dialogs/ContractSetupDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import FirstChargeDialog from "@/components/dialogs/FirstChargeDialog";
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
@@ -23,7 +24,9 @@ import {
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useContractGuard } from "@/hooks/ui/useContractGuard";
 import { usePixKeyGuard } from "@/hooks/ui/usePixKeyGuard";
+
 import { PassageiroFormModes, PixKeyStatus } from "@/types/enums";
 import {
     ReactNode,
@@ -158,6 +161,11 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
+  const [contractSetupDialogState, setContractSetupDialogState] = useState({
+    open: false,
+  });
+
+
   // Prioridade de Dialogs: PIX Key > Whatsapp
   const isPixKeyValid = !!profile?.chave_pix && profile?.status_chave_pix === PixKeyStatus.VALIDADA;
 
@@ -174,6 +182,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     isLoading: isProfileLoading,
     onShouldOpen: handleOpenPixKeyDialog,
   });
+
+  useContractGuard({
+    profile,
+    isProfissional: !!is_profissional,
+    isLoading: isProfileLoading,
+    onShouldOpen: () => setContractSetupDialogState({ open: true }),
+  });
+
 
 
 
@@ -324,7 +340,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openManualPaymentDialog,
         openFirstChargeDialog,
         isFirstChargeDialogOpen: firstChargeDialogState.open,
+        openContractSetupDialog: () => setContractSetupDialogState({ open: true }),
       }}
+
     >
       {children}
 
@@ -567,6 +585,12 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             passageiro={firstChargeDialogState.props.passageiro}
         />
       )}
+
+      <ContractSetupDialog
+        isOpen={contractSetupDialogState.open}
+        onClose={() => setContractSetupDialogState({ open: false })}
+      />
+
     </LayoutContext.Provider>
   );
 };

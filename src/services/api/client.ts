@@ -32,6 +32,7 @@ apiClient.interceptors.request.use(
       config.headers = config.headers || {};
       // @ts-ignore
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
     }
     return config;
   },
@@ -78,7 +79,8 @@ apiClient.interceptors.response.use(
         }
 
         // If refresh failed or returned success=false
-        sessionManager.signOut().catch(() => {});
+        // sessionManager.signOut().catch(() => {});
+        console.warn('[ApiClient] 401 Interceptor: Refresh failed. proceeding to reject but NOT signing out for debug.');
     }
 
     const message = handleApiError(error);

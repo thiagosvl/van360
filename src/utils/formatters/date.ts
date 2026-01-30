@@ -105,3 +105,9 @@ export const formatRelativeTime = (date: string | Date): string => {
 
   return formatDateToBR(past);
 };
+
+export const convertDateBrToISO = (dateBr: string): string => {
+  if (!dateBr || dateBr.length !== 10) return "";
+  const [day, month, year] = dateBr.split("/");
+  return `${year}-${month}-${day}`;
+};

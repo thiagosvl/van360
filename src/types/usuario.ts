@@ -27,4 +27,14 @@ export interface Usuario {
   flags?: any;
   plano?: any;
   assinatura?: any;
+
+  // Configurações de contrato
+  assinatura_url?: string;
+  config_contrato?: {
+    usar_contratos: boolean;
+    configurado: boolean;
+    multa_atraso: { valor: number; tipo: "percentual" | "fixo" };
+    multa_rescisao: { valor: number; tipo: "percentual" | "fixo" };
+    clausulas: string[];
+  };
 }

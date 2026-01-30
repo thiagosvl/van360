@@ -1,104 +1,96 @@
-import { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Document, Page, pdfjs } from 'react-pdf';
-import SignatureCanvas from 'react-signature-canvas';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { toast } from 'sonner';
-import { api } from '@/lib/api';
-import { Loader2 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ROUTES } from "@/constants/routes";
+import {
+  useGetPublicContract,
+  useSignContract,
+} from "@/hooks/api/usePublicContract";
+import { ContratoStatus } from "@/types/enums";
+import { CheckCircle2, Download, FileSignature, Loader2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { Document, Page, pdfjs } from "react-pdf";
+import { useNavigate, useParams } from "react-router-dom";
+import SignatureCanvas from "react-signature-canvas";
+import { toast } from "sonner";
 
 // Configurar worker do PDF.js
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-interface Contrato {
-  id: string;
-  status: string;
-  minuta_url: string;
-  dados_contrato: {
-    nomeAluno: string;
-    nomeResponsavel: string;
-    valorMensal: number;
-  };
-}
-
-export function AssinarContrato() {
+export default function AssinarContrato() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  
-  const [contrato, setContrato] = useState<Contrato | null>(null);
+
   const [modalAberto, setModalAberto] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [assinando, setAssinando] = useState(false);
   const [numPages, setNumPages] = useState<number>(0);
-  
+
   const sigCanvas = useRef<SignatureCanvas>(null);
 
-  useEffect(() => {
-    carregarContrato();
-  }, [token]);
+  // Hook for fetching contract
+  const {
+    data: contrato,
+    isLoading,
+    isError,
+  } = useGetPublicContract(token || "");
 
-  const carregarContrato = async () => {
-    try {
-      const response = await api.get(`/contratos/publico/${token}`);
-      setContrato(response.data);
-      
-      if (response.data.status !== 'pendente') {
-        toast.error('Este contrato já foi assinado ou cancelado');
-      }
-    } catch (error: any) {
-      console.error('Erro ao carregar contrato:', error);
-      toast.error('Contrato não encontrado');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Hook for signing
+  const signMutation = useSignContract();
 
   const obterIP = async (): Promise<string> => {
     try {
-      const response = await fetch('https://api.ipify.org?format=json');
+      const response = await fetch("https://api.ipify.org?format=json");
       const data = await response.json();
       return data.ip;
     } catch {
-      return 'unknown';
+      return "unknown";
     }
   };
 
   const handleAssinar = async () => {
     if (!sigCanvas.current || sigCanvas.current.isEmpty()) {
-      toast.error('Por favor, desenhe sua assinatura');
+      toast.error("Por favor, desenhe sua assinatura");
       return;
     }
-    
-    setAssinando(true);
-    
+
+    if (!token) return;
+
     try {
       const assinaturaBase64 = sigCanvas.current.toDataURL();
       const ip = await obterIP();
-      
+
       const metadados = {
         ip,
         userAgent: navigator.userAgent,
         timestamp: new Date().toISOString(),
       };
 
-      await api.post(`/contratos/publico/${token}/assinar`, {
+      await signMutation.mutateAsync({
+        token,
         assinatura: assinaturaBase64,
         metadados,
       });
 
-      toast.success('Contrato assinado com sucesso! Você receberá o documento via WhatsApp.');
+      toast.success(
+        "Contrato assinado com sucesso! Você receberá o documento via WhatsApp.",
+      );
       setModalAberto(false);
-      
+
       setTimeout(() => {
-        navigate('/');
+        // Redirect to landing page or success page
+        if (window.opener) {
+          window.close();
+        } else {
+          navigate(ROUTES.PUBLIC.ROOT);
+        }
       }, 2000);
     } catch (error: any) {
-      console.error('Erro ao assinar:', error);
-      toast.error('Erro ao assinar contrato. Tente novamente.');
-    } finally {
-      setAssinando(false);
+      console.error("Erro ao assinar:", error);
     }
   };
 
@@ -106,7 +98,7 @@ export function AssinarContrato() {
     setNumPages(numPages);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -114,7 +106,7 @@ export function AssinarContrato() {
     );
   }
 
-  if (!contrato) {
+  if (isError || !contrato) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Card className="w-full max-w-md">
@@ -123,7 +115,8 @@ export function AssinarContrato() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              O contrato que você está tentando acessar não existe ou expirou.
+              O contrato que você está tentando acessar não existe, foi
+              cancelado ou expirou.
             </p>
           </CardContent>
         </Card>
@@ -135,14 +128,12 @@ export function AssinarContrato() {
     <div className="container mx-auto p-4 max-w-4xl">
       <Card>
         <CardHeader>
-          <CardTitle>Contrato de Transporte Escolar</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Aluno: {contrato.dados_contrato.nomeAluno} | Responsável: {contrato.dados_contrato.nomeResponsavel}
-          </p>
+          <img src="/assets/logo-van360.png" alt="Van360" className="w-20 mx-auto" />
         </CardHeader>
-        
+
         <CardContent>
-          <div className="border rounded-lg overflow-hidden mb-6">
+          {/* PDF View */}
+          <div className="border rounded-lg overflow-hidden mb-32 flex justify-center bg-gray-50 min-h-[60vh]">
             <Document
               file={contrato.minuta_url}
               onLoadSuccess={onDocumentLoadSuccess}
@@ -151,60 +142,99 @@ export function AssinarContrato() {
                   <Loader2 className="h-8 w-8 animate-spin" />
                 </div>
               }
+              error={
+                <div className="p-8 text-center text-red-500">
+                  Erro ao carregar PDF.{" "}
+                  <button
+                    onClick={() => window.open(contrato.minuta_url)}
+                    className="underline"
+                  >
+                    Clique aqui para baixar
+                  </button>
+                </div>
+              }
             >
-              {Array.from(new Array(numPages), (_, index) => (
-                <Page
-                  key={`page_${index + 1}`}
-                  pageNumber={index + 1}
-                  width={Math.min(window.innerWidth - 100, 800)}
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                />
-              ))}
+              {
+                // Limit pages rendered for performance if needed, or render all
+                Array.from(new Array(numPages), (_, index) => (
+                  <div key={`page_${index + 1}`} className="mb-4 shadow-sm">
+                    <Page
+                      pageNumber={index + 1}
+                      width={Math.min(window.innerWidth - 64, 800)}
+                      renderTextLayer={false}
+                      renderAnnotationLayer={false}
+                    />
+                  </div>
+                ))
+              }
             </Document>
-          </div>
-
-          <div className="flex gap-4">
-            <Button
-              variant="outline"
-              onClick={() => window.open(contrato.minuta_url, '_blank')}
-            >
-              Baixar Contrato
-            </Button>
-            
-            <Button
-              onClick={() => setModalAberto(true)}
-              disabled={contrato.status !== 'pendente'}
-              className="flex-1"
-            >
-              {contrato.status === 'pendente' ? 'Assinar Documento' : 'Contrato já assinado'}
-            </Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Fixed Action Buttons */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 sm:p-6 bg-white/80 backdrop-blur-md border-t border-gray-100 z-50 flex items-center justify-between gap-4 sm:justify-between transition-all duration-300">
+        <Button
+          onClick={() => window.open(contrato.minuta_url, "_blank")}
+          className="rounded-full bg-green-600 hover:bg-green-700 text-white font-bold h-12 sm:h-14 px-6 sm:px-8 text-base shadow-lg shadow-green-500/20 hover:shadow-green-500/30 hover:-translate-y-1 transition-all"
+        >
+          <Download className="mr-2 h-5 w-5" />
+          Baixar <span className="hidden sm:inline">Contrato</span>
+        </Button>
+
+        <Button
+          onClick={() => setModalAberto(true)}
+          disabled={contrato.status !== ContratoStatus.PENDENTE}
+          className={`rounded-full font-bold h-12 sm:h-14 px-6 sm:px-8 text-base shadow-lg hover:-translate-y-1 transition-all ${
+            contrato.status === ContratoStatus.PENDENTE
+              ? "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20 hover:shadow-blue-500/30"
+              : "bg-gray-200 text-gray-500 cursor-not-allowed"
+          }`}
+        >
+          {contrato.status === ContratoStatus.PENDENTE ? (
+            <>
+              <FileSignature className="mr-2 h-5 w-5" />
+              Assinar <span className="hidden sm:inline">Documento</span>
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="mr-2 h-5 w-5" />
+              Assinado
+            </>
+          )}
+        </Button>
+      </div>
 
       <Dialog open={modalAberto} onOpenChange={setModalAberto}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Assinatura Digital</DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
-            <div className="border-2 border-gray-300 rounded-lg overflow-hidden">
+            <p className="text-sm text-muted-foreground">
+              Por favor, assine no quadro abaixo usando seu dedo ou mouse.
+            </p>
+            <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
               <SignatureCanvas
                 ref={sigCanvas}
+                penColor="rgb(0, 0, 128)"
+                minWidth={1}
+                maxWidth={2.5}
                 canvasProps={{
                   width: 400,
                   height: 200,
-                  className: 'w-full h-full bg-white'
+                  className: "w-full h-full cursor-crosshair",
                 }}
+                backgroundColor="white"
               />
             </div>
 
             <Button
-              variant="outline"
+              variant="ghost"
+              size="sm"
               onClick={() => sigCanvas.current?.clear()}
-              className="w-full"
+              className="w-full text-muted-foreground hover:text-destructive"
             >
               Limpar assinatura
             </Button>
@@ -214,22 +244,19 @@ export function AssinarContrato() {
             <Button
               variant="outline"
               onClick={() => setModalAberto(false)}
-              disabled={assinando}
+              disabled={signMutation.isPending}
             >
               Cancelar
             </Button>
-            
-            <Button
-              onClick={handleAssinar}
-              disabled={assinando}
-            >
-              {assinando ? (
+
+            <Button onClick={handleAssinar} disabled={signMutation.isPending}>
+              {signMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Assinando...
                 </>
               ) : (
-                'Salvar e Enviar'
+                "Salvar e Enviar"
               )}
             </Button>
           </DialogFooter>

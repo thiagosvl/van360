@@ -1,3 +1,8 @@
+import {
+  ParentescoResponsavel,
+  PassageiroGenero,
+  PassageiroModalidade,
+} from "@/types/enums";
 import { CATEGORIAS_GASTOS } from "@/types/gasto";
 
 // Listas de dados para geração aleatória
@@ -69,6 +74,19 @@ const veiculos = [
  */
 const randomNumber = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1) + min);
+};
+
+const randomEnum = <T>(anEnum: T): T[keyof T] => {
+  const enumValues = Object.values(anEnum as object) as unknown as T[keyof T][];
+  const randomIndex = Math.floor(Math.random() * enumValues.length);
+  return enumValues[randomIndex];
+};
+
+const generateDate = (startYear: number, endYear: number) => {
+    const year = randomNumber(startYear, endYear);
+    const month = randomNumber(1, 12).toString().padStart(2, '0');
+    const day = randomNumber(1, 28).toString().padStart(2, '0');
+    return `${day}/${month}/${year}`;
 };
 
 /**
@@ -268,6 +286,14 @@ export const mockGenerator = {
       ativo: true,
       observacoes: "é um teste",
       enviar_cobranca_automatica: false,
+      
+      // New fields from Schema/Enums
+      genero: randomEnum(PassageiroGenero),
+      modalidade: randomEnum(PassageiroModalidade),
+      parentesco_responsavel: randomEnum(ParentescoResponsavel),
+      data_nascimento: generateDate(2010, 2020), // 4-14 years old
+      data_inicio_transporte: generateDate(2024, 2024),
+      
       ...overrides
     };
   }

@@ -1,31 +1,14 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { getMessage } from '@/constants/messages';
+import { apiClient } from '@/services/api/client';
+import { Contrato, CreateContratoDTO } from '@/types/contract';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-interface Contrato {
-  id: string;
-  usuario_id: string;
-  passageiro_id: string;
-  token_acesso: string;
-  status: 'pendente' | 'assinado' | 'cancelado' | 'expirado';
-  provider: string;
-  minuta_url: string;
-  contrato_final_url?: string;
-  dados_contrato: any;
-  created_at: string;
-  assinado_em?: string;
-}
-
-interface CreateContratoDTO {
-  passageiroId: string;
-  provider?: 'inhouse' | 'assinafy';
-}
-
-export function useContratos(filters?: any) {
+export function useContratos(filters?: Record<string, any>) {
   return useQuery({
     queryKey: ['contratos', filters],
     queryFn: async () => {
-      const { data } = await api.get('/contratos', { params: filters });
+      const { data } = await apiClient.get<{ data: Contrato[] }>('/contratos', { params: filters });
       return data;
     },
   });
@@ -36,15 +19,16 @@ export function useCreateContrato() {
 
   return useMutation({
     mutationFn: async (dto: CreateContratoDTO) => {
-      const { data } = await api.post('/contratos', dto);
+      const { data } = await apiClient.post<Contrato>('/contratos', dto);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
-      toast.success('Contrato criado com sucesso!');
+      toast.success(getMessage('contrato.sucesso.criado'));
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Erro ao criar contrato');
+      const message = error.response?.data?.error || getMessage('contrato.erro.criar');
+      toast.error(message);
     },
   });
 }
@@ -54,15 +38,16 @@ export function useCancelContrato() {
 
   return useMutation({
     mutationFn: async (contratoId: string) => {
-      const { data } = await api.delete(`/contratos/${contratoId}`);
+      const { data } = await apiClient.delete(`/contratos/${contratoId}`);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
-      toast.success('Contrato cancelado com sucesso!');
+      toast.success(getMessage('contrato.sucesso.cancelado'));
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Erro ao cancelar contrato');
+      const message = error.response?.data?.error || getMessage('contrato.erro.cancelar');
+      toast.error(message);
     },
   });
 }
@@ -70,7 +55,7 @@ export function useCancelContrato() {
 export function useDownloadContrato() {
   return useMutation({
     mutationFn: async (contratoId: string) => {
-      const response = await api.get(`/contratos/${contratoId}/download`, {
+      const response = await apiClient.get(`/contratos/${contratoId}/download`, {
         responseType: 'blob',
       });
       
@@ -81,14 +66,36 @@ export function useDownloadContrato() {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
       
       return response.data;
     },
     onSuccess: () => {
-      toast.success('Contrato baixado com sucesso!');
+      toast.success(getMessage('contrato.sucesso.baixado'));
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Erro ao baixar contrato');
+      const message = error.response?.data?.error || getMessage('contrato.erro.baixar');
+      toast.error(message);
+    },
+  });
+}
+
+export function usePreviewContrato() {
+  return useMutation({
+    mutationFn: async (draftConfig?: any) => {
+      const response = await apiClient.post('/contratos/preview', draftConfig || {}, {
+        responseType: 'blob',
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      window.open(url, '_blank');
+      // Note: we don't revoke here because it needs to stay open in the new tab.
+      
+      return response.data;
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.error || getMessage('contrato.erro.carregar');
+      toast.error(message);
     },
   });
 }

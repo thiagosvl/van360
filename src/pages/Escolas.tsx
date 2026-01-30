@@ -16,11 +16,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreateEscola,
-  useDeleteEscola,
-  useEscolas,
-  useFilters,
-  useToggleAtivoEscola,
+    useCreateEscola,
+    useDeleteEscola,
+    useEscolas,
+    useFilters,
+    useToggleAtivoEscola,
 } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useProfile } from "@/hooks/business/useProfile";

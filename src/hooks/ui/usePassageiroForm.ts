@@ -2,11 +2,13 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 import {
     cepSchema,
     cpfSchema,
+    dateSchema,
     phoneSchema,
 } from "@/schemas/common";
 import { PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
+import { formatDateToBR } from "@/utils/formatters/date";
 import { cepMask, cpfMask, moneyMask, moneyToNumber, phoneMask } from "@/utils/masks";
 import { validateEnderecoFields } from "@/utils/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,6 +24,9 @@ export const passageiroSchema = z
     nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
 
     periodo: z.string().min(1, "Campo obrigatório"),
+    modalidade: z.string().min(1, "Campo obrigatório"),
+    data_nascimento: dateSchema(true),
+    genero: z.string().min(1, "Campo obrigatório"),
 
     logradouro: z.string().optional(),
     numero: z.string().optional(),
@@ -34,6 +39,7 @@ export const passageiroSchema = z
     observacoes: z.string().optional(),
 
     nome_responsavel: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+    parentesco_responsavel: z.string().min(1, "Campo obrigatório"),
     email_responsavel: z
       .string()
       .min(1, "Campo obrigatório")
@@ -49,6 +55,7 @@ export const passageiroSchema = z
         return num >= 1;
       }, "O valor deve ser no mínimo R$ 1,00"),
     dia_vencimento: z.string().min(1, "Campo obrigatório"),
+    data_inicio_transporte: dateSchema(true),
 
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
@@ -122,6 +129,9 @@ export function usePassageiroForm({
       veiculo_id: "",
       nome: "",
       periodo: "",
+      modalidade: "",
+      data_nascimento: "",
+      genero: "",
       observacoes: "",
       logradouro: "",
       numero: "",
@@ -131,11 +141,13 @@ export function usePassageiroForm({
       cep: "",
       referencia: "",
       nome_responsavel: "",
+      parentesco_responsavel: "",
       email_responsavel: "",
       telefone_responsavel: "",
       cpf_responsavel: "",
       valor_cobranca: "",
       dia_vencimento: "",
+      data_inicio_transporte: "",
 
       ativo: true,
       enviar_cobranca_automatica:
@@ -157,7 +169,11 @@ export function usePassageiroForm({
           form.reset({
             nome: editingPassageiro.nome,
             periodo: editingPassageiro.periodo,
+            modalidade: editingPassageiro.modalidade || "",
+            data_nascimento: editingPassageiro.data_nascimento ? formatDateToBR(new Date(editingPassageiro.data_nascimento)) : "",
+            genero: editingPassageiro.genero || "",
             nome_responsavel: editingPassageiro.nome_responsavel,
+            parentesco_responsavel: editingPassageiro.parentesco_responsavel || "",
             email_responsavel: editingPassageiro.email_responsavel,
             cpf_responsavel: cpfMask(editingPassageiro.cpf_responsavel),
             telefone_responsavel: phoneMask(
@@ -171,6 +187,7 @@ export function usePassageiroForm({
                 )
               : "",
             dia_vencimento: editingPassageiro.dia_vencimento?.toString() || "",
+            data_inicio_transporte: editingPassageiro.data_inicio_transporte ? formatDateToBR(new Date(editingPassageiro.data_inicio_transporte)) : "",
             observacoes: editingPassageiro.observacoes || "",
             logradouro: editingPassageiro.logradouro || "",
             numero: editingPassageiro.numero || "",
@@ -199,10 +216,14 @@ export function usePassageiroForm({
         form.reset({
           nome: prePassageiro.nome,
           nome_responsavel: prePassageiro.nome_responsavel,
+          parentesco_responsavel: "", // Não tem no pré-passageiro ainda
           email_responsavel: prePassageiro.email_responsavel,
           cpf_responsavel: cpfMask(prePassageiro.cpf_responsavel),
           telefone_responsavel: phoneMask(prePassageiro.telefone_responsavel),
           periodo: prePassageiro.periodo || "",
+          modalidade: "",
+          data_nascimento: "",
+          genero: prePassageiro.genero || "", 
           logradouro: prePassageiro.logradouro || "",
           numero: prePassageiro.numero || "",
           bairro: prePassageiro.bairro || "",
@@ -219,6 +240,7 @@ export function usePassageiroForm({
               )
             : "",
           dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
+          data_inicio_transporte: "",
 
           ativo: true,
           enviar_cobranca_automatica:
@@ -229,10 +251,13 @@ export function usePassageiroForm({
           "escola_id",
           "veiculo_id",
           "periodo",
+          "modalidade",
+          "genero",
           "valor_cobranca",
           "dia_vencimento",
           "nome",
           "nome_responsavel",
+          "parentesco_responsavel",
           "email_responsavel",
           "cpf_responsavel",
           "telefone_responsavel",
@@ -251,6 +276,9 @@ export function usePassageiroForm({
           veiculo_id: "",
           nome: "",
           periodo: "",
+          modalidade: "",
+          data_nascimento: "",
+          genero: "",
           observacoes: "",
           logradouro: "",
           numero: "",
@@ -260,11 +288,13 @@ export function usePassageiroForm({
           cep: "",
           referencia: "",
           nome_responsavel: "",
+          parentesco_responsavel: "",
           email_responsavel: "",
           telefone_responsavel: "",
           cpf_responsavel: "",
           valor_cobranca: "",
           dia_vencimento: "",
+          data_inicio_transporte: "",
 
           ativo: true,
           enviar_cobranca_automatica:
@@ -301,6 +331,25 @@ export function usePassageiroForm({
         carregarDados();
     }
   }, [isOpen, carregarDados]);
+
+  // AJUSTE RÁPIDO: Auto-ativar checkbox de cobrança automática se elegível e não tocado
+  useEffect(() => {
+    // Apenas modes de criação/finalização (Edit respeita o banco)
+    if (mode === PassageiroFormModes.EDIT) return;
+
+    // Se tem permissão e franquia
+    if (canUseCobrancaAutomatica && podeAtivarCobrancaAutomatica) {
+        // Verificar se usuário já mexeu no campo
+        const fieldState = form.getFieldState("enviar_cobranca_automatica");
+        const currentValue = form.getValues("enviar_cobranca_automatica");
+        
+        // Se não está dirty (usuário não clicou) e está false, forçamos true
+        if (!fieldState.isDirty && !currentValue) {
+            form.setValue("enviar_cobranca_automatica", true, { shouldDirty: false }); // shouldDirty false para manter status de "intocado" se quiser, ou true para marcar mudança.
+            // Optei por false para parecer valor default
+        }
+    }
+  }, [canUseCobrancaAutomatica, podeAtivarCobrancaAutomatica, mode, form]);
 
   return {
     form,

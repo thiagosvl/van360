@@ -14,7 +14,10 @@ export const messages = {
     operacao: "Erro ao realizar operação.",
     conexao: "Erro de conexão. Verifique sua internet.",
     permissao: "Você não tem permissão para realizar esta ação.",
-    validacao: "Corrija os erros no formulário.",
+    validacao: {
+      generico: "Corrija os erros no formulário.",
+      selecionePassageiro: "Selecione um passageiro para continuar.",
+    },
   },
 
   // ========== SUCESSO GENÉRICO ==========
@@ -23,6 +26,7 @@ export const messages = {
     excluir: "Excluído com sucesso.",
     atualizar: "Atualizado com sucesso.",
     operacao: "Operação realizada com sucesso.",
+    copiado: "Copiado para a área de transferência.",
   },
 
   // ========== VEÍCULOS ==========
@@ -217,7 +221,7 @@ export const messages = {
       atualizar: "Erro ao atualizar usuário.",
     },
     sucesso: {
-      perfilAtualizado: "Perfil atualizado com sucesso.",
+      perfilAtualizado: "Atualizado com sucesso.",
       perfilAtualizadoDescricao: "Suas informações foram salvas.",
     },
     info: {
@@ -289,6 +293,7 @@ export const messages = {
     campoObrigatorio: "Campo obrigatório.",
     senhasNaoCoincidem: "As senhas não coincidem.",
     formularioComErros: "Corrija os erros no formulário.",
+    selecionePassageiro: "Selecione um passageiro.",
   },
 
   // ========== SISTEMA ==========
@@ -339,6 +344,21 @@ export const messages = {
       excluido: "Usuário excluído com sucesso!",
     },
   },
+
+  // ========== CONTRATOS ==========
+  contrato: {
+    erro: {
+      carregar: "Erro ao carregar contratos.",
+      criar: "Erro ao criar contrato.",
+      cancelar: "Erro ao cancelar contrato.",
+      baixar: "Erro ao baixar contrato.",
+    },
+    sucesso: {
+      criado: "Contrato criado com sucesso!",
+      cancelado: "Contrato cancelado com sucesso!",
+      baixado: "Contrato baixado com sucesso!",
+    },
+  },
 } as const;
 
 /**
@@ -376,7 +396,9 @@ export type MessageKey =
   | `usuario.erro.${keyof typeof messages.usuario.erro}`
   | `usuario.sucesso.${keyof typeof messages.usuario.sucesso}`
   | `prePassageiro.erro.${keyof typeof messages.prePassageiro.erro}`
-  | `prePassageiro.sucesso.${keyof typeof messages.prePassageiro.sucesso}`;
+  | `prePassageiro.sucesso.${keyof typeof messages.prePassageiro.sucesso}`
+  | `contrato.erro.${keyof typeof messages.contrato.erro}`
+  | `contrato.sucesso.${keyof typeof messages.contrato.sucesso}`;
 
 /**
  * Função helper para obter mensagem por chave

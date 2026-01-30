@@ -27,11 +27,12 @@ import { PassageiroFormData } from "@/hooks/ui/usePassageiroForm";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
-
-import { PassageiroFormModes } from "@/types/enums";
+import { convertDateBrToISO } from "@/utils/formatters/date";
 import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
+
+import { PassageiroFormModes } from "@/types/enums";
 import { Loader2, User, Wand2, X } from "lucide-react";
 import { useEffect } from "react";
 import { PassageiroFormDadosCadastrais } from "../features/passageiro/form/PassageiroFormDadosCadastrais";
@@ -255,6 +256,14 @@ export default function PassengerFormDialog({
         // Sanitização monetária
         if (purePayload.valor_cobranca) {
           purePayload.valor_cobranca = String(moneyToNumber(purePayload.valor_cobranca));
+        }
+
+        // Conversão de Data (DD/MM/YYYY -> YYYY-MM-DD)
+        if (purePayload.data_nascimento) {
+            purePayload.data_nascimento = convertDateBrToISO(purePayload.data_nascimento);
+        }
+        if (purePayload.data_inicio_transporte) {
+             purePayload.data_inicio_transporte = convertDateBrToISO(purePayload.data_inicio_transporte);
         }
     
         const commonOptions = {

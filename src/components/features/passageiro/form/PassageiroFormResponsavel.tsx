@@ -1,17 +1,26 @@
 import { PhoneInput } from "@/components/forms";
 import {
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { parentescos } from "@/utils/formatters";
 import { cpfMask } from "@/utils/masks";
 import { Contact, Hash, Loader2, Mail, User } from "lucide-react";
 import { useFormContext } from "react-hook-form";
@@ -60,6 +69,41 @@ export function PassageiroFormResponsavel({ isSearching }: PassageiroFormRespons
                     />
                   </div>
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="parentesco_responsavel"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel className="text-gray-700 font-medium ml-1">
+                  Parentesco <span className="text-red-600">*</span>
+                </FormLabel>
+                 <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger
+                        className={cn(
+                          "h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                          fieldState.error && "border-red-500"
+                        )}
+                      >
+                        <SelectValue placeholder="Selecione..." />
+                      </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {parentescos.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}

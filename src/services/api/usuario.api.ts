@@ -31,5 +31,8 @@ export const usuarioApi = {
     telefone?: string;
     chave_pix?: string;
     tipo_chave_pix?: string;
+    assinatura_url?: string;
+    config_contrato?: any;
   }) => apiClient.patch(`${endpointBase}/${usuarioId}`, payload).then(res => res.data),
+
 };

@@ -5,34 +5,35 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { cn } from "@/lib/utils";
+import { ContratoStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { formatarEnderecoCompleto } from "@/utils/formatters/address";
-import { formatPeriodo } from "@/utils/formatters/periodo";
 import { formatarTelefone } from "@/utils/formatters/phone";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  AlertCircle,
-  Bot,
-  BotOff,
-  CalendarDays,
-  Car,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Copy,
-  CopyCheck,
-  CreditCard,
-  HeartPulse,
-  Lock,
-  Mail,
-  MapPin,
-  Pencil,
-  Phone,
-  School,
-  Trash2,
-  User,
-  UserCheck
+    AlertCircle,
+    Bot,
+    BotOff,
+    CalendarDays,
+    Car,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    Copy,
+    CopyCheck,
+    CreditCard,
+    FileText,
+    HeartPulse,
+    Lock,
+    Mail,
+    MapPin,
+    Pencil,
+    Phone,
+    School,
+    Trash2,
+    User,
+    UserCheck
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { InfoItem } from "./InfoItem";
@@ -49,6 +50,7 @@ interface CarteirinhaInfoProps {
   onDeleteClick: () => void;
   onUpgrade: (featureName: string, description: string) => void;
   onReactivateWithoutAutomation?: () => Promise<void>; 
+  onGenerateContract?: () => void;
 }
 
 export const CarteirinhaInfo = ({
@@ -63,6 +65,7 @@ export const CarteirinhaInfo = ({
   onDeleteClick,
   onUpgrade,
   onReactivateWithoutAutomation,
+  onGenerateContract,
 }: CarteirinhaInfoProps) => {
   const [mostrarMaisInfo, setMostrarMaisInfo] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -217,6 +220,31 @@ export const CarteirinhaInfo = ({
       label: "E-mail",
       content: passageiro.email_responsavel || "Não informado",
     },
+    {
+      icon: User,
+      label: "Gênero",
+      content: passageiro.genero ? passageiro.genero.charAt(0).toUpperCase() + passageiro.genero.slice(1) : "Não informado",
+    },
+    {
+      icon: CalendarDays,
+      label: "Nascimento",
+      content: passageiro.data_nascimento ? new Date(passageiro.data_nascimento).toLocaleDateString('pt-BR') : "Não informado",
+    },
+    {
+      icon: User,
+      label: "Parentesco",
+      content: passageiro.parentesco_responsavel ? passageiro.parentesco_responsavel.charAt(0).toUpperCase() + passageiro.parentesco_responsavel.slice(1) : "Não informado",
+    },
+    {
+      icon: Car,
+      label: "Modalidade",
+      content: passageiro.modalidade === 'ida_volta' ? 'Ida e Volta' : passageiro.modalidade === 'ida' ? 'Ida' : passageiro.modalidade === 'volta' ? 'Volta' : 'Não informado',
+    },
+    {
+       icon: CalendarDays,
+       label: "Início Transporte",
+       content: passageiro.data_inicio_transporte ? new Date(passageiro.data_inicio_transporte).toLocaleDateString('pt-BR') : "Não informado"
+    }
   ];
 
   return (
@@ -347,11 +375,11 @@ export const CarteirinhaInfo = ({
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <Clock className="h-4 w-4" />
                 <span className="text-xs font-medium uppercase tracking-wider">
-                  Período
+                  Vencimento
                 </span>
               </div>
               <p className="font-semibold text-gray-900 text-sm sm:text-base">
-                {formatPeriodo(passageiro.periodo)}
+                Dia {passageiro.dia_vencimento}
               </p>
             </div>
 
@@ -429,6 +457,33 @@ export const CarteirinhaInfo = ({
                 <UserCheck className="h-4 w-4 mr-2" />
                 Reativar Passageiro
               </Button>
+            )}
+
+            {onGenerateContract && (
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "w-full pl-0 justify-start",
+                    passageiro.status_contrato === ContratoStatus.ASSINADO ? "text-green-600 hover:text-green-700" :
+                    passageiro.status_contrato === ContratoStatus.PENDENTE ? "text-yellow-600 hover:text-yellow-700" :
+                    "text-muted-foreground hover:bg-transparent hover:text-primary"
+                  )}
+                  onClick={() => {
+                        if (passageiro.contrato_url && (passageiro.status_contrato === ContratoStatus.PENDENTE || passageiro.status_contrato === ContratoStatus.ASSINADO)) {
+                             window.open(passageiro.contrato_url, '_blank');
+                        } else if ((passageiro.status_contrato === ContratoStatus.PENDENTE || passageiro.status_contrato === ContratoStatus.ASSINADO) && onGenerateContract) {
+                            // Fallback if no URL but status says exists (shouldn't happen with new backend)
+                            onGenerateContract();
+                        } else {
+                            onGenerateContract && onGenerateContract();
+                        }
+                  }}
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  {passageiro.status_contrato === ContratoStatus.ASSINADO ? 'Ver Contrato Assinado' : 
+                   passageiro.status_contrato === ContratoStatus.PENDENTE ? 'Ver Contrato Pendente' : 
+                   'Gerar Contrato'}
+                </Button>
             )}
 
             <Button

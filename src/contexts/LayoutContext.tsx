@@ -125,7 +125,9 @@ export interface LayoutContextType {
   isFirstChargeDialogOpen: boolean;
   openSubscriptionExpiredDialog: (props?: OpenSubscriptionExpiredDialogProps) => void;
   isSubscriptionExpiredDialogOpen: boolean;
+  openContractSetupDialog: () => void;
 }
+
 
 export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 

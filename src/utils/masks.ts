@@ -100,3 +100,13 @@ export const evpMask = (value: string): string => {
     .replace(/^([a-zA-Z0-9]{8})-([a-zA-Z0-9]{4})-([a-zA-Z0-9]{4})([a-zA-Z0-9])/, '$1-$2-$3-$4')
     .replace(/^([a-zA-Z0-9]{8})-([a-zA-Z0-9]{4})-([a-zA-Z0-9]{4})-([a-zA-Z0-9]{4})([a-zA-Z0-9])/, '$1-$2-$3-$4-$5');
 };
+
+export const dateMask = (value: string): string => {
+  if (!value) return value;
+  const numericValue = value.replace(/\D/g, "").slice(0, 8); // Limit to 8 digits
+
+  return numericValue
+    .replace(/(\d{2})(\d)/, "$1/$2") // Add slash after 2nd digit
+    .replace(/(\d{2})(\d)/, "$1/$2"); // Add slash after 4th digit (2nd part)
+    // .replace(/(\d{4})(\d)/, "$1"); // No need, slice handles length
+};

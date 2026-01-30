@@ -67,7 +67,6 @@ export function SubscriptionSettings({
           </div>
           <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
         </Button>
-
       </div>
     </>
   );

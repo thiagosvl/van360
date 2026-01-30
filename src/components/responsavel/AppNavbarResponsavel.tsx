@@ -16,7 +16,7 @@ export default function AppNavbarResponsavel({
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    clearAppSession();
+    clearAppSession(true);
 
     navigate(ROUTES.PUBLIC.LOGIN);
   };

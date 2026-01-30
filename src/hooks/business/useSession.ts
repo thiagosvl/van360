@@ -1,7 +1,7 @@
 import {
-  AuthUser,
-  Session,
-  sessionManager
+    AuthUser,
+    Session,
+    sessionManager
 } from "@/services/sessionManager";
 import { useEffect, useRef, useState } from "react";
 
@@ -15,42 +15,40 @@ export function useSession() {
   useEffect(() => {
     let mounted = true;
 
-    async function loadInitial() {
-      const { data } = await sessionManager.getSession();
-      if (!mounted) return;
-      const initialUser = data.session?.user ?? null;
-      setSession(data.session);
-      setUser(initialUser);
-      userRef.current = initialUser;
-      setLoading(false);
-      initialLoadDoneRef.current = true;
-    }
-
     const { data: listener } = sessionManager.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
         
         const newUserId = session?.user?.id ?? null;
         const currentUserId = userRef.current?.id ?? null;
-        const isInitialEvent = event === "INITIAL_SESSION";
         
-        if (newUserId !== currentUserId || (isInitialEvent && session && !userRef.current)) {
+        // Handle Initial Session (always updates state)
+        if (event === "INITIAL_SESSION") {
+            const newUser = session?.user ?? null;
+            setSession(session);
+            setUser(newUser);
+            userRef.current = newUser;
+            setLoading(false);
+            initialLoadDoneRef.current = true;
+            return; 
+        }
+
+        // Handle Status Changes
+        if (newUserId !== currentUserId) {
           const newUser = session?.user ?? null;
           setSession(session);
           setUser(newUser);
           userRef.current = newUser;
-          setLoading(false);
-          initialLoadDoneRef.current = true;
         } else if (event === "SIGNED_OUT") {
            setSession(null);
            setUser(null);
            userRef.current = null;
-           setLoading(false);
         }
+        
+        // Always ensure loading is false after any auth event
+        setLoading(false);
       }
     );
-
-    loadInitial();
 
     return () => {
       mounted = false;

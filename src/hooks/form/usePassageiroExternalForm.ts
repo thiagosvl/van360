@@ -7,11 +7,12 @@ import { z } from "zod";
 import { ROUTES } from "@/constants/routes";
 import { useEscolasWithFilters } from "@/hooks";
 import { useSEO } from "@/hooks/useSEO";
-import { cepSchema, cpfSchema, phoneSchema } from "@/schemas/common";
+import { cepSchema, cpfSchema, dateSchema, phoneSchema } from "@/schemas/common";
 import { apiClient } from "@/services/api/client";
 import { prePassageiroApi } from "@/services/api/pre-passageiro.api";
 import {
-    parseCurrencyToNumber
+  convertDateBrToISO,
+  parseCurrencyToNumber
 } from "@/utils/formatters";
 import { moneyToNumber } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
@@ -38,6 +39,12 @@ const prePassageiroSchema = z.object({
 
   escola_id: z.string().optional(),
   periodo: z.string().optional(),
+  modalidade: z.string().min(1, "Campo obrigatório"),
+  data_nascimento: dateSchema(true),
+  genero: z.string().min(1, "Campo obrigatório"),
+  parentesco_responsavel: z.string().min(1, "Campo obrigatório"),
+  data_inicio_transporte: dateSchema(true),
+
 
   valor_cobranca: z
     .string()
@@ -46,7 +53,6 @@ const prePassageiroSchema = z.object({
       message: "O valor deve ser no mínimo R$ 1,00",
     }),
   dia_vencimento: z.string().optional(),
-  emitir_cobranca_mes_atual: z.boolean().optional(),
   enviar_cobranca_automatica: z.boolean().optional(),
   ativo: z.boolean().optional(),
 });
@@ -86,6 +92,7 @@ export function usePassageiroExternalForm() {
     defaultValues: {
       nome: "",
       nome_responsavel: "",
+      parentesco_responsavel: "",
       email_responsavel: "",
       cpf_responsavel: "",
       telefone_responsavel: "",
@@ -101,7 +108,10 @@ export function usePassageiroExternalForm() {
       dia_vencimento: "",
       escola_id: "",
       periodo: "",
-      emitir_cobranca_mes_atual: false,
+      modalidade: "",
+      data_nascimento: "",
+      genero: "",
+      data_inicio_transporte: "",
     },
     mode: "onBlur",
   });
@@ -147,6 +157,11 @@ export function usePassageiroExternalForm() {
     try {
       setSubmitting(true);
 
+      if (!motoristaId) {
+        toast.error("Motorista não identificado na URL");
+        return;
+      }
+
       const payload = {
         ...data,
         telefone_responsavel: String(data.telefone_responsavel || "").replace(
@@ -162,6 +177,14 @@ export function usePassageiroExternalForm() {
           : null,
       };
 
+      // Conversão de Data (DD/MM/YYYY -> YYYY-MM-DD)
+      if (payload.data_nascimento) {
+          payload.data_nascimento = convertDateBrToISO(payload.data_nascimento);
+      }
+      if (payload.data_inicio_transporte) {
+          payload.data_inicio_transporte = convertDateBrToISO(payload.data_inicio_transporte);
+      }
+      
       await prePassageiroApi.createPrePassageiro({
         ...payload,
         escola_id: payload.escola_id === "none" ? null : payload.escola_id,
@@ -203,7 +226,6 @@ export function usePassageiroExternalForm() {
       valor_cobranca: "",
       dia_vencimento: "",
 
-      emitir_cobranca_mes_atual: false,
       ativo: true,
       enviar_cobranca_automatica: false,
     });
@@ -241,7 +263,6 @@ export function usePassageiroExternalForm() {
 
     form.reset({
       ...mockData,
-      emitir_cobranca_mes_atual: false,
     });
 
     setOpenAccordionItems([
@@ -265,6 +286,6 @@ export function usePassageiroExternalForm() {
     handleSubmit,
     onFormError,
     handleNewCadastro,
-    handleFillMock
+    handleFillMock,
   };
 }

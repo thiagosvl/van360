@@ -9,6 +9,7 @@ Disallow: /inicio
 Disallow: /assinatura
 Disallow: /passageiros
 Disallow: /mensalidades
+Disallow: /contratos
 Disallow: /escolas
 Disallow: /veiculos
 Disallow: /gastos

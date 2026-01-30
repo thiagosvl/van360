@@ -1,4 +1,4 @@
-import { Car, ChartArea, CreditCard, GraduationCap, LayoutDashboard, Receipt, TrendingDown, Users } from "lucide-react";
+import { Car, ChartArea, CreditCard, FileText, GraduationCap, LayoutDashboard, Receipt, TrendingDown, Users } from "lucide-react";
 
 const pagesItems = [
     {
@@ -10,6 +10,11 @@ const pagesItems = [
         title: "Mensalidades",
         href: "/mensalidades",
         icon: CreditCard,
+    },
+    {
+        title: "Contratos",
+        href: "/contratos",
+        icon: FileText,
     },
     {
         title: "Passageiros",
@@ -44,4 +49,3 @@ const pagesItems = [
 ];
 
 export { pagesItems };
-

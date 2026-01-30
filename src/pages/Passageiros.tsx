@@ -491,7 +491,6 @@ export default function Passageiros() {
       {
         ...fakeData,
         usuario_id: profile.id,
-        emitir_cobranca_mes_atual: false,
         enviar_cobranca_automatica: enviarCobrancaAutomatica,
       },
       {

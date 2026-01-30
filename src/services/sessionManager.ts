@@ -1,8 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import { queryClient } from "@/services/queryClient";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
+import { Session as SupabaseSession } from "@supabase/supabase-js";
 
-export type AuthChangeEvent = "SIGNED_IN" | "SIGNED_OUT" | "INITIAL_SESSION";
+export type AuthChangeEvent = "SIGNED_IN" | "SIGNED_OUT" | "INITIAL_SESSION" | "TOKEN_REFRESHED" | "USER_UPDATED" | "PASSWORD_RECOVERY";
 
 export interface AuthUser {
   id: string;
@@ -23,126 +24,81 @@ export type AuthListener = {
 };
 
 class SessionManager {
-  private listeners: ((event: AuthChangeEvent, session: Session) => void)[] = [];
   private currentSession: Session = null;
 
   constructor() {
-    this.loadFromStorage();
-  }
+    // Initial load from Supabase client
+    supabase.auth.getSession().then(({ data }) => {
+      this.currentSession = this.mapSupabaseSession(data.session);
+    });
 
-  private loadFromStorage() {
-    // We only store the tokens. User details are fetched via /me/profile usually.
-    // Ideally we might store user basic info too if needed.
-    // For now, let's look for what the Login saves.
-    // The previous implementation used supabase.auth.setSession which auto-persisted.
-    // We need to persist manually now.
-    
-    // NOTE: Supabase client uses a specific key format. We will switch to a simple key.
-    const stored = localStorage.getItem("van360_auth_session");
-    if (stored) {
-      try {
-        this.currentSession = JSON.parse(stored);
-        // Sync with Supabase Client (for Realtime)
-        if (this.currentSession) {
-             supabase.auth.setSession({
-                 access_token: this.currentSession.access_token,
-                 refresh_token: this.currentSession.refresh_token
-             }).catch(() => {/* Ignore errors dealing with supabase internally */});
-        }
-      } catch (e) {
-        this.currentSession = null;
+    // Subscribe to Supabase auth changes
+    supabase.auth.onAuthStateChange((event, session) => {
+      this.currentSession = this.mapSupabaseSession(session);
+      
+      if (event === 'SIGNED_OUT') {
+        clearAppSession();
+        queryClient.clear();
       }
-    }
+    });
   }
 
-  async getSession(): Promise<{ data: { session: Session } }> {
-    return { data: { session: this.currentSession } };
-  }
-
-  async setSession(access_token: string, refresh_token: string, user: AuthUser | null = null) {
-    const newSession = { access_token, refresh_token, user };
-    this.currentSession = newSession;
-    localStorage.setItem("van360_auth_session", JSON.stringify(newSession));
-    
-    // Sync with Supabase Client (for Realtime)
-    await supabase.auth.setSession({ access_token, refresh_token });
-
-    // Defer notification to next tick to ensure storage is committed and stack is clear
-    setTimeout(() => {
-        this.notifyListeners("SIGNED_IN", newSession);
-    }, 0);
-    
-    return { error: null };
-  }
-
-  private refreshPromise: Promise<{ success: boolean }> | null = null;
-
-  async refreshToken(): Promise<{ success: boolean }> {
-    if (this.refreshPromise) return this.refreshPromise;
-
-    if (!this.currentSession?.refresh_token) return { success: false };
-
-    this.refreshPromise = (async () => {
-        try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/refresh`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ refresh_token: this.currentSession?.refresh_token }), // Use conditional access just in case
-          });
-
-          if (!response.ok) {
-            return { success: false };
-          }
-
-          const data = await response.json();
-          // Update session locally
-          await this.setSession(data.access_token, data.refresh_token, data.user);
-          return { success: true };
-        } catch (err) {
-          return { success: false };
-        } finally {
-            this.refreshPromise = null;
-        }
-    })();
-
-    return this.refreshPromise;
-  }
-
-  async signOut() {
-    this.currentSession = null;
-    localStorage.removeItem("van360_auth_session");
-    clearAppSession(); // Clears other app keys
-    
-    // Clear React Query cache to remove any stale user data (profiles, etc)
-    // This prevents components from remounting with old/error data immediately after login
-    queryClient.clear();
-    
-    // Sync with Supabase Client
-    await supabase.auth.signOut();
-
-    this.notifyListeners("SIGNED_OUT", null);
-    return { error: null };
-  }
-
-  onAuthStateChange(callback: (event: AuthChangeEvent, session: Session) => void): { data: AuthListener } {
-    this.listeners.push(callback);
-    // Emit initial event immediately
-    callback("INITIAL_SESSION", this.currentSession);
-    
+  private mapSupabaseSession(session: SupabaseSession | null): Session {
+    if (!session) return null;
     return {
-      data: {
-        subscription: {
-          unsubscribe: () => {
-            this.listeners = this.listeners.filter(cb => cb !== callback);
-          }
-        }
-      }
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
+      user: session.user ? {
+        id: session.user.id,
+        email: session.user.email,
+        ...session.user.user_metadata
+      } : null
     };
   }
 
-  private notifyListeners(event: AuthChangeEvent, session: Session) {
-    this.listeners.forEach(cb => cb(event, session));
+  async getSession(): Promise<{ data: { session: Session } }> {
+    const { data } = await supabase.auth.getSession();
+    return { data: { session: this.mapSupabaseSession(data.session) } };
+  }
+
+  // Deprecated: Login should use supabase.auth.signInWith... directly, 
+  // but keeping for compatibility if customized login flow uses it.
+  async setSession(access_token: string, refresh_token: string, user: AuthUser | null = null) {
+    const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+    return { error };
+  }
+
+  async refreshToken(): Promise<{ success: boolean }> {
+    // Supabase handles auto-refresh. 
+    // If manual refresh is absolutely needed, we can try getting the session which refreshes if needed.
+    const { data, error } = await supabase.auth.getSession();
+    return { success: !error && !!data.session };
+  }
+
+  async signOut() {
+    const { error } = await supabase.auth.signOut();
+    return { error };
+  }
+
+  onAuthStateChange(callback: (event: AuthChangeEvent, session: Session) => void): { data: AuthListener } {
+    // We proxy the supabase listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const mappedSession = this.mapSupabaseSession(session);
+      // Map Supabase events to valid AuthChangeEvent if strictly typed
+      const mappedEvent = event as AuthChangeEvent; 
+      callback(mappedEvent, mappedSession);
+    });
+    
+    // We rely on Supabase's native INITIAL_SESSION event which is fired immediately 
+    // upon subscription with the current session state.
+
+    return {
+      data: {
+        subscription
+      }
+    };
   }
 }
 
 export const sessionManager = new SessionManager();
+

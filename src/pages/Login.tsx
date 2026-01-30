@@ -180,6 +180,7 @@ export default function Login() {
       
       // Validação final de sessão
       const { data: { session } } = await sessionManager.getSession();
+      
       if (!session) {
         throw new Error("Sessão não foi estabelecida corretamente.");
       }

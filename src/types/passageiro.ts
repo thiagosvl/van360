@@ -1,3 +1,5 @@
+import { ContratoStatus } from "./enums";
+
 export interface Passageiro {
   id?: string;
   nome: string;
@@ -26,4 +28,14 @@ export interface Passageiro {
   veiculo?: { placa: string };
 
   enviar_cobranca_automatica?: boolean;
+  status_contrato?: ContratoStatus;
+  contrato_id?: string;
+  contrato_url?: string;
+
+  // Novos Campos
+  modalidade?: string;
+  data_nascimento?: string;
+  genero?: string;
+  parentesco_responsavel?: string;
+  data_inicio_transporte?: string;
 }

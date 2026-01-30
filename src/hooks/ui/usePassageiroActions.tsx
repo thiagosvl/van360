@@ -5,6 +5,7 @@ import {
   Bot,
   BotOff,
   CreditCard,
+  FileText,
   Pencil,
   ToggleLeft,
   ToggleRight,
@@ -88,6 +89,21 @@ export function usePassageiroActions({
     isDestructive: true,
     swipeColor: "bg-red-500",
   });
+
+  // Action Logic: Ver Contrato
+  // Only show if there is a contract URL
+  if (passageiro.contrato_url) {
+      // Add after 'Carteirinha' or before? Let's add before Excluir
+      const verContratoAction: ActionItem = {
+          label: "Ver Contrato",
+          icon: <FileText className="h-4 w-4" />,
+          onClick: () => window.open(passageiro.contrato_url, '_blank'),
+          swipeColor: "bg-purple-500"
+      };
+      
+      // Insert before the last item (Excluir)
+      actions.splice(actions.length - 1, 0, verContratoAction);
+  }
 
   return actions;
 }

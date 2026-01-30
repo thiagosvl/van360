@@ -23,7 +23,8 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { cn } from "@/lib/utils";
 import { Usuario } from "@/types/usuario";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
-import { periodos } from "@/utils/formatters";
+import { generos, modalidades, periodos } from "@/utils/formatters";
+import { dateMask } from "@/utils/masks";
 import { Car, School, Sun, User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -266,6 +267,104 @@ export function PassageiroFormDadosCadastrais({
                     {periodos.map((tipo) => (
                       <SelectItem key={tipo.value} value={tipo.value}>
                         {tipo.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="modalidade"
+            render={({ field, fieldState }) => (
+              <FormItem className="col-span-1">
+                <FormLabel className="text-gray-700 font-medium ml-1">
+                  Modalidade <span className="text-red-600">*</span>
+                </FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <div className="relative">
+                       {/* Icone pode ser um arrow-left-right ou similar */}
+                      <SelectTrigger
+                        className={cn(
+                          "h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                          fieldState.error && "border-red-500"
+                        )}
+                      >
+                        <SelectValue placeholder="Selecione..." />
+                      </SelectTrigger>
+                    </div>
+                  </FormControl>
+                  <SelectContent>
+                    {modalidades.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="data_nascimento"
+            render={({ field, fieldState }) => (
+              <FormItem className="col-span-1">
+                <FormLabel className="text-gray-700 font-medium ml-1">
+                  Data de Nascimento <span className="text-red-600">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="text"
+                    placeholder="DD/MM/AAAA"
+                    maxLength={10}
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(dateMask(e.target.value));
+                    }}
+                    className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+           <FormField
+            control={form.control}
+            name="genero"
+            render={({ field, fieldState }) => (
+              <FormItem className="col-span-1">
+                <FormLabel className="text-gray-700 font-medium ml-1">
+                  Gênero <span className="text-red-600">*</span>
+                </FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger
+                        className={cn(
+                          "h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                          fieldState.error && "border-red-500"
+                        )}
+                      >
+                        <SelectValue placeholder="Selecione..." />
+                      </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {generos.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
                       </SelectItem>
                     ))}
                   </SelectContent>

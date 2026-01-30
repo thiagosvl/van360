@@ -8,9 +8,6 @@ import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
 import { useSubscriptionStatus } from "@/hooks/business/useSubscriptionStatus";
 import { useSEO } from "@/hooks/useSEO";
-import { apiClient } from "@/services/api/client";
-import { clearAppSession } from "@/utils/domain";
-import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
 /* 
@@ -59,23 +56,28 @@ function AppLayoutContent({ plano, role }: { plano: any, role: "motorista" }) {
 
 export default function AppLayout() {
   const { user, loading: loadingSession } = useSession();
-  const { profile, isLoading, plano, role } = usePermissions();
+  const { profile, isLoading, plano, role, isError, error } = usePermissions();
 
   // Bloquear indexação de todas as páginas protegidas (área logada)
   useSEO({
     noindex: true,
   });
 
-  if (loadingSession || isLoading) {
+  if (isError) {
+    console.error("Erro ao carregar perfil:", error);
+    // User requested to keep showing loading instead of error screen
+    // Fallthrough to the loading block below
+  }
+
+  // Se ainda estiver carregando sessão, perfil, ou não tiver usuário/perfil definido (mas sem erro explícito)
+  // continuamos exibindo o loading. Isso evita flicker de telas intermediárias.
+  // IMPORTANTE: Isso assume que se !isError e !profile, estamos em transição/loading.
+  if (loadingSession || isLoading || !user || !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
-  }
-
-  if (!profile) {
-    return <AutoRedirectToLogin />;
   }
 
   const currentRole = (role || "motorista") as "motorista";
@@ -85,24 +87,4 @@ export default function AppLayout() {
         <AppLayoutContent plano={plano} role={currentRole} />
     </LayoutProvider>
   );
-}
-
-function AutoRedirectToLogin() {
-    useEffect(() => {
-        const performLogout = async () => {
-             try {
-                await apiClient.post("/auth/logout");
-             } catch (e) { console.error(e); }
-             clearAppSession();
-             window.location.href = ROUTES.PUBLIC.LOGIN;
-        };
-        performLogout();
-    }, []);
-    
-    // Renderiza um spinner simples enquanto redireciona
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
 }

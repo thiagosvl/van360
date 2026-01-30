@@ -38,6 +38,8 @@ export interface SystemSummary {
       is_cancelada: boolean;
       is_profissional: boolean;
       is_essencial: boolean;
+      contrato_configurado: boolean;
+      usar_contratos: boolean;
     };
   };
   contadores: {

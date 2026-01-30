@@ -27,7 +27,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import {
   useCreatePrePassageiro,
   useDeletePrePassageiro,
-  usePassageiros,
+  usePermissions,
   usePrePassageiros,
 } from "@/hooks";
 import { PassageiroFormModes } from "@/types/enums";
@@ -49,12 +49,11 @@ import {
   Trash2,
   Users2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function PrePassageiros({
   onFinalizeNewPrePassageiro,
   profile,
-  plano,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -87,15 +86,8 @@ export default function PrePassageiros({
     },
   );
 
-  const { data: passageirosData } = usePassageiros(
-    { usuarioId: profile?.id },
-    { enabled: !!profile?.id },
-  );
-
   const prePassageiros =
     (prePassageirosData as PrePassageiro[] | undefined) ?? [];
-  const countPassageiros =
-    (passageirosData as { list?: any[] } | undefined)?.list?.length || 0;
 
   const loading = isPrePassageirosLoading || isPrePassageirosFetching;
 
@@ -106,7 +98,21 @@ export default function PrePassageiros({
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
+  const { summary } = usePermissions();
+  const solicitacoesPendentesCount = summary?.contadores?.passageiros?.solicitacoes_pendentes || 0;
 
+  // Track previous count to detect changes coming from the server/socket
+  const prevCountRef = useRef(solicitacoesPendentesCount);
+
+  useEffect(() => {
+    // If the count changed from what we had before, it means an external update happened.
+    // We should refetch the list to match the new count.
+    if (prevCountRef.current !== solicitacoesPendentesCount) {
+      console.log(`[Summary Update] Count changed from ${prevCountRef.current} to ${solicitacoesPendentesCount}. Refetching list...`);
+      refetchPrePassageiros();
+      prevCountRef.current = solicitacoesPendentesCount;
+    }
+  }, [solicitacoesPendentesCount, refetchPrePassageiros]);
 
   const handleCadastrarRapidoLink = async () => {
     if (!profile?.id) {
@@ -116,7 +122,6 @@ export default function PrePassageiros({
 
     const hoje = new Date();
     const valor = Math.floor(Math.random() * (200 - 100 + 1)) + 100;
-    const valorInString = `R$ ${valor},00`;
 
     const nomePassageiro = mockGenerator.name();
     const nomeResponsavel = mockGenerator.name();
@@ -144,6 +149,11 @@ export default function PrePassageiros({
       referencia: `Perto do ${endereco.bairro}`,
       valor_cobranca: valor, // Agora enviando o número real
       dia_vencimento: hoje.getDate(),
+      genero: mockGenerator.passenger().genero,
+      modalidade: mockGenerator.passenger().modalidade,
+      parentesco_responsavel: mockGenerator.passenger().parentesco_responsavel,
+      data_nascimento: mockGenerator.passenger().data_nascimento,
+      data_inicio_transporte: mockGenerator.passenger().data_inicio_transporte,
     };
 
     createPrePassageiro.mutate(fakePayload);

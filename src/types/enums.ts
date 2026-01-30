@@ -76,3 +76,36 @@ export enum PlanSalesContext {
   UPGRADE_AUTO = "upgrade_auto",
   TRIAL_CONVERSION = "trial_conversion"
 }
+
+export enum ContratoStatus {
+  PENDENTE = "pendente",
+  ASSINADO = "assinado",
+  CANCELADO = "cancelado",
+  EXPIRADO = "expirado",
+  SUBSTITUIDO = "substituido"
+}
+
+export enum PassageiroModalidade {
+  IDA = "ida",
+  VOLTA = "volta",
+  IDA_VOLTA = "ida_volta"
+}
+
+export enum PassageiroGenero {
+  MASCULINO = "masculino",
+  FEMININO = "feminino",
+  PREFIRO_NAO_INFORMAR = "prefiro_nao_informar"
+}
+
+export enum ParentescoResponsavel {
+  PAI = "pai",
+  MAE = "mae",
+  AVO = "avo",
+  TIO = "tio",
+  IRMAO = "irmao",
+  PRIMO = "primo",
+  PADRASTRO = "padrastro",
+  MADRASTA = "madrasta",
+  RESPONSAVEL_LEGAL = "responsavel_legal",
+  OUTRO = "outro"
+}

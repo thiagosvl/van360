@@ -11,6 +11,8 @@ export function useProfile(userId?: string) {
   const {
     data: profile,
     isLoading,
+    isError,
+    error
   } = useQuery<Usuario>({
     queryKey: ["profile"], 
     queryFn: () => usuarioApi.getProfile(userId!), 
@@ -65,6 +67,8 @@ export function useProfile(userId?: string) {
     summary,
     plano: planoData,
     isLoading: isLoading || (!summary && !!profile),
+    isError, 
+    error,
     isAuthenticated: !!profile,
     refreshProfile,
     

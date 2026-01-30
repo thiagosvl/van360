@@ -2,46 +2,47 @@ import { usePassageiroExternalForm } from "@/hooks/form/usePassageiroExternalFor
 
 import { MoneyInput } from "@/components/forms";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { periodos } from "@/utils/formatters";
+import { generos, modalidades, periodos } from "@/utils/formatters";
 import {
-  AlertTriangle,
-  CalendarDays,
-  Car,
-  CheckCircle2,
-  CreditCard,
-  Loader2,
-  School,
-  Sun,
-  User,
-  Wand2,
+    AlertTriangle,
+    CalendarDays,
+    Car,
+    CheckCircle2,
+    CreditCard,
+    Loader2,
+    School,
+    Sun,
+    User,
+    Wand2,
 } from "lucide-react";
 
 import { PassageiroFormEndereco } from "@/components/features/passageiro/form/PassageiroFormEndereco";
 import { PassageiroFormResponsavel } from "@/components/features/passageiro/form/PassageiroFormResponsavel";
+import { dateMask } from "@/utils/masks";
 
 export default function PassageiroExternalForm() {
   const {
@@ -56,7 +57,7 @@ export default function PassageiroExternalForm() {
     handleSubmit,
     onFormError,
     handleNewCadastro,
-    handleFillMock
+    handleFillMock,
   } = usePassageiroExternalForm();
 
   if (loading) {
@@ -285,6 +286,106 @@ export default function PassageiroExternalForm() {
                           />
                         </div>
                       </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <FormField
+                          control={form.control}
+                          name="modalidade"
+                          render={({ field, fieldState }) => (
+                            <FormItem>
+                              <FormLabel className="text-gray-700 font-medium ml-1">
+                                Modalidade <span className="text-red-600">*</span>
+                              </FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger
+                                    className={cn(
+                                      "h-12 rounded-xl bg-gray-50 border-gray-200 text-left focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                      fieldState.error && "border-red-500"
+                                    )}
+                                  >
+                                    <SelectValue placeholder="Selecione..." />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {modalidades.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                           control={form.control}
+                           name="data_nascimento"
+                           render={({ field, fieldState }) => (
+                             <FormItem>
+                               <FormLabel className="text-gray-700 font-medium ml-1">
+                                 Data de Nascimento <span className="text-red-600">*</span>
+                               </FormLabel>
+                               <FormControl>
+                                 <Input
+                                   type="text"
+                                   placeholder="DD/MM/AAAA"
+                                   maxLength={10}
+                                   {...field}
+                                   onChange={(e) => {
+                                     field.onChange(dateMask(e.target.value));
+                                   }}
+                                   className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                 />
+                               </FormControl>
+                               <FormMessage />
+                             </FormItem>
+                           )}
+                         />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                         <FormField
+                           control={form.control}
+                           name="genero"
+                           render={({ field, fieldState }) => (
+                             <FormItem>
+                               <FormLabel className="text-gray-700 font-medium ml-1">
+                                 Gênero <span className="text-red-600">*</span>
+                               </FormLabel>
+                               <Select
+                                 onValueChange={field.onChange}
+                                 value={field.value}
+                               >
+                                 <FormControl>
+                                   <SelectTrigger
+                                       className={cn(
+                                         "h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
+                                         fieldState.error && "border-red-500"
+                                       )}
+                                     >
+                                       <SelectValue placeholder="Selecione..." />
+                                     </SelectTrigger>
+                                 </FormControl>
+                                 <SelectContent>
+                                   {generos.map((option) => (
+                                     <SelectItem key={option.value} value={option.value}>
+                                       {option.label}
+                                     </SelectItem>
+                                   ))}
+                                 </SelectContent>
+                               </Select>
+                               <FormMessage />
+                             </FormItem>
+                           )}
+                         />
+                      </div>
+
                     </AccordionContent>
                   </AccordionItem>
 
@@ -358,6 +459,26 @@ export default function PassageiroExternalForm() {
                             </FormItem>
                           )}
                         />
+                        
+                         <FormField
+                            control={form.control}
+                            name="data_inicio_transporte"
+                            render={({ field, fieldState }) => (
+                              <FormItem>
+                                <FormLabel className="text-gray-700 font-medium ml-1">
+                                  Início do Transporte
+                                </FormLabel>
+                                 <FormControl>
+                                  <Input
+                                    type="date"
+                                    {...field}
+                                    className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                       </div>
                     </AccordionContent>
                   </AccordionItem>

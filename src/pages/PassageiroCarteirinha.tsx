@@ -55,10 +55,12 @@ import {
   useToggleAtivoPassageiro,
   useToggleNotificacoesCobranca,
   useUpdateCobranca,
-  useUpdatePassageiro,
+  useUpdatePassageiro
 } from "@/hooks";
+import { useCreateContrato } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { ContratoStatus } from "@/types/enums";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useFranchiseGate } from "@/hooks/business/useFranchiseGate";
@@ -99,8 +101,10 @@ export default function PassageiroCarteirinha() {
   const enviarNotificacao = useEnviarNotificacaoCobranca();
   const desfazerPagamento = useDesfazerPagamento();
   const toggleNotificacoes = useToggleNotificacoesCobranca();
+  const createContrato = useCreateContrato(); // Instantiated hook
 
   const isActionLoading =
+    createContrato.isPending ||
     updatePassageiro.isPending ||
     deletePassageiro.isPending ||
     toggleAtivoPassageiro.isPending ||
@@ -591,6 +595,54 @@ export default function PassageiroCarteirinha() {
                         })
                       }
                       onUpgrade={handleUpgrade}
+                       onGenerateContract={() => {
+                          if (!passageiro || !passageiro_id) return;
+                          
+                          if (passageiro.status_contrato === ContratoStatus.PENDENTE) {
+                              // Contrato pendente: abrir o drawer de assinatura (copiar link) ou navegar para detalhes
+                              // Simplest: Go to contract list or show toast
+                              toast.info("Contrato pendente", {
+                                  description: "Este passageiro já possui um contrato aguardando assinatura. Você será redirecionado para a lista de contratos.",
+                                  action: {
+                                      label: "Ir para Contratos",
+                                      onClick: () => navigate(ROUTES.PRIVATE.MOTORISTA.CONTRACTS)
+                                  }
+                              });
+                              return;
+                          }
+
+                          if (passageiro.status_contrato === ContratoStatus.ASSINADO) {
+                              toast.success("Contrato Ativo", {
+                                  description: "Este passageiro já possui um contrato assinado.",
+                                  action: {
+                                      label: "Ver Contratos",
+                                      onClick: () => navigate(ROUTES.PRIVATE.MOTORISTA.CONTRACTS)
+                                  }
+                              });
+                              return;
+                          }
+
+                          openConfirmationDialog({
+                              title: "Gerar Contrato?",
+                              description: `Deseja gerar um novo contrato para ${passageiro.nome}? Isso usará a configuração atual de contrato.`,
+                              confirmText: "Gerar Contrato",
+                              onConfirm: async () => {
+                                  if (!passageiro || !passageiro_id) return;
+                                  
+                                  try {
+                                      await createContrato.mutateAsync({
+                                          passageiroId: passageiro.id,
+                                          modalidade: passageiro.periodo,
+                                          valorMensal: Number(passageiro.valor_cobranca),
+                                          diaVencimento: Number(passageiro.dia_vencimento),
+                                      });
+                                      closeConfirmationDialog();
+                                  } catch (error) {
+                                      closeConfirmationDialog();
+                                  }
+                              }
+                          });
+                       }}
                     />
                   </Suspense>
                 </div>

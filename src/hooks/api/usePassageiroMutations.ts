@@ -15,6 +15,7 @@ export function useCreatePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      queryClient.invalidateQueries({ queryKey: ["contratos"] });
       toast.success("passageiro.sucesso.criado");
     },
     onError: (error: any) => {
@@ -60,6 +61,7 @@ export function useUpdatePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["cobranca"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      queryClient.invalidateQueries({ queryKey: ["contratos"] });
 
       // Se payload tem escola_id ou veiculo_id, invalidamos as listas para atualizar a contagem
       if (variables.data?.escola_id !== undefined) {
@@ -143,7 +145,7 @@ export function useFinalizePreCadastro() {
       data,
     }: {
       prePassageiroId: string;
-      data: any & { usuario_id: string; emitir_cobranca_mes_atual: boolean };
+      data: any & { usuario_id: string; };
     }) =>
       passageiroApi.finalizePreCadastro(
         prePassageiroId,

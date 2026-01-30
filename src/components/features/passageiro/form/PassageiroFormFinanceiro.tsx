@@ -13,6 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -103,6 +104,26 @@ export function PassageiroFormFinanceiro({
                     ))}
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="data_inicio_transporte"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel className="text-gray-700 font-medium ml-1">
+                  Início do Transporte
+                </FormLabel>
+                 <FormControl>
+                  <Input
+                    type="date"
+                    {...field}
+                    className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
