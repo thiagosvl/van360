@@ -1,5 +1,6 @@
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
+import { StatusBadge } from "@/components/common/StatusBadge";
 import { UnifiedEmptyState } from "@/components/empty";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,7 +13,6 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { ContratoStatus } from "@/types/enums";
-import { formatDateToBR } from "@/utils/formatters";
 import { Download, Eye, FileText, Send, Trash2, User } from "lucide-react";
 import { memo } from "react";
 import { ContratoActionsMenu } from "./ContratoActionsMenu";
@@ -44,57 +44,57 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   onExcluir,
   onSubstituir,
   onGerarContrato,
-  onVisualizarLink
+  onVisualizarLink,
 }: any) {
-  const isPassageiro = item.tipo === 'passageiro';
+  const isPassageiro = item.tipo === "passageiro";
   const status = item.status;
-  
+
   // Definir ações para o Swipe
   const swipeActions = [];
-  
+
   if (isPassageiro) {
     swipeActions.push({
-      label: 'Gerar Contrato',
+      label: "Gerar Contrato",
       icon: <FileText className="h-5 w-5" />,
       onClick: () => onGerarContrato(item.id),
-      swipeColor: 'bg-blue-600'
+      swipeColor: "bg-blue-600",
     });
   } else {
     if (status === ContratoStatus.PENDENTE) {
       swipeActions.push({
-        label: 'Reenviar',
+        label: "Reenviar",
         icon: <Send className="h-5 w-5" />,
         onClick: () => onReenviarNotificacao(item.id),
-        swipeColor: 'bg-blue-600'
+        swipeColor: "bg-blue-600",
       });
       swipeActions.push({
-        label: 'Excluir',
+        label: "Excluir",
         icon: <Trash2 className="h-5 w-5" />,
         onClick: () => onExcluir(item.id),
-        swipeColor: 'bg-red-600'
+        swipeColor: "bg-red-600",
       });
     } else if (status === ContratoStatus.ASSINADO) {
       swipeActions.push({
-        label: 'Visualizar',
+        label: "Visualizar",
         icon: <Eye className="h-5 w-5" />,
         onClick: () => onVisualizarLink(item.token_acesso),
-        swipeColor: 'bg-green-600'
+        swipeColor: "bg-green-600",
       });
       swipeActions.push({
-        label: 'Baixar',
+        label: "Baixar",
         icon: <Download className="h-5 w-5" />,
         onClick: () => onBaixarPDF(item.id),
-        swipeColor: 'bg-blue-600'
+        swipeColor: "bg-blue-600",
       });
     }
   }
 
   // Global action sempre disponível
   swipeActions.push({
-    label: 'Ver Passageiro',
+    label: "Ver Passageiro",
     icon: <User className="h-5 w-5" />,
     onClick: () => onVerPassageiro(isPassageiro ? item.id : item.passageiro_id),
-    swipeColor: 'bg-gray-500'
+    swipeColor: "bg-gray-500",
   });
 
   return (
@@ -102,38 +102,52 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
       <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-2">
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
-            <div className={cn(
-              "h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm",
-              isPassageiro ? "bg-orange-50 text-orange-600" : (status === ContratoStatus.ASSINADO ? "bg-green-50 text-green-600" : "bg-blue-50 text-blue-600")
-            )}>
+            <div
+              className={cn(
+                "h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm",
+                item.passageiro?.ativo
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "bg-gray-100 text-slate-600",
+              )}
+            >
               {(item.passageiro?.nome || item.nome || "?").charAt(0)}
             </div>
             <div>
-              <p className="font-bold text-gray-900 text-sm">{item.passageiro?.nome || item.nome || "Não informado"}</p>
-              <p className="text-xs text-gray-500">{item.passageiro?.nome_responsavel || item.nome_responsavel || "Responsável não inf."}</p>
+              <p className="font-bold text-gray-900 text-sm">
+                {item.passageiro?.nome || item.nome || "Não informado"}
+              </p>
+              <p className="text-xs text-gray-500">
+                {item.passageiro?.nome_responsavel ||
+                  item.nome_responsavel ||
+                  "Responsável não inf."}
+              </p>
             </div>
           </div>
-          {!isPassageiro && (
-             <Badge variant={status === ContratoStatus.ASSINADO ? "success" : "destructive"}>
-                {status === ContratoStatus.ASSINADO ? "Assinado" : "Pendente"}
-             </Badge>
-          )}
         </div>
-        
+
         <div className="flex justify-between items-center mt-1 pt-2 border-t border-gray-50">
           <div>
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">VALOR</span>
             <span className="text-sm font-bold text-gray-700">
-              {(Number(item.dados_contrato?.valorMensal || item.valor_parcela || item.valor_mensal) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              {(
+                Number(
+                  item.dados_contrato?.valorMensal ||
+                    item.valor_parcela ||
+                    item.valor_mensal,
+                ) || 0
+              ).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
             </span>
           </div>
           <div className="text-right">
-             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
-               {isPassageiro ? "VENCIMENTO PADRÃO" : "CRIADO EM"}
-             </span>
-             <span className="text-sm text-gray-600">
-               {isPassageiro ? `Dia ${item.vencimento_mensalidade || item.dados_contrato?.diaVencimento || item.dia_vencimento}` : formatDateToBR(item.created_at)}
-             </span>
+            
+          {!isPassageiro ? (
+             <Badge variant={status === ContratoStatus.ASSINADO ? "success" : "destructive"}>
+                {status === ContratoStatus.ASSINADO ? "Assinado" : "Pendente"}
+             </Badge>
+          ) : (
+            <Badge variant="secondary">
+              Sem Contrato
+            </Badge>
+          )}
           </div>
         </div>
       </div>
@@ -160,9 +174,21 @@ export const ContratosList = memo(function ContratosList({
     }
 
     const configs: Record<string, any> = {
-      pendentes: { icon: Send, title: "Nenhum contrato pendente", desc: "Todos os seus contratos foram assinados!" },
-      assinados: { icon: Eye, title: "Nenhum contrato assinado", desc: "Aguardando assinaturas dos responsáveis." },
-      sem_contrato: { icon: FileText, title: "Todos os passageiros com contrato", desc: "Bom trabalho! Tudo organizado." },
+      pendentes: {
+        icon: Send,
+        title: "Nenhum contrato pendente",
+        desc: "Todos os seus contratos foram assinados!",
+      },
+      assinados: {
+        icon: Eye,
+        title: "Nenhum contrato assinado",
+        desc: "Aguardando assinaturas dos responsáveis.",
+      },
+      sem_contrato: {
+        icon: FileText,
+        title: "Todos os passageiros com contrato",
+        desc: "Bom trabalho! Tudo organizado.",
+      },
     };
 
     const config = configs[activeTab] || configs.pendentes;
@@ -183,12 +209,12 @@ export const ContratosList = memo(function ContratosList({
       emptyState={getEmptyState()}
       mobileContainerClassName="space-y-3"
       mobileItemRenderer={(item, index) => (
-        <ContratoMobileCard 
-          key={item.id} 
-          item={item} 
-          index={index} 
-          activeTab={activeTab} 
-          {...actions} 
+        <ContratoMobileCard
+          key={item.id}
+          item={item}
+          index={index}
+          activeTab={activeTab}
+          {...actions}
         />
       )}
     >
@@ -196,43 +222,70 @@ export const ContratosList = memo(function ContratosList({
         <Table>
           <TableHeader className="bg-gray-50/50">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Passageiro</TableHead>
-              <TableHead className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Responsável</TableHead>
-              <TableHead className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Valor</TableHead>
               <TableHead className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
-                {activeTab === 'sem_contrato' ? 'Venc. Padrão' : 'Data'}
+                Passageiro
               </TableHead>
-              <TableHead className="px-6 py-4 text-xs font-bold text-gray-400 uppercase text-right">Ações</TableHead>
+              <TableHead className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
+                Status Passageiro
+              </TableHead>
+              <TableHead className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
+                Valor
+              </TableHead>
+              <TableHead className="px-6 py-4 text-xs font-bold text-gray-400 uppercase text-right">
+                Ações
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {data.map((item) => (
-              <TableRow key={item.id} className="hover:bg-gray-50/50 transition-colors border-b border-gray-50 last:border-0">
+              <TableRow
+                key={item.id}
+                className="hover:bg-gray-50/50 transition-colors border-b border-gray-50 last:border-0"
+              >
                 <TableCell className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs",
-                      item.tipo === 'passageiro' ? "bg-orange-50 text-orange-600" : (item.status === ContratoStatus.ASSINADO ? "bg-green-50 text-green-600" : "bg-blue-50 text-blue-600")
-                    )}>
+                    <div
+                      className={cn(
+                        "h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm",
+                        item.passageiro?.ativo
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-gray-100 text-slate-600",
+                      )}
+                    >
                       {(item.passageiro?.nome || item.nome || "?").charAt(0)}
                     </div>
-                    <span className="font-bold text-gray-900 text-sm">{item.passageiro?.nome || item.nome || "Não informado"}</span>
+                    <div className="flex flex-col">
+                      <p className="font-bold text-gray-900 text-sm">
+                        {item.passageiro?.nome || item.nome || "Não informado"}
+                      </p>
+                      <p className="text-xs font-semibold text-gray-900">
+                        {item.passageiro?.nome_responsavel ||
+                          item.nome_responsavel ||
+                          "Não informado"}
+                      </p>
+                    </div>
                   </div>
                 </TableCell>
-                <TableCell className="px-6 py-4 text-sm text-gray-600">
-                  {item.passageiro?.nome_responsavel || item.nome_responsavel || "Não informado"}
+                <TableCell className="px-6 py-4">
+                  <StatusBadge status={item.passageiro?.ativo} />
                 </TableCell>
                 <TableCell className="px-6 py-4 font-bold text-gray-900 text-sm">
-                  {(Number(item.dados_contrato?.valorMensal || item.valor_parcela || item.valor_mensal) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                </TableCell>
-                <TableCell className="px-6 py-4 text-sm text-gray-600">
-                  {item.tipo === 'passageiro' ? `Dia ${item.vencimento_mensalidade || item.dados_contrato?.diaVencimento || item.dia_vencimento}` : formatDateToBR(item.created_at)}
+                  {(
+                    Number(
+                      item.dados_contrato?.valorMensal ||
+                        item.valor_parcela ||
+                        item.valor_mensal,
+                    ) || 0
+                  ).toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  })}
                 </TableCell>
                 <TableCell className="px-6 py-4 text-right">
-                  <ContratoActionsMenu 
-                    item={item} 
-                    tipo={item.tipo} 
-                    status={item.status} 
+                  <ContratoActionsMenu
+                    item={item}
+                    tipo={item.tipo}
+                    status={item.status}
                     {...actions}
                   />
                 </TableCell>

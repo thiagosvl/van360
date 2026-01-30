@@ -44,9 +44,6 @@ export function PassageiroFormFinanceiro({
 }: PassageiroFormFinanceiroProps) {
   const form = useFormContext();
 
-  const diaVencimento = form.watch("dia_vencimento");
-
-
   return (
     <AccordionItem
       value="cobranca"
@@ -89,7 +86,7 @@ export function PassageiroFormFinanceiro({
                       <SelectTrigger
                         className={cn(
                           "pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
-                          fieldState.error && "border-red-500"
+                          fieldState.error && "border-red-500",
                         )}
                         aria-invalid={!!fieldState.error}
                       >
@@ -109,7 +106,7 @@ export function PassageiroFormFinanceiro({
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="data_inicio_transporte"
@@ -118,13 +115,13 @@ export function PassageiroFormFinanceiro({
                 <FormLabel className="text-gray-700 font-medium ml-1">
                   Início do Transporte <span className="text-red-600">*</span>
                 </FormLabel>
-                 <FormControl>
+                <FormControl>
                   <Input
                     placeholder="DD/MM/AAAA"
                     maxLength={10}
                     {...field}
                     onChange={(e) => {
-                       field.onChange(dateMask(e.target.value));
+                      field.onChange(dateMask(e.target.value));
                     }}
                     className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                   />
@@ -173,7 +170,6 @@ export function PassageiroFormFinanceiro({
             }}
           />
         </div>
-
       </AccordionContent>
     </AccordionItem>
   );

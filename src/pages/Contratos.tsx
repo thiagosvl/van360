@@ -97,7 +97,7 @@ const Contratos = () => {
   };
 
   const handleVerPassageiro = (id: string) => {
-    navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(':id', id));
+    navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(':passageiro_id', id));
   };
 
   const handleCopiarLink = (token: string) => {
