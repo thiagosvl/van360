@@ -32,6 +32,7 @@ import { useCreateGasto, useUpdateGasto, useVeiculos } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 import { safeCloseDialog } from "@/utils/dialogUtils";
+import { formatarPlacaExibicao } from "@/utils/domain";
 import { moneyMask, moneyToNumber } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -275,7 +276,7 @@ export default function GastoFormDialog({
                         </SelectItem>
                         {veiculos.map((v) => (
                           <SelectItem key={v.id} value={v.id}>
-                            {v.placa}
+                            {formatarPlacaExibicao(v.placa)}
                           </SelectItem>
                         ))}
                       </SelectContent>

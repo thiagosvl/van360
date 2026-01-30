@@ -2,25 +2,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
+import { formatarPlacaExibicao } from "@/utils/domain";
 import { Filter, ListFilter, Plus, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -140,7 +141,7 @@ export function GastosToolbar({
             <SelectItem value="todos">Todos os Veículos</SelectItem>
             {veiculos.map((v) => (
               <SelectItem key={v.id} value={v.id}>
-                {v.placa}
+                {formatarPlacaExibicao(v.placa)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -313,7 +314,7 @@ export function GastosToolbar({
                     <SelectItem value="todos">Todos os Veículos</SelectItem>
                     {veiculos.map((v) => (
                       <SelectItem key={v.id} value={v.id}>
-                        {v.placa}
+                        {formatarPlacaExibicao(v.placa)}
                       </SelectItem>
                     ))}
                   </SelectContent>

@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { formatarPlacaExibicao } from "@/utils/domain";
 import { BarChart3, ChevronDown, ChevronRight, TrendingDown } from "lucide-react";
 import { useState } from "react";
 
@@ -181,7 +182,7 @@ export const RelatoriosSaidas = ({
                                  <div key={vIndex} className="flex items-center justify-between py-1 px-2 rounded">
                                      <div className="flex flex-col">
                                          <span className="text-sm font-semibold text-gray-800">
-                                            {v.placa !== "-" ? v.placa : v.nome}
+                                            {v.placa !== "-" ? formatarPlacaExibicao(v.placa) : v.nome}
                                          </span>
                                          {v.placa !== "-" && (
                                              <span className="text-[10px] text-gray-500">{v.nome}</span>
@@ -232,7 +233,7 @@ export const RelatoriosSaidas = ({
                 <div key={index} className="space-y-2">
                   <div className="flex justify-between items-center text-sm">
                     <div className="flex flex-col">
-                       <span className="font-bold text-gray-900">{v.placa !== "-" ? v.placa : v.nome}</span>
+                       <span className="font-bold text-gray-900">{v.placa !== "-" ? formatarPlacaExibicao(v.placa) : v.nome}</span>
                        {v.placa !== "-" && <span className="text-xs text-gray-500 font-normal">{v.nome}</span>}
                     </div>
                     <span className="font-bold text-gray-900">

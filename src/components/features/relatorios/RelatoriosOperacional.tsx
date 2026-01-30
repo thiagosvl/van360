@@ -2,6 +2,7 @@ import { AutomationPlanCard } from "@/components/common/AutomationPlanCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useLayout } from "@/contexts/LayoutContext";
+import { formatarPlacaExibicao } from "@/utils/domain";
 import { Users } from "lucide-react";
 
 interface RelatoriosOperacionalProps {
@@ -173,7 +174,7 @@ export const RelatoriosOperacional = ({
               <div key={index} className="space-y-2">
                 <div className="flex justify-between items-end text-sm">
                   <span className="font-medium text-gray-700">
-                    {veiculo.placa}
+                    {formatarPlacaExibicao(veiculo.placa)}
                   </span>
                   <div className="font-semibold text-gray-900">
                     {veiculo.passageiros}{" "}

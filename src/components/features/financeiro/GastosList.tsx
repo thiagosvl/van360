@@ -3,19 +3,20 @@ import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { useGastoActions } from "@/hooks/ui/useGastoActions";
 import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
+import { formatarPlacaExibicao } from "@/utils/domain";
 import { formatCurrency, formatDateToBR } from "@/utils/formatters";
 import {
-    Bus,
-    Calendar,
-    ClipboardCheck,
-    Cog,
-    Ellipsis,
-    Eye,
-    FileText,
-    Fuel,
-    HelpCircle,
-    Wallet,
-    Wrench,
+  Bus,
+  Calendar,
+  ClipboardCheck,
+  Cog,
+  Ellipsis,
+  Eye,
+  FileText,
+  Fuel,
+  HelpCircle,
+  Wallet,
+  Wrench,
 } from "lucide-react";
 import { memo } from "react";
 import { GastoActionsMenu } from "./GastoActionsMenu";
@@ -105,7 +106,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
                 {placa ? (
                   <span className="text-[10px] font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded-md border border-gray-200 inline-flex items-center gap-1">
                     <Bus className="w-3 h-3 text-gray-500" />
-                    {placa}
+                    {formatarPlacaExibicao(placa)}
                   </span>
                 ) : (
                   <span className="text-[10px] font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100 inline-flex items-center gap-1 whitespace-nowrap">
