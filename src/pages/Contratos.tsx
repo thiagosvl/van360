@@ -1,180 +1,273 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
+import { CheckCircle2, FileText, Send, UserX } from 'lucide-react';
+import {
+  useEffect,
+  useState
+} from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
+
+import { KPICard } from '@/components/common/KPICard';
+import { PullToRefreshWrapper } from '@/components/navigation/PullToRefreshWrapper';
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
+
+import { ContratosList } from '@/components/features/contrato/ContratosList';
+import { ContratosToolbar } from '@/components/features/contrato/ContratosToolbar';
+
+import { ROUTES } from '@/constants/routes';
 import { useLayout } from '@/contexts/LayoutContext';
-import { useCancelContrato, useContratos, useDownloadContrato, usePreviewContrato } from '@/hooks/api/useContratos';
+import {
+  useContratos,
+  useContratosKPIs,
+  useCreateContrato,
+  useDeleteContrato,
+  useDownloadContrato,
+  usePreviewContrato,
+  useReenviarContrato,
+  useSubstituirContrato,
+} from '@/hooks/api/useContratos';
+
 import { usePermissions } from '@/hooks/business/usePermissions';
-import { ContratoStatus } from '@/types/enums';
-import { toast } from '@/utils/notifications/toast';
-import { Copy, Download, Eye, FileText, Loader2, Settings, X } from 'lucide-react';
-import { useEffect } from 'react';
 
-export default function Contratos() {
-  const { openContractSetupDialog, setPageTitle } = useLayout();
-  const { data: contratos, isLoading } = useContratos();
-  const { summary, profile } = usePermissions();
+const Contratos = () => {
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog } = useLayout();
+  const { profile } = usePermissions();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
+  const handleOpenContractSetup = () => {
+    openContractSetupDialog({
+        forceOpen: true,
+        onSuccess: (usarContratos) => {
+            if (usarContratos) {
+                refetchKPIs();
+                refetchContratos();
+            }
+        }
+    });
+  };
+
+  // Filtros e Abas
+  const activeTab = searchParams.get('tab') || 'pendentes';
+  const [busca, setBusca] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearch(busca), 500);
+    return () => clearTimeout(handler);
+  }, [busca]);
+
+  const handleTabChange = (val: string) => {
+    setSearchParams({ tab: val });
+  };
+
+  // Queries e Mutations
+  const { data: kpis, isLoading: isLoadingKPIs, refetch: refetchKPIs } = useContratosKPIs({
+      enabled: !!profile?.config_contrato?.usar_contratos
+  });
+  const { data: contratosRes, isLoading: isLoadingContratos, refetch: refetchContratos } = useContratos(
+    { tab: activeTab, search: debouncedSearch },
+    { enabled: !!profile?.config_contrato?.usar_contratos }
+  );
+
+  const deleteMutation = useDeleteContrato();
+  const downloadMutation = useDownloadContrato();
+  const reenviarMutation = useReenviarContrato();
+  const substituirMutation = useSubstituirContrato();
+  const createMutation = useCreateContrato();
+  const previewMutation = usePreviewContrato();
+
+  const isActionLoading = 
+    deleteMutation.isPending || 
+    downloadMutation.isPending || 
+    reenviarMutation.isPending || 
+    substituirMutation.isPending ||
+    createMutation.isPending ||
+    previewMutation.isPending;
+
+  const isGlobalLoading = isLoadingKPIs || isLoadingContratos || isActionLoading;
+
+  // Handlers
   useEffect(() => {
     setPageTitle('Contratos');
   }, [setPageTitle]);
 
-  const cancelMutation = useCancelContrato();
-  const downloadMutation = useDownloadContrato();
-  const previewMutation = usePreviewContrato();
+  const onRefresh = async () => {
+    await Promise.all([refetchKPIs(), refetchContratos()]);
+  };
 
-  const isConfigurado = summary?.usuario.flags.contrato_configurado;
-  const usaContratos = summary?.usuario.flags.usar_contratos;
-  const podeVerModelo = isConfigurado && usaContratos;
+  const handleVerPassageiro = (id: string) => {
+    navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(':id', id));
+  };
 
   const handleCopiarLink = (token: string) => {
-    const link = `${window.location.origin}/assinar/${token}`;
-    navigator.clipboard.writeText(link);
-    toast.success('sucesso.copiado');
+    const url = `${window.location.origin}/assinar/${token}`;
+    navigator.clipboard.writeText(url);
+    toast.success('Link de assinatura copiado!');
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, any> = {
-      pendente: 'destructive',
-      assinado: 'success',
-      substituido: 'default',
-    };
-
-    const labels: Record<string, string> = {
-      [ContratoStatus.PENDENTE]: 'Pendente',
-      [ContratoStatus.ASSINADO]: 'Assinado',
-      [ContratoStatus.SUBSTITUIDO]: 'Substituído',
-    };
-
-    return <Badge variant={variants[status] || 'default'}>{labels[status] || status}</Badge>;
+  const handleVisualizarLink = (token: string) => {
+    window.open(`${window.location.origin}/assinar/${token}`, '_blank');
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+  const handleExcluir = (id: string) => {
+    openConfirmationDialog({
+      title: 'Excluir Contrato?',
+      description: 'Tem certeza que deseja excluir este contrato? Esta ação não pode ser desfeita.',
+      confirmText: 'Excluir',
+      variant: 'destructive',
+      onConfirm: async () => {
+        await deleteMutation.mutateAsync(id);
+        closeConfirmationDialog();
+      }
+    });
+  };
+
+  const handleSubstituir = (id: string) => {
+    openConfirmationDialog({
+      title: 'Substituir Contrato?',
+      description: 'O contrato atual será marcado como substituído e um novo será gerado com os dados atuais do passageiro. Deseja continuar?',
+      confirmText: 'Continuar',
+      onConfirm: async () => {
+        await substituirMutation.mutateAsync(id);
+        closeConfirmationDialog();
+      }
+    });
+  };
+
+  const handleGerarContrato = (passageiroId: string) => {
+    openConfirmationDialog({
+      title: 'Gerar Contrato?',
+      description: 'Deseja gerar um novo contrato para este passageiro agora?',
+      confirmText: 'Gerar',
+      onConfirm: async () => {
+        await createMutation.mutateAsync({ passageiroId });
+        closeConfirmationDialog();
+      }
+    });
+  };
+
+  const actions = {
+    onVerPassageiro: handleVerPassageiro,
+    onCopiarLink: handleCopiarLink,
+    onBaixarPDF: (id: string) => downloadMutation.mutate(id),
+    onReenviarNotificacao: (id: string) => reenviarMutation.mutate(id),
+    onExcluir: handleExcluir,
+    onSubstituir: handleSubstituir,
+    onGerarContrato: handleGerarContrato,
+    onVisualizarLink: handleVisualizarLink,
+  };
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Contratos</h1>
-          <p className="text-muted-foreground">Gerencie os contratos de transporte dos seus passageiros</p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <Button 
-            variant="outline"
-            className="gap-2"
-            disabled={!podeVerModelo || previewMutation.isPending}
-            onClick={() => previewMutation.mutate({
-              clausulas: profile?.config_contrato?.clausulas,
-              multaAtraso: profile?.config_contrato?.multa_atraso,
-              multaRescisao: profile?.config_contrato?.multa_rescisao
-            })}
-          >
-            {previewMutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-            <span className="hidden sm:inline">Ver Modelo (PDF)</span>
-          </Button>
-
-          <Button 
-            variant="outline"
-            className="gap-2"
-            onClick={openContractSetupDialog}
-          >
-            <Settings className="h-4 w-4" />
-            <span className="hidden sm:inline">Configurações</span>
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid gap-4">
-        {contratos?.data?.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Nenhum contrato encontrado</p>
-            </CardContent>
-          </Card>
-        ) : (
-          contratos?.data?.map((contrato: any) => (
-            <Card key={contrato.id}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">
-                      {contrato.dados_contrato.nomePassageiro}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Responsável: {contrato.dados_contrato.nomeResponsavel}
-                    </p>
+    <>
+      <PullToRefreshWrapper onRefresh={onRefresh}>
+        <div className="space-y-6">
+          {/* Feature Disabled State */}
+          {!profile?.config_contrato?.usar_contratos && (
+              <UnifiedEmptyState
+                icon={FileText}
+                title="Contratos Desativados"
+                description={
+                  <div className="space-y-1">
+                    <p>A funcionalidade de contratos está desativada nas suas configurações.</p>
+                    <p>Ative agora mesmo para gerar contratos e coletar assinaturas digitais.</p>
                   </div>
-                  {getStatusBadge(contrato.status)}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 mb-4">
-                  <p className="text-sm">
-                    <span className="font-medium">Valor mensal:</span> R$ {contrato.dados_contrato.valorMensal.toFixed(2)}
-                  </p>
-                  <p className="text-sm">
-                    <span className="font-medium">Criado em:</span>{' '}
-                    {new Date(contrato.created_at).toLocaleDateString('pt-BR')}
-                  </p>
-                  {contrato.assinado_em && (
-                    <p className="text-sm">
-                      <span className="font-medium">Assinado em:</span>{' '}
-                      {new Date(contrato.assinado_em).toLocaleDateString('pt-BR')}
-                    </p>
-                  )}
-                </div>
+                }
+                action={{
+                  label: "Ativar Contratos",
+                  onClick: () => handleOpenContractSetup(),
+                  icon: CheckCircle2
+                }}
+                className="mt-8 border-dashed border-gray-300 bg-gray-50/50"
+              />
+          )}
 
-                <div className="flex gap-2">
-                  {contrato.status === ContratoStatus.PENDENTE && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCopiarLink(contrato.token_acesso)}
-                      >
-                        <Copy className="mr-2 h-4 w-4" />
-                        Copiar Link
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => cancelMutation.mutate(contrato.id)}
-                        disabled={cancelMutation.isPending}
-                      >
-                        <X className="mr-2 h-4 w-4" />
-                        Cancelar
-                      </Button>
-                    </>
-                  )}
+          {/* Active State */}
+          {profile?.config_contrato?.usar_contratos && (
+            <>
+              {/* KPIs */}
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                <KPICard
+                  title="Pendentes"
+                  value={kpis?.pendentes ?? 0}
+                  icon={Send}
+                  bgClass="bg-blue-50"
+                  colorClass="text-blue-600"
+                  countVisible={false}
+                  format="number"
+                />
+                <KPICard
+                  title="Assinados"
+                  value={kpis?.assinados ?? 0}
+                  icon={CheckCircle2}
+                  bgClass="bg-green-50"
+                  colorClass="text-green-600"
+                  countVisible={false}
+                  format="number"
+                />
+                <KPICard
+                  title="Sem Contrato"
+                  value={kpis?.semContrato ?? 0}
+                  icon={UserX}
+                  bgClass="bg-orange-50"
+                  colorClass="text-orange-600"
+                  countVisible={false}
+                  format="number"
+                  className="col-span-2 md:col-span-1"
+                />
+              </div>
 
-                  {contrato.status === ContratoStatus.ASSINADO && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => downloadMutation.mutate(contrato.id)}
-                      disabled={downloadMutation.isPending}
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Baixar PDF
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
-    </div>
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                <ContratosToolbar 
+                  busca={busca}
+                  setBusca={setBusca}
+                  activeTab={activeTab}
+                  countPendentes={kpis?.pendentes}
+                  countAssinados={kpis?.assinados}
+                  countSemContrato={kpis?.semContrato}
+                  onOpenConfig={handleOpenContractSetup}
+                  onOpenPreview={() => previewMutation.mutate({})}
+                />
+
+                <TabsContent value="pendentes" className="mt-0">
+                  <ContratosList 
+                    data={contratosRes?.data || []} 
+                    isLoading={isLoadingContratos} 
+                    activeTab="pendentes"
+                    busca={debouncedSearch}
+                    {...actions}
+                  />
+                </TabsContent>
+
+                <TabsContent value="assinados" className="mt-0">
+                  <ContratosList 
+                    data={contratosRes?.data || []} 
+                    isLoading={isLoadingContratos} 
+                    activeTab="assinados"
+                    busca={debouncedSearch}
+                    {...actions}
+                  />
+                </TabsContent>
+
+                <TabsContent value="sem_contrato" className="mt-0">
+                  <ContratosList 
+                    data={contratosRes?.data || []} 
+                    isLoading={isLoadingContratos} 
+                    activeTab="sem_contrato"
+                    busca={debouncedSearch}
+                    {...actions}
+                  />
+                </TabsContent>
+              </Tabs>
+            </>
+          )}
+        </div>
+      </PullToRefreshWrapper>
+
+      <LoadingOverlay active={isGlobalLoading} text={isActionLoading ? "Processando..." : "Carregando..."} />
+    </>
   );
-}
+};
+
+export default Contratos;

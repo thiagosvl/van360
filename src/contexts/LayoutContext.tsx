@@ -1,5 +1,5 @@
 import {
-    PlanUpgradeDialogProps,
+  PlanUpgradeDialogProps,
 } from "@/components/dialogs/PlanUpgradeDialog";
 import { SubscriptionExpiredDialogProps } from "@/components/dialogs/SubscriptionExpiredDialog";
 import { PassageiroFormModes } from "@/types/enums";
@@ -9,8 +9,8 @@ import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Veiculo } from "@/types/veiculo";
 import {
-    createContext,
-    useContext,
+  createContext,
+  useContext,
 } from "react";
 
 export type OpenPlanUpgradeDialogProps = Omit<
@@ -99,6 +99,11 @@ export interface OpenFirstChargeDialogProps {
   onSuccess?: () => void;
 }
 
+export interface OpenContractSetupDialogProps {
+    forceOpen?: boolean;
+    onSuccess?: (usarContratos?: boolean) => void;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -125,7 +130,7 @@ export interface LayoutContextType {
   isFirstChargeDialogOpen: boolean;
   openSubscriptionExpiredDialog: (props?: OpenSubscriptionExpiredDialogProps) => void;
   isSubscriptionExpiredDialogOpen: boolean;
-  openContractSetupDialog: () => void;
+  openContractSetupDialog: (props?: OpenContractSetupDialogProps) => void;
 }
 
 

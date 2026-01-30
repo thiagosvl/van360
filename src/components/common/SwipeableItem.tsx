@@ -155,7 +155,7 @@ export function SwipeableItem({
               )}
               style={{ width: ACTION_WIDTH }}
             >
-              <div className="mb-1">{action.icon}</div>
+              <div className="mb-1">{<IconRenderer icon={action.icon} className="h-5 w-5" />}</div>
               <span className="text-[10px] font-medium leading-tight text-center">
                 {action.label}
               </span>
@@ -189,7 +189,7 @@ export function SwipeableItem({
               )}
               style={{ width: ACTION_WIDTH }}
             >
-              <div className="mb-1">{action.icon}</div>
+              <div className="mb-1">{<IconRenderer icon={action.icon} className="h-5 w-5" />}</div>
               <span className="text-[10px] font-medium leading-tight text-center">
                 {action.label}
               </span>
@@ -223,4 +223,18 @@ export function SwipeableItem({
       </motion.div>
     </div>
   );
+}
+
+/**
+ * Helper to render an icon that could be either a JSX element or a component reference
+ */
+function IconRenderer({ icon, className }: { icon: any, className?: string }) {
+  if (!icon) return null;
+  // If it's a component reference (function or object with render)
+  if (typeof icon === 'function' || (typeof icon === 'object' && icon.render)) {
+    const IconComponent = icon;
+    return <IconComponent className={className} />;
+  }
+  // Otherwise assume it's already a React element (jsx)
+  return icon;
 }

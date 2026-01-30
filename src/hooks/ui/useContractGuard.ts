@@ -27,25 +27,33 @@ export function useContractGuard({
   useEffect(() => {
     if (isLoading || !profile) return;
 
-    if (isProfissional) {
-      // 1. Check if PIX is validated first (Contract Guard depends on PIX Guard)
-      const isPixKeyValidated = profile.status_chave_pix === PixKeyStatus.VALIDADA;
-      if (!isPixKeyValidated) return;
+    // 1. Check basic prerequisites
+    const isContractConfigured = profile.flags?.contrato_configurado ?? profile.config_contrato?.configurado === true;
+    const isPixKeyValidated = profile.status_chave_pix === PixKeyStatus.VALIDADA;
 
-      // 2. Check if contract is configured (prefer flag from summary/profile.flags)
-      const isContractConfigured = profile.flags?.contrato_configurado ?? profile.config_contrato?.configurado === true;
-      
-      const shouldBlock = !isContractConfigured;
+    // 2. Determine if we should block based on plan rules
+    let shouldBlock = false;
 
-      if (!shouldBlock) {
-          return;
-      }
-
-      // 3. Trigger modal if on a new path
-      if (triggeredPath !== location.pathname) {
-          onShouldOpen();
-          setTriggeredPath(location.pathname);
-      }
+    if (!isContractConfigured) {
+        if (isProfissional) {
+            // Profissional: Must have PIX validated before worrying about contracts
+            if (isPixKeyValidated) {
+                shouldBlock = true;
+            }
+        } else {
+            // Essential (or others): Block immediately if not configured (no PIX dependency for this specific guard)
+            shouldBlock = true;
+        }
     }
-  }, [profile, isProfissional, isLoading, onShouldOpen, location.pathname, triggeredPath]);
+
+    if (!shouldBlock) {
+        return;
+    }
+
+    // 3. Trigger modal if on a new path
+    if (triggeredPath !== location.pathname) {
+        onShouldOpen();
+        setTriggeredPath(location.pathname);
+    }
+  }, [profile, isLoading, onShouldOpen, location.pathname, triggeredPath]);
 }

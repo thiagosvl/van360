@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { MoreVertical } from "lucide-react";
@@ -135,8 +135,8 @@ export function MobileActionItem({
                   action.onClick();
                 }}
               >
-                 <span className={cn("mr-3", action.isDestructive ? "text-red-600" : (action.disabled ? "text-gray-300" : "text-gray-500"))}>
-                    {action.icon}
+                <span className={cn("mr-3", action.isDestructive ? "text-red-600" : (action.disabled ? "text-gray-300" : "text-gray-500"))}>
+                    <IconRenderer icon={action.icon} className="h-5 w-5" />
                  </span>
                 {action.label}
               </Button>
@@ -146,4 +146,20 @@ export function MobileActionItem({
       </Sheet>
     </>
   );
+}
+
+/**
+ * Helper to render an icon that could be either a JSX element or a component reference
+ */
+function IconRenderer({ icon, className }: { icon: any, className?: string }) {
+  if (!icon) return null;
+  if (import.meta.env.DEV && typeof icon === 'object' && !icon.$$typeof && !Array.isArray(icon)) {
+     console.warn('IconRenderer: icon seems to be a plain object, which is not valid as a React child.', icon);
+  }
+  
+  if (typeof icon === 'function' || (typeof icon === 'object' && icon.render)) {
+    const IconComponent = icon;
+    return <IconComponent className={className} />;
+  }
+  return icon;
 }

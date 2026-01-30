@@ -88,7 +88,7 @@ export function KPICard({
           bgClass
         )}
       >
-        <Icon className={cn("h-3 w-3 sm:h-5 sm:w-5", colorClass)} />
+        <IconRenderer icon={Icon} className={cn("h-3 w-3 sm:h-5 sm:w-5", colorClass)} />
       </div>
       <div className="relative z-10">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
@@ -118,4 +118,16 @@ export function KPICard({
       )}
     </div>
   );
+}
+
+/**
+ * Helper to render an icon that could be either a JSX element or a component reference
+ */
+function IconRenderer({ icon, className }: { icon: any, className?: string }) {
+  if (!icon) return null;
+  if (typeof icon === 'function' || (typeof icon === 'object' && icon.render)) {
+    const IconComponent = icon;
+    return <IconComponent className={className} />;
+  }
+  return icon;
 }

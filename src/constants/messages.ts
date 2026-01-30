@@ -350,11 +350,17 @@ export const messages = {
     erro: {
       carregar: "Erro ao carregar contratos.",
       criar: "Erro ao criar contrato.",
+      remover: "Erro ao remover contrato.",
+      substituir: "Erro ao gerar novo contrato.",
+      reenviar: "Erro ao reenviar notificação.",
       cancelar: "Erro ao cancelar contrato.",
       baixar: "Erro ao baixar contrato.",
     },
     sucesso: {
       criado: "Contrato criado com sucesso!",
+      removido: "Contrato removido com sucesso!",
+      substituido: "Novo contrato gerado com sucesso!",
+      reenviado: "Notificação reenviada com sucesso!",
       cancelado: "Contrato cancelado com sucesso!",
       baixado: "Contrato baixado com sucesso!",
     },

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -37,7 +37,7 @@ import SignatureCanvas from "react-signature-canvas";
 interface ContractSetupDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (usarContratos?: boolean) => void;
 }
 
 enum SetupStep {
@@ -195,7 +195,7 @@ export default function ContractSetupDialog({
 
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       await refreshProfile();
-      if (onSuccess) onSuccess();
+      if (onSuccess) onSuccess(active);
       onClose();
     } catch (err) {
       toast.error("erro.salvar");
@@ -214,8 +214,8 @@ export default function ContractSetupDialog({
           Proteja seu Negócio
         </h2>
         <p className="text-gray-600">
-          Como usuário Profissional, você pode automatizar a geração e
-          assinatura de contratos com os pais.
+          Você pode automatizar a geração e
+          assinatura de contratos com os pais de forma simples e segura.
         </p>
       </div>
 
@@ -576,12 +576,20 @@ export default function ContractSetupDialog({
     >
       <DialogContent
         className="w-[calc(100%-1.5rem)] sm:w-full max-w-md p-0 overflow-hidden bg-white rounded-2xl sm:rounded-3xl border-0 shadow-2xl"
-        hideCloseButton={!podeFechar}
+        hideCloseButton
         onPointerDownOutside={(e) => !podeFechar && e.preventDefault()}
         onEscapeKeyDown={(e) => !podeFechar && e.preventDefault()}
       >
-        <div className="bg-blue-600 p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between text-white shrink-0 gap-4">
-          <div className="flex items-center gap-3">
+        <div className="bg-blue-600 p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between text-white shrink-0 gap-4 relative">
+          {/* Custom Close Button matching EscolaFormDialog (Mobile) */}
+          {podeFechar && (
+            <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors sm:hidden" onClick={onClose}>
+              <X className="h-6 w-6" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          )}
+
+          <div className="flex items-center gap-3 pr-8 sm:pr-0">
             <div className="p-2 bg-white/20 rounded-lg shrink-0">
               <FileText className="w-5 h-5" />
             </div>
@@ -594,13 +602,24 @@ export default function ContractSetupDialog({
               </p>
             </div>
           </div>
-          <div className="flex gap-1 justify-end">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className={`h-1 w-3 sm:h-1.5 sm:w-4 rounded-full transition-all ${step === i ? "bg-white w-6 sm:w-8" : "bg-white/30"}`}
-              />
-            ))}
+          
+          <div className="flex gap-1 justify-end items-center">
+             {/* Desktop Close Button */}
+              {podeFechar && (
+                <DialogClose className="hidden sm:block text-white/70 hover:text-white transition-colors ml-4" onClick={onClose}>
+                  <X className="h-6 w-6" />
+                  <span className="sr-only">Close</span>
+                </DialogClose>
+              )}
+            
+            <div className="flex gap-1">
+                {[0, 1, 2, 3, 4].map((i) => (
+                <div
+                    key={i}
+                    className={`h-1 w-3 sm:h-1.5 sm:w-4 rounded-full transition-all ${step === i ? "bg-white w-6 sm:w-8" : "bg-white/30"}`}
+                />
+                ))}
+            </div>
           </div>
         </div>
 
