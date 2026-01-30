@@ -43,17 +43,20 @@ export function usePassageiroActions({
       ),
       onClick: () => onToggleStatus(passageiro),
       swipeColor: passageiro.ativo ? "bg-amber-500" : "bg-emerald-500",
+      hasSeparatorAfter: true
     },
     {
       label: "Editar",
       icon: <Pencil className="h-4 w-4" />,
       onClick: () => onEdit(passageiro),
       swipeColor: "bg-blue-500",
+      hasSeparatorAfter: true
     },
     {
       label: "Carteirinha",
       icon: <CreditCard className="h-4 w-4" />,
       onClick: () => onHistorico(passageiro),
+      hasSeparatorAfter: true
     },
   ];
 
@@ -64,6 +67,7 @@ export function usePassageiroActions({
         icon: <BotOff className="h-4 w-4" />,
         onClick: () => onToggleCobrancaAutomatica(passageiro),
         swipeColor: "bg-slate-500",
+        hasSeparatorAfter: true
       });
     }
   } else {
@@ -78,7 +82,21 @@ export function usePassageiroActions({
         }
       },
       swipeColor: "bg-indigo-600",
+      hasSeparatorAfter: true
     });
+  }
+
+  // Action Logic: Ver Contrato
+  if (passageiro.contrato_url) {
+      const verContratoAction: ActionItem = {
+          label: "Ver Contrato",
+          icon: <FileText className="h-4 w-4" />,
+          onClick: () => window.open(passageiro.contrato_url, '_blank'),
+          swipeColor: "bg-purple-500",
+          hasSeparatorAfter: true
+      };
+      
+      actions.push(verContratoAction);
   }
 
   // Ação de Excluir (sempre por último)
@@ -88,22 +106,8 @@ export function usePassageiroActions({
     onClick: () => onDelete(passageiro),
     isDestructive: true,
     swipeColor: "bg-red-500",
+    className: "text-red-600"
   });
-
-  // Action Logic: Ver Contrato
-  // Only show if there is a contract URL
-  if (passageiro.contrato_url) {
-      // Add after 'Carteirinha' or before? Let's add before Excluir
-      const verContratoAction: ActionItem = {
-          label: "Ver Contrato",
-          icon: <FileText className="h-4 w-4" />,
-          onClick: () => window.open(passageiro.contrato_url, '_blank'),
-          swipeColor: "bg-purple-500"
-      };
-      
-      // Insert before the last item (Excluir)
-      actions.splice(actions.length - 1, 0, verContratoAction);
-  }
 
   return actions;
 }

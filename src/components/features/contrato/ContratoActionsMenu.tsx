@@ -1,24 +1,17 @@
-import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { ActionsDropdown } from "@/components/common/ActionsDropdown";
+import { ActionItem } from "@/types/actions";
 import { ContratoStatus } from "@/types/enums";
 import {
-    Copy,
-    Download,
-    Eye,
-    FileText,
-    MoreVertical,
-    RefreshCcw,
-    Send,
-    Trash2,
-    User
+  Copy,
+  Download,
+  Eye,
+  FileText,
+  RefreshCcw,
+  Send,
+  Trash2,
+  User
 } from "lucide-react";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 
 interface ContratoActionsMenuProps {
   item: any; // Pode ser Contrato ou Passageiro
@@ -34,112 +27,111 @@ interface ContratoActionsMenuProps {
   onVisualizarLink?: (token: string) => void;
 }
 
-export const ContratoActionsMenu = memo(function ContratoActionsMenu({
-  item,
-  tipo,
-  status,
-  onVerPassageiro,
-  onCopiarLink,
-  onBaixarPDF,
-  onReenviarNotificacao,
-  onExcluir,
-  onSubstituir,
-  onGerarContrato,
-  onVisualizarLink,
-}: ContratoActionsMenuProps) {
-  const isPendente = status === ContratoStatus.PENDENTE;
-  const isAssinado = status === ContratoStatus.ASSINADO;
+export const ContratoActionsMenu = memo(function ContratoActionsMenu(props: ContratoActionsMenuProps) {
+  const {
+    item,
+    tipo,
+    status,
+    onVerPassageiro,
+    onCopiarLink,
+    onBaixarPDF,
+    onReenviarNotificacao,
+    onExcluir,
+    onSubstituir,
+    onGerarContrato,
+    onVisualizarLink,
+  } = props;
 
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-          <MoreVertical className="h-4 w-4 text-gray-400" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-100 shadow-xl p-1">
-        
-        {tipo === 'passageiro' ? (
-          <DropdownMenuItem 
-            onClick={() => onGerarContrato?.(item.id)}
-            className="flex items-center gap-2 p-2.5 rounded-lg text-blue-600 font-medium"
-          >
-            <FileText className="h-4 w-4" />
-            Gerar Contrato
-          </DropdownMenuItem>
-        ) : (
-          <>
-            {isPendente && (
-              <>
-                <DropdownMenuItem 
-                  onClick={() => onReenviarNotificacao?.(item.id)}
-                  className="flex items-center gap-2 p-2.5 rounded-lg text-blue-600 font-medium cursor-pointer"
-                >
-                  <Send className="h-4 w-4" />
-                  Reenviar WhatsApp
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => onCopiarLink?.(item.token_acesso)}
-                  className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer"
-                >
-                  <Copy className="h-4 w-4" />
-                  Copiar Link
-                </DropdownMenuItem>
-              </>
-            )}
+  const actions = useMemo(() => {
+    const isPendente = status === ContratoStatus.PENDENTE;
+    const isAssinado = status === ContratoStatus.ASSINADO;
+    const list: ActionItem[] = [];
 
-            {isAssinado && (
-              <>
-                <DropdownMenuItem 
-                  onClick={() => onVisualizarLink?.(item.token_acesso)}
-                  className="flex items-center gap-2 p-2.5 rounded-lg text-green-600 font-medium cursor-pointer"
-                >
-                  <Eye className="h-4 w-4" />
-                  Visualizar (Link)
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => onBaixarPDF?.(item.id)}
-                  className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer"
-                >
-                  <Download className="h-4 w-4" />
-                  Baixar PDF
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => onSubstituir?.(item.id)}
-                  className="flex items-center gap-2 p-2.5 rounded-lg text-orange-600 font-medium cursor-pointer"
-                >
-                  <RefreshCcw className="h-4 w-4" />
-                  Gerar Novo (Substituir)
-                </DropdownMenuItem>
-              </>
-            )}
-          </>
-        )}
+    if (tipo === 'passageiro') {
+      if (onGerarContrato) {
+        list.push({
+          label: 'Gerar Contrato',
+          icon: <FileText className="h-4 w-4" />,
+          onClick: () => onGerarContrato(item.id),
+          hasSeparatorAfter: true
+        });
+      }
+    } else {
+      // Contrato Actions
+      if (isPendente) {
+        if (onReenviarNotificacao) {
+          list.push({
+            label: 'Reenviar WhatsApp',
+            icon: <Send className="h-4 w-4" />,
+            onClick: () => onReenviarNotificacao(item.id),
+            hasSeparatorAfter: true
+          });
+        }
+        if (onCopiarLink) {
+           list.push({
+            label: 'Copiar Link',
+            icon: <Copy className="h-4 w-4" />,
+            onClick: () => onCopiarLink(item.token_acesso),
+            hasSeparatorAfter: true
+           });
+        }
+      }
 
-        <DropdownMenuSeparator className="bg-gray-50 my-1" />
-        
-        <DropdownMenuItem 
-          onClick={() => onVerPassageiro(tipo === 'passageiro' ? item.id : item.passageiro_id)}
-          className="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer"
-        >
-          <User className="h-4 w-4" />
-          Ver Passageiro
-        </DropdownMenuItem>
+      if (isAssinado) {
+        if (onVisualizarLink) {
+          list.push({
+            label: 'Visualizar (Link)',
+            icon: <Eye className="h-4 w-4" />,
+            onClick: () => onVisualizarLink(item.token_acesso),
+            hasSeparatorAfter: true
+          });
+        }
+        if (onBaixarPDF) {
+          list.push({
+            label: 'Baixar PDF',
+            icon: <Download className="h-4 w-4" />,
+            onClick: () => onBaixarPDF(item.id),
+            hasSeparatorAfter: true
+          });
+        }
+        if (onSubstituir) {
+          list.push({
+            label: 'Gerar Novo (Substituir)',
+            icon: <RefreshCcw className="h-4 w-4" />,
+            onClick: () => onSubstituir(item.id),
+            hasSeparatorAfter: true
+          });
+        }
+      }
+    }
 
-        {tipo === 'contrato' && isPendente && (
-          <>
-            <DropdownMenuSeparator className="bg-gray-50 my-1" />
-            <DropdownMenuItem 
-              onClick={() => onExcluir?.(item.id)}
-              className="flex items-center gap-2 p-2.5 rounded-lg text-red-600 font-medium cursor-pointer"
-            >
-              <Trash2 className="h-4 w-4" />
-              Excluir Contrato
-            </DropdownMenuItem>
-          </>
-        )}
+    // Common Action: Ver Passageiro
+    list.push({
+      label: 'Ver Passageiro',
+      icon: <User className="h-4 w-4" />,
+      onClick: () => onVerPassageiro(tipo === 'passageiro' ? item.id : item.passageiro_id),
+    });
 
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+    // Destructive Actions
+    if (tipo === 'contrato' && isPendente && onExcluir) {
+      list.push({
+        label: 'Excluir Contrato',
+        icon: <Trash2 className="h-4 w-4" />,
+        onClick: () => onExcluir(item.id),
+        className: 'text-red-600',
+        isDestructive: true
+      });
+    }
+
+    // Final pass to ensure EVERY item except the last has a separator
+    if (list.length > 1) {
+      for (let i = 0; i < list.length - 1; i++) {
+        list[i].hasSeparatorAfter = true;
+      }
+    }
+
+    return list;
+  }, [item, tipo, status, props]);
+
+  return <ActionsDropdown actions={actions} />;
 });

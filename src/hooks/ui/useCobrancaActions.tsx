@@ -260,6 +260,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         icon: <User className="h-4 w-4" />,
         onClick: onVerCarteirinha,
         swipeColor: "bg-indigo-600",
+        hasSeparatorAfter: true,
       });
     }
 
@@ -350,11 +351,20 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     if (!disableExcluirCobranca(cobranca)) {
       actions.push({
         label: "Excluir",
-        icon: <Trash2 className="h-4 w-4 text-red-600" />,
+        icon: <Trash2 className="h-4 w-4" />,
         onClick: props.onExcluirCobranca || handleDeleteCobranca,
         isDestructive: true,
         swipeColor: "bg-red-600",
+        className: "text-red-600"
       });
+    }
+
+    // Final pass to ensure EVERY item except the last has a separator
+    // This creates the standard "separated list" look requested by the user
+    if (actions.length > 1) {
+      for (let i = 0; i < actions.length - 1; i++) {
+        actions[i].hasSeparatorAfter = true;
+      }
     }
 
     return actions;

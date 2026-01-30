@@ -25,12 +25,14 @@ export function useVeiculoActions({
       icon: veiculo.ativo ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />,
       onClick: () => onToggleAtivo(veiculo),
       swipeColor: veiculo.ativo ? "bg-amber-500" : "bg-emerald-500",
+      hasSeparatorAfter: true,
     },
     {
       label: "Editar",
       icon: <Pencil className="h-4 w-4" />,
       onClick: () => onEdit(veiculo),
       swipeColor: "bg-blue-600",
+      hasSeparatorAfter: true,
     },
     {
       label: "Ver Passageiros",
@@ -38,6 +40,7 @@ export function useVeiculoActions({
       onClick: () => navigate(`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?veiculo=${veiculo.id}`),
       disabled: !veiculo.passageiros_ativos_count,
       swipeColor: "bg-purple-600",
+      hasSeparatorAfter: true,
     },
     {
       label: "Excluir",

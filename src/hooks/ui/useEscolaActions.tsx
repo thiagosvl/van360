@@ -25,12 +25,14 @@ export function useEscolaActions({
       icon: escola.ativo ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />,
       onClick: () => onToggleAtivo(escola),
       swipeColor: escola.ativo ? "bg-amber-500" : "bg-emerald-500",
+      hasSeparatorAfter: true,
     },
     {
       label: "Editar",
       icon: <Pencil className="h-4 w-4" />,
       onClick: () => onEdit(escola),
       swipeColor: "bg-blue-600",
+      hasSeparatorAfter: true,
     },
     {
       label: "Ver Passageiros",
@@ -38,6 +40,7 @@ export function useEscolaActions({
       onClick: () => navigate(`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?escola=${escola.id}`),
       disabled: !escola.passageiros_ativos_count,
       swipeColor: "bg-purple-600",
+      hasSeparatorAfter: true,
     },
     {
       label: "Excluir",

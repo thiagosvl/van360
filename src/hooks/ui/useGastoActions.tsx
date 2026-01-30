@@ -19,6 +19,7 @@ export function useGastoActions({
       icon: <Edit className="h-4 w-4" />,
       onClick: () => onEdit(gasto),
       swipeColor: "bg-blue-600",
+      hasSeparatorAfter: true,
     },
     {
       label: "Excluir",

@@ -5,7 +5,6 @@ import {
   useState
 } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { toast } from 'sonner';
 
 import { KPICard } from '@/components/common/KPICard';
 import { PullToRefreshWrapper } from '@/components/navigation/PullToRefreshWrapper';
@@ -104,7 +103,6 @@ const Contratos = () => {
   const handleCopiarLink = (token: string) => {
     const url = `${window.location.origin}/assinar/${token}`;
     navigator.clipboard.writeText(url);
-    toast.success('Link de assinatura copiado!');
   };
 
   const handleVisualizarLink = (token: string) => {

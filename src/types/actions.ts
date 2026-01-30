@@ -13,5 +13,7 @@ export interface ActionItem {
   // Specifics
   isDestructive?: boolean; // Semantic flag
   drawerClass?: string; // Specific class for mobile drawer override
-  title?: string; // Tooltip or HTML title attribute
+  title?: string;
+  className?: string; // Additional custom classes (e.g. text color)
+  hasSeparatorAfter?: boolean; // Render a separator line after this item
 }
