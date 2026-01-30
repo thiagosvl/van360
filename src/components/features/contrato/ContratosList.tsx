@@ -11,9 +11,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useContratoActions } from "@/hooks/ui/useContratoActions";
 import { cn } from "@/lib/utils";
 import { ContratoStatus } from "@/types/enums";
-import { Download, Eye, FileText, Send, Trash2, User } from "lucide-react";
+import { Eye, FileText, Send } from "lucide-react";
 import { memo } from "react";
 import { ContratoActionsMenu } from "./ContratoActionsMenu";
 
@@ -31,6 +32,7 @@ interface ContratosListProps {
   onSubstituir: (id: string) => void;
   onGerarContrato: (passageiroId: string) => void;
   onVisualizarLink: (token: string) => void;
+  onVisualizarFinal: (url: string) => void;
 }
 
 const ContratoMobileCard = memo(function ContratoMobileCard({
@@ -45,57 +47,34 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   onSubstituir,
   onGerarContrato,
   onVisualizarLink,
+  onVisualizarFinal,
 }: any) {
+  const actions = useContratoActions({
+    item,
+    tipo: item.tipo,
+    status: item.status,
+    onVerPassageiro,
+    onCopiarLink,
+    onBaixarPDF,
+    onReenviarNotificacao,
+    onExcluir,
+    onSubstituir,
+    onGerarContrato,
+    onVisualizarLink,
+    onVisualizarFinal,
+  });
+
   const isPassageiro = item.tipo === "passageiro";
   const status = item.status;
 
-  // Definir ações para o Swipe
-  const swipeActions = [];
-
-  if (isPassageiro) {
-    swipeActions.push({
-      label: "Gerar Contrato",
-      icon: <FileText className="h-5 w-5" />,
-      onClick: () => onGerarContrato(item.id),
-      swipeColor: "bg-blue-600",
-    });
-  } else {
-    if (status === ContratoStatus.PENDENTE) {
-      swipeActions.push({
-        label: "Reenviar",
-        icon: <Send className="h-5 w-5" />,
-        onClick: () => onReenviarNotificacao(item.id),
-        swipeColor: "bg-blue-600",
-      });
-      swipeActions.push({
-        label: "Excluir",
-        icon: <Trash2 className="h-5 w-5" />,
-        onClick: () => onExcluir(item.id),
-        swipeColor: "bg-red-600",
-      });
-    } else if (status === ContratoStatus.ASSINADO) {
-      swipeActions.push({
-        label: "Visualizar",
-        icon: <Eye className="h-5 w-5" />,
-        onClick: () => onVisualizarLink(item.token_acesso),
-        swipeColor: "bg-green-600",
-      });
-      swipeActions.push({
-        label: "Baixar",
-        icon: <Download className="h-5 w-5" />,
-        onClick: () => onBaixarPDF(item.id),
-        swipeColor: "bg-blue-600",
-      });
-    }
-  }
-
-  // Global action sempre disponível
-  swipeActions.push({
-    label: "Ver Passageiro",
-    icon: <User className="h-5 w-5" />,
-    onClick: () => onVerPassageiro(isPassageiro ? item.id : item.passageiro_id),
-    swipeColor: "bg-gray-500",
-  });
+  // Mapeia as ações do hook para o formato do MobileActionItem
+  const swipeActions = actions.map(action => ({
+    label: action.label,
+    icon: action.icon,
+    onClick: action.onClick,
+    swipeColor: action.swipeColor || 'bg-gray-500',
+    isDestructive: action.isDestructive
+  }));
 
   return (
     <MobileActionItem actions={swipeActions} showHint={index === 0}>

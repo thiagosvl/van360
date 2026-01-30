@@ -14,6 +14,7 @@ interface ContratoActionsMenuProps {
   onSubstituir?: (id: string) => void;
   onGerarContrato?: (passageiroId: string) => void;
   onVisualizarLink?: (token: string) => void;
+  onVisualizarFinal?: (url: string) => void;
 }
 
 export const ContratoActionsMenu = memo(function ContratoActionsMenu(props: ContratoActionsMenuProps) {

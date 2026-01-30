@@ -28,6 +28,7 @@ import {
 } from '@/hooks/api/useContratos';
 
 import { usePermissions } from '@/hooks/business/usePermissions';
+import { openBrowserLink } from '@/utils/browser';
 
 const Contratos = () => {
   const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog } = useLayout();
@@ -106,7 +107,11 @@ const Contratos = () => {
   };
 
   const handleVisualizarLink = (token: string) => {
-    window.open(`${window.location.origin}/assinar/${token}`, '_blank');
+    openBrowserLink(`${window.location.origin}/assinar/${token}`);
+  };
+
+  const handleVisualizarFinal = (url: string) => {
+    openBrowserLink(url);
   };
 
   const handleExcluir = (id: string) => {
@@ -155,6 +160,7 @@ const Contratos = () => {
     onSubstituir: handleSubstituir,
     onGerarContrato: handleGerarContrato,
     onVisualizarLink: handleVisualizarLink,
+    onVisualizarFinal: handleVisualizarFinal,
   };
 
   return (

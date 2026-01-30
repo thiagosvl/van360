@@ -65,6 +65,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { useFranchiseGate } from "@/hooks/business/useFranchiseGate";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
+import { openBrowserLink } from "@/utils/browser";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 import { toast } from "@/utils/notifications/toast";
 
@@ -595,30 +596,21 @@ export default function PassageiroCarteirinha() {
                         })
                       }
                       onUpgrade={handleUpgrade}
-                       onGenerateContract={() => {
+                       onContractAction={() => {
                           if (!passageiro || !passageiro_id) return;
                           
-                          if (passageiro.status_contrato === ContratoStatus.PENDENTE) {
-                              // Contrato pendente: abrir o drawer de assinatura (copiar link) ou navegar para detalhes
-                              // Simplest: Go to contract list or show toast
-                              toast.info("Contrato pendente", {
-                                  description: "Este passageiro já possui um contrato aguardando assinatura. Você será redirecionado para a lista de contratos.",
-                                  action: {
-                                      label: "Ir para Contratos",
-                                      onClick: () => navigate(ROUTES.PRIVATE.MOTORISTA.CONTRACTS)
-                                  }
-                              });
-                              return;
-                          }
+                          if (passageiro.status_contrato === ContratoStatus.PENDENTE || passageiro.status_contrato === ContratoStatus.ASSINADO) {
+                              const url = passageiro.status_contrato === ContratoStatus.ASSINADO 
+                                ? (passageiro.contrato_final_url || passageiro.contrato_url)
+                                : passageiro.contrato_url;
 
-                          if (passageiro.status_contrato === ContratoStatus.ASSINADO) {
-                              toast.success("Contrato Ativo", {
-                                  description: "Este passageiro já possui um contrato assinado.",
-                                  action: {
-                                      label: "Ver Contratos",
-                                      onClick: () => navigate(ROUTES.PRIVATE.MOTORISTA.CONTRACTS)
-                                  }
-                              });
+                              if (url) {
+                                  openBrowserLink(url);
+                              } else {
+                                  toast.error("contrato.erro.semUrl", {
+                                      description: "contrato.erro.semUrlDescricao"
+                                  });
+                              }
                               return;
                           }
 

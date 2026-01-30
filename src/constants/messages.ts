@@ -355,6 +355,8 @@ export const messages = {
       reenviar: "Erro ao reenviar notificação.",
       cancelar: "Erro ao cancelar contrato.",
       baixar: "Erro ao baixar contrato.",
+      semUrl: "Contrato sem URL.",
+      semUrlDescricao: "Não foi possível encontrar o link deste contrato.",
     },
     sucesso: {
       criado: "Contrato criado com sucesso!",

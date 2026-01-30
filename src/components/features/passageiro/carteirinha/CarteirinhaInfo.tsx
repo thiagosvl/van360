@@ -12,28 +12,28 @@ import { formatarEnderecoCompleto } from "@/utils/formatters/address";
 import { formatarTelefone } from "@/utils/formatters/phone";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-    AlertCircle,
-    Bot,
-    BotOff,
-    CalendarDays,
-    Car,
-    ChevronDown,
-    ChevronUp,
-    Clock,
-    Copy,
-    CopyCheck,
-    CreditCard,
-    FileText,
-    HeartPulse,
-    Lock,
-    Mail,
-    MapPin,
-    Pencil,
-    Phone,
-    School,
-    Trash2,
-    User,
-    UserCheck
+  AlertCircle,
+  Bot,
+  BotOff,
+  CalendarDays,
+  Car,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Copy,
+  CopyCheck,
+  CreditCard,
+  FileText,
+  HeartPulse,
+  Lock,
+  Mail,
+  MapPin,
+  Pencil,
+  Phone,
+  School,
+  Trash2,
+  User,
+  UserCheck
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { InfoItem } from "./InfoItem";
@@ -50,7 +50,7 @@ interface CarteirinhaInfoProps {
   onDeleteClick: () => void;
   onUpgrade: (featureName: string, description: string) => void;
   onReactivateWithoutAutomation?: () => Promise<void>; 
-  onGenerateContract?: () => void;
+  onContractAction?: () => void;
 }
 
 export const CarteirinhaInfo = ({
@@ -65,7 +65,7 @@ export const CarteirinhaInfo = ({
   onDeleteClick,
   onUpgrade,
   onReactivateWithoutAutomation,
-  onGenerateContract,
+  onContractAction,
 }: CarteirinhaInfoProps) => {
   const [mostrarMaisInfo, setMostrarMaisInfo] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -459,7 +459,7 @@ export const CarteirinhaInfo = ({
               </Button>
             )}
 
-            {onGenerateContract && (
+            {onContractAction && (
                 <Button
                   variant="ghost"
                   className={cn(
@@ -468,16 +468,7 @@ export const CarteirinhaInfo = ({
                     passageiro.status_contrato === ContratoStatus.PENDENTE ? "text-yellow-600 hover:text-yellow-700" :
                     "text-muted-foreground hover:bg-transparent hover:text-primary"
                   )}
-                  onClick={() => {
-                        if (passageiro.contrato_url && (passageiro.status_contrato === ContratoStatus.PENDENTE || passageiro.status_contrato === ContratoStatus.ASSINADO)) {
-                             window.open(passageiro.contrato_url, '_blank');
-                        } else if ((passageiro.status_contrato === ContratoStatus.PENDENTE || passageiro.status_contrato === ContratoStatus.ASSINADO) && onGenerateContract) {
-                            // Fallback if no URL but status says exists (shouldn't happen with new backend)
-                            onGenerateContract();
-                        } else {
-                            onGenerateContract && onGenerateContract();
-                        }
-                  }}
+                  onClick={onContractAction}
                 >
                   <FileText className="h-4 w-4 mr-2" />
                   {passageiro.status_contrato === ContratoStatus.ASSINADO ? 'Ver Contrato Assinado' : 

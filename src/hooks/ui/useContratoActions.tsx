@@ -1,14 +1,15 @@
 import { ActionItem } from "@/types/actions";
 import { ContratoStatus } from "@/types/enums";
 import {
-    Copy,
-    Download,
-    Eye,
-    FileText,
-    RefreshCcw,
-    Send,
-    Trash2,
-    User
+  Copy,
+  Download,
+  ExternalLink,
+  Eye,
+  FileText,
+  RefreshCcw,
+  Send,
+  Trash2,
+  User
 } from "lucide-react";
 import { useMemo } from "react";
 
@@ -24,6 +25,7 @@ interface UseContratoActionsProps {
   onSubstituir?: (id: string) => void;
   onGerarContrato?: (passageiroId: string) => void;
   onVisualizarLink?: (token: string) => void;
+  onVisualizarFinal?: (url: string) => void;
 }
 
 export function useContratoActions({
@@ -38,6 +40,7 @@ export function useContratoActions({
   onSubstituir,
   onGerarContrato,
   onVisualizarLink,
+  onVisualizarFinal,
 }: UseContratoActionsProps): ActionItem[] {
   return useMemo(() => {
     const isPendente = status === ContratoStatus.PENDENTE;
@@ -51,19 +54,17 @@ export function useContratoActions({
           icon: <FileText className="h-4 w-4" />,
           onClick: () => onGerarContrato(item.id),
           swipeColor: 'bg-blue-600',
-          hasSeparatorAfter: true
         });
       }
     } else {
       // Contrato Actions
       if (isPendente) {
-        if (onReenviarNotificacao) {
+        if (onVisualizarLink) {
           list.push({
-            label: 'Reenviar WhatsApp',
-            icon: <Send className="h-4 w-4" />,
-            onClick: () => onReenviarNotificacao(item.id),
-            swipeColor: 'bg-blue-600',
-            hasSeparatorAfter: true
+            label: 'Ver Contrato',
+            icon: <ExternalLink className="h-4 w-4" />,
+            onClick: () => onVisualizarLink(item.token_acesso),
+            swipeColor: 'bg-green-600',
           });
         }
         if (onCopiarLink) {
@@ -72,19 +73,25 @@ export function useContratoActions({
             icon: <Copy className="h-4 w-4" />,
             onClick: () => onCopiarLink(item.token_acesso),
             swipeColor: 'bg-indigo-600',
-            hasSeparatorAfter: true
            });
+        }
+        if (onReenviarNotificacao) {
+          list.push({
+            label: 'Reenviar Contrato',
+            icon: <Send className="h-4 w-4" />,
+            onClick: () => onReenviarNotificacao(item.id),
+            swipeColor: 'bg-blue-600',
+          });
         }
       }
 
       if (isAssinado) {
-        if (onVisualizarLink) {
+        if (onVisualizarFinal && (item.contrato_final_url || item.contrato_url)) {
           list.push({
-            label: 'Visualizar (Link)',
+            label: 'Ver Contrato',
             icon: <Eye className="h-4 w-4" />,
-            onClick: () => onVisualizarLink(item.token_acesso),
+            onClick: () => onVisualizarFinal(item.contrato_final_url || item.contrato_url),
             swipeColor: 'bg-green-600',
-            hasSeparatorAfter: true
           });
         }
         if (onBaixarPDF) {
@@ -93,16 +100,14 @@ export function useContratoActions({
             icon: <Download className="h-4 w-4" />,
             onClick: () => onBaixarPDF(item.id),
             swipeColor: 'bg-blue-600',
-            hasSeparatorAfter: true
           });
         }
         if (onSubstituir) {
           list.push({
-            label: 'Gerar Novo (Substituir)',
+            label: 'Substituir Contrato',
             icon: <RefreshCcw className="h-4 w-4" />,
             onClick: () => onSubstituir(item.id),
             swipeColor: 'bg-orange-600',
-            hasSeparatorAfter: true
           });
         }
       }
@@ -122,7 +127,7 @@ export function useContratoActions({
         label: 'Excluir Contrato',
         icon: <Trash2 className="h-4 w-4" />,
         onClick: () => onExcluir(item.id),
-        className: 'text-red-600',
+        className: 'text-red-600 font-medium',
         isDestructive: true,
         swipeColor: 'bg-red-600'
       });
@@ -136,5 +141,5 @@ export function useContratoActions({
     }
 
     return list;
-  }, [item, tipo, status, onVerPassageiro, onCopiarLink, onBaixarPDF, onReenviarNotificacao, onExcluir, onSubstituir, onGerarContrato, onVisualizarLink]);
+  }, [item, tipo, status, onVerPassageiro, onCopiarLink, onBaixarPDF, onReenviarNotificacao, onExcluir, onSubstituir, onGerarContrato, onVisualizarLink, onVisualizarFinal]);
 }
