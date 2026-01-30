@@ -1,4 +1,3 @@
-import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -7,6 +6,7 @@ import { Veiculo } from "@/types/veiculo";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { Eye, Users2 } from "lucide-react";
 import { NavigateFunction } from "react-router-dom";
+import { VeiculoActionsMenu } from "./VeiculoActionsMenu";
 
 interface VeiculosListProps {
   veiculos: (Veiculo & { passageiros_ativos_count?: number })[];
@@ -99,49 +99,44 @@ export function VeiculosList({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {veiculos.map((veiculo) => {
-              // eslint-disable-next-line react-hooks/rules-of-hooks
-              const actions = useVeiculoActions({
-                veiculo,
-                navigate,
-                onEdit,
-                onToggleAtivo,
-                onDelete,
-              });
-
-              return (
-                <tr
-                  key={veiculo.id}
-                  onClick={() => onEdit(veiculo)}
-                  className="hover:bg-gray-50/80 border-b border-gray-50 last:border-0 transition-colors cursor-pointer"
-                >
-                  <td className="py-4 pl-6 align-middle">
-                    <p className="font-bold text-gray-900 text-sm">
-                      {formatarPlacaExibicao(veiculo.placa)}
-                    </p>
-                  </td>
-                  <td className="px-6 py-4 align-middle">
-                    <div className="flex flex-col">
-                      <span className="text-sm">
-                        {veiculo.marca} {veiculo.modelo}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 align-middle">
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Users2 className="w-4 h-4" />
-                      {veiculo.passageiros_ativos_count} ativos
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 align-middle">
-                    <StatusBadge status={veiculo.ativo} />
-                  </td>
-                  <td className="px-6 py-4 text-right align-middle">
-                    <ActionsDropdown actions={actions} />
-                  </td>
-                </tr>
-              );
-            })}
+            {veiculos.map((veiculo) => (
+              <tr
+                key={veiculo.id}
+                onClick={() => onEdit(veiculo)}
+                className="hover:bg-gray-50/80 border-b border-gray-50 last:border-0 transition-colors cursor-pointer"
+              >
+                <td className="py-4 pl-6 align-middle">
+                  <p className="font-bold text-gray-900 text-sm">
+                    {formatarPlacaExibicao(veiculo.placa)}
+                  </p>
+                </td>
+                <td className="px-6 py-4 align-middle">
+                  <div className="flex flex-col">
+                    <span className="text-sm">
+                      {veiculo.marca} {veiculo.modelo}
+                    </span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 align-middle">
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Users2 className="w-4 h-4" />
+                    {veiculo.passageiros_ativos_count} ativos
+                  </div>
+                </td>
+                <td className="px-6 py-4 align-middle">
+                  <StatusBadge status={veiculo.ativo} />
+                </td>
+                <td className="px-6 py-4 text-right align-middle">
+                  <VeiculoActionsMenu
+                    veiculo={veiculo}
+                    navigate={navigate}
+                    onEdit={onEdit}
+                    onToggleAtivo={onToggleAtivo}
+                    onDelete={onDelete}
+                  />
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

@@ -1,4 +1,3 @@
-import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { useGastoActions } from "@/hooks/ui/useGastoActions";
@@ -6,19 +5,20 @@ import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
 import { formatCurrency, formatDateToBR } from "@/utils/formatters";
 import {
-  Bus,
-  Calendar,
-  ClipboardCheck,
-  Cog,
-  Ellipsis,
-  Eye,
-  FileText,
-  Fuel,
-  HelpCircle,
-  Wallet,
-  Wrench,
+    Bus,
+    Calendar,
+    ClipboardCheck,
+    Cog,
+    Ellipsis,
+    Eye,
+    FileText,
+    Fuel,
+    HelpCircle,
+    Wallet,
+    Wrench,
 } from "lucide-react";
 import { memo } from "react";
+import { GastoActionsMenu } from "./GastoActionsMenu";
 
 interface GastosListProps {
   gastos: Gasto[];
@@ -63,18 +63,6 @@ const getCategoryConfig = (categoria: string) => {
       };
   }
 };
-
-const GastoActionsMenu = memo(function GastoActionsMenu({
-  gasto,
-  onEdit,
-  onDelete,
-}: { gasto: Gasto } & Pick<
-  GastosListProps,
-  "onEdit" | "onDelete"
->) {
-  const actions = useGastoActions({ gasto, onEdit, onDelete });
-  return <ActionsDropdown actions={actions} />;
-});
 
 const GastoMobileCard = memo(function GastoMobileCard({
   gasto,

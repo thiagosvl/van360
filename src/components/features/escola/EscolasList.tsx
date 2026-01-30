@@ -1,4 +1,3 @@
-import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -6,6 +5,7 @@ import { useEscolaActions } from "@/hooks/ui/useEscolaActions";
 import { Escola } from "@/types/escola";
 import { Eye, Users2 } from "lucide-react";
 import { NavigateFunction } from "react-router-dom";
+import { EscolaActionsMenu } from "./EscolaActionsMenu";
 
 interface EscolasListProps {
   escolas: (Escola & { passageiros_ativos_count?: number })[];
@@ -92,48 +92,43 @@ export function EscolasList({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {escolas.map((escola) => {
-              // eslint-disable-next-line react-hooks/rules-of-hooks
-              const actions = useEscolaActions({
-                escola,
-                navigate,
-                onEdit,
-                onToggleAtivo,
-                onDelete,
-              });
-
-              return (
-                <tr
-                  key={escola.id}
-                  className="hover:bg-gray-50/80 transition-colors cursor-pointer border-b border-gray-50 last:border-0"
-                  onClick={() => onEdit(escola)}
-                >
-                  <td className="py-4 pl-6 align-middle">
-                    <span className="font-bold text-gray-900 text-sm">
-                      {escola.nome}
+            {escolas.map((escola) => (
+              <tr
+                key={escola.id}
+                className="hover:bg-gray-50/80 transition-colors cursor-pointer border-b border-gray-50 last:border-0"
+                onClick={() => onEdit(escola)}
+              >
+                <td className="py-4 pl-6 align-middle">
+                  <span className="font-bold text-gray-900 text-sm">
+                    {escola.nome}
+                  </span>
+                </td>
+                <td className="px-6 py-4 align-middle">
+                  <div className="flex items-center gap-1.5">
+                    <Users2 className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-muted-foreground">
+                      {escola.passageiros_ativos_count || 0} ativos
                     </span>
-                  </td>
-                  <td className="px-6 py-4 align-middle">
-                    <div className="flex items-center gap-1.5">
-                      <Users2 className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-muted-foreground">
-                        {escola.passageiros_ativos_count || 0} ativos
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 align-middle">
-                    <StatusBadge
-                      status={escola.ativo}
-                      trueLabel="Ativa"
-                      falseLabel="Desativada"
-                    />
-                  </td>
-                  <td className="px-6 py-4 text-right align-middle">
-                    <ActionsDropdown actions={actions} />
-                  </td>
-                </tr>
-              );
-            })}
+                  </div>
+                </td>
+                <td className="px-6 py-4 align-middle">
+                  <StatusBadge
+                    status={escola.ativo}
+                    trueLabel="Ativa"
+                    falseLabel="Desativada"
+                  />
+                </td>
+                <td className="px-6 py-4 text-right align-middle">
+                  <EscolaActionsMenu
+                    escola={escola}
+                    navigate={navigate}
+                    onEdit={onEdit}
+                    onToggleAtivo={onToggleAtivo}
+                    onDelete={onDelete}
+                  />
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

@@ -1,4 +1,3 @@
-import { ActionsDropdown } from "@/components/common/ActionsDropdown";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -17,6 +16,7 @@ import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { formatPeriodo } from "@/utils/formatters";
 import { Bot, Eye } from "lucide-react";
 import { memo } from "react";
+import { PassageiroActionsMenu } from "./PassageiroActionsMenu";
 
 interface PassageirosListProps {
   passageiros: Passageiro[];
@@ -50,30 +50,6 @@ const RenderAutoBillingIcon = ({ passageiro }: { passageiro: Passageiro }) => {
     </div>
   );
 };
-
-// Sub-components to isolate hook calls
-const PassageiroActionsMenu = memo(function PassageiroActionsMenu({
-  passageiro,
-  plano,
-  onHistorico,
-  onEdit,
-  onToggleCobrancaAutomatica,
-  onToggleClick,
-  onDeleteClick,
-  onOpenUpgradeDialog,
-}: { passageiro: Passageiro } & Omit<PassageirosListProps, "passageiros">) {
-  const actions = usePassageiroActions({
-    passageiro,
-    onHistorico,
-    onEdit,
-    onToggleCobrancaAutomatica,
-    onToggleStatus: onToggleClick,
-    onDelete: onDeleteClick,
-    onOpenUpgradeDialog,
-  });
-
-  return <ActionsDropdown actions={actions} />;
-});
 
 const PassageiroMobileCard = memo(function PassageiroMobileCard({
   passageiro,
@@ -117,30 +93,46 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
               {getInitials(passageiro.nome)}
             </div>
             <div className="pr-2">
-              <p className="font-bold text-gray-900 text-sm">
-                {passageiro.nome}
-              </p>
-              <p className="text-xs font-semibold text-gray-900">
-                {passageiro.nome_responsavel}
+              <p className="font-bold text-gray-900 text-sm">{passageiro.nome}</p>
+              <p className="text-xs text-gray-500">
+                {formatPeriodo(passageiro.periodo)}
               </p>
             </div>
+            <Eye className="h-4 w-4 text-gray-300 absolute right-0 top-3" />
           </div>
-          <Eye className="h-4 w-4 text-gray-300 absolute right-0 top-1" />
-        </div>
-
-        <div className="flex justify-between items-center pt-2">
-          <div className="shrink-0 flex items-center gap-2">
+          <div className="shrink-0 flex gap-2">
             <StatusBadge status={passageiro.ativo} />
             <RenderAutoBillingIcon passageiro={passageiro} />
           </div>
-          <div className="flex flex-col items-end gap-0.5">
-            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-              Escola / Período
+        </div>
+
+        <div className="flex justify-between items-end border-t border-gray-50 pt-2.5">
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">
+              Escola / Veículo
             </span>
-            <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
-              {passageiro.escola?.nome || "-"} •{" "}
-              {formatPeriodo(passageiro.periodo)}
-            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-gray-700">
+                {passageiro.escola?.nome || "Sem escola"}
+              </span>
+              <span className="h-1 w-1 rounded-full bg-gray-300" />
+              <span className="text-xs font-bold text-gray-500">
+                {passageiro.veiculo
+                  ? formatarPlacaExibicao(passageiro.veiculo.placa)
+                  : "Sem veículo"}
+              </span>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase block">
+              Valor
+            </span>
+            <span className="text-sm font-bold text-gray-950">
+              {Number(passageiro.valor_cobranca).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </span>
           </div>
         </div>
       </div>
@@ -251,7 +243,12 @@ export function PassageirosList({
                   })}
                 </TableCell>
                 <TableCell className="text-right py-4 pr-6">
-                  <PassageiroActionsMenu passageiro={passageiro} {...props} />
+                  <PassageiroActionsMenu 
+                    passageiro={passageiro} 
+                    {...props} 
+                    onToggleStatus={props.onToggleClick}
+                    onDelete={props.onDeleteClick}
+                  />
                 </TableCell>
               </TableRow>
             ))}
