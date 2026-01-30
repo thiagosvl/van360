@@ -98,7 +98,7 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
             <div className="pr-2">
               <p className="font-bold text-gray-900 text-sm">{passageiro.nome}</p>
               <p className="text-xs text-gray-500">
-                {formatPeriodo(passageiro.periodo)}
+                {passageiro.nome_responsavel}
               </p>
             </div>
           </div>
