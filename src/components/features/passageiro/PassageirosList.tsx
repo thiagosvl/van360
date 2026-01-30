@@ -3,12 +3,12 @@ import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { usePassageiroActions } from "@/hooks/ui/usePassageiroActions";
 import { Passageiro } from "@/types/passageiro";
@@ -27,6 +27,7 @@ interface PassageirosListProps {
   onToggleClick: (passageiro: Passageiro) => void;
   onDeleteClick: (passageiro: Passageiro) => void;
   onOpenUpgradeDialog?: (passageiroId?: string) => void;
+  onGenerateContract?: (passageiro: Passageiro) => void;
 }
 
 // Helpers
@@ -61,6 +62,7 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
   onToggleClick,
   onDeleteClick,
   onOpenUpgradeDialog,
+  onGenerateContract,
 }: { passageiro: Passageiro; index: number } & Omit<
   PassageirosListProps,
   "passageiros"
@@ -73,6 +75,7 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
     onToggleStatus: onToggleClick,
     onDelete: onDeleteClick,
     onOpenUpgradeDialog,
+    onGenerateContract,
   });
 
   return (

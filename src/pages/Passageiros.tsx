@@ -53,6 +53,7 @@ export default function Passageiros() {
     closeConfirmationDialog,
     openPassageiroFormDialog,
     openFirstChargeDialog,
+    openContractSetupDialog,
   } = useLayout();
 
   const {
@@ -503,6 +504,22 @@ export default function Passageiros() {
     [navigate],
   );
 
+  const handleGenerateContract = useCallback(
+    (passageiro: Passageiro) => {
+      if (is_read_only) {
+        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        return;
+      }
+      openContractSetupDialog({
+        passageiroId: passageiro.id,
+        onSuccess: () => {
+          refetchPassageiros();
+        },
+      });
+    },
+    [openContractSetupDialog, refetchPassageiros, is_read_only, openPlanUpgradeDialog],
+  );
+
   const pullToRefreshReload = useCallback(async () => {
     await Promise.all([
       refetchPassageiros(),
@@ -646,6 +663,7 @@ export default function Passageiros() {
                       onToggleClick={handleToggleClick}
                       onDeleteClick={handleDeleteClick}
                       onOpenUpgradeDialog={handleOpenUpgradeDialog}
+                      onGenerateContract={handleGenerateContract}
                     />
                   )}
                 </CardContent>

@@ -63,7 +63,7 @@ export function useContratoActions({
           list.push({
             label: 'Ver Contrato',
             icon: <ExternalLink className="h-4 w-4" />,
-            onClick: () => onVisualizarLink(item.token_acesso),
+            onClick: () => onVisualizarFinal(item.minuta_url),
             swipeColor: 'bg-green-600',
           });
         }

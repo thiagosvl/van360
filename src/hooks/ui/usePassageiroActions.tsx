@@ -1,10 +1,14 @@
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { ActionItem } from "@/types/actions";
+import { ContratoStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
+import { openBrowserLink } from "@/utils/browser";
 import {
   Bot,
   BotOff,
   CreditCard,
+  FileCheck,
+  FilePlus,
   FileText,
   Pencil,
   ToggleLeft,
@@ -20,6 +24,7 @@ interface UsePassageiroActionsProps {
   onToggleCobrancaAutomatica: (passageiro: Passageiro) => void;
   onDelete: (passageiro: Passageiro) => void;
   onOpenUpgradeDialog?: (featureOrId?: string) => void;
+  onGenerateContract?: (passageiro: Passageiro) => void;
 }
 
 export function usePassageiroActions({
@@ -30,6 +35,7 @@ export function usePassageiroActions({
   onToggleCobrancaAutomatica,
   onDelete,
   onOpenUpgradeDialog,
+  onGenerateContract,
 }: UsePassageiroActionsProps): ActionItem[] {
   const { canUseAutomatedCharges: hasCobrancaAutomaticaAccess } = usePermissions();
 
@@ -86,18 +92,39 @@ export function usePassageiroActions({
     });
   }
 
-  // Action Logic: Ver Contrato
-  if (passageiro.contrato_url) {
-      const verContratoAction: ActionItem = {
-          label: "Ver Contrato",
-          icon: <FileText className="h-4 w-4" />,
-          onClick: () => window.open(passageiro.contrato_url, '_blank'),
-          swipeColor: "bg-purple-500",
-          hasSeparatorAfter: true
-      };
-      
-      actions.push(verContratoAction);
+  // Contract Actions - Conditional Logic
+  if (passageiro.status_contrato === ContratoStatus.ASSINADO) {
+    // Contract is signed - show link to final document
+    const finalUrl = passageiro.contrato_final_url || passageiro.contrato_url;
+    if (finalUrl) {
+      actions.push({
+        label: "Ver Contrato Assinado",
+        icon: <FileCheck className="h-4 w-4" />,
+        onClick: () => openBrowserLink(finalUrl),
+        swipeColor: "bg-green-600",
+        hasSeparatorAfter: true
+      });
+    }
+  } else if (passageiro.status_contrato === ContratoStatus.PENDENTE && passageiro.contrato_url) {
+    // Contract is pending signature - show link to signing page
+    actions.push({
+      label: "Ver Contrato (Pendente)",
+      icon: <FileText className="h-4 w-4" />,
+      onClick: () => openBrowserLink(passageiro.contrato_url),
+      swipeColor: "bg-amber-600",
+      hasSeparatorAfter: true
+    });
+  } else if (onGenerateContract) {
+    // No contract - show generate option
+    actions.push({
+      label: "Gerar Contrato",
+      icon: <FilePlus className="h-4 w-4" />,
+      onClick: () => onGenerateContract(passageiro),
+      swipeColor: "bg-blue-600",
+      hasSeparatorAfter: true
+    });
   }
+
 
   // Ação de Excluir (sempre por último)
   actions.push({
