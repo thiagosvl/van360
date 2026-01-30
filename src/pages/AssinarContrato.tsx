@@ -77,18 +77,13 @@ export default function AssinarContrato() {
       });
 
       toast.success(
-        "Contrato assinado com sucesso! Você receberá o documento via WhatsApp.",
+        "Contrato assinado com sucesso!",
+        {
+          description: "O documento final foi gerado e enviado para o seu WhatsApp."
+        }
       );
       setModalAberto(false);
-
-      setTimeout(() => {
-        // Redirect to landing page or success page
-        if (window.opener) {
-          window.close();
-        } else {
-          navigate(ROUTES.PUBLIC.ROOT);
-        }
-      }, 2000);
+      // O estado do contrato será atualizado pelo hook useGetPublicContract ou refresh manual
     } catch (error: any) {
       console.error("Erro ao assinar:", error);
     }
@@ -124,14 +119,75 @@ export default function AssinarContrato() {
     );
   }
 
-  return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <Card>
-        <CardHeader>
-          <img src="/assets/logo-van360.png" alt="Van360" className="w-20 mx-auto" />
-        </CardHeader>
+  if (contrato.status === ContratoStatus.ASSINADO) {
+    return (
+      <div className="min-h-screen bg-neutral-100/50 flex flex-col">
+        {/* Dark Header */}
+        <header className="bg-[#002554] border-b border-white/10 shadow-lg shrink-0">
+          <div className="container mx-auto px-4 h-16 flex items-center justify-center">
+            <img 
+              src="/assets/logo-van360.png" 
+              alt="Van360" 
+              className="h-10 w-auto filter brightness-0 invert" 
+            />
+          </div>
+        </header>
 
-        <CardContent>
+        <main className="flex-1 container mx-auto p-4 max-w-4xl flex items-center justify-center pb-24">
+          <Card className="w-full max-w-lg border-none shadow-2xl bg-white overflow-hidden">
+            <CardHeader className="text-center pb-2 pt-8">
+              <div className="mx-auto bg-green-50 w-20 h-20 rounded-full flex items-center justify-center mb-6">
+                <CheckCircle2 className="h-12 w-12 text-green-600" />
+              </div>
+              <CardTitle className="text-3xl font-bold text-gray-900 tracking-tight">Contrato Assinado!</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center space-y-8 p-8 pt-4">
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Tudo pronto! O contrato foi assinado digitalmente e o documento final já está disponível para download.
+              </p>
+              
+              <div className="flex flex-col gap-4 pt-4">
+                <Button 
+                  onClick={() => window.open(contrato.contrato_final_url || contrato.contrato_url, "_blank")}
+                  className="bg-[#28a745] hover:bg-[#218838] h-14 rounded-xl font-bold text-lg shadow-lg shadow-green-500/10 transition-all active:scale-95"
+                >
+                  <Download className="mr-2 h-5 w-5" />
+                  Baixar Documento Assinado
+                </Button>
+                <Button 
+                  variant="ghost"
+                  onClick={() => {
+                    if (window.opener) window.close();
+                    else navigate(ROUTES.PUBLIC.ROOT);
+                  }}
+                  className="h-12 rounded-xl text-gray-500 hover:text-gray-900 font-medium"
+                >
+                  Sair do documento
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-neutral-100/50 flex flex-col">
+      {/* Dark Header similar to competitor */}
+      <header className="sticky top-0 z-40 bg-[#002554] border-b border-white/10 shadow-lg shrink-0">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-center">
+          <img 
+            src="/assets/logo-van360.png" 
+            alt="Van360" 
+            className="h-10 w-auto filter brightness-0 invert" 
+          />
+        </div>
+      </header>
+
+      <main className="flex-1 container mx-auto p-4 sm:p-8 max-w-4xl flex flex-col items-center">
+        <Card className="w-full border-none shadow-2xl bg-white overflow-hidden mb-8">
+          <CardContent className="p-0">
           {/* PDF View */}
           <div className="border rounded-lg overflow-hidden mb-32 flex justify-center bg-gray-50 min-h-[60vh]">
             <Document
@@ -171,12 +227,13 @@ export default function AssinarContrato() {
           </div>
         </CardContent>
       </Card>
+      </main>
 
-      {/* Fixed Action Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 sm:p-6 bg-white/80 backdrop-blur-md border-t border-gray-100 z-50 flex items-center justify-between gap-4 sm:justify-between transition-all duration-300">
+      {/* Fixed Action Buttons - Fixed at bottom corners */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 sm:p-8 bg-gradient-to-t from-white via-white/90 to-transparent z-50 flex items-center justify-between pointer-events-none">
         <Button
           onClick={() => window.open(contrato.minuta_url, "_blank")}
-          className="rounded-full bg-green-600 hover:bg-green-700 text-white font-bold h-12 sm:h-14 px-6 sm:px-8 text-base shadow-lg shadow-green-500/20 hover:shadow-green-500/30 hover:-translate-y-1 transition-all"
+          className="pointer-events-auto rounded-xl bg-[#28a745] hover:bg-[#218838] text-white font-bold h-12 sm:h-14 px-6 sm:px-10 text-base shadow-lg shadow-green-500/20 hover:shadow-green-500/30 transition-all active:scale-95"
         >
           <Download className="mr-2 h-5 w-5" />
           Baixar <span className="hidden sm:inline">Contrato</span>
@@ -185,9 +242,9 @@ export default function AssinarContrato() {
         <Button
           onClick={() => setModalAberto(true)}
           disabled={contrato.status !== ContratoStatus.PENDENTE}
-          className={`rounded-full font-bold h-12 sm:h-14 px-6 sm:px-8 text-base shadow-lg hover:-translate-y-1 transition-all ${
+          className={`pointer-events-auto rounded-xl font-bold h-12 sm:h-14 px-6 sm:px-10 text-base shadow-lg transition-all active:scale-95 ${
             contrato.status === ContratoStatus.PENDENTE
-              ? "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20 hover:shadow-blue-500/30"
+              ? "bg-[#2b6eff] hover:bg-[#1a56e6] text-white shadow-blue-500/10 hover:shadow-blue-500/30"
               : "bg-gray-200 text-gray-500 cursor-not-allowed"
           }`}
         >

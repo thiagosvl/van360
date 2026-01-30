@@ -35,9 +35,10 @@ import { PrePassageiro } from "@/types/prePassageiro";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import {
   formatarTelefone,
-  formatRelativeTime,
-  periodos,
+  formatRelativeTime
 } from "@/utils/formatters";
+import { convertDateBrToISO } from "@/utils/formatters/date";
+import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import {
@@ -54,6 +55,7 @@ import { useEffect, useRef, useState } from "react";
 export default function PrePassageiros({
   onFinalizeNewPrePassageiro,
   profile,
+  plano,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -120,40 +122,21 @@ export default function PrePassageiros({
       return;
     }
 
-    const hoje = new Date();
-    const valor = Math.floor(Math.random() * (200 - 100 + 1)) + 100;
-
-    const nomePassageiro = mockGenerator.name();
-    const nomeResponsavel = mockGenerator.name();
-    const emailResponsavel = mockGenerator.email(nomeResponsavel);
-    const telefoneResponsavel = mockGenerator.phone();
-    const cpfResponsavel = mockGenerator.cpf();
-    const endereco = mockGenerator.address();
+    const mockPassenger = mockGenerator.passenger();
+    const mockEndereco = mockGenerator.address();
 
     const fakePayload: any = {
-      nome: nomePassageiro,
-      nome_responsavel: nomeResponsavel,
-      email_responsavel: emailResponsavel,
-      telefone_responsavel: telefoneResponsavel,
-      cpf_responsavel: cpfResponsavel,
+      ...mockPassenger,
+      ...mockEndereco,
+      telefone_responsavel: phoneMask(mockPassenger.telefone_responsavel),
       usuario_id: profile.id,
       observacoes: `Solicitação rápida gerada automaticamente`,
-      logradouro: endereco.logradouro,
-      numero: endereco.numero,
-      periodo: periodos[0].value,
       escola_id: null,
-      bairro: endereco.bairro,
-      cidade: endereco.cidade,
-      estado: endereco.estado,
-      cep: endereco.cep,
-      referencia: `Perto do ${endereco.bairro}`,
-      valor_cobranca: valor, // Agora enviando o número real
-      dia_vencimento: hoje.getDate(),
-      genero: mockGenerator.passenger().genero,
-      modalidade: mockGenerator.passenger().modalidade,
-      parentesco_responsavel: mockGenerator.passenger().parentesco_responsavel,
-      data_nascimento: mockGenerator.passenger().data_nascimento,
-      data_inicio_transporte: mockGenerator.passenger().data_inicio_transporte,
+      referencia: `Perto do ${mockEndereco.bairro}`,
+      data_nascimento: convertDateBrToISO(mockPassenger.data_nascimento),
+      data_inicio_transporte: convertDateBrToISO(mockPassenger.data_inicio_transporte),
+      valor_cobranca: moneyToNumber(mockPassenger.valor_cobranca),
+      dia_vencimento: parseInt(mockPassenger.dia_vencimento),
     };
 
     createPrePassageiro.mutate(fakePayload);

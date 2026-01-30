@@ -296,6 +296,7 @@ export function PassageiroFormDadosCadastrais({
                           "h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
                           fieldState.error && "border-red-500"
                         )}
+                        aria-invalid={!!fieldState.error}
                       >
                         <SelectValue placeholder="Selecione..." />
                       </SelectTrigger>
@@ -352,11 +353,12 @@ export function PassageiroFormDadosCadastrais({
                   value={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger
+                      <SelectTrigger
                         className={cn(
                           "h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
                           fieldState.error && "border-red-500"
                         )}
+                        aria-invalid={!!fieldState.error}
                       >
                         <SelectValue placeholder="Selecione..." />
                       </SelectTrigger>

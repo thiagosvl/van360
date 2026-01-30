@@ -12,21 +12,21 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  FEATURE_COBRANCA_AUTOMATICA
+    FEATURE_COBRANCA_AUTOMATICA
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreateEscola,
-  useCreatePassageiro,
-  useCreateVeiculo,
-  useDeletePassageiro,
-  useEscolas,
-  useFilters,
-  usePassageiros,
-  usePermissions,
-  useToggleAtivoPassageiro,
-  useUpdatePassageiro,
-  useVeiculos,
+    useCreateEscola,
+    useCreatePassageiro,
+    useCreateVeiculo,
+    useDeletePassageiro,
+    useEscolas,
+    useFilters,
+    usePassageiros,
+    usePermissions,
+    useToggleAtivoPassageiro,
+    useUpdatePassageiro,
+    useVeiculos,
 } from "@/hooks";
 import { useFranchiseGate } from "@/hooks/business/useFranchiseGate";
 import { usePlanLimits } from "@/hooks/business/usePlanLimits";
@@ -37,6 +37,8 @@ import { Veiculo } from "@/types/veiculo";
 
 import { ROUTES } from "@/constants/routes";
 import { PassageiroFormModes } from "@/types/enums";
+import { convertDateBrToISO } from "@/utils/formatters/date";
+import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import { Users2 } from "lucide-react";
@@ -450,36 +452,19 @@ export default function Passageiros() {
       return;
     }
 
-    const hoje = new Date();
-    const valor = Math.floor(Math.random() * (200 - 100 + 1)) + 100;
-    const valorInString = `R$ ${valor},00`;
-
-    const nomePassageiro = mockGenerator.name();
-    const nomeResponsavel = mockGenerator.name();
-    const emailResponsavel = mockGenerator.email(nomeResponsavel);
-    const telefoneResponsavel = "(11) 95118-6951";
-    const cpfResponsavel = mockGenerator.cpf();
-    const endereco = mockGenerator.address();
+    const mockPassenger = mockGenerator.passenger();
+    const mockEndereco = mockGenerator.address();
 
     const fakeData = {
-      nome: nomePassageiro,
-      nome_responsavel: nomeResponsavel,
-      email_responsavel: emailResponsavel,
-      telefone_responsavel: telefoneResponsavel,
-      cpf_responsavel: cpfResponsavel,
-      periodo: Math.random() > 0.5 ? "manha" : "tarde",
-      observacoes: `Cadastro rápido gerado automaticamente`,
-      valor_cobranca: valorInString,
-      dia_vencimento: hoje.getDate(),
+      ...mockPassenger,
+      ...mockEndereco,
+      telefone_responsavel: phoneMask(mockPassenger.telefone_responsavel),
       escola_id: escolaId,
       veiculo_id: veiculoId,
-      ativo: true,
-      logradouro: endereco.logradouro,
-      numero: endereco.numero,
-      bairro: endereco.bairro,
-      cidade: endereco.cidade,
-      estado: endereco.estado,
-      cep: endereco.cep,
+      data_nascimento: convertDateBrToISO(mockPassenger.data_nascimento),
+      data_inicio_transporte: convertDateBrToISO(mockPassenger.data_inicio_transporte),
+      valor_cobranca: moneyToNumber(mockPassenger.valor_cobranca),
+      dia_vencimento: parseInt(mockPassenger.dia_vencimento),
     };
 
     let enviarCobrancaAutomatica = false;

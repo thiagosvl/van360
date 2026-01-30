@@ -4,11 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { DEFAULT_CLAUSULAS_CONTRATO } from "@/constants/defaults";
@@ -19,17 +19,17 @@ import { queryClient } from "@/services/queryClient";
 import { toast } from "@/utils/notifications/toast";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-    AlertCircle,
-    ChevronLeft,
-    ChevronRight,
-    DollarSign,
-    FileText,
-    Loader2,
-    PenTool,
-    Plus,
-    ShieldCheck,
-    Trash2,
-    X,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  DollarSign,
+  FileText,
+  Loader2,
+  PenTool,
+  Plus,
+  ShieldCheck,
+  Trash2,
+  X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import SignatureCanvas from "react-signature-canvas";
@@ -193,7 +193,6 @@ export default function ContractSetupDialog({
         },
       });
 
-      toast.success("cadastro.sucesso.perfilAtualizado");
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       await refreshProfile();
       if (onSuccess) onSuccess();

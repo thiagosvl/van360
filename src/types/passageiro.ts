@@ -31,6 +31,8 @@ export interface Passageiro {
   status_contrato?: ContratoStatus;
   contrato_id?: string;
   contrato_url?: string;
+  minuta_url?: string;
+  contrato_final_url?: string;
 
   // Novos Campos
   modalidade?: string;

@@ -11,8 +11,8 @@ import { cepSchema, cpfSchema, dateSchema, phoneSchema } from "@/schemas/common"
 import { apiClient } from "@/services/api/client";
 import { prePassageiroApi } from "@/services/api/pre-passageiro.api";
 import {
-  convertDateBrToISO,
-  parseCurrencyToNumber
+    convertDateBrToISO,
+    parseCurrencyToNumber
 } from "@/utils/formatters";
 import { moneyToNumber } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
@@ -43,7 +43,7 @@ const prePassageiroSchema = z.object({
   data_nascimento: dateSchema(true),
   genero: z.string().min(1, "Campo obrigatório"),
   parentesco_responsavel: z.string().min(1, "Campo obrigatório"),
-  data_inicio_transporte: dateSchema(true),
+  data_inicio_transporte: dateSchema(true, true),
 
 
   valor_cobranca: z

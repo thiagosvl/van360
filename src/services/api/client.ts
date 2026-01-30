@@ -44,43 +44,43 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Check for 403 (Forbidden/Inactive) - User is authenticated but blocked (active=false or insufficient permissions)
-    // In this case, we MUST logout immediately, no retry.
-    if (error.response && error.response.status === 403) {
+    // Check for 403 (Forbidden/Inactive) or 404 on profile summary
+    if (error.response && (error.response.status === 403 || (error.response.status === 404 && originalRequest.url.includes('/usuarios/resumo')))) {
          sessionManager.signOut().catch(() => {});
          const message = handleApiError(error);
          (error as AxiosError & { userMessage?: string }).userMessage = message;
          return Promise.reject(error);
     }
 
-    // Check for 401 (Unauthorized) - Token expired or invalid
-    if (error.response && error.response.status === 401 && !originalRequest._retry) {
-        
-        // Prevent infinite loop
-        originalRequest._retry = true;
+    // Check for 401 (Unauthorized) - Token expired, invalid or user deleted
+    if (error.response && error.response.status === 401) {
+        if (!originalRequest._retry) {
+            // Prevent infinite loop
+            originalRequest._retry = true;
 
-        try {
-            // Attempt to refresh the token
-            const { success } = await sessionManager.refreshToken();
-            
-            if (success) {
-                // Get the new token (sessionManager already updated internal state)
-                const { data } = await sessionManager.getSession();
-                const newToken = data.session?.access_token;
+            try {
+                // Attempt to refresh the token
+                const { success } = await sessionManager.refreshToken();
+                
+                if (success) {
+                    // Get the new token (sessionManager already updated internal state)
+                    const { data } = await sessionManager.getSession();
+                    const newToken = data.session?.access_token;
 
-                if (newToken) {
-                    // Update headers and retry
-                    originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
-                    return apiClient(originalRequest);
+                    if (newToken) {
+                        // Update headers and retry
+                        originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+                        return apiClient(originalRequest);
+                    }
                 }
+            } catch (refreshErr) {
+                // Refresh failed (network error, etc) - proceed to logout
             }
-        } catch (refreshErr) {
-            // Refresh failed (network error, etc) - proceed to logout
         }
 
-        // If refresh failed or returned success=false
-        // sessionManager.signOut().catch(() => {});
-        console.warn('[ApiClient] 401 Interceptor: Refresh failed. proceeding to reject but NOT signing out for debug.');
+        // If it was already a retry, or refresh failed, or refresh returned success=false
+        sessionManager.signOut().catch(() => {});
+        console.warn('[ApiClient] 401 Interceptor: Unrecoverable session. User signed out.');
     }
 
     const message = handleApiError(error);

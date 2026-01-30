@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
+import { dateMask } from "@/utils/masks";
 import { CalendarDays, CreditCard } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 
@@ -115,12 +116,16 @@ export function PassageiroFormFinanceiro({
             render={({ field, fieldState }) => (
               <FormItem>
                 <FormLabel className="text-gray-700 font-medium ml-1">
-                  Início do Transporte
+                  Início do Transporte <span className="text-red-600">*</span>
                 </FormLabel>
                  <FormControl>
                   <Input
-                    type="date"
+                    placeholder="DD/MM/AAAA"
+                    maxLength={10}
                     {...field}
+                    onChange={(e) => {
+                       field.onChange(dateMask(e.target.value));
+                    }}
                     className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
                   />
                 </FormControl>

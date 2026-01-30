@@ -55,7 +55,7 @@ export const passageiroSchema = z
         return num >= 1;
       }, "O valor deve ser no mínimo R$ 1,00"),
     dia_vencimento: z.string().min(1, "Campo obrigatório"),
-    data_inicio_transporte: dateSchema(true),
+    data_inicio_transporte: dateSchema(true, true),
 
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
@@ -216,14 +216,14 @@ export function usePassageiroForm({
         form.reset({
           nome: prePassageiro.nome,
           nome_responsavel: prePassageiro.nome_responsavel,
-          parentesco_responsavel: "", // Não tem no pré-passageiro ainda
           email_responsavel: prePassageiro.email_responsavel,
           cpf_responsavel: cpfMask(prePassageiro.cpf_responsavel),
           telefone_responsavel: phoneMask(prePassageiro.telefone_responsavel),
           periodo: prePassageiro.periodo || "",
-          modalidade: "",
-          data_nascimento: "",
+          modalidade: prePassageiro.modalidade || "",
+          data_nascimento: formatDateToBR(prePassageiro.data_nascimento || ""),
           genero: prePassageiro.genero || "", 
+          parentesco_responsavel: prePassageiro.parentesco_responsavel || "",
           logradouro: prePassageiro.logradouro || "",
           numero: prePassageiro.numero || "",
           bairro: prePassageiro.bairro || "",
@@ -240,7 +240,7 @@ export function usePassageiroForm({
               )
             : "",
           dia_vencimento: prePassageiro.dia_vencimento?.toString() || "",
-          data_inicio_transporte: "",
+          data_inicio_transporte: formatDateToBR(prePassageiro.data_inicio_transporte || ""),
 
           ativo: true,
           enviar_cobranca_automatica:

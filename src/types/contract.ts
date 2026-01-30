@@ -9,6 +9,7 @@ export interface Contrato {
   provider: 'inhouse' | 'assinafy';
   minuta_url: string;
   contrato_final_url?: string;
+  contrato_url?: string;
   dados_contrato: any;
   created_at: string;
   assinado_em?: string;
