@@ -14,7 +14,7 @@ import { usePassageiroActions } from "@/hooks/ui/usePassageiroActions";
 import { Passageiro } from "@/types/passageiro";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { formatPeriodo } from "@/utils/formatters";
-import { Bot, Eye } from "lucide-react";
+import { Bot } from "lucide-react";
 import { memo } from "react";
 import { PassageiroActionsMenu } from "./PassageiroActionsMenu";
 
@@ -101,7 +101,6 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
                 {formatPeriodo(passageiro.periodo)}
               </p>
             </div>
-            <Eye className="h-4 w-4 text-gray-300 absolute right-0 top-3" />
           </div>
           <div className="shrink-0 flex gap-2">
             <StatusBadge status={passageiro.ativo} />
@@ -112,17 +111,11 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
         <div className="flex justify-between items-end border-t border-gray-50 pt-2.5">
           <div className="flex flex-col gap-1">
             <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">
-              Escola / Veículo
+              Escola
             </span>
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-gray-700">
-                {passageiro.escola?.nome || "Sem escola"}
-              </span>
-              <span className="h-1 w-1 rounded-full bg-gray-300" />
-              <span className="text-xs font-bold text-gray-500">
-                {passageiro.veiculo
-                  ? formatarPlacaExibicao(passageiro.veiculo.placa)
-                  : "Sem veículo"}
+                {passageiro.escola?.nome}
               </span>
             </div>
           </div>

@@ -15,7 +15,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useContratoActions } from "@/hooks/ui/useContratoActions";
 import { cn } from "@/lib/utils";
 import { ContratoStatus } from "@/types/enums";
-import { Eye, FileText, Send } from "lucide-react";
+import { ChevronsLeft, Eye, FileText, Send } from "lucide-react";
 import { memo } from "react";
 import { ContratoActionsMenu } from "./ContratoActionsMenu";
 
@@ -80,7 +80,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   return (
     <MobileActionItem actions={swipeActions} showHint={index === 0}>
       <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-2">
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-start relative">
           <div className="flex items-center gap-3">
             <div
               className={cn(
@@ -102,6 +102,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
                   "Responsável não inf."}
               </p>
             </div>
+            <ChevronsLeft className="h-4 w-4 text-gray-300 absolute right-0 top-0" />
           </div>
         </div>
 
