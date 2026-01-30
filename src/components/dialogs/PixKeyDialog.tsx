@@ -1,25 +1,25 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { getMessage } from "@/constants/messages";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -108,12 +108,12 @@ export default function PixKeyDialog({
     const wasValid = prevStatusRef.current === PixKeyStatus.VALIDADA;
     const isNowValid = status === PixKeyStatus.VALIDADA;
 
-    if (isNowValid && !wasValid && !overrideStatus && isOpen) {
+    if (isNowValid && !wasValid && isOpen) {
        toast.success(getMessage("pix.sucesso.validada"));
        const timer = setTimeout(() => {
            if (onSuccess) onSuccess();
            onClose();
-       }, 2000);
+       }, 1000);
        return () => clearTimeout(timer);
     }
     

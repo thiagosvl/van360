@@ -26,6 +26,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useContractGuard } from "@/hooks/ui/useContractGuard";
 import { usePixKeyGuard } from "@/hooks/ui/usePixKeyGuard";
+import { toast } from "@/utils/notifications/toast";
 
 import { PassageiroFormModes, PixKeyStatus } from "@/types/enums";
 import {
@@ -198,6 +199,18 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 
 
   const openPlanUpgradeDialog = (props?: OpenPlanUpgradeDialogProps) => {
+    // 1. Impedir abertura se já estiver aberto
+    if (planUpgradeDialogState.open) return;
+
+    // 2. Impedir abertura se não tiver PIX validado
+    if (!isPixKeyValid) {
+      toast.error("Configuração Necessária", {
+        description: "Você precisa configurar sua chave PIX antes de alterar seu plano.",
+      });
+      openPixKeyDialog({ canClose: true });
+      return;
+    }
+
     let defaultTab = props?.defaultTab;
 
     // Inferência inteligente de aba baseada na feature/dor
