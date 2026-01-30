@@ -335,21 +335,21 @@ export function usePassageiroForm({
   // AJUSTE RÁPIDO: Auto-ativar checkbox de cobrança automática se elegível e não tocado
   useEffect(() => {
     // Apenas modes de criação/finalização (Edit respeita o banco)
-    if (mode === PassageiroFormModes.EDIT) return;
+    if (mode === PassageiroFormModes.EDIT || !isOpen) return;
 
     // Se tem permissão e franquia
     if (canUseCobrancaAutomatica && podeAtivarCobrancaAutomatica) {
-        // Verificar se usuário já mexeu no campo
-        const fieldState = form.getFieldState("enviar_cobranca_automatica");
-        const currentValue = form.getValues("enviar_cobranca_automatica");
-        
-        // Se não está dirty (usuário não clicou) e está false, forçamos true
-        if (!fieldState.isDirty && !currentValue) {
-            form.setValue("enviar_cobranca_automatica", true, { shouldDirty: false }); // shouldDirty false para manter status de "intocado" se quiser, ou true para marcar mudança.
-            // Optei por false para parecer valor default
-        }
+      // Verificar se usuário já mexeu no campo
+      const fieldState = form.getFieldState("enviar_cobranca_automatica");
+      const currentValue = form.getValues("enviar_cobranca_automatica");
+      
+      // Se não está dirty (usuário não clicou) e está false, forçamos true
+      // Adicionado check de !fieldState.isDirty para garantir que não sobrescrevemos escolha do usuário
+      if (!fieldState.isDirty && !currentValue) {
+        form.setValue("enviar_cobranca_automatica", true, { shouldDirty: false });
+      }
     }
-  }, [canUseCobrancaAutomatica, podeAtivarCobrancaAutomatica, mode, form]);
+  }, [canUseCobrancaAutomatica, podeAtivarCobrancaAutomatica, mode, form, isOpen]);
 
   return {
     form,
