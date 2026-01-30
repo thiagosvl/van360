@@ -1,9 +1,9 @@
 import { usePermissions } from "@/hooks/business/usePermissions";
 import {
-    cepSchema,
-    cpfSchema,
-    dateSchema,
-    phoneSchema,
+  cepSchema,
+  cpfSchema,
+  dateSchema,
+  phoneSchema,
 } from "@/schemas/common";
 import { PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
@@ -161,7 +161,7 @@ export function usePassageiroForm({
 
       const isFinalizeMode = mode === PassageiroFormModes.FINALIZE && prePassageiro;
 
-      if (editingPassageiro && mode === PassageiroFormModes.EDIT) {
+        if (editingPassageiro && mode === PassageiroFormModes.EDIT) {
         await new Promise((r) => setTimeout(r, 200));
         await new Promise((r) => requestAnimationFrame(r));
 
@@ -259,8 +259,8 @@ export function usePassageiroForm({
           "nome_responsavel",
           "parentesco_responsavel",
           "email_responsavel",
-          "cpf_responsavel",
           "telefone_responsavel",
+          "cpf_responsavel",
         ]);
 
         setOpenAccordionItems([
@@ -316,13 +316,12 @@ export function usePassageiroForm({
       setRefreshing(false);
     }
   }, [
-    editingPassageiro,
+    editingPassageiro?.id, 
     mode,
-    prePassageiro,
+    prePassageiro?.id,     
     form,
-    plano,
     podeAtivarCobrancaAutomatica,
-    canUseCobrancaAutomatica, // Added
+    canUseCobrancaAutomatica, 
   ]);
   
   // Load data when dialog opens
@@ -330,21 +329,16 @@ export function usePassageiroForm({
     if (isOpen) {
         carregarDados();
     }
-  }, [isOpen, carregarDados]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, editingPassageiro?.id, prePassageiro?.id]); 
 
-  // AJUSTE RÁPIDO: Auto-ativar checkbox de cobrança automática se elegível e não tocado
   useEffect(() => {
-    // Apenas modes de criação/finalização (Edit respeita o banco)
     if (mode === PassageiroFormModes.EDIT || !isOpen) return;
 
-    // Se tem permissão e franquia
     if (canUseCobrancaAutomatica && podeAtivarCobrancaAutomatica) {
-      // Verificar se usuário já mexeu no campo
       const fieldState = form.getFieldState("enviar_cobranca_automatica");
       const currentValue = form.getValues("enviar_cobranca_automatica");
       
-      // Se não está dirty (usuário não clicou) e está false, forçamos true
-      // Adicionado check de !fieldState.isDirty para garantir que não sobrescrevemos escolha do usuário
       if (!fieldState.isDirty && !currentValue) {
         form.setValue("enviar_cobranca_automatica", true, { shouldDirty: false });
       }
