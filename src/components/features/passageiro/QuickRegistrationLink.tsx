@@ -1,15 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
+import { openBrowserLink } from "@/utils/browser";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { toast } from "@/utils/notifications/toast";
 import {
-  ChevronDown,
-  ChevronUp,
-  Copy,
-  CopyCheck,
-  LinkIcon,
-  MessageCircle
+    ChevronDown,
+    ChevronUp,
+    Copy,
+    CopyCheck,
+    LinkIcon,
+    MessageCircle
 } from "lucide-react";
 import { useState } from "react";
 
@@ -58,7 +59,7 @@ export function QuickRegistrationLink({
     const link = buildPrepassageiroLink(profile.id);
     const message = `Olá! Clique no link abaixo para cadastrar seu filho(a) no transporte escolar: ${link}`;
     const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(url, "_blank");
+    openBrowserLink(url);
   };
 
   return (

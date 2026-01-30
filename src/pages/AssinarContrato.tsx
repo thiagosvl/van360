@@ -13,6 +13,7 @@ import {
   useSignContract,
 } from "@/hooks/api/usePublicContract";
 import { ContratoStatus } from "@/types/enums";
+import { openBrowserLink } from "@/utils/browser";
 import { CheckCircle2, Download, FileSignature, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
@@ -150,9 +151,8 @@ export default function AssinarContrato() {
               <div className="flex flex-col gap-4 pt-4">
                 <Button
                   onClick={() =>
-                    window.open(
-                      contrato.contrato_final_url || contrato.contrato_url,
-                      "_blank",
+                    openBrowserLink(
+                      contrato.contrato_final_url || contrato.contrato_url
                     )
                   }
                   className="bg-[#28a745] hover:bg-[#218838] h-14 rounded-xl font-bold text-lg shadow-lg shadow-green-500/10 transition-all active:scale-95"
@@ -206,7 +206,7 @@ export default function AssinarContrato() {
               <div className="p-8 text-center text-red-500">
                 Erro ao carregar PDF.{" "}
                 <button
-                  onClick={() => window.open(contrato.minuta_url)}
+                  onClick={() => openBrowserLink(contrato.minuta_url)}
                   className="underline"
                 >
                   Clique aqui para baixar
@@ -234,7 +234,7 @@ export default function AssinarContrato() {
       {/* Fixed Action Buttons - Fixed at bottom corners */}
       <div className="fixed bottom-0 left-0 right-0 p-4 sm:p-8 bg-gradient-to-t from-white via-white/90 to-transparent z-50 flex items-center justify-between pointer-events-none">
         <Button
-          onClick={() => window.open(contrato.minuta_url, "_blank")}
+          onClick={() => openBrowserLink(contrato.minuta_url)}
           className="pointer-events-auto rounded-xl bg-[#28a745] hover:bg-[#218838] text-white font-bold h-12 sm:h-14 px-6 sm:px-10 text-base shadow-lg shadow-green-500/20 hover:shadow-green-500/30 transition-all active:scale-95"
         >
           <Download className="mr-2 h-5 w-5" />

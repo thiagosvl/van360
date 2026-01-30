@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { openBrowserLink } from "@/utils/browser";
 import { Download, Receipt } from "lucide-react";
 import React from "react";
 
@@ -43,7 +44,7 @@ export function ReceiptDialog({ url, trigger, open, onOpenChange }: ReceiptDialo
                         <div className="flex gap-3">
                             <Button 
                                 className="w-full gap-2 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-blue-100" 
-                                onClick={() => window.open(url, '_blank')}
+                                onClick={() => openBrowserLink(url)}
                             >
                                 <Download className="w-4 h-4" />
                                 Baixar Original

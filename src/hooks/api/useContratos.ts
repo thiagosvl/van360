@@ -1,6 +1,7 @@
 import { getMessage } from '@/constants/messages';
 import { apiClient } from '@/services/api/client';
 import { Contrato, CreateContratoDTO } from '@/types/contract';
+import { openBrowserLink } from '@/utils/browser';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -144,7 +145,7 @@ export function usePreviewContrato() {
       });
       
       const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-      window.open(url, '_blank');
+      await openBrowserLink(url);
       // Note: we don't revoke here because it needs to stay open in the new tab.
       
       return response.data;
