@@ -101,6 +101,7 @@ export function useDeletePassageiro() {
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      queryClient.invalidateQueries({ queryKey: ["contratos"] });
     },
   });
 }
@@ -132,6 +133,7 @@ export function useToggleAtivoPassageiro() {
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      queryClient.invalidateQueries({ queryKey: ["contratos"] });
     },
   });
 }
@@ -159,6 +161,7 @@ export function useFinalizePreCadastro() {
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
+      queryClient.invalidateQueries({ queryKey: ["contratos"] });
       toast.success("passageiro.sucesso.criado");
     },
     onError: (error: any) => {
