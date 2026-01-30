@@ -59,12 +59,12 @@ const escolas = [
 const veiculos = [
   {
     placa: "ABC-1234",
-    modelo: "Chevrolet Onix",
+    modelo: "Onix",
     marca: "Chevrolet",
   },
   {
     placa: "DEF-5678",
-    modelo: "Volkswagen Gol",
+    modelo: "Gol",
     marca: "Volkswagen",
   },
 ];

@@ -1,25 +1,25 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { getMessage } from "@/constants/messages";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -173,7 +173,6 @@ export default function PixKeyDialog({
           <Loader2 className="w-5 h-5 text-blue-600 animate-spin shrink-0" />
           <div className="space-y-0.5">
             <h4 className="text-sm font-semibold text-blue-900">Validando Chave...</h4>
-            <p className="text-xs text-blue-700">Enviando micro-transação de R$ 0,01.</p>
           </div>
         </div>
       );

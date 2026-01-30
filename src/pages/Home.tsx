@@ -1,17 +1,17 @@
 import { ROUTES } from "@/constants/routes";
 import {
-  Copy,
-  CopyCheck,
-  CreditCard,
-  DollarSign,
-  FileText,
-  Plus,
-  Receipt,
-  TrendingDown,
-  UserCheck,
-  Users,
-  Wallet,
-  Zap,
+    Copy,
+    CopyCheck,
+    CreditCard,
+    DollarSign,
+    FileText,
+    Plus,
+    Receipt,
+    TrendingDown,
+    UserCheck,
+    Users,
+    Wallet,
+    Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -34,8 +34,8 @@ import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
 import { useUpsellContent } from "@/hooks/ui/useUpsellContent";
 import {
-  PassageiroFormModes,
-  PixKeyStatus
+    PassageiroFormModes,
+    PixKeyStatus
 } from "@/types/enums";
 import { getMesNome } from "@/utils/formatters";
 
@@ -437,6 +437,13 @@ const Home = () => {
                 label="Minha Assinatura"
                 colorClass="text-yellow-600"
                 bgClass="bg-yellow-50"
+              />
+              <ShortcutCard
+                to={ROUTES.PRIVATE.MOTORISTA.CONTRACTS}
+                icon={FileText}
+                label="Contratos"
+                colorClass="text-cyan-600"
+                bgClass="bg-cyan-50"
               />
             </div>
           </section>
