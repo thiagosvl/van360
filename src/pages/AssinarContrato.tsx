@@ -76,12 +76,10 @@ export default function AssinarContrato() {
         metadados,
       });
 
-      toast.success(
-        "Contrato assinado com sucesso!",
-        {
-          description: "O documento final foi gerado e enviado para o seu WhatsApp."
-        }
-      );
+      toast.success("Contrato assinado com sucesso!", {
+        description:
+          "O documento final foi gerado e enviado para o seu WhatsApp.",
+      });
       setModalAberto(false);
       // O estado do contrato será atualizado pelo hook useGetPublicContract ou refresh manual
     } catch (error: any) {
@@ -125,10 +123,10 @@ export default function AssinarContrato() {
         {/* Dark Header */}
         <header className="bg-[#002554] border-b border-white/10 shadow-lg shrink-0">
           <div className="container mx-auto px-4 h-16 flex items-center justify-center">
-            <img 
-              src="/assets/logo-van360.png" 
-              alt="Van360" 
-              className="h-10 w-auto filter brightness-0 invert" 
+            <img
+              src="/assets/logo-van360.png"
+              alt="Van360"
+              className="h-10 w-auto filter brightness-0 invert"
             />
           </div>
         </header>
@@ -139,22 +137,30 @@ export default function AssinarContrato() {
               <div className="mx-auto bg-green-50 w-20 h-20 rounded-full flex items-center justify-center mb-6">
                 <CheckCircle2 className="h-12 w-12 text-green-600" />
               </div>
-              <CardTitle className="text-3xl font-bold text-gray-900 tracking-tight">Contrato Assinado!</CardTitle>
+              <CardTitle className="text-3xl font-bold text-gray-900 tracking-tight">
+                Contrato Assinado!
+              </CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-8 p-8 pt-4">
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Tudo pronto! O contrato foi assinado digitalmente e o documento final já está disponível para download.
+                Tudo pronto! O contrato foi assinado digitalmente e o documento
+                final já está disponível para download.
               </p>
-              
+
               <div className="flex flex-col gap-4 pt-4">
-                <Button 
-                  onClick={() => window.open(contrato.contrato_final_url || contrato.contrato_url, "_blank")}
+                <Button
+                  onClick={() =>
+                    window.open(
+                      contrato.contrato_final_url || contrato.contrato_url,
+                      "_blank",
+                    )
+                  }
                   className="bg-[#28a745] hover:bg-[#218838] h-14 rounded-xl font-bold text-lg shadow-lg shadow-green-500/10 transition-all active:scale-95"
                 >
                   <Download className="mr-2 h-5 w-5" />
                   Baixar Documento Assinado
                 </Button>
-                <Button 
+                <Button
                   variant="ghost"
                   onClick={() => {
                     if (window.opener) window.close();
@@ -177,56 +183,52 @@ export default function AssinarContrato() {
       {/* Dark Header similar to competitor */}
       <header className="sticky top-0 z-40 bg-[#002554] border-b border-white/10 shadow-lg shrink-0">
         <div className="container mx-auto px-4 h-16 flex items-center justify-center">
-          <img 
-            src="/assets/logo-van360.png" 
-            alt="Van360" 
-            className="h-10 w-auto filter brightness-0 invert" 
+          <img
+            src="/assets/logo-van360.png"
+            alt="Van360"
+            className="h-10 w-auto filter brightness-0 invert"
           />
         </div>
       </header>
 
       <main className="flex-1 container mx-auto p-4 sm:p-8 max-w-4xl flex flex-col items-center">
-        <Card className="w-full border-none shadow-2xl bg-white overflow-hidden mb-8">
-          <CardContent className="p-0">
-          {/* PDF View */}
-          <div className="border rounded-lg overflow-hidden mb-32 flex justify-center bg-gray-50 min-h-[60vh]">
-            <Document
-              file={contrato.minuta_url}
-              onLoadSuccess={onDocumentLoadSuccess}
-              loading={
-                <div className="flex items-center justify-center p-8">
-                  <Loader2 className="h-8 w-8 animate-spin" />
+        {/* PDF View */}
+        <div className="border-none overflow-hidden mb-16 flex justify-center bg-transparent min-h-[60vh]">
+          <Document
+            file={contrato.minuta_url}
+            onLoadSuccess={onDocumentLoadSuccess}
+            loading={
+              <div className="flex items-center justify-center p-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            }
+            error={
+              <div className="p-8 text-center text-red-500">
+                Erro ao carregar PDF.{" "}
+                <button
+                  onClick={() => window.open(contrato.minuta_url)}
+                  className="underline"
+                >
+                  Clique aqui para baixar
+                </button>
+              </div>
+            }
+          >
+            {
+              // Limit pages rendered for performance if needed, or render all
+              Array.from(new Array(numPages), (_, index) => (
+                <div key={`page_${index + 1}`} className="mb-4 shadow-sm">
+                  <Page
+                    pageNumber={index + 1}
+                    width={Math.min(window.innerWidth - 64, 800)}
+                    renderTextLayer={false}
+                    renderAnnotationLayer={false}
+                  />
                 </div>
-              }
-              error={
-                <div className="p-8 text-center text-red-500">
-                  Erro ao carregar PDF.{" "}
-                  <button
-                    onClick={() => window.open(contrato.minuta_url)}
-                    className="underline"
-                  >
-                    Clique aqui para baixar
-                  </button>
-                </div>
-              }
-            >
-              {
-                // Limit pages rendered for performance if needed, or render all
-                Array.from(new Array(numPages), (_, index) => (
-                  <div key={`page_${index + 1}`} className="mb-4 shadow-sm">
-                    <Page
-                      pageNumber={index + 1}
-                      width={Math.min(window.innerWidth - 64, 800)}
-                      renderTextLayer={false}
-                      renderAnnotationLayer={false}
-                    />
-                  </div>
-                ))
-              }
-            </Document>
-          </div>
-        </CardContent>
-      </Card>
+              ))
+            }
+          </Document>
+        </div>
       </main>
 
       {/* Fixed Action Buttons - Fixed at bottom corners */}
