@@ -26,9 +26,8 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useContractGuard } from "@/hooks/ui/useContractGuard";
 import { usePixKeyGuard } from "@/hooks/ui/usePixKeyGuard";
-import { toast } from "@/utils/notifications/toast";
 
-import { PassageiroFormModes, PixKeyStatus } from "@/types/enums";
+import { PassageiroFormModes } from "@/types/enums";
 import {
   ReactNode,
   useCallback,
@@ -170,10 +169,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
-
-  // Prioridade de Dialogs: PIX Key > Whatsapp
-  const isPixKeyValid = !!profile?.chave_pix && profile?.status_chave_pix === PixKeyStatus.VALIDADA;
-
   const handleOpenPixKeyDialog = useCallback(() => {
     setPixKeyDialogState({
       open: true,
@@ -195,25 +190,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     onShouldOpen: () => setContractSetupDialogState({ open: true }),
   });
 
-
-
-
-  // Global Check for Whatsapp (Professional Plan)
-  // Global WhatsApp Check Removed - Global Instance Active
-
-
   const openPlanUpgradeDialog = (props?: OpenPlanUpgradeDialogProps) => {
     // 1. Impedir abertura se já estiver aberto
     if (planUpgradeDialogState.open) return;
-
-    // 2. Impedir abertura se não tiver PIX validado
-    if (!isPixKeyValid) {
-      toast.error("Configuração Necessária", {
-        description: "Você precisa configurar sua chave PIX antes de alterar seu plano.",
-      });
-      openPixKeyDialog({ canClose: true });
-      return;
-    }
 
     let defaultTab = props?.defaultTab;
 
