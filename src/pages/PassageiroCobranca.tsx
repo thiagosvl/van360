@@ -362,32 +362,32 @@ export default function PassageiroCobranca() {
     "bg-gradient-to-r from-blue-100 via-blue-50 to-white border-b border-blue-100";
   let StatusIcon = Wallet;
   let paymentButtonClass =
-    "bg-blue-600 hover:bg-blue-700 text-white shadow-[0_12px_30px_-20px_rgba(37,99,235,0.7)]";
+    "bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-50 shadow-sm";
 
   if (isPago) {
     headerBg =
       "bg-gradient-to-r from-green-100 via-emerald-50 to-white border-b border-green-100";
     StatusIcon = CheckCircle2;
     paymentButtonClass =
-      "bg-green-600 hover:bg-green-700 text-white shadow-[0_12px_30px_-20px_rgba(16,185,129,0.6)]";
+      "bg-transparent border-2 border-green-600 text-green-600 hover:bg-green-50 shadow-sm";
   } else if (statusText === "Em atraso") {
     headerBg =
       "bg-gradient-to-r from-red-100 via-rose-50 to-white border-b border-red-100";
     StatusIcon = XCircle;
     paymentButtonClass =
-      "bg-red-600 hover:bg-red-700 text-white shadow-[0_12px_30px_-20px_rgba(248,113,113,0.6)]";
+      "bg-transparent border-2 border-red-600 text-red-600 hover:bg-red-50 shadow-sm";
   } else if (statusText === "Vence hoje") {
     headerBg =
       "bg-gradient-to-r from-white to-red-200 hover:bg-inherit border-b border-red-100";
     StatusIcon = Wallet;
     paymentButtonClass =
-      "bg-gradient-to-r from-orange-500 via-red-600 to-red-600 hover:bg-orange-700 text-white shadow-[0_12px_30px_-20px_rgba(251,146,60,0.7)]";
+      "bg-transparent border-2 border-orange-500 text-orange-600 hover:bg-orange-50 shadow-sm";
   } else {
     headerBg =
       "bg-gradient-to-r from-orange-100 via-orange-50 to-white border-b border-orange-100";
     StatusIcon = Wallet;
     paymentButtonClass =
-      "bg-yellow-500 hover:bg-yellow-600 text-white shadow-[0_12px_30px_-20px_rgba(37,99,235,0.7)]";
+      "bg-transparent border-2 border-yellow-500 text-yellow-600 hover:bg-yellow-50 shadow-sm";
   }
 
   return (
@@ -626,7 +626,7 @@ export default function PassageiroCobranca() {
                         cobrancaTyped?.qr_code_payload &&
                         !isPago && (
                           <Button
-                            className="h-12 px-8 rounded-xl font-bold text-base bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto min-w-[200px]"
+                            className="h-12 px-8 rounded-xl font-bold text-base bg-transparent border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 shadow-sm transition-all hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto min-w-[200px]"
                             onClick={() =>
                               openCobrancaPixDrawer({
                                 qrCodePayload:
