@@ -575,7 +575,7 @@ export default function ContractSetupDialog({
       }}
     >
       <DialogContent
-        className="w-[calc(100%-1.5rem)] sm:w-full max-w-md p-0 overflow-hidden bg-white rounded-2xl sm:rounded-3xl border-0 shadow-2xl"
+        className="w-[calc(100%-1.5rem)] sm:w-full max-w-md p-0 overflow-hidden bg-white rounded-2xl sm:rounded-3xl border-0 shadow-2xl flex flex-col max-h-[95vh] sm:max-h-[90vh]"
         hideCloseButton
         onPointerDownOutside={(e) => !podeFechar && e.preventDefault()}
         onEscapeKeyDown={(e) => !podeFechar && e.preventDefault()}
@@ -623,7 +623,7 @@ export default function ContractSetupDialog({
           </div>
         </div>
 
-        <div className="p-5">
+        <div className="p-5 flex-1 overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
@@ -631,6 +631,7 @@ export default function ContractSetupDialog({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.2 }}
+              className="h-full"
             >
               {step === SetupStep.WELCOME && renderWelcome()}
               {step === SetupStep.FEES && renderFees()}

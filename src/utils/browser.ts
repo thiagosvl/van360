@@ -1,17 +1,24 @@
+import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 
 /**
  * Abre um link no navegador externo no mobile (Capacitor)
  * ou em uma nova aba no desktop (Web).
  */
-export const openBrowserLink = (url: string) => {
+export const openBrowserLink = async (url: string) => {
   if (!url) return;
 
-  if (Capacitor.isNativePlatform()) {
-    // No Capacitor, o target '_system' força a abertura no navegador padrão do dispositivo
-    window.open(url, '_system');
-  } else {
-    // No web padrão, abre em nova aba
+  try {
+    if (Capacitor.isNativePlatform()) {
+      // Usa o plugin Browser para melhor integração nativa
+      await Browser.open({ url });
+    } else {
+      // No web padrão, abre em nova aba
+      window.open(url, '_blank');
+    }
+  } catch (error) {
+    console.error('Erro ao abrir link:', error);
+    // Fallback de segurança
     window.open(url, '_blank');
   }
 };
