@@ -8,19 +8,21 @@ interface UsePixKeyGuardProps {
     isProfissional: boolean;
     isLoading: boolean;
     onShouldOpen: () => void;
+    disabled?: boolean;
 }
 
 export function usePixKeyGuard({
   profile,
   isProfissional,
   isLoading,
-  onShouldOpen
+  onShouldOpen,
+  disabled
 }: UsePixKeyGuardProps) {
   const location = useLocation();
   const [triggeredPath, setTriggeredPath] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isLoading || !profile) return;
+    if (disabled || isLoading || !profile) return;
 
     // Check only if it's the professional plan
     if (isProfissional) {

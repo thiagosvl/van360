@@ -1,16 +1,16 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { getMessage } from "@/constants/messages";
 import { useCreateCobranca } from "@/hooks/api/useCobrancaMutations";
@@ -19,13 +19,13 @@ import { CobrancaOrigem, CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { calculateSafeDueDate } from "@/utils/dateUtils";
 import {
-  AlertCircle,
-  ArrowLeft,
-  CheckCircle2,
-  CreditCard,
-  Loader2,
-  Send,
-  Wallet,
+    AlertCircle,
+    ArrowLeft,
+    CheckCircle2,
+    CreditCard,
+    Loader2,
+    Send,
+    Wallet,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -181,36 +181,36 @@ export default function FirstChargeDialog({
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent
-        className="sm:max-w-[425px] w-[90%] rounded-3xl gap-0 p-0 overflow-hidden border-0 shadow-2xl"
+        className="sm:max-w-[425px] w-[95%] sm:w-[90%] rounded-3xl gap-0 p-0 overflow-hidden border-0 shadow-2xl"
         hideCloseButton
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <DialogHeader className="relative px-6 pt-6 pb-2 shrink-0">
+        <DialogHeader className="relative px-4 pt-5 sm:px-6 sm:pt-6 pb-2 shrink-0">
           {step !== "REGISTER_CHECK" && (
             <Button
               variant="ghost"
               size="icon"
-              className="absolute left-6 top-6 h-8 w-8 -ml-3 text-gray-400 hover:text-gray-900 rounded-full hover:bg-gray-100/80 transition-all"
+              className="absolute left-4 top-5 sm:left-6 sm:top-6 h-8 w-8 -ml-3 text-gray-400 hover:text-gray-900 rounded-full hover:bg-gray-100/80 transition-all"
               onClick={handleBack}
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
           )}
-          <DialogTitle className="text-center text-xl font-bold text-gray-900">
+          <DialogTitle className="text-center text-lg sm:text-xl font-bold text-gray-900">
             Mensalidade de {currentMonthNameCapitalized}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="p-6 pt-2">
+        <div className="p-4 sm:p-6 pt-2">
           {step === "REGISTER_CHECK" && (
             <div className="flex flex-col gap-6">
-              <div className="flex flex-col items-center text-center gap-4 bg-blue-50/50 p-6 rounded-3xl border border-blue-100/50">
+              <div className="flex flex-col items-center text-center gap-4 bg-blue-50/50 p-4 sm:p-6 rounded-3xl border border-blue-100/50">
                 <div className="bg-blue-100 p-4 rounded-full shrink-0 shadow-sm ring-4 ring-blue-50">
                   <AlertCircle className="w-8 h-8 text-blue-600" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-gray-600 font-medium leading-relaxed max-w-[240px] mx-auto">
+                  <p className="text-gray-600 font-medium leading-relaxed max-w-full sm:max-w-[240px] mx-auto text-sm sm:text-base">
                     Deseja registrar a mensalidade deste mês no histórico
                     financeiro?
                   </p>
@@ -220,7 +220,7 @@ export default function FirstChargeDialog({
               <div className="grid grid-cols-1 gap-3">
                 <Button
                   onClick={handleNext}
-                  className="h-14 rounded-2xl font-bold gap-2 text-base shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="h-12 sm:h-14 rounded-2xl font-bold gap-2 text-sm sm:text-base shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <CheckCircle2 className="w-5 h-5" />
                   Sim, registrar mensalidade
@@ -228,7 +228,7 @@ export default function FirstChargeDialog({
                 <Button
                   variant="ghost"
                   onClick={onClose}
-                  className="h-12 rounded-2xl text-gray-500 hover:text-gray-900 font-medium hover:bg-gray-50"
+                  className="h-10 sm:h-12 rounded-2xl text-gray-500 hover:text-gray-900 font-medium hover:bg-gray-50 text-sm sm:text-base"
                 >
                   Não, ignorar este mês
                 </Button>
@@ -237,13 +237,13 @@ export default function FirstChargeDialog({
           )}
 
           {step === "PAYMENT_STATUS" && (
-            <div className="space-y-6 pt-2">
-              <div className="text-center px-4">
-                <div className="mx-auto w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 ring-8 ring-gray-50/50">
-                  <Wallet className="w-8 h-8 text-gray-400" />
+            <div className="space-y-4 sm:space-y-6 pt-2">
+              <div className="text-center px-2 sm:px-4">
+                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3 sm:mb-4 ring-8 ring-gray-50/50">
+                  <Wallet className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
                 </div>
 
-                <p className="text-gray-900 text-lg leading-relaxed font-medium max-w-[320px] mx-auto">
+                <p className="text-gray-900 text-base sm:text-lg leading-relaxed font-medium max-w-full sm:max-w-[320px] mx-auto">
                   O responsável de{" "}
                   <span className="text-blue-600 font-bold">
                     {firstNamePassageiro} ({firstNameResponsavel})
@@ -255,17 +255,17 @@ export default function FirstChargeDialog({
               <div className="grid grid-cols-1 gap-3">
                 <Button
                   variant="outline"
-                  className="h-auto py-4 justify-start px-5 gap-4 border border-gray-200 rounded-2xl hover:border-blue-500 hover:bg-blue-50/50 hover:text-blue-700 group transition-all relative overflow-hidden"
+                  className="h-auto py-3 sm:py-4 justify-start px-3 sm:px-5 gap-3 sm:gap-4 border border-gray-200 rounded-2xl hover:border-blue-500 hover:bg-blue-50/50 hover:text-blue-700 group transition-all relative overflow-hidden"
                   onClick={() => handlePaymentStatusSelection("PAID")}
                 >
-                  <div className="w-8 h-8 rounded-full border-2 border-gray-300 group-hover:border-blue-500 flex items-center justify-center transition-colors shrink-0 bg-white shadow-sm">
-                    <div className="w-4 h-4 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-all transform scale-0 group-hover:scale-100" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-gray-300 group-hover:border-blue-500 flex items-center justify-center transition-colors shrink-0 bg-white shadow-sm">
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-all transform scale-0 group-hover:scale-100" />
                   </div>
                   <div className="text-left">
-                    <span className="block font-bold text-gray-900 text-lg group-hover:text-blue-900 transition-colors">
+                    <span className="block font-bold text-gray-900 text-base sm:text-lg group-hover:text-blue-900 transition-colors">
                       Sim, já recebi
                     </span>
-                    <span className="text-gray-500 font-medium group-hover:text-blue-600/80 transition-colors">
+                    <span className="text-gray-500 text-xs sm:text-sm font-medium group-hover:text-blue-600/80 transition-colors">
                       Informar forma de pagamento
                     </span>
                   </div>
@@ -273,17 +273,17 @@ export default function FirstChargeDialog({
 
                 <Button
                   variant="outline"
-                  className="h-auto py-4 justify-start px-5 gap-4 border border-gray-200 rounded-2xl hover:border-orange-500 hover:bg-orange-50/50 hover:text-orange-700 group transition-all relative overflow-hidden"
+                  className="h-auto py-3 sm:py-4 justify-start px-3 sm:px-5 gap-3 sm:gap-4 border border-gray-200 rounded-2xl hover:border-orange-500 hover:bg-orange-50/50 hover:text-orange-700 group transition-all relative overflow-hidden"
                   onClick={() => handlePaymentStatusSelection("PENDING")}
                 >
-                  <div className="w-8 h-8 rounded-full border-2 border-gray-300 group-hover:border-orange-500 flex items-center justify-center transition-colors shrink-0 bg-white shadow-sm">
-                    <div className="w-4 h-4 rounded-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-all transform scale-0 group-hover:scale-100" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-gray-300 group-hover:border-orange-500 flex items-center justify-center transition-colors shrink-0 bg-white shadow-sm">
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-all transform scale-0 group-hover:scale-100" />
                   </div>
                   <div className="text-left">
-                    <span className="block font-bold text-gray-900 text-lg group-hover:text-orange-900 transition-colors">
+                    <span className="block font-bold text-gray-900 text-base sm:text-lg group-hover:text-orange-900 transition-colors">
                       Não, ainda vai pagar
                     </span>
-                    <span className="text-gray-500 font-medium group-hover:text-orange-600/80 transition-colors">
+                    <span className="text-gray-500 text-xs sm:text-sm font-medium group-hover:text-orange-600/80 transition-colors">
                       Gerar mensalidade pendente
                     </span>
                   </div>
@@ -294,11 +294,11 @@ export default function FirstChargeDialog({
 
           {step === "PAYMENT_METHOD" && (
             <div className="space-y-8 pt-4">
-              <div className="text-center px-4">
-                <div className="mx-auto w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-4 ring-8 ring-emerald-50/50">
-                  <CreditCard className="w-8 h-8 text-emerald-600" />
+              <div className="text-center px-2 sm:px-4">
+                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-3 sm:mb-4 ring-8 ring-emerald-50/50">
+                  <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-600" />
                 </div>
-                <p className="font-bold text-xl text-gray-900">
+                <p className="font-bold text-lg sm:text-xl text-gray-900">
                   Qual foi a forma de pagamento?
                 </p>
               </div>
@@ -359,15 +359,15 @@ export default function FirstChargeDialog({
 
           {step === "AUTOMATION_CHECK" && (
             <div className="space-y-8 pt-4">
-              <div className="bg-violet-50/80 p-6 rounded-3xl border border-violet-100/50 flex flex-col items-center text-center gap-4">
-                <div className="bg-violet-100 p-4 rounded-full shrink-0 shadow-sm ring-4 ring-violet-50">
-                  <Send className="w-8 h-8 text-violet-600" />
+              <div className="bg-violet-50/80 p-4 sm:p-6 rounded-3xl border border-violet-100/50 flex flex-col items-center text-center gap-3 sm:gap-4">
+                <div className="bg-violet-100 p-3 sm:p-4 rounded-full shrink-0 shadow-sm ring-4 ring-violet-50">
+                  <Send className="w-6 h-6 sm:w-8 sm:h-8 text-violet-600" />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="font-bold text-xl text-gray-900">
+                  <h4 className="font-bold text-lg sm:text-xl text-gray-900">
                     Enviar cobrança via WhatsApp?
                   </h4>
-                  <p className="text-gray-500 leading-relaxed max-w-[260px]">
+                  <p className="text-gray-500 text-sm sm:text-base leading-relaxed max-w-full sm:max-w-[260px]">
                     Este passageiro tem cobrança automática. Deseja enviar a
                     notificação no WhatsApp já?
                   </p>

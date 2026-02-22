@@ -1,37 +1,37 @@
 import {
-    FEATURE_COBRANCA_AUTOMATICA,
-    FEATURE_NOTIFICACOES
+  FEATURE_COBRANCA_AUTOMATICA,
+  FEATURE_NOTIFICACOES
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useDeleteCobranca,
-    useDesfazerPagamento,
-    useEnviarNotificacaoCobranca,
-    usePermissions,
-    useToggleNotificacoesCobranca
+  useDeleteCobranca,
+  useDesfazerPagamento,
+  useEnviarNotificacaoCobranca,
+  usePermissions,
+  useToggleNotificacoesCobranca
 } from "@/hooks";
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
 import {
-    canSendNotification,
-    canViewReceipt,
-    disableEditarCobranca,
-    disableExcluirCobranca,
-    disableRegistrarPagamento,
-    seForPago
+  canSendNotification,
+  canViewReceipt,
+  disableEditarCobranca,
+  disableExcluirCobranca,
+  disableRegistrarPagamento,
+  seForPago
 } from "@/utils/domain/cobranca/disableActions";
 import {
-    Bell,
-    BellOff,
-    CheckCircle2,
-    DollarSign,
-    FilePen,
-    QrCode,
-    Receipt,
-    RotateCcw,
-    Send,
-    Trash2,
-    User
+  Bell,
+  BellOff,
+  CheckCircle2,
+  DollarSign,
+  FilePen,
+  QrCode,
+  Receipt,
+  RotateCcw,
+  Send,
+  Trash2,
+  User
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
@@ -225,15 +225,12 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     handleDeleteCobranca,
   } = useCobrancaOperations(props);
 
-  // usePermissions Hook outside useMemo
   const { canUseNotifications: hasNotificacoesAccess } = usePermissions();
 
   return useMemo(() => {
-    // const hasNotificacoesAccess = canUseNotificacoes(plano); // REMOVED
     const isPago = seForPago(cobranca);
     const actions: ActionItem[] = [];
 
-    // 0. Ver Recibo (Se pago e com URL)
     if (canViewReceipt(cobranca) && props.onVerRecibo) {
       actions.push({
         label: "Ver Recibo",
@@ -328,8 +325,8 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     if (!isPago) {
       const label =
         !hasNotificacoesAccess || cobranca.desativar_lembretes
-          ? "Ativar Lembretes"
-          : "Pausar Lembretes";
+          ? "Ativar Lembretes Automáticos"
+          : "Pausar Lembretes Automáticos";
       
       // ... (icon logic same)
       const icon =

@@ -120,6 +120,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     is_profissional,
     isLoading: isProfileLoading,
     plano,
+    summary,
   } = useProfile(user?.id);
 
   // Dialog States (Global)
@@ -176,11 +177,54 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   }, []);
 
+  const isTrial = plano?.is_trial_ativo;
+  const isTrialExpired = isTrial && !plano?.is_trial_valido;
+  const isSuspendedOrCancelled = plano?.is_suspensa || plano?.is_cancelada;
+  const isInvalidPlan = !plano?.is_plano_valido;
+
+  const isPaymentBlocked = isTrialExpired || isSuspendedOrCancelled || isInvalidPlan;
+  const canShowUpgrade = !!summary?.usuario.flags.pix_key_configurada;
+
+  useEffect(() => {
+    if (isProfileLoading || !profile || !profile.assinatura) return;
+
+    if (isPaymentBlocked) {
+        if (isTrial || isTrialExpired) {
+             // Trial expirado -> Abre PlanUpgradeDialog
+             if (!planUpgradeDialogState.open) {
+                 if (canShowUpgrade) {
+                    openPlanUpgradeDialog({
+                      defaultTab: plano?.slug as any, 
+                      feature: "trial_conversion",
+                    });
+                 } else if (!subscriptionExpiredDialogState.open) {
+                    openSubscriptionExpiredDialog();
+                 }
+             }
+        } else {
+             if (!subscriptionExpiredDialogState.open) {
+                 openSubscriptionExpiredDialog();
+             }
+        }
+    }
+  }, [
+    isProfileLoading, 
+    profile, 
+    isPaymentBlocked, 
+    isTrial, 
+    isTrialExpired, 
+    canShowUpgrade, 
+    planUpgradeDialogState.open, 
+    subscriptionExpiredDialogState.open, 
+    plano?.slug
+  ]);
+
   usePixKeyGuard({
     profile,
     isProfissional: !!is_profissional,
     isLoading: isProfileLoading,
     onShouldOpen: handleOpenPixKeyDialog,
+    disabled: isPaymentBlocked
   });
 
   useContractGuard({
@@ -188,6 +232,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     isProfissional: !!is_profissional,
     isLoading: isProfileLoading,
     onShouldOpen: () => setContractSetupDialogState({ open: true }),
+    disabled: isPaymentBlocked
   });
 
   const openPlanUpgradeDialog = (props?: OpenPlanUpgradeDialogProps) => {

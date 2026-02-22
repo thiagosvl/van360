@@ -8,6 +8,7 @@ interface UseContractGuardProps {
   isProfissional: boolean;
   isLoading: boolean;
   onShouldOpen: () => void;
+  disabled?: boolean;
 }
 
 /**
@@ -19,13 +20,14 @@ export function useContractGuard({
   profile,
   isProfissional,
   isLoading,
-  onShouldOpen
+  onShouldOpen,
+  disabled
 }: UseContractGuardProps) {
   const location = useLocation();
   const [triggeredPath, setTriggeredPath] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isLoading || !profile) return;
+    if (disabled || isLoading || !profile) return;
 
     // 1. Check basic prerequisites
     const isContractConfigured = profile.flags?.contrato_configurado ?? profile.config_contrato?.configurado === true;

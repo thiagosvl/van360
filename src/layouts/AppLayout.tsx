@@ -6,20 +6,13 @@ import { ROUTES } from "@/constants/routes";
 import { LayoutProvider } from "@/contexts/LayoutProvider";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useSession } from "@/hooks/business/useSession";
-import { useSubscriptionStatus } from "@/hooks/business/useSubscriptionStatus";
 import { useSEO } from "@/hooks/useSEO";
 import { Outlet, useNavigate } from "react-router-dom";
-
-/* 
-   Componente interno para consumir o contexto de Layout 
-   (useSubscriptionStatus precisa estar DEPOIS do LayoutProvider)
-*/
 function AppLayoutContent({ plano, role }: { plano: any, role: "motorista" }) {
     const navigate = useNavigate();
     
     // Monitorar status da assinatura e abrir dialogs se necessário
     // AGORA SEGURO: Estamos dentro do LayoutProvider
-    useSubscriptionStatus();
 
     return (
       <div className="min-h-screen bg-gray-50">

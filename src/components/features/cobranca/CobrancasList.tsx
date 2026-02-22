@@ -5,12 +5,12 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { UnifiedEmptyState } from "@/components/empty";
 import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActionsMenu";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
 import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
@@ -18,9 +18,9 @@ import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus } from "@/types/enums";
 import {
-  formatDateToBR,
-  formatPaymentType,
-  getStatusColor,
+    formatDateToBR,
+    formatPaymentType,
+    getStatusColor,
 } from "@/utils/formatters";
 import { BellOff, DollarSign, Wallet } from "lucide-react";
 import { Fragment, memo } from "react";
@@ -81,7 +81,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
             plano={plano}
             permissions={permissions}
             actionsProps={{
-                onVerCobranca,
+                onVerCobranca: () => onVerCobranca(cobranca),
                 onVerCarteirinha: () => onVerCarteirinha(cobranca.passageiro_id),
                 onEditarCobranca: () => onEditarCobranca(cobranca),
                 onRegistrarPagamento: () => onRegistrarPagamento(cobranca),

@@ -514,7 +514,7 @@ export default function ContractSetupDialog({
   );
 
   const renderPreview = () => (
-    <div className="flex flex-col items-center justify-center space-y-6 py-4">
+    <div className="flex flex-col items-center justify-center space-y-6 py-0">
       <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
         <ShieldCheck className="w-10 h-10 text-blue-600" />
       </div>
@@ -549,11 +549,8 @@ export default function ContractSetupDialog({
       </Button>
 
       <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl flex gap-3">
-        <div className="shrink-0 mt-0.5">
-          <Loader2 className="w-4 h-4 text-amber-600 animate-spin" />
-        </div>
         <p className="text-[11px] text-amber-800 leading-relaxed">
-          <strong>Lembrete:</strong> Ao finalizar, novos passageiros aprovados
+          <strong>Lembrete:</strong> Ao finalizar, novos passageiros
           receberão este modelo automaticamente para assinatura.
         </p>
       </div>
