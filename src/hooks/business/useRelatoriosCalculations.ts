@@ -222,7 +222,7 @@ export const useRelatoriosCalculations = ({
       .map((cat) => {
         const iconData = CATEGORIA_ICONS[cat.nome] || CATEGORIA_ICONS.Outros;
         const veiculos = Object.entries(cat.veiculos).map(([vId, data]) => {
-          const info = veiculosMap[vId] || { nome: "Geral / Sem vínculo", placa: "-" };
+          const info = veiculosMap[vId] || { nome: "Não vinculado a veículo", placa: "-" };
           return {
             id: vId,
             nome: info.nome,
@@ -267,7 +267,7 @@ export const useRelatoriosCalculations = ({
     const gastosPorVeiculo = Object.values(gastosPorVeiculoMap)
       .map((item) => {
         const info = veiculosMap[item.veiculoId] || {
-          nome: "Geral / Sem vínculo",
+          nome: "Não vinculado a veículo",
           placa: "-",
         };
         return {
