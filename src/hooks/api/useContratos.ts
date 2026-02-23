@@ -2,6 +2,7 @@ import { getMessage } from '@/constants/messages';
 import { apiClient } from '@/services/api/client';
 import { Contrato, CreateContratoDTO } from '@/types/contract';
 import { openBrowserLink } from '@/utils/browser';
+import { Capacitor } from '@capacitor/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -140,15 +141,36 @@ export function useDownloadContrato() {
 export function usePreviewContrato() {
   return useMutation({
     mutationFn: async (draftConfig?: any) => {
-      const response = await apiClient.post('/contratos/preview', draftConfig || {}, {
-        responseType: 'blob',
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-      await openBrowserLink(url);
-      // Note: we don't revoke here because it needs to stay open in the new tab.
-      
-      return response.data;
+      // PWA/Mobile FIX: Open blank window IMMEDIATELY to preserve user gesture
+      // Most mobile browsers block window.open if it's called after an async await.
+      let newWindow: Window | null = null;
+      if (!Capacitor.isNativePlatform()) {
+        newWindow = window.open('about:blank', '_blank');
+        if (newWindow) {
+          newWindow.document.write('<!DOCTYPE html><html><head><title>Gerando Prévia...</title><style>body{display:flex;justify-content:center;align-items:center;height:100vh;margin:0;font-family:sans-serif;background:#f9fafb;color:#4b5563;}</style></head><body><div style="text-align:center;"><div style="border:4px solid #f3f3f3;border-top:4px solid #3b82f6;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>Gerando prévia do contrato...</div><style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style></body></html>');
+        }
+      }
+
+      try {
+        const response = await apiClient.post('/contratos/preview', draftConfig || {}, {
+          responseType: 'blob',
+        });
+        
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        
+        if (newWindow) {
+          newWindow.location.href = url;
+        } else {
+          // Native Capacitor or fallback
+          await openBrowserLink(url);
+        }
+        
+        return response.data;
+      } catch (error) {
+        if (newWindow) newWindow.close();
+        throw error;
+      }
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || getMessage('contrato.erro.carregar');
