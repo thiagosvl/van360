@@ -1,15 +1,16 @@
+import { usePermissions } from "@/hooks/business/usePermissions";
 import { ActionItem } from "@/types/actions";
 import { ContratoStatus } from "@/types/enums";
 import {
-  Copy,
-  Download,
-  ExternalLink,
-  Eye,
-  FileText,
-  RefreshCcw,
-  Send,
-  Trash2,
-  User
+    Copy,
+    Download,
+    ExternalLink,
+    Eye,
+    FileText,
+    RefreshCcw,
+    Send,
+    Trash2,
+    User
 } from "lucide-react";
 import { useMemo } from "react";
 
@@ -42,13 +43,15 @@ export function useContratoActions({
   onVisualizarLink,
   onVisualizarFinal,
 }: UseContratoActionsProps): ActionItem[] {
+  const { canUseContracts } = usePermissions();
+
   return useMemo(() => {
     const isPendente = status === ContratoStatus.PENDENTE;
     const isAssinado = status === ContratoStatus.ASSINADO;
     const list: ActionItem[] = [];
 
     if (tipo === 'passageiro') {
-      if (onGerarContrato) {
+      if (canUseContracts && onGerarContrato) {
         list.push({
           label: 'Gerar Contrato',
           icon: <FileText className="h-4 w-4" />,
@@ -58,57 +61,59 @@ export function useContratoActions({
       }
     } else {
       // Contrato Actions
-      if (isPendente) {
-        if (onVisualizarLink) {
-          list.push({
-            label: 'Ver Contrato',
-            icon: <ExternalLink className="h-4 w-4" />,
-            onClick: () => onVisualizarFinal(item.minuta_url),
-            swipeColor: 'bg-green-600',
-          });
+      if (canUseContracts) {
+        if (isPendente) {
+          if (onVisualizarLink) {
+            list.push({
+              label: 'Ver Contrato',
+              icon: <ExternalLink className="h-4 w-4" />,
+              onClick: () => onVisualizarFinal(item.minuta_url),
+              swipeColor: 'bg-green-600',
+            });
+          }
+          if (onCopiarLink) {
+             list.push({
+              label: 'Copiar Link',
+              icon: <Copy className="h-4 w-4" />,
+              onClick: () => onCopiarLink(item.token_acesso),
+              swipeColor: 'bg-indigo-600',
+             });
+          }
+          if (onReenviarNotificacao) {
+            list.push({
+              label: 'Reenviar Contrato',
+              icon: <Send className="h-4 w-4" />,
+              onClick: () => onReenviarNotificacao(item.id),
+              swipeColor: 'bg-blue-600',
+            });
+          }
         }
-        if (onCopiarLink) {
-           list.push({
-            label: 'Copiar Link',
-            icon: <Copy className="h-4 w-4" />,
-            onClick: () => onCopiarLink(item.token_acesso),
-            swipeColor: 'bg-indigo-600',
-           });
-        }
-        if (onReenviarNotificacao) {
-          list.push({
-            label: 'Reenviar Contrato',
-            icon: <Send className="h-4 w-4" />,
-            onClick: () => onReenviarNotificacao(item.id),
-            swipeColor: 'bg-blue-600',
-          });
-        }
-      }
 
-      if (isAssinado) {
-        if (onVisualizarFinal && (item.contrato_final_url || item.contrato_url)) {
-          list.push({
-            label: 'Ver Contrato',
-            icon: <Eye className="h-4 w-4" />,
-            onClick: () => onVisualizarFinal(item.contrato_final_url || item.contrato_url),
-            swipeColor: 'bg-green-600',
-          });
-        }
-        if (onBaixarPDF) {
-          list.push({
-            label: 'Baixar PDF',
-            icon: <Download className="h-4 w-4" />,
-            onClick: () => onBaixarPDF(item.id),
-            swipeColor: 'bg-blue-600',
-          });
-        }
-        if (onSubstituir) {
-          list.push({
-            label: 'Substituir Contrato',
-            icon: <RefreshCcw className="h-4 w-4" />,
-            onClick: () => onSubstituir(item.id),
-            swipeColor: 'bg-orange-600',
-          });
+        if (isAssinado) {
+          if (onVisualizarFinal && (item.contrato_final_url || item.contrato_url)) {
+            list.push({
+              label: 'Ver Contrato',
+              icon: <Eye className="h-4 w-4" />,
+              onClick: () => onVisualizarFinal(item.contrato_final_url || item.contrato_url),
+              swipeColor: 'bg-green-600',
+            });
+          }
+          if (onBaixarPDF) {
+            list.push({
+              label: 'Baixar PDF',
+              icon: <Download className="h-4 w-4" />,
+              onClick: () => onBaixarPDF(item.id),
+              swipeColor: 'bg-blue-600',
+            });
+          }
+          if (onSubstituir) {
+            list.push({
+              label: 'Substituir Contrato',
+              icon: <RefreshCcw className="h-4 w-4" />,
+              onClick: () => onSubstituir(item.id),
+              swipeColor: 'bg-orange-600',
+            });
+          }
         }
       }
     }

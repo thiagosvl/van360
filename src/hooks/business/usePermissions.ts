@@ -27,12 +27,14 @@ export function usePermissions() {
   // Regras de Funcionalidades (Features) vindas do resumo consolidado
   const canUseAutomatedCharges = summary?.usuario.plano.funcionalidades.cobranca_automatica ?? false;
   const canUseNotifications = summary?.usuario.plano.funcionalidades.notificacoes_whatsapp ?? false;
+  const canUseContracts = summary?.usuario.flags.usar_contratos ?? false;
   
   return {
     isLoading,
     
     canUseAutomatedCharges,
     canUseNotifications,
+    canUseContracts,
 
     is_essencial,
     is_profissional,

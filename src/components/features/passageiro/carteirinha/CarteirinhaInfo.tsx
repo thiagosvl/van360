@@ -71,7 +71,10 @@ export const CarteirinhaInfo = ({
   const cardRef = useRef<HTMLDivElement>(null);
   
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
-  const { canUseAutomatedCharges: hasCobrancaAutomaticaAccess } = usePermissions();
+  const { 
+    canUseAutomatedCharges: hasCobrancaAutomaticaAccess,
+    canUseContracts
+  } = usePermissions();
   const { limits } = usePlanLimits();
 
   const handleToggleClickInternal = async () => {
@@ -459,7 +462,7 @@ export const CarteirinhaInfo = ({
               </Button>
             )}
 
-            {onContractAction && (
+            {canUseContracts && onContractAction && (
                 <Button
                   variant="ghost"
                   className={cn(
