@@ -90,7 +90,7 @@ export default function CobrancaEditDialog({
               <span
                 className={cn(
                   "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide shadow-sm",
-                  getStatusColor(cobranca?.status, cobranca?.data_vencimento)
+                  getStatusColor(cobranca?.status, cobranca?.data_vencimento, cobranca?.status_repasse)
                 )}
               >
                 {cobranca?.status === CobrancaStatus.PAGO
@@ -127,9 +127,8 @@ export default function CobrancaEditDialog({
                   cancelado (ficará inválido) e um novo PIX será gerado</strong>.
                 </p>
                 {cobranca?.data_envio_ultima_notificacao && (
-                  <p className="text-amber-800 font-semibold mt-1 text-xs underline">
-                    Como já foi enviada, você precisará reenviar a cobrança da mensalidade ao
-                    responsável!
+                  <p className="text-amber-900 font-medium mt-1.5 text-xs">
+                    Como já havia sido enviada, nós <strong>reenviaremos automaticamente</strong> uma nova mensagem no WhatsApp com os dados atualizados!
                   </p>
                 )}
               </div>

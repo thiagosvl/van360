@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ROUTES } from "@/constants/routes";
 import {
   useGetPublicContract,
   useSignContract,
@@ -159,16 +158,6 @@ export default function AssinarContrato() {
                 >
                   <Download className="mr-2 h-5 w-5" />
                   Baixar Documento Assinado
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    if (window.opener) window.close();
-                    else navigate(ROUTES.PUBLIC.ROOT);
-                  }}
-                  className="h-12 rounded-xl text-gray-500 hover:text-gray-900 font-medium"
-                >
-                  Sair do documento
                 </Button>
               </div>
             </CardContent>

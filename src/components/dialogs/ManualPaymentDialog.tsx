@@ -36,7 +36,7 @@ import {
     parseCurrencyToNumber,
     toLocalDateString
 } from "@/utils/formatters";
-import { moneyMask, moneyToNumber } from "@/utils/masks";
+import { moneyMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -120,7 +120,7 @@ export default function ManualPaymentDialog({
 
   const handleSubmit = async (data: PaymentFormData) => {
     const pagamentoData = {
-      valor_pago: moneyToNumber(data.valor_pago),
+      valor_pago: data.valor_pago,
       data_pagamento: toLocalDateString(data.data_pagamento),
       tipo_pagamento: data.tipo_pagamento,
     };

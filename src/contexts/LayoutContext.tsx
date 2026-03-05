@@ -1,5 +1,5 @@
 import {
-  PlanUpgradeDialogProps,
+    PlanUpgradeDialogProps,
 } from "@/components/dialogs/PlanUpgradeDialog";
 import { SubscriptionExpiredDialogProps } from "@/components/dialogs/SubscriptionExpiredDialog";
 import { PassageiroFormModes } from "@/types/enums";
@@ -9,8 +9,8 @@ import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Veiculo } from "@/types/veiculo";
 import {
-  createContext,
-  useContext,
+    createContext,
+    useContext,
 } from "react";
 
 export type OpenPlanUpgradeDialogProps = Omit<
@@ -76,6 +76,12 @@ export interface OpenCobrancaEditDialogProps {
   cobranca: any; // Using any to avoid complex type issues for now, can be Cobranca
 }
 
+export interface OpenCobrancaDeleteDialogProps {
+  onConfirm: () => void | Promise<void>;
+  onEdit: () => void;
+  isLoading?: boolean;
+}
+
 export interface OpenCobrancaPixDrawerProps {
   qrCodePayload: string;
   valor: number;
@@ -123,6 +129,8 @@ export interface LayoutContextType {
   }) => void;
   closePixKeyDialog: () => void;
   isPixKeyDialogOpen: boolean;
+  openCobrancaDeleteDialog: (props: OpenCobrancaDeleteDialogProps) => void;
+  closeCobrancaDeleteDialog: () => void;
   openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;
   openCobrancaPixDrawer: (props: OpenCobrancaPixDrawerProps) => void;
   openManualPaymentDialog: (props: OpenManualPaymentDialogProps) => void;

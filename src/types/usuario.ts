@@ -22,14 +22,12 @@ export interface Usuario {
   assinaturas_usuarios?: any;
   status_chave_pix?: string;
   chave_pix_validada_em?: string;
-  nome_titular_pix_validado?: string;
-  cpf_cnpj_titular_pix_validado?: string;
   flags?: any;
   plano?: any;
   assinatura?: any;
 
   // Configurações de contrato
-  assinatura_url?: string;
+  assinatura_digital_url?: string;
   config_contrato?: {
     usar_contratos: boolean;
     configurado: boolean;

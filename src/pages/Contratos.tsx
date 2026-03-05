@@ -78,21 +78,6 @@ const Contratos = () => {
   const createMutation = useCreateContrato();
   const previewMutation = usePreviewContrato();
 
-  const isActionLoading = 
-    deleteMutation.isPending || 
-    downloadMutation.isPending || 
-    reenviarMutation.isPending || 
-    substituirMutation.isPending ||
-    createMutation.isPending ||
-    previewMutation.isPending;
-
-  const isGlobalLoading = isLoadingKPIs || isLoadingContratos || isActionLoading;
-
-  // Handlers
-  useEffect(() => {
-    setPageTitle('Contratos');
-  }, [setPageTitle]);
-
   const onRefresh = async () => {
     await Promise.all([refetchKPIs(), refetchContratos()]);
   };
@@ -150,6 +135,29 @@ const Contratos = () => {
       }
     });
   };
+
+  const { isLoading: isProfileLoading } = usePermissions();
+
+  const isActionLoading = 
+    deleteMutation.isPending || 
+    downloadMutation.isPending || 
+    reenviarMutation.isPending || 
+    substituirMutation.isPending ||
+    createMutation.isPending ||
+    previewMutation.isPending;
+
+  // Handlers
+  useEffect(() => {
+    setPageTitle('Contratos');
+  }, [setPageTitle]);
+
+  if (isProfileLoading || !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        <p>Carregando informações...</p>
+      </div>
+    );
+  }
 
   const actions = {
     onVerPassageiro: handleVerPassageiro,
@@ -269,7 +277,7 @@ const Contratos = () => {
         </div>
       </PullToRefreshWrapper>
 
-      <LoadingOverlay active={isGlobalLoading} text={isActionLoading ? "Processando..." : "Carregando..."} />
+      <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>
   );
 };

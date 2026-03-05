@@ -27,7 +27,7 @@ import { Fragment, memo } from "react";
 
 interface CobrancasListProps {
   cobrancas: Cobranca[];
-  variant: "pending" | "paid";
+  variant: "pending" | "processing" | "paid";
   plano: any;
   permissions: any;
   isLoading: boolean;
@@ -65,7 +65,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
 }: {
   cobranca: Cobranca;
   index: number;
-  variant: "pending" | "paid";
+  variant: "pending" | "processing" | "paid";
 } & Omit<CobrancasListProps, "cobrancas" | "isLoading" | "busca" | "mesFilter" | "meses">) {
   
   const isPending = variant === "pending";
@@ -133,7 +133,7 @@ function CardContentWrapper({
                     <div
                       className={cn(
                         "h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm",
-                        getStatusColor(cobranca?.status, cobranca?.data_vencimento)
+                        getStatusColor(cobranca?.status, cobranca?.data_vencimento, cobranca?.status_repasse)
                       )}
                     >
                       {cobranca?.passageiro.nome.charAt(0)}
@@ -158,12 +158,13 @@ function CardContentWrapper({
 
                 {/* Footer depending on variant */}
                 <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-                  {variant === "pending" ? (
+                  {variant === "pending" || variant === "processing" ? (
                       <>
                         <div className="flex items-center gap-2">
                             <StatusBadge
                             status={cobranca?.status}
                             dataVencimento={cobranca?.data_vencimento}
+                            statusRepasse={cobranca?.status_repasse}
                             className="font-semibold h-6 shadow-none"
                             />
                             {cobranca?.desativar_lembretes && (
@@ -184,11 +185,14 @@ function CardContentWrapper({
                       </>
                   ) : (
                       <>
-                        <div>
-                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-                            FORMA DE PAGAMENTO
-                          </span>
-                          <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
+                        <div className="flex flex-col gap-1 items-start">
+                             <StatusBadge
+                                status={cobranca?.status}
+                                dataVencimento={cobranca?.data_vencimento}
+                                statusRepasse={cobranca?.status_repasse}
+                                className="font-semibold h-5 px-1.5 text-[10px] shadow-none mb-1"
+                             />
+                          <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
                             {formatPaymentType(cobranca?.tipo_pagamento)}
                           </p>
                         </div>
@@ -241,6 +245,14 @@ export function CobrancasList({
                description={`Não há mensalidades pendentes para ${meses[mesFilter - 1]}.`}
              />
          );
+    } else if (variant === "processing") {
+         return (
+             <UnifiedEmptyState
+               icon={Wallet}
+               title="Nenhum pagamento em processamento"
+               description={`Não há pagamentos em aprovação/processamento em ${meses[mesFilter - 1]}.`}
+             />
+         );
     } else {
         return (
             <UnifiedEmptyState
@@ -280,7 +292,7 @@ export function CobrancasList({
                 Valor
               </TableHead>
               
-              {variant === "pending" ? (
+              {variant === "pending" || variant === "processing" ? (
                   <>
                     <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                         Vencimento
@@ -317,7 +329,7 @@ export function CobrancasList({
                     <div
                       className={cn(
                         "h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm",
-                        getStatusColor(cobranca?.status, cobranca?.data_vencimento)
+                        getStatusColor(cobranca?.status, cobranca?.data_vencimento, cobranca?.status_repasse)
                       )}
                     >
                       {cobranca?.passageiro.nome.charAt(0)}
@@ -342,7 +354,7 @@ export function CobrancasList({
                   </span>
                 </TableCell>
                 
-                {variant === "pending" ? (
+                {variant === "pending" || variant === "processing" ? (
                     <>
                         <TableCell className="px-6 py-4">
                             <span className="text-sm text-gray-600 font-medium">

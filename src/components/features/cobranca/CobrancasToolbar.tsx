@@ -6,59 +6,58 @@ import { Bot, Search } from "lucide-react";
 
 interface CobrancasToolbarProps {
   onUpgrade: (feature: string, description: string) => void;
-  // plano?: any; // unused in current implementation
-  buscaAbertas: string;
-  setBuscaAbertas: (value: string) => void;
-  buscaPagas: string;
-  setBuscaPagas: (value: string) => void;
-  countAbertas: number;
-  countPagas: number;
+  buscaAReceber: string;
+  setBuscaAReceber: (value: string) => void;
+  buscaRecebidos: string;
+  setBuscaRecebidos: (value: string) => void;
+  countAReceber: number;
+  countRecebidos: number;
   canUseAutomatedCharges: boolean;
   activeTab: string;
 }
 
 export function CobrancasToolbar({
   onUpgrade,
-  buscaAbertas,
-  setBuscaAbertas,
-  buscaPagas,
-  setBuscaPagas,
-  countAbertas,
-  countPagas,
+  buscaAReceber,
+  setBuscaAReceber,
+  buscaRecebidos,
+  setBuscaRecebidos,
+  countAReceber,
+  countRecebidos,
   canUseAutomatedCharges,
   activeTab
 }: CobrancasToolbarProps) {
   
   const showUpgradeButton = !canUseAutomatedCharges;
-  const currentSearch = activeTab === "pendentes" ? buscaAbertas : buscaPagas;
-  const setCurrentSearch = activeTab === "pendentes" ? setBuscaAbertas : setBuscaPagas;
+  const currentSearch = activeTab === "areceber" ? buscaAReceber : buscaRecebidos;
+  const setCurrentSearch = activeTab === "areceber" ? setBuscaAReceber : setBuscaRecebidos;
 
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
       {/* 1. Tabs (Left) */}
       <TabsList className="bg-gray-100/80 p-1 rounded-xl h-10 md:h-12 w-full md:w-auto self-start">
         <TabsTrigger
-          value="pendentes"
+          value="areceber"
           className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none"
         >
-          Pendentes
+          A receber
           <Badge
             variant="secondary"
             className="ml-2 bg-gray-200 text-gray-700 hover:bg-gray-200 text-[10px] md:text-xs"
           >
-            {countAbertas}
+            {countAReceber}
           </Badge>
         </TabsTrigger>
         <TabsTrigger
-          value="pagas"
+          value="recebidos"
           className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none"
         >
-          Pagas
+          Recebidos
           <Badge
             variant="secondary"
             className="ml-2 bg-gray-200 text-gray-700 hover:bg-gray-200 text-[10px] md:text-xs"
           >
-            {countPagas}
+            {countRecebidos}
           </Badge>
         </TabsTrigger>
       </TabsList>

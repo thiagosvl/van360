@@ -1,3 +1,4 @@
+import CobrancaDeleteDialog from "@/components/dialogs/CobrancaDeleteDialog";
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import ContractSetupDialog from "@/components/dialogs/ContractSetupDialog";
@@ -8,18 +9,18 @@ import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import PixKeyDialog from "@/components/dialogs/PixKeyDialog";
 import {
-  PlanUpgradeDialog,
+    PlanUpgradeDialog,
 } from "@/components/dialogs/PlanUpgradeDialog";
 import { SubscriptionExpiredDialog } from "@/components/dialogs/SubscriptionExpiredDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
 import {
-  FEATURE_COBRANCA_AUTOMATICA,
-  FEATURE_GASTOS,
-  FEATURE_LIMITE_PASSAGEIROS,
-  FEATURE_NOTIFICACOES,
-  FEATURE_RELATORIOS,
-  PLANO_PROFISSIONAL,
+    FEATURE_COBRANCA_AUTOMATICA,
+    FEATURE_GASTOS,
+    FEATURE_LIMITE_PASSAGEIROS,
+    FEATURE_NOTIFICACOES,
+    FEATURE_RELATORIOS,
+    PLANO_PROFISSIONAL,
 } from "@/constants";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -29,25 +30,26 @@ import { usePixKeyGuard } from "@/hooks/ui/usePixKeyGuard";
 
 import { PassageiroFormModes } from "@/types/enums";
 import {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useState,
+    ReactNode,
+    useCallback,
+    useEffect,
+    useState,
 } from "react";
 import {
-  LayoutContext,
-  OpenCobrancaEditDialogProps,
-  OpenCobrancaPixDrawerProps,
-  OpenConfirmationDialogProps,
-  OpenContractSetupDialogProps,
-  OpenEscolaFormProps,
-  OpenFirstChargeDialogProps,
-  OpenGastoFormProps,
-  OpenManualPaymentDialogProps,
-  OpenPassageiroFormProps,
-  OpenPlanUpgradeDialogProps,
-  OpenSubscriptionExpiredDialogProps,
-  OpenVeiculoFormProps
+    LayoutContext,
+    OpenCobrancaDeleteDialogProps,
+    OpenCobrancaEditDialogProps,
+    OpenCobrancaPixDrawerProps,
+    OpenConfirmationDialogProps,
+    OpenContractSetupDialogProps,
+    OpenEscolaFormProps,
+    OpenFirstChargeDialogProps,
+    OpenGastoFormProps,
+    OpenManualPaymentDialogProps,
+    OpenPassageiroFormProps,
+    OpenPlanUpgradeDialogProps,
+    OpenSubscriptionExpiredDialogProps,
+    OpenVeiculoFormProps
 } from "./LayoutContext";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
@@ -138,6 +140,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [cobrancaEditDialogState, setCobrancaEditDialogState] = useState<{
     open: boolean;
     props?: OpenCobrancaEditDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [cobrancaDeleteDialogState, setCobrancaDeleteDialogState] = useState<{
+    open: boolean;
+    props?: OpenCobrancaDeleteDialogProps;
   }>({
     open: false,
   });
@@ -327,6 +336,17 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 
 
 
+  const openCobrancaDeleteDialog = (props: OpenCobrancaDeleteDialogProps) => {
+    setCobrancaDeleteDialogState({
+      open: true,
+      props,
+    });
+  };
+
+  const closeCobrancaDeleteDialog = () => {
+    setCobrancaDeleteDialogState((prev) => ({ ...prev, open: false }));
+  };
+
   const openCobrancaEditDialog = (props: OpenCobrancaEditDialogProps) => {
     setCobrancaEditDialogState({
       open: true,
@@ -376,6 +396,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closePixKeyDialog,
         isPixKeyDialogOpen: pixKeyDialogState.open,
 
+        openCobrancaDeleteDialog,
+        closeCobrancaDeleteDialog,
         openCobrancaEditDialog,
         openCobrancaPixDrawer,
         openManualPaymentDialog,
@@ -571,6 +593,36 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             cobrancaEditDialogState.props?.onSuccess?.();
             setCobrancaEditDialogState((prev) => ({ ...prev, open: false }));
           }}
+        />
+      )}
+
+      {cobrancaDeleteDialogState.open && cobrancaDeleteDialogState.props && (
+        <CobrancaDeleteDialog
+          open={cobrancaDeleteDialogState.open}
+          onOpenChange={(open) => {
+            if (!open) {
+              safeCloseDialog(() => setCobrancaDeleteDialogState((prev) => ({ ...prev, open: false })));
+            } else {
+              setCobrancaDeleteDialogState((prev) => ({ ...prev, open }));
+            }
+          }}
+          onConfirm={async () => {
+             const result = cobrancaDeleteDialogState.props?.onConfirm();
+             if (result instanceof Promise) {
+                 try {
+                     await result;
+                 } finally {
+                     closeCobrancaDeleteDialog();
+                 }
+             } else {
+                 closeCobrancaDeleteDialog();
+             }
+          }}
+          onEdit={() => {
+             cobrancaDeleteDialogState.props?.onEdit();
+             closeCobrancaDeleteDialog();
+          }}
+          isLoading={cobrancaDeleteDialogState.props?.isLoading}
         />
       )}
 

@@ -1,5 +1,6 @@
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { NotificationTimeline } from "@/components/features/cobranca/NotificationTimeline";
+import { PaymentTimeline } from "@/components/features/cobranca/PaymentTimeline";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,12 +11,12 @@ import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCobranca,
-  useCobrancaNotificacoes,
-  useDeleteCobranca,
-  usePermissions,
-  useProfile,
-  useSession
+    useCobranca,
+    useCobrancaNotificacoes,
+    useDeleteCobranca,
+    usePermissions,
+    useProfile,
+    useSession
 } from "@/hooks";
 import { useCobrancaOperations } from "@/hooks/ui/useCobrancaActions";
 import { cn } from "@/lib/utils";
@@ -24,52 +25,52 @@ import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import { CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
-  canSendNotification,
-  canViewReceipt,
-  disableEditarCobranca,
-  disableExcluirCobranca,
-  disableRegistrarPagamento,
-  seForPago,
+    canSendNotification,
+    canViewReceipt,
+    disableEditarCobranca,
+    disableExcluirCobranca,
+    disableRegistrarPagamento,
+    seForPago,
 } from "@/utils/domain/cobranca/disableActions";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
-  formatCobrancaOrigem,
-  formatDateToBR,
-  formatPaymentType,
-  formatarEnderecoCompleto,
-  formatarTelefone,
-  getStatusColor,
-  getStatusText,
-  meses,
+    formatCobrancaOrigem,
+    formatDateToBR,
+    formatPaymentType,
+    formatarEnderecoCompleto,
+    formatarTelefone,
+    getStatusColor,
+    getStatusText,
+    meses,
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowRight,
-  BadgeCheck,
-  Bell,
-  BellOff,
-  Calendar,
-  CalendarDays,
-  Car,
-  CheckCircle2,
-  Copy,
-  CopyCheck,
-  CreditCard,
-  History,
-  IdCard,
-  MapPin,
-  Pencil,
-  Phone,
-  QrCode,
-  Receipt,
-  School,
-  Send,
-  Trash2,
-  User,
-  Wallet,
-  XCircle,
+    ArrowRight,
+    BadgeCheck,
+    Bell,
+    BellOff,
+    Calendar,
+    CalendarDays,
+    Car,
+    CheckCircle2,
+    Copy,
+    CopyCheck,
+    CreditCard,
+    History,
+    IdCard,
+    MapPin,
+    Pencil,
+    Phone,
+    QrCode,
+    Receipt,
+    School,
+    Send,
+    Trash2,
+    User,
+    Wallet,
+    XCircle,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -137,6 +138,7 @@ export default function PassageiroCobranca() {
   const {
     setPageTitle,
     openCobrancaEditDialog,
+    openCobrancaDeleteDialog,
     openCobrancaPixDrawer,
     openManualPaymentDialog,
     openConfirmationDialog,
@@ -250,18 +252,12 @@ export default function PassageiroCobranca() {
     
     // Captura o ID antes da mutação pois o objeto pode ser limpo do cache (Success -> removeQueries)
     const passageiroIdCapturado = cobranca.passageiro_id;
-    openConfirmationDialog({
-      title: "Excluir mensalidade?",
-      description: "Tem certeza que deseja excluir esta mensalidade? Essa ação não poderá ser desfeita.",
-      confirmText: "Excluir",
-      variant: "destructive",
+    openCobrancaDeleteDialog({
       onConfirm: async () => {
          setIsDeleting(true);
          try {
             await deleteCobranca.mutateAsync(cobranca.id);
             
-            closeConfirmationDialog();
-
             // Lógica solicitada: Tenta VOLTAR (-1). Se não houver histórico, usa condicional.
             if (window.history.length > 2) { 
               navigate(-1);
@@ -277,9 +273,14 @@ export default function PassageiroCobranca() {
               navigate(ROUTES.PRIVATE.MOTORISTA.BILLING, { replace: true });
             }
          } catch (error) {
-            console.error("[DeleteFlow] Erro durante o fluxo:", error);
             setIsDeleting(false);
+            throw error;
          }
+      },
+      onEdit: () => {
+         openCobrancaEditDialog({
+           cobranca,
+         });
       }
     });
   };
@@ -352,10 +353,12 @@ export default function PassageiroCobranca() {
   const statusText = getStatusText(
     cobrancaTyped?.status,
     cobrancaTyped?.data_vencimento,
+    cobrancaTyped?.status_repasse
   );
   const statusColorClass = getStatusColor(
     cobrancaTyped?.status,
     cobrancaTyped?.data_vencimento,
+    cobrancaTyped?.status_repasse
   );
 
   let headerBg =
@@ -697,11 +700,10 @@ export default function PassageiroCobranca() {
                           <>
                             <div className="px-6 py-4 rounded-xl bg-green-50 border border-green-100 text-green-800 font-medium text-sm flex items-center justify-center gap-2 w-full">
                               <CheckCircle2 className="w-5 h-5 text-green-600" />
-                              <span>Pago via cobrança automática</span>
+                              <span>Pagamento processado pelo sistema</span>
                             </div>
                             <p className="text-muted-foreground text-xs">
-                              Não é possível desfazer um pagamento feito via
-                              cobrança automática.
+                              Não é possível desfazer um pagamento compensado automaticamente pelo banco.
                             </p>
                           </>
                         )}
@@ -814,11 +816,30 @@ export default function PassageiroCobranca() {
                   </Card>
                 </motion.div>
 
-                {/* Timeline Card */}
+                {/* Lifecycle Card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.25 }}
+                >
+                  <Card className="h-full bg-white border border-gray-100 shadow-lg">
+                    <CardHeader className="pb-2">
+                       <CardTitle className="flex items-center gap-2 text-base font-bold text-gray-900">
+                           Ciclo de Vida do Pagamento
+                       </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4 pb-8 pl-4">
+                        <PaymentTimeline cobranca={cobrancaTyped} />
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                {/* Timeline Lembretes Card */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.3 }}
+                  className="md:col-span-2"
                 >
                   <Card className="h-full bg-white border border-gray-100 shadow-lg">
                     <CardHeader className="pb-2">

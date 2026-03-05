@@ -2,14 +2,15 @@ import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { UnifiedEmptyState } from "@/components/empty";
+import { ListSkeleton } from "@/components/skeletons";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useContratoActions } from "@/hooks/ui/useContratoActions";
@@ -203,6 +204,7 @@ export const ContratosList = memo(function ContratosList({
     <ResponsiveDataList
       data={data}
       isLoading={isLoading}
+      loadingSkeleton={<ListSkeleton count={5} />}
       emptyState={getEmptyState()}
       mobileContainerClassName="space-y-3"
       mobileItemRenderer={(item, index) => (

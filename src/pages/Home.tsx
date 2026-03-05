@@ -69,7 +69,7 @@ const Home = () => {
   const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
 
   // Financial metrics from summary
-  const receitaPrevista = systemSummary?.financeiro?.receita?.prevista ?? 0;
+  const recebido = systemSummary?.financeiro?.receita?.realizada ?? 0;
   const aReceber = systemSummary?.financeiro?.receita?.pendente ?? 0;
   const totalEmAtraso = systemSummary?.financeiro?.atrasos?.valor ?? 0;
   const countAtrasos = systemSummary?.financeiro?.atrasos?.count ?? 0;
@@ -274,7 +274,7 @@ const Home = () => {
           )}
 
           {/* Notificação de Mensalidades pendentes / em dia */}
-          {!showOnboarding && receitaPrevista > 0 && (
+          {!showOnboarding && recebido > 0 && (
             <section>
               {countAtrasos > 0 ? (
                 <DashboardStatusCard
@@ -310,15 +310,15 @@ const Home = () => {
             {!showOnboarding && (
               <>
                 <MiniKPI
-                  label="receita prevista"
-                  value={formatCurrency(receitaPrevista)}
+                  label="Recebido"
+                  value={formatCurrency(recebido)}
                   icon={DollarSign}
                   colorClass="text-emerald-600"
                   bgClass="bg-emerald-50"
                   loading={isProfileLoading}
                 />
                 <MiniKPI
-                  label="Pendente"
+                  label="A receber"
                   value={formatCurrency(aReceber)}
                   icon={Wallet}
                   colorClass={

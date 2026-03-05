@@ -8,8 +8,7 @@ import {
     parseCurrencyToNumber
 } from "@/utils/formatters";
 import {
-    moneyMask,
-    moneyToNumber,
+    moneyMask
 } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -170,7 +169,7 @@ export function useCobrancaForm({
        return;
     }
 
-    const valorNumerico = moneyToNumber(data.valor);
+    const valorNumerico = data.valor;
     
     // Tratamento de fuso horário simples para strings yyyy-mm-dd
     const dataVencimentoStr = format(data.data_vencimento, "yyyy-MM-dd");

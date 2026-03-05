@@ -39,12 +39,14 @@ export const moneyMask = (value: string | number): string => {
 export const moneyToNumber = (value: string | number): number => {
   if (typeof value === 'number') return value;
   if (!value) return 0;
-  
-  const numericString = value
-    .replace(/[R$\s]/g, '')
-    .replace(/\./g, '')
-    .replace(',', '.');
-    
+
+  let numericString = value.replace(/[R$\s]/g, '');
+
+  // Se contiver vírgula, assume formato brasileiro (1.234,56) onde o ponto é milhar
+  if (numericString.includes(',')) {
+    numericString = numericString.replace(/\./g, '').replace(',', '.');
+  }
+
   return parseFloat(numericString) || 0;
 };
 

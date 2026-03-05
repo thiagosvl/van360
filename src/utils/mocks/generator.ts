@@ -211,7 +211,7 @@ export const generateVencimento = (): string => {
  * Gera um valor de mensalidade aleatório formatado
  */
 export const generateValorCobranca = (): string => {
-  const valores = ["150,00", "250,00", "350,00", "450,00", "550,00"];
+  const valores = ["1,00", "1,15", "1,25"];
   return valores[randomNumber(0, valores.length - 1)];
 };
 

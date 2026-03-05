@@ -26,11 +26,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreateVeiculo,
-    useDeleteVeiculo,
-    useFilters,
-    useToggleAtivoVeiculo,
-    useVeiculos,
+  useCreateVeiculo,
+  useDeleteVeiculo,
+  useFilters,
+  useToggleAtivoVeiculo,
+  useVeiculos,
 } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -96,7 +96,6 @@ export default function Veiculos() {
                 ativo: true
             }
         });
-        toast.success("Veículo fake criado com sucesso!");
     } catch (error) {
         console.error("Failed to create fake vehicle", error);
     }

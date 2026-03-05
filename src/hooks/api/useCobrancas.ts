@@ -26,7 +26,7 @@ export function useCobrancas(
     onError?: (error: unknown) => void;
   }
 ) {
-  const query = useQuery<Cobranca[], unknown, { all: Cobranca[]; abertas: Cobranca[]; pagas: Cobranca[] }>({
+  const query = useQuery<Cobranca[], unknown, { all: Cobranca[]; areceber: Cobranca[]; recebidos: Cobranca[] }>({
     queryKey: buildQueryKey(filters),
     enabled: (options?.enabled ?? true) && Boolean(filters.usuarioId),
     staleTime: 1000 * 60,
@@ -46,27 +46,28 @@ export function useCobrancas(
     },
     select: (cobrancas): {
       all: Cobranca[];
-      abertas: Cobranca[];
-      pagas: Cobranca[];
+      areceber: Cobranca[];
+      recebidos: Cobranca[];
     } => {
       // Garantir que cobrancas seja sempre um array
       // Pode acontecer de receber dados já transformados do cache em alguns casos
       if (!Array.isArray(cobrancas)) {
         return {
           all: [],
-          abertas: [],
-          pagas: [],
+          areceber: [],
+          recebidos: [],
         };
       }
 
       const all = cobrancas;
-      const abertas = all.filter((cobranca) => cobranca.status !== CobrancaStatus.PAGO);
-      const pagas = all.filter((cobranca) => cobranca.status === CobrancaStatus.PAGO);
+      
+      const recebidos = all.filter((cobranca) => cobranca.status === CobrancaStatus.PAGO);
+      const areceber = all.filter((cobranca) => cobranca.status !== CobrancaStatus.PAGO);
 
       return {
         all,
-        abertas,
-        pagas,
+        areceber,
+        recebidos,
       };
     },
   });

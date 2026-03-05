@@ -3,18 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import {
-  AlertTriangle,
-  ArrowDownCircle,
-  ArrowUpCircle,
-  Percent,
-  Users,
-  Wallet
+    ArrowDownCircle,
+    ArrowUpCircle,
+    Percent,
+    Users,
+    Wallet
 } from "lucide-react";
 
 interface RelatoriosVisaoGeralProps {
   dados: {
     lucroEstimado: number;
-    atrasos: {
+    aReceber: {
       valor: number;
       passageiros: number;
     };
@@ -52,20 +51,20 @@ export const RelatoriosVisaoGeral = ({
           className="md:col-span-1"
         />
 
-        {/* Atrasos */}
+        {/* A Receber */}
         <KPICard
-          title="Em Atraso"
-          icon={AlertTriangle}
-          bgClass="bg-red-50"
-          colorClass="text-red-600"
+          title="A Receber"
+          icon={Wallet}
+          bgClass="bg-orange-50"
+          colorClass="text-orange-600"
           value={
-             <span className="font-bold tracking-tight text-red-600">
-               {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.atrasos.valor)}
+             <span className="font-bold tracking-tight text-orange-600">
+               {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.aReceber.valor)}
              </span>
           }
           countText={
-            <div className="inline-flex items-center gap-1.5 bg-red-50 px-2.5 py-1 rounded-md text-red-700">
-                {dados.atrasos.passageiros} passageiros
+            <div className="inline-flex items-center gap-1.5 bg-orange-50 px-2.5 py-1 rounded-md text-orange-700">
+                {dados.aReceber.passageiros} passageiros
             </div>
           }
           countVisible={true}

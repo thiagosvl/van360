@@ -1,16 +1,16 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { getMessage } from "@/constants/messages";
 import { useCreateCobranca } from "@/hooks/api/useCobrancaMutations";
@@ -18,14 +18,15 @@ import { cn } from "@/lib/utils";
 import { CobrancaOrigem, CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { calculateSafeDueDate } from "@/utils/dateUtils";
+import { moneyToNumber } from "@/utils/masks";
 import {
-    AlertCircle,
-    ArrowLeft,
-    CheckCircle2,
-    CreditCard,
-    Loader2,
-    Send,
-    Wallet,
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle2,
+  CreditCard,
+  Loader2,
+  Send,
+  Wallet,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -133,14 +134,7 @@ export default function FirstChargeDialog({
       // valor sanitization
       let valor = passageiro.valor_cobranca || 0;
       if (customValue) {
-        const num = parseFloat(
-          customValue
-            .replace("R$", "")
-            .replace(/\./g, "")
-            .replace(",", ".")
-            .trim(),
-        );
-        if (!isNaN(num)) valor = num;
+        valor = moneyToNumber(customValue);
       }
 
       const payload: any = {
@@ -163,12 +157,6 @@ export default function FirstChargeDialog({
       }
 
       await createCobranca.mutateAsync(payload);
-
-      if (generatePixAndNotify) {
-        toast.success(getMessage("cobranca.erro.criarEnviada"));
-      } else {
-        toast.success(getMessage("cobranca.erro.criarSucesso"));
-      }
 
       onClose();
     } catch (err) {

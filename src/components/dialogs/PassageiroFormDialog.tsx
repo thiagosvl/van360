@@ -28,7 +28,7 @@ import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
 import { convertDateBrToISO } from "@/utils/formatters/date";
-import { moneyToNumber, phoneMask } from "@/utils/masks";
+import { phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 
@@ -225,6 +225,7 @@ export default function PassengerFormDialog({
     const mockData = mockGenerator.passenger({
       escola_id: escolaId,
       veiculo_id: veiculoId,
+      enviar_cobranca_automatica: true
     });
     
     form.reset(mockData);
@@ -253,11 +254,6 @@ export default function PassengerFormDialog({
     const processSubmit = () => {
         const purePayload = { ...data };
         
-        // Sanitização monetária
-        if (purePayload.valor_cobranca) {
-          purePayload.valor_cobranca = String(moneyToNumber(purePayload.valor_cobranca));
-        }
-
         // Conversão de Data (DD/MM/YYYY -> YYYY-MM-DD)
         if (purePayload.data_nascimento) {
             purePayload.data_nascimento = convertDateBrToISO(purePayload.data_nascimento);

@@ -4,11 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { DEFAULT_CLAUSULAS_CONTRATO } from "@/constants/defaults";
@@ -19,17 +19,17 @@ import { queryClient } from "@/services/queryClient";
 import { toast } from "@/utils/notifications/toast";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  AlertCircle,
-  ChevronLeft,
-  ChevronRight,
-  DollarSign,
-  FileText,
-  Loader2,
-  PenTool,
-  Plus,
-  ShieldCheck,
-  Trash2,
-  X,
+    AlertCircle,
+    ChevronLeft,
+    ChevronRight,
+    DollarSign,
+    FileText,
+    Loader2,
+    PenTool,
+    Plus,
+    ShieldCheck,
+    Trash2,
+    X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import SignatureCanvas from "react-signature-canvas";
@@ -88,8 +88,8 @@ export default function ContractSetupDialog({
         setMultaRescisao(profile.config_contrato.multa_rescisao);
 
       // Load saved signature if available and no temp signature set
-      if (profile.assinatura_url && !signatureTemp) {
-        setSignatureTemp(profile.assinatura_url);
+      if (profile.assinatura_digital_url && !signatureTemp) {
+        setSignatureTemp(profile.assinatura_digital_url);
       }
 
       const configurado = profile.config_contrato?.configurado;
@@ -140,7 +140,7 @@ export default function ContractSetupDialog({
 
     if (step === SetupStep.SIGNATURE) {
       const hasDrawing = sigPad.current && !sigPad.current.isEmpty();
-      const hasSaved = !!profile?.assinatura_url;
+      const hasSaved = !!profile?.assinatura_digital_url;
       const hasTemp = !!signatureTemp;
 
       if (!hasDrawing && !hasSaved && !hasTemp) {
@@ -169,7 +169,7 @@ export default function ContractSetupDialog({
     if (!profile?.id) return;
     setIsSubmitting(true);
     try {
-      let signatureUrl = signatureTemp || profile.assinatura_url;
+      let signatureUrl = signatureTemp || profile.assinatura_digital_url;
 
       if (
         active &&
@@ -183,7 +183,7 @@ export default function ContractSetupDialog({
       const finalClausulas = clausulas.filter((c) => c.trim() !== "");
 
       await usuarioApi.atualizarUsuario(profile.id, {
-        assinatura_url: signatureUrl,
+        assinatura_digital_url: signatureUrl,
         config_contrato: {
           usar_contratos: active,
           configurado: true,
@@ -536,7 +536,7 @@ export default function ContractSetupDialog({
             clausulas,
             multaAtraso,
             multaRescisao,
-            assinaturaCondutorUrl: signatureTemp || profile?.assinatura_url,
+            assinaturaCondutorUrl: signatureTemp || profile?.assinatura_digital_url,
           })
         }
       >

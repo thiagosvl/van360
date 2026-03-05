@@ -1,37 +1,37 @@
 import {
-  FEATURE_COBRANCA_AUTOMATICA,
-  FEATURE_NOTIFICACOES
+    FEATURE_COBRANCA_AUTOMATICA,
+    FEATURE_NOTIFICACOES
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useDeleteCobranca,
-  useDesfazerPagamento,
-  useEnviarNotificacaoCobranca,
-  usePermissions,
-  useToggleNotificacoesCobranca
+    useDeleteCobranca,
+    useDesfazerPagamento,
+    useEnviarNotificacaoCobranca,
+    usePermissions,
+    useToggleNotificacoesCobranca
 } from "@/hooks";
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
 import {
-  canSendNotification,
-  canViewReceipt,
-  disableEditarCobranca,
-  disableExcluirCobranca,
-  disableRegistrarPagamento,
-  seForPago
+    canSendNotification,
+    canViewReceipt,
+    disableEditarCobranca,
+    disableExcluirCobranca,
+    disableRegistrarPagamento,
+    seForPago
 } from "@/utils/domain/cobranca/disableActions";
 import {
-  Bell,
-  BellOff,
-  CheckCircle2,
-  DollarSign,
-  FilePen,
-  QrCode,
-  Receipt,
-  RotateCcw,
-  Send,
-  Trash2,
-  User
+    Bell,
+    BellOff,
+    CheckCircle2,
+    DollarSign,
+    FilePen,
+    QrCode,
+    Receipt,
+    RotateCcw,
+    Send,
+    Trash2,
+    User
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
@@ -52,8 +52,10 @@ export function useCobrancaOperations({
 }: UseCobrancaOperationsProps) {
   const {
     openConfirmationDialog,
-    openPlanUpgradeDialog,
     closeConfirmationDialog,
+    openPlanUpgradeDialog,
+    openCobrancaDeleteDialog,
+    openCobrancaEditDialog,
   } = useLayout();
 
   // Mutations
@@ -156,27 +158,27 @@ export function useCobrancaOperations({
   ]);
 
   const handleDeleteCobranca = useCallback(async () => {
-    openConfirmationDialog({
-      title: "Excluir mensalidade?",
-      description:
-        "Tem certeza que deseja excluir esta mensalidade? Essa ação não poderá ser desfeita.",
-      variant: "destructive",
-      confirmText: "Excluir",
+    openCobrancaDeleteDialog({
       onConfirm: async () => {
         try {
           await deleteCobranca.mutateAsync(cobranca.id);
-          closeConfirmationDialog();
           if (onActionSuccess) onActionSuccess();
         } catch (error) {
-          closeConfirmationDialog();
           console.error(error);
+          throw error;
         }
       },
+      onEdit: () => {
+        openCobrancaEditDialog({
+          cobranca,
+          onSuccess: onActionSuccess,
+        });
+      }
     });
   }, [
     deleteCobranca,
-    openConfirmationDialog,
-    closeConfirmationDialog,
+    openCobrancaDeleteDialog,
+    openCobrancaEditDialog,
     onActionSuccess,
     cobranca,
   ]);

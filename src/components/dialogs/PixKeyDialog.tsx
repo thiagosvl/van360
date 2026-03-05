@@ -1,25 +1,25 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { getMessage } from "@/constants/messages";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -56,6 +56,7 @@ export default function PixKeyDialog({
 }: PixKeyDialogProps) {
   const { profile, refreshProfile } = usePermissions();
   const [overrideStatus, setOverrideStatus] = React.useState(false);
+  const [isRotatingWait, setIsRotatingWait] = React.useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -100,25 +101,83 @@ export default function PixKeyDialog({
     return () => clearInterval(interval);
   }, [isOpen, profile?.id, status, refreshProfile]);
 
+  const currentChave = form.watch("chave_pix");
+  const currentTipo = form.watch("tipo_chave_pix");
+
+  // Auto-reset overrideStatus if values match original validated key
+  useEffect(() => {
+    if (!profile || status !== PixKeyStatus.VALIDADA || !overrideStatus) return;
+
+    let sanitizedCurrent = currentChave;
+    if ([TipoChavePix.CPF, TipoChavePix.CNPJ, TipoChavePix.TELEFONE].includes(currentTipo)) {
+        sanitizedCurrent = sanitizedCurrent.replace(/\D/g, "");
+    } else if (currentTipo === TipoChavePix.ALEATORIA) {
+        sanitizedCurrent = sanitizedCurrent.trim();
+    } else {
+        sanitizedCurrent = cleanString(sanitizedCurrent);
+    }
+
+    const isMatch = sanitizedCurrent === profile.chave_pix && currentTipo === profile.tipo_chave_pix;
+    if (isMatch) {
+      setOverrideStatus(false);
+    }
+  }, [currentChave, currentTipo, profile, status, overrideStatus]);
+
   // Track previous status to detect transitions
   const prevStatusRef = React.useRef(status);
+  const prevChaveRef = React.useRef(profile?.chave_pix);
+  // Track if success toast was already shown in this modal session
+  const successShownRef = React.useRef(false);
+  const closeTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Auto-close on validation success
   useEffect(() => {
+    if (!isOpen) {
+      successShownRef.current = false;
+      setIsRotatingWait(false);
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+      // Sync refs when closed to have a fresh baseline when opening
+      prevStatusRef.current = status;
+      prevChaveRef.current = profile?.chave_pix;
+      return;
+    }
+
+    if (!status) return; // Prevent oscillation on null/undefined status during refresh
+
     const wasValid = prevStatusRef.current === PixKeyStatus.VALIDADA;
     const isNowValid = status === PixKeyStatus.VALIDADA;
+    
+    // Detect key change for rotation
+    const keyChanged = profile?.chave_pix && prevChaveRef.current && profile.chave_pix !== prevChaveRef.current;
+    
+    const transitionSuccess = isNowValid && !wasValid;
+    const rotationSuccess = isNowValid && wasValid && keyChanged && isRotatingWait;
 
-    if (isNowValid && !wasValid && isOpen) {
+    if ((transitionSuccess || rotationSuccess) && !successShownRef.current) {
+       successShownRef.current = true;
+       setIsRotatingWait(false);
        toast.success(getMessage("pix.sucesso.validada"));
-       const timer = setTimeout(() => {
-           if (onSuccess) onSuccess();
+       
+       closeTimerRef.current = setTimeout(() => {
+           onSuccess?.();
            onClose();
+           closeTimerRef.current = null;
        }, 1000);
-       return () => clearTimeout(timer);
     }
     
+    // Update refs for next check
     prevStatusRef.current = status;
-  }, [status, overrideStatus, isOpen, onClose, onSuccess]);
+    prevChaveRef.current = profile?.chave_pix;
+
+    // Standard effect cleanup (only clear on unmount or if isOpen changes)
+    return () => {
+        // We DON'T clear the success timer here to prevent cancelling it 
+        // if status updates again DURING the 1s wait.
+    };
+  }, [status, profile?.chave_pix, isOpen, onClose, onSuccess, isRotatingWait]);
 
   const handleChaveChange = (e: React.ChangeEvent<HTMLInputElement>, fieldChange: (value: string) => void) => {
     let value = e.target.value;
@@ -135,8 +194,11 @@ export default function PixKeyDialog({
       let chavePixLimpa = data.chave_pix;
       const tipo = data.tipo_chave_pix;
 
-      if ([TipoChavePix.CPF, TipoChavePix.CNPJ, TipoChavePix.TELEFONE, TipoChavePix.ALEATORIA].includes(tipo)) {
-          chavePixLimpa = chavePixLimpa.replace(/[^a-zA-Z0-9]/g, "");
+      if ([TipoChavePix.CPF, TipoChavePix.CNPJ, TipoChavePix.TELEFONE].includes(tipo)) {
+          chavePixLimpa = chavePixLimpa.replace(/[^0-9]/g, "");
+      } else if (tipo === TipoChavePix.ALEATORIA) {
+          // Mantém letras, números e hífens para chaves aleatórias (UUID)
+          chavePixLimpa = chavePixLimpa.trim();
       } else {
           chavePixLimpa = cleanString(chavePixLimpa);
       }
@@ -159,6 +221,12 @@ export default function PixKeyDialog({
       });
 
       await refreshProfile(); 
+      
+      // If we are already VALIDADA, mark as waiting for rotation
+      if (profile.status_chave_pix === PixKeyStatus.VALIDADA) {
+          setIsRotatingWait(true);
+      }
+      
       setOverrideStatus(false);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : getMessage("pix.erro.erroAoSalvar");
@@ -167,12 +235,14 @@ export default function PixKeyDialog({
   };
 
   const renderStatusBanner = () => {
-    if (isPending && !overrideStatus) {
+    if ((isPending || isRotatingWait) && !overrideStatus) {
       return (
         <div className="mb-6 bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3 items-center animate-pulse">
           <Loader2 className="w-5 h-5 text-blue-600 animate-spin shrink-0" />
           <div className="space-y-0.5">
-            <h4 className="text-sm font-semibold text-blue-900">Validando Chave...</h4>
+            <h4 className="text-sm font-semibold text-blue-900">
+                {isRotatingWait ? "Validando Nova Chave..." : "Validando Chave..."}
+            </h4>
           </div>
         </div>
       );
@@ -184,7 +254,7 @@ export default function PixKeyDialog({
           <div className="space-y-1">
             <h4 className="text-sm font-semibold text-red-900">Validação Falhou</h4>
             <p className="text-sm text-red-800 leading-relaxed">
-              O banco rejeitou a chave. Verifique se o CPF/CNPJ da conta bancária é o mesmo do seu cadastro.
+              A chave Pix informada não pôde ser validada. Verifique se o tipo e os dados da chave estão corretos e tente novamente.
             </p>
             <Button 
               variant="link" 
@@ -203,13 +273,33 @@ export default function PixKeyDialog({
           <div className="bg-green-100 p-1.5 rounded-full shrink-0">
              <Check className="w-4 h-4 text-green-600" />
           </div>
-          <div className="space-y-0.5">
+          <div className="flex-1 space-y-0.5">
             <h4 className="text-sm font-semibold text-green-900">Chave Validada</h4>
             <p className="text-xs text-green-700">Sua conta está pronta para receber.</p>
           </div>
         </div>
       );
     }
+    if (overrideStatus) {
+      return (
+        <div className="mb-6 bg-amber-50 border border-amber-100 rounded-xl p-4 flex gap-3 items-start">
+          <div className="bg-amber-100 p-2 rounded-lg shrink-0">
+            <Lightbulb className="w-5 h-5 text-amber-600" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-sm font-semibold text-amber-900">
+               {isValid ? "Alterando Chave PIX" : "Por que cadastrar?"}
+            </h4>
+            <p className="text-sm text-amber-800 leading-relaxed">
+              {isValid 
+                ? "Sua chave atual continuará ativa para receber pagamentos até que a nova chave seja validada com sucesso."
+                : "Ela é necessária para que você receba os pagamentos das mensalidades na sua conta com total segurança."}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="mb-6 bg-blue-50/50 border border-blue-100 rounded-xl p-4 flex gap-3 items-start">
         <div className="bg-blue-100 p-2 rounded-lg shrink-0">
@@ -260,11 +350,11 @@ export default function PixKeyDialog({
              type="submit" 
              onClick={form.handleSubmit(handleSubmit)}
              className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all active:scale-95"
-             disabled={form.formState.isSubmitting}
+             disabled={form.formState.isSubmitting || (isValid && !overrideStatus)}
            >
              {form.formState.isSubmitting ? (
                <Loader2 className="w-5 h-5 animate-spin mr-2" />
-             ) : "Salvar e Validar"}
+             ) : (isValid ? "Confirmar Nova Chave" : "Validar e Salvar")}
            </Button>
         )}
       </div>
@@ -315,18 +405,22 @@ export default function PixKeyDialog({
                             field.onChange(val);
                             
                             // Lógica de preenchimento automático
-                            if (!profile?.chave_pix) {
-                                // Cadastro novo -> preenche com dados do perfil se disponíveis
-                                let autoValue = "";
+                            let autoValue = "";
+                            if (val === profile?.tipo_chave_pix) {
+                                // Se escolheu o tipo que já está validado, puxa a chave do perfil
+                                autoValue = profile.chave_pix;
+                                if (val === TipoChavePix.CPF) autoValue = maskCpf(autoValue);
+                                else if (val === TipoChavePix.CNPJ) autoValue = cnpjMask(autoValue);
+                                else if (val === TipoChavePix.TELEFONE) autoValue = maskPhone(autoValue);
+                                else if (val === TipoChavePix.ALEATORIA) autoValue = evpMask(autoValue);
+                            } else {
+                                // Caso contrário, tenta puxar dos dados de cadastro (CPF, Telefone, E-mail)
                                 if (val === TipoChavePix.CPF) autoValue = maskCpf(profile?.cpfcnpj || "");
                                 else if (val === TipoChavePix.TELEFONE) autoValue = maskPhone(profile?.telefone || "");
                                 else if (val === TipoChavePix.EMAIL) autoValue = profile?.email || "";
-                                
-                                form.setValue("chave_pix", autoValue);
-                            } else {
-                                // Edição -> limpa o campo para o usuário digitar
-                                form.setValue("chave_pix", "");
                             }
+                            
+                            form.setValue("chave_pix", autoValue);
                             
                             form.clearErrors("chave_pix");
                             setOverrideStatus(true); // Editando

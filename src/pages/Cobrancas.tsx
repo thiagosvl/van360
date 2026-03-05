@@ -1,9 +1,9 @@
 // React
 import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
 } from "react";
 
 import { ROUTES } from "@/constants/routes";
@@ -23,7 +23,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 import {
-  meses,
+    meses,
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 
@@ -35,9 +35,9 @@ import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import {
-  CheckCircle2,
-  TrendingUp,
-  Wallet,
+    CheckCircle2,
+    TrendingUp,
+    Wallet,
 } from "lucide-react";
 
 
@@ -48,6 +48,7 @@ const Cobrancas = () => {
     openPlanUpgradeDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
+    openCobrancaDeleteDialog,
     openCobrancaEditDialog,
     openCobrancaPixDrawer,
     openManualPaymentDialog,
@@ -61,18 +62,18 @@ const Cobrancas = () => {
 
   const activeTab = useMemo(() => {
     const tabParam = searchParams.get("tab");
-    const validTabs = ["pendentes", "pagas"];
+    const validTabs = ["areceber", "recebidos"];
     if (tabParam && validTabs.includes(tabParam)) {
       return tabParam;
     }
-    return "pendentes";
+    return "areceber";
   }, [searchParams]);
 
   useEffect(() => {
     const currentTab = searchParams.get("tab");
-    if (!currentTab || !["pendentes", "pagas"].includes(currentTab)) {
+    if (!currentTab || !["areceber", "recebidos"].includes(currentTab)) {
       const newParams = new URLSearchParams(searchParams);
-      newParams.set("tab", "pendentes");
+      newParams.set("tab", "areceber");
       setSearchParams(newParams, { replace: true });
     }
   }, [searchParams, setSearchParams]);
@@ -105,17 +106,17 @@ const Cobrancas = () => {
     [openPlanUpgradeDialog]
   );
 
-  const [buscaAbertas, setBuscaAbertas] = useState("");
-  const [buscaPagas, setBuscaPagas] = useState("");
+  const [buscaAReceber, setBuscaAReceber] = useState("");
+  const [buscaRecebidos, setBuscaRecebidos] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   useEffect(() => {
-    const term = activeTab === "pendentes" ? buscaAbertas : buscaPagas;
+    const term = activeTab === "areceber" ? buscaAReceber : buscaRecebidos;
     const handler = setTimeout(() => {
         setDebouncedSearchTerm(term);
     }, 500);
     return () => clearTimeout(handler);
-  }, [buscaAbertas, buscaPagas, activeTab]);
+  }, [buscaAReceber, buscaRecebidos, activeTab]);
 
   const {
     data: cobrancasData,
@@ -139,12 +140,12 @@ const Cobrancas = () => {
 
 
 
-  const cobrancasAbertas = useMemo(
-    () => cobrancasData?.abertas ?? [],
+  const cobrancasAReceber = useMemo(
+    () => cobrancasData?.areceber ?? [],
     [cobrancasData]
   );
-  const cobrancasPagas = useMemo(
-    () => cobrancasData?.pagas ?? [],
+  const cobrancasRecebidas = useMemo(
+    () => cobrancasData?.recebidos ?? [],
     [cobrancasData]
   );
   const isInitialLoading = isCobrancasLoading && !cobrancasData;
@@ -165,24 +166,22 @@ const Cobrancas = () => {
 
   const handleDeleteCobrancaClick = useCallback(
     (cobranca: Cobranca) => {
-      openConfirmationDialog({
-        title: "Excluir mensalidade?",
-        description:
-          "Tem certeza que deseja excluir esta mensalidade? Essa ação não poderá ser desfeita.",
-        confirmText: "Excluir",
-        variant: "destructive",
+      openCobrancaDeleteDialog({
         onConfirm: async () => {
           try {
             await deleteCobranca.mutateAsync(cobranca.id);
-            closeConfirmationDialog();
           } catch (error) {
-            closeConfirmationDialog();
-            // Error handled by hook or generic handling
+            throw error;
           }
         },
+        onEdit: () => {
+          openCobrancaEditDialog({
+            cobranca,
+          });
+        }
       });
     },
-    [deleteCobranca, closeConfirmationDialog, refetchCobrancas]
+    [deleteCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog]
   );
 
   const handleNavigation = useCallback((newMes: number, newAno: number) => {
@@ -237,24 +236,24 @@ const Cobrancas = () => {
 
   useEffect(() => {
     if (mesFilter || anoFilter) {
-      setBuscaAbertas("");
-      setBuscaPagas("");
+      setBuscaAReceber("");
+      setBuscaRecebidos("");
     }
   }, [mesFilter, anoFilter]);
 
   // Filtering (Server Side)
-  const cobrancasAbertasFiltradas = cobrancasAbertas;
-  const cobrancasPagasFiltradas = cobrancasPagas;
+  const cobrancasAReceberFiltradas = cobrancasAReceber;
+  const cobrancasRecebidasFiltradas = cobrancasRecebidas;
 
   // KPI Calculations
   const totalAReceber = useMemo(
-    () => cobrancasAbertas.reduce((acc, curr) => acc + Number(curr.valor), 0),
-    [cobrancasAbertas]
+    () => cobrancasAReceber.reduce((acc, curr) => acc + Number(curr.valor), 0),
+    [cobrancasAReceber]
   );
 
   const totalRecebido = useMemo(
-    () => cobrancasPagas.reduce((acc, curr) => acc + Number(curr.valor), 0),
-    [cobrancasPagas]
+    () => cobrancasRecebidas.reduce((acc, curr) => acc + Number(curr.valor), 0),
+    [cobrancasRecebidas]
   );
 
   const totalPrevisto = totalAReceber + totalRecebido;
@@ -301,7 +300,7 @@ const Cobrancas = () => {
             <KPICard
               title="A Receber"
               value={totalAReceber}
-              count={cobrancasAbertas.length}
+              count={cobrancasAReceber.length}
               icon={Wallet}
               bgClass="bg-orange-50"
               colorClass="text-orange-600"
@@ -309,7 +308,7 @@ const Cobrancas = () => {
             <KPICard
               title="Recebido"
               value={totalRecebido}
-              count={cobrancasPagas.length}
+              count={cobrancasRecebidas.length}
               icon={CheckCircle2}
               bgClass="bg-green-50"
               colorClass="text-green-600"
@@ -317,7 +316,7 @@ const Cobrancas = () => {
             <KPICard
               title="Total Previsto"
               value={totalPrevisto}
-              count={cobrancasAbertas.length + cobrancasPagas.length}
+              count={cobrancasAReceber.length + cobrancasRecebidas.length}
               icon={TrendingUp}
               bgClass="bg-blue-50"
               colorClass="text-blue-600"
@@ -343,23 +342,23 @@ const Cobrancas = () => {
           >
             <CobrancasToolbar
               onUpgrade={handleUpgrade}
-              buscaAbertas={buscaAbertas}
-              setBuscaAbertas={setBuscaAbertas}
-              buscaPagas={buscaPagas}
-              setBuscaPagas={setBuscaPagas}
-              countAbertas={cobrancasAbertas.length}
-              countPagas={cobrancasPagas.length}
+              buscaAReceber={buscaAReceber}
+              setBuscaAReceber={setBuscaAReceber}
+              buscaRecebidos={buscaRecebidos}
+              setBuscaRecebidos={setBuscaRecebidos}
+              countAReceber={cobrancasAReceber.length}
+              countRecebidos={cobrancasRecebidas.length}
               canUseAutomatedCharges={permissions.canUseAutomatedCharges}
               activeTab={activeTab}
             />
   
-            {/* Content: Pendentes */}
-            <TabsContent value="pendentes" className="mt-0">
+            {/* Content: A Receber */}
+            <TabsContent value="areceber" className="mt-0">
                <CobrancasList
                   variant="pending"
-                  cobrancas={cobrancasAbertasFiltradas}
+                  cobrancas={cobrancasAReceberFiltradas}
                   isLoading={isInitialLoading}
-                  busca={buscaAbertas}
+                  busca={buscaAReceber}
                   mesFilter={mesFilter}
                   meses={meses}
                   plano={plano}
@@ -368,13 +367,13 @@ const Cobrancas = () => {
                />
             </TabsContent>
 
-            {/* Content: Pagas */}
-            <TabsContent value="pagas" className="mt-0">
+            {/* Content: Recebidos */}
+            <TabsContent value="recebidos" className="mt-0">
                 <CobrancasList
                   variant="paid"
-                  cobrancas={cobrancasPagasFiltradas}
+                  cobrancas={cobrancasRecebidasFiltradas}
                   isLoading={isInitialLoading}
-                  busca={buscaPagas}
+                  busca={buscaRecebidos}
                   mesFilter={mesFilter}
                   meses={meses}
                   plano={plano}

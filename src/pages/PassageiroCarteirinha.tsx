@@ -1,10 +1,10 @@
 import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+    Suspense,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
 } from "react";
 
 import { ROUTES } from "@/constants/routes";
@@ -44,18 +44,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useAvailableYears,
-  useCobrancasByPassageiro,
-  useDeleteCobranca,
-  useDeletePassageiro,
-  useDesfazerPagamento,
-  useEnviarNotificacaoCobranca,
-  usePassageiro,
-  usePermissions,
-  useToggleAtivoPassageiro,
-  useToggleNotificacoesCobranca,
-  useUpdateCobranca,
-  useUpdatePassageiro
+    useAvailableYears,
+    useCobrancasByPassageiro,
+    useDeleteCobranca,
+    useDeletePassageiro,
+    useDesfazerPagamento,
+    useEnviarNotificacaoCobranca,
+    usePassageiro,
+    usePermissions,
+    useToggleAtivoPassageiro,
+    useToggleNotificacoesCobranca,
+    useUpdateCobranca,
+    useUpdatePassageiro
 } from "@/hooks";
 import { useCreateContrato } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -85,6 +85,7 @@ export default function PassageiroCarteirinha() {
     openConfirmationDialog,
     closeConfirmationDialog,
     openPassageiroFormDialog,
+    openCobrancaDeleteDialog,
     openCobrancaEditDialog,
     openCobrancaPixDrawer,
     openManualPaymentDialog,
@@ -448,23 +449,23 @@ export default function PassageiroCarteirinha() {
   
   const handleExcluirCobranca = useCallback(
     (cobranca: Cobranca) => {
-      openConfirmationDialog({
-        title: "Excluir mensalidade?",
-        description:
-          "Tem certeza que deseja excluir esta mensalidade? Essa ação não poderá ser desfeita.",
-        confirmText: "Excluir",
-        variant: "destructive",
+      openCobrancaDeleteDialog({
         onConfirm: async () => {
           try {
             await deleteCobranca.mutateAsync(cobranca.id);
-            closeConfirmationDialog();
           } catch (error) {
-            closeConfirmationDialog();
+            throw error;
           }
         },
+        onEdit: () => {
+          openCobrancaEditDialog({
+            cobranca,
+            onSuccess: refetchCobrancas,
+          });
+        }
       });
     },
-    [deleteCobranca, closeConfirmationDialog],
+    [deleteCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, refetchCobrancas]
   );
 
   const openPaymentDialog = (cobranca: Cobranca) => {

@@ -1,13 +1,13 @@
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { periodos as periodosConstants } from "@/utils/formatters/constants";
 import {
-  ClipboardCheck,
-  Cog,
-  FileText,
-  Fuel,
-  HelpCircle,
-  Wallet,
-  Wrench,
+    ClipboardCheck,
+    Cog,
+    FileText,
+    Fuel,
+    HelpCircle,
+    Wallet,
+    Wrench,
 } from "lucide-react";
 import { useMemo } from "react";
 
@@ -60,6 +60,7 @@ interface UseRelatoriosCalculationsProps {
     receita: {
       realizada: number;
       prevista: number;
+      pendente: number;
       taxa_recebimento: number;
     };
     saidas: {
@@ -102,17 +103,12 @@ export const useRelatoriosCalculations = ({
     const gasto = financeiro?.saidas.total ?? gastos.reduce((acc: number, g: any) => acc + Number(g.valor || 0), 0);
     const lucroEstimado = recebido - gasto;
 
-    // Atrasos
-    const hoje = new Date();
-    const atrasos = cobrancasAbertas.filter((c: any) => {
-      const vencimento = new Date(c.data_vencimento);
-      return vencimento < hoje;
-    });
-    const valorAtrasos = financeiro?.atrasos.valor ?? atrasos.reduce(
+    // A Receber (Vencidos + Pendentes)
+    const valorAReceber = financeiro?.receita.pendente ?? cobrancasAbertas.reduce(
       (acc: number, c: any) => acc + Number(c.valor || 0),
       0
     );
-    const atrasosCount = financeiro?.atrasos.count ?? atrasos.length;
+    const aReceberCount = cobrancasAbertas.length;
 
     // Taxa de Recebimento
     const totalPrevisto = cobrancas.reduce(
@@ -394,9 +390,9 @@ export const useRelatoriosCalculations = ({
         recebido,
         gasto,
         custoPorPassageiro,
-        atrasos: {
-          valor: valorAtrasos,
-          passageiros: atrasosCount,
+        aReceber: {
+          valor: valorAReceber,
+          passageiros: aReceberCount,
         },
         taxaRecebimento,
       },

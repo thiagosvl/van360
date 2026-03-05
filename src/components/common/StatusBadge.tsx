@@ -6,6 +6,7 @@ interface StatusBadgeProps {
   status: boolean | string;
   
   dataVencimento?: string | Date;
+  statusRepasse?: string;
 
   trueLabel?: string;
   falseLabel?: string;
@@ -16,6 +17,7 @@ interface StatusBadgeProps {
 export function StatusBadge({
   status,
   dataVencimento,
+  statusRepasse,
   trueLabel = "Ativo",
   falseLabel = "Inativo",
   className,
@@ -45,8 +47,8 @@ export function StatusBadge({
     );
   }
 
-  const colorClass = getStatusColor(status, dataVencimento ? dataVencimento.toString() : "");
-  const text = getStatusText(status, dataVencimento ? dataVencimento.toString() : "");
+  const colorClass = getStatusColor(status, dataVencimento ? dataVencimento.toString() : "", statusRepasse);
+  const text = getStatusText(status, dataVencimento ? dataVencimento.toString() : "", statusRepasse);
 
   return (
     <Badge
