@@ -2,7 +2,7 @@ import PagamentoAssinaturaDialog from "@/components/dialogs/PagamentoAssinaturaD
 import { Button } from "@/components/ui/button";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
-import { usePlanUpgrade } from "@/hooks/business/usePlanUpgrade";
+import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
 import { assinaturaCobrancaApi } from "@/services/api/assinatura-cobranca.api";
 import { Lock } from "lucide-react";
 import { useState } from "react";
