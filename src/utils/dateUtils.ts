@@ -31,5 +31,18 @@ export function calculateSafeDueDate(day: number, month?: number, year?: number)
     return todayZero;
   }
 
+
   return calculatedDate;
+}
+
+/**
+ * Converte um objeto Date para uma string YYYY-MM-DD no fuso horário local.
+ * Evita o erro de ISOString() que muda de dia às 21h.
+ */
+export function toLocalDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 }

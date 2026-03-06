@@ -2,9 +2,9 @@ import { getMessage } from '@/constants/messages';
 import { apiClient } from '@/services/api/client';
 import { Contrato, CreateContratoDTO } from '@/types/contract';
 import { openBrowserLink } from '@/utils/browser';
+import { toast } from '@/utils/notifications/toast';
 import { Capacitor } from '@capacitor/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 // Option interface for queries
 interface UseContratosOptions {
@@ -47,7 +47,7 @@ export function useCreateContrato() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
-      toast.success(getMessage('contrato.sucesso.criado'));
+      toast.success('contrato.sucesso.criado');
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || getMessage('contrato.erro.criar');
@@ -66,7 +66,7 @@ export function useDeleteContrato() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
-      toast.success(getMessage('contrato.sucesso.removido'));
+      toast.success('contrato.sucesso.removido');
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || getMessage('contrato.erro.remover');
@@ -85,7 +85,7 @@ export function useSubstituirContrato() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
-      toast.success(getMessage('contrato.sucesso.substituido'));
+      toast.success('contrato.sucesso.substituido');
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || getMessage('contrato.erro.substituir');
@@ -101,7 +101,7 @@ export function useReenviarContrato() {
       return data;
     },
     onSuccess: () => {
-      toast.success(getMessage('contrato.sucesso.reenviado'));
+      toast.success('contrato.sucesso.reenviado');
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || getMessage('contrato.erro.reenviar');
@@ -129,7 +129,7 @@ export function useDownloadContrato() {
       return response.data;
     },
     onSuccess: () => {
-      toast.success(getMessage('contrato.sucesso.baixado'));
+      toast.success('contrato.sucesso.baixado');
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || getMessage('contrato.erro.baixar');

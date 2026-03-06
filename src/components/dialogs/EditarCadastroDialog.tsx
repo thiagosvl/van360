@@ -123,7 +123,7 @@ export default function EditarCadastroDialog({
   };
 
   const onFormError = () => {
-       toast.error("Verifique os campos obrigatórios");
+       toast.error("validacao.formularioComErros");
        setOpenAccordionItems(["dados-pessoais"]);
   }
 

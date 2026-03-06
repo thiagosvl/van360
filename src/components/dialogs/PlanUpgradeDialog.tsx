@@ -1,18 +1,16 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  FEATURE_COBRANCA_AUTOMATICA,
-  FEATURE_GASTOS,
-  FEATURE_LIMITE_FRANQUIA,
-  FEATURE_NOTIFICACOES,
-  FEATURE_RELATORIOS,
-  PLANO_ESSENCIAL,
-  PLANO_PROFISSIONAL,
+    FEATURE_COBRANCA_AUTOMATICA,
+    FEATURE_GASTOS,
+    FEATURE_LIMITE_FRANQUIA,
+    FEATURE_NOTIFICACOES,
+    FEATURE_RELATORIOS,
+    PLANO_ESSENCIAL,
+    PLANO_PROFISSIONAL,
 } from "@/constants";
+import { usePermissions, usePlanUpgrade, useSession } from "@/hooks";
 import { usePlanos } from "@/hooks/api/usePlanos";
-import { usePermissions } from "@/hooks/business/usePermissions";
-import { usePlanUpgrade } from "@/hooks/business/usePlanUpgrade";
-import { useSession } from "@/hooks/business/useSession";
 import { useUpgradeFranquia } from "@/hooks/business/useUpgradeFranquia";
 import { useCustomPricePreview } from "@/hooks/ui/useCustomPricePreview";
 import { PlanSalesContext } from "@/types/enums";

@@ -3,10 +3,11 @@ import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  PLANO_ESSENCIAL,
-  PLANO_PROFISSIONAL,
-  QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO,
+    PLANO_ESSENCIAL,
+    PLANO_PROFISSIONAL,
+    QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO,
 } from "@/constants";
+import { getMessage } from "@/constants/messages";
 import { cn } from "@/lib/utils";
 import { PlanSalesContext } from "@/types/enums";
 import { Plano, SubPlano } from "@/types/plano";
@@ -636,16 +637,16 @@ export const PlanoCardSelection = ({
               e.stopPropagation();
               if (isProfissional) {
                 if (!opcaoSelecionada) {
-                  toast.error("Selecione a quantidade de passageiros");
+                  toast.error("plano.erro.selecionarQuantidade");
                   return;
                 }
                 if (opcaoSelecionada === "personalizado") {
                   if (!quantidadePersonalizada) {
-                    toast.error("Informe a quantidade");
+                    toast.error("plano.erro.informarQuantidadePersonalizada");
                     return;
                   }
                   if (quantidadeMinima && !isQuantidadeValida) {
-                    toast.error(`Mínimo de ${quantidadeMinima} passageiros`);
+                    toast.error(getMessage("plano.erro.minimoPassageiros", { QUANTIDADE: quantidadeMinima }));
                     return;
                   }
                   onQuantidadePersonalizadaConfirm?.();

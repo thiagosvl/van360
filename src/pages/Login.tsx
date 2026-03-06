@@ -3,6 +3,7 @@ import { forwardRef, useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 // React Router
+import { getMessage } from "@/constants/messages";
 import { ROUTES } from "@/constants/routes";
 import { useNavigate } from "react-router-dom";
 
@@ -111,7 +112,7 @@ export default function Login() {
     const cpfDigits = formMotorista.getValues("cpfcnpj")?.replace(/\D/g, "");
     if (!cpfDigits) {
         toast.info("auth.info.informeCpf", {
-            description: "Digite o CPF cadastrado para receber o link de redefinição em seu e-mail.",
+            description: "auth.info.informeCpfDescricao",
         });
         return;
     }
@@ -125,7 +126,7 @@ export default function Login() {
         });
 
         toast.success("auth.sucesso.emailEnviado", {
-            description: data.message || "Email de recuperação enviado.",
+            description: data.message || "auth.sucesso.emailEnviado",
         });
 
     } catch (err: any) {
@@ -385,7 +386,7 @@ export default function Login() {
                       className="w-full h-12 rounded-full text-[15px] font-semibold bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/25 transition-all"
                       disabled={loading}
                     >
-                      {loading ? "Entrando..." : "Entrar"}
+                      {loading ? getMessage("auth.labels.loginProcessando") : getMessage("auth.labels.login")}
                     </Button>
                   </div>
 
@@ -482,7 +483,7 @@ export default function Login() {
                       disabled={loading}
                       className="w-full h-12 rounded-full text-[15px] font-semibold bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/25 transition-all"
                     >
-                      {loading ? "Acessando..." : "Acessar Carteirinha"}
+                      {loading ? getMessage("auth.labels.acessando") : getMessage("auth.labels.acessar")}
                     </Button>
                   </div>
                 </form>
@@ -492,7 +493,7 @@ export default function Login() {
         )}
       </div>
 
-      <LoadingOverlay active={refreshing} text="Aguarde..." />
+      <LoadingOverlay active={refreshing} text="comum.aguarde" />
     </>
   );
 }

@@ -1,10 +1,10 @@
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { useLayout } from "@/contexts/LayoutContext";
@@ -12,18 +12,18 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_LIMITE_FRANQUIA } from "@/constants";
 import {
-  useBuscarResponsavel,
-  useCreatePassageiro,
-  useEscolasWithFilters,
-  useFinalizePreCadastro,
-  usePassageiroForm,
-  usePermissions,
-  useUpdatePassageiro,
-  useVeiculosWithFilters,
+    useBuscarResponsavel,
+    useCreatePassageiro,
+    useEscolasWithFilters,
+    useFinalizePreCadastro,
+    useFranchiseGate,
+    usePassageiroForm,
+    usePermissions,
+    usePlanLimits,
+    useUpdatePassageiro,
+    useVeiculosWithFilters,
 } from "@/hooks";
-import { useFranchiseGate } from "@/hooks/business/useFranchiseGate";
-import { usePlanLimits } from "@/hooks/business/usePlanLimits";
-import { PassageiroFormData } from "@/hooks/ui/usePassageiroForm";
+import { PassageiroFormData } from "@/hooks/form/usePassageiroForm";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";

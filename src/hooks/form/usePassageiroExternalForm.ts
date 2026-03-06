@@ -158,7 +158,7 @@ export function usePassageiroExternalForm() {
       setSubmitting(true);
 
       if (!motoristaId) {
-        toast.error("Motorista não identificado na URL");
+        toast.error("sistema.erro.motoristaNaoIdentificado");
         return;
       }
 
@@ -241,10 +241,8 @@ export function usePassageiroExternalForm() {
 
     window.scrollTo({ top: 0, behavior: "smooth" });
 
-    toast.info("Dados mantidos!", {
-      description:
-        "Para agilizar, mantivemos os dados do responsável e endereço. Preencha apenas os dados do novo passageiro.",
-      duration: 5000,
+    toast.info("prePassageiro.info.dadosMantidos", {
+      description: "prePassageiro.info.dadosMantidosDescricao",
     });
   };
 

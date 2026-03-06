@@ -57,9 +57,7 @@ export function useRegisterController() {
     { ativo: "true" },
     {
       onError: () => {
-        toast.error("plano.erro.carregar", {
-          description: "Não foi possível buscar os planos disponíveis.",
-        });
+        toast.error("plano.erro.carregar");
       },
     }
   );
@@ -360,9 +358,7 @@ export function useRegisterController() {
             return;
           }
 
-          toast.error("sistema.erro.calcularPreco", {
-            description: error.message || "Não foi possível calcular o preço.",
-          });
+          toast.error("sistema.erro.calcularPreco");
           setPrecoCalculadoPreview(null);
           form.setValue("quantidade_personalizada", undefined);
           setIsCalculandoPreco(false);
@@ -404,18 +400,12 @@ export function useRegisterController() {
     const quantidadeMinima = getQuantidadeMinima();
 
     if (isNaN(quantidade) || !quantidadeMinima || quantidade < quantidadeMinima) {
-      toast.error("validacao.campoObrigatorio", {
-        description: quantidadeMinima
-          ? `A quantidade mínima é ${quantidadeMinima} cobranças.`
-          : "Não foi possível determinar a quantidade mínima.",
-      });
+      toast.error("plano.erro.quantidadeAbaixoMinimo");
       return;
     }
 
     if (precoCalculadoPreview === null) {
-      toast.error("erro.operacao", {
-        description: "Não foi possível calcular o preço. Tente novamente.",
-      });
+      toast.error("sistema.erro.calcularPreco");
       return;
     }
 

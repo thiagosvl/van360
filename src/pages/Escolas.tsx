@@ -16,11 +16,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreateEscola,
-  useDeleteEscola,
-  useEscolas,
-  useFilters,
-  useToggleAtivoEscola,
+    useCreateEscola,
+    useDeleteEscola,
+    useEscolas,
+    useFilters,
+    useToggleAtivoEscola,
 } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -173,9 +173,8 @@ export default function Escolas() {
       }
 
       openConfirmationDialog({
-        title: "Excluir escola?",
-        description:
-          "Tem certeza que deseja excluir esta escola? Essa ação não poderá ser desfeita.",
+        title: "escola.confirmar.excluir",
+        description: "escola.confirmar.excluirDescricao",
         confirmText: "Excluir",
         variant: "destructive",
         onConfirm: async () => {
@@ -211,7 +210,7 @@ export default function Escolas() {
 
       const action = novoStatus ? "Ativar" : "Desativar";
       openConfirmationDialog({
-        title: `${action} escola?`,
+        title: novoStatus ? "escola.confirmar.ativar" : "escola.confirmar.desativar",
         description: novoStatus
           ? "A escola voltará a aparecer nas listagens ativas."
           : "A escola deixará de aparecer nas listagens ativas. Você poderá reativá-la depois.",
@@ -329,7 +328,7 @@ export default function Escolas() {
           </Card>
         </div>
       </PullToRefreshWrapper>
-      <LoadingOverlay active={isActionLoading} text="Aguarde..." />
+      <LoadingOverlay active={isActionLoading} text="comum.aguarde" />
     </>
   );
 }

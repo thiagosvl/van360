@@ -34,11 +34,6 @@ export function useCreateEscola() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("escola.sucesso.criada");
     },
-    // onError: (error: any) => {
-    //   toast.error("escola.erro.criar", {
-    //     description: error.message || "Não foi possível criar a escola.",
-    //   });
-    // },
   });
 }
 

@@ -386,7 +386,7 @@ const Cobrancas = () => {
           {/* Dialogs */}
         </div>
       </PullToRefreshWrapper>
-      <LoadingOverlay active={isActionLoading} text="Processando..." />
+      <LoadingOverlay active={isActionLoading} text="sistema.sucesso.processando" />
     </>
   );
 };

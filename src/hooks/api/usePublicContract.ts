@@ -1,6 +1,6 @@
 import { apiClient } from '@/services/api/client';
+import { toast } from '@/utils/notifications/toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 export type ContratoStatus = 'pendente' | 'assinado' | 'substituido';
 
@@ -43,7 +43,7 @@ export function useSignContract() {
       queryClient.invalidateQueries({ queryKey: ['public-contract', variables.token] });
     },
     onError: (error: any) => {
-      toast.error('Erro ao assinar contrato. Tente novamente.');
+      toast.error('contrato.erro.assinar');
     },
   });
 }

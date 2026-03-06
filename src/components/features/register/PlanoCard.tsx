@@ -14,6 +14,7 @@ import {
   PLANO_PROFISSIONAL,
   QUANTIDADE_MAXIMA_PASSAGEIROS_CADASTRO,
 } from "@/constants";
+import { getMessage } from "@/constants/messages";
 import { cn } from "@/lib/utils";
 import { Plano, SubPlano } from "@/types/plano";
 import { getMaiorSubplanoProfissional } from "@/utils/domain/plano/planoStructureUtils";
@@ -670,9 +671,11 @@ export const PlanoCard = ({
 
                 if (quantidadeMinima && !isQuantidadeValida) {
                   toast.error(
-                    `Personalização a partir de ${quantidadeMinima} passageiros.`,
+                    getMessage("plano.erro.minimoPassageiros", {
+                      QUANTIDADE: quantidadeMinima,
+                    }),
                     {
-                      description: `Para quantidades menores, selecione outra opção.`,
+                      description: "plano.erro.minimoPassageirosDescricao",
                     }
                   );
                   const input = document.getElementById(

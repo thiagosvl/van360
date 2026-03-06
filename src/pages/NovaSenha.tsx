@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { getMessage } from "@/constants/messages";
 import { ROUTES } from "@/constants/routes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Lock } from "lucide-react";
 
+import { supabase } from "@/integrations/supabase/client";
 import { apiClient } from "@/services/api/client";
 
 import { useSEO } from "@/hooks/useSEO";
@@ -30,6 +32,16 @@ export default function NovaSenha() {
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        toast.error("auth.erro.linkExpirado");
+        navigate(ROUTES.PUBLIC.LOGIN, { replace: true });
+      }
+    });
+  }, [navigate]);
+
 
   const formSchema = z
     .object({
@@ -169,7 +181,7 @@ export default function NovaSenha() {
                   className="w-full h-12 rounded-xl text-base font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all"
                   disabled={loading}
                 >
-                  {loading ? "Salvando..." : "Redefinir senha"}
+                  {loading ? getMessage("auth.labels.redefinirSenhaProcessando") : getMessage("auth.labels.redefinirSenha")}
                 </Button>
               </div>
 

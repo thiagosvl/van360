@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { getMessage } from "@/constants/messages";
 import { ROUTES } from "@/constants/routes";
 import AppLayout from "@/layouts/AppLayout";
 import { apiClient } from "@/services/api/client";
@@ -151,7 +152,7 @@ const App = () => {
     <div className="min-h-screen flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Carregando...</p>
+        <p className="text-sm text-muted-foreground">{getMessage("sistema.sucesso.processando")}</p>
       </div>
     </div>
   );
@@ -269,11 +270,10 @@ const App = () => {
           <AlertDialogContent className="sm:max-w-md">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-xl">
-                Nova versão disponível
+                {getMessage("sistema.atualizacao.titulo")}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-base pt-2">
-                Uma nova versão do aplicativo está disponível. O aplicativo será
-                atualizado agora para garantir o melhor funcionamento.
+                {getMessage("sistema.atualizacao.descricao")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="sm:justify-end">
@@ -306,8 +306,7 @@ const App = () => {
                     setUpdating(false);
                     setPendingUpdate(null);
                     toast.error("sistema.erro.atualizacao", {
-                      description:
-                        "Não foi possível aplicar a atualização. Tente novamente.",
+                      description: "sistema.erro.atualizacaoDescricao",
                     });
                   }
                 }}
@@ -323,9 +322,11 @@ const App = () => {
           <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 text-white">
             <Loader2 className="animate-spin w-10 h-10 mb-3" />
             <p className="text-lg font-medium mb-2">
-              Atualizando o aplicativo...
+              {getMessage("sistema.atualizacao.processando")}
             </p>
-            <p className="text-sm opacity-80">{progress}% concluído</p>
+            <p className="text-sm opacity-80">
+                {getMessage("sistema.atualizacao.progresso", { PERCENTUAL: progress })}
+            </p>
           </div>
         )}
       </TooltipProvider>

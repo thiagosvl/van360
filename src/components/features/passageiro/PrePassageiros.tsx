@@ -1,6 +1,6 @@
 import {
-  MobileAction,
-  MobileActionItem,
+    MobileAction,
+    MobileActionItem,
 } from "@/components/common/MobileActionItem";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
@@ -8,47 +8,47 @@ import { PrePassengerListSkeleton } from "@/components/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreatePrePassageiro,
-  useDeletePrePassageiro,
-  usePermissions,
-  usePrePassageiros,
+    useCreatePrePassageiro,
+    useDeletePrePassageiro,
+    usePermissions,
+    usePrePassageiros,
 } from "@/hooks";
 import { PassageiroFormModes } from "@/types/enums";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import {
-  formatarTelefone,
-  formatRelativeTime
+    formatarTelefone,
+    formatRelativeTime
 } from "@/utils/formatters";
 import { convertDateBrToISO } from "@/utils/formatters/date";
 import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import {
-  Clock,
-  Copy,
-  Eye,
-  MoreVertical,
-  Search,
-  Trash2,
-  Users2,
+    Clock,
+    Copy,
+    Eye,
+    MoreVertical,
+    Search,
+    Trash2,
+    Users2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -118,7 +118,7 @@ export default function PrePassageiros({
 
   const handleCadastrarRapidoLink = async () => {
     if (!profile?.id) {
-      toast.error("auth.erro.login", { description: "Faça login novamente." });
+      toast.error("auth.erro.sessaoExpirada");
       return;
     }
 
@@ -199,9 +199,8 @@ export default function PrePassageiros({
           onClick={(e) => {
             e.stopPropagation();
             openConfirmationDialog({
-              title: "Excluir solicitação?",
-              description:
-                "Tem certeza que deseja excluir esta solicitação? Essa ação não poderá ser desfeita.",
+              title: "prePassageiro.info.confirmarExclusao",
+              description: "prePassageiro.info.confirmarExclusaoDescricao",
               variant: "destructive",
               confirmText: "Excluir",
               cancelText: "Cancelar",
@@ -284,8 +283,8 @@ export default function PrePassageiros({
                         navigator.clipboard.writeText(
                           buildPrepassageiroLink(profile.id),
                         );
-                        toast.success("Link copiado!", {
-                          description: "Envie para os pais.",
+                        toast.success("sistema.sucesso.linkCopiado", {
+                          description: "sistema.sucesso.linkCopiadoDescricao",
                         });
                       },
                     }
@@ -468,7 +467,7 @@ export default function PrePassageiros({
         </div>
       </div>
 
-      <LoadingOverlay active={isActionLoading} text="Processando..." />
+      <LoadingOverlay active={isActionLoading} text="sistema.sucesso.processando" />
     </>
   );
 }

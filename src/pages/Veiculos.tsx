@@ -26,11 +26,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreateVeiculo,
-  useDeleteVeiculo,
-  useFilters,
-  useToggleAtivoVeiculo,
-  useVeiculos,
+    useCreateVeiculo,
+    useDeleteVeiculo,
+    useFilters,
+    useToggleAtivoVeiculo,
+    useVeiculos,
 } from "@/hooks";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -180,8 +180,8 @@ export default function Veiculos() {
     }
     
     openConfirmationDialog({
-      title: "Excluir veículo?",
-      description: "Tem certeza que deseja excluir este veículo? Essa ação não poderá ser desfeita.",
+      title: "veiculo.confirmar.excluir",
+      description: "veiculo.confirmar.excluirDescricao",
       confirmText: "Excluir",
       variant: "destructive",
       onConfirm: async () => {
@@ -214,10 +214,10 @@ export default function Veiculos() {
 
       const action = novoStatus ? "Ativar" : "Desativar";
       openConfirmationDialog({
-        title: `${action} veículo?`,
+        title: novoStatus ? "veiculo.confirmar.ativar" : "veiculo.confirmar.desativar",
         description: novoStatus 
-          ? "O veículo voltará a aparecer nas listagens ativas."
-          : "O veículo deixará de aparecer nas listagens ativas. Você poderá reativá-lo depois.",
+          ? "veiculo.confirmar.ativarDescricao"
+          : "veiculo.confirmar.desativarDescricao",
         confirmText: action,
         variant: novoStatus ? "success" : "warning",
         onConfirm: async () => {
@@ -321,7 +321,7 @@ export default function Veiculos() {
 
         </div>
       </PullToRefreshWrapper>
-      <LoadingOverlay active={isActionLoading} text="Aguarde..." />
+      <LoadingOverlay active={isActionLoading} text="comum.aguarde" />
     </>
   );
 }

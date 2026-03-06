@@ -52,6 +52,14 @@ export const messages = {
       ativado: "Veículo ativado com sucesso.",
       desativado: "Veículo desativado com sucesso.",
     },
+    confirmar: {
+      excluir: "Excluir veículo?",
+      excluirDescricao: "Tem certeza que deseja excluir este veículo? Essa ação não poderá ser desfeita.",
+      desativar: "Desativar veículo?",
+      desativarDescricao: "O veículo deixará de aparecer nas listagens ativas. Você poderá reativá-lo depois.",
+      ativar: "Ativar veículo?",
+      ativarDescricao: "O veículo voltará a aparecer nas listagens ativas.",
+    },
   },
 
   // ========== PASSAGEIROS ==========
@@ -96,6 +104,13 @@ export const messages = {
     sucesso: {
       linkGerado: "Solicitação salva com sucesso.",
       excluido: "Pré-cadastro excluído com sucesso.",
+      criada: "Solicitação enviada com sucesso!",
+    },
+    info: {
+      dadosMantidos: "Dados mantidos!",
+      dadosMantidosDescricao: "Para agilizar, mantivemos os dados do responsável e endereço. Preencha apenas os dados do novo passageiro.",
+      confirmarExclusao: "Excluir solicitação?",
+      confirmarExclusaoDescricao: "Tem certeza que deseja excluir esta solicitação? Essa ação não poderá ser desfeita.",
     },
   },
 
@@ -121,6 +136,14 @@ export const messages = {
       excluida: "Escola excluída permanentemente.",
       ativada: "Escola ativada com sucesso.",
       desativada: "Escola desativada com sucesso.",
+    },
+    confirmar: {
+      excluir: "Excluir escola?",
+      excluirDescricao: "Tem certeza que deseja excluir esta escola? Essa ação não poderá ser desfeita.",
+      desativar: "Desativar escola?",
+      desativarDescricao: "A escola deixará de aparecer nas listagens ativas. Você poderá reativá-lo depois.",
+      ativar: "Ativar escola?",
+      ativarDescricao: "A escola voltará a aparecer nas listagens ativas.",
     },
   },
 
@@ -155,6 +178,7 @@ export const messages = {
       alterarNotificacoesDetalhe: "Não foi possível alterar as notificações.",
       registrarPagamentoDetalhe: "Não foi possível registrar o pagamento.",
       desfazerPagamentoDetalhe: "Não foi possível desfazer o pagamento.",
+      copiarPix: "Erro ao copiar código PIX.",
     },
     info: {
       nenhumaAlteracao: "Nenhuma alteração detectada.",
@@ -198,6 +222,7 @@ export const messages = {
       emailNaoEncontrado: "E-mail não encontrado.",
       sessaoExpirada: "Sua sessão expirou. Faça login novamente.",
       naoAutorizado: "Você não está autorizado a acessar esta página.",
+      linkExpirado: "O link de redefinição expirou ou é inválido. Solicite um novo.",
       nenhumPassageiroEncontrado: "Nenhum passageiro foi encontrado vinculado aos dados informados.",
     },
     sucesso: {
@@ -211,6 +236,16 @@ export const messages = {
     info: {
       informeCpf: "Informe seu CPF.",
       informeCpfDescricao: "Digite o CPF cadastrado para receber o link de redefinição em seu e-mail.",
+    },
+    labels: {
+      login: "Entrar",
+      loginProcessando: "Entrando...",
+      acessar: "Acessar Carteirinha",
+      acessando: "Acessando...",
+      redefinirSenha: "Redefinir senha",
+      redefinirSenhaProcessando: "Salvando...",
+      voltarLogin: "Voltar ao login",
+      cadastreSe: "Cadastre-se",
     },
   },
 
@@ -245,11 +280,21 @@ export const messages = {
       atualizada: "Assinatura atualizada com sucesso.",
       cobrancasAtivadas: "Cobranças automáticas ativadas.",
       cobrancasAtivadasDescricao: "X passageiros foram ativados automaticamente.",
+      bemVindoProfissional: "Bem-vindo ao Plano Profissional!",
+      bemVindoProfissionalDescricao: "Agora você tem cobrança automática e todos os recursos.",
+      limiteAtualizado: "Limite atualizado!",
+      limiteAtualizadoDescricao: "Sua franquia de cobranças foi ajustada.",
+      confirmado: "Pagamento confirmado!",
     },
     info: {
       pendente: "Você possui uma assinatura pendente.",
       quantidadeIgual: "Você já está com este plano ativo.",
       quantidadeIgualDescricao: "Não é necessário fazer alterações. Você já tem esta quantidade de passageiros com cobrança automática.",
+      liberacaoDemorando: "Pagamento recebido, mas a liberação está demorando. Ela ocorrerá automaticamente em instantes.",
+    },
+    status: {
+      validando: "Validando Pagamento...",
+      validandoDescricao: "Recebemos seu PIX! Estamos finalizando a configuração da sua assinatura. Isso leva apenas alguns segundos.",
     },
   },
 
@@ -262,9 +307,12 @@ export const messages = {
         informarQuantidadePersonalizada: "Informe a quantidade de cobranças automáticas que deseja.",
         quantidadeAbaixoMinimo: "A quantidade informada está abaixo do mínimo permitido.",
         cobrancaAutomaticaApenasProfissional: "Cobranças automáticas estão disponíveis apenas no plano Profissional.",
+        minimoPassageiros: "O mínimo é de {{QUANTIDADE}} passageiros.",
+        minimoPassageirosDescricao: "Para quantidades menores, selecione uma das opções pré-definidas acima.",
       },
     sucesso: {
       limiteExpandido: "Limite expandido! Agora você pode ativar a cobrança automática.",
+      atualizado: "Plano atualizado com sucesso!",
     },
     info: {
       limiteAtingido: "Você atingiu o limite do seu plano.",
@@ -281,10 +329,12 @@ export const messages = {
     },
     sucesso: {
       validada: "Chave validada com sucesso!",
+      copiado: "Código Copiado!",
     },
     info: {
       pendente: "Ainda pendente. Aguarde mais um pouco.",
       jaValidada: "Esta chave já está validada e atualizada.",
+      copiar: "Copiar código PIX",
     }
   },
 
@@ -307,13 +357,26 @@ export const messages = {
       validarFranquiaDescricao: "Não foi possível verificar o limite de cobranças automáticas.",
       consultarCep: "Erro ao consultar CEP.",
       enviarDados: "Erro ao enviar dados.",
-      linkInvalido: "Link inválido.",
       linkInvalidoDescricao: "Este link de cadastro não é válido.",
-      atualizacao: "Erro ao atualizar.",
+      calcularPreco: "Erro ao calcular preço do plano.",
+      gerarDependencias: "Erro ao gerar dependências automáticas.",
+      sessaoExpirada: "Erro de sessão. Tente recarregar a página.",
+      motoristaNaoIdentificado: "Motorista não identificado na URL.",
+      gerarCadastroAutomatico: "Não foi possível obter escola ou veículo para criação automática.",
+      atualizacao: "Ocorreu um erro ao atualizar o aplicativo.",
+      atualizacaoDescricao: "Não foi possível aplicar a atualização. Tente novamente.",
+    },
+    atualizacao: {
+           titulo: "Nova versão disponível",
+           descricao: "Uma nova versão do aplicativo está disponível. O aplicativo será atualizado agora para garantir o melhor funcionamento.",
+           processando: "Atualizando o aplicativo...",
+           progresso: "{{PERCENTUAL}}% concluído",
     },
     sucesso: {
-      cobrancasAutomaticasAtivadas: "Cobranças automáticas ativadas com sucesso.",
       cobrancasAutomaticasDesativadas: "Cobranças automáticas desativadas com sucesso.",
+      linkCopiado: "Link copiado!",
+      linkCopiadoDescricao: "Envie para os pais.",
+      processando: "Processando...",
     },
     info: {
       cepNaoEncontrado: "CEP não encontrado na base de dados.",
@@ -324,6 +387,22 @@ export const messages = {
       melhoriasProntasDescricao: "A nova versão será aplicada na próxima vez que você abrir o app.",
       appAtualizado: "Pronto.",
       appAtualizadoDescricao: "O aplicativo foi atualizado com sucesso para a versão mais recente.",
+    },
+  },
+  
+  // ========== HOME ==========
+  home: {
+    info: {
+      saudacaoPadrao: "Olá, Motorista",
+      saudacaoAtalhos: "Acesso Rápido",
+      semPendencias: "Nenhuma pendência hoje",
+      passageirosEmAtraso: "passageiro(s) em atraso",
+    },
+    status: {
+      validacaoPendente: "Validação PIX em Andamento",
+      validacaoPendenteDescricao: "Estamos confirmando sua chave com o banco. Isso leva alguns minutos.",
+      validacaoFalhou: "Validação PIX Falhou",
+      validacaoFalhouDescricao: "Não conseguimos confirmar sua chave. Corrija os dados para receber repasses.",
     },
   },
 
@@ -357,6 +436,9 @@ export const messages = {
       baixar: "Erro ao baixar contrato.",
       semUrl: "Contrato sem URL.",
       semUrlDescricao: "Não foi possível encontrar o link deste contrato.",
+      assinaturaNecessaria: "Por favor, desenhe sua assinatura.",
+      assinaturaVazia: "Por favor, desenhe sua assinatura.",
+      assinar: "Erro ao assinar contrato.",
     },
     sucesso: {
       criado: "Contrato criado com sucesso!",
@@ -365,7 +447,22 @@ export const messages = {
       reenviado: "Notificação reenviada com sucesso!",
       cancelado: "Contrato cancelado com sucesso!",
       baixado: "Contrato baixado com sucesso!",
+      assinado: "Contrato assinado com sucesso!",
+      assinadoDescricao: "O documento final foi gerado e enviado para o seu WhatsApp.",
     },
+  },
+
+  // ========== COMUM ==========
+  comum: {
+    confirmar: {
+      excluir: "Excluir?",
+      excluirDescricao: "Tem certeza que deseja excluir? Essa ação não poderá ser desfeita.",
+      desativar: "Desativar?",
+      desativarDescricao: "Deseja realmente desativar? Você poderá reativar futuramente.",
+      ativar: "Ativar?",
+      ativarDescricao: "Deseja realmente ativado?",
+    },
+    aguarde: "Aguarde...",
   },
 } as const;
 
@@ -389,11 +486,13 @@ export type MessageKey =
   | `auth.erro.${keyof typeof messages.auth.erro}`
   | `auth.sucesso.${keyof typeof messages.auth.sucesso}`
   | `auth.info.${keyof typeof messages.auth.info}`
+  | `auth.labels.${keyof typeof messages.auth.labels}`
   | `cadastro.erro.${keyof typeof messages.cadastro.erro}`
   | `cadastro.sucesso.${keyof typeof messages.cadastro.sucesso}`
   | `assinatura.erro.${keyof typeof messages.assinatura.erro}`
   | `assinatura.sucesso.${keyof typeof messages.assinatura.sucesso}`
   | `assinatura.info.${keyof typeof messages.assinatura.info}`
+  | `assinatura.status.${keyof typeof messages.assinatura.status}`
   | `plano.erro.${keyof typeof messages.plano.erro}`
   | `plano.sucesso.${keyof typeof messages.plano.sucesso}`
   | `plano.info.${keyof typeof messages.plano.info}`
@@ -405,14 +504,24 @@ export type MessageKey =
   | `usuario.sucesso.${keyof typeof messages.usuario.sucesso}`
   | `prePassageiro.erro.${keyof typeof messages.prePassageiro.erro}`
   | `prePassageiro.sucesso.${keyof typeof messages.prePassageiro.sucesso}`
+  | `prePassageiro.info.${keyof typeof messages.prePassageiro.info}`
   | `contrato.erro.${keyof typeof messages.contrato.erro}`
-  | `contrato.sucesso.${keyof typeof messages.contrato.sucesso}`;
+  | `contrato.sucesso.${keyof typeof messages.contrato.sucesso}`
+  | `home.info.${keyof typeof messages.home.info}`
+  | `home.status.${keyof typeof messages.home.status}`
+  | `pix.erro.${keyof typeof messages.pix.erro}`
+  | `pix.sucesso.${keyof typeof messages.pix.sucesso}`
+  | `pix.info.${keyof typeof messages.pix.info}`
+  | `comum.${keyof typeof messages.comum}`
+  | `comum.confirmar.${keyof typeof messages.comum.confirmar}`
+  | `veiculo.confirmar.${keyof typeof messages.veiculo.confirmar}`
+  | `escola.confirmar.${keyof typeof messages.escola.confirmar}`;
 
 /**
- * Função helper para obter mensagem por chave
- * Exemplo: getMessage('veiculo.sucesso.criado') => "Veículo criado com sucesso."
+ * Função helper para obter mensagem por chave com suporte a parâmetros
+ * Exemplo: getMessage('plano.erro.minimoPassageiros', { QUANTIDADE: 5 }) => "O mínimo é de 5 passageiros."
  */
-export function getMessage(key: MessageKey | string): string {
+export function getMessage(key: MessageKey | string, params?: Record<string, string | number>): string {
   const keys = key.split('.');
   let value: unknown = messages;
   
@@ -420,10 +529,20 @@ export function getMessage(key: MessageKey | string): string {
     if (value && typeof value === 'object' && k in value) {
       value = value[k as keyof typeof value];
     } else {
-      return key; // Retorna a chave se não encontrar
+      return key;
     }
   }
   
-  return typeof value === 'string' ? value : key;
+  if (typeof value !== 'string') return key;
+
+  if (params) {
+    let msg = value;
+    Object.entries(params).forEach(([k, v]) => {
+      msg = msg.replace(new RegExp(`{{${k}}}`, 'g'), String(v));
+    });
+    return msg;
+  }
+  
+  return value;
 }
 

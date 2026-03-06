@@ -1,25 +1,25 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { getMessage } from "@/constants/messages";
 import { usePermissions } from "@/hooks/business/usePermissions";
@@ -159,7 +159,7 @@ export default function PixKeyDialog({
     if ((transitionSuccess || rotationSuccess) && !successShownRef.current) {
        successShownRef.current = true;
        setIsRotatingWait(false);
-       toast.success(getMessage("pix.sucesso.validada"));
+       toast.success("pix.sucesso.validada");
        
        closeTimerRef.current = setTimeout(() => {
            onSuccess?.();
@@ -209,7 +209,7 @@ export default function PixKeyDialog({
           profile.tipo_chave_pix === tipo && 
           profile.status_chave_pix === PixKeyStatus.VALIDADA
       ) {
-          toast.success(getMessage("pix.info.jaValidada"));
+          toast.success("pix.info.jaValidada");
            if (onSuccess) onSuccess();
            onClose();
            return;
@@ -230,7 +230,7 @@ export default function PixKeyDialog({
       setOverrideStatus(false);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : getMessage("pix.erro.erroAoSalvar");
-      toast.error(getMessage("pix.erro.falhaSalvar"), { description: errorMessage });
+      toast.error("pix.erro.falhaSalvar", { description: errorMessage });
     }
   };
 

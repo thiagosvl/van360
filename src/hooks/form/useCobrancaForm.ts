@@ -5,10 +5,10 @@ import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus } from "@/types/enums";
 import { calculateSafeDueDate } from "@/utils/dateUtils";
 import {
-    parseCurrencyToNumber
+  parseCurrencyToNumber
 } from "@/utils/formatters";
 import {
-    moneyMask
+  moneyMask
 } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -122,7 +122,7 @@ export function useCobrancaForm({
         data_vencimento: new Date(cobranca.data_vencimento + "T12:00:00"), // Compensar fuso simples ou usar lib
         foi_pago: isPago,
         data_pagamento: cobranca.data_pagamento
-          ? new Date(cobranca.data_pagamento + "T12:00:00")
+          ? new Date(cobranca.data_pagamento)
           : undefined,
         tipo_pagamento: cobranca.tipo_pagamento || "",
         mes: undefined, 
@@ -165,7 +165,7 @@ export function useCobrancaForm({
 
   const onSubmit = async (data: CobrancaFormData) => {
     if (!profile?.id) {
-       toast.error("Erro de sessão. Tente recarregar a página.");
+       toast.error("sistema.erro.sessaoExpirada");
        return;
     }
 
@@ -174,7 +174,7 @@ export function useCobrancaForm({
     // Tratamento de fuso horário simples para strings yyyy-mm-dd
     const dataVencimentoStr = format(data.data_vencimento, "yyyy-MM-dd");
     const dataPagamentoStr = data.data_pagamento 
-        ? format(data.data_pagamento, "yyyy-MM-dd") 
+        ? data.data_pagamento.toISOString() 
         : null;
 
     if (mode === "create") {

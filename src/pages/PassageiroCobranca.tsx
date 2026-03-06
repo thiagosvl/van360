@@ -299,7 +299,7 @@ export default function PassageiroCobranca() {
       setIsCopiedEndereco(true);
       setTimeout(() => setIsCopiedEndereco(false), 1000);
     } catch (err) {
-      toast.error("Erro ao copiar endereço.");
+      toast.error("sistema.erro.copiar");
     }
   };
 
@@ -312,7 +312,7 @@ export default function PassageiroCobranca() {
       setIsCopiedTelefone(true);
       setTimeout(() => setIsCopiedTelefone(false), 1000);
     } catch (err) {
-      toast.error("Erro ao copiar telefone.");
+      toast.error("sistema.erro.copiar");
     }
   };
 

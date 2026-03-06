@@ -33,8 +33,7 @@ import { CobrancaStatus } from "@/types/enums";
 import {
     getStatusColor,
     getStatusText,
-    parseCurrencyToNumber,
-    toLocalDateString
+    parseCurrencyToNumber
 } from "@/utils/formatters";
 import { moneyMask } from "@/utils/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -121,7 +120,7 @@ export default function ManualPaymentDialog({
   const handleSubmit = async (data: PaymentFormData) => {
     const pagamentoData = {
       valor_pago: data.valor_pago,
-      data_pagamento: toLocalDateString(data.data_pagamento),
+      data_pagamento: data.data_pagamento.toISOString(),
       tipo_pagamento: data.tipo_pagamento,
     };
 

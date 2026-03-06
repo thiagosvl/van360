@@ -12,24 +12,24 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-    FEATURE_COBRANCA_AUTOMATICA
+  FEATURE_COBRANCA_AUTOMATICA
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreateEscola,
-    useCreatePassageiro,
-    useCreateVeiculo,
-    useDeletePassageiro,
-    useEscolas,
-    useFilters,
-    usePassageiros,
-    usePermissions,
-    useToggleAtivoPassageiro,
-    useUpdatePassageiro,
-    useVeiculos,
+  useCreateEscola,
+  useCreatePassageiro,
+  useCreateVeiculo,
+  useDeletePassageiro,
+  useEscolas,
+  useFilters,
+  useFranchiseGate,
+  usePassageiros,
+  usePermissions,
+  usePlanLimits,
+  useToggleAtivoPassageiro,
+  useUpdatePassageiro,
+  useVeiculos,
 } from "@/hooks";
-import { useFranchiseGate } from "@/hooks/business/useFranchiseGate";
-import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { cn } from "@/lib/utils";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
@@ -441,15 +441,13 @@ export default function Passageiros() {
       }
     } catch (e) {
       console.error("Erro ao criar dependências fake", e);
-      toast.error("Erro ao gerar dependências automáticas.");
+      toast.error("sistema.erro.gerarDependencias");
       return;
     }
 
     // Double check if we have IDs now
     if (!escolaId || !veiculoId) {
-      toast.error(
-        "Não foi possível obter escola/veículo para criação automática.",
-      );
+      toast.error("sistema.erro.gerarCadastroAutomatico");
       return;
     }
 
@@ -511,7 +509,6 @@ export default function Passageiros() {
         return;
       }
       openContractSetupDialog({
-        passageiroId: passageiro.id,
         onSuccess: () => {
           refetchPassageiros();
         },

@@ -1,11 +1,12 @@
 import { ComoFuncionaPixSheet } from "@/components/features/pagamento/ComoFuncionaPixSheet";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle,
 } from "@/components/ui/dialog";
+import { getMessage } from "@/constants/messages";
 import { meses } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 import { AlertTriangle, Copy, CopyCheck, HelpCircle, X } from "lucide-react";
@@ -61,7 +62,7 @@ export function CobrancaPixDrawer({
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
-      toast.error("Erro ao copiar código PIX");
+      toast.error("cobranca.erro.copiarPix");
     }
   };
 
@@ -183,7 +184,7 @@ export function CobrancaPixDrawer({
               }`}
               onClick={handleCopy}
             >
-              {isCopied ? "Código Copiado!" : "Copiar código PIX"}
+              {isCopied ? getMessage("pix.sucesso.copiado") : getMessage("pix.info.copiar")}
             </Button>
           </div>
         </div>

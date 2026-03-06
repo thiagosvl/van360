@@ -20,10 +20,13 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { getMessage } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
-import { usePermissions } from "@/hooks/business/usePermissions";
-import { useSession } from "@/hooks/business/useSession";
-
+import {
+    usePermissions,
+    useSession,
+    useUpsellContent
+} from "@/hooks";
 import { cn } from "@/lib/utils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { formatCurrency } from "@/utils/formatters/currency";
@@ -32,7 +35,6 @@ import { DashboardStatusCard } from "@/components/features/home/DashboardStatusC
 import { MiniKPI } from "@/components/features/home/MiniKPI";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
-import { useUpsellContent } from "@/hooks/ui/useUpsellContent";
 import {
     PassageiroFormModes,
     PixKeyStatus
@@ -109,7 +111,7 @@ const Home = () => {
     if (profile?.apelido) {
       setPageTitle(`Olá, ${profile.apelido}`);
     } else {
-      setPageTitle("Olá, Motorista");
+      setPageTitle("home.info.saudacaoPadrao");
     }
   }, [profile?.apelido, setPageTitle]);
 
@@ -195,10 +197,8 @@ const Home = () => {
             </p>
             <p className="text-xs text-gray-400 mt-0.5">
               {countAtrasos > 0
-                ? `${countAtrasos} passageiro${
-                    countAtrasos != 1 ? "s" : ""
-                  } em atraso`
-                : "Nenhuma pendência hoje"}
+                ? `${countAtrasos} ${getMessage("home.info.passageirosEmAtraso")}`
+                : getMessage("home.info.semPendencias")}
             </p>
           </div>
 
@@ -206,8 +206,8 @@ const Home = () => {
             <section className="mb-4">
               <DashboardStatusCard
                 type="pending"
-                title="Validação PIX em Andamento"
-                description="Estamos confirmando sua chave com o banco. Isso leva alguns minutos."
+                title="home.status.validacaoPendente"
+                description="home.status.validacaoPendenteDescricao"
                 actionLabel="Verificar Agora"
                 onAction={() => openPixKeyDialog()}
               />
@@ -216,8 +216,8 @@ const Home = () => {
             <section className="mb-4">
               <DashboardStatusCard
                 type="error"
-                title="Validação PIX Falhou"
-                description="Não conseguimos confirmar sua chave. Corrija os dados para receber repasses."
+                title="home.status.validacaoFalhou"
+                description="home.status.validacaoFalhouDescricao"
                 actionLabel="Corrigir Chave"
                 onAction={() => openPixKeyDialog()}
               />

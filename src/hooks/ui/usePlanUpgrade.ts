@@ -34,7 +34,7 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
 
   const handleUpgradeEssencial = async (planoEssencialId?: string) => {
     if (!profile?.id) {
-      toast.error("Erro de perfil", { description: "Usuário não identificado." });
+      toast.error("sistema.erro.motoristaNaoIdentificado");
       return;
     }
     if (!planoEssencialId) return;
@@ -76,15 +76,13 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
         });
       } else {
         await refreshProfile();
-        toast.success("Plano atualizado com sucesso!");
+        toast.success("plano.sucesso.atualizado");
         onSuccess?.();
         onOpenChange?.(false);
       }
     } catch (error: any) {
       console.error("Erro upgrade/downgrade essencial:", error);
-      toast.error("Erro ao alterar de plano", {
-        description: error.response?.data?.error || "Tente novamente mais tarde.",
-      });
+      toast.error("plano.erro.escolher");
     } finally {
       setLoading(false);
     }
@@ -92,14 +90,12 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
 
   const handleUpgradeProfissional = async (targetId?: string, targetPlan?: any) => {
     if (!profile?.id) {
-      toast.error("Erro de perfil", { description: "Usuário não identificado." });
+      toast.error("sistema.erro.motoristaNaoIdentificado");
       return;
     }
 
     if (!targetId && !targetPlan?.isCustom) {
-      toast.error("Erro de configuração", {
-        description: "Plano não disponível no momento.",
-      });
+      toast.error("plano.erro.carregar");
       return;
     }
 
@@ -156,20 +152,22 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
         // Se já teve sucesso sem pagamento (ex: redução de plano ou valor zero)
         await refreshProfile();
 
-        const title = isAlreadyProfissional ? "Limite atualizado!" : "Plano atualizado!";
-        const desc = isAlreadyProfissional
-          ? "Sua franquia de cobranças foi ajustada."
-          : "Bem-vindo ao Plano Profissional.";
-
-        toast.success(title, { description: desc });
+        if (isAlreadyProfissional) {
+          toast.success("assinatura.sucesso.limiteAtualizado", { 
+            description: "assinatura.sucesso.limiteAtualizadoDescricao" 
+          });
+        } else {
+          toast.success("assinatura.sucesso.bemVindoProfissional", { 
+            description: "assinatura.sucesso.bemVindoProfissionalDescricao" 
+          });
+        }
+        
         onSuccess?.();
         onOpenChange?.(false);
       }
     } catch (error: any) {
       console.error("Erro upgrade profissional:", error);
-      toast.error("Erro ao atualizar plano", {
-        description: error.response?.data?.error || "Tente novamente mais tarde.",
-      });
+      toast.error("plano.erro.escolher");
     } finally {
       setLoading(false);
     }
@@ -190,20 +188,15 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
       } else {
         // Mensagens contextuais baseadas no tipo de operação
         if (context === "franchise_upgrade") {
-          toast.success("Capacidade Aumentada!", {
-            description: "Seu limite de passageiros no automático foi atualizado.",
-            duration: 4000
+          toast.success("assinatura.sucesso.limiteAtualizado", {
+            description: "assinatura.sucesso.limiteAtualizadoDescricao",
           });
         } else if (context === "plan_upgrade") {
-          toast.success("Bem-vindo ao Profissional!", {
-            description: "Agora você tem cobrança automática e todos os recursos.",
-            duration: 4000
+          toast.success("assinatura.sucesso.bemVindoProfissional", {
+            description: "assinatura.sucesso.bemVindoProfissionalDescricao",
           });
         } else {
-          toast.success("Sucesso!", {
-            description: "Operação realizada com sucesso.",
-            duration: 4000
-          });
+          toast.success("sucesso.operacao");
         }
       }
       onOpenChange?.(false);

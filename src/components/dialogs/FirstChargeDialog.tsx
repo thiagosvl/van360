@@ -17,7 +17,7 @@ import { useCreateCobranca } from "@/hooks/api/useCobrancaMutations";
 import { cn } from "@/lib/utils";
 import { CobrancaOrigem, CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
-import { calculateSafeDueDate } from "@/utils/dateUtils";
+import { calculateSafeDueDate, toLocalDateString } from "@/utils/dateUtils";
 import { moneyToNumber } from "@/utils/masks";
 import {
   AlertCircle,
@@ -128,7 +128,7 @@ export default function FirstChargeDialog({
     );
 
     // Formatar YYYY-MM-DD para o payload
-    const vencimento = vencimentoDate.toISOString().split("T")[0];
+    const vencimento = toLocalDateString(vencimentoDate);
 
     try {
       // valor sanitization
@@ -151,7 +151,7 @@ export default function FirstChargeDialog({
 
       if (status === CobrancaStatus.PAGO) {
         payload.tipo_pagamento = paymentMethod;
-        payload.data_pagamento = vencimento;
+        payload.data_pagamento = new Date().toISOString();
         payload.valor_pago = valor;
         payload.pagamento_manual = true;
       }

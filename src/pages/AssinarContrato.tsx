@@ -1,24 +1,24 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  useGetPublicContract,
-  useSignContract,
+    useGetPublicContract,
+    useSignContract,
 } from "@/hooks/api/usePublicContract";
 import { ContratoStatus } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
+import { toast } from "@/utils/notifications/toast";
 import { CheckCircle2, Download, FileSignature, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { useNavigate, useParams } from "react-router-dom";
 import SignatureCanvas from "react-signature-canvas";
-import { toast } from "sonner";
 
 // Configurar worker do PDF.js
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -54,7 +54,7 @@ export default function AssinarContrato() {
 
   const handleAssinar = async () => {
     if (!sigCanvas.current || sigCanvas.current.isEmpty()) {
-      toast.error("Por favor, desenhe sua assinatura");
+      toast.error("contrato.erro.assinaturaVazia");
       return;
     }
 
@@ -76,14 +76,13 @@ export default function AssinarContrato() {
         metadados,
       });
 
-      toast.success("Contrato assinado com sucesso!", {
-        description:
-          "O documento final foi gerado e enviado para o seu WhatsApp.",
+      toast.success("contrato.sucesso.assinado", {
+        description: "contrato.sucesso.assinadoDescricao",
       });
       setModalAberto(false);
       // O estado do contrato será atualizado pelo hook useGetPublicContract ou refresh manual
     } catch (error: any) {
-      console.error("Erro ao assinar:", error);
+      toast.error("contrato.erro.assinar");
     }
   };
 

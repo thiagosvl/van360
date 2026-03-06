@@ -2,9 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { FEATURE_UPGRADE_AUTO, PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
-import { usePlanUpgrade } from "@/hooks/business/usePlanUpgrade";
-import { useProfile } from "@/hooks/business/useProfile";
-import { useSession } from "@/hooks/business/useSession";
+import { usePlanUpgrade, useProfile, useSession } from "@/hooks";
 import { CalendarX, ShieldAlert, Sparkles } from "lucide-react";
 import PagamentoAssinaturaDialog from "./PagamentoAssinaturaDialog";
 

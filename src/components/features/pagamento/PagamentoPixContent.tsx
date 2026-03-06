@@ -1,6 +1,7 @@
 import { ComoFuncionaPixSheet } from "@/components/features/pagamento/ComoFuncionaPixSheet";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { getMessage } from "@/constants/messages";
 import { useGerarPixParaCobranca } from "@/hooks";
 import { supabase } from "@/integrations/supabase/client";
 import { assinaturaCobrancaApi } from "@/services/api/assinatura-cobranca.api";
@@ -232,10 +233,7 @@ export default function PagamentoPixContent({
     setPaymentConfirmed(true);
 
     if (!sucesso && context !== "register") {
-      toast.warning(
-        "Pagamento recebido, mas a liberação está demorando. Ela ocorrerá automaticamente em instantes.",
-        { duration: 6000 }
-      );
+      toast.warning("assinatura.info.liberacaoDemorando", { duration: 6000 });
     }
 
     if (onPaymentVerified) {
@@ -379,9 +377,7 @@ export default function PagamentoPixContent({
         setIsCopied(false);
       }, 1000);
     } catch (err: any) {
-      toast.error("Erro ao copiar", {
-        description: "Não foi possível copiar o código PIX.",
-      });
+      toast.error("assinatura.erro.copiarPix");
     }
   }, [dadosPagamento?.qrCodePayload]);
 
@@ -392,11 +388,10 @@ export default function PagamentoPixContent({
           <Loader2 className="w-10 h-10 text-emerald-600 animate-spin" />
         </div>
         <h2 className="text-xl font-bold text-gray-900 mb-2 text-center">
-          Validando Pagamento...
+          {getMessage("assinatura.status.validando")}
         </h2>
         <p className="text-gray-500 text-center text-sm px-6">
-          Recebemos seu PIX! Estamos finalizando a configuração da sua
-          assinatura. Isso leva apenas alguns segundos.
+          {getMessage("assinatura.status.validandoDescricao")}
         </p>
       </div>
     );
@@ -412,7 +407,7 @@ export default function PagamentoPixContent({
             </div>
 
             <h2 className="text-3xl font-extrabold text-emerald-900 mb-3 tracking-tight">
-              Pagamento confirmado!
+              {getMessage("assinatura.sucesso.confirmado")}
             </h2>
 
             <p className="text-emerald-700 text-base font-medium mb-1">
@@ -623,7 +618,7 @@ export default function PagamentoPixContent({
               }`}
               onClick={handleCopyPix}
             >
-              {isCopied ? "Código Copiado!" : "Copiar código PIX"}
+              {isCopied ? getMessage("pix.sucesso.copiado") : getMessage("pix.info.copiar")}
             </Button>
           </div>
         </>
