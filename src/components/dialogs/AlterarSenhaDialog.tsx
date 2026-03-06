@@ -86,7 +86,6 @@ export default function AlterarSenhaDialog({
 
       await new Promise((res) => setTimeout(res, 1500));
 
-      // Logout to force re-login
       await apiClient.post("/auth/logout");
       
       window.location.href = ROUTES.PUBLIC.LOGIN;
