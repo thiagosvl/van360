@@ -356,8 +356,8 @@ export default function FirstChargeDialog({
                     Enviar cobrança via WhatsApp?
                   </h4>
                   <p className="text-gray-500 text-sm sm:text-base leading-relaxed max-w-full sm:max-w-[260px]">
-                    Este passageiro tem cobrança automática. Deseja enviar a
-                    notificação no WhatsApp já?
+                    Este passageiro tem cobrança automática ativa. Deseja enviar a
+                    notificação no WhatsApp?
                   </p>
                 </div>
               </div>
