@@ -24,15 +24,15 @@ export const openBrowserLink = async (url: string) => {
 };
 
 /**
- * Utilitário robusto para compartilhar ou baixar um arquivo PDF
- * Funciona em PWA (Android/iOS) e APK Nativo (Capacitor).
+ * Utilitário robusto para compartilhar ou baixar um arquivo PDF.
+ * Suporte a APK Nativo, PWA (Chrome/Android) e Browsers Desktop.
  */
 export const shareOrDownloadFile = async (blob: Blob, fileName: string, title: string = 'Documento PDF') => {
   const isNative = Capacitor.isNativePlatform();
   
   try {
+    // 1. LÓGICA PARA APK NATIVO (Capacitor)
     if (isNative) {
-      // --- LÓGICA NATIVA (APK) ---
       const reader = new FileReader();
       const base64Promise = new Promise<string>((resolve) => {
         reader.onloadend = () => {
@@ -54,57 +54,60 @@ export const shareOrDownloadFile = async (blob: Blob, fileName: string, title: s
         title: title,
         text: 'Visualizando documento PDF',
         url: fileResult.uri,
-        dialogTitle: 'Compartilhar ou Salvar Contrato',
+        dialogTitle: 'Compartilhar ou Salvar',
       });
-      
-    } else {
-      // --- LÓGICA WEB / PWA ---
-      const file = new File([blob], fileName, { type: 'application/pdf' });
-      
-      // Tentar Web Share API se disponível e for mobile
-      // Adicionamos detecção mais cautelosa para PWA Chrome
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
-      if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          // No Chrome Android PWA, às vezes o canShare passa mas o share falha por contexto de segurança
-          // ou se o blob veio de um origin diferente.
-          await navigator.share({
-            files: [file],
-            title: title,
-            text: 'Visualizando documento PDF no Van Control',
-          });
-          return; // Sucesso no compartilhamento nativo do navegador
-        } catch (shareErr: any) {
-          // Se o usuário cancelou (AbortError), não fazemos nada.
-          if (shareErr.name === 'AbortError') return;
-          console.warn('Web Share falhou ou foi recusado pelo sistema, tentando download:', shareErr);
-        }
-      }
-
-      // Se o Share API falhou ou não existe, fazemos o Download
-      downloadBlob(blob, fileName);
+      return;
     }
+
+    // 2. LÓGICA PARA WEB / PWA
+    // IMPORTANTE: Em PWAs Android, Files com PDF as vezes falham se o blob não for recriado explicitamente.
+    const file = new File([blob], fileName, { type: 'application/pdf' });
+    
+    // Tenta Web Share API (Gaveta nativa do Android no Chrome)
+    const canShare = navigator.share && navigator.canShare && navigator.canShare({ files: [file] });
+
+    if (canShare) {
+      try {
+        // Tentativa de compartilhamento real
+        await navigator.share({
+          files: [file],
+          title: title,
+          text: 'PDF do Van Control'
+        });
+        // Se chegou aqui sem erro, o sistema abriu a gaveta com sucesso.
+        return;
+      } catch (shareErr: any) {
+        // Se o usuário cancelou o compartilhamento, paramos por aqui.
+        if (shareErr.name === 'AbortError') return;
+        
+        // Se for um erro de permissão ou sistema, tentamos o fallback de download.
+        console.warn('Web Share API recusada ou falhou. Tentando download...', shareErr);
+      }
+    }
+
+    // 3. FALLBACK: DOWNLOAD DIRETO (Caso o Share não funcione ou não exista no navegador)
+    downloadBlob(blob, fileName);
+
   } catch (error) {
-    console.error('Erro ao processar arquivo:', error);
-    // IMPORTANTE: Só mostramos erro se o download (último recurso) também falhar
+    console.error('Erro geral no processamento do arquivo:', error);
+    // Tenta o download simples como última esperança antes de avisar erro.
     try {
       downloadBlob(blob, fileName);
     } catch (finalErr) {
-      toast.error('Não foi possível compartilhar ou baixar o documento.');
+      toast.error('Não foi possível compartilhar ou baixar o documento no seu dispositivo.');
     }
   }
 };
 
 /**
- * Técnica clássica de download por link <a> com suporte a PWA Android
+ * Técnica de download silenciosa para PWA e Browsers.
  */
 export const downloadBlob = (blob: Blob, fileName: string) => {
   try {
-    const url = window.URL.createObjectURL(blob);
     const isAndroid = /Android/.test(navigator.userAgent);
     const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
 
+    // Em PWAs no Android, links blob:// as vezes são bloqueados. Usamos DataURL (Base64).
     if (isAndroid && isStandalone) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -119,6 +122,8 @@ export const downloadBlob = (blob: Blob, fileName: string) => {
       };
       reader.readAsDataURL(blob);
     } else {
+      // Browser padrão (Desktop/Mobile)
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', fileName);
@@ -131,10 +136,9 @@ export const downloadBlob = (blob: Blob, fileName: string) => {
       }, 500);
     }
     
-    // Mostramos apenas este toast se o fluxo chegar até aqui
-    toast.info('Documento baixado com sucesso.');
+    toast.info('Documento enviado para download.');
   } catch (err) {
-    console.error('Erro no downloadBlob:', err);
-    throw err; // Repassa para o catch superior tratar
+    console.error('Erro ao baixar documento:', err);
+    throw err;
   }
 };
