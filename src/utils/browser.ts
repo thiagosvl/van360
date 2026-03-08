@@ -29,26 +29,53 @@ export const openBrowserLink = async (url: string) => {
 export const downloadBlob = (blob: Blob, fileName: string) => {
   const url = window.URL.createObjectURL(blob);
   
+  // Se for PWA no iOS, o download nativo é bloqueado muitas vezes.
+  // A solução é converter o Blob para Base64 e abrir em uma nova aba,
+  // ou usar uma técnica de Reader.
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
+
+  if (isIOS && isStandalone) {
+    // Para iOS PWA, converter para Base64 e abrir é mais confiável para PDFs
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64data = reader.result;
+      const newWindow = window.open();
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+            <body style="margin:0;">
+              <embed width="100%" height="100%" src="${base64data}" type="application/pdf">
+            </body>
+          </html>
+        `);
+      } else {
+        // Fallback se o pop-up for bloqueado
+        window.location.href = url;
+      }
+    };
+    reader.readAsDataURL(blob);
+    return;
+  }
+
   if (Capacitor.isNativePlatform()) {
-    // Native (Capacitor) handles blobs better via Browser plugin with standard URL
     openBrowserLink(url);
     return;
   }
 
-  // PWA/Web
+  // PWA/Web padrão
   const link = document.createElement('a');
   link.href = url;
   link.setAttribute('download', fileName);
+  link.style.display = 'none';
   
-  // Important for iOS PWA: Some versions require the link to be in the DOM
   document.body.appendChild(link);
   link.click();
   
-  // Cleanup
   setTimeout(() => {
     if (document.body.contains(link)) {
         document.body.removeChild(link);
     }
     window.URL.revokeObjectURL(url);
-  }, 100);
+  }, 200);
 };

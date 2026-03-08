@@ -36,15 +36,15 @@ export function PdfPreviewDialog({
   const [scale, setScale] = useState(1.0);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Base width calculated from screen size
-  const baseWidth = Math.min(window.innerWidth * 0.9, 850);
-
-  // States for pinch and pan
-  const touchState = useRef({
+  // Ref to track state without re-renders during gestures
+  const pinchRef = useRef({
     initialDistance: 0,
-    lastScale: 1.0,
+    initialScale: 1.0,
     isPinching: false,
   });
+
+  // Base width calculated from screen size
+  const baseWidth = Math.min(window.innerWidth * 0.9, 850);
 
   useEffect(() => {
     if (isOpen) {
@@ -75,23 +75,22 @@ export function PdfPreviewDialog({
   const handleZoomIn = () => setScale((s) => Math.min(s + 0.25, 3.0));
   const handleZoomOut = () => setScale((s) => Math.max(s - 0.25, 0.5));
 
-  // Natural Pinch-to-zoom logic
+  // --- REFINED PINCH LOGIC ---
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
-      e.stopPropagation();
       const dist = Math.hypot(
         e.touches[0].pageX - e.touches[1].pageX,
         e.touches[0].pageY - e.touches[1].pageY
       );
-      touchState.current.initialDistance = dist;
-      touchState.current.lastScale = scale;
-      touchState.current.isPinching = true;
+      pinchRef.current.initialDistance = dist;
+      pinchRef.current.initialScale = scale;
+      pinchRef.current.isPinching = true;
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 2 && touchState.current.isPinching) {
-      // Prevent browser from doing its own zoom/pan during pinch
+    if (e.touches.length === 2 && pinchRef.current.isPinching) {
+      // Bloqueia o scroll nativo APENAS durante o gesto de pinça
       if (e.cancelable) e.preventDefault();
       
       const dist = Math.hypot(
@@ -99,25 +98,19 @@ export function PdfPreviewDialog({
         e.touches[0].pageY - e.touches[1].pageY
       );
       
-      if (touchState.current.initialDistance > 0) {
-        // Use a multiplier for more "natural" sensitivity
-        const ratio = dist / touchState.current.initialDistance;
-        const newScale = Math.min(Math.max(touchState.current.lastScale * ratio, 0.5), 3.0);
+      if (pinchRef.current.initialDistance > 10) { // Margem de segurança
+        const ratio = dist / pinchRef.current.initialDistance;
+        const newScale = Math.min(Math.max(pinchRef.current.initialScale * ratio, 0.5), 3.0);
         
-        // Use requestAnimationFrame style update hiddenly by React state
-        // but avoid tiny jittery updates (1% fixes)
-        if (Math.abs(newScale - scale) > 0.01) {
-          setScale(newScale);
-        }
+        // Atualização direta para garantir fluidez
+        setScale(newScale);
       }
     }
   };
 
-  const handleTouchEnd = (e: React.TouchList | any) => {
-    if (e.touches?.length < 2) {
-      touchState.current.isPinching = false;
-      touchState.current.initialDistance = 0;
-    }
+  const handleTouchEnd = () => {
+    pinchRef.current.isPinching = false;
+    pinchRef.current.initialDistance = 0;
   };
 
   return (
@@ -126,7 +119,7 @@ export function PdfPreviewDialog({
         className="w-full max-w-5xl p-0 gap-0 bg-gray-50 h-full max-h-screen sm:h-[95vh] sm:max-h-[95vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
-        <div className="bg-blue-600 p-4 text-center relative shrink-0 z-10">
+        <div className="bg-blue-600 p-4 text-center relative shrink-0 z-10 shadow-md">
           <div className="absolute left-4 top-4 flex gap-2">
             <Button
               variant="ghost"
@@ -175,7 +168,6 @@ export function PdfPreviewDialog({
             {title}
           </DialogTitle>
           
-          {/* Zoom controls for Mobile */}
           <div className="flex sm:hidden justify-center mt-3">
              <div className="flex items-center bg-white/10 rounded-full px-1 border border-white/20 backdrop-blur-sm">
                 <Button
@@ -205,7 +197,7 @@ export function PdfPreviewDialog({
 
         <div 
           ref={containerRef}
-          className="flex-1 bg-gray-200 relative overflow-auto grid place-items-start p-4 scrollbar-thin scrollbar-thumb-gray-400 touch-pan-x touch-pan-y"
+          className="flex-1 bg-gray-200 relative overflow-auto block p-4 scrollbar-thin scrollbar-thumb-gray-400 touch-pan-x touch-pan-y"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -217,7 +209,7 @@ export function PdfPreviewDialog({
             </div>
           )}
           
-          <div className="mx-auto">
+          <div className="flex flex-col items-center">
             {pdfUrl ? (
                 <Document
                 file={pdfUrl}
@@ -232,7 +224,7 @@ export function PdfPreviewDialog({
                     renderTextLayer={true}
                     renderAnnotationLayer={true}
                     width={baseWidth * scale}
-                    className="shadow-xl border-0 rounded-sm overflow-hidden bg-white transition-[width] duration-75 ease-out"
+                    className="shadow-xl border-0 rounded-sm overflow-hidden bg-white"
                     />
                 ))}
                 </Document>
