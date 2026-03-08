@@ -8,7 +8,6 @@ interface ContratoActionsMenuProps {
   status?: string;
   onVerPassageiro: (id: string) => void;
   onCopiarLink?: (token: string) => void;
-  onBaixarPDF?: (id: string) => void;
   onReenviarNotificacao?: (id: string) => void;
   onExcluir?: (id: string) => void;
   onSubstituir?: (id: string) => void;

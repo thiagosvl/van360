@@ -1,9 +1,9 @@
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { CheckCircle2, FileText, Send, UserX } from 'lucide-react';
 import {
-    useEffect,
-    useRef,
-    useState
+  useEffect,
+  useRef,
+  useState
 } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -19,14 +19,13 @@ import { ContratosToolbar } from '@/components/features/contrato/ContratosToolba
 import { ROUTES } from '@/constants/routes';
 import { useLayout } from '@/contexts/LayoutContext';
 import {
-    useContratos,
-    useContratosKPIs,
-    useCreateContrato,
-    useDeleteContrato,
-    useDownloadContrato,
-    usePreviewContrato,
-    useReenviarContrato,
-    useSubstituirContrato,
+  useContratos,
+  useContratosKPIs,
+  useCreateContrato,
+  useDeleteContrato,
+  usePreviewContrato,
+  useReenviarContrato,
+  useSubstituirContrato,
 } from '@/hooks/api/useContratos';
 
 import { usePermissions } from '@/hooks/business/usePermissions';
@@ -85,7 +84,6 @@ const Contratos = () => {
   );
 
   const deleteMutation = useDeleteContrato();
-  const downloadMutation = useDownloadContrato();
   const reenviarMutation = useReenviarContrato();
   const substituirMutation = useSubstituirContrato();
   const createMutation = useCreateContrato();
@@ -165,7 +163,6 @@ const Contratos = () => {
 
   const isActionLoading = 
     deleteMutation.isPending || 
-    downloadMutation.isPending || 
     reenviarMutation.isPending || 
     substituirMutation.isPending ||
     createMutation.isPending ||
@@ -187,7 +184,6 @@ const Contratos = () => {
   const actions = {
     onVerPassageiro: handleVerPassageiro,
     onCopiarLink: handleCopiarLink,
-    onBaixarPDF: (id: string) => downloadMutation.mutate(id),
     onReenviarNotificacao: (id: string) => reenviarMutation.mutate(id),
     onExcluir: handleExcluir,
     onSubstituir: handleSubstituir,

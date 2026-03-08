@@ -5,8 +5,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { shareOrDownloadFile } from "@/utils/browser";
-import { ExternalLink, Loader2, Minus, Plus, Share2, X } from "lucide-react";
+import { ExternalLink, Loader2, Minus, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -29,6 +28,7 @@ export function PdfPreviewDialog({
   onClose,
   pdfUrl,
   title = "Prévia do Documento",
+  // eslint-disable-next-line @typescript_eslint/no-unused-vars
   fileName = "documento.pdf"
 }: PdfPreviewDialogProps) {
   const [numPages, setNumPages] = useState<number | null>(null);
@@ -64,24 +64,6 @@ export function PdfPreviewDialog({
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
     setIsLoading(false);
-  };
-
-  /**
-   * SHARE/DOWNLOAD - Improved for APK (Native) and Android Chrome Standalone (PWA)
-   */
-  const handleDownload = async () => {
-    if (!pdfUrl) return;
-    try {
-      const response = await fetch(pdfUrl);
-      const blob = await response.blob();
-      
-      // Chama a nossa nova utility robusta que usa Capacitor Share/Filesystem para o APK
-      // e Web Share API para o Browser/PWA.
-      await shareOrDownloadFile(blob, fileName, title);
-    } catch (error) {
-      console.error('Download error:', error);
-      window.open(pdfUrl, '_blank');
-    }
   };
 
   const updateScale = (newScale: number) => {
@@ -157,19 +139,9 @@ export function PdfPreviewDialog({
         className="w-full max-w-5xl p-0 gap-0 bg-[#525659] h-full max-h-screen sm:h-[95vh] sm:max-h-[95vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
-        {/* PDF Style Header */}
+        {/* PDF Style Header (Removed download/share) */}
         <div className="bg-blue-600 p-4 text-center relative shrink-0 z-10 shadow-lg">
-          <div className="absolute left-4 top-4 flex gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleDownload}
-              className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
-              title="Baixar ou Compartilhar"
-            >
-              <Share2 className="w-5 h-5" />
-            </Button>
-            
+          <div className="absolute left-4 top-4">
             <div className="hidden sm:flex items-center bg-white/10 rounded-full px-1 border border-white/20 backdrop-blur-sm">
                 <Button variant="ghost" size="icon" onClick={() => updateScale(scale - 0.25)} className="text-white hover:bg-white/20 rounded-full h-8 w-8" disabled={scale <= 0.5}><Minus className="h-4 w-4" /></Button>
                 <span className="text-[11px] font-bold text-white min-w-[35px] text-center">{displayPercentage}%</span>
@@ -199,7 +171,7 @@ export function PdfPreviewDialog({
           </div>
         </div>
 
-        {/* Scrollable Container */}
+        {/* HIGH QUALITY SCROLL AREA */}
         <div 
           className="flex-1 bg-[#525659] relative overflow-auto block scrollbar-thin scrollbar-thumb-gray-400 touch-pan-x touch-pan-y"
           onTouchStart={handleTouchStart}
@@ -213,7 +185,6 @@ export function PdfPreviewDialog({
             </div>
           )}
           
-          {/* Document Wrapper */}
           <div className="inline-block min-w-full p-4 md:p-8">
             <div ref={wrapperRef} className="flex flex-col items-center">
               {pdfUrl ? (

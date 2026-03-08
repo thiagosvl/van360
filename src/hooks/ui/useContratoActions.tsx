@@ -3,7 +3,6 @@ import { ActionItem } from "@/types/actions";
 import { ContratoStatus } from "@/types/enums";
 import {
     Copy,
-    Download,
     ExternalLink,
     Eye,
     FileText,
@@ -20,7 +19,6 @@ interface UseContratoActionsProps {
   status?: string;
   onVerPassageiro: (id: string) => void;
   onCopiarLink?: (token: string) => void;
-  onBaixarPDF?: (id: string) => void;
   onReenviarNotificacao?: (id: string) => void;
   onExcluir?: (id: string) => void;
   onSubstituir?: (id: string) => void;
@@ -35,7 +33,6 @@ export function useContratoActions({
   status,
   onVerPassageiro,
   onCopiarLink,
-  onBaixarPDF,
   onReenviarNotificacao,
   onExcluir,
   onSubstituir,
@@ -63,7 +60,7 @@ export function useContratoActions({
       // Contrato Actions
       if (canUseContracts) {
         if (isPendente) {
-          if (onVisualizarLink) {
+          if (onVisualizarFinal) {
             list.push({
               label: 'Ver Contrato',
               icon: <ExternalLink className="h-4 w-4" />,
@@ -98,14 +95,7 @@ export function useContratoActions({
               swipeColor: 'bg-green-600',
             });
           }
-          if (onBaixarPDF) {
-            list.push({
-              label: 'Baixar PDF',
-              icon: <Download className="h-4 w-4" />,
-              onClick: () => onBaixarPDF(item.id),
-              swipeColor: 'bg-blue-600',
-            });
-          }
+          
           if (onSubstituir) {
             list.push({
               label: 'Substituir Contrato',
@@ -146,5 +136,5 @@ export function useContratoActions({
     }
 
     return list;
-  }, [item, tipo, status, onVerPassageiro, onCopiarLink, onBaixarPDF, onReenviarNotificacao, onExcluir, onSubstituir, onGerarContrato, onVisualizarLink, onVisualizarFinal]);
+  }, [item, tipo, status, onVerPassageiro, onCopiarLink, onReenviarNotificacao, onExcluir, onSubstituir, onGerarContrato, onVisualizarLink, onVisualizarFinal]);
 }

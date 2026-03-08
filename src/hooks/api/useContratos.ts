@@ -1,7 +1,6 @@
 import { getMessage } from '@/constants/messages';
 import { apiClient } from '@/services/api/client';
 import { Contrato, CreateContratoDTO } from '@/types/contract';
-import { shareOrDownloadFile } from '@/utils/browser';
 import { toast } from '@/utils/notifications/toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -104,28 +103,6 @@ export function useReenviarContrato() {
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || getMessage('contrato.erro.reenviar');
-      toast.error(message);
-    },
-  });
-}
-
-export function useDownloadContrato() {
-  return useMutation({
-    mutationFn: async (contratoId: string) => {
-      const response = await apiClient.get(`/contratos/${contratoId}/download`, {
-        responseType: 'blob',
-      });
-      
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      shareOrDownloadFile(blob, `contrato-${contratoId}.pdf`, 'Contrato de Transporte');
-      
-      return response.data;
-    },
-    onSuccess: () => {
-      toast.success('contrato.sucesso.baixado');
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.error || getMessage('contrato.erro.baixar');
       toast.error(message);
     },
   });

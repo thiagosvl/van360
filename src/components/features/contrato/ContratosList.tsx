@@ -28,7 +28,6 @@ interface ContratosListProps {
   // Ações
   onVerPassageiro: (id: string) => void;
   onCopiarLink: (token: string) => void;
-  onBaixarPDF: (id: string) => void;
   onReenviarNotificacao: (id: string) => void;
   onExcluir: (id: string) => void;
   onSubstituir: (id: string) => void;
@@ -43,7 +42,6 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   activeTab,
   onVerPassageiro,
   onCopiarLink,
-  onBaixarPDF,
   onReenviarNotificacao,
   onExcluir,
   onSubstituir,
@@ -57,7 +55,6 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
     status: item.status,
     onVerPassageiro,
     onCopiarLink,
-    onBaixarPDF,
     onReenviarNotificacao,
     onExcluir,
     onSubstituir,
