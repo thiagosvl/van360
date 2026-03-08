@@ -1,14 +1,14 @@
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { ActionItem } from "@/types/actions";
-import { MoreVertical } from "lucide-react";
+import { Loader2, MoreVertical } from "lucide-react";
 
 interface ActionsDropdownProps {
   actions: ActionItem[];
@@ -58,10 +58,11 @@ export function ActionsDropdown({
           <div key={`${action.label}-${idx}`}>
             <DropdownMenuItem
               onClick={(e) => {
+                 if (action.disabled || action.isLoading) return;
                  e.stopPropagation();
                  action.onClick();
               }}
-              disabled={action.disabled}
+              disabled={action.disabled || action.isLoading}
               className={cn(
                 "flex items-center gap-2 p-2.5 rounded-lg cursor-pointer font-medium",
                 action.isDestructive || action.variant === "destructive" ? "text-red-600 focus:text-red-600" : "text-gray-700",
@@ -69,7 +70,9 @@ export function ActionsDropdown({
               )}
               title={action.title}
             >
-              {action.icon && (
+              {action.isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mr-2" />
+              ) : action.icon && (
                 <span className={cn("h-4 w-4", 
                    (action.isDestructive || action.variant === 'destructive') ? "text-red-600" : "text-current"
                 )}>

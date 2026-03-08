@@ -127,7 +127,7 @@ export default function CobrancaDialog({
                 Registrando...
               </>
             ) : (
-              "Registrar Mensalidade"
+              "Registrar"
             )}
           </Button>
         </div>

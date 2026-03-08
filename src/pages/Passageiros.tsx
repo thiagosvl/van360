@@ -54,6 +54,7 @@ export default function Passageiros() {
     openPassageiroFormDialog,
     openFirstChargeDialog,
     openContractSetupDialog,
+    openSubscriptionExpiredDialog,
   } = useLayout();
 
   const {
@@ -259,7 +260,7 @@ export default function Passageiros() {
   const handleDeleteClick = useCallback(
     (passageiro: Passageiro) => {
       if (is_read_only) {
-        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        openSubscriptionExpiredDialog();
         return;
       }
       openConfirmationDialog({
@@ -289,7 +290,7 @@ export default function Passageiros() {
   const handleToggleClick = useCallback(
     (passageiro: Passageiro) => {
       if (is_read_only) {
-        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        openSubscriptionExpiredDialog();
         return;
       }
       const action = passageiro.ativo ? "desativar" : "ativar";
@@ -371,7 +372,7 @@ export default function Passageiros() {
   const handleEdit = useCallback(
     (passageiro: Passageiro) => {
       if (is_read_only) {
-        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        openSubscriptionExpiredDialog();
         return;
       }
       openPassageiroFormDialog({
@@ -384,7 +385,7 @@ export default function Passageiros() {
 
   const handleOpenNewDialog = useCallback(() => {
     if (is_read_only) {
-      openPlanUpgradeDialog({ feature: "READ_ONLY" });
+      openSubscriptionExpiredDialog();
       return;
     }
     openPassageiroFormDialog({
@@ -401,10 +402,14 @@ export default function Passageiros() {
     openFirstChargeDialog,
     refetchPassageiros,
     is_read_only,
-    openPlanUpgradeDialog,
+    openSubscriptionExpiredDialog,
   ]);
 
   const handleCadastrarRapido = useCallback(async () => {
+    if (is_read_only) {
+      openSubscriptionExpiredDialog();
+      return;
+    }
     if (!profile?.id) return;
 
     let escolaId = escolas?.[0]?.id;
@@ -505,7 +510,7 @@ export default function Passageiros() {
   const handleGenerateContract = useCallback(
     (passageiro: Passageiro) => {
       if (is_read_only) {
-        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        openSubscriptionExpiredDialog();
         return;
       }
       openContractSetupDialog({

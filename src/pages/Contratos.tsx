@@ -1,8 +1,8 @@
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { CheckCircle2, FileText, Send, UserX } from 'lucide-react';
 import {
-  useEffect,
-  useState
+    useEffect,
+    useState
 } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -17,22 +17,22 @@ import { ContratosToolbar } from '@/components/features/contrato/ContratosToolba
 import { ROUTES } from '@/constants/routes';
 import { useLayout } from '@/contexts/LayoutContext';
 import {
-  useContratos,
-  useContratosKPIs,
-  useCreateContrato,
-  useDeleteContrato,
-  useDownloadContrato,
-  usePreviewContrato,
-  useReenviarContrato,
-  useSubstituirContrato,
+    useContratos,
+    useContratosKPIs,
+    useCreateContrato,
+    useDeleteContrato,
+    useDownloadContrato,
+    usePreviewContrato,
+    useReenviarContrato,
+    useSubstituirContrato,
 } from '@/hooks/api/useContratos';
 
 import { usePermissions } from '@/hooks/business/usePermissions';
 import { openBrowserLink } from '@/utils/browser';
 
 const Contratos = () => {
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog } = useLayout();
-  const { profile } = usePermissions();
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog, openSubscriptionExpiredDialog } = useLayout();
+  const { profile, is_read_only } = usePermissions();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -100,6 +100,10 @@ const Contratos = () => {
   };
 
   const handleExcluir = (id: string) => {
+    if (is_read_only) {
+      openSubscriptionExpiredDialog();
+      return;
+    }
     openConfirmationDialog({
       title: 'Excluir Contrato?',
       description: 'Tem certeza que deseja excluir este contrato? Esta ação não pode ser desfeita.',
@@ -113,6 +117,10 @@ const Contratos = () => {
   };
 
   const handleSubstituir = (id: string) => {
+    if (is_read_only) {
+      openSubscriptionExpiredDialog();
+      return;
+    }
     openConfirmationDialog({
       title: 'Substituir Contrato?',
       description: 'O contrato atual será marcado como substituído e um novo será gerado com os dados atuais do passageiro. Deseja continuar?',
@@ -125,6 +133,10 @@ const Contratos = () => {
   };
 
   const handleGerarContrato = (passageiroId: string) => {
+    if (is_read_only) {
+      openSubscriptionExpiredDialog();
+      return;
+    }
     openConfirmationDialog({
       title: 'Gerar Contrato?',
       description: 'Deseja gerar um novo contrato para este passageiro agora?',

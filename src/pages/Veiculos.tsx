@@ -47,7 +47,7 @@ import { Veiculo } from "@/types/veiculo";
 import { Car } from "lucide-react";
 
 export default function Veiculos() {
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openVeiculoFormDialog, openPlanUpgradeDialog } = useLayout();
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openVeiculoFormDialog, openPlanUpgradeDialog, openSubscriptionExpiredDialog } = useLayout();
   const { is_read_only } = usePermissions();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -75,6 +75,10 @@ export default function Veiculos() {
   const createVeiculo = useCreateVeiculo();
 
   const handleCadastrarRapido = useCallback(async () => {
+    if (is_read_only) {
+      openSubscriptionExpiredDialog();
+      return;
+    }
     if (!profile?.id) return;
     
     // Create new object to avoid reference issues
@@ -158,20 +162,20 @@ export default function Veiculos() {
   }, [searchParams, openVeiculoFormDialog, navigate]);
 
   const handleEdit = useCallback((veiculo: Veiculo) => {
-    if (is_read_only) {
-        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+      if (is_read_only) {
+        openSubscriptionExpiredDialog();
         return;
-    }
+      }
     openVeiculoFormDialog({
         editingVeiculo: veiculo
     });
   }, [openVeiculoFormDialog]);
 
   const handleDeleteClick = useCallback((veiculo: Veiculo) => {
-    if (is_read_only) {
-        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+      if (is_read_only) {
+        openSubscriptionExpiredDialog();
         return;
-    }
+      }
     if (veiculo.passageiros_ativos_count > 0) {
       toast.error("veiculo.erro.excluir", {
         description: "veiculo.erro.excluirComPassageiros",
@@ -198,7 +202,7 @@ export default function Veiculos() {
   const handleToggleAtivo = useCallback(
     async (veiculo: Veiculo) => {
       if (is_read_only) {
-        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        openSubscriptionExpiredDialog();
         return;
       }
       if (!profile?.id) return;
@@ -276,7 +280,7 @@ export default function Veiculos() {
                   onApplyFilters={setFilters}
                   onRegister={() => {
                     if (is_read_only) {
-                        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+                        openSubscriptionExpiredDialog();
                         return;
                     }
                     openVeiculoFormDialog({ allowBatchCreation: true });
@@ -299,7 +303,13 @@ export default function Veiculos() {
                     !searchTerm
                       ? {
                           label: "Novo Veículo",
-                          onClick: () => openVeiculoFormDialog(),
+                          onClick: () => {
+                            if (is_read_only) {
+                              openSubscriptionExpiredDialog();
+                              return;
+                            }
+                            openVeiculoFormDialog();
+                          },
                         }
                       : undefined
                   }

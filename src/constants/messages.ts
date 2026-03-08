@@ -274,6 +274,8 @@ export const messages = {
       gerarPix: "Erro ao gerar PIX.",
       copiarPix: "Erro ao copiar PIX.",
       copiarPixDescricao: "Não foi possível copiar o código PIX.",
+      franquiaInsuficiente: "Limite insuficiente",
+      franquiaInsuficienteDescricao: "Você possui {{ATIVOS}} passageiro(s) com automação ativa. Para reduzir sua franquia para {{NOVA}}, desative a automação de pelo menos {{EXCEDENTE}} passageiro(s) na lista de passageiros.",
     },
     sucesso: {
       ativada: "Assinatura ativada com sucesso.",
@@ -394,7 +396,6 @@ export const messages = {
   home: {
     info: {
       saudacaoPadrao: "Olá, Motorista",
-      saudacaoAtalhos: "Acesso Rápido",
       semPendencias: "Nenhuma pendência hoje",
       passageirosEmAtraso: "passageiro(s) em atraso",
     },

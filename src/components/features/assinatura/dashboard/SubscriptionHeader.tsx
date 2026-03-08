@@ -96,11 +96,7 @@ export function SubscriptionHeader({
   const StatusIcon = statusConfig.icon;
 
   const handlePrimaryAction = () => {
-    if (isPendente || isSuspensa) {
-      onPagarClick();
-      return;
-    }
-    if (is_trial) {
+    if (isPendente || isSuspensa || is_trial) {
       onPagarClick();
       return;
     }
@@ -115,7 +111,7 @@ export function SubscriptionHeader({
         feature: FEATURE_OUTROS,
         targetPassengerCount: passageirosAtivos,
         onClose: onRefresh,
-      }); // Upgrade from Essential
+      });
     }
   };
 

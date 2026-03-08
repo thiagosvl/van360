@@ -1,14 +1,11 @@
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogTitle
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { AlertCircle, Loader2, Pencil, Trash2 } from "lucide-react";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { AlertCircle, Loader2, Pencil, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
 export interface CobrancaDeleteDialogProps {
@@ -31,91 +28,92 @@ export default function CobrancaDeleteDialog({
   const showLoading = isLoading || internalLoading;
 
   const handleConfirm = async (e: React.MouseEvent) => {
-      e.preventDefault();
-      if (onConfirm) {
-          const result = onConfirm();
-          if (result instanceof Promise) {
-              setInternalLoading(true);
-              try {
-                  await result;
-              } finally {
-                  setInternalLoading(false);
-              }
-          }
+    e.preventDefault();
+    if (onConfirm) {
+      const result = onConfirm();
+      if (result instanceof Promise) {
+        setInternalLoading(true);
+        try {
+          await result;
+        } finally {
+          setInternalLoading(false);
+        }
       }
+    }
   };
 
   const handleEdit = (e: React.MouseEvent) => {
-      e.preventDefault();
-      onOpenChange(false);
-      onEdit();
+    e.preventDefault();
+    onOpenChange(false);
+    onEdit();
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="w-[95vw] max-w-md rounded-3xl border-0 shadow-2xl p-0 bg-white gap-0 overflow-hidden">
-        
-        {/* Header Visual */}
-        <div className="bg-red-50 p-6 flex flex-col items-center justify-center text-center relative border-b border-red-100">
-            <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mb-4 ring-4 ring-white shadow-sm">
-                <Trash2 className="w-7 h-7 text-red-600" />
-            </div>
-            <AlertDialogTitle className="text-xl font-bold text-gray-900 leading-tight">
-                Você realmente deseja excluir?
-            </AlertDialogTitle>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent 
+        className="w-full max-w-md p-0 gap-0 bg-white h-full sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-[32px] border-0 shadow-2xl"
+        hideCloseButton
+      >
+        {/* Header Visual - Red for Destructive */}
+        <div className="bg-red-600 p-6 text-center relative shrink-0">
+          <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
+            <X className="h-6 w-6" />
+            <span className="sr-only">Fechar</span>
+          </DialogClose>
+
+          <div className="mx-auto bg-white/20 w-12 h-12 rounded-2xl flex items-center justify-center mb-3 backdrop-blur-sm shadow-inner ring-1 ring-white/30">
+            <Trash2 className="w-6 h-6 text-white" />
+          </div>
+          <DialogTitle className="text-xl font-bold text-white leading-tight">
+            Deseja mesmo excluir?
+          </DialogTitle>
         </div>
 
-        {/* Content */}
-        <div className="p-6">
-            <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200/60 flex gap-3 text-left">
-                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                    <p className="font-bold text-amber-900 text-sm">Editar pode ser melhor!</p>
-                    <p className="text-amber-700 text-sm leading-relaxed">
-                        Se você deseja apenas corrigir o <strong>valor</strong>, a <strong>data de vencimento</strong> ou o <strong>status</strong>, não é necessário excluir esta mensalidade da lista. Basta editá-la!
-                    </p>
-                </div>
+        {/* Content Section - Flexible and scrollable if needed */}
+        <div className="p-6 pt-8 space-y-6 flex-1 overflow-y-auto">
+          <div className="bg-orange-50/50 rounded-2xl p-5 border border-orange-100 flex gap-4 text-left shadow-sm">
+            <div className="bg-orange-100 h-10 w-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+              <AlertCircle className="w-5 h-5 text-orange-600" />
             </div>
+            <div className="space-y-1.5 pt-0.5">
+              <p className="font-bold text-orange-900 text-sm tracking-tight">Editar pode ser melhor!</p>
+              <p className="text-orange-800/80 text-[13px] leading-relaxed font-medium">
+                Se você deseja apenas corrigir o <strong className="text-orange-900">valor</strong>, a <strong className="text-orange-900">data</strong> ou o <strong className="text-orange-900">status</strong>, não é necessário excluir. Basta editar!
+              </p>
+            </div>
+          </div>
 
-            <AlertDialogDescription className="text-gray-500 text-sm text-center mt-5 mb-2 font-medium">
-                O que você prefere fazer agora?
-            </AlertDialogDescription>
+          <p className="text-gray-500 text-sm text-center font-medium px-4">
+            A exclusão é irreversível. O que você prefere fazer agora?
+          </p>
         </div>
 
-        {/* Actions */}
-        <AlertDialogFooter className="p-4 bg-gray-50 border-t border-gray-100 sm:justify-between flex-col sm:flex-row gap-3">
-            <Button
-                variant="outline"
-                disabled={showLoading}
-                onClick={handleEdit}
-                className="w-full sm:w-auto h-12 sm:h-auto rounded-xl border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800 hover:border-blue-300 font-bold gap-2 transition-all order-1 sm:order-none"
-            >
-                <Pencil className="w-4 h-4" />
-                Quero Editar
-            </Button>
-            
-            <AlertDialogAction
-                onClick={handleConfirm}
-                disabled={showLoading}
-                className={cn(
-                    "w-full sm:w-auto h-12 sm:h-auto rounded-xl font-bold gap-2 transition-all text-white bg-red-600 hover:bg-red-700 shadow-md shadow-red-500/20 hover:shadow-red-500/30",
-                    showLoading && "opacity-70 cursor-not-allowed"
-                )}
-            >
-                {showLoading ? (
-                    <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Excluindo...
-                    </>
-                ) : (
-                    <>
-                        <Trash2 className="w-4 h-4" />
-                        Excluir Mensalidade
-                    </>
-                )}
-            </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        {/* Fixed Footer */}
+        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
+          <Button
+            variant="outline"
+            disabled={showLoading}
+            onClick={handleEdit}
+            className="w-full h-11 rounded-xl border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800 hover:border-blue-300 font-bold gap-2 transition-all transition-colors"
+          >
+            <Pencil className="w-4 h-4" />
+            <span className="truncate">Editar</span>
+          </Button>
+          
+          <Button
+            onClick={handleConfirm}
+            disabled={showLoading}
+            className="w-full h-11 rounded-xl font-bold gap-2 transition-all text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-500/20 hover:shadow-red-500/30 active:scale-[0.98]"
+          >
+            {showLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+            ) : (
+              <Trash2 className="w-4 h-4 shrink-0" />
+            )}
+            <span className="truncate">{showLoading ? "Excluindo" : "Excluir"}</span>
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

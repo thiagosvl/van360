@@ -1,4 +1,3 @@
-import { CobrancaStatus } from "@/types/enums";
 import { moneyToNumber } from "@/utils/masks";
 import { apiClient } from "./client";
 
@@ -45,13 +44,13 @@ export const cobrancaApi = {
         apiClient.post(`${endpointBase}/${cobrancaId}/desfazer-pagamento-manual`).then(res => res.data),
 
     registrarPagamentoManual: (cobrancaId: string, data: any) => {
-        return cobrancaApi.updateCobranca(cobrancaId, {
-            status: CobrancaStatus.PAGO,
-            data_pagamento: data.data_pagamento,
-            tipo_pagamento: data.tipo_pagamento,
-            valor_pago: moneyToNumber(data.valor_pago),
-            pagamento_manual: true,
-        });
+        const payload = {
+            ...data,
+            valor_pago: data.valor_pago !== undefined ? moneyToNumber(data.valor_pago) : undefined,
+        };
+        return apiClient
+            .post(`${endpointBase}/${cobrancaId}/registrar-pagamento-manual`, payload)
+            .then(res => res.data);
     },
 
     fetchAvailableYears: (passageiroId: string) =>

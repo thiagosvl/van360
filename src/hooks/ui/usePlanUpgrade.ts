@@ -1,6 +1,7 @@
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { usuarioApi } from "@/services/api/usuario.api";
+import { AssinaturaStatus } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
 import { useState } from "react";
 
@@ -22,7 +23,7 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
     valor: number;
     nomePlano: string;
     franquia?: number;
-    context?: "register" | "upgrade" | "franchise_upgrade" | "plan_upgrade";
+    context?: "register" | "upgrade" | "expansion";
     initialData?: {
       qrCodePayload: string;
       location: string;
@@ -110,8 +111,19 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
       if (isAlreadyProfissional) {
         // --- Fluxo de Troca de Capacidade (Subplano) ---
 
+        // Se o plano alvo é o mesmo que o atual e o sistema está restrito, 
+        // usamos o endpoint de regularização para logs mais precisos
+        const currentAssinatura = profile.assinatura || profile.assinaturas_usuarios?.[0];
+        const isSamePlan = targetId === currentAssinatura?.plano_id;
+        const isRestricted = plano?.is_suspensa || plano?.is_cancelada || 
+                            plano?.status === AssinaturaStatus.SUSPENSA || 
+                            plano?.status === AssinaturaStatus.CANCELADA;
+
+        if (isSamePlan && isRestricted) {
+          result = await usuarioApi.regularizarAssinatura({ usuario_id: profile.id });
+        }
         // Cenario 1: Customizado (Quantidade > tiers padrão)
-        if (targetPlan?.isCustom) {
+        else if (targetPlan?.isCustom) {
           result = await usuarioApi.criarAssinaturaProfissionalPersonalizado({
             usuario_id: profile.id,
             quantidade: targetPlan.quantidade
@@ -140,7 +152,7 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
           valor: Number(result.preco_aplicado || result.valor || 0),
           nomePlano: "Plano Profissional",
           franquia: targetPlan?.quantidade,
-          context: isAlreadyProfissional ? "franchise_upgrade" : "plan_upgrade",
+          context: isAlreadyProfissional ? "expansion" : "upgrade",
           initialData: {
             qrCodePayload: result.qrCodePayload,
             location: result.location,
@@ -173,13 +185,15 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
     }
   };
 
-  const handleClosePayment = (success?: boolean, customMessage?: { title: string, description: string }) => {
+  const handleClosePayment = async (success?: boolean, customMessage?: { title: string, description: string }) => {
     // Captura o contexto antes de limpar o estado
     const context = pagamentoDialog?.context;
     setPagamentoDialog(null);
 
-    // Fecha nível 2 SOMENTE se houve sucesso explícito OU verificado anteriormente
+    // Se houve sucesso (ex: confirmou pagamento ou foi operação gratuita), atualizamos tudo
     if (success === true || isPaymentVerified) {
+      await refreshProfile();
+
       if (customMessage) {
         toast.success(customMessage.title, {
           description: customMessage.description,
@@ -187,11 +201,11 @@ export function usePlanUpgrade({ onSuccess, onOpenChange }: UsePlanUpgradeProps 
         });
       } else {
         // Mensagens contextuais baseadas no tipo de operação
-        if (context === "franchise_upgrade") {
+        if (context === "expansion") {
           toast.success("assinatura.sucesso.limiteAtualizado", {
             description: "assinatura.sucesso.limiteAtualizadoDescricao",
           });
-        } else if (context === "plan_upgrade") {
+        } else if (context === "upgrade") {
           toast.success("assinatura.sucesso.bemVindoProfissional", {
             description: "assinatura.sucesso.bemVindoProfissionalDescricao",
           });

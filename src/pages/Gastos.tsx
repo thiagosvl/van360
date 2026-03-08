@@ -26,14 +26,21 @@ import { cn } from "@/lib/utils";
 import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
 
 import {
-  CalendarIcon,
-  TrendingDown,
-  TrendingUp,
-  Wallet,
+    CalendarIcon,
+    TrendingDown,
+    TrendingUp,
+    Wallet,
 } from "lucide-react";
 
 export default function Gastos() {
-  const { setPageTitle, openGastoFormDialog } = useLayout();
+  const {
+    setPageTitle,
+    openGastoFormDialog,
+    openConfirmationDialog,
+    closeConfirmationDialog,
+    openPlanUpgradeDialog,
+    openSubscriptionExpiredDialog
+  } = useLayout();
   const deleteGasto = useDeleteGasto();
 
   const isActionLoading = deleteGasto.isPending;
@@ -113,20 +120,49 @@ export default function Gastos() {
 
   const handleDelete = useCallback(
     async (id: string) => {
-      deleteGasto.mutate(id);
+      if (is_read_only) {
+        openSubscriptionExpiredDialog();
+        return;
+      }
+
+      openConfirmationDialog({
+        title: "Excluir gasto?",
+        description:
+          "Tem certeza que deseja excluir este registro de gasto? Essa ação não poderá ser desfeita.",
+        confirmText: "Excluir",
+        variant: "destructive",
+        onConfirm: async () => {
+          try {
+            await deleteGasto.mutateAsync(id);
+            closeConfirmationDialog();
+          } catch (error) {
+            closeConfirmationDialog();
+          }
+        },
+      });
     },
-    [deleteGasto]
+    [
+      is_read_only,
+      openPlanUpgradeDialog,
+      openConfirmationDialog,
+      deleteGasto,
+      closeConfirmationDialog,
+    ]
   );
 
   const openDialog = useCallback(
     (gasto: Gasto | null = null) => {
+      if (is_read_only) {
+        openSubscriptionExpiredDialog();
+        return;
+      }
       openGastoFormDialog({
         gastoToEdit: gasto,
         veiculos: veiculos.map((v) => ({ id: v.id, placa: v.placa })),
         usuarioId: profile?.id,
       });
     },
-    [openGastoFormDialog, veiculos, profile?.id]
+    [is_read_only, openSubscriptionExpiredDialog, openGastoFormDialog, veiculos, profile?.id]
   );
 
   const pullToRefreshReload = async () => {
@@ -222,7 +258,13 @@ export default function Gastos() {
                         veiculo: filters.veiculo
                      });
                   }}
-                  onRegistrarGasto={() => openDialog()}
+                  onRegistrarGasto={() => {
+                      if (is_read_only) {
+                          openSubscriptionExpiredDialog();
+                          return;
+                      }
+                      openDialog();
+                  }}
                   categorias={CATEGORIAS_GASTOS}
                   veiculos={veiculos.map((v) => ({ id: v.id, placa: v.placa }))}
                   disabled={loading || loadingActions}

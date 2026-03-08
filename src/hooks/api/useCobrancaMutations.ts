@@ -89,6 +89,7 @@ export function useDesfazerPagamento() {
     onSuccess: (updatedCobranca, cobrancaId) => {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["cobranca", cobrancaId], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["cobranca-notificacoes", cobrancaId], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("cobranca.sucesso.pagamentoDesfeito");
@@ -114,7 +115,6 @@ export function useRegistrarPagamentoManual() {
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
       toast.success("cobranca.sucesso.pagamentoRegistrado");
     },
-
     onError: (error: any) => {
       toast.error("cobranca.erro.registrarPagamento", {
         description: getErrorMessage(error, "cobranca.erro.registrarPagamentoDetalhe"),
@@ -167,4 +167,3 @@ export function useToggleNotificacoesCobranca() {
     },
   });
 }
-

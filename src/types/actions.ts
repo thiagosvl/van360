@@ -9,6 +9,7 @@ export interface ActionItem {
   swipeColor?: string; // For Mobile Swipe/Drawer styling (e.g. 'bg-red-500')
   // State
   disabled?: boolean;
+  isLoading?: boolean;
   hidden?: boolean;
   // Specifics
   isDestructive?: boolean; // Semantic flag

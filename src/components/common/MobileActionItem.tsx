@@ -7,7 +7,7 @@ import {
     SheetTitle,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { MoreVertical } from "lucide-react";
+import { Loader2, MoreVertical } from "lucide-react";
 import { ReactNode, useMemo, useState } from "react";
 import { SwipeableItem } from "./SwipeableItem";
 
@@ -25,6 +25,8 @@ export interface MobileAction {
   disabled?: boolean;
   /** If true, action is destructive (Delete, etc) - useful for Drawer styling */
   isDestructive?: boolean;
+  /** If true, shows a loader and disables the action */
+  isLoading?: boolean;
 }
 
 interface MobileActionItemProps {
@@ -52,11 +54,12 @@ export function MobileActionItem({
     // Note: If an action is disabled, we might want to visually indicate it in Swipe too.
     const transformSwipeAction = (a: MobileAction) => ({
       ...a,
-      color: a.disabled 
+      color: (a.disabled || a.isLoading) 
         ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
         : cn("text-white", a.swipeColor || "bg-gray-400"),
+      icon: a.isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : a.icon,
       onClick: () => {
-         if (!a.disabled) a.onClick();
+         if (!a.disabled && !a.isLoading) a.onClick();
       },
       // We can pass opacity or specific classes if SwipeableItem supports it
     });
@@ -116,27 +119,32 @@ export function MobileActionItem({
               <Button
                 key={idx}
                 variant="ghost" // Usamos ghost para aplicar estilos customizados de "card"
-                disabled={action.disabled}
+                disabled={action.disabled || action.isLoading}
                 className={cn(
                     "w-full justify-start h-14 text-base font-medium transition-all active:scale-[0.98] rounded-xl shadow-sm border",
                     // Estilo Base (Card Branco)
                     "bg-white border-gray-200 hover:bg-gray-50",
                     // Estilo Destrutivo override
                     action.isDestructive && "border-red-100 bg-red-50/50 text-red-600 hover:bg-red-100/50 hover:border-red-200",
-                    // Disabled style (Enhanced for visibility)
-                    action.disabled && "text-gray-400 cursor-not-allowed hover:bg-gray-50 disabled:bg-gray-50 disabled:opacity-60 disabled:grayscale border-gray-100",
+                    // Disabled/Loading style
+                    (action.disabled || action.isLoading) && "text-gray-400 cursor-not-allowed hover:bg-gray-50 disabled:bg-gray-50 disabled:opacity-60 disabled:grayscale border-gray-100",
                     // Estilo Customizado
                     action.drawerClass,
                     // Cor padrão se não for destrutivo/disabled
-                    !action.isDestructive && !action.disabled && "text-gray-700"
+                    !action.isDestructive && !action.disabled && !action.isLoading && "text-gray-700"
                 )}
                 onClick={() => {
+                  if (action.disabled || action.isLoading) return;
                   setIsSheetOpen(false);
                   action.onClick();
                 }}
               >
-                <span className={cn("mr-3", action.isDestructive ? "text-red-600" : (action.disabled ? "text-gray-300" : "text-gray-500"))}>
-                    <IconRenderer icon={action.icon} className="h-5 w-5" />
+                <span className={cn("mr-3", action.isDestructive ? "text-red-600" : ((action.disabled || action.isLoading) ? "text-gray-300" : "text-gray-500"))}>
+                    {action.isLoading ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                        <IconRenderer icon={action.icon} className="h-5 w-5" />
+                    )}
                  </span>
                 {action.label}
               </Button>

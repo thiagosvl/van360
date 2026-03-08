@@ -1,17 +1,17 @@
 import { ROUTES } from "@/constants/routes";
 import {
-    Copy,
-    CopyCheck,
-    CreditCard,
-    DollarSign,
-    FileText,
-    Plus,
-    Receipt,
-    TrendingDown,
-    UserCheck,
-    Users,
-    Wallet,
-    Zap,
+  Copy,
+  CopyCheck,
+  CreditCard,
+  DollarSign,
+  FileText,
+  Plus,
+  Receipt,
+  TrendingDown,
+  UserCheck,
+  Users,
+  Wallet,
+  Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -23,9 +23,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getMessage } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    usePermissions,
-    useSession,
-    useUpsellContent
+  usePermissions,
+  useSession,
+  useUpsellContent
 } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
@@ -36,8 +36,8 @@ import { MiniKPI } from "@/components/features/home/MiniKPI";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
 import {
-    PassageiroFormModes,
-    PixKeyStatus
+  PassageiroFormModes,
+  PixKeyStatus
 } from "@/types/enums";
 import { getMesNome } from "@/utils/formatters";
 
@@ -51,6 +51,7 @@ const Home = () => {
     openPassageiroFormDialog,
     openGastoFormDialog,
     openFirstChargeDialog,
+    openSubscriptionExpiredDialog,
   } = useLayout();
   const { loading: isSessionLoading } = useSession();
   /* WhatsApp Global Mode Active */
@@ -60,6 +61,7 @@ const Home = () => {
     isLoading: isProfileLoading,
     plano,
     is_profissional,
+    is_read_only,
     summary: systemSummary,
   } = usePermissions();
 
@@ -144,13 +146,21 @@ const Home = () => {
   }, [openFirstChargeDialog]);
 
   const handleOpenPassageiroDialog = useCallback(() => {
+    if (is_read_only) {
+      openSubscriptionExpiredDialog();
+      return;
+    }
     openPassageiroFormDialog({
       mode: PassageiroFormModes.CREATE,
       onSuccess: handleSuccessFormPassageiro,
     });
-  }, [openPassageiroFormDialog, handleSuccessFormPassageiro]);
+  }, [openPassageiroFormDialog, handleSuccessFormPassageiro, is_read_only, openSubscriptionExpiredDialog]);
 
   const handleOpenGastoDialog = useCallback(() => {
+    if (is_read_only) {
+      openSubscriptionExpiredDialog();
+      return;
+    }
     const triggerGasto = () => {
       openGastoFormDialog({
         onSuccess: () => {},
@@ -158,7 +168,7 @@ const Home = () => {
     };
 
     triggerGasto();
-  }, [openPlanUpgradeDialog, openGastoFormDialog]);
+  }, [openPlanUpgradeDialog, openGastoFormDialog, is_read_only, openSubscriptionExpiredDialog]);
 
   const handleEscolaCreated = useCallback(
     (novaEscola: any, keepOpen?: boolean) => {
@@ -248,26 +258,38 @@ const Home = () => {
           {showOnboarding && (
             <section>
               <QuickStartCard
-                onOpenVeiculoDialog={() =>
+                onOpenVeiculoDialog={() => {
+                  if (is_read_only) {
+                    openSubscriptionExpiredDialog();
+                    return;
+                  }
                   openVeiculoFormDialog({
                     allowBatchCreation: true,
                     onSuccess: handleVeiculoCreated,
-                  })
-                }
-                onOpenEscolaDialog={() =>
+                  });
+                }}
+                onOpenEscolaDialog={() => {
+                   if (is_read_only) {
+                    openSubscriptionExpiredDialog();
+                    return;
+                  }
                   openEscolaFormDialog({
                     allowBatchCreation: true,
                     onSuccess: handleEscolaCreated,
-                  })
-                }
-                onOpenPassageiroDialog={() =>
+                  });
+                }}
+                onOpenPassageiroDialog={() => {
+                   if (is_read_only) {
+                    openSubscriptionExpiredDialog();
+                    return;
+                  }
                   openPassageiroFormDialog({
                     mode: PassageiroFormModes.CREATE,
                     onSuccess: (passageiro) => {
                       handleSuccessFormPassageiro(passageiro);
                     },
-                  })
-                }
+                  });
+                }}
                 onOpenPixKeyDialog={() => openPixKeyDialog()}
               />
             </section>
@@ -413,7 +435,7 @@ const Home = () => {
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.EXPENSES}
                 icon={TrendingDown}
-                label="Gastos"
+                label="Controle de Gastos"
                 colorClass="text-red-600"
                 bgClass="bg-red-50"
               />

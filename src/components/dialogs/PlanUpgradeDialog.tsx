@@ -98,13 +98,16 @@ export function PlanUpgradeDialog({
 
   const valorAtual = Number(assinatura?.preco_aplicado ?? assinatura?.valor);
   const passageirosAtivos = resumo?.contadores?.passageiros?.ativos;
+  const comAutomacao = resumo?.contadores?.passageiros?.com_automacao || 0;
 
   const targetFromProps = targetPassengerCount ?? 0;
-  const targetFromAtivos = passageirosAtivos || 0;
+  const targetFromAtivos = comAutomacao || 0;
   let effectiveTarget = Math.max(targetFromProps, targetFromAtivos);
 
   if (is_profissional && effectiveTarget <= franquiaAtual) {
-    effectiveTarget = franquiaAtual + 1;
+    // If already professional, we don't force them to stay above current franchise for visualization,
+    // but the system will block later if needed.
+    effectiveTarget = 0; // Allow viewing all tiers (downgrade)
   }
 
   const { options: franchiseOptions, calculateProrata } = useUpgradeFranquia({
@@ -115,19 +118,10 @@ export function PlanUpgradeDialog({
   });
 
   const minAllowedQuantity = useMemo(() => {
-    const standardTiers = franchiseOptions?.filter((o) => !o.isCustom) || [];
-    const maxStandardTier = Math.max(
-      ...standardTiers.map((o) => o.quantidade || 0),
-      0,
-    );
-    const current = passageirosAtivos ?? 0;
-
-    if (current <= maxStandardTier) {
-      return maxStandardTier + 1;
-    }
-
-    return current;
-  }, [franchiseOptions, passageirosAtivos]);
+    // We want to allow the user to see all plans, so minAllowed should be based on what's technically possible (e.g. 1)
+    // but for the "custom" input, we might want to start from at least 1 or comAutomacao.
+    return 1;
+  }, []);
 
   const planoEssencialData = planos.find(
     (p: any) => p.slug === PLANO_ESSENCIAL,
@@ -139,13 +133,8 @@ export function PlanUpgradeDialog({
   const availableFranchiseOptions = useMemo(() => {
     if (!franchiseOptions) return [];
 
-    const filtered = franchiseOptions.filter((opt) => {
-      const quantidade = opt.quantidade || 0;
-      const requiredCapacity = effectiveTarget;
-      
-      if (quantidade < requiredCapacity) return false;
-      if (is_profissional && quantidade <= franquiaAtual) return false;
-
+    const filtered = franchiseOptions.filter(() => {
+      // In downgrade flow, we want to allow selecting smaller plans to see the alert.
       return true;
     });
 
@@ -474,6 +463,8 @@ export function PlanUpgradeDialog({
             })()}
             trialDays={trialDays}
             isLoadingPrice={isDebouncing || isLoadingPrice}
+            isFranchiseInsufficient={activeTab === PLANO_PROFISSIONAL && Number(currentTierOption?.quantidade || 0) < comAutomacao}
+            automatedCount={comAutomacao}
           />
         </DialogContent>
       </Dialog>

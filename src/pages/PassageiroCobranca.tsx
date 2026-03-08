@@ -1,5 +1,5 @@
+import { ActivityTimeline } from "@/components/common/ActivityTimeline";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
-import { NotificationTimeline } from "@/components/features/cobranca/NotificationTimeline";
 import { PaymentTimeline } from "@/components/features/cobranca/PaymentTimeline";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,6 @@ import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
     useCobranca,
-    useCobrancaNotificacoes,
     useDeleteCobranca,
     usePermissions,
     useProfile,
@@ -21,7 +20,6 @@ import {
 import { useCobrancaOperations } from "@/hooks/ui/useCobrancaActions";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
-import { CobrancaNotificacao } from "@/types/cobrancaNotificacao";
 import { CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
@@ -61,6 +59,7 @@ import {
     CreditCard,
     History,
     IdCard,
+    Loader2,
     MapPin,
     Pencil,
     Phone,
@@ -144,11 +143,12 @@ export default function PassageiroCobranca() {
     openManualPaymentDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
+    openSubscriptionExpiredDialog,
   } = useLayout();
 
   const { user } = useSession();
   const { plano } = useProfile(user?.id);
-  const permissions = usePermissions();
+  const { is_read_only, canUseAutomatedCharges } = usePermissions();
 
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
@@ -166,13 +166,8 @@ export default function PassageiroCobranca() {
     enabled: !!cobranca_id && !isDeleting,
   });
 
-  const { data: notificacoesData } = useCobrancaNotificacoes(cobranca_id, {
-    enabled: !!cobranca_id && !isDeleting,
-  });
-
   const cobranca = cobrancaData as Cobranca | null;
   const cobrancaTyped = cobranca;
-  const notificacoes = (notificacoesData || []) as CobrancaNotificacao[];
 
   const loading = isCobrancaLoading;
 
@@ -219,6 +214,10 @@ export default function PassageiroCobranca() {
   ]);
 
   const handleEditCobrancaClick = () => {
+    if (is_read_only) {
+      openSubscriptionExpiredDialog();
+      return;
+    }
     if (cobrancaNormalizadaParaEdicao) {
       openCobrancaEditDialog({
         cobranca: cobrancaNormalizadaParaEdicao,
@@ -240,6 +239,9 @@ export default function PassageiroCobranca() {
     // handleDeleteCobranca, // We overlap this one
     handleUpgrade,
     isActionLoading: originalIsActionLoading,
+    isTogglingNotificacoes,
+    isSendingNotification,
+    isDesfazendoPagamento
   } = useCobrancaOperations({
     cobranca: cobranca!,
     plano: plano,
@@ -249,6 +251,10 @@ export default function PassageiroCobranca() {
 
   // Wrapper para adicionar navegação após exclusão
   const handleDeleteCobranca = async () => {
+    if (is_read_only) {
+      openSubscriptionExpiredDialog();
+      return;
+    }
     if (!cobranca) return;
     
     // Captura o ID antes da mutação pois o objeto pode ser limpo do cache (Success -> removeQueries)
@@ -652,7 +658,11 @@ export default function PassageiroCobranca() {
                             "h-12 px-8 rounded-xl font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto min-w-[200px]",
                             paymentButtonClass,
                           )}
-                          onClick={() =>
+                          onClick={() => {
+                            if (is_read_only) {
+                              openSubscriptionExpiredDialog();
+                              return;
+                            }
                             openManualPaymentDialog({
                               cobrancaId: cobrancaTyped.id,
                               passageiroNome: cobrancaTyped.passageiro.nome,
@@ -664,7 +674,7 @@ export default function PassageiroCobranca() {
                               onPaymentRecorded: () => {
                                 refetchCobranca();
                                 // Upsell Check
-                                if (!permissions.canUseAutomatedCharges) {
+                                if (!canUseAutomatedCharges) {
                                   handleUpgrade(
                                     FEATURE_COBRANCA_AUTOMATICA,
                                     "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?",
@@ -672,8 +682,8 @@ export default function PassageiroCobranca() {
                                   );
                                 }
                               },
-                            })
-                          }
+                            });
+                          }}
                         >
                           <BadgeCheck className="w-5 h-5 mr-2" />
                           Registrar Pagamento
@@ -687,8 +697,13 @@ export default function PassageiroCobranca() {
                               variant="outline"
                               className="h-12 px-8 rounded-xl border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 w-full sm:w-auto min-w-[200px]"
                               onClick={handleDesfazerPagamento}
+                              disabled={isActionLoading}
                             >
-                              <History className="w-4 h-4 mr-2" />
+                              {isDesfazendoPagamento ? (
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              ) : (
+                                <History className="w-4 h-4 mr-2" />
+                              )}
                               Desfazer Pagamento
                             </Button>
                             <p className="text-muted-foreground w-full text-xs">
@@ -718,7 +733,7 @@ export default function PassageiroCobranca() {
                         size="sm"
                         className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
                         onClick={handleEditCobrancaClick}
-                        disabled={disableEditarCobranca(cobrancaTyped)}
+                        disabled={disableEditarCobranca(cobrancaTyped) || isActionLoading}
                       >
                         <Pencil className="w-3.5 h-3.5 mr-2" /> Editar
                       </Button>
@@ -727,10 +742,15 @@ export default function PassageiroCobranca() {
                         variant="ghost"
                         size="sm"
                         className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
-                        disabled={!canSendNotification(cobrancaTyped)}
+                        disabled={!canSendNotification(cobrancaTyped) || isActionLoading}
                         onClick={handleEnviarNotificacao}
                       >
-                        <Send className="w-3.5 h-3.5 mr-2" /> Cobrar via WhatsApp
+                        {isSendingNotification ? (
+                          <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                        ) : (
+                          <Send className="w-3.5 h-3.5 mr-2" />
+                        )}
+                        Cobrar via WhatsApp
                       </Button>
 
                       {canViewReceipt(cobrancaTyped) && (
@@ -753,20 +773,17 @@ export default function PassageiroCobranca() {
                         variant="ghost"
                         size="sm"
                         className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
-                        disabled={seForPago(cobrancaTyped)}
+                        disabled={seForPago(cobrancaTyped) || isActionLoading}
                         onClick={handleToggleLembretes}
                       >
-                        {cobrancaTyped?.desativar_lembretes ? (
-                          <>
-                            <Bell className="w-3.5 h-3.5 mr-2" /> Ativar
-                            Lembretes Automáticos
-                          </>
+                        {isTogglingNotificacoes ? (
+                          <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                        ) : cobrancaTyped?.desativar_lembretes ? (
+                          <Bell className="w-3.5 h-3.5 mr-2" />
                         ) : (
-                          <>
-                            <BellOff className="w-3.5 h-3.5 mr-2" /> Pausar
-                            Lembretes Automáticos
-                          </>
+                          <BellOff className="w-3.5 h-3.5 mr-2" />
                         )}
+                        {cobrancaTyped?.desativar_lembretes ? "Ativar Lembretes Automáticos" : "Pausar Lembretes Automáticos"}
                       </Button>
                     </div>
 
@@ -775,10 +792,15 @@ export default function PassageiroCobranca() {
                       <Button
                         variant="ghost"
                         className="text-red-400 hover:text-red-600 hover:bg-red-50 font-medium text-xs h-8 px-3 rounded-md transition-colors"
-                        disabled={disableExcluirCobranca(cobrancaTyped)}
+                        disabled={disableExcluirCobranca(cobrancaTyped) || isActionLoading}
                         onClick={handleDeleteCobranca}
                       >
-                        <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir mensalidade
+                        {isDeleting ? (
+                          <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3.5 h-3.5 mr-2" />
+                        )}
+                        Excluir mensalidade
                       </Button>
                     </div>
                   </div>
@@ -837,7 +859,7 @@ export default function PassageiroCobranca() {
                   </Card>
                 </motion.div>
 
-                {/* Timeline Lembretes Card */}
+                {/* Timeline de Atividades Card */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -847,19 +869,14 @@ export default function PassageiroCobranca() {
                   <Card className="h-full bg-white border border-gray-100 shadow-lg">
                     <CardHeader className="pb-2">
                       <CardTitle className="flex items-center gap-2 text-base font-bold text-gray-900">
-                        Histórico de Lembretes
+                        Histórico da Cobrança
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-4 px-2 sm:pr-4">
-                      {notificacoes && notificacoes.length > 0 ? (
-                        <NotificationTimeline items={notificacoes} />
-                      ) : (
-                        <div className="text-center py-8">
-                          <p className="text-sm text-gray-400 font-medium">
-                            Nenhum lembrete enviado.
-                          </p>
-                        </div>
-                      )}
+                      <ActivityTimeline 
+                        entidadeTipo="COBRANCA" 
+                        entidadeId={cobranca_id} 
+                      />
                     </CardContent>
                   </Card>
                 </motion.div>

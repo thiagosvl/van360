@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { PLANO_ESSENCIAL } from "@/constants";
+import { getMessage } from "@/constants/messages";
 import { formatCurrency } from "@/utils/formatters/currency";
 import { Loader2 } from "lucide-react";
 
@@ -18,6 +19,10 @@ interface FooterActionsProps {
   originalPrice?: number | null;
   trialDays?: number;
   isLoadingPrice?: boolean;
+
+  // Safety lock props
+  isFranchiseInsufficient?: boolean;
+  automatedCount?: number;
 }
 
 export function FooterActions({
@@ -32,6 +37,8 @@ export function FooterActions({
   currentPrice,
   trialDays = 7, // Default fallback
   isLoadingPrice = false,
+  isFranchiseInsufficient = false,
+  automatedCount = 0,
 }: FooterActionsProps) {
   return (
     <div className="shrink-0 z-20 shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.05)] bg-white">
@@ -40,6 +47,28 @@ export function FooterActions({
           <span className="text-sm font-semibold text-gray-800">
             Experimente por {trialDays} dias grátis
           </span>
+        </div>
+      )}
+
+      {isFranchiseInsufficient && activeTab !== PLANO_ESSENCIAL && (
+        <div className="bg-amber-50 py-3 px-6 border-b border-amber-100 animate-in fade-in slide-in-from-bottom-2">
+          <div className="flex items-start gap-3">
+             <div className="bg-amber-100 p-1 rounded-full mt-0.5">
+                <span className="text-amber-600">⚠️</span>
+             </div>
+             <div className="flex-1">
+                <p className="text-xs font-bold text-amber-900 leading-tight">
+                  {getMessage("assinatura.erro.franquiaInsuficiente")}
+                </p>
+                <p className="text-[10px] text-amber-700 mt-0.5 leading-tight">
+                  {getMessage("assinatura.erro.franquiaInsuficienteDescricao", {
+                    ATIVOS: automatedCount,
+                    NOVA: String(currentTierOption?.quantidade || 0),
+                    EXCEDENTE: automatedCount - Number(currentTierOption?.quantidade || 0)
+                  })}
+                </p>
+             </div>
+          </div>
         </div>
       )}
 
@@ -76,7 +105,7 @@ export function FooterActions({
           <Button
             className="h-12 px-6 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-md shadow-violet-200/50 transition-all text-sm mb-0 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={onUpgradeProfissional}
-            disabled={loading || !currentTierOption || (currentPrice === null && !isLoadingPrice) || isLoadingPrice}
+            disabled={loading || !currentTierOption || (currentPrice === null && !isLoadingPrice) || isLoadingPrice || isFranchiseInsufficient}
           >
             {loading ? (
               <Loader2 className="animate-spin w-5 h-5" />

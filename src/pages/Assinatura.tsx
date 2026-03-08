@@ -10,7 +10,7 @@ import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { useEffect, useMemo, useState } from "react";
 
 export default function Assinatura() {
-  const { setPageTitle } = useLayout();
+  const { setPageTitle, openPlanUpgradeDialog } = useLayout();
   const {
     profile,
     plano,
@@ -73,6 +73,11 @@ export default function Assinatura() {
     if (cobranca) {
       setSelectedCobranca(cobranca);
       setPaymentModalOpen(true);
+    } else {
+        openPlanUpgradeDialog({
+            defaultTab: plano?.slug as any,
+            feature: "RENEWAL"
+        });
     }
   };
 

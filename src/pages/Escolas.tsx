@@ -40,6 +40,7 @@ export default function Escolas() {
     closeConfirmationDialog,
     openEscolaFormDialog,
     openPlanUpgradeDialog,
+    openSubscriptionExpiredDialog,
   } = useLayout();
   
   const { is_read_only } = usePermissions();
@@ -66,6 +67,10 @@ export default function Escolas() {
   const createEscola = useCreateEscola();
 
   const handleCadastrarRapido = useCallback(async () => {
+    if (is_read_only) {
+      openSubscriptionExpiredDialog();
+      return;
+    }
     if (!profile?.id) return;
 
     const fakeEscola = { ...mockGenerator.escola() };
@@ -149,7 +154,7 @@ export default function Escolas() {
   const handleEdit = useCallback(
     (escola: Escola) => {
       if (is_read_only) {
-        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        openSubscriptionExpiredDialog();
         return;
       }
       openEscolaFormDialog({
@@ -162,7 +167,7 @@ export default function Escolas() {
   const handleDeleteClick = useCallback(
     (escola: Escola) => {
       if (is_read_only) {
-        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        openSubscriptionExpiredDialog();
         return;
       }
       if (escola.passageiros_ativos_count > 0) {
@@ -194,7 +199,7 @@ export default function Escolas() {
   const handleToggleAtivo = useCallback(
     async (escola: Escola) => {
       if (is_read_only) {
-        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+        openSubscriptionExpiredDialog();
         return;
       }
       if (!profile?.id) return;
@@ -287,7 +292,7 @@ export default function Escolas() {
                   onApplyFilters={setFilters}
                   onRegister={() => {
                     if (is_read_only) {
-                        openPlanUpgradeDialog({ feature: "READ_ONLY" });
+                        openSubscriptionExpiredDialog();
                         return;
                     }
                     openEscolaFormDialog({ allowBatchCreation: true });
@@ -310,7 +315,13 @@ export default function Escolas() {
                     !searchTerm
                       ? {
                           label: "Cadastrar Escola",
-                          onClick: () => openEscolaFormDialog(),
+                          onClick: () => {
+                            if (is_read_only) {
+                              openSubscriptionExpiredDialog();
+                              return;
+                            }
+                            openEscolaFormDialog();
+                          },
                         }
                       : undefined
                   }

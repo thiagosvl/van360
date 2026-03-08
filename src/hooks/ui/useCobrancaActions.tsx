@@ -56,6 +56,7 @@ export function useCobrancaOperations({
     openPlanUpgradeDialog,
     openCobrancaDeleteDialog,
     openCobrancaEditDialog,
+    openSubscriptionExpiredDialog,
   } = useLayout();
 
   // Mutations
@@ -77,10 +78,15 @@ export function useCobrancaOperations({
 
   const { 
     canUseNotifications: hasNotificacoesAccess,
-    canUseAutomatedCharges
+    canUseAutomatedCharges,
+    is_read_only
   } = usePermissions();
 
   const handleToggleLembretes = useCallback(async () => {
+    if (is_read_only) {
+      openSubscriptionExpiredDialog();
+      return;
+    }
     if (!hasNotificacoesAccess) {
       handleUpgrade(FEATURE_NOTIFICACOES);
       return;
@@ -97,6 +103,10 @@ export function useCobrancaOperations({
   }, [toggleNotificacoes, hasNotificacoesAccess, handleUpgrade, onActionSuccess, cobranca]);
 
   const handleEnviarNotificacao = useCallback(async () => {
+    if (is_read_only) {
+      openSubscriptionExpiredDialog();
+      return;
+    }
     if (!hasNotificacoesAccess) {
       handleUpgrade(FEATURE_COBRANCA_AUTOMATICA);
       return;
@@ -132,6 +142,10 @@ export function useCobrancaOperations({
   ]);
 
   const handleDesfazerPagamento = useCallback(async () => {
+    if (is_read_only) {
+      openSubscriptionExpiredDialog();
+      return;
+    }
     openConfirmationDialog({
       title: "Desfazer pagamento?",
       description:
@@ -158,6 +172,10 @@ export function useCobrancaOperations({
   ]);
 
   const handleDeleteCobranca = useCallback(async () => {
+    if (is_read_only) {
+      openSubscriptionExpiredDialog();
+      return;
+    }
     openCobrancaDeleteDialog({
       onConfirm: async () => {
         try {
@@ -196,6 +214,10 @@ export function useCobrancaOperations({
     handleDeleteCobranca,
     handleUpgrade,
     isActionLoading,
+    isTogglingNotificacoes: toggleNotificacoes.isPending,
+    isSendingNotification: enviarNotificacao.isPending,
+    isDesfazendoPagamento: desfazerPagamento.isPending,
+    isDeleting: deleteCobranca.isPending
   };
 }
 
@@ -225,6 +247,11 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     handleEnviarNotificacao,
     handleDesfazerPagamento,
     handleDeleteCobranca,
+    isActionLoading,
+    isTogglingNotificacoes,
+    isSendingNotification,
+    isDesfazendoPagamento,
+    isDeleting
   } = useCobrancaOperations(props);
 
   const { canUseNotifications: hasNotificacoesAccess } = usePermissions();
@@ -249,6 +276,8 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         icon: <RotateCcw className="h-4 w-4" />,
         onClick: props.onDesfazerPagamento || handleDesfazerPagamento,
         swipeColor: "bg-amber-500",
+        isLoading: isDesfazendoPagamento,
+        disabled: isActionLoading
       });
     }
 
@@ -273,6 +302,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
           setTimeout(() => onRegistrarPagamento(), 10);
         },
         swipeColor: "bg-emerald-500",
+        disabled: isActionLoading
       });
     }
 
@@ -306,6 +336,8 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         icon: <Send className="h-4 w-4" />,
         onClick: handleEnviarNotificacao,
         swipeColor: "bg-emerald-500",
+        isLoading: isSendingNotification,
+        disabled: isActionLoading
       });
     }
 
@@ -318,7 +350,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
           document.body.click(); // Close menus/swipes
           setTimeout(() => onEditarCobranca(), 10);
         },
-        disabled: disableEditarCobranca(cobranca),
+        disabled: disableEditarCobranca(cobranca) || isActionLoading,
         swipeColor: "bg-blue-600",
       });
     }
@@ -330,7 +362,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
           ? "Ativar Lembretes Automáticos"
           : "Pausar Lembretes Automáticos";
       
-      // ... (icon logic same)
       const icon =
         !hasNotificacoesAccess || cobranca.desativar_lembretes ? (
           <Bell className="h-4 w-4" />
@@ -343,6 +374,8 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         icon,
         onClick: handleToggleLembretes,
         swipeColor: !hasNotificacoesAccess || cobranca.desativar_lembretes ? "bg-emerald-500" : "bg-amber-500",
+        isLoading: isTogglingNotificacoes,
+        disabled: isActionLoading
       });
     }
 
@@ -354,7 +387,9 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         onClick: props.onExcluirCobranca || handleDeleteCobranca,
         isDestructive: true,
         swipeColor: "bg-red-600",
-        className: "text-red-600"
+        className: "text-red-600",
+        isLoading: isDeleting,
+        disabled: isActionLoading
       });
     }
 

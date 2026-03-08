@@ -22,6 +22,9 @@ export const usuarioApi = {
   trocarSubplano: (payload: { usuario_id: string; subplano_id: string }) =>
     apiClient.post(`${endpointBase}/trocar-subplano`, payload).then(res => res.data),
 
+  regularizarAssinatura: (payload: { usuario_id: string }) =>
+    apiClient.post(`${endpointBase}/regularizar-assinatura`, payload).then(res => res.data),
+
   criarAssinaturaProfissionalPersonalizado: (payload: { usuario_id: string; quantidade: number }) =>
     apiClient.post(`${endpointBase}/criar-assinatura-profissional-personalizado`, payload).then(res => res.data),
 

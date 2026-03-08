@@ -24,7 +24,11 @@ export function useProfile(userId?: string) {
   });
 
   const refreshProfile = useCallback(async () => {
-    return queryClient.invalidateQueries({ queryKey: ["profile"] });
+    // Invalida tanto o perfil quanto o resumo (que contém as flags de assinatura)
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["profile"] }),
+      queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] })
+    ]);
   }, [queryClient]);
 
   const { data: summary } = useUsuarioResumo(profile?.id, undefined, { staleTime: 5000 });

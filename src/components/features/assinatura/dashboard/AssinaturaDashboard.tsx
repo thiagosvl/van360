@@ -36,7 +36,6 @@ export function AssinaturaDashboard({
         onRefresh={onRefresh}
         flags={flags}
         onPagarClick={() => {
-          // Find pending or open modal
           const pendente = cobrancas.find(
             (c) => c.status === AssinaturaCobrancaStatus.PENDENTE_PAGAMENTO,
           );

@@ -1,9 +1,9 @@
 // React
 import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
 } from "react";
 
 import { ROUTES } from "@/constants/routes";
@@ -23,7 +23,7 @@ import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
 import {
-    meses,
+  meses,
 } from "@/utils/formatters";
 import { toast } from "@/utils/notifications/toast";
 
@@ -35,9 +35,9 @@ import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import { usePermissions } from "@/hooks/business/usePermissions";
 import {
-    CheckCircle2,
-    TrendingUp,
-    Wallet,
+  CheckCircle2,
+  TrendingUp,
+  Wallet,
 } from "lucide-react";
 
 
@@ -46,12 +46,11 @@ const Cobrancas = () => {
   const {
     setPageTitle,
     openPlanUpgradeDialog,
-    openConfirmationDialog,
-    closeConfirmationDialog,
     openCobrancaDeleteDialog,
     openCobrancaEditDialog,
     openCobrancaPixDrawer,
     openManualPaymentDialog,
+    openSubscriptionExpiredDialog,
   } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -157,15 +156,23 @@ const Cobrancas = () => {
   // Handlers
   const handleEditCobrancaClick = useCallback(
     (cobranca: Cobranca) => {
+      if (permissions.is_read_only) {
+        openSubscriptionExpiredDialog();
+        return;
+      }
       openCobrancaEditDialog({
         cobranca,
       });
     },
-    [openCobrancaEditDialog]
+    [openCobrancaEditDialog, permissions.is_read_only, openSubscriptionExpiredDialog]
   );
 
   const handleDeleteCobrancaClick = useCallback(
     (cobranca: Cobranca) => {
+      if (permissions.is_read_only) {
+        openSubscriptionExpiredDialog();
+        return;
+      }
       openCobrancaDeleteDialog({
         onConfirm: async () => {
           try {
@@ -181,7 +188,7 @@ const Cobrancas = () => {
         }
       });
     },
-    [deleteCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog]
+    [deleteCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, permissions.is_read_only, openSubscriptionExpiredDialog]
   );
 
   const handleNavigation = useCallback((newMes: number, newAno: number) => {
@@ -191,6 +198,10 @@ const Cobrancas = () => {
 
   const openPaymentDialog = useCallback(
     (cobranca: Cobranca) => {
+      if (permissions.is_read_only) {
+        openSubscriptionExpiredDialog();
+        return;
+      }
       openManualPaymentDialog({
         cobrancaId: cobranca.id,
         passageiroNome: cobranca.passageiro.nome,
@@ -201,7 +212,7 @@ const Cobrancas = () => {
         onPaymentRecorded: () => {},
       });
     },
-    [openManualPaymentDialog]
+    [openManualPaymentDialog, permissions.is_read_only, openSubscriptionExpiredDialog]
   );
 
   const handlePagarPix = useCallback(

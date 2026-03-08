@@ -10,11 +10,11 @@ export const disableRegistrarPagamento = (cobranca: Cobranca): boolean => {
 };
 
 export const disableExcluirCobranca = (cobranca: Cobranca): boolean => {
-  return seForPago(cobranca) && cobranca.pagamento_manual;
+  return seForPago(cobranca);
 };
 
 export const disableEditarCobranca = (cobranca: Cobranca): boolean => {
-  return seForPago(cobranca) && cobranca.pagamento_manual;
+  return seForPago(cobranca);
 };
 
 export const canSendNotification = (cobranca: Cobranca): boolean => {
