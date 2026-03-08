@@ -36,6 +36,9 @@ export function PdfPreviewDialog({
   const [scale, setScale] = useState(1.0);
   const containerRef = useRef<HTMLDivElement>(null);
   
+  // Ref to track the LATEST scale for the touch handler to avoid closure staleness
+  const scaleRef = useRef(1.0);
+  
   // Base width calculated from screen size
   const baseWidth = Math.min(window.innerWidth * 0.9, 850);
 
@@ -51,38 +54,37 @@ export function PdfPreviewDialog({
       setIsLoading(true);
       setNumPages(null);
       setScale(1.0);
+      scaleRef.current = 1.0;
     }
   }, [isOpen, pdfUrl]);
+
+  // Sync scaleRef whenever scale changes
+  useEffect(() => {
+    scaleRef.current = scale;
+  }, [scale]);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
     setIsLoading(false);
   };
 
-  /**
-   * Correção Crítica de Download para iOS PWA:
-   * No iOS PWA, o comando window.open precisa ser disparado IMEDIATAMENTE no clique do usuário.
-   * Não podemos esperar o 'fetch' do blob terminar.
-   */
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!pdfUrl) return;
     
-    // Se já temos um blob ou url, passamos para a utility
-    // A utility agora está preparada para lidar com o contexto de clique do iOS
-    // Mas para garantir, vamos tentar disparar o download diretamente se possível
-    fetch(pdfUrl)
-      .then(res => res.blob())
-      .then(blob => downloadBlob(blob, fileName))
-      .catch(err => {
-        console.error('Download error:', err);
-        window.open(pdfUrl, '_blank');
-      });
+    try {
+      const response = await fetch(pdfUrl);
+      const blob = await response.blob();
+      downloadBlob(blob, fileName);
+    } catch (error) {
+      console.error('Download error:', error);
+      window.open(pdfUrl, '_blank');
+    }
   };
 
   const handleZoomIn = () => setScale((s) => Math.min(s + 0.25, 3.0));
   const handleZoomOut = () => setScale((s) => Math.max(s - 0.25, 0.5));
 
-  // --- PINCH LOGIC REFORMULADA PARA CONTINUIDADE ---
+  // --- PINCH LOGIC REFINED FOR FLUIDITY ON ANDROID ---
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
       const dist = Math.hypot(
@@ -90,13 +92,14 @@ export function PdfPreviewDialog({
         e.touches[0].pageY - e.touches[1].pageY
       );
       pinchRef.current.initialDistance = dist;
-      pinchRef.current.initialScale = scale;
+      pinchRef.current.initialScale = scaleRef.current;
       pinchRef.current.isPinching = true;
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (e.touches.length === 2 && pinchRef.current.isPinching) {
+      // Bloqueia o scroll nativo APENAS durante o gesto de pinça
       if (e.cancelable) e.preventDefault();
       
       const dist = Math.hypot(
@@ -104,11 +107,11 @@ export function PdfPreviewDialog({
         e.touches[0].pageY - e.touches[1].pageY
       );
       
-      if (pinchRef.current.initialDistance > 10) {
+      if (pinchRef.current.initialDistance > 5) { // Reduzido para maior sensibilidade
         const ratio = dist / pinchRef.current.initialDistance;
         const newScale = Math.min(Math.max(pinchRef.current.initialScale * ratio, 0.5), 3.0);
         
-        // Atualiza a escala sem travas de "1%" para ser fluido
+        // Atualiza a escala de forma contínua
         setScale(newScale);
       }
     }
@@ -116,6 +119,7 @@ export function PdfPreviewDialog({
 
   const handleTouchEnd = () => {
     pinchRef.current.isPinching = false;
+    pinchRef.current.initialDistance = 0;
   };
 
   return (
@@ -165,7 +169,11 @@ export function PdfPreviewDialog({
           </div>
         </div>
 
-        {/* Container de Visualização - Correção de Clipping */}
+        {/* 
+          Container de Visualização - Correção Crítica de Clipping (Android focus)
+          Usamos flex-start para que ao aumentar o documento, o overflow ocorra para a direita/baixo naturalmente.
+          Mudar para items-center corta o lado esquerdo em zooms altos no mobile.
+        */}
         <div 
           ref={containerRef}
           className="flex-1 bg-[#525659] relative overflow-auto block scrollbar-thin scrollbar-thumb-gray-400 touch-pan-x touch-pan-y"
@@ -180,12 +188,8 @@ export function PdfPreviewDialog({
             </div>
           )}
           
-          {/* 
-            Wrapper Crucial: 
-            Usamos 'min-w-fit' e 'p-4' para garantir que o documento 
-            não seja cortado à esquerda quando o zoom é grande.
-          */}
-          <div className="min-w-fit min-h-fit p-4 md:p-8 flex flex-col items-center">
+          {/* Wrapper com padding e largura flexível para evitar cortes */}
+          <div className="min-w-max p-4 flex flex-col items-center">
             {pdfUrl ? (
                 <Document
                 file={pdfUrl}
@@ -200,7 +204,7 @@ export function PdfPreviewDialog({
                     renderTextLayer={true}
                     renderAnnotationLayer={true}
                     width={baseWidth * scale}
-                    className="shadow-2xl border-0 rounded-sm overflow-hidden bg-white origin-center"
+                    className="shadow-2xl border-0 rounded-sm overflow-hidden bg-white"
                     />
                 ))}
                 </Document>

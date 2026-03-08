@@ -24,47 +24,43 @@ export const openBrowserLink = async (url: string) => {
 };
 
 /**
- * Técnica para forçar o download ou abertura de BLOB em PWA/Mobile
+ * Técnica para forçar o download ou abertura de BLOB em PWA/Mobile (Android/Chrome focus)
  */
 export const downloadBlob = (blob: Blob, fileName: string) => {
   const url = window.URL.createObjectURL(blob);
   
-  // Detecção de iOS PWA
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  // Detecção de plataforma
+  const isAndroid = /Android/.test(navigator.userAgent);
   const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
 
-  if (isIOS && isStandalone) {
-    // No iOS PWA, o comando 'download' é bloqueado.
-    // Abrimos uma nova janela IMEDIATAMENTE (gesto do usuário) e depois populamos.
-    const newWindow = window.open('', '_blank');
-    if (newWindow) {
-      newWindow.document.write('<html><head><title>Carregando...</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#666;">Preparando documento...</body></html>');
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64data = reader.result as string;
-        // Substitui o conteúdo para exibir o PDF de forma que o iOS permita salvar/compartilhar
-        newWindow.document.documentElement.innerHTML = `
-          <html>
-            <head>
-              <title>${fileName}</title>
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            </head>
-            <body style="margin:0;background:#525659;display:flex;flex-direction:column;height:100vh;">
-              <embed src="${base64data}" type="application/pdf" style="width:100%;height:100%; border:none;" />
-            </body>
-          </html>
-        `;
-      };
-      reader.readAsDataURL(blob);
-    } else {
-      // Fallback via redirecionamento de tela (menos desejável mas funcional)
-      window.location.href = url;
-    }
+  // No Android PWA/Chrome, Blobs costumam funcionar bem com <a> download, 
+  // mas o link PRECISA estar no DOM e ser visível ou ter layout.
+  if (isAndroid && isStandalone) {
+    // Técnica de DataURL para Android PWA (mais estável para evitar bloqueio de Blob URL)
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64data = reader.result as string;
+      const link = document.createElement('a');
+      link.href = base64data;
+      link.download = fileName;
+      link.style.opacity = '0';
+      link.style.position = 'fixed';
+      link.style.pointerEvents = 'none';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+      }, 500);
+    };
+    reader.readAsDataURL(blob);
     return;
   }
 
   if (Capacitor.isNativePlatform()) {
+    // Se for APK Nativo, tentamos abrir o navegador do sistema com o URL
+    // Nota: URLs de Blob podem não funcionar em navegadores externos no Android Nativo
+    // se o Chrome Custom Tab não tiver acesso ao processo. 
+    // O ideal seria usar o Filesystem plugin aqui se estivesse disponível.
     openBrowserLink(url);
     return;
   }
@@ -83,5 +79,5 @@ export const downloadBlob = (blob: Blob, fileName: string) => {
         document.body.removeChild(link);
     }
     window.URL.revokeObjectURL(url);
-  }, 200);
+  }, 300);
 };
