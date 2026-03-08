@@ -1,6 +1,7 @@
 import { getMessage } from '@/constants/messages';
 import { apiClient } from '@/services/api/client';
 import { Contrato, CreateContratoDTO } from '@/types/contract';
+import { downloadBlob } from '@/utils/browser';
 import { toast } from '@/utils/notifications/toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -115,14 +116,8 @@ export function useDownloadContrato() {
         responseType: 'blob',
       });
       
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `contrato-${contratoId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      downloadBlob(blob, `contrato-${contratoId}.pdf`);
       
       return response.data;
     },

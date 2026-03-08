@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { downloadBlob } from "@/utils/browser";
 import { Download, ExternalLink, Loader2, Minus, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
@@ -35,6 +36,9 @@ export function PdfPreviewDialog({
   const [scale, setScale] = useState(1.0);
   const containerRef = useRef<HTMLDivElement>(null);
   
+  // Base width calculated from screen size
+  const baseWidth = Math.min(window.innerWidth * 0.9, 850);
+
   // Pinch-to-zoom state
   const touchState = useRef({
     initialDistance: 0,
@@ -54,18 +58,23 @@ export function PdfPreviewDialog({
     setIsLoading(false);
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!pdfUrl) return;
-    const link = document.createElement("a");
-    link.href = pdfUrl;
-    link.setAttribute("download", fileName);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    
+    try {
+      // Fetch the blob from the URL (which is a Blob URL itself in our case)
+      const response = await fetch(pdfUrl);
+      const blob = await response.blob();
+      downloadBlob(blob, fileName);
+    } catch (error) {
+      console.error('Erro ao baixar documento:', error);
+      // Fallback de segurança: abre o URL diretamente em uma nova aba
+      window.open(pdfUrl, '_blank');
+    }
   };
 
-  const handleZoomIn = () => setScale((s) => Math.min(s + 0.2, 3.0));
-  const handleZoomOut = () => setScale((s) => Math.max(s - 0.2, 0.5));
+  const handleZoomIn = () => setScale((s) => Math.min(s + 0.25, 3.0));
+  const handleZoomOut = () => setScale((s) => Math.max(s - 0.25, 0.5));
 
   // Pinch-to-zoom logic
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -81,8 +90,7 @@ export function PdfPreviewDialog({
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (e.touches.length === 2 && touchState.current.initialDistance > 0) {
-      // Prevent default to avoid page scrolling while pinching
-      e.preventDefault();
+      if (e.cancelable) e.preventDefault();
       
       const dist = Math.hypot(
         e.touches[0].pageX - e.touches[1].pageX,
@@ -106,7 +114,7 @@ export function PdfPreviewDialog({
         className="w-full max-w-5xl p-0 gap-0 bg-gray-50 h-full max-h-screen sm:h-[95vh] sm:max-h-[95vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
-        <div className="bg-blue-600 p-4 text-center relative shrink-0">
+        <div className="bg-blue-600 p-4 text-center relative shrink-0 z-10">
           <div className="absolute left-4 top-4 flex gap-2">
             <Button
               variant="ghost"
@@ -128,7 +136,7 @@ export function PdfPreviewDialog({
                 >
                     <Minus className="h-4 w-4" />
                 </Button>
-                <span className="text-[10px] font-bold text-white min-w-[35px] text-center">
+                <span className="text-[11px] font-bold text-white min-w-[35px] text-center">
                     {Math.round(scale * 100)}%
                 </span>
                 <Button
@@ -167,7 +175,7 @@ export function PdfPreviewDialog({
                 >
                     <Minus className="h-4 w-4" />
                 </Button>
-                <span className="text-[10px] font-bold text-white min-w-[35px] text-center">
+                <span className="text-[11px] font-bold text-white min-w-[35px] text-center">
                     {Math.round(scale * 100)}%
                 </span>
                 <Button
@@ -185,22 +193,19 @@ export function PdfPreviewDialog({
 
         <div 
           ref={containerRef}
-          className="flex-1 bg-gray-200 relative overflow-auto flex flex-col items-center p-4 scrollbar-thin scrollbar-thumb-gray-400 touch-none"
+          className="flex-1 bg-gray-200 relative overflow-auto grid place-items-start p-4 scrollbar-thin scrollbar-thumb-gray-400"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
           {isLoading && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50/80 z-10 pointer-events-none">
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50/80 z-20 pointer-events-none">
               <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-3" />
-              <p className="text-gray-500 font-medium">Carregando visualização...</p>
+              <p className="text-gray-500 font-medium font-sans">Carregando visualização...</p>
             </div>
           )}
           
-          <div 
-            className="origin-top transition-transform duration-100 ease-out" 
-            style={{ transform: `scale(${scale})` }}
-          >
+          <div className="mx-auto">
             {pdfUrl ? (
                 <Document
                 file={pdfUrl}
@@ -214,13 +219,13 @@ export function PdfPreviewDialog({
                     pageNumber={index + 1} 
                     renderTextLayer={true}
                     renderAnnotationLayer={true}
-                    width={Math.min(window.innerWidth * 0.85, 800)}
-                    className="shadow-xl border-0 rounded-sm overflow-hidden"
+                    width={baseWidth * scale}
+                    className="shadow-xl border-0 rounded-sm overflow-hidden bg-white"
                     />
                 ))}
                 </Document>
             ) : (
-                <div className="flex items-center justify-center h-full text-gray-400">
+                <div className="flex items-center justify-center w-full min-h-[50vh] text-gray-400">
                 Nenhuma prévia disponível
                 </div>
             )}

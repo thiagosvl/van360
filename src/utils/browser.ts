@@ -22,3 +22,33 @@ export const openBrowserLink = async (url: string) => {
     window.open(url, '_blank');
   }
 };
+
+/**
+ * Técnica para forçar o download ou abertura de BLOB em PWA/Mobile
+ */
+export const downloadBlob = (blob: Blob, fileName: string) => {
+  const url = window.URL.createObjectURL(blob);
+  
+  if (Capacitor.isNativePlatform()) {
+    // Native (Capacitor) handles blobs better via Browser plugin with standard URL
+    openBrowserLink(url);
+    return;
+  }
+
+  // PWA/Web
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', fileName);
+  
+  // Important for iOS PWA: Some versions require the link to be in the DOM
+  document.body.appendChild(link);
+  link.click();
+  
+  // Cleanup
+  setTimeout(() => {
+    if (document.body.contains(link)) {
+        document.body.removeChild(link);
+    }
+    window.URL.revokeObjectURL(url);
+  }, 100);
+};
