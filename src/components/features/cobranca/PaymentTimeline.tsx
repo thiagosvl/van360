@@ -26,15 +26,22 @@ export function PaymentTimeline({ cobranca }: PaymentTimelineProps) {
 
   if (status === CobrancaStatus.PAGO) {
     // Passo 2: Pagamento Concluído
+    const dateDescription =
+      cobranca.data_pagamento
+        ? cobranca.pagamento_manual
+          ? `Pago em ${formatDateToBR(cobranca.data_pagamento)}`
+          : `Pago em ${formatDateToBR(cobranca.data_pagamento)} às ${new Date(cobranca.data_pagamento).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`
+        : formatPaymentType(cobranca.tipo_pagamento);
+
     steps.push({
       id: "pago",
       title: "Pagamento Concluído",
-      description: cobranca.data_pagamento ? `Pago em ${formatDateToBR(cobranca.data_pagamento)}` : formatPaymentType(cobranca.tipo_pagamento),
+      description: dateDescription,
       status: "done",
     });
 
-    // Se for um fluxo de repasse (PIX/C6)
-    if (isC6 && (statusRepasse || cobranca.repasse)) {
+    // Se for um fluxo de repasse (PIX/C6) E NÃO for pagamento manual
+    if (!cobranca.pagamento_manual && isC6 && (statusRepasse || cobranca.repasse)) {
         const repasseEstado = cobranca.repasse?.estado || statusRepasse;
         
         const isRepassado = repasseEstado === RepasseState.LIQUIDADO;
@@ -79,31 +86,33 @@ export function PaymentTimeline({ cobranca }: PaymentTimelineProps) {
             description: isRepassado ? "O dinheiro já está na sua conta" : "Aguardando conclusão do repasse",
             status: isRepassado ? "done" : "pending",
         });
+    } else if (!cobranca.pagamento_manual && isC6 && !statusRepasse) {
+        // Fluxo Automático que ainda não tem repasse associado
+        steps.push({
+            id: "processamento",
+            title: "Processamento Bancário",
+            description: "Preparando repasse...",
+            status: "current",
+        });
+        steps.push({
+            id: "liquidado",
+            title: "Saldo Disponível",
+            description: "Aguardando Repasse",
+            status: "pending",
+        });
+    } else if (cobranca.pagamento_manual) {
+        // Pagamento manual puro - Ciclo termina no Pagamento Concluído (já adicionado acima)
+        // Mas para manter as 2 etapas visuais claras conforme falado:
+        // A "Cobrança Gerada" já existe. "Pagamento Concluído" já existe.
+        // Não adicionamos mais nada.
     } else {
-        // Fluxo Manual Antigo ou sem repasse associado ainda
-        // Se for PIX e ainda não tem repasse, mostramos que está em processamento (para não dar check falso)
-        if (isC6 && !statusRepasse) {
-            steps.push({
-                id: "processamento",
-                title: "Processamento Bancário",
-                description: "Preparando repasse...",
-                status: "current",
-            });
-            steps.push({
-                id: "liquidado",
-                title: "Saldo Disponível",
-                description: "Aguardando Repasse",
-                status: "pending",
-            });
-        } else {
-            // Pagamento manual puro (Dinheiro, etc) - Mantém 3 passos originais
-            steps.push({
-                id: "liquidado",
-                title: "Saldo Disponível",
-                description: "O dinheiro já está com você",
-                status: "done",
-            });
-        }
+        // Caso genérico fallback (ex: pagamento manual antigo que caiu aqui por erro de flag)
+        steps.push({
+            id: "liquidado",
+            title: "Saldo Disponível",
+            description: "O dinheiro já está com você",
+            status: "done",
+        });
     }
   } else {
     // Pendente

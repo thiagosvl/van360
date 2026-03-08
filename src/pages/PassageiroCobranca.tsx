@@ -35,6 +35,7 @@ import {
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import {
     formatCobrancaOrigem,
+    formatDateTimeToBR,
     formatDateToBR,
     formatPaymentType,
     formatarEnderecoCompleto,
@@ -805,7 +806,9 @@ export default function PassageiroCobranca() {
                         </InfoItem>
                         <InfoItem icon={Calendar} label="Data do Pagamento">
                           {cobrancaTyped?.data_pagamento
-                            ? formatDateToBR(cobrancaTyped?.data_pagamento)
+                            ? cobrancaTyped.pagamento_manual
+                              ? formatDateToBR(cobrancaTyped.data_pagamento)
+                              : formatDateTimeToBR(cobrancaTyped.data_pagamento, { includeTime: true })
                             : "—"}
                         </InfoItem>
                         <InfoItem icon={ArrowRight} label="Origem da Mensalidade">
