@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Download, ExternalLink, Loader2, X } from "lucide-react";
+import { Download, ExternalLink, Loader2, Minus, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -32,11 +32,13 @@ export function PdfPreviewDialog({
 }: PdfPreviewDialogProps) {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [scale, setScale] = useState(1.0);
 
   useEffect(() => {
     if (isOpen) {
       setIsLoading(true);
       setNumPages(null);
+      setScale(1.0);
     }
   }, [isOpen, pdfUrl]);
 
@@ -55,6 +57,9 @@ export function PdfPreviewDialog({
     link.remove();
   };
 
+  const handleZoomIn = () => setScale((s) => Math.min(s + 0.2, 3.0));
+  const handleZoomOut = () => setScale((s) => Math.max(s - 0.2, 0.5));
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent 
@@ -72,6 +77,30 @@ export function PdfPreviewDialog({
             >
               <Download className="w-5 h-5" />
             </Button>
+            
+            <div className="hidden sm:flex items-center bg-white/10 rounded-full px-1 border border-white/20 backdrop-blur-sm">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleZoomOut}
+                    className="text-white hover:bg-white/20 rounded-full h-8 w-8"
+                    disabled={scale <= 0.5}
+                >
+                    <Minus className="h-4 w-4" />
+                </Button>
+                <span className="text-[10px] font-bold text-white min-w-[35px] text-center">
+                    {Math.round(scale * 100)}%
+                </span>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleZoomIn}
+                    className="text-white hover:bg-white/20 rounded-full h-8 w-8"
+                    disabled={scale >= 3.0}
+                >
+                    <Plus className="h-4 w-4" />
+                </Button>
+            </div>
           </div>
           
           <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors" onClick={onClose}>
@@ -85,9 +114,36 @@ export function PdfPreviewDialog({
           <DialogTitle className="text-xl font-bold text-white">
             {title}
           </DialogTitle>
+          
+          {/* Zoom controls for Mobile */}
+          <div className="flex sm:hidden justify-center mt-3">
+             <div className="flex items-center bg-white/10 rounded-full px-1 border border-white/20 backdrop-blur-sm">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleZoomOut}
+                    className="text-white hover:bg-white/20 rounded-full h-8 w-8"
+                    disabled={scale <= 0.5}
+                >
+                    <Minus className="h-4 w-4" />
+                </Button>
+                <span className="text-[10px] font-bold text-white min-w-[35px] text-center">
+                    {Math.round(scale * 100)}%
+                </span>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleZoomIn}
+                    className="text-white hover:bg-white/20 rounded-full h-8 w-8"
+                    disabled={scale >= 3.0}
+                >
+                    <Plus className="h-4 w-4" />
+                </Button>
+            </div>
+          </div>
         </div>
 
-        <div className="flex-1 bg-white relative overflow-y-auto flex flex-col items-center p-4">
+        <div className="flex-1 bg-gray-200 relative overflow-auto flex flex-col items-center p-4 scrollbar-thin scrollbar-thumb-gray-400">
           {isLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50/80 z-10">
               <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-3" />
@@ -95,29 +151,31 @@ export function PdfPreviewDialog({
             </div>
           )}
           
-          {pdfUrl ? (
-            <Document
-              file={pdfUrl}
-              onLoadSuccess={onDocumentLoadSuccess}
-              loading={<div />}
-              className="flex flex-col items-center gap-4"
-            >
-              {Array.from(new Array(numPages), (_, index) => (
-                <Page 
-                  key={`page_${index + 1}`} 
-                  pageNumber={index + 1} 
-                  renderTextLayer={true}
-                  renderAnnotationLayer={true}
-                  width={Math.min(window.innerWidth * 0.9, 800)}
-                  className="shadow-lg border rounded-sm"
-                />
-              ))}
-            </Document>
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-400">
-              Nenhuma prévia disponível
-            </div>
-          )}
+          <div className="origin-top transition-transform duration-200" style={{ transform: `scale(${scale})` }}>
+            {pdfUrl ? (
+                <Document
+                file={pdfUrl}
+                onLoadSuccess={onDocumentLoadSuccess}
+                loading={<div />}
+                className="flex flex-col items-center gap-4"
+                >
+                {Array.from(new Array(numPages), (_, index) => (
+                    <Page 
+                    key={`page_${index + 1}`} 
+                    pageNumber={index + 1} 
+                    renderTextLayer={true}
+                    renderAnnotationLayer={true}
+                    width={Math.min(window.innerWidth * 0.85, 800)}
+                    className="shadow-xl border-0 rounded-sm overflow-hidden"
+                    />
+                ))}
+                </Document>
+            ) : (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                Nenhuma prévia disponível
+                </div>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
