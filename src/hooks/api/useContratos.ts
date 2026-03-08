@@ -1,7 +1,7 @@
 import { getMessage } from '@/constants/messages';
 import { apiClient } from '@/services/api/client';
 import { Contrato, CreateContratoDTO } from '@/types/contract';
-import { downloadBlob } from '@/utils/browser';
+import { shareOrDownloadFile } from '@/utils/browser';
 import { toast } from '@/utils/notifications/toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -117,7 +117,7 @@ export function useDownloadContrato() {
       });
       
       const blob = new Blob([response.data], { type: 'application/pdf' });
-      downloadBlob(blob, `contrato-${contratoId}.pdf`);
+      shareOrDownloadFile(blob, `contrato-${contratoId}.pdf`, 'Contrato de Transporte');
       
       return response.data;
     },

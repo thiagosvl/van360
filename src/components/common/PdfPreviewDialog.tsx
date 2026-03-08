@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { downloadBlob } from "@/utils/browser";
+import { shareOrDownloadFile } from "@/utils/browser";
 import { ExternalLink, Loader2, Minus, Plus, Share2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
@@ -67,7 +67,7 @@ export function PdfPreviewDialog({
   };
 
   /**
-   * SHARE/DOWNLOAD - Improved for Android Chrome Standalone (PWA)
+   * SHARE/DOWNLOAD - Improved for APK (Native) and Android Chrome Standalone (PWA)
    */
   const handleDownload = async () => {
     if (!pdfUrl) return;
@@ -75,29 +75,11 @@ export function PdfPreviewDialog({
       const response = await fetch(pdfUrl);
       const blob = await response.blob();
       
-      const file = new File([blob], fileName, { type: 'application/pdf' });
-      
-      // Standalone PWAs (Chrome on Android) have better luck sharing if the object has both title/text AND files
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({
-            files: [file],
-            title: title || 'Documento PDF',
-            text: 'Visualizando documento PDF no Van Control',
-          });
-          return; // Success!
-        } catch (shareErr: any) {
-          // If the user cancelled, we don't treat it as a hard failure
-          if (shareErr.name === 'AbortError') return;
-          console.warn('Share API failed, falling back to download:', shareErr);
-        }
-      }
-
-      // If Share API didn't work or isn't available, use our optimized download link
-      downloadBlob(blob, fileName);
+      // Chama a nossa nova utility robusta que usa Capacitor Share/Filesystem para o APK
+      // e Web Share API para o Browser/PWA.
+      await shareOrDownloadFile(blob, fileName, title);
     } catch (error) {
       console.error('Download error:', error);
-      // Absolute last resort
       window.open(pdfUrl, '_blank');
     }
   };
@@ -149,7 +131,7 @@ export function PdfPreviewDialog({
             wrapperRef.current.style.transformOrigin = 'center top';
           }
           
-          // Smoothly update the text percentage (cheap state update compared to PDF rerender)
+          // Smoothly update the text percentage
           const newPercentage = Math.round(targetScale * 100);
           if (newPercentage !== displayPercentage) {
             setDisplayPercentage(newPercentage);
@@ -175,7 +157,7 @@ export function PdfPreviewDialog({
         className="w-full max-w-5xl p-0 gap-0 bg-[#525659] h-full max-h-screen sm:h-[95vh] sm:max-h-[95vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
-        {/* Chrome-style PDF Header */}
+        {/* PDF Style Header */}
         <div className="bg-blue-600 p-4 text-center relative shrink-0 z-10 shadow-lg">
           <div className="absolute left-4 top-4 flex gap-2">
             <Button
@@ -217,7 +199,7 @@ export function PdfPreviewDialog({
           </div>
         </div>
 
-        {/* HIGH QUALITY SCROLL AREA */}
+        {/* Scrollable Container */}
         <div 
           className="flex-1 bg-[#525659] relative overflow-auto block scrollbar-thin scrollbar-thumb-gray-400 touch-pan-x touch-pan-y"
           onTouchStart={handleTouchStart}
@@ -231,7 +213,7 @@ export function PdfPreviewDialog({
             </div>
           )}
           
-          {/* inline-block min-w-full avoids left-side clipping on mobile android */}
+          {/* Document Wrapper */}
           <div className="inline-block min-w-full p-4 md:p-8">
             <div ref={wrapperRef} className="flex flex-col items-center">
               {pdfUrl ? (
