@@ -35,6 +35,9 @@ export function PdfPreviewDialog({
   const [isLoading, setIsLoading] = useState(true);
   const [scale, setScale] = useState(1.0);
   
+  // Real-time zoom display state for the header percentage
+  const [displayPercentage, setDisplayPercentage] = useState(100);
+  
   // High-performance gesture management
   const wrapperRef = useRef<HTMLDivElement>(null);
   const pinchRef = useRef({
@@ -51,7 +54,7 @@ export function PdfPreviewDialog({
       setIsLoading(true);
       setNumPages(null);
       setScale(1.0);
-      pinchRef.current.currentRatio = 1.0;
+      setDisplayPercentage(100);
       if (wrapperRef.current) {
         wrapperRef.current.style.transform = 'scale(1)';
       }
@@ -63,6 +66,9 @@ export function PdfPreviewDialog({
     setIsLoading(false);
   };
 
+  /**
+   * SHARE/DOWNLOAD - Improved for Android Chrome Standalone (PWA)
+   */
   const handleDownload = async () => {
     if (!pdfUrl) return;
     try {
@@ -70,24 +76,39 @@ export function PdfPreviewDialog({
       const blob = await response.blob();
       
       const file = new File([blob], fileName, { type: 'application/pdf' });
+      
+      // Standalone PWAs (Chrome on Android) have better luck sharing if the object has both title/text AND files
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: title,
-        });
-      } else {
-        downloadBlob(blob, fileName);
+        try {
+          await navigator.share({
+            files: [file],
+            title: title || 'Documento PDF',
+            text: 'Visualizando documento PDF no Van Control',
+          });
+          return; // Success!
+        } catch (shareErr: any) {
+          // If the user cancelled, we don't treat it as a hard failure
+          if (shareErr.name === 'AbortError') return;
+          console.warn('Share API failed, falling back to download:', shareErr);
+        }
       }
+
+      // If Share API didn't work or isn't available, use our optimized download link
+      downloadBlob(blob, fileName);
     } catch (error) {
       console.error('Download error:', error);
+      // Absolute last resort
       window.open(pdfUrl, '_blank');
     }
   };
 
   const updateScale = (newScale: number) => {
-    const clamped = Math.min(Math.max(newScale, 0.5), 4.0);
+    const clamped = Math.min(Math.max(newScale, 0.5), 4.5);
     setScale(clamped);
-    pinchRef.current.currentRatio = 1.0;
+    setDisplayPercentage(Math.round(clamped * 100));
+    if (wrapperRef.current) {
+      wrapperRef.current.style.transform = 'scale(1)';
+    }
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -114,15 +135,25 @@ export function PdfPreviewDialog({
         e.touches[0].pageY - e.touches[1].pageY
       );
       
-      const ratio = dist / pinchRef.current.initialDistance;
-      const targetScale = scale * ratio;
-      
-      // Limites de zoom dinâmico durante o movimento
-      if (targetScale >= 0.4 && targetScale <= 4.5) {
-        pinchRef.current.currentRatio = ratio;
-        if (wrapperRef.current) {
-          wrapperRef.current.style.transform = `scale(${ratio})`;
-          wrapperRef.current.style.transformOrigin = 'center top';
+      if (pinchRef.current.initialDistance > 10) {
+        const ratio = dist / pinchRef.current.initialDistance;
+        const targetScale = scale * ratio;
+        
+        // Dynamic limits (visual feedback)
+        if (targetScale >= 0.3 && targetScale <= 5.0) {
+          pinchRef.current.currentRatio = ratio;
+          
+          // CSS Zoom for performance (GPU-accelerated)
+          if (wrapperRef.current) {
+            wrapperRef.current.style.transform = `scale(${ratio})`;
+            wrapperRef.current.style.transformOrigin = 'center top';
+          }
+          
+          // Smoothly update the text percentage (cheap state update compared to PDF rerender)
+          const newPercentage = Math.round(targetScale * 100);
+          if (newPercentage !== displayPercentage) {
+            setDisplayPercentage(newPercentage);
+          }
         }
       }
     }
@@ -131,28 +162,12 @@ export function PdfPreviewDialog({
   const handleTouchEnd = () => {
     if (pinchRef.current.isPinching) {
       pinchRef.current.isPinching = false;
-      
-      // 1. Calculamos a escala final atingida
       const finalScale = scale * pinchRef.current.currentRatio;
-      
-      // 2. Aplicamos o 'set' no React (Isso redesenha o PDF com qualidade 1:1)
-      updateScale(finalScale);
-      
-      // 3. Resetamos o transform visual do CSS IMEDIATAMENTE antes do re-render ocorrer
-      // pois o novo width do Page (via prop) assumirá o tamanho correto.
-      if (wrapperRef.current) {
-        wrapperRef.current.style.transform = 'scale(1)';
-      }
-      
+      updateScale(finalScale); // This updates the PDF quality and resets the transform
       pinchRef.current.initialDistance = 0;
+      pinchRef.current.currentRatio = 1.0;
     }
   };
-
-  // Valor de zoom para mostrar no Header (Sincronizado em tempo real ou quase)
-  // Durante a pinça, mostramos o cálculo acumulado
-  const displayZoom = pinchRef.current.isPinching 
-    ? Math.round(scale * pinchRef.current.currentRatio * 100) 
-    : Math.round(scale * 100);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -160,6 +175,7 @@ export function PdfPreviewDialog({
         className="w-full max-w-5xl p-0 gap-0 bg-[#525659] h-full max-h-screen sm:h-[95vh] sm:max-h-[95vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
+        {/* Chrome-style PDF Header */}
         <div className="bg-blue-600 p-4 text-center relative shrink-0 z-10 shadow-lg">
           <div className="absolute left-4 top-4 flex gap-2">
             <Button
@@ -174,8 +190,8 @@ export function PdfPreviewDialog({
             
             <div className="hidden sm:flex items-center bg-white/10 rounded-full px-1 border border-white/20 backdrop-blur-sm">
                 <Button variant="ghost" size="icon" onClick={() => updateScale(scale - 0.25)} className="text-white hover:bg-white/20 rounded-full h-8 w-8" disabled={scale <= 0.5}><Minus className="h-4 w-4" /></Button>
-                <span className="text-[11px] font-bold text-white min-w-[35px] text-center">{displayZoom}%</span>
-                <Button variant="ghost" size="icon" onClick={() => updateScale(scale + 0.25)} className="text-white hover:bg-white/20 rounded-full h-8 w-8" disabled={scale >= 4.0}><Plus className="h-4 w-4" /></Button>
+                <span className="text-[11px] font-bold text-white min-w-[35px] text-center">{displayPercentage}%</span>
+                <Button variant="ghost" size="icon" onClick={() => updateScale(scale + 0.25)} className="text-white hover:bg-white/20 rounded-full h-8 w-8" disabled={scale >= 4.5}><Plus className="h-4 w-4" /></Button>
             </div>
           </div>
           
@@ -191,17 +207,19 @@ export function PdfPreviewDialog({
             {title}
           </DialogTitle>
           
+          {/* Mobile Zoom Sync */}
           <div className="flex sm:hidden justify-center mt-2.5">
              <div className="flex items-center bg-white/10 rounded-full px-1 border border-white/20 backdrop-blur-sm">
                 <Button variant="ghost" size="icon" onClick={() => updateScale(scale - 0.25)} className="text-white hover:bg-white/20 rounded-full h-8 w-8" disabled={scale <= 0.5}><Minus className="h-4 w-4" /></Button>
-                <span className="text-[10px] font-bold text-white min-w-[30px] text-center">{displayZoom}%</span>
-                <Button variant="ghost" size="icon" onClick={() => updateScale(scale + 0.25)} className="text-white hover:bg-white/20 rounded-full h-8 w-8" disabled={scale >= 4.0}><Plus className="h-4 w-4" /></Button>
+                <span className="text-[10px] font-bold text-white min-w-[30px] text-center">{displayPercentage}%</span>
+                <Button variant="ghost" size="icon" onClick={() => updateScale(scale + 0.25)} className="text-white hover:bg-white/20 rounded-full h-8 w-8" disabled={scale >= 4.5}><Plus className="h-4 w-4" /></Button>
             </div>
           </div>
         </div>
 
+        {/* HIGH QUALITY SCROLL AREA */}
         <div 
-          className="flex-1 bg-[#525659] relative overflow-auto scrollbar-thin scrollbar-thumb-gray-400 touch-pan-x touch-pan-y"
+          className="flex-1 bg-[#525659] relative overflow-auto block scrollbar-thin scrollbar-thumb-gray-400 touch-pan-x touch-pan-y"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -209,11 +227,12 @@ export function PdfPreviewDialog({
           {isLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50/80 z-20 pointer-events-none">
               <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-3" />
-              <p className="text-gray-500 font-medium font-sans">Carregando...</p>
+              <p className="text-gray-500 font-medium font-sans">Sincronizando...</p>
             </div>
           )}
           
-          <div className="inline-block min-w-full p-4">
+          {/* inline-block min-w-full avoids left-side clipping on mobile android */}
+          <div className="inline-block min-w-full p-4 md:p-8">
             <div ref={wrapperRef} className="flex flex-col items-center">
               {pdfUrl ? (
                   <Document
@@ -229,7 +248,7 @@ export function PdfPreviewDialog({
                         renderTextLayer={true}
                         renderAnnotationLayer={true}
                         width={baseWidth * scale}
-                        className="shadow-2xl border-0 rounded-sm overflow-hidden bg-white"
+                        className="shadow-2xl border-0 rounded-sm overflow-hidden bg-white origin-center"
                       />
                   ))}
                   </Document>
