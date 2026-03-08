@@ -39,10 +39,11 @@ export function PdfPreviewDialog({
   // Base width calculated from screen size
   const baseWidth = Math.min(window.innerWidth * 0.9, 850);
 
-  // Pinch-to-zoom state
+  // States for pinch and pan
   const touchState = useRef({
     initialDistance: 0,
-    initialScale: 1.0,
+    lastScale: 1.0,
+    isPinching: false,
   });
 
   useEffect(() => {
@@ -62,13 +63,11 @@ export function PdfPreviewDialog({
     if (!pdfUrl) return;
     
     try {
-      // Fetch the blob from the URL (which is a Blob URL itself in our case)
       const response = await fetch(pdfUrl);
       const blob = await response.blob();
       downloadBlob(blob, fileName);
     } catch (error) {
       console.error('Erro ao baixar documento:', error);
-      // Fallback de segurança: abre o URL diretamente em uma nova aba
       window.open(pdfUrl, '_blank');
     }
   };
@@ -76,20 +75,23 @@ export function PdfPreviewDialog({
   const handleZoomIn = () => setScale((s) => Math.min(s + 0.25, 3.0));
   const handleZoomOut = () => setScale((s) => Math.max(s - 0.25, 0.5));
 
-  // Pinch-to-zoom logic
+  // Natural Pinch-to-zoom logic
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
+      e.stopPropagation();
       const dist = Math.hypot(
         e.touches[0].pageX - e.touches[1].pageX,
         e.touches[0].pageY - e.touches[1].pageY
       );
       touchState.current.initialDistance = dist;
-      touchState.current.initialScale = scale;
+      touchState.current.lastScale = scale;
+      touchState.current.isPinching = true;
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 2 && touchState.current.initialDistance > 0) {
+    if (e.touches.length === 2 && touchState.current.isPinching) {
+      // Prevent browser from doing its own zoom/pan during pinch
       if (e.cancelable) e.preventDefault();
       
       const dist = Math.hypot(
@@ -97,15 +99,25 @@ export function PdfPreviewDialog({
         e.touches[0].pageY - e.touches[1].pageY
       );
       
-      const zoomFactor = dist / touchState.current.initialDistance;
-      const newScale = Math.min(Math.max(touchState.current.initialScale * zoomFactor, 0.5), 3.0);
-      
-      setScale(newScale);
+      if (touchState.current.initialDistance > 0) {
+        // Use a multiplier for more "natural" sensitivity
+        const ratio = dist / touchState.current.initialDistance;
+        const newScale = Math.min(Math.max(touchState.current.lastScale * ratio, 0.5), 3.0);
+        
+        // Use requestAnimationFrame style update hiddenly by React state
+        // but avoid tiny jittery updates (1% fixes)
+        if (Math.abs(newScale - scale) > 0.01) {
+          setScale(newScale);
+        }
+      }
     }
   };
 
-  const handleTouchEnd = () => {
-    touchState.current.initialDistance = 0;
+  const handleTouchEnd = (e: React.TouchList | any) => {
+    if (e.touches?.length < 2) {
+      touchState.current.isPinching = false;
+      touchState.current.initialDistance = 0;
+    }
   };
 
   return (
@@ -193,7 +205,7 @@ export function PdfPreviewDialog({
 
         <div 
           ref={containerRef}
-          className="flex-1 bg-gray-200 relative overflow-auto grid place-items-start p-4 scrollbar-thin scrollbar-thumb-gray-400"
+          className="flex-1 bg-gray-200 relative overflow-auto grid place-items-start p-4 scrollbar-thin scrollbar-thumb-gray-400 touch-pan-x touch-pan-y"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -220,7 +232,7 @@ export function PdfPreviewDialog({
                     renderTextLayer={true}
                     renderAnnotationLayer={true}
                     width={baseWidth * scale}
-                    className="shadow-xl border-0 rounded-sm overflow-hidden bg-white"
+                    className="shadow-xl border-0 rounded-sm overflow-hidden bg-white transition-[width] duration-75 ease-out"
                     />
                 ))}
                 </Document>
