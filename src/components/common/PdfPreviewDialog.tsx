@@ -1,12 +1,19 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Download, ExternalLink, Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Document, Page, pdfjs } from "react-pdf";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
+
+// Configure worker for Vite
+import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 interface PdfPreviewDialogProps {
   isOpen: boolean;
@@ -23,13 +30,20 @@ export function PdfPreviewDialog({
   title = "Prévia do Documento",
   fileName = "documento.pdf"
 }: PdfPreviewDialogProps) {
+  const [numPages, setNumPages] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (isOpen) {
       setIsLoading(true);
+      setNumPages(null);
     }
   }, [isOpen, pdfUrl]);
+
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
+    setIsLoading(false);
+  };
 
   const handleDownload = () => {
     if (!pdfUrl) return;
@@ -73,21 +87,32 @@ export function PdfPreviewDialog({
           </DialogTitle>
         </div>
 
-        <div className="flex-1 bg-white relative overflow-hidden">
+        <div className="flex-1 bg-white relative overflow-y-auto flex flex-col items-center p-4">
           {isLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50/80 z-10">
               <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-3" />
-              <p className="text-gray-500 font-medium">Carregando PDF...</p>
+              <p className="text-gray-500 font-medium">Carregando visualização...</p>
             </div>
           )}
           
           {pdfUrl ? (
-            <iframe
-              src={`${pdfUrl}#view=FitH&toolbar=0&navpanes=0`}
-              className="w-full h-full border-none"
-              onLoad={() => setIsLoading(false)}
-              title="PDF Preview"
-            />
+            <Document
+              file={pdfUrl}
+              onLoadSuccess={onDocumentLoadSuccess}
+              loading={<div />}
+              className="flex flex-col items-center gap-4"
+            >
+              {Array.from(new Array(numPages), (_, index) => (
+                <Page 
+                  key={`page_${index + 1}`} 
+                  pageNumber={index + 1} 
+                  renderTextLayer={true}
+                  renderAnnotationLayer={true}
+                  width={Math.min(window.innerWidth * 0.9, 800)}
+                  className="shadow-lg border rounded-sm"
+                />
+              ))}
+            </Document>
           ) : (
             <div className="flex items-center justify-center h-full text-gray-400">
               Nenhuma prévia disponível
