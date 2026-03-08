@@ -1,3 +1,4 @@
+import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -72,6 +73,19 @@ export default function ContractSetupDialog({
   const [clausulas, setClausulas] = useState<string[]>([]);
   const [signatureTemp, setSignatureTemp] = useState<string | null>(null);
   const sigPad = useRef<SignatureCanvas>(null);
+  const [isPreviewPdfOpen, setIsPreviewPdfOpen] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+
+  // Memory management for PDF Blob URL
+  const pdfUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pdfUrlRef.current) {
+        window.URL.revokeObjectURL(pdfUrlRef.current);
+      }
+    };
+  }, []);
 
   // Initialize from profile or default
   useEffect(() => {
@@ -531,14 +545,27 @@ export default function ContractSetupDialog({
         className="w-full h-12 border-2 border-blue-200 text-blue-700 hover:bg-blue-50 rounded-2xl font-bold gap-2"
         disabled={previewMutation.isPending}
         // Send ALL draft config including signature
-        onClick={() =>
-          previewMutation.mutate({
-            clausulas,
-            multaAtraso,
-            multaRescisao,
-            assinaturaCondutorUrl: signatureTemp || profile?.assinatura_digital_url,
-          })
-        }
+        onClick={async () => {
+          try {
+            const result = await previewMutation.mutateAsync({
+              clausulas,
+              multaAtraso,
+              multaRescisao,
+              assinaturaCondutorUrl: signatureTemp || profile?.assinatura_digital_url,
+            });
+            
+            // Cleanup previous preview URL to avoid memory leaks
+            if (pdfUrlRef.current) {
+                window.URL.revokeObjectURL(pdfUrlRef.current);
+            }
+            
+            pdfUrlRef.current = result.url;
+            setPdfUrl(result.url);
+            setIsPreviewPdfOpen(true);
+          } catch (err) {
+            // Error is handled by mutation's onError
+          }
+        }}
       >
         {previewMutation.isPending ? (
           <Loader2 className="w-5 h-5 animate-spin" />
@@ -670,6 +697,12 @@ export default function ContractSetupDialog({
           </Button>
         </div>
       </DialogContent>
+      <PdfPreviewDialog
+        isOpen={isPreviewPdfOpen}
+        onClose={() => setIsPreviewPdfOpen(false)}
+        pdfUrl={pdfUrl}
+        title="Modelo do Contrato"
+      />
     </Dialog>
   );
 }

@@ -2,11 +2,13 @@ import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { CheckCircle2, FileText, Send, UserX } from 'lucide-react';
 import {
     useEffect,
+    useRef,
     useState
 } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { KPICard } from '@/components/common/KPICard';
+import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
 import { PullToRefreshWrapper } from '@/components/navigation/PullToRefreshWrapper';
 import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -34,6 +36,17 @@ const Contratos = () => {
   const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog, openSubscriptionExpiredDialog } = useLayout();
   const { profile, is_read_only } = usePermissions();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isPreviewPdfOpen, setIsPreviewPdfOpen] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const pdfUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pdfUrlRef.current) {
+        window.URL.revokeObjectURL(pdfUrlRef.current);
+      }
+    };
+  }, []);
   const navigate = useNavigate();
 
   const handleOpenContractSetup = () => {
@@ -247,11 +260,26 @@ const Contratos = () => {
                   busca={busca}
                   setBusca={setBusca}
                   activeTab={activeTab}
-                  countPendentes={kpis?.pendentes}
-                  countAssinados={kpis?.assinados}
+                   countPendentes={kpis?.pendentes}
+                   countAssinados={kpis?.assinados}
                   countSemContrato={kpis?.semContrato}
                   onOpenConfig={handleOpenContractSetup}
-                  onOpenPreview={() => previewMutation.mutate({})}
+                  onOpenPreview={async () => {
+                    try {
+                        const result = await previewMutation.mutateAsync({});
+                        
+                        // Cleanup
+                        if (pdfUrlRef.current) {
+                            window.URL.revokeObjectURL(pdfUrlRef.current);
+                        }
+                        
+                        pdfUrlRef.current = result.url;
+                        setPdfUrl(result.url);
+                        setIsPreviewPdfOpen(true);
+                    } catch (err) {
+                        // Handled by mutation
+                    }
+                  }}
                 />
 
                 <TabsContent value="pendentes" className="mt-0">
@@ -289,7 +317,13 @@ const Contratos = () => {
         </div>
       </PullToRefreshWrapper>
 
-      <LoadingOverlay active={isActionLoading} text="Processando..." />
+       <LoadingOverlay active={isActionLoading} text="Processando..." />
+      <PdfPreviewDialog 
+        isOpen={isPreviewPdfOpen}
+        onClose={() => setIsPreviewPdfOpen(false)}
+        pdfUrl={pdfUrl}
+        title="Modelo do Contrato"
+      />
     </>
   );
 };
