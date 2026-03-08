@@ -189,8 +189,11 @@ export default function PixKeyDialog({
     fieldChange(value);
   };
 
+  const [isManualLoading, setIsManualLoading] = React.useState(false);
+
   const handleSubmit = async (data: FormData) => {
     if (!profile?.id) return;
+    setIsManualLoading(true);
     try {
       let chavePixLimpa = data.chave_pix;
       const tipo = data.tipo_chave_pix;
@@ -198,13 +201,11 @@ export default function PixKeyDialog({
       if ([TipoChavePix.CPF, TipoChavePix.CNPJ, TipoChavePix.TELEFONE].includes(tipo)) {
           chavePixLimpa = chavePixLimpa.replace(/[^0-9]/g, "");
       } else if (tipo === TipoChavePix.ALEATORIA) {
-          // Mantém letras, números e hífens para chaves aleatórias (UUID)
           chavePixLimpa = chavePixLimpa.trim();
       } else {
           chavePixLimpa = cleanString(chavePixLimpa);
       }
 
-      // Check for redundant submission
       if (
           profile.chave_pix === chavePixLimpa && 
           profile.tipo_chave_pix === tipo && 
@@ -223,13 +224,18 @@ export default function PixKeyDialog({
 
       await refreshProfile(); 
       
-      // If we are already VALIDADA, mark as waiting for rotation
       if (profile.status_chave_pix === PixKeyStatus.VALIDADA) {
           setIsRotatingWait(true);
       }
       
       setOverrideStatus(false);
+      
+      // Pequeno delay para garantir que o profile atualizado (com status pendente) 
+      // já foi refletido no componente antes de remover o loading manual
+      setTimeout(() => setIsManualLoading(false), 800);
+
     } catch (err: unknown) {
+      setIsManualLoading(false);
       const errorMessage = err instanceof Error ? err.message : getMessage("pix.erro.erroAoSalvar");
       toast.error("pix.erro.falhaSalvar", { description: errorMessage });
     }
@@ -238,13 +244,13 @@ export default function PixKeyDialog({
   const renderStatusBanner = () => {
     // 1. Status Críticos (Validando, Falhou, Validada) - Prioridade se NÃO estiver editando
     if (!overrideStatus) {
-      if ((isPending || isRotatingWait)) {
+      if ((isPending || isRotatingWait || isManualLoading)) {
         return (
           <div className="mb-6 bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3 items-center animate-pulse">
             <Loader2 className="w-5 h-5 text-blue-600 animate-spin shrink-0" />
             <div className="space-y-0.5">
               <h4 className="text-sm font-semibold text-blue-900">
-                  {isRotatingWait ? "Validando Nova Chave..." : "Validando Chave..."}
+                  {(isManualLoading && !isPending) ? "Enviando Dados..." : (isRotatingWait ? "Validando Nova Chave..." : "Validando Chave...")}
               </h4>
             </div>
           </div>
@@ -319,11 +325,11 @@ export default function PixKeyDialog({
   };
 
   const renderFooter = () => {
-    const showPending = (isPending || isRotatingWait) && !overrideStatus;
-    const isSubmitting = form.formState.isSubmitting;
+    const showPending = (isPending || isRotatingWait || isManualLoading) && !overrideStatus;
+    const isSubmitting = form.formState.isSubmitting || isManualLoading;
     
     // Se estiver validado e não estiver editando, não precisa de rodapé (o banner verde já resolve)
-    if (isValid && !overrideStatus && !isPending && !isRotatingWait) return null;
+    if (isValid && !overrideStatus && !isPending && !isRotatingWait && !isManualLoading) return null;
 
     return (
       <div className="p-4 bg-gray-50 border-t border-gray-100 shrink-0 flex gap-3">
@@ -341,7 +347,7 @@ export default function PixKeyDialog({
           {(isSubmitting || showPending) ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin mr-2" />
-              {showPending ? "Aguardando Validação" : "Salvando..."}
+              {showPending ? "Aguardando Validação" : (isManualLoading ? "Enviando..." : "Salvando...")}
             </>
           ) : (
             isValid ? "Confirmar Nova Chave" : "Validar e Salvar"
