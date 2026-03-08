@@ -32,39 +32,33 @@ export const shareOrDownloadFile = async (blob: Blob, fileName: string, title: s
   
   try {
     if (isNative) {
-      // --- LÓGICA NATIVA (APK) ---
-      // 1. Converter Blob para Base64 (Requisito do Capacitor Filesystem)
       const reader = new FileReader();
       const base64Promise = new Promise<string>((resolve) => {
         reader.onloadend = () => {
           const base64data = reader.result as string;
-          resolve(base64data.split(',')[1]); // Remove o prefixo data:*/*;base64,
+          resolve(base64data.split(',')[1]);
         };
         reader.readAsDataURL(blob);
       });
       
       const base64 = await base64Promise;
       
-      // 2. Gravar no sistema de arquivos temporário
       const fileResult = await Filesystem.writeFile({
         path: fileName,
         data: base64,
         directory: Directory.Cache,
       });
 
-      // 3. Compartilhar o arquivo gravado (Isso abre a gaveta nativa do Android)
       await Share.share({
         title: title,
         text: 'Visualizando documento PDF',
-        url: fileResult.uri, // URI nativo do arquivo no dispositivo
+        url: fileResult.uri,
         dialogTitle: 'Compartilhar ou Salvar Contrato',
       });
       
     } else {
-      // --- LÓGICA WEB / PWA ---
       const file = new File([blob], fileName, { type: 'application/pdf' });
       
-      // Tentar Web Share API se disponível e for mobile
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       
       if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -81,13 +75,11 @@ export const shareOrDownloadFile = async (blob: Blob, fileName: string, title: s
         }
       }
 
-      // Fallback para Download Direto
       downloadBlob(blob, fileName);
     }
   } catch (error) {
     console.error('Erro ao processar arquivo:', error);
     toast.error('Erro ao compartilhar ou baixar o documento.');
-    // Fallback final: tenta download simples
     downloadBlob(blob, fileName);
   }
 };
