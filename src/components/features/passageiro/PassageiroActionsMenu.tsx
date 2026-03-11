@@ -11,6 +11,7 @@ interface PassageiroActionsMenuProps {
   onToggleStatus: (passageiro: Passageiro) => void;
   onDelete: (passageiro: Passageiro) => void;
   onOpenUpgradeDialog?: (passageiroId?: string) => void;
+  onGenerateContract?: (passageiro: Passageiro) => void;
 }
 
 export const PassageiroActionsMenu = memo(function PassageiroActionsMenu({
@@ -21,6 +22,7 @@ export const PassageiroActionsMenu = memo(function PassageiroActionsMenu({
   onToggleStatus,
   onDelete,
   onOpenUpgradeDialog,
+  onGenerateContract,
 }: PassageiroActionsMenuProps) {
   const actions = usePassageiroActions({
     passageiro,
@@ -30,6 +32,7 @@ export const PassageiroActionsMenu = memo(function PassageiroActionsMenu({
     onToggleStatus,
     onDelete,
     onOpenUpgradeDialog,
+    onGenerateContract,
   });
 
   return <ActionsDropdown actions={actions} />;

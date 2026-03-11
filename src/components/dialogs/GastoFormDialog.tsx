@@ -271,7 +271,7 @@ export default function GastoFormDialog({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="none">
-                          Não vincular a veículo
+                          Não especificar
                         </SelectItem>
                         {veiculos.map((v) => (
                           <SelectItem key={v.id} value={v.id}>

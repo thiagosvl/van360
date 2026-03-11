@@ -28,6 +28,7 @@ export function usePermissions() {
   const canUseAutomatedCharges = summary?.usuario.plano.funcionalidades.cobranca_automatica ?? false;
   const canUseNotifications = summary?.usuario.plano.funcionalidades.notificacoes_whatsapp ?? false;
   const canUseContracts = summary?.usuario.flags.usar_contratos ?? false;
+  const isContractsEnabled = profile?.config_contrato?.usar_contratos ?? false;
   
   return {
     isLoading,
@@ -35,6 +36,7 @@ export function usePermissions() {
     canUseAutomatedCharges,
     canUseNotifications,
     canUseContracts,
+    isContractsEnabled,
 
     is_essencial,
     is_profissional,

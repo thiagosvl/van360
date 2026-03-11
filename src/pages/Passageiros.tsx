@@ -12,23 +12,24 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  FEATURE_COBRANCA_AUTOMATICA
+    FEATURE_COBRANCA_AUTOMATICA
 } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useCreateEscola,
-  useCreatePassageiro,
-  useCreateVeiculo,
-  useDeletePassageiro,
-  useEscolas,
-  useFilters,
-  useFranchiseGate,
-  usePassageiros,
-  usePermissions,
-  usePlanLimits,
-  useToggleAtivoPassageiro,
-  useUpdatePassageiro,
-  useVeiculos,
+    useCreateContrato,
+    useCreateEscola,
+    useCreatePassageiro,
+    useCreateVeiculo,
+    useDeletePassageiro,
+    useEscolas,
+    useFilters,
+    useFranchiseGate,
+    usePassageiros,
+    usePermissions,
+    usePlanLimits,
+    useToggleAtivoPassageiro,
+    useUpdatePassageiro,
+    useVeiculos,
 } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Escola } from "@/types/escola";
@@ -126,11 +127,13 @@ export default function Passageiros() {
   const deletePassageiro = useDeletePassageiro();
   const toggleAtivoPassageiro = useToggleAtivoPassageiro();
 
+  const createContrato = useCreateContrato();
+
   const isActionLoading =
     createPassageiro.isPending ||
     updatePassageiro.isPending ||
     deletePassageiro.isPending ||
-    deletePassageiro.isPending ||
+    createContrato.isPending ||
     toggleAtivoPassageiro.isPending;
 
   const passageiroFilters = {
@@ -513,13 +516,22 @@ export default function Passageiros() {
         openSubscriptionExpiredDialog();
         return;
       }
-      openContractSetupDialog({
-        onSuccess: () => {
-          refetchPassageiros();
+
+      openConfirmationDialog({
+        title: "Gerar Contrato?",
+        description: `Deseja gerar um novo contrato para ${passageiro.nome} agora?`,
+        confirmText: "Gerar",
+        onConfirm: async () => {
+          try {
+            await createContrato.mutateAsync({ passageiroId: passageiro.id });
+            closeConfirmationDialog();
+          } catch (error) {
+            closeConfirmationDialog();
+          }
         },
       });
     },
-    [openContractSetupDialog, refetchPassageiros, is_read_only, openPlanUpgradeDialog],
+    [openConfirmationDialog, closeConfirmationDialog, createContrato, is_read_only, openSubscriptionExpiredDialog],
   );
 
   const pullToRefreshReload = useCallback(async () => {

@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import {
     Bus,
     CheckCircle2,
-    Key,
     Lock as LockIcon,
     Rocket,
     School,
@@ -14,21 +13,18 @@ import { useMemo, useState } from "react";
 import { PassengerOnboardingDrawer } from "./PassengerOnboardingDrawer";
 
 // Hooks
-import { PLANO_PROFISSIONAL } from "@/constants";
 import { usePermissions } from "@/hooks/business/usePermissions";
 
 interface QuickStartCardProps {
   onOpenVeiculoDialog: () => void;
   onOpenEscolaDialog: () => void;
   onOpenPassageiroDialog: () => void;
-  onOpenPixKeyDialog: () => void;
 }
 
 export const QuickStartCard = ({
   onOpenVeiculoDialog,
   onOpenEscolaDialog,
   onOpenPassageiroDialog,
-  onOpenPixKeyDialog,
 }: QuickStartCardProps) => {
   const { profile, plano, summary: systemSummary, isLoading: isSummaryLoading } = usePermissions();
 
@@ -71,18 +67,6 @@ export const QuickStartCard = ({
       },
     ];
 
-    // Adiciona step de PIX se for Profissional
-    if (plano?.slug === PLANO_PROFISSIONAL) {
-      defaultSteps.push({
-        id: 4,
-        done: !!profile?.chave_pix,
-        label: "Configurar Chave PIX",
-        onAction: onOpenPixKeyDialog,
-        icon: Key,
-        buttonText: "Configurar",
-      });
-    }
-
     return defaultSteps;
   }, [
     veiculosCount,
@@ -90,7 +74,6 @@ export const QuickStartCard = ({
     passageirosCount,
     onOpenVeiculoDialog,
     onOpenEscolaDialog,
-    onOpenPixKeyDialog,
     plano,
     profile,
     systemSummary // Ensure it re-runs when summary updates

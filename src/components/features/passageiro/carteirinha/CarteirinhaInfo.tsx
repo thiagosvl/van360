@@ -12,28 +12,28 @@ import { formatarEnderecoCompleto } from "@/utils/formatters/address";
 import { formatarTelefone } from "@/utils/formatters/phone";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  AlertCircle,
-  Bot,
-  BotOff,
-  CalendarDays,
-  Car,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Copy,
-  CopyCheck,
-  CreditCard,
-  FileText,
-  HeartPulse,
-  Lock,
-  Mail,
-  MapPin,
-  Pencil,
-  Phone,
-  School,
-  Trash2,
-  User,
-  UserCheck
+    AlertCircle,
+    Bot,
+    BotOff,
+    CalendarDays,
+    Car,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    Copy,
+    CopyCheck,
+    CreditCard,
+    FileText,
+    HeartPulse,
+    Lock,
+    Mail,
+    MapPin,
+    Pencil,
+    Phone,
+    School,
+    Trash2,
+    User,
+    UserCheck
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { InfoItem } from "./InfoItem";
@@ -73,7 +73,8 @@ export const CarteirinhaInfo = ({
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
   const { 
     canUseAutomatedCharges: hasCobrancaAutomaticaAccess,
-    canUseContracts
+    canUseContracts,
+    isContractsEnabled
   } = usePermissions();
   const { limits } = usePlanLimits();
 
@@ -462,7 +463,7 @@ export const CarteirinhaInfo = ({
               </Button>
             )}
 
-            {canUseContracts && onContractAction && (
+            {canUseContracts && isContractsEnabled && onContractAction && (
                 <Button
                   variant="ghost"
                   className={cn(

@@ -1,17 +1,17 @@
 import { ROUTES } from "@/constants/routes";
 import {
-  Copy,
-  CopyCheck,
-  CreditCard,
-  DollarSign,
-  FileText,
-  Plus,
-  Receipt,
-  TrendingDown,
-  UserCheck,
-  Users,
-  Wallet,
-  Zap,
+    Copy,
+    CopyCheck,
+    CreditCard,
+    DollarSign,
+    FileText,
+    Plus,
+    Receipt,
+    TrendingDown,
+    UserCheck,
+    Users,
+    Wallet,
+    Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -23,9 +23,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getMessage } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  usePermissions,
-  useSession,
-  useUpsellContent
+    usePermissions,
+    useSession,
+    useUpsellContent
 } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
@@ -36,8 +36,7 @@ import { MiniKPI } from "@/components/features/home/MiniKPI";
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
 import {
-  PassageiroFormModes,
-  PixKeyStatus
+    PassageiroFormModes
 } from "@/types/enums";
 import { getMesNome } from "@/utils/formatters";
 
@@ -45,7 +44,6 @@ const Home = () => {
   const {
     setPageTitle,
     openPlanUpgradeDialog,
-    openPixKeyDialog,
     openEscolaFormDialog,
     openVeiculoFormDialog,
     openPassageiroFormDialog,
@@ -86,16 +84,13 @@ const Home = () => {
   const passageirosInativosCount = systemSummary?.contadores?.passageiros?.inativos ?? 0;
   const passageirosSolicitacoesCount = systemSummary?.contadores?.passageiros?.solicitacoes_pendentes ?? 0;
 
-  const hasPixKey = !!profile?.chave_pix;
-
   const completedSteps = [
     veiculosCount > 0,
     escolasCount > 0,
     passageirosCount > 0,
-    is_profissional ? hasPixKey : null,
   ].filter((step) => step === true).length;
 
-  const totalSteps = is_profissional ? 4 : 3;
+  const totalSteps = 3;
   const showOnboarding = completedSteps < totalSteps;
 
   const dateContext = useMemo(() => {
@@ -212,27 +207,7 @@ const Home = () => {
             </p>
           </div>
 
-          {profile?.status_chave_pix === PixKeyStatus.PENDENTE_VALIDACAO ? (
-            <section className="mb-4">
-              <DashboardStatusCard
-                type="pending"
-                title="home.status.validacaoPendente"
-                description="home.status.validacaoPendenteDescricao"
-                actionLabel="Verificar Agora"
-                onAction={() => openPixKeyDialog()}
-              />
-            </section>
-          ) : profile?.status_chave_pix === PixKeyStatus.FALHA_VALIDACAO ? (
-            <section className="mb-4">
-              <DashboardStatusCard
-                type="error"
-                title="home.status.validacaoFalhou"
-                description="home.status.validacaoFalhouDescricao"
-                actionLabel="Corrigir Chave"
-                onAction={() => openPixKeyDialog()}
-              />
-              </section>
-          ) : null}
+
           {/* Notificação de Solicitações Pendentes */}
           {passageirosSolicitacoesCount > 0 && (
             <section className="mb-4">
@@ -290,7 +265,7 @@ const Home = () => {
                     },
                   });
                 }}
-                onOpenPixKeyDialog={() => openPixKeyDialog()}
+
               />
             </section>
           )}

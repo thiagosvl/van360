@@ -6,17 +6,17 @@ import { Gasto } from "@/types/gasto";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { formatCurrency, formatDateToBR } from "@/utils/formatters";
 import {
-  Bus,
-  Calendar,
-  ClipboardCheck,
-  Cog,
-  Ellipsis,
-  Eye,
-  FileText,
-  Fuel,
-  HelpCircle,
-  Wallet,
-  Wrench,
+    Bus,
+    Calendar,
+    ClipboardCheck,
+    Cog,
+    Ellipsis,
+    Eye,
+    FileText,
+    Fuel,
+    HelpCircle,
+    Wallet,
+    Wrench,
 } from "lucide-react";
 import { memo } from "react";
 import { GastoActionsMenu } from "./GastoActionsMenu";
@@ -111,7 +111,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
                 ) : (
                   <span className="text-[10px] font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100 inline-flex items-center gap-1 whitespace-nowrap">
                     <Bus className="w-3 h-3 text-gray-400" />
-                    Sem Veículo
+                    Não especificado
                   </span>
                 )}
               </div>
@@ -228,7 +228,7 @@ export function GastosList({
                         </span>
                       ) : (
                         <span className="text-xs font-semibold text-gray-400 bg-gray-50 px-2 py-1 rounded-md border border-gray-100 italic whitespace-nowrap">
-                          Sem Veículo
+                          Não especificado
                         </span>
                       )}
                     </div>

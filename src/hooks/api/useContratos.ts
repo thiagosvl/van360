@@ -45,6 +45,7 @@ export function useCreateContrato() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
+      queryClient.invalidateQueries({ queryKey: ['passageiros'] });
       toast.success('contrato.sucesso.criado');
     },
     onError: (error: any) => {
@@ -64,6 +65,7 @@ export function useDeleteContrato() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
+      queryClient.invalidateQueries({ queryKey: ['passageiros'] });
       toast.success('contrato.sucesso.removido');
     },
     onError: (error: any) => {
@@ -83,6 +85,7 @@ export function useSubstituirContrato() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
+      queryClient.invalidateQueries({ queryKey: ['passageiros'] });
       toast.success('contrato.sucesso.substituido');
     },
     onError: (error: any) => {

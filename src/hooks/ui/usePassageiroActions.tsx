@@ -39,7 +39,8 @@ export function usePassageiroActions({
 }: UsePassageiroActionsProps): ActionItem[] {
   const { 
     canUseAutomatedCharges: hasCobrancaAutomaticaAccess,
-    canUseContracts
+    canUseContracts,
+    isContractsEnabled
   } = usePermissions();
 
   const actions: ActionItem[] = [
@@ -96,7 +97,7 @@ export function usePassageiroActions({
   }
 
   // Contract Actions - Conditional Logic
-  if (canUseContracts) {
+  if (canUseContracts && isContractsEnabled) {
     if (passageiro.status_contrato === ContratoStatus.ASSINADO) {
       // Contract is signed - show link to final document
       const finalUrl = passageiro.contrato_final_url || passageiro.contrato_url;

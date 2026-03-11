@@ -48,6 +48,9 @@ export {
     useDesfazerPagamento, useEnviarNotificacaoCobranca, useRegistrarPagamentoManual, useToggleNotificacoesCobranca, useUpdateCobranca
 } from "./api/useCobrancaMutations";
 export {
+    useContratos, useContratosKPIs, useCreateContrato, useDeleteContrato, usePreviewContrato, useReenviarContrato, useSubstituirContrato
+} from "./api/useContratos";
+export {
     useCreateEscola, useDeleteEscola,
     useToggleAtivoEscola, useUpdateEscola
 } from "./api/useEscolaMutations";
