@@ -1,10 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -21,12 +16,11 @@ import { calculateSafeDueDate, toLocalDateString } from "@/utils/dateUtils";
 import { moneyToNumber } from "@/utils/masks";
 import {
   AlertCircle,
-  ArrowLeft,
   CheckCircle2,
+  ChevronLeft,
   CreditCard,
   Loader2,
-  Send,
-  Wallet,
+  Wallet
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -36,10 +30,14 @@ export interface FirstChargeDialogProps {
   onClose: () => void;
   passageiro: Passageiro;
 }
-type Step =
-  | "REGISTER_CHECK"
-  | "PAYMENT_STATUS"
-  | "PAYMENT_METHOD";
+
+type Step = "REGISTER_CHECK" | "PAYMENT_STATUS" | "PAYMENT_METHOD";
+
+const STEP_INDEX: Record<Step, number> = {
+  REGISTER_CHECK: 0,
+  PAYMENT_STATUS: 1,
+  PAYMENT_METHOD: 2,
+};
 
 export default function FirstChargeDialog({
   isOpen,
@@ -47,83 +45,68 @@ export default function FirstChargeDialog({
   passageiro,
 }: FirstChargeDialogProps) {
   const [step, setStep] = useState<Step>("REGISTER_CHECK");
-  const [paymentStatus, setPaymentStatus] = useState<"PAID" | "PENDING" | null>(
-    null,
-  );
+  const [paymentStatus, setPaymentStatus] = useState<"PAID" | "PENDING" | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string>("");
-  const [customValue, setCustomValue] = useState<string>(
+  const [customValue] = useState<string>(
     passageiro.valor_cobranca ? String(passageiro.valor_cobranca) : "",
   );
 
   const createCobranca = useCreateCobranca();
 
-  const currentMonthName = new Date().toLocaleString("pt-BR", {
-    month: "long",
-  });
+  const currentMonthName = new Date().toLocaleString("pt-BR", { month: "long" });
   const currentMonthNameCapitalized =
     currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
 
-  const firstNameResponsavel = passageiro.nome?.split(" ")[0];
-  const firstNamePassageiro = passageiro.nome_responsavel?.split(" ")[0];
+  const firstNamePassageiro = passageiro.nome?.split(" ")[0];
+  const firstNameResponsavel = passageiro.nome_responsavel?.split(" ")[0];
 
-  const handlePaymentStatusSelection = async (status: "PAID" | "PENDING") => {
-    setPaymentStatus(status);
-
-    if (status === "PAID") {
-      setStep("PAYMENT_METHOD");
-    } else {
-      // Sem automação, cria pendente direto
-      await submitCobranca(CobrancaStatus.PENDENTE, false);
-    }
-  };
+  const stepIndex = STEP_INDEX[step];
+  const isLoading = createCobranca.isPending;
 
   const handleBack = () => {
     if (step === "PAYMENT_STATUS") {
       setStep("REGISTER_CHECK");
+      setPaymentStatus(null);
     } else if (step === "PAYMENT_METHOD") {
       setStep("PAYMENT_STATUS");
-
     }
   };
 
   const handleNext = async () => {
-    // 1. REGISTER CHECK
     if (step === "REGISTER_CHECK") {
       setStep("PAYMENT_STATUS");
       return;
     }
 
-    // 3. PAYMENT METHOD (PAID)
+    if (step === "PAYMENT_STATUS") {
+      if (!paymentStatus) return;
+      if (paymentStatus === "PAID") {
+        setStep("PAYMENT_METHOD");
+      } else {
+        await submitCobranca(CobrancaStatus.PENDENTE);
+      }
+      return;
+    }
+
     if (step === "PAYMENT_METHOD") {
       if (!paymentMethod) {
         toast.error(getMessage("cobranca.erro.selecioneFormaPagamento"));
         return;
       }
-      await submitCobranca(CobrancaStatus.PAGO, false);
-      return;
+      await submitCobranca(CobrancaStatus.PAGO);
     }
-
-    // 4. AUTOMATION_CHECK handled by buttons
   };
 
-  const submitCobranca = async (
-    status: CobrancaStatus,
-    generatePixAndNotify: boolean,
-  ) => {
+  const submitCobranca = async (status: CobrancaStatus) => {
     const today = new Date();
-    
-    // Usar utilitário padronizado para garantir data válida
     const vencimentoDate = calculateSafeDueDate(
-        passageiro.dia_vencimento || today.getDate(),
-        today.getMonth(),
-        today.getFullYear()
+      passageiro.dia_vencimento || today.getDate(),
+      today.getMonth(),
+      today.getFullYear(),
     );
-
-    // Formatar YYYY-MM-DD para o payload
     const vencimento = toLocalDateString(vencimentoDate);
 
     try {
-      // valor sanitization
       let valor = passageiro.valor_cobranca || 0;
       if (customValue) {
         valor = moneyToNumber(customValue);
@@ -132,13 +115,13 @@ export default function FirstChargeDialog({
       const payload: any = {
         passageiro_id: passageiro.id,
         usuario_id: passageiro.usuario_id,
-        valor: valor,
+        valor,
         data_vencimento: vencimento,
-        status: status,
+        status,
         mes: today.getMonth() + 1,
         ano: today.getFullYear(),
         origem: CobrancaOrigem.MANUAL,
-        enviar_notificacao_agora: generatePixAndNotify,
+        enviar_notificacao_agora: false,
       };
 
       if (status === CobrancaStatus.PAGO) {
@@ -149,194 +132,271 @@ export default function FirstChargeDialog({
       }
 
       await createCobranca.mutateAsync(payload);
-
       onClose();
     } catch (err) {
       console.error(err);
     }
   };
 
-  const isLoading = createCobranca.isPending;
+  const primaryButtonText = () => {
+    if (step === "PAYMENT_METHOD") return "Confirmar";
+    if (step === "PAYMENT_STATUS" && paymentStatus === "PENDING") return "Registrar";
+    if (step === "REGISTER_CHECK") return "Sim, registrar";
+    return "Próximo";
+  };
+
+  const isPrimaryDisabled =
+    isLoading ||
+    (step === "PAYMENT_STATUS" && !paymentStatus) ||
+    (step === "PAYMENT_METHOD" && !paymentMethod);
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent
-        className="sm:max-w-[425px] w-[95%] sm:w-[90%] rounded-3xl gap-0 p-0 overflow-hidden border-0 shadow-2xl"
+        className="w-[calc(100%-1.5rem)] sm:w-full max-w-md p-0 overflow-hidden bg-white rounded-2xl sm:rounded-3xl border-0 shadow-2xl flex flex-col max-h-[95vh] sm:max-h-[90vh]"
         hideCloseButton
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <DialogHeader className="relative px-4 pt-5 sm:px-6 sm:pt-6 pb-2 shrink-0">
-          {step !== "REGISTER_CHECK" && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute left-4 top-5 sm:left-6 sm:top-6 h-8 w-8 -ml-3 text-gray-400 hover:text-gray-900 rounded-full hover:bg-gray-100/80 transition-all"
-              onClick={handleBack}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          )}
-          <DialogTitle className="text-center text-lg sm:text-xl font-bold text-gray-900">
-            Mensalidade de {currentMonthNameCapitalized}
-          </DialogTitle>
-        </DialogHeader>
+        {/* Header */}
+        <div className="bg-blue-600 p-4 sm:p-6 flex items-center justify-between text-white shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/20 rounded-lg shrink-0">
+              <Wallet className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <DialogTitle className="text-base sm:text-lg font-bold">
+                Mensalidade de {currentMonthNameCapitalized}
+              </DialogTitle>
+              <p className="text-xs text-blue-100 italic">
+                Passo {stepIndex + 1} de 3
+              </p>
+            </div>
+          </div>
 
-        <div className="p-4 sm:p-6 pt-2">
+          <div className="flex gap-1">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className={`h-1 sm:h-1.5 rounded-full transition-all ${
+                  stepIndex === i
+                    ? "bg-white w-6 sm:w-8"
+                    : "bg-white/30 w-3 sm:w-4"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-5 pt-4 flex-1 overflow-y-auto">
           {step === "REGISTER_CHECK" && (
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col items-center text-center gap-4 bg-blue-50/50 p-4 sm:p-6 rounded-3xl border border-blue-100/50">
-                <div className="bg-blue-100 p-4 rounded-full shrink-0 shadow-sm ring-4 ring-blue-50">
-                  <AlertCircle className="w-8 h-8 text-blue-600" />
+            <div className="space-y-5">
+              <div className="text-center space-y-2">
+                <div className="mx-auto w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-2">
+                  <Wallet className="w-8 h-8 text-blue-600" />
                 </div>
-                <div className="space-y-1">
-                  <p className="text-gray-600 font-medium leading-relaxed max-w-full sm:max-w-[240px] mx-auto text-sm sm:text-base">
-                    Deseja registrar a mensalidade deste mês no histórico
-                    financeiro?
-                  </p>
-                </div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  Registrar mensalidade?
+                </h2>
+                <p className="text-sm text-gray-500 leading-relaxed">
+                  Cria o registro de{" "}
+                  <strong className="text-gray-800">{currentMonthNameCapitalized}</strong>{" "}
+                  no histórico financeiro de{" "}
+                  <strong className="text-gray-800">{firstNamePassageiro}</strong>.
+                </p>
               </div>
 
-              <div className="grid grid-cols-1 gap-3">
-                <Button
-                  onClick={handleNext}
-                  className="h-12 sm:h-14 rounded-2xl font-bold gap-2 text-sm sm:text-base shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <CheckCircle2 className="w-5 h-5" />
-                  Sim, registrar mensalidade
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={onClose}
-                  className="h-10 sm:h-12 rounded-2xl text-gray-500 hover:text-gray-900 font-medium hover:bg-gray-50 text-sm sm:text-base"
-                >
-                  Não, ignorar este mês
-                </Button>
+              <div className="bg-gray-50 rounded-2xl border border-gray-200 px-4 py-3 flex items-center justify-between">
+                <span className="text-sm text-gray-500">Valor da mensalidade</span>
+                <span className="font-bold text-gray-900 text-lg">
+                  {(passageiro.valor_cobranca || 0).toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  })}
+                </span>
               </div>
             </div>
           )}
 
           {step === "PAYMENT_STATUS" && (
-            <div className="space-y-4 sm:space-y-6 pt-2">
-              <div className="text-center px-2 sm:px-4">
-                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3 sm:mb-4 ring-8 ring-gray-50/50">
-                  <Wallet className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
-                </div>
-
-                <p className="text-gray-900 text-base sm:text-lg leading-relaxed font-medium max-w-full sm:max-w-[320px] mx-auto">
-                  O responsável de{" "}
-                  <span className="text-blue-600 font-bold">
-                    {firstNamePassageiro} ({firstNameResponsavel})
-                  </span>{" "}
-                  já realizou o pagamento deste mês?
+            <div className="space-y-5">
+              <div className="space-y-1">
+                <h3 className="font-bold text-gray-900">O responsável já pagou?</h3>
+                <p className="text-sm text-gray-500">
+                  {firstNamePassageiro}{" "}
+                  <span className="text-gray-400">({firstNameResponsavel})</span>
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 gap-3">
-                <Button
-                  variant="outline"
-                  className="h-auto py-3 sm:py-4 justify-start px-3 sm:px-5 gap-3 sm:gap-4 border border-gray-200 rounded-2xl hover:border-blue-500 hover:bg-blue-50/50 hover:text-blue-700 group transition-all relative overflow-hidden"
-                  onClick={() => handlePaymentStatusSelection("PAID")}
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setPaymentStatus("PAID")}
+                  className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-3 ${
+                    paymentStatus === "PAID"
+                      ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-200"
+                      : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
                 >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-gray-300 group-hover:border-blue-500 flex items-center justify-center transition-colors shrink-0 bg-white shadow-sm">
-                    <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-all transform scale-0 group-hover:scale-100" />
+                  <div
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                      paymentStatus === "PAID" ? "bg-emerald-500" : "bg-gray-100"
+                    }`}
+                  >
+                    <CheckCircle2
+                      className={`w-5 h-5 ${paymentStatus === "PAID" ? "text-white" : "text-gray-500"}`}
+                    />
                   </div>
-                  <div className="text-left">
-                    <span className="block font-bold text-gray-900 text-base sm:text-lg group-hover:text-blue-900 transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`font-semibold text-sm ${paymentStatus === "PAID" ? "text-emerald-900" : "text-gray-800"}`}
+                    >
                       Sim, já recebi
-                    </span>
-                    <span className="text-gray-500 text-xs sm:text-sm font-medium group-hover:text-blue-600/80 transition-colors">
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">
                       Informar forma de pagamento
-                    </span>
+                    </p>
                   </div>
-                </Button>
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                      paymentStatus === "PAID"
+                        ? "border-emerald-500 bg-emerald-500"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    {paymentStatus === "PAID" && (
+                      <div className="w-2 h-2 bg-white rounded-full" />
+                    )}
+                  </div>
+                </button>
 
-                <Button
-                  variant="outline"
-                  className="h-auto py-3 sm:py-4 justify-start px-3 sm:px-5 gap-3 sm:gap-4 border border-gray-200 rounded-2xl hover:border-orange-500 hover:bg-orange-50/50 hover:text-orange-700 group transition-all relative overflow-hidden"
-                  onClick={() => handlePaymentStatusSelection("PENDING")}
+                <button
+                  type="button"
+                  onClick={() => setPaymentStatus("PENDING")}
+                  className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-3 ${
+                    paymentStatus === "PENDING"
+                      ? "border-amber-500 bg-amber-50 ring-1 ring-amber-200"
+                      : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
                 >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-gray-300 group-hover:border-orange-500 flex items-center justify-center transition-colors shrink-0 bg-white shadow-sm">
-                    <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-all transform scale-0 group-hover:scale-100" />
+                  <div
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                      paymentStatus === "PENDING" ? "bg-amber-500" : "bg-gray-100"
+                    }`}
+                  >
+                    <AlertCircle
+                      className={`w-5 h-5 ${paymentStatus === "PENDING" ? "text-white" : "text-gray-500"}`}
+                    />
                   </div>
-                  <div className="text-left">
-                    <span className="block font-bold text-gray-900 text-base sm:text-lg group-hover:text-orange-900 transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`font-semibold text-sm ${paymentStatus === "PENDING" ? "text-amber-900" : "text-gray-800"}`}
+                    >
                       Não, ainda vai pagar
-                    </span>
-                    <span className="text-gray-500 text-xs sm:text-sm font-medium group-hover:text-orange-600/80 transition-colors">
-                      Gerar mensalidade pendente
-                    </span>
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Registrar como pendente
+                    </p>
                   </div>
-                </Button>
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                      paymentStatus === "PENDING"
+                        ? "border-amber-500 bg-amber-500"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    {paymentStatus === "PENDING" && (
+                      <div className="w-2 h-2 bg-white rounded-full" />
+                    )}
+                  </div>
+                </button>
               </div>
             </div>
           )}
 
           {step === "PAYMENT_METHOD" && (
-            <div className="space-y-8 pt-4">
-              <div className="text-center px-2 sm:px-4">
-                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-3 sm:mb-4 ring-8 ring-emerald-50/50">
-                  <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-600" />
+            <div className="space-y-5">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-blue-600" />
+                  <h3 className="font-bold text-gray-900">Forma de pagamento</h3>
                 </div>
-                <p className="font-bold text-lg sm:text-xl text-gray-900">
-                  Qual foi a forma de pagamento?
+                <p className="text-xs text-gray-500 ml-7">
+                  Como o pagamento foi realizado?
                 </p>
               </div>
 
-              <div className="space-y-6">
-                <Select onValueChange={setPaymentMethod} value={paymentMethod}>
-                  <SelectTrigger
-                    className={cn(
-                      "pl-5 h-16 rounded-2xl bg-white border border-gray-200 focus-visible:ring-4 focus-visible:ring-blue-500/20 focus:border-blue-500 transition-all text-left text-lg shadow-sm hover:border-gray-300",
-                      !paymentMethod && "text-muted-foreground",
-                    )}
-                  >
-                    <div className="flex items-center gap-4">
-                      <Wallet className="h-6 w-6 text-gray-400" />
-                      <SelectValue placeholder="Selecione..." />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[280px] rounded-2xl border-gray-100 shadow-xl p-2">
-                    {[
-                      "dinheiro",
-                      "PIX",
-                      "cartao-credito",
-                      "cartao-debito",
-                      "transferencia",
-                      "boleto",
-                    ].map((val) => (
-                      <SelectItem
-                        key={val}
-                        value={val}
-                        className="py-3 px-4 rounded-xl cursor-pointer focus:bg-gray-50 text-base"
-                      >
-                        {val === "PIX"
-                          ? "PIX"
-                          : val === "cartao-credito"
-                            ? "Cartão de Crédito"
-                            : val === "cartao-debito"
-                              ? "Cartão de Débito"
-                              : val.charAt(0).toUpperCase() + val.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Button
-                  onClick={handleNext}
-                  disabled={isLoading || !paymentMethod}
-                  className="w-full h-14 rounded-2xl font-bold bg-blue-600 hover:bg-blue-700 text-lg shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:translate-y-[-2px]"
-                >
-                  {isLoading ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    "Confirmar Recebimento"
+              <Select onValueChange={setPaymentMethod} value={paymentMethod}>
+                <SelectTrigger
+                  className={cn(
+                    "h-14 rounded-2xl bg-white border border-gray-200 px-4 text-base shadow-sm hover:border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all",
+                    !paymentMethod && "text-muted-foreground",
                   )}
-                </Button>
-              </div>
+                >
+                  <div className="flex items-center gap-3">
+                    <Wallet className="w-5 h-5 text-gray-400 shrink-0" />
+                    <SelectValue placeholder="Selecione a forma de pagamento..." />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="max-h-[280px] rounded-2xl border-gray-100 shadow-xl p-2">
+                  {[
+                    { value: "dinheiro", label: "Dinheiro" },
+                    { value: "PIX", label: "PIX" },
+                    { value: "cartao-credito", label: "Cartão de Crédito" },
+                    { value: "cartao-debito", label: "Cartão de Débito" },
+                    { value: "transferencia", label: "Transferência" },
+                    { value: "boleto", label: "Boleto" },
+                  ].map(({ value, label }) => (
+                    <SelectItem
+                      key={value}
+                      value={value}
+                      className="py-3 px-4 rounded-xl cursor-pointer focus:bg-gray-50 text-base"
+                    >
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
+        </div>
 
+        {/* Footer */}
+        <div className="p-4 sm:p-6 bg-gray-50 flex gap-3 border-t shrink-0">
+          {step === "REGISTER_CHECK" ? (
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              className="flex-1 h-12 rounded-2xl font-semibold text-gray-600"
+              disabled={isLoading}
+            >
+              Não, ignorar
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              className="flex-1 h-12 rounded-2xl font-semibold text-gray-600"
+              disabled={isLoading}
+            >
+              <ChevronLeft className="w-4 h-4 mr-2" /> Voltar
+            </Button>
+          )}
+
+          <Button
+            onClick={handleNext}
+            disabled={isPrimaryDisabled}
+            className="flex-1 h-12 rounded-2xl font-bold bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-95"
+          >
+            {isLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <>
+                {primaryButtonText()}
+              </>
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

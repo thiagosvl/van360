@@ -189,7 +189,6 @@ const Contratos = () => {
                 title="Contratos Desativados"
                 description={
                   <div className="space-y-1">
-                    <p>A funcionalidade de contratos está desativada nas suas configurações.</p>
                     <p>Ative agora mesmo para gerar contratos e coletar assinaturas digitais.</p>
                   </div>
                 }

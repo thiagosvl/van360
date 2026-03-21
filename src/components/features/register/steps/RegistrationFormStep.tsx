@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { RegisterFormData } from "@/schemas/registerSchema";
 import { lazyLoad } from "@/utils/lazyLoad";
-import { FileText, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 
 // Lazy load
@@ -48,7 +48,7 @@ export function RegistrationFormStep({
                   Criando conta...
                 </>
               ) : (
-                <>Criar minha conta e começar</>
+                <>Criar minha conta</>
               )}
             </Button>
             <div className="mt-4 text-center">

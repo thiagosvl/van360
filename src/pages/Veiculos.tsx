@@ -22,11 +22,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Hooks
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreateVeiculo,
-    useDeleteVeiculo,
-    useFilters,
-    useToggleAtivoVeiculo,
-    useVeiculos,
+  useCreateVeiculo,
+  useDeleteVeiculo,
+  useFilters,
+  useToggleAtivoVeiculo,
+  useVeiculos,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -131,7 +131,7 @@ export default function Veiculos() {
     setPageTitle("Veículos");
   }, [setPageTitle]);
 
-  const veiculosFiltradas = veiculos;
+  const veiculosFiltrados = veiculos;
 
   // Check for openModal param on mount
   useEffect(() => {

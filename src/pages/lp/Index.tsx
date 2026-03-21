@@ -14,9 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
+import { ROUTES } from "@/constants/routes";
 import { useSEO } from "@/hooks/useSEO";
 import { motion } from "framer-motion";
 import {
@@ -34,9 +32,9 @@ import {
   Users,
   Wallet,
   X,
-  XCircle
+  XCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -44,28 +42,13 @@ const Index = () => {
   useSEO({
     noindex: false,
     title: "Van360 - Você dirige. Nós cobramos, confirmamos e organizamos.",
-    description: "Recupere 15+ horas por mês e reduza a inadimplência em até 80%. Automatize cobranças via WhatsApp e baixa de PIX. Assuma o controle total do seu financeiro.",
+    description:
+      "Recupere 15+ horas por mês e reduza a inadimplência em até 80%. Automatize cobranças via WhatsApp e baixa de PIX. Assuma o controle total do seu financeiro.",
   });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // ROI Calculator State
-  const [roiPassageiros, setRoiPassageiros] = useState([60]);
-  const [roiMensalidade, setRoiMensalidade] = useState(200);
-  const [roiPerdaAnual, setRoiPerdaAnual] = useState(0);
-
-  const CTA_LINK = "/cadastro";
-  const LOGIN_LINK = "/login";
-
-  // Calculate ROI
-  useEffect(() => {
-    const faturamentoMensal = roiPassageiros[0] * roiMensalidade;
-    const perdaInadimplencia = faturamentoMensal * 0.05; // 5% inadimplência
-    const perdaTempo = roiPassageiros[0] * 10; // R$ 10 de tempo/stress por passageiro
-    const perdaTotalMensal = perdaInadimplencia + perdaTempo;
-    setRoiPerdaAnual(perdaTotalMensal * 12);
-  }, [roiPassageiros, roiMensalidade]);
-
-
+  const CTA_LINK = ROUTES.PUBLIC.REGISTER;
+  const LOGIN_LINK = ROUTES.PUBLIC.LOGIN;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-yellow-200 overflow-x-hidden scroll-smooth">
@@ -196,7 +179,8 @@ const Index = () => {
                 </span>
               </h1>
               <p className="text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed">
-                O Van360 organiza a burocracia para você focar no que importa: a segurança dos seus passageiros.
+                O Van360 organiza a burocracia para você focar no que importa: a
+                segurança dos seus passageiros.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
@@ -218,15 +202,21 @@ const Index = () => {
               <div className="flex flex-wrap justify-center lg:justify-start gap-6 text-sm text-blue-100 font-medium">
                 <div className="flex items-center gap-2">
                   <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                  <span><strong>4.9/5</strong></span>
+                  <span>
+                    <strong>4.9/5</strong>
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="w-5 h-5" />
-                  <span><strong>+500</strong> motoristas</span>
+                  <span>
+                    <strong>+500</strong> motoristas
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-5 h-5" />
-                  <span><strong>+R$2.5M</strong> processados</span>
+                  <span>
+                    <strong>+R$2.5M</strong> processados
+                  </span>
                 </div>
               </div>
             </div>
@@ -290,7 +280,8 @@ const Index = () => {
                 Noites Perdidas Cobrando
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                São 22h e você ainda está no WhatsApp, mandando mensagem um por um, conferindo quem pagou e quem ainda não viu a mensagem.
+                São 22h e você ainda está no WhatsApp, mandando mensagem um por
+                um, conferindo quem pagou e quem ainda não viu a mensagem.
               </p>
             </div>
 
@@ -303,7 +294,9 @@ const Index = () => {
                 Dinheiro Deixado na Mesa
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                A inadimplência de 5% parece pouco, mas no fim do ano são milhares de reais que você trabalhou para ganhar e não recebeu. Fora o estresse de cobrar.
+                A inadimplência de 5% parece pouco, mas no fim do ano são
+                milhares de reais que você trabalhou para ganhar e não recebeu.
+                Fora o estresse de cobrar.
               </p>
             </div>
 
@@ -316,7 +309,9 @@ const Index = () => {
                 Vergonha e Desgaste
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                Cobrar é desconfortável. Você se sente mal, o pai se sente pressionado e a relação fica desgastada. Parece que você está pedindo um favor, e não recebendo pelo seu trabalho.
+                Cobrar é desconfortável. Você se sente mal, o pai se sente
+                pressionado e a relação fica desgastada. Parece que você está
+                pedindo um favor, e não recebendo pelo seu trabalho.
               </p>
             </div>
           </div>
@@ -324,7 +319,10 @@ const Index = () => {
       </section>
 
       {/* COMO FUNCIONA SECTION */}
-      <section id="como-funciona" className="py-16 md:py-24 bg-slate-50 scroll-mt-20">
+      <section
+        id="como-funciona"
+        className="py-16 md:py-24 bg-slate-50 scroll-mt-20"
+      >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
@@ -347,7 +345,8 @@ const Index = () => {
                 Configure em 5 Minutos
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                Cadastre seus passageiros e defina os valores. Nossa equipe te ajuda no processo, se precisar.
+                Cadastre seus passageiros e defina os valores. Nossa equipe te
+                ajuda no processo, se precisar.
               </p>
             </div>
 
@@ -360,7 +359,8 @@ const Index = () => {
                 Organize suas Cobranças
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                Acompanhe quem pagou e quem está pendente de forma profissional e organizada em um só lugar.
+                Acompanhe quem pagou e quem está pendente de forma profissional
+                e organizada em um só lugar.
               </p>
             </div>
 
@@ -373,7 +373,9 @@ const Index = () => {
                 Gestão e Controle
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                Dê baixa nas cobranças e mantenha o histórico de pagamentos sempre atualizado. A carteirinha do passageiro reflete o status em tempo real.
+                Dê baixa nas cobranças e mantenha o histórico de pagamentos
+                sempre atualizado. A carteirinha do passageiro reflete o status
+                em tempo real.
               </p>
             </div>
           </div>
@@ -409,7 +411,8 @@ const Index = () => {
                 </div>
               </div>
               <p className="text-slate-700 leading-relaxed mb-3">
-                O tempo que você gastava cobrando, agora você usa para descansar, ficar com a família ou cuidar da sua van.
+                O tempo que você gastava cobrando, agora você usa para
+                descansar, ficar com a família ou cuidar da sua van.
               </p>
               <p className="text-sm text-slate-500 italic">
                 Valor: R$600+/mês (considerando seu tempo)
@@ -432,7 +435,8 @@ const Index = () => {
                 </div>
               </div>
               <p className="text-slate-700 leading-relaxed mb-3">
-                Com cobranças automáticas e lembretes, os pais pagam em dia e você não perde dinheiro.
+                Com cobranças automáticas e lembretes, os pais pagam em dia e
+                você não perde dinheiro.
               </p>
               <p className="text-sm text-slate-500 italic">
                 Valor: R$1.200+/ano (para um faturamento de R$10k/mês)
@@ -455,7 +459,9 @@ const Index = () => {
                 </div>
               </div>
               <p className="text-slate-700 leading-relaxed mb-3">
-                Com carteirinha digital, link de cadastro e comunicação automática, os pais veem seu serviço com outros olhos e valorizam mais.
+                Com carteirinha digital, link de cadastro e comunicação
+                automática, os pais veem seu serviço com outros olhos e
+                valorizam mais.
               </p>
               <p className="text-sm text-slate-500 italic">
                 Valor: Aumento da percepção de valor e fidelização
@@ -478,7 +484,8 @@ const Index = () => {
                 </div>
               </div>
               <p className="text-slate-700 leading-relaxed mb-3">
-                Relatórios claros de faturamento, despesas e inadimplência. Chega de achismos e planilhas complicadas.
+                Relatórios claros de faturamento, despesas e inadimplência.
+                Chega de achismos e planilhas complicadas.
               </p>
               <p className="text-sm text-slate-500 italic">
                 Valor: Tome decisões baseadas em dados, não em suposições
@@ -489,7 +496,10 @@ const Index = () => {
       </section>
 
       {/* DEPOIMENTOS SECTION */}
-      <section id="depoimentos" className="hidden py-16 md:py-24 bg-slate-50 scroll-mt-20">
+      <section
+        id="depoimentos"
+        className="hidden py-16 md:py-24 bg-slate-50 scroll-mt-20"
+      >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
@@ -505,11 +515,16 @@ const Index = () => {
             <div className="bg-white border-2 border-slate-200 rounded-2xl p-8 hover:shadow-lg transition-shadow">
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                  <Star
+                    key={i}
+                    className="w-5 h-5 text-yellow-400 fill-yellow-400"
+                  />
                 ))}
               </div>
               <p className="text-slate-700 leading-relaxed mb-6 italic">
-                "Eu perdia quase 3 horas por dia cobrando. Hoje, o Van360 faz tudo sozinho. A inadimplência caiu de 10% pra quase zero. Não vivo mais sem."
+                "Eu perdia quase 3 horas por dia cobrando. Hoje, o Van360 faz
+                tudo sozinho. A inadimplência caiu de 10% pra quase zero. Não
+                vivo mais sem."
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-lg">
@@ -526,11 +541,16 @@ const Index = () => {
             <div className="bg-white border-2 border-slate-200 rounded-2xl p-8 hover:shadow-lg transition-shadow">
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                  <Star
+                    key={i}
+                    className="w-5 h-5 text-yellow-400 fill-yellow-400"
+                  />
                 ))}
               </div>
               <p className="text-slate-700 leading-relaxed mb-6 italic">
-                "O que mais gostei foi o profissionalismo. Os pais elogiam a organização, a carteirinha digital. Parece que meu negócio subiu de nível."
+                "O que mais gostei foi o profissionalismo. Os pais elogiam a
+                organização, a carteirinha digital. Parece que meu negócio subiu
+                de nível."
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 font-bold text-lg">
@@ -547,11 +567,16 @@ const Index = () => {
             <div className="bg-white border-2 border-slate-200 rounded-2xl p-8 hover:shadow-lg transition-shadow">
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                  <Star
+                    key={i}
+                    className="w-5 h-5 text-yellow-400 fill-yellow-400"
+                  />
                 ))}
               </div>
               <p className="text-slate-700 leading-relaxed mb-6 italic">
-                "No começo eu duvidei, mas em 2 meses eu já tinha recuperado o valor do ano inteiro só com a redução da inadimplência. É um investimento que se paga muito rápido."
+                "No começo eu duvidei, mas em 2 meses eu já tinha recuperado o
+                valor do ano inteiro só com a redução da inadimplência. É um
+                investimento que se paga muito rápido."
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold text-lg">
@@ -590,15 +615,21 @@ const Index = () => {
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3">
                     <span className="text-red-500 text-xl">❌</span>
-                    <span className="text-slate-700">15h/mês gastas cobrando</span>
+                    <span className="text-slate-700">
+                      15h/mês gastas cobrando
+                    </span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-red-500 text-xl">❌</span>
-                    <span className="text-slate-700">5-10% de inadimplência</span>
+                    <span className="text-slate-700">
+                      5-10% de inadimplência
+                    </span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-red-500 text-xl">❌</span>
-                    <span className="text-slate-700">Caderninho e planilhas</span>
+                    <span className="text-slate-700">
+                      Caderninho e planilhas
+                    </span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-red-500 text-xl">❌</span>
@@ -628,23 +659,33 @@ const Index = () => {
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-green-500 text-xl">✅</span>
-                    <span className="text-slate-700">&lt; 1% de inadimplência</span>
+                    <span className="text-slate-700">
+                      &lt; 1% de inadimplência
+                    </span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-green-500 text-xl">✅</span>
-                    <span className="text-slate-700">App organizado no celular</span>
+                    <span className="text-slate-700">
+                      App organizado no celular
+                    </span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-green-500 text-xl">✅</span>
-                    <span className="text-slate-700">Cobrança automática e profissional</span>
+                    <span className="text-slate-700">
+                      Cobrança automática e profissional
+                    </span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-green-500 text-xl">✅</span>
-                    <span className="text-slate-700">Paz de espírito e controle total</span>
+                    <span className="text-slate-700">
+                      Paz de espírito e controle total
+                    </span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-green-500 text-xl">✅</span>
-                    <span className="text-slate-700">Empresário do transporte escolar</span>
+                    <span className="text-slate-700">
+                      Empresário do transporte escolar
+                    </span>
                   </li>
                 </ul>
               </div>
@@ -665,139 +706,69 @@ const Index = () => {
             </p>
           </div>
 
-            <div className="max-w-lg mx-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <Card className="relative flex flex-col h-full border-2 border-blue-600 shadow-2xl scale-105">
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-blue-600 text-white px-4 py-1 text-sm font-bold">
-                      Acesso Vitalício
-                    </Badge>
-                  </div>
+          <div className="max-w-lg mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card className="relative flex flex-col h-full border-2 border-blue-600 shadow-2xl scale-105">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <Badge className="bg-blue-600 text-white px-4 py-1 text-sm font-bold">
+                    Acesso Vitalício
+                  </Badge>
+                </div>
 
-                  <CardHeader className="text-center pb-8 pt-8">
-                    <CardTitle className="text-2xl font-bold text-slate-900 mb-2">
-                      Plano Único & Gratuito
-                    </CardTitle>
-                    <CardDescription className="text-base text-slate-600 mb-6">
-                      Todas as ferramentas que você precisa para crescer sem custos.
-                    </CardDescription>
-                    <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-4xl font-extrabold text-slate-900">
-                        R$ 0,00
-                      </span>
-                      <span className="text-slate-500 font-medium text-sm">
-                        /sempre
-                      </span>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="space-y-4 flex-grow">
-                    <ul className="space-y-3 text-sm text-slate-700">
-                      {[
-                        "Passageiros Ilimitados",
-                        "Suporte a Cobrança via WhatsApp",
-                        "Baixa Automática via PIX",
-                        "Relatórios Financeiros Completos",
-                        "Carteirinha Digital para os Pais",
-                        "Suporte Especializado",
-                      ].map((beneficio, idx) => (
-                        <li key={idx} className="flex items-start gap-2.5">
-                          <div className="mt-0.5 p-0.5 rounded-full flex-shrink-0 bg-blue-100 text-blue-700">
-                            <CheckCircle2 className="w-4 h-4" />
-                          </div>
-                          <span className="font-medium leading-snug">
-                            {beneficio}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-
-                  <CardFooter className="pt-2 pb-6">
-                    <Link
-                      to="/cadastro"
-                      className="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent text-white bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-blue-500/30 text-base font-medium rounded-xl transition-all duration-200"
-                    >
-                      Criar minha conta grátis
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Link>
-                  </CardFooter>
-                </Card>
-              </motion.div>
-            </div>
-
-          {/* ROI Calculator */}
-          <div className="max-w-3xl mx-auto mt-16">
-            <div className="bg-white border-2 border-blue-200 rounded-2xl p-8 shadow-lg">
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                  Calcule quanto você está perdendo
-                </h3>
-                <p className="text-slate-600">
-                  Veja o impacto da inadimplência e do tempo perdido no seu negócio.
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <Label className="text-base font-medium text-slate-700 mb-3 block">
-                    Quantos passageiros você tem?
-                  </Label>
-                  <div className="flex items-center gap-4">
-                    <Slider
-                      value={roiPassageiros}
-                      onValueChange={setRoiPassageiros}
-                      min={10}
-                      max={200}
-                      step={5}
-                      className="flex-1"
-                    />
-                    <span className="text-2xl font-bold text-blue-600 w-16 text-right">
-                      {roiPassageiros[0]}
+                <CardHeader className="text-center pb-8 pt-8">
+                  <CardTitle className="text-2xl font-bold text-slate-900 mb-2">
+                    Plano Único & Gratuito
+                  </CardTitle>
+                  <CardDescription className="text-base text-slate-600 mb-6">
+                    Todas as ferramentas que você precisa para crescer sem
+                    custos.
+                  </CardDescription>
+                  <div className="flex items-baseline justify-center gap-2">
+                    <span className="text-4xl font-extrabold text-slate-900">
+                      R$ 0,00
+                    </span>
+                    <span className="text-slate-500 font-medium text-sm">
+                      /sempre
                     </span>
                   </div>
-                </div>
+                </CardHeader>
 
-                <div>
-                  <Label className="text-base font-medium text-slate-700 mb-3 block">
-                    Qual sua mensalidade média?
-                  </Label>
-                  <div className="flex items-center gap-4">
-                    <Input
-                      type="number"
-                      value={roiMensalidade}
-                      onChange={(e) => setRoiMensalidade(Number(e.target.value))}
-                      min={100}
-                      max={800}
-                      className="flex-1 text-lg"
-                    />
-                    <span className="text-slate-600 font-medium">R$</span>
-                  </div>
-                </div>
+                <CardContent className="space-y-4 flex-grow">
+                  <ul className="space-y-3 text-sm text-slate-700">
+                    {[
+                      "Passageiros Ilimitados",
+                      "Suporte a Cobrança via WhatsApp",
+                      "Baixa Automática via PIX",
+                      "Relatórios Financeiros Completos",
+                      "Carteirinha Digital para os Pais",
+                      "Suporte Especializado",
+                    ].map((beneficio, idx) => (
+                      <li key={idx} className="flex items-start gap-2.5">
+                        <div className="mt-0.5 p-0.5 rounded-full flex-shrink-0 bg-blue-100 text-blue-700">
+                          <CheckCircle2 className="w-4 h-4" />
+                        </div>
+                        <span className="font-medium leading-snug">
+                          {beneficio}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
 
-                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 text-center">
-                  <p className="text-slate-700 mb-2">
-                    Você pode estar perdendo até
-                  </p>
-                  <p className="text-4xl font-extrabold text-red-600 mb-2">
-                    R${" "}
-                    {roiPerdaAnual.toLocaleString("pt-BR", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </p>
-                  <p className="text-slate-600">
-                    por ano com inadimplência e tempo gasto.
-                  </p>
-                  <p className="text-sm text-slate-500 mt-3">
-                    O Van360 recupera esse valor para você.
-                  </p>
-                </div>
-              </div>
-            </div>
+                <CardFooter className="pt-2 pb-6">
+                  <Link
+                    to="/cadastro"
+                    className="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent text-white bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-blue-500/30 text-base font-medium rounded-xl transition-all duration-200"
+                  >
+                    Criar minha conta grátis
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </CardFooter>
+              </Card>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -879,8 +850,8 @@ const Index = () => {
                 E se eu não gostar? Tem contrato de fidelidade?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
-                Não tem fidelidade. Você pode cancelar quando quiser, sem multa e
-                sem burocracia. Nosso objetivo é que você fique porque está
+                Não tem fidelidade. Você pode cancelar quando quiser, sem multa
+                e sem burocracia. Nosso objetivo é que você fique porque está
                 amando, não porque está preso a um contrato.
               </AccordionContent>
             </AccordionItem>
@@ -969,17 +940,26 @@ const Index = () => {
               <h4 className="text-white font-bold mb-4">Produto</h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <a href="#como-funciona" className="hover:text-white transition-colors">
+                  <a
+                    href="#como-funciona"
+                    className="hover:text-white transition-colors"
+                  >
                     Como Funciona
                   </a>
                 </li>
                 <li>
-                  <a href="#precos" className="hover:text-white transition-colors">
+                  <a
+                    href="#precos"
+                    className="hover:text-white transition-colors"
+                  >
                     Preços
                   </a>
                 </li>
                 <li>
-                  <a href="#depoimentos" className="hover:text-white transition-colors">
+                  <a
+                    href="#depoimentos"
+                    className="hover:text-white transition-colors"
+                  >
                     Depoimentos
                   </a>
                 </li>

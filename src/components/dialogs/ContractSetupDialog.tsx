@@ -3,15 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { DEFAULT_CLAUSULAS_CONTRATO } from "@/constants/defaults";
 import { usePreviewContrato } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -20,17 +18,15 @@ import { queryClient } from "@/services/queryClient";
 import { toast } from "@/utils/notifications/toast";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-    AlertCircle,
-    ChevronLeft,
-    ChevronRight,
-    DollarSign,
-    FileText,
-    Loader2,
-    PenTool,
-    Plus,
-    ShieldCheck,
-    Trash2,
-    X,
+  AlertCircle,
+  ChevronLeft,
+  DollarSign,
+  FileText,
+  Loader2,
+  PenTool,
+  Plus,
+  Trash2,
+  X
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import SignatureCanvas from "react-signature-canvas";
@@ -78,6 +74,7 @@ export default function ContractSetupDialog({
 
   // Memory management for PDF Blob URL
   const pdfUrlRef = useRef<string | null>(null);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -89,7 +86,12 @@ export default function ContractSetupDialog({
 
   // Initialize from profile or default
   useEffect(() => {
-    if (isOpen && profile) {
+    if (!isOpen) {
+      initializedRef.current = false;
+      return;
+    }
+
+    if (isOpen && profile && !initializedRef.current) {
       if (profile.config_contrato?.clausulas) {
         setClausulas(profile.config_contrato.clausulas);
       } else {
@@ -106,18 +108,13 @@ export default function ContractSetupDialog({
         setSignatureTemp(profile.assinatura_digital_url);
       }
 
-      const configurado = profile.config_contrato?.configurado;
       const usar = profile.config_contrato?.usar_contratos;
-
-      if (configurado && usar) {
-        setUsarContratos(true);
-        setStep(SetupStep.WELCOME);
-      } else {
-        setUsarContratos(usar ?? true);
-        setStep(SetupStep.WELCOME);
-      }
+      setUsarContratos(usar ?? true);
+      setStep(SetupStep.WELCOME);
+      
+      initializedRef.current = true;
     }
-  }, [isOpen, profile]);
+  }, [isOpen, profile, signatureTemp]);
 
   const captureSignature = () => {
     if (sigPad.current && !sigPad.current.isEmpty()) {
@@ -219,72 +216,125 @@ export default function ContractSetupDialog({
   };
 
   const renderWelcome = () => (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="text-center space-y-2">
-        <div className="mx-auto w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-4">
-          <ShieldCheck className="w-8 h-8 text-blue-600" />
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900">
-          Proteja seu Negócio
+        <h2 className="text-xl font-bold text-gray-900">
+          Quer usar contratos automáticos?
         </h2>
-        <p className="text-gray-600">
-          Você pode automatizar a geração e
-          assinatura de contratos com os pais de forma simples e segura.
+        <p className="text-sm text-gray-500 leading-relaxed">
+          Gere PDFs com suas cláusulas, multas e colete assinaturas dos responsáveis.
         </p>
       </div>
 
-      <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex items-center justify-between">
-        <div className="flex gap-3 items-center">
-          <div className="bg-white p-2 rounded-lg shadow-sm">
-            <FileText className="w-5 h-5 text-blue-600" />
+      <div className="space-y-3">
+        <button
+          type="button"
+          onClick={() => setUsarContratos(true)}
+          className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-3 ${
+            usarContratos
+              ? "border-blue-500 bg-blue-50 ring-1 ring-blue-200"
+              : "border-gray-200 bg-white hover:border-gray-300"
+          }`}
+        >
+          <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+            usarContratos ? "bg-blue-500" : "bg-gray-100"
+          }`}>
+            <FileText className={`w-5 h-5 ${usarContratos ? "text-white" : "text-gray-500"}`} />
           </div>
-          <div>
-            <p className="font-semibold text-gray-900">
-              Usar contratos automáticos
+          <div className="flex-1 min-w-0">
+            <p className={`font-semibold text-sm ${usarContratos ? "text-blue-900" : "text-gray-800"}`}>
+              Sim, quero usar contratos
             </p>
-            <p className="text-xs text-gray-500">
-              Gere PDFs e colete assinaturas via WhatsApp
+            <p className="text-xs text-gray-500 mt-0.5 leading-snug">
+              PDFs automáticos, assinatura digital via WhatsApp
             </p>
           </div>
-        </div>
-        <Switch checked={usarContratos} onCheckedChange={setUsarContratos} />
+          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+            usarContratos ? "border-blue-500 bg-blue-500" : "border-gray-300"
+          }`}>
+            {usarContratos && <div className="w-2 h-2 bg-white rounded-full" />}
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setUsarContratos(false)}
+          className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-3 ${
+            !usarContratos
+              ? "border-gray-400 bg-gray-50 ring-1 ring-gray-200"
+              : "border-gray-200 bg-white hover:border-gray-300"
+          }`}
+        >
+          <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+            !usarContratos ? "bg-gray-500" : "bg-gray-100"
+          }`}>
+            <X className={`w-5 h-5 ${!usarContratos ? "text-white" : "text-gray-400"}`} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className={`font-semibold text-sm ${!usarContratos ? "text-gray-900" : "text-gray-600"}`}>
+              Não, prefiro gerenciar manualmente
+            </p>
+            <p className="text-xs text-gray-500 mt-0.5 leading-snug">
+              Você pode ativar essa função a qualquer momento
+            </p>
+          </div>
+          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+            !usarContratos ? "border-gray-500 bg-gray-500" : "border-gray-300"
+          }`}>
+            {!usarContratos && <div className="w-2 h-2 bg-white rounded-full" />}
+          </div>
+        </button>
       </div>
 
-      {!usarContratos && (
-        <div className="p-4 bg-amber-50 rounded-xl border border-amber-100 flex gap-3">
-          <X className="w-5 h-5 text-amber-600 shrink-0" />
-          <p className="text-sm text-amber-800">
-            Você pode ativar esta funcionalidade a qualquer momento nas
-            configurações do seu perfil.
-          </p>
-        </div>
-      )}
+      <AnimatePresence>
+        {!usarContratos && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            className="p-3 bg-amber-50 rounded-xl border border-amber-200 flex gap-2.5 items-start"
+          >
+            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-800 leading-relaxed">
+              Sem problema! Nas configurações do seu perfil você pode ativar quando quiser.
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 
   const renderFees = () => (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-2">
-        <DollarSign className="w-5 h-5 text-blue-600" />
-        <h3 className="font-bold text-gray-900">Taxas e Multas</h3>
+    <div className="space-y-5">
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <DollarSign className="w-5 h-5 text-blue-600" />
+          <h3 className="font-bold text-gray-900">Multas do Contrato</h3>
+        </div>
+        <p className="text-xs text-gray-500 ml-7">
+          Defina as penalidades que constarão no contrato assinado pelos responsáveis.
+        </p>
       </div>
 
       <div className="space-y-4">
-        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-4">
-          <Label className="text-gray-700 font-semibold">
-            Multa Mensal por Atraso
-          </Label>
+        <div className="p-4 bg-white rounded-2xl border border-gray-200 space-y-3 shadow-sm">
+          <div>
+            <Label className="text-gray-800 font-semibold text-sm">
+              Multa por Atraso no Pagamento
+            </Label>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Cobrada manualmente por você sobre a mensalidade quando houver atraso.
+            </p>
+          </div>
           <div className="flex gap-2">
             <Input
               type="number"
+              min={0}
               value={multaAtraso.valor}
               onChange={(e) =>
-                setMultaAtraso({
-                  ...multaAtraso,
-                  valor: Number(e.target.value),
-                })
+                setMultaAtraso({ ...multaAtraso, valor: Number(e.target.value) })
               }
-              className="flex-1 rounded-xl"
+              className="flex-1 rounded-xl text-center font-bold text-lg"
             />
             <Select
               value={multaAtraso.tipo}
@@ -292,17 +342,18 @@ export default function ContractSetupDialog({
                 setMultaAtraso({ ...multaAtraso, tipo: v })
               }
             >
-              <SelectTrigger className="w-32 rounded-xl">
+              <SelectTrigger className="w-36 rounded-xl">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="percentual">Porcentagem (%)</SelectItem>
-                <SelectItem value="fixo">Valor Fixo (R$)</SelectItem>
+                <SelectItem value="percentual">% Porcentagem</SelectItem>
+                <SelectItem value="fixo">R$ Valor fixo</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <p className="text-xs text-blue-600 bg-blue-50/50 p-2 rounded-lg border border-blue-100/50 italic">
-            Ex: Em uma mensalidade de R$ 200,00, a multa por atraso será de{" "}
+          <div className="text-xs bg-blue-50 text-blue-700 px-3 py-2 rounded-xl border border-blue-100">
+            <span className="font-medium">Exemplo: </span>
+            mensalidade de R$ 200,00 → multa de{" "}
             <strong>
               {multaAtraso.tipo === "percentual"
                 ? (200 * (multaAtraso.valor / 100)).toLocaleString("pt-BR", {
@@ -314,25 +365,27 @@ export default function ContractSetupDialog({
                     currency: "BRL",
                   })}
             </strong>
-            .
-          </p>
+          </div>
         </div>
 
-        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-4">
-          <Label className="text-gray-700 font-semibold">
-            Multa por Rescisão/Cancelamento
-          </Label>
+        <div className="p-4 bg-white rounded-2xl border border-gray-200 space-y-3 shadow-sm">
+          <div>
+            <Label className="text-gray-800 font-semibold text-sm">
+              Multa por Cancelamento
+            </Label>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Cobrada manualmente por você quando o contrato é encerrado antes do prazo.
+            </p>
+          </div>
           <div className="flex gap-2">
             <Input
               type="number"
+              min={0}
               value={multaRescisao.valor}
               onChange={(e) =>
-                setMultaRescisao({
-                  ...multaRescisao,
-                  valor: Number(e.target.value),
-                })
+                setMultaRescisao({ ...multaRescisao, valor: Number(e.target.value) })
               }
-              className="flex-1 rounded-xl"
+              className="flex-1 rounded-xl text-center font-bold text-lg"
             />
             <Select
               value={multaRescisao.tipo}
@@ -340,17 +393,18 @@ export default function ContractSetupDialog({
                 setMultaRescisao({ ...multaRescisao, tipo: v })
               }
             >
-              <SelectTrigger className="w-32 rounded-xl">
+              <SelectTrigger className="w-36 rounded-xl">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="percentual">Porcentagem (%)</SelectItem>
-                <SelectItem value="fixo">Valor Fixo (R$)</SelectItem>
+                <SelectItem value="percentual">% Porcentagem</SelectItem>
+                <SelectItem value="fixo">R$ Valor fixo</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <p className="text-xs text-blue-600 bg-blue-50/50 p-2 rounded-lg border border-blue-100/50 italic">
-            Ex: Caso o contrato seja encerrado, a multa de rescisão será de{" "}
+          <div className="text-xs bg-blue-50 text-blue-700 px-3 py-2 rounded-xl border border-blue-100">
+            <span className="font-medium">Exemplo: </span>
+            contrato de R$ 2.400,00 → multa de{" "}
             <strong>
               {multaRescisao.tipo === "percentual"
                 ? (2400 * (multaRescisao.valor / 100)).toLocaleString("pt-BR", {
@@ -363,9 +417,8 @@ export default function ContractSetupDialog({
                   })}
             </strong>
             {multaRescisao.tipo === "percentual" &&
-              ` (referente a ${multaRescisao.valor}% do valor total de um contrato de R$ 2.400,00)`}
-            .
-          </p>
+              ` (${multaRescisao.valor}% de R$ 2.400,00)`}
+          </div>
         </div>
       </div>
     </div>
@@ -373,87 +426,102 @@ export default function ContractSetupDialog({
 
   const renderClauses = () => (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-2">
-        <PenTool className="w-5 h-5 text-blue-600" />
-        <h3 className="font-bold text-gray-900">Cláusulas do Contrato</h3>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <PenTool className="w-5 h-5 text-blue-600" />
+          <h3 className="font-bold text-gray-900">Cláusulas do Contrato</h3>
+        </div>
+        {clausulas.length > 0 && (
+          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+            {clausulas.length} {clausulas.length === 1 ? "cláusula" : "cláusulas"}
+          </span>
+        )}
       </div>
 
-      <ScrollArea className="h-64 pr-4">
-        <div className="space-y-4">
-          {clausulas.map((clausula, idx) => (
-            <div key={idx} className="group relative">
-              <div className="flex gap-2 items-start">
-                <div className="mt-3 bg-gray-100 text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shrink-0">
-                  {idx + 1}
-                </div>
-                <div className="flex-1 relative">
-                  <textarea
-                    autoFocus={idx === clausulas.length - 1 && clausula === ""}
-                    className={`w-full p-3 text-sm bg-gray-50 border rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none min-h-[80px] ${
-                      showErrors && clausula.trim() === ""
-                        ? "border-red-300 focus:border-red-500 focus:ring-red-200"
-                        : "border-gray-200"
-                    }`}
-                    value={clausula}
-                    onChange={(e) => {
-                      const newClausulas = [...clausulas];
-                      newClausulas[idx] = e.target.value;
-                      setClausulas(newClausulas);
-                    }}
-                    placeholder="Descreva os termos da cláusula..."
-                  />
-                  <button
-                    onClick={() =>
-                      setClausulas(clausulas.filter((_, i) => i !== idx))
-                    }
-                    className="absolute top-0 right-1 p-1.5 text-gray-400 hover:text-red-500 bg-white/80 rounded-lg opacity-50 group-hover:opacity-100 transition-opacity shadow-sm"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+      <p className="text-xs text-gray-500">
+        Cada cláusula aparecerá numerada no contrato. Edite os textos conforme sua necessidade.
+      </p>
 
-                  {showErrors && clausula.trim() === "" && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center gap-1.5 mt-1.5 ml-1"
-                    >
-                      <AlertCircle className="w-3.5 h-3.5 text-red-500" />
-                      <p className="text-xs font-medium text-red-600">
-                        Campo obrigatório. Preencha ou remova esta cláusula.
-                      </p>
-                    </motion.div>
-                  )}
-                </div>
-              </div>
+      <div className="space-y-3">
+        {clausulas.map((clausula, idx) => (
+          <div
+            key={idx}
+            className={`rounded-2xl border transition-colors ${
+              showErrors && clausula.trim() === ""
+                ? "border-red-300 bg-red-50"
+                : "border-gray-200 bg-white shadow-sm"
+            }`}
+          >
+            <div className="flex items-center justify-between px-3 pt-3 pb-1">
+              <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">
+                Cláusula {idx + 1}
+              </span>
+              <button
+                type="button"
+                onClick={() => setClausulas(clausulas.filter((_, i) => i !== idx))}
+                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                title="Remover cláusula"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
-          ))}
-          {clausulas.length > 0 && (
+            <textarea
+              autoFocus={idx === clausulas.length - 1 && clausula === ""}
+              className={`w-full px-3 pb-3 pt-1 text-sm bg-transparent border-0 focus:outline-none resize-none leading-relaxed placeholder:text-gray-400 ${
+                showErrors && clausula.trim() === "" ? "text-red-800" : "text-gray-700"
+              }`}
+              value={clausula}
+              rows={3}
+              onChange={(e) => {
+                const newClausulas = [...clausulas];
+                newClausulas[idx] = e.target.value;
+                setClausulas(newClausulas);
+                e.target.style.height = "auto";
+                e.target.style.height = e.target.scrollHeight + "px";
+              }}
+              onFocus={(e) => {
+                e.target.style.height = "auto";
+                e.target.style.height = e.target.scrollHeight + "px";
+              }}
+              placeholder="Descreva os termos desta cláusula..."
+            />
+            {showErrors && clausula.trim() === "" && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center gap-1.5 px-3 pb-2.5"
+              >
+                <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                <p className="text-xs text-red-600">Preencha ou remova esta cláusula.</p>
+              </motion.div>
+            )}
+          </div>
+        ))}
+
+        {clausulas.length > 0 ? (
+          <Button
+            variant="outline"
+            className="w-full h-11 border-dashed border-blue-200 text-blue-600 bg-blue-50/50 hover:bg-blue-100 rounded-xl"
+            onClick={() => setClausulas([...clausulas, ""])}
+          >
+            <Plus className="w-4 h-4 mr-2" /> Adicionar Cláusula
+          </Button>
+        ) : (
+          <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
+            <PenTool className="w-8 h-8 text-gray-300 mx-auto mb-3" />
+            <p className="text-sm text-gray-500 mb-1 font-medium">Nenhuma cláusula adicionada</p>
+            <p className="text-xs text-gray-400 mb-4">Você precisa de ao menos uma cláusula.</p>
             <Button
               variant="outline"
-              className="w-full h-10 border-dashed border-blue-200 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl mt-2"
-              onClick={() => setClausulas([...clausulas, ""])}
+              size="sm"
+              className="rounded-xl border-blue-200 text-blue-600"
+              onClick={() => setClausulas([""])}
             >
-              <Plus className="w-4 h-4 mr-2" /> Nova Cláusula
+              <Plus className="w-4 h-4 mr-1" /> Adicionar Primeira Cláusula
             </Button>
-          )}
-
-          {clausulas.length === 0 && (
-            <div className="text-center py-8 border-2 border-dashed border-gray-100 rounded-2xl">
-              <p className="text-sm text-gray-400 mb-4">
-                Nenhuma cláusula adicionada.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-xl border-blue-200 text-blue-600"
-                onClick={() => setClausulas([...clausulas, ""])}
-              >
-                <Plus className="w-4 h-4 mr-1" /> Adicionar Primeira Cláusula
-              </Button>
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+          </div>
+        )}
+      </div>
     </div>
   );
 
@@ -528,23 +596,47 @@ export default function ContractSetupDialog({
   );
 
   const renderPreview = () => (
-    <div className="flex flex-col items-center justify-center space-y-6 py-0">
-      <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
-        <ShieldCheck className="w-10 h-10 text-blue-600" />
-      </div>
-      <div className="text-center space-y-2">
-        <h3 className="text-xl font-bold text-gray-900">Quase lá!</h3>
-        <p className="text-sm text-gray-500 max-w-[280px] mx-auto">
-          Suas configurações e assinatura foram capturadas. Visualize como seus
-          contratos ficarão antes de finalizar.
+    <div className="flex flex-col items-center space-y-5 py-0">
+      <div className="text-center space-y-1.5">
+        <h3 className="text-xl font-bold text-gray-900">Tudo configurado!</h3>
+        <p className="text-sm text-gray-500 max-w-[280px] mx-auto leading-relaxed">
+          Você pode alterar as configurações a qualquer momento.
         </p>
+      </div>
+
+      <div className="w-full bg-white rounded-2xl border border-gray-200 divide-y divide-gray-100 shadow-sm">
+        <div className="flex items-center justify-between px-4 py-2.5">
+          <span className="text-xs text-gray-500">Multa por atraso</span>
+          <span className="text-xs font-semibold text-gray-800 whitespace-nowrap">
+            {multaAtraso.tipo === "percentual"
+              ? `${multaAtraso.valor}%`
+              : multaAtraso.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+          </span>
+        </div>
+        <div className="flex items-center justify-between px-4 py-2.5">
+          <span className="text-xs text-gray-500">Multa por cancelamento</span>
+          <span className="text-xs font-semibold text-gray-800 whitespace-nowrap">
+            {multaRescisao.tipo === "percentual"
+              ? `${multaRescisao.valor}%`
+              : multaRescisao.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+          </span>
+        </div>
+        <div className="flex items-center justify-between px-4 py-2.5">
+          <span className="text-xs text-gray-500">Cláusulas</span>
+          <span className="text-xs font-semibold text-gray-800">
+            {clausulas.filter((c) => c.trim()).length} incluídas
+          </span>
+        </div>
+        <div className="flex items-center justify-between px-4 py-2.5">
+          <span className="text-xs text-gray-500">Assinatura digital</span>
+          <span className="text-xs font-semibold text-green-700">✓ Capturada</span>
+        </div>
       </div>
 
       <Button
         variant="outline"
         className="w-full h-12 border-2 border-blue-200 text-blue-700 hover:bg-blue-50 rounded-2xl font-bold gap-2"
         disabled={previewMutation.isPending}
-        // Send ALL draft config including signature
         onClick={async () => {
           try {
             const result = await previewMutation.mutateAsync({
@@ -553,12 +645,11 @@ export default function ContractSetupDialog({
               multaRescisao,
               assinaturaCondutorUrl: signatureTemp || profile?.assinatura_digital_url,
             });
-            
-            // Cleanup previous preview URL to avoid memory leaks
+
             if (pdfUrlRef.current) {
-                window.URL.revokeObjectURL(pdfUrlRef.current);
+              window.URL.revokeObjectURL(pdfUrlRef.current);
             }
-            
+
             pdfUrlRef.current = result.url;
             setPdfUrl(result.url);
             setIsPreviewPdfOpen(true);
@@ -572,15 +663,12 @@ export default function ContractSetupDialog({
         ) : (
           <FileText className="w-5 h-5" />
         )}
-        Visualizar Modelo (PDF)
+        Visualizar Contrato (PDF)
       </Button>
 
-      <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl flex gap-3">
-        <p className="text-[11px] text-amber-800 leading-relaxed">
-          <strong>Lembrete:</strong> Ao finalizar, novos passageiros
-          receberão este modelo automaticamente para assinatura.
-        </p>
-      </div>
+      <p className="text-[11px] text-gray-500 text-center leading-relaxed px-2">
+        Os próximos passageiros cadastrados receberão este contrato automaticamente para assinar.
+      </p>
     </div>
   );
 
@@ -647,7 +735,7 @@ export default function ContractSetupDialog({
           </div>
         </div>
 
-        <div className="p-5 flex-1 overflow-y-auto">
+        <div className="p-5 pt-2 flex-1 overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
@@ -681,7 +769,7 @@ export default function ContractSetupDialog({
             onClick={handleNext}
             className={`flex-1 h-12 rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95 ${
               step === SetupStep.PREVIEW
-                ? "bg-green-600 hover:bg-green-700"
+                ? "bg-blue-600 hover:bg-blue-700"
                 : "bg-blue-600 hover:bg-blue-700"
             }`}
             disabled={isSubmitting}
@@ -690,8 +778,11 @@ export default function ContractSetupDialog({
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               <>
-                {step === SetupStep.PREVIEW ? "Finalizar Tudo" : "Próximo"}
-                <ChevronRight className="w-4 h-4 ml-2" />
+                {step === SetupStep.PREVIEW
+                  ? "Concluir"
+                  : step === SetupStep.WELCOME && !usarContratos
+                  ? "Confirmar"
+                  : "Próximo"}
               </>
             )}
           </Button>

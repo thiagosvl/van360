@@ -12,44 +12,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      assinaturas_usuarios: {
-        Row: {
-          created_at: string
-          id: string
-          usuario_id: string | null
-          status: string
-          updated_at: string
-          valor: number
-          vencimento: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          usuario_id?: string | null
-          status?: string
-          updated_at?: string
-          valor?: number
-          vencimento: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          usuario_id?: string | null
-          status?: string
-          updated_at?: string
-          valor?: number
-          vencimento?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "assinaturas_usuarios_usuario_id_fkey"
-            columns: ["usuario_id"]
-            isOneToOne: false
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       cobrancas: {
         Row: {
           ano: number

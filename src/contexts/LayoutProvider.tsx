@@ -11,27 +11,22 @@ import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useContractGuard } from "@/hooks/ui/useContractGuard";
 
 import { PassageiroFormModes } from "@/types/enums";
+import { ReactNode, useEffect, useState } from "react";
 import {
-    ReactNode,
-    useCallback,
-    useEffect,
-    useState,
-} from "react";
-import {
-    LayoutContext,
-    OpenCobrancaDeleteDialogProps,
-    OpenCobrancaEditDialogProps,
-
-    OpenConfirmationDialogProps,
-    OpenContractSetupDialogProps,
-    OpenEscolaFormProps,
-    OpenFirstChargeDialogProps,
-    OpenGastoFormProps,
-    OpenManualPaymentDialogProps,
-    OpenPassageiroFormProps,
-    OpenVeiculoFormProps
+  LayoutContext,
+  OpenCobrancaDeleteDialogProps,
+  OpenCobrancaEditDialogProps,
+  OpenConfirmationDialogProps,
+  OpenContractSetupDialogProps,
+  OpenEscolaFormProps,
+  OpenFirstChargeDialogProps,
+  OpenGastoFormProps,
+  OpenManualPaymentDialogProps,
+  OpenPassageiroFormProps,
+  OpenVeiculoFormProps,
 } from "./LayoutContext";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
@@ -86,11 +81,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const { user } = useSession();
-  const {
-    profile,
+  const { 
+    isLoading: isProfileLoading, 
+    profile 
   } = useProfile(user?.id);
-
-
 
   const [cobrancaEditDialogState, setCobrancaEditDialogState] = useState<{
     open: boolean;
@@ -105,8 +99,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   }>({
     open: false,
   });
-
-
 
   const [manualPaymentDialogState, setManualPaymentDialogState] = useState<{
     open: boolean;
@@ -129,7 +121,12 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
-
+  useContractGuard({
+    profile,
+    isLoading: isProfileLoading,
+    onShouldOpen: () => setContractSetupDialogState({ open: true }),
+    disabled: false
+  });
 
   const openConfirmationDialog = (props: OpenConfirmationDialogProps) => {
     setConfirmationDialogState({
@@ -188,8 +185,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-
-
   const openManualPaymentDialog = (props: OpenManualPaymentDialogProps) => {
     setManualPaymentDialogState({
       open: true,
@@ -223,9 +218,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openManualPaymentDialog,
         openFirstChargeDialog,
         isFirstChargeDialogOpen: firstChargeDialogState.open,
-        openContractSetupDialog: (props?: OpenContractSetupDialogProps) => setContractSetupDialogState({ open: true, props }),
+        openContractSetupDialog: (props?: OpenContractSetupDialogProps) =>
+          setContractSetupDialogState({ open: true, props }),
       }}
-
     >
       {children}
 
@@ -261,8 +256,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <EscolaFormDialog
           isOpen={true}
           onClose={() =>
-            safeCloseDialog(() => 
-                setEscolaFormDialogState((prev) => ({ ...prev, open: false }))
+            safeCloseDialog(() =>
+              setEscolaFormDialogState((prev) => ({ ...prev, open: false })),
             )
           }
           onSuccess={(escola, keepOpen) => {
@@ -281,8 +276,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <VeiculoFormDialog
           isOpen={true}
           onClose={() =>
-            safeCloseDialog(() => 
-                setVeiculoFormDialogState((prev) => ({ ...prev, open: false }))
+            safeCloseDialog(() =>
+              setVeiculoFormDialogState((prev) => ({ ...prev, open: false })),
             )
           }
           onSuccess={(veiculo, keepOpen) => {
@@ -301,8 +296,11 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <PassageiroFormDialog
           isOpen={true}
           onClose={() =>
-            safeCloseDialog(() => 
-                setPassageiroFormDialogState((prev) => ({ ...prev, open: false }))
+            safeCloseDialog(() =>
+              setPassageiroFormDialogState((prev) => ({
+                ...prev,
+                open: false,
+              })),
             )
           }
           onSuccess={(data) => {
@@ -312,7 +310,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           editingPassageiro={
             passageiroFormDialogState.props?.editingPassageiro || null
           }
-          mode={passageiroFormDialogState.props?.mode || PassageiroFormModes.CREATE}
+          mode={
+            passageiroFormDialogState.props?.mode || PassageiroFormModes.CREATE
+          }
           prePassageiro={passageiroFormDialogState.props?.prePassageiro}
           profile={profile}
         />
@@ -321,13 +321,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {gastoFormDialogState.open && (
         <GastoFormDialog
           isOpen={true}
-           onOpenChange={(open) => {
+          onOpenChange={(open) => {
             if (!open) {
-                safeCloseDialog(() => {
-                    setGastoFormDialogState((prev) => ({ ...prev, open: false }));
-                });
+              safeCloseDialog(() => {
+                setGastoFormDialogState((prev) => ({ ...prev, open: false }));
+              });
             } else {
-                setGastoFormDialogState((prev) => ({ ...prev, open }));
+              setGastoFormDialogState((prev) => ({ ...prev, open }));
             }
           }}
           onSuccess={() => {
@@ -340,14 +340,12 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
-
-
       {cobrancaEditDialogState.open && cobrancaEditDialogState.props && (
         <CobrancaEditDialog
           isOpen={true}
           onClose={() =>
-            safeCloseDialog(() => 
-                setCobrancaEditDialogState((prev) => ({ ...prev, open: false }))
+            safeCloseDialog(() =>
+              setCobrancaEditDialogState((prev) => ({ ...prev, open: false })),
             )
           }
           cobranca={cobrancaEditDialogState.props.cobranca}
@@ -363,39 +361,42 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           open={cobrancaDeleteDialogState.open}
           onOpenChange={(open) => {
             if (!open) {
-              safeCloseDialog(() => setCobrancaDeleteDialogState((prev) => ({ ...prev, open: false })));
+              safeCloseDialog(() =>
+                setCobrancaDeleteDialogState((prev) => ({
+                  ...prev,
+                  open: false,
+                })),
+              );
             } else {
               setCobrancaDeleteDialogState((prev) => ({ ...prev, open }));
             }
           }}
           onConfirm={async () => {
-             const result = cobrancaDeleteDialogState.props?.onConfirm();
-             if (result instanceof Promise) {
-                 try {
-                     await result;
-                 } finally {
-                     closeCobrancaDeleteDialog();
-                 }
-             } else {
-                 closeCobrancaDeleteDialog();
-             }
+            const result = cobrancaDeleteDialogState.props?.onConfirm();
+            if (result instanceof Promise) {
+              try {
+                await result;
+              } finally {
+                closeCobrancaDeleteDialog();
+              }
+            } else {
+              closeCobrancaDeleteDialog();
+            }
           }}
           onEdit={() => {
-             cobrancaDeleteDialogState.props?.onEdit();
-             closeCobrancaDeleteDialog();
+            cobrancaDeleteDialogState.props?.onEdit();
+            closeCobrancaDeleteDialog();
           }}
           isLoading={cobrancaDeleteDialogState.props?.isLoading}
         />
       )}
-
-
 
       {manualPaymentDialogState.open && manualPaymentDialogState.props && (
         <ManualPaymentDialog
           isOpen={true}
           onClose={() =>
             safeCloseDialog(() =>
-              setManualPaymentDialogState((prev) => ({ ...prev, open: false }))
+              setManualPaymentDialogState((prev) => ({ ...prev, open: false })),
             )
           }
           cobrancaId={manualPaymentDialogState.props.cobrancaId}
@@ -412,12 +413,12 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 
       {firstChargeDialogState.open && firstChargeDialogState.props && (
         <FirstChargeDialog
-            isOpen={true}
-            onClose={() => {
-                setFirstChargeDialogState(prev => ({ ...prev, open: false }));
-                firstChargeDialogState.props?.onSuccess?.();
-            }}
-            passageiro={firstChargeDialogState.props.passageiro}
+          isOpen={true}
+          onClose={() => {
+            setFirstChargeDialogState((prev) => ({ ...prev, open: false }));
+            firstChargeDialogState.props?.onSuccess?.();
+          }}
+          passageiro={firstChargeDialogState.props.passageiro}
         />
       )}
 
@@ -426,7 +427,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         onClose={() => setContractSetupDialogState({ open: false })}
         onSuccess={contractSetupDialogState.props?.onSuccess}
       />
-
     </LayoutContext.Provider>
   );
 };

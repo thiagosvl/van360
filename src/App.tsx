@@ -22,10 +22,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import ResponsavelGate from "./components/auth/ResponsavelGate";
 import BackButtonController from "./components/navigation/BackButtonController";
 import ScrollToTop from "./components/navigation/ScrollToTop";
-import ResponsavelLayout from "./layouts/ResponsavelLayout";
 
 import { lazyLoad } from "@/utils/lazyLoad";
 
@@ -104,7 +102,6 @@ const App = () => {
           });
 
           await CapacitorUpdater.next({ id: version.id });
-          setShowUpdateDialog(false);
           localStorage.setItem("pendingUpdate", version.id);
 
                   toast.success("sistema.info.melhoriasProntas", {
@@ -217,16 +214,6 @@ const App = () => {
                   // Web → mostra página inicial pública
                   <Index />
                 )
-              }
-            />
-
-            {/* Rota Visão Responsável */}
-            <Route
-              path={ROUTES.PRIVATE.RESPONSAVEL.ROOT}
-              element={
-                <ResponsavelGate>
-                  <ResponsavelLayout />
-                </ResponsavelGate>
               }
             />
 
