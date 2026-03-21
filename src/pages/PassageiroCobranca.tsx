@@ -187,6 +187,10 @@ export default function PassageiroCobranca() {
     if (cobrancaTyped) openCobrancaEditDialog({ cobranca: cobrancaTyped });
   };
 
+  const pullToRefreshReload = async () => {
+    await refetchCobranca();
+  };
+
   const handleDeleteCobranca = async () => {
     if (!cobranca) return;
     const passageiroIdCapturado = cobranca.passageiro_id;
@@ -242,36 +246,36 @@ export default function PassageiroCobranca() {
   // Tema visual baseado no status — cor pontual, onde faz sentido
   const theme = isPago
     ? {
-        badgeCls: "bg-emerald-100 text-emerald-700 border-emerald-200",
-        primaryCls: "bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200/60",
-        StatusIcon: CheckCircle2,
-        accentBar: "bg-emerald-500",
-      }
+      badgeCls: "bg-emerald-100 text-emerald-700 border-emerald-200",
+      primaryCls: "bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200/60",
+      StatusIcon: CheckCircle2,
+      accentBar: "bg-emerald-500",
+    }
     : statusText === "Em atraso"
-    ? {
+      ? {
         badgeCls: "bg-red-100 text-red-700 border-red-200",
         primaryCls: "bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200/60",
         StatusIcon: AlertCircle,
         accentBar: "bg-red-500",
       }
-    : statusText === "Vence hoje"
-    ? {
-        badgeCls: "bg-orange-100 text-orange-700 border-orange-200",
-        primaryCls: "bg-orange-600 hover:bg-orange-700 shadow-lg shadow-orange-200/60",
-        StatusIcon: Clock,
-        accentBar: "bg-orange-500",
-      }
-    : {
-        badgeCls: "bg-blue-100 text-blue-700 border-blue-200",
-        primaryCls: "bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200/60",
-        StatusIcon: Clock,
-        accentBar: "bg-blue-500",
-      };
+      : statusText === "Vence hoje"
+        ? {
+          badgeCls: "bg-orange-100 text-orange-700 border-orange-200",
+          primaryCls: "bg-orange-600 hover:bg-orange-700 shadow-lg shadow-orange-200/60",
+          StatusIcon: Clock,
+          accentBar: "bg-orange-500",
+        }
+        : {
+          badgeCls: "bg-blue-100 text-blue-700 border-blue-200",
+          primaryCls: "bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200/60",
+          StatusIcon: Clock,
+          accentBar: "bg-blue-500",
+        };
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <>
-      <PullToRefreshWrapper onRefresh={() => refetchCobranca()}>
+      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="max-w-lg mx-auto space-y-3 pb-10">
 
           {/* ── Hero Card ──────────────────────────────────────────────── */}

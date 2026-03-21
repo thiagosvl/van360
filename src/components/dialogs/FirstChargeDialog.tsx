@@ -121,7 +121,6 @@ export default function FirstChargeDialog({
         mes: today.getMonth() + 1,
         ano: today.getFullYear(),
         origem: CobrancaOrigem.MANUAL,
-        enviar_notificacao_agora: false,
       };
 
       if (status === CobrancaStatus.PAGO) {
@@ -151,7 +150,7 @@ export default function FirstChargeDialog({
     (step === "PAYMENT_METHOD" && !paymentMethod);
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
+    <Dialog open={isOpen} onOpenChange={() => { }}>
       <DialogContent
         className="w-[calc(100%-1.5rem)] sm:w-full max-w-md p-0 overflow-hidden bg-white rounded-2xl sm:rounded-3xl border-0 shadow-2xl flex flex-col max-h-[95vh] sm:max-h-[90vh]"
         hideCloseButton
@@ -178,11 +177,10 @@ export default function FirstChargeDialog({
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className={`h-1 sm:h-1.5 rounded-full transition-all ${
-                  stepIndex === i
-                    ? "bg-white w-6 sm:w-8"
-                    : "bg-white/30 w-3 sm:w-4"
-                }`}
+                className={`h-1 sm:h-1.5 rounded-full transition-all ${stepIndex === i
+                  ? "bg-white w-6 sm:w-8"
+                  : "bg-white/30 w-3 sm:w-4"
+                  }`}
               />
             ))}
           </div>
@@ -233,16 +231,14 @@ export default function FirstChargeDialog({
                 <button
                   type="button"
                   onClick={() => setPaymentStatus("PAID")}
-                  className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-3 ${
-                    paymentStatus === "PAID"
-                      ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-200"
-                      : "border-gray-200 bg-white hover:border-gray-300"
-                  }`}
+                  className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-3 ${paymentStatus === "PAID"
+                    ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-200"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                    }`}
                 >
                   <div
-                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                      paymentStatus === "PAID" ? "bg-emerald-500" : "bg-gray-100"
-                    }`}
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${paymentStatus === "PAID" ? "bg-emerald-500" : "bg-gray-100"
+                      }`}
                   >
                     <CheckCircle2
                       className={`w-5 h-5 ${paymentStatus === "PAID" ? "text-white" : "text-gray-500"}`}
@@ -259,11 +255,10 @@ export default function FirstChargeDialog({
                     </p>
                   </div>
                   <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                      paymentStatus === "PAID"
-                        ? "border-emerald-500 bg-emerald-500"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${paymentStatus === "PAID"
+                      ? "border-emerald-500 bg-emerald-500"
+                      : "border-gray-300"
+                      }`}
                   >
                     {paymentStatus === "PAID" && (
                       <div className="w-2 h-2 bg-white rounded-full" />
@@ -274,16 +269,14 @@ export default function FirstChargeDialog({
                 <button
                   type="button"
                   onClick={() => setPaymentStatus("PENDING")}
-                  className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-3 ${
-                    paymentStatus === "PENDING"
-                      ? "border-amber-500 bg-amber-50 ring-1 ring-amber-200"
-                      : "border-gray-200 bg-white hover:border-gray-300"
-                  }`}
+                  className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-3 ${paymentStatus === "PENDING"
+                    ? "border-amber-500 bg-amber-50 ring-1 ring-amber-200"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                    }`}
                 >
                   <div
-                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                      paymentStatus === "PENDING" ? "bg-amber-500" : "bg-gray-100"
-                    }`}
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${paymentStatus === "PENDING" ? "bg-amber-500" : "bg-gray-100"
+                      }`}
                   >
                     <AlertCircle
                       className={`w-5 h-5 ${paymentStatus === "PENDING" ? "text-white" : "text-gray-500"}`}
@@ -300,11 +293,10 @@ export default function FirstChargeDialog({
                     </p>
                   </div>
                   <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                      paymentStatus === "PENDING"
-                        ? "border-amber-500 bg-amber-500"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${paymentStatus === "PENDING"
+                      ? "border-amber-500 bg-amber-500"
+                      : "border-gray-300"
+                      }`}
                   >
                     {paymentStatus === "PENDING" && (
                       <div className="w-2 h-2 bg-white rounded-full" />

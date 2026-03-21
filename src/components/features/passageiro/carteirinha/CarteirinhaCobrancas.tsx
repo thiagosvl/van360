@@ -5,11 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 import { cn } from "@/lib/utils";
@@ -17,24 +17,24 @@ import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
-    formatDateToBR,
-    getMesNome,
-    getStatusColor,
-    getStatusText,
+  formatDateToBR,
+  getMesNome,
+  getStatusColor,
+  getStatusText,
 } from "@/utils/formatters";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-    AlertTriangle,
-    BellOff,
-    Calendar,
-    Check,
-    ChevronDown,
-    ChevronUp,
-    Clock,
-    DollarSign,
-    Eye,
-    Plus,
-    RotateCcw,
+  AlertTriangle,
+  BellOff,
+  Calendar,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  DollarSign,
+  Eye,
+  Plus,
+  RotateCcw,
 } from "lucide-react";
 import { memo, ReactNode, useState } from "react";
 
@@ -159,9 +159,8 @@ export const CarteirinhaCobrancas = ({
               )}
             >
               <div
-                className={`${
-                  availableYears.length <= 1 ? "hidden" : "inline"
-                }`}
+                className={`${availableYears.length <= 1 ? "hidden" : "inline"
+                  }`}
               >
                 <Select value={yearFilter} onValueChange={onYearChange}>
                   <SelectTrigger className="w-[90px] h-9 text-sm bg-gray-50 border-gray-200 rounded-lg">
@@ -254,46 +253,18 @@ export const CarteirinhaCobrancas = ({
                       const statusColor = getStatusColor(
                         cobranca?.status,
                         cobranca?.data_vencimento,
-                        cobranca?.status_repasse
                       );
                       const isPago =
                         cobranca?.status === CobrancaStatus.PAGO;
                       const statusText = getStatusText(
                         cobranca?.status,
                         cobranca?.data_vencimento,
-                        cobranca?.status_repasse
                       );
 
                       // Lógica de cores e ícones (mantida)
                       let circleBgColor = "bg-orange-100";
                       let circleBorderColor = "border-orange-400";
                       let circleIcon = <Clock className="w-3.5 h-3.5 text-orange-600" />;
-
-                      if (statusText === "Em aprovação") {
-                        circleBgColor = "bg-orange-100";
-                        circleBorderColor = "border-orange-400";
-                        circleIcon = <Clock className="w-3.5 h-3.5 text-orange-600" />;
-                      } else if (statusText === "Em processamento") {
-                        circleBgColor = "bg-blue-100";
-                        circleBorderColor = "border-blue-400";
-                        circleIcon = <Clock className="w-3.5 h-3.5 text-blue-600" />;
-                      } else if (statusText === "Falha no repasse" || statusText === "Em atraso") {
-                        circleBgColor = "bg-red-100";
-                        circleBorderColor = "border-red-400";
-                        circleIcon = <AlertTriangle className="w-3.5 h-3.5 text-red-600" />;
-                      } else if (statusText === "Cancelada") {
-                        circleBgColor = "bg-gray-100";
-                        circleBorderColor = "border-gray-400";
-                        circleIcon = <RotateCcw className="w-3.5 h-3.5 text-gray-600" />;
-                      } else if (isPago) {
-                        circleBgColor = "bg-emerald-100";
-                        circleBorderColor = "border-emerald-400";
-                        circleIcon = <Check className="w-3.5 h-3.5 text-emerald-600" />;
-                      } else if (statusText === "Vence hoje") {
-                        circleBgColor = "bg-orange-50";
-                        circleBorderColor = "border-orange-300";
-                        circleIcon = <Clock className="w-3.5 h-3.5 text-orange-500" />;
-                      }
 
                       return (
                         <motion.div
@@ -341,7 +312,7 @@ export const CarteirinhaCobrancas = ({
                                   <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                                     <Calendar className="w-3 h-3" />
                                     {cobranca?.status ===
-                                    CobrancaStatus.PAGO ? (
+                                      CobrancaStatus.PAGO ? (
                                       <>
                                         Paga em{" "}
                                         {formatDateToBR(
@@ -447,7 +418,6 @@ export const CarteirinhaCobrancas = ({
                       const statusColor = getStatusColor(
                         cobranca?.status,
                         cobranca?.data_vencimento,
-                        cobranca?.status_repasse
                       );
                       const isPago =
                         cobranca?.status === CobrancaStatus.PAGO;
@@ -488,7 +458,6 @@ export const CarteirinhaCobrancas = ({
                                 {getStatusText(
                                   cobranca?.status,
                                   cobranca?.data_vencimento,
-                                  cobranca?.status_repasse
                                 )}
                               </Badge>
                               {cobranca?.desativar_lembretes && !isPago && (

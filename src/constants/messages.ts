@@ -335,12 +335,6 @@ export const messages = {
       semPendencias: "Nenhuma pendência hoje",
       passageirosEmAtraso: "passageiro(s) em atraso",
     },
-    status: {
-      validacaoPendente: "Validação PIX em Andamento",
-      validacaoPendenteDescricao: "Estamos confirmando sua chave com o banco. Isso leva alguns minutos.",
-      validacaoFalhou: "Validação PIX Falhou",
-      validacaoFalhouDescricao: "Não conseguimos confirmar sua chave. Corrija os dados para receber repasses.",
-    },
   },
 
   // ========== USUÁRIOS/ADMIN ==========
@@ -438,7 +432,6 @@ export type MessageKey =
   | `contrato.erro.${keyof typeof messages.contrato.erro}`
   | `contrato.sucesso.${keyof typeof messages.contrato.sucesso}`
   | `home.info.${keyof typeof messages.home.info}`
-  | `home.status.${keyof typeof messages.home.status}`
   | `pix.erro.${keyof typeof messages.pix.erro}`
   | `pix.sucesso.${keyof typeof messages.pix.sucesso}`
   | `pix.info.${keyof typeof messages.pix.info}`
