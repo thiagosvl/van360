@@ -2,9 +2,6 @@ import { cpfSchema, emailSchema, phoneSchema } from "@/schemas/common";
 import { z } from "zod";
 
 export const registerSchema = z.object({
-  plano_id: z.string().min(1, "Selecione um plano para continuar"),
-  sub_plano_id: z.string().optional(),
-  quantidade_personalizada: z.number().optional(),
   nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
   apelido: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
   cpfcnpj: cpfSchema,

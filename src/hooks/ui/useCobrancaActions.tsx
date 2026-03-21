@@ -1,13 +1,8 @@
-import {
-    FEATURE_COBRANCA_AUTOMATICA,
-    FEATURE_NOTIFICACOES
-} from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
     useDeleteCobranca,
     useDesfazerPagamento,
     useEnviarNotificacaoCobranca,
-    usePermissions,
     useToggleNotificacoesCobranca
 } from "@/hooks";
 import { ActionItem } from "@/types/actions";
@@ -37,26 +32,20 @@ import { useCallback, useMemo } from "react";
 
 export interface UseCobrancaOperationsProps {
   cobranca: Cobranca;
-  plano?: any;
   onActionSuccess?: () => void;
-  onUpgrade?: (feature: string, description?: string, title?: string) => void;
   onExcluirCobranca?: () => void;
 }
 
 export function useCobrancaOperations({
   cobranca,
-  plano,
   onActionSuccess,
-  onUpgrade,
   onExcluirCobranca,
 }: UseCobrancaOperationsProps) {
   const {
     openConfirmationDialog,
     closeConfirmationDialog,
-    openPlanUpgradeDialog,
     openCobrancaDeleteDialog,
     openCobrancaEditDialog,
-    openSubscriptionExpiredDialog,
   } = useLayout();
 
   // Mutations
@@ -65,32 +54,7 @@ export function useCobrancaOperations({
   const desfazerPagamento = useDesfazerPagamento();
   const deleteCobranca = useDeleteCobranca();
 
-  const handleUpgrade = useCallback(
-    (feature: string, description?: string, title?: string) => {
-      openPlanUpgradeDialog({
-        feature,
-        description,
-        title,
-      });
-    },
-    [openPlanUpgradeDialog]
-  );
-
-  const { 
-    canUseNotifications: hasNotificacoesAccess,
-    canUseAutomatedCharges,
-    is_read_only
-  } = usePermissions();
-
   const handleToggleLembretes = useCallback(async () => {
-    if (is_read_only) {
-      openSubscriptionExpiredDialog();
-      return;
-    }
-    if (!hasNotificacoesAccess) {
-      handleUpgrade(FEATURE_NOTIFICACOES);
-      return;
-    }
     try {
       await toggleNotificacoes.mutateAsync({
         cobrancaId: cobranca.id,
@@ -100,17 +64,9 @@ export function useCobrancaOperations({
     } catch (error) {
       console.error(error);
     }
-  }, [toggleNotificacoes, hasNotificacoesAccess, handleUpgrade, onActionSuccess, cobranca]);
+  }, [toggleNotificacoes, onActionSuccess, cobranca]);
 
   const handleEnviarNotificacao = useCallback(async () => {
-    if (is_read_only) {
-      openSubscriptionExpiredDialog();
-      return;
-    }
-    if (!hasNotificacoesAccess) {
-      handleUpgrade(FEATURE_COBRANCA_AUTOMATICA);
-      return;
-    }
     openConfirmationDialog({
       title: "Cobrar via WhatsApp",
       description:
@@ -120,9 +76,6 @@ export function useCobrancaOperations({
         try {
           await enviarNotificacao.mutateAsync(cobranca.id);
           closeConfirmationDialog();
-          if (!canUseAutomatedCharges) {
-            handleUpgrade(FEATURE_COBRANCA_AUTOMATICA);
-          }
           if (onActionSuccess) onActionSuccess();
         } catch (error) {
           closeConfirmationDialog();
@@ -132,20 +85,13 @@ export function useCobrancaOperations({
     });
   }, [
     enviarNotificacao,
-    plano,
-    handleUpgrade,
     openConfirmationDialog,
     closeConfirmationDialog,
     onActionSuccess,
     cobranca,
-    hasNotificacoesAccess
   ]);
 
   const handleDesfazerPagamento = useCallback(async () => {
-    if (is_read_only) {
-      openSubscriptionExpiredDialog();
-      return;
-    }
     openConfirmationDialog({
       title: "Desfazer pagamento?",
       description:
@@ -172,10 +118,6 @@ export function useCobrancaOperations({
   ]);
 
   const handleDeleteCobranca = useCallback(async () => {
-    if (is_read_only) {
-      openSubscriptionExpiredDialog();
-      return;
-    }
     openCobrancaDeleteDialog({
       onConfirm: async () => {
         try {
@@ -212,7 +154,6 @@ export function useCobrancaOperations({
     handleEnviarNotificacao,
     handleDesfazerPagamento,
     handleDeleteCobranca,
-    handleUpgrade,
     isActionLoading,
     isTogglingNotificacoes: toggleNotificacoes.isPending,
     isSendingNotification: enviarNotificacao.isPending,
@@ -228,13 +169,12 @@ export interface UseCobrancaActionsProps extends UseCobrancaOperationsProps {
   onEditarCobranca?: () => void;
   onRegistrarPagamento?: () => void;
   onPagarPix?: () => void;
-  onDesfazerPagamento?: () => void;
+  onDesfazerPagamento?: (cobranca: Cobranca) => void;
 }
 
 export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[] {
   const {
     cobranca,
-    plano,
     onVerCobranca,
     onVerCarteirinha,
     onEditarCobranca,
@@ -254,8 +194,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     isDeleting
   } = useCobrancaOperations(props);
 
-  const { canUseNotifications: hasNotificacoesAccess } = usePermissions();
-
   return useMemo(() => {
     const isPago = seForPago(cobranca);
     const actions: ActionItem[] = [];
@@ -274,14 +212,19 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       actions.push({
         label: "Desfazer Pagamento",
         icon: <RotateCcw className="h-4 w-4" />,
-        onClick: props.onDesfazerPagamento || handleDesfazerPagamento,
+        onClick: () => {
+           if (props.onDesfazerPagamento) {
+               props.onDesfazerPagamento(cobranca);
+           } else {
+               handleDesfazerPagamento();
+           }
+        },
         swipeColor: "bg-amber-500",
         isLoading: isDesfazendoPagamento,
         disabled: isActionLoading
       });
     }
 
-    // 1. Ver Carteirinha
     if (onVerCarteirinha) {
       actions.push({
         label: "Ver Carteirinha",
@@ -292,7 +235,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // 2. Registrar Pagamento
     if (!disableRegistrarPagamento(cobranca) && onRegistrarPagamento) {
       actions.push({
         label: "Registrar Pagamento",
@@ -306,19 +248,8 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    if (!isPago && cobranca.gateway_txid && cobranca.qr_code_payload && onPagarPix) {
-      actions.push({
-        label: "Ver PIX",
-        icon: <QrCode className="h-4 w-4" />,
-        onClick: () => {
-          document.body.click(); // Close menus
-          setTimeout(() => onPagarPix(), 10);
-        },
-        swipeColor: "bg-blue-600",
-      });
-    }
+    // Opção de Ver PIX removida conforme plano base.
 
-    // 3. Ver Detalhes
     if (onVerCobranca) {
       actions.push({
         label: "Ver Detalhes",
@@ -328,7 +259,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // 4. Enviar Mensalidade
     const canSend = canSendNotification(cobranca);
     if (canSend) {
       actions.push({
@@ -341,7 +271,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // 5. Editar
     if (onEditarCobranca) {
       actions.push({
         label: "Editar",
@@ -355,31 +284,8 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // 6. Notificações
-    if (!isPago) {
-      const label =
-        !hasNotificacoesAccess || cobranca.desativar_lembretes
-          ? "Ativar Lembretes Automáticos"
-          : "Pausar Lembretes Automáticos";
-      
-      const icon =
-        !hasNotificacoesAccess || cobranca.desativar_lembretes ? (
-          <Bell className="h-4 w-4" />
-        ) : (
-          <BellOff className="h-4 w-4" />
-        );
+    // Lembretes automáticos desativados conforme plano base.
 
-      actions.push({
-        label,
-        icon,
-        onClick: handleToggleLembretes,
-        swipeColor: !hasNotificacoesAccess || cobranca.desativar_lembretes ? "bg-emerald-500" : "bg-amber-500",
-        isLoading: isTogglingNotificacoes,
-        disabled: isActionLoading
-      });
-    }
-
-    // 7. Excluir (Usando regra de disable)
     if (!disableExcluirCobranca(cobranca)) {
       actions.push({
         label: "Excluir",
@@ -393,8 +299,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // Final pass to ensure EVERY item except the last has a separator
-    // This creates the standard "separated list" look requested by the user
     if (actions.length > 1) {
       for (let i = 0; i < actions.length - 1; i++) {
         actions[i].hasSeparatorAfter = true;
@@ -404,8 +308,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     return actions;
   }, [
     cobranca,
-    // plano, // Removed
-    hasNotificacoesAccess, // Added
     onVerCarteirinha,
     onRegistrarPagamento,
     onVerCobranca,
@@ -416,6 +318,12 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     handleDeleteCobranca,
     props.onVerRecibo,
     props.onExcluirCobranca,
-    props.onDesfazerPagamento
+    props.onDesfazerPagamento,
+    isActionLoading,
+    isTogglingNotificacoes,
+    isSendingNotification,
+    isDesfazendoPagamento,
+    isDeleting,
+    onPagarPix
   ]);
 }

@@ -13,7 +13,7 @@ import { useMemo, useState } from "react";
 import { PassengerOnboardingDrawer } from "./PassengerOnboardingDrawer";
 
 // Hooks
-import { usePermissions } from "@/hooks/business/usePermissions";
+import { useProfile } from "@/hooks/business/useProfile";
 
 interface QuickStartCardProps {
   onOpenVeiculoDialog: () => void;
@@ -26,7 +26,7 @@ export const QuickStartCard = ({
   onOpenEscolaDialog,
   onOpenPassageiroDialog,
 }: QuickStartCardProps) => {
-  const { profile, plano, summary: systemSummary, isLoading: isSummaryLoading } = usePermissions();
+  const { profile, summary: systemSummary, isLoading: isSummaryLoading } = useProfile();
 
   const loading = isSummaryLoading;
 
@@ -73,10 +73,7 @@ export const QuickStartCard = ({
     escolasCount,
     passageirosCount,
     onOpenVeiculoDialog,
-    onOpenEscolaDialog,
-    plano,
-    profile,
-    systemSummary // Ensure it re-runs when summary updates
+    onOpenEscolaDialog
   ]);
 
   const completedSteps = steps.filter((step) => step.done).length;

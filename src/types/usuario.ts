@@ -9,7 +9,7 @@ export interface Usuario {
   telefone: string;
   chave_pix?: string;
   tipo_chave_pix?: string;
-  auth_uid: string;
+
   ativo?: boolean; // Flag de segurança (conta bloqueada/ativa)
   
   /** @deprecated Use 'tipo' instead. */
@@ -19,12 +19,9 @@ export interface Usuario {
 
   created_at: string;
   updated_at: string;
-  assinaturas_usuarios?: any;
   status_chave_pix?: string;
   chave_pix_validada_em?: string;
   flags?: any;
-  plano?: any;
-  assinatura?: any;
 
   // Configurações de contrato
   assinatura_digital_url?: string;

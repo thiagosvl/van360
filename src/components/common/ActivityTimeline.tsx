@@ -16,8 +16,6 @@ import {
   RefreshCcw,
   ShieldCheck,
   Trash2,
-  TrendingDown,
-  TrendingUp
 } from "lucide-react";
 
 interface ActivityTimelineProps {
@@ -29,12 +27,10 @@ interface ActivityTimelineProps {
 }
 
 const getActionIcon = (acao: string | AtividadeAcao) => {
-  // Verificações específicas com Enum para evitar magic strings
   switch (acao) {
     case AtividadeAcao.BAIXA_BANCARIA:
       return <CreditCard className="w-4 h-4 text-emerald-500" />;
     case AtividadeAcao.PAGAMENTO_MANUAL:
-    case AtividadeAcao.ASSINATURA_PAGAMENTO:
       return <CreditCard className="w-4 h-4 text-blue-500" />;
     case AtividadeAcao.PAGAMENTO_REVERTIDO:
       return <RefreshCcw className="w-4 h-4 text-orange-500" />;
@@ -42,15 +38,10 @@ const getActionIcon = (acao: string | AtividadeAcao) => {
       return <FileText className="w-4 h-4 text-blue-500" />;
     case AtividadeAcao.CONTRATO_ASSINADO:
       return <ShieldCheck className="w-4 h-4 text-emerald-500" />;
-    case AtividadeAcao.ASSINATURA_UPGRADE:
-      return <TrendingUp className="w-4 h-4 text-emerald-500" />;
-    case AtividadeAcao.ASSINATURA_DOWNGRADE:
-      return <TrendingDown className="w-4 h-4 text-rose-500" />;
     case AtividadeAcao.NOTIFICACAO_WHATSAPP:
       return <MessageSquare className="w-4 h-4 text-blue-500" />;
   }
 
-  // Fallbacks genéricos baseados em padrões de nomenclatura
   if (acao.includes("CRIADA") || acao.includes("CRIADO") || acao.includes("REGISTRADO") || acao.includes("GERADO")) return <PlusCircle className="w-4 h-4" />;
   if (acao.includes("EDITADA") || acao.includes("EDITADO") || acao.includes("ALTERADA")) return <Edit className="w-4 h-4" />;
   if (acao.includes("EXCLUIDA") || acao.includes("EXCLUIDO")) return <Trash2 className="w-4 h-4 text-destructive" />;
@@ -66,7 +57,6 @@ const getEntityColor = (tipo: AtividadeEntidadeTipo | string) => {
     case AtividadeEntidadeTipo.ESCOLA: return "bg-indigo-500/10 text-indigo-500 border-indigo-500/20";
     case AtividadeEntidadeTipo.USUARIO: return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
     case AtividadeEntidadeTipo.GASTO: return "bg-rose-500/10 text-rose-500 border-rose-500/20";
-    case AtividadeEntidadeTipo.ASSINATURA: return "bg-amber-500/10 text-amber-500 border-amber-500/20";
     case AtividadeEntidadeTipo.CONTRATO: return "bg-blue-500/10 text-blue-500 border-blue-500/20";
     default: return "bg-gray-500/10 text-gray-500 border-gray-500/20";
   }
@@ -154,12 +144,6 @@ export function ActivityTimeline({ entidadeTipo, entidadeId, title, className, l
                   <div className="ml-8 text-[11px] text-muted-foreground bg-muted/20 p-2 rounded-lg border border-border/30">
                      {atividade.meta.valor && (
                        <span className="block font-medium">Valor: R$ {atividade.meta.valor.toFixed(2)}</span>
-                     )}
-                     {atividade.meta.plano && (
-                       <span className="block">Plano: <span className="text-foreground">{atividade.meta.plano}</span></span>
-                     )}
-                     {atividade.meta.franquia && (
-                       <span className="block">Limite: <span className="text-foreground">{atividade.meta.franquia} passageiros</span></span>
                      )}
                      {atividade.meta.campos && (
                        <span className="block">Alterações: <span className="text-foreground italic">{atividade.meta.campos.join(', ')}</span></span>

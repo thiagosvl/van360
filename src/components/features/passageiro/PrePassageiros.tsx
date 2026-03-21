@@ -27,9 +27,9 @@ import { useLayout } from "@/contexts/LayoutContext";
 import {
     useCreatePrePassageiro,
     useDeletePrePassageiro,
-    usePermissions,
     usePrePassageiros,
 } from "@/hooks";
+import { useProfile } from "@/hooks/business/useProfile";
 import { PassageiroFormModes } from "@/types/enums";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
@@ -54,8 +54,7 @@ import { useEffect, useRef, useState } from "react";
 
 export default function PrePassageiros({
   onFinalizeNewPrePassageiro,
-  profile,
-  plano,
+  profile: initialProfile,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -65,6 +64,8 @@ export default function PrePassageiros({
     openPassageiroFormDialog,
     openFirstChargeDialog,
   } = useLayout();
+
+  const { profile, summary } = useProfile();
 
   const createPrePassageiro = useCreatePrePassageiro();
   const deletePrePassageiro = useDeletePrePassageiro();
@@ -100,7 +101,6 @@ export default function PrePassageiros({
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  const { summary } = usePermissions();
   const solicitacoesPendentesCount = summary?.contadores?.passageiros?.solicitacoes_pendentes || 0;
 
   // Track previous count to detect changes coming from the server/socket
@@ -110,7 +110,6 @@ export default function PrePassageiros({
     // If the count changed from what we had before, it means an external update happened.
     // We should refetch the list to match the new count.
     if (prevCountRef.current !== solicitacoesPendentesCount) {
-      console.log(`[Summary Update] Count changed from ${prevCountRef.current} to ${solicitacoesPendentesCount}. Refetching list...`);
       refetchPrePassageiros();
       prevCountRef.current = solicitacoesPendentesCount;
     }

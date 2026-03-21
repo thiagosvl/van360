@@ -285,7 +285,6 @@ export const mockGenerator = {
       ...address,
       ativo: true,
       observacoes: "é um teste",
-      enviar_cobranca_automatica: false,
       
       // New fields from Schema/Enums
       genero: randomEnum(PassageiroGenero),

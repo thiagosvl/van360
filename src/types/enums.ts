@@ -37,30 +37,6 @@ export enum WhatsappStatus {
   NOT_FOUND = "NOT_FOUND"
 }
 
-export enum AssinaturaStatus {
-  ATIVA = "ativa",
-  TRIAL = "trial",
-  SUSPENSA = "suspensa",
-  PENDENTE_PAGAMENTO = "pendente_pagamento",
-  CANCELADA = "cancelada"
-}
-
-export enum AssinaturaCobrancaStatus {
-  PAGO = "pago",
-  PENDENTE_PAGAMENTO = "pendente_pagamento",
-  CANCELADA = "cancelada"
-}
-
-export enum AssinaturaBillingType {
-  SUBSCRIPTION = "subscription",
-  UPGRADE_PLAN = "upgrade_plan",
-  UPGRADE = "upgrade",
-  DOWNGRADE = "downgrade",
-  ACTIVATION = "activation",
-  EXPANSION = "expansion",
-  RENEWAL = "renewal",
-}
-
 export enum PixKeyStatus {
   VALIDADA = "VALIDADA",
   NAO_CADASTRADA = "NAO_CADASTRADA",
@@ -81,14 +57,6 @@ export enum PassageiroFormModes {
   CREATE = "create",
   EDIT = "edit",
   FINALIZE = "finalize"
-}
-
-export enum PlanSalesContext {
-  UPGRADE = "upgrade",
-  REGISTER = "register",
-  EXPANSION = "expansion",
-  UPGRADE_AUTO = "upgrade_auto",
-  TRIAL_CONVERSION = "trial_conversion"
 }
 
 export enum ContratoStatus {
@@ -129,7 +97,6 @@ export enum AtividadeEntidadeTipo {
   GASTO = "GASTO",
   VEICULO = "VEICULO",
   ESCOLA = "ESCOLA",
-  ASSINATURA = "ASSINATURA",
   CONTRATO = "CONTRATO"
 }
 
@@ -158,10 +125,6 @@ export enum AtividadeAcao {
   CONTRATO_GERADO = "CONTRATO_GERADO",
   CONTRATO_ASSINADO = "CONTRATO_ASSINADO",
   CONTRATO_EXCLUIDO = "CONTRATO_EXCLUIDO",
-  ASSINATURA_UPGRADE = "ASSINATURA_UPGRADE",
-  ASSINATURA_PAGAMENTO = "ASSINATURA_PAGAMENTO",
-  ASSINATURA_DOWNGRADE = "ASSINATURA_DOWNGRADE",
-  ASSINATURA_CANCELADA = "ASSINATURA_CANCELADA",
   USUARIO_EXCLUIDO = "USUARIO_EXCLUIDO",
   USUARIO_SUSPENSO = "USUARIO_SUSPENSO",
   WHATSAPP_STATUS_ALTERADO = "WHATSAPP_STATUS_ALTERADO",

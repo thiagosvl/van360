@@ -1,23 +1,18 @@
-
-import { GlobalExpiryBanner } from "@/components/common/GlobalExpiryBanner";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { ROUTES } from "@/constants/routes";
 import { LayoutProvider } from "@/contexts/LayoutProvider";
-import { usePermissions } from "@/hooks/business/usePermissions";
+import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useSEO } from "@/hooks/useSEO";
 import { Outlet, useNavigate } from "react-router-dom";
-function AppLayoutContent({ plano, role }: { plano: any, role: "motorista" }) {
+
+function AppLayoutContent({ role }: { role: "motorista" }) {
     const navigate = useNavigate();
     
-    // Monitorar status da assinatura e abrir dialogs se necessário
-    // AGORA SEGURO: Estamos dentro do LayoutProvider
-
     return (
       <div className="min-h-screen bg-gray-50">
-        <GlobalExpiryBanner />
-        <AppNavbar plano={plano} role={role} />
+        <AppNavbar role={role} />
 
         <aside className="hidden md:flex fixed left-0 top-0 z-40 h-full w-72 flex-col border-r border-gray-100 bg-white">
           <div className="flex h-20 items-center gap-3 px-6">
@@ -36,7 +31,7 @@ function AppLayoutContent({ plano, role }: { plano: any, role: "motorista" }) {
             </div>
           </div>
           <div className="flex-1 overflow-y-auto px-5 py-6">
-            <AppSidebar plano={plano} role={role} />
+            <AppSidebar role={role} />
           </div>
         </aside>
 
@@ -49,7 +44,7 @@ function AppLayoutContent({ plano, role }: { plano: any, role: "motorista" }) {
 
 export default function AppLayout() {
   const { user, loading: loadingSession } = useSession();
-  const { profile, isLoading, plano, role, isError, error } = usePermissions();
+  const { profile, isLoading, isError, error } = useProfile(user?.id);
 
   // Bloquear indexação de todas as páginas protegidas (área logada)
   useSEO({
@@ -58,13 +53,8 @@ export default function AppLayout() {
 
   if (isError) {
     console.error("Erro ao carregar perfil:", error);
-    // User requested to keep showing loading instead of error screen
-    // Fallthrough to the loading block below
   }
 
-  // Se ainda estiver carregando sessão, perfil, ou não tiver usuário/perfil definido (mas sem erro explícito)
-  // continuamos exibindo o loading. Isso evita flicker de telas intermediárias.
-  // IMPORTANTE: Isso assume que se !isError e !profile, estamos em transição/loading.
   if (loadingSession || isLoading || !user || !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -73,11 +63,9 @@ export default function AppLayout() {
     );
   }
 
-  const currentRole = (role || "motorista") as "motorista";
-
   return (
     <LayoutProvider>
-        <AppLayoutContent plano={plano} role={currentRole} />
+        <AppLayoutContent role="motorista" />
     </LayoutProvider>
   );
 }

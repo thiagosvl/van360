@@ -1,7 +1,8 @@
+import { CobrancaOrigem } from "@/types/enums";
 import { formatDate } from "./date";
 
 export const formatCobrancaOrigem = (origem: string): string => {
-  if (origem === "automatica") {
+  if (origem === CobrancaOrigem.AUTOMATICA) {
     return "Gerada Automaticamente";
   }
   return "Registrada Manualmente";

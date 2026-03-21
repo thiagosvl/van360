@@ -10,12 +10,12 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Lock } from "lucide-react";
@@ -64,13 +64,9 @@ export default function NovaSenha() {
   const handleRedefinir = async (data: z.infer<typeof formSchema>) => {
     try {
       setLoading(true);
-      
-      // We assume the user is already logged in (via magic link/recovery link handling by Supabase Client or manual session)
-      // Actually, when a user clicks the recovery link, Supabase Auto-login works on client-side to set the session.
-      // So 'apiClient' will automatically attach the Bearer token.
-      
+
       const { data: response } = await apiClient.post("/auth/update-password", {
-          password: data.senha
+        password: data.senha
       });
 
       setLoading(false);
@@ -88,14 +84,14 @@ export default function NovaSenha() {
     } catch (err: any) {
       setLoading(false);
       const msg = err.userMessage || err.message || "Tente novamente mais tarde.";
-      
+
       if (msg.includes("same_password")) {
-          toast.error("erro.operacao", {
-            description: "A nova senha deve ser diferente da senha atual.",
-          });
+        toast.error("erro.operacao", {
+          description: "A nova senha deve ser diferente da senha atual.",
+        });
       } else {
         toast.error("erro.generico", {
-            description: msg,
+          description: msg,
         });
       }
     }

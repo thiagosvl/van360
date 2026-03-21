@@ -17,23 +17,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { PLANO_ESSENCIAL, PLANO_PROFISSIONAL } from "@/constants";
-import { usePlanos } from "@/hooks";
 import { useSEO } from "@/hooks/useSEO";
-import { cn } from "@/lib/utils";
-import { Plano, SubPlano } from "@/types/plano";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
   CheckCircle2,
   Clock,
-  CreditCard,
   DollarSign,
   Headset,
   Heart,
-  Loader2,
   Menu,
   MessageCircle,
+  Smartphone,
   Star,
   TrendingUp,
   Users,
@@ -49,7 +44,7 @@ const Index = () => {
   useSEO({
     noindex: false,
     title: "Van360 - Você dirige. Nós cobramos, confirmamos e organizamos.",
-    description: "Recupere 15+ horas por mês e reduza a inadimplência em até 80%. Automatize cobranças via WhatsApp e baixa de PIX. Teste 21 dias grátis.",
+    description: "Recupere 15+ horas por mês e reduza a inadimplência em até 80%. Automatize cobranças via WhatsApp e baixa de PIX. Assuma o controle total do seu financeiro.",
   });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -58,7 +53,7 @@ const Index = () => {
   const [roiMensalidade, setRoiMensalidade] = useState(200);
   const [roiPerdaAnual, setRoiPerdaAnual] = useState(0);
 
-  const CTA_LINK = "/cadastro?plano=essencial";
+  const CTA_LINK = "/cadastro";
   const LOGIN_LINK = "/login";
 
   // Calculate ROI
@@ -70,55 +65,7 @@ const Index = () => {
     setRoiPerdaAnual(perdaTotalMensal * 12);
   }, [roiPassageiros, roiMensalidade]);
 
-  // Fetch dos planos
-  const { data: planosData, isLoading: isLoadingPlanos } = usePlanos({
-    ativo: "true",
-  });
 
-  const planosDataTyped: { bases: Plano[]; sub: SubPlano[] } = (planosData as
-    | { bases: Plano[]; sub: SubPlano[] }
-    | undefined) ?? { bases: [], sub: [] };
-
-  const planosOrdenados = planosDataTyped.bases.sort((a, b) => {
-    const order = [PLANO_ESSENCIAL, PLANO_PROFISSIONAL];
-    return order.indexOf(a.slug) - order.indexOf(b.slug);
-  });
-
-  const getPlanoConfig = (slug: string) => {
-    switch (slug) {
-      case PLANO_ESSENCIAL:
-        return {
-          buttonText: "Testar 21 dias grátis",
-          buttonVariant: "outline" as const,
-          highlight: false,
-          badge: null,
-        };
-      case PLANO_PROFISSIONAL:
-        return {
-          buttonText: "Quero Automatizar",
-          buttonVariant: "default" as const,
-          highlight: true,
-          badge: "Recomendado",
-        };
-      default:
-        return {
-          buttonText: "Escolher Plano",
-          buttonVariant: "outline" as const,
-          highlight: false,
-          badge: null,
-        };
-    }
-  };
-
-  const processarBeneficio = (beneficio: string, plano: Plano) => {
-    if (beneficio.includes("{{LIMITE_PASSAGEIROS}}")) {
-      return beneficio.replace(
-        "{{LIMITE_PASSAGEIROS}}",
-        plano.limite_passageiros ? String(plano.limite_passageiros) : "0"
-      );
-    }
-    return beneficio;
-  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-yellow-200 overflow-x-hidden scroll-smooth">
@@ -168,7 +115,7 @@ const Index = () => {
                 </Link>
                 <Link to={CTA_LINK}>
                   <Button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold text-sm px-5 shadow-md hover:shadow-lg transition-all">
-                    Testar 21 Dias Grátis
+                    Criar Conta Grátis
                   </Button>
                 </Link>
               </div>
@@ -227,7 +174,7 @@ const Index = () => {
               </Link>
               <Link to={CTA_LINK} onClick={() => setIsMenuOpen(false)}>
                 <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold text-base h-12 rounded-xl">
-                  Testar 21 Dias Grátis
+                  Criar Conta Grátis
                 </Button>
               </Link>
             </div>
@@ -249,7 +196,7 @@ const Index = () => {
                 </span>
               </h1>
               <p className="text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed">
-                Recupere <strong>15+ horas por mês</strong> e reduza a inadimplência em até <strong>80%</strong>. O Van360 automatiza a burocracia para você focar no que importa: a segurança dos seus passageiros.
+                O Van360 organiza a burocracia para você focar no que importa: a segurança dos seus passageiros.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
@@ -258,13 +205,13 @@ const Index = () => {
                     size="lg"
                     className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 h-14 text-lg font-bold shadow-xl rounded-xl hover:scale-105 transition-transform w-full sm:w-auto px-8"
                   >
-                    Começar meu trial de 21 dias
+                    Começar a usar agora
                   </Button>
                 </Link>
               </div>
 
               <p className="text-sm text-blue-200 mb-6">
-                💳 Sem cartão de crédito • ❌ Cancele quando quiser
+                ✅ Gratuito e sem restrições • ❌ Sem pegadinhas
               </p>
 
               {/* Prova Social */}
@@ -404,16 +351,16 @@ const Index = () => {
               </p>
             </div>
 
-            {/* Passo 2 */}
-            <div className="bg-white p-8 rounded-2xl border-2 border-slate-200 shadow-sm flex flex-col items-center text-center relative hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-2xl mb-6 shadow-md">
+            {/* Passo 2 - Comentado Automação */}
+            <div className="bg-white p-8 rounded-2xl border-2 border-slate-200 shadow-sm flex flex-col items-center text-center relative hover:shadow-lg transition-shadow opacity-60">
+              <div className="w-16 h-16 rounded-full bg-slate-400 text-white flex items-center justify-center font-bold text-2xl mb-6 shadow-md">
                 2
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">
-                O Robô Assume a Cobrança
+                Organize suas Cobranças
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                O sistema envia as cobranças via WhatsApp, com o PIX, dias antes do vencimento. De forma automática e profissional.
+                Acompanhe quem pagou e quem está pendente de forma profissional e organizada em um só lugar.
               </p>
             </div>
 
@@ -423,10 +370,10 @@ const Index = () => {
                 3
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">
-                Receba e Relaxe
+                Gestão e Controle
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                O pai paga o PIX, o sistema dá baixa automática, a carteirinha do passageiro fica verde e você recebe uma notificação. Simples assim.
+                Dê baixa nas cobranças e mantenha o histórico de pagamentos sempre atualizado. A carteirinha do passageiro reflete o status em tempo real.
               </p>
             </div>
           </div>
@@ -711,127 +658,76 @@ const Index = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
-              Um investimento que se paga sozinho. Escolha seu plano.
+              Um investimento que se paga sozinho. Acesso total e gratuito.
             </h2>
             <p className="text-xl text-slate-600">
-              Comece com 21 dias grátis. Sem cartão de crédito.
+              Gerencie seu transporte sem custos. Sem cartão de crédito.
             </p>
           </div>
 
-          {isLoadingPlanos ? (
-            <div className="flex justify-center items-center py-20">
-              <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-              {planosOrdenados.map((plano, index) => {
-                const config = getPlanoConfig(plano.slug);
-                return (
-                  <motion.div
-                    key={plano.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Card
-                      className={cn(
-                        "relative flex flex-col h-full transition-all duration-300",
-                        config.highlight
-                          ? "border-2 border-blue-600 shadow-2xl scale-105"
-                          : "border-2 border-slate-200 hover:shadow-lg"
-                      )}
+            <div className="max-w-lg mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Card className="relative flex flex-col h-full border-2 border-blue-600 shadow-2xl scale-105">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-blue-600 text-white px-4 py-1 text-sm font-bold">
+                      Acesso Vitalício
+                    </Badge>
+                  </div>
+
+                  <CardHeader className="text-center pb-8 pt-8">
+                    <CardTitle className="text-2xl font-bold text-slate-900 mb-2">
+                      Plano Único & Gratuito
+                    </CardTitle>
+                    <CardDescription className="text-base text-slate-600 mb-6">
+                      Todas as ferramentas que você precisa para crescer sem custos.
+                    </CardDescription>
+                    <div className="flex items-baseline justify-center gap-2">
+                      <span className="text-4xl font-extrabold text-slate-900">
+                        R$ 0,00
+                      </span>
+                      <span className="text-slate-500 font-medium text-sm">
+                        /sempre
+                      </span>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4 flex-grow">
+                    <ul className="space-y-3 text-sm text-slate-700">
+                      {[
+                        "Passageiros Ilimitados",
+                        "Suporte a Cobrança via WhatsApp",
+                        "Baixa Automática via PIX",
+                        "Relatórios Financeiros Completos",
+                        "Carteirinha Digital para os Pais",
+                        "Suporte Especializado",
+                      ].map((beneficio, idx) => (
+                        <li key={idx} className="flex items-start gap-2.5">
+                          <div className="mt-0.5 p-0.5 rounded-full flex-shrink-0 bg-blue-100 text-blue-700">
+                            <CheckCircle2 className="w-4 h-4" />
+                          </div>
+                          <span className="font-medium leading-snug">
+                            {beneficio}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+
+                  <CardFooter className="pt-2 pb-6">
+                    <Link
+                      to="/cadastro"
+                      className="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent text-white bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-blue-500/30 text-base font-medium rounded-xl transition-all duration-200"
                     >
-                      {config.badge && (
-                        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                          <Badge className="bg-blue-600 text-white px-4 py-1 text-sm font-bold">
-                            {config.badge}
-                          </Badge>
-                        </div>
-                      )}
-
-                      <CardHeader className="text-center pb-8 pt-8">
-                        <CardTitle className="text-2xl font-bold text-slate-900 mb-2">
-                          {plano.nome}
-                        </CardTitle>
-                        <CardDescription className="text-base text-slate-600 mb-6">
-                          {plano.slug === PLANO_ESSENCIAL
-                            ? "Para quem quer organizar a casa e ter controle total."
-                            : "Para quem quer automatizar tudo e ter mais tempo e lucro."}
-                        </CardDescription>
-                        <div className="flex items-baseline justify-center gap-2">
-                          {plano.slug === PLANO_ESSENCIAL ? (
-                            <>
-                              <span className="text-4xl font-extrabold text-slate-900">
-                                R${" "}
-                                {plano.preco
-                                  .toLocaleString("pt-BR", {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })
-                                  .replace("R$", "")
-                                  .trim()}
-                              </span>
-                              <span className="text-slate-500 font-medium text-sm">
-                                /mês
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              <span className="text-slate-600 font-medium text-lg">
-                                A partir de
-                              </span>
-                              <span className="text-4xl font-extrabold text-slate-900">
-                                R$ 107
-                              </span>
-                              <span className="text-slate-500 font-medium text-sm">
-                                /mês
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </CardHeader>
-
-                      <CardContent className="space-y-4 flex-grow">
-                        <ul className="space-y-3 text-sm text-slate-700">
-                          {plano.beneficios.map((beneficio, idx) => (
-                            <li key={idx} className="flex items-start gap-2.5">
-                              <div
-                                className={`mt-0.5 p-0.5 rounded-full flex-shrink-0 ${
-                                  config.highlight
-                                    ? "bg-blue-100 text-blue-700"
-                                    : "bg-green-100 text-green-700"
-                                }`}
-                              >
-                                <CheckCircle2 className="w-4 h-4" />
-                              </div>
-                              <span className="font-medium leading-snug">
-                                {processarBeneficio(beneficio, plano)}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </CardContent>
-
-                      <CardFooter className="pt-2 pb-6">
-                        <Link
-                          to={`/cadastro?plano=${plano.slug}`}
-                          className={cn(
-                            "w-full inline-flex items-center justify-center px-6 py-3 border text-base font-medium rounded-xl transition-all duration-200",
-                            config.highlight
-                              ? "border-transparent text-white bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-blue-500/30"
-                              : "border-gray-200 text-blue-600 bg-white hover:bg-blue-50 hover:border-blue-200"
-                          )}
-                        >
-                          {config.buttonText}
-                          <ArrowRight className="ml-2 h-5 w-5" />
-                        </Link>
-                      </CardFooter>
-                    </Card>
-                  </motion.div>
-                );
-              })}
+                      Criar minha conta grátis
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Link>
+                  </CardFooter>
+                </Card>
+              </motion.div>
             </div>
-          )}
 
           {/* ROI Calculator */}
           <div className="max-w-3xl mx-auto mt-16">
@@ -969,10 +865,9 @@ const Index = () => {
                 Preciso conectar meu WhatsApp? É seguro?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 text-sm leading-relaxed pb-4">
-                Sim, para o plano Profissional. Usamos a API oficial do WhatsApp
-                de forma 100% segura e não invasiva. O sistema só envia as
-                mensagens de cobrança que você configurar. Não lemos suas
-                conversas pessoais.
+                Sim! Usamos a API oficial do WhatsApp de forma 100% segura e não
+                invasiva. O sistema só envia as mensagens de cobrança que você
+                configurar. Não lemos suas conversas pessoais.
               </AccordionContent>
             </AccordionItem>
 
@@ -1019,7 +914,7 @@ const Index = () => {
           </h2>
           <p className="text-xl md:text-2xl text-blue-100 mb-12 max-w-2xl mx-auto">
             Junte-se a mais de 500 motoristas que já estão no controle. Comece
-            seu trial de 21 dias e veja a transformação na sua rotina.
+            agora e veja a transformação na sua rotina.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
             <Link to={CTA_LINK}>
@@ -1027,18 +922,18 @@ const Index = () => {
                 size="lg"
                 className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 text-xl font-bold px-12 h-16 rounded-2xl shadow-2xl hover:scale-105 transition-transform"
               >
-                Começar meu trial de 21 dias grátis
+                Criar minha conta gratuita
               </Button>
             </Link>
           </div>
           <div className="flex flex-wrap justify-center gap-6 text-sm text-blue-200">
             <div className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5" />
-              <span>Sem cartão de crédito</span>
+              <CheckCircle2 className="w-5 h-5 text-green-400" />
+              <span>Grátis para sempre</span>
             </div>
             <div className="flex items-center gap-2">
-              <XCircle className="w-5 h-5" />
-              <span>Cancele a qualquer momento</span>
+              <Smartphone className="w-5 h-5" />
+              <span>Acesso total via celular</span>
             </div>
             <div className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5" />

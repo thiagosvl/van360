@@ -1,4 +1,3 @@
-import { usePermissions } from "@/hooks/business/usePermissions";
 import {
   cepSchema,
   cpfSchema,
@@ -59,7 +58,6 @@ export const passageiroSchema = z
 
     ativo: z.boolean().optional(),
     usuario_id: z.string().optional(),
-    enviar_cobranca_automatica: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
     const validation = validateEnderecoFields(
@@ -99,8 +97,6 @@ interface UsePassageiroFormProps {
   mode?: PassageiroFormModes;
   editingPassageiro: Passageiro | null;
   prePassageiro?: PrePassageiro | null;
-  plano: any;
-  podeAtivarCobrancaAutomatica: boolean;
 }
 
 export function usePassageiroForm({
@@ -108,10 +104,7 @@ export function usePassageiroForm({
   mode,
   editingPassageiro,
   prePassageiro,
-  plano,
-  podeAtivarCobrancaAutomatica,
 }: UsePassageiroFormProps) {
-  const { canUseAutomatedCharges: canUseCobrancaAutomatica } = usePermissions();
   const [refreshing, setRefreshing] = useState(false);
   const [openAccordionItems, setOpenAccordionItems] = useState<string[]>([
     "passageiro",
@@ -150,8 +143,6 @@ export function usePassageiroForm({
       data_inicio_transporte: "",
 
       ativo: true,
-      enviar_cobranca_automatica:
-        canUseCobrancaAutomatica && podeAtivarCobrancaAutomatica,
     },
   });
 
@@ -200,8 +191,6 @@ export function usePassageiroForm({
             veiculo_id: editingPassageiro.veiculo_id || "",
 
             ativo: editingPassageiro.ativo,
-            enviar_cobranca_automatica:
-              editingPassageiro.enviar_cobranca_automatica || false,
           });
         });
 
@@ -243,8 +232,6 @@ export function usePassageiroForm({
           data_inicio_transporte: formatDateToBR(prePassageiro.data_inicio_transporte || ""),
 
           ativo: true,
-          enviar_cobranca_automatica:
-            canUseCobrancaAutomatica && podeAtivarCobrancaAutomatica,
         });
 
         form.trigger([
@@ -297,8 +284,6 @@ export function usePassageiroForm({
           data_inicio_transporte: "",
 
           ativo: true,
-          enviar_cobranca_automatica:
-            canUseCobrancaAutomatica && podeAtivarCobrancaAutomatica,
         });
         
         // Reset accordion default on create (All open by default as requested)
@@ -320,8 +305,6 @@ export function usePassageiroForm({
     mode,
     prePassageiro?.id,     
     form,
-    podeAtivarCobrancaAutomatica,
-    canUseCobrancaAutomatica, 
   ]);
   
   // Load data when dialog opens
@@ -331,19 +314,6 @@ export function usePassageiroForm({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, editingPassageiro?.id, prePassageiro?.id]); 
-
-  useEffect(() => {
-    if (mode === PassageiroFormModes.EDIT || !isOpen) return;
-
-    if (canUseCobrancaAutomatica && podeAtivarCobrancaAutomatica) {
-      const fieldState = form.getFieldState("enviar_cobranca_automatica");
-      const currentValue = form.getValues("enviar_cobranca_automatica");
-      
-      if (!fieldState.isDirty && !currentValue) {
-        form.setValue("enviar_cobranca_automatica", true, { shouldDirty: false });
-      }
-    }
-  }, [canUseCobrancaAutomatica, podeAtivarCobrancaAutomatica, mode, form, isOpen]);
 
   return {
     form,

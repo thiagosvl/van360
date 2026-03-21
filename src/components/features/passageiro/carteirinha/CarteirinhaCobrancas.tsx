@@ -11,7 +11,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { usePermissions } from "@/hooks/business/usePermissions";
 import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
@@ -42,10 +41,6 @@ import { memo, ReactNode, useState } from "react";
 interface CarteirinhaCobrancasProps {
   cobrancas: Cobranca[];
   passageiro: Passageiro;
-  plano?: {
-    slug?: string;
-    isEssentialPlan?: boolean;
-  } | null;
 
   yearFilter: string;
   availableYears: string[];
@@ -63,7 +58,6 @@ interface CarteirinhaCobrancasProps {
   onToggleMostrarTodas: () => void;
   onToggleClick: (statusAtual: boolean) => void;
   limiteCobrancasMobile?: number;
-  onUpgrade: (featureName: string, description: string) => void;
 }
 
 const COBRANCAS_LIMIT_DEFAULT = 3;
@@ -73,8 +67,6 @@ const CobrancaMobileItemWrapper = memo(
   ({
     cobranca,
     children,
-    plano,
-    onUpgrade,
     onVerCobranca,
     onEditarCobranca,
     onRegistrarPagamento,
@@ -86,8 +78,6 @@ const CobrancaMobileItemWrapper = memo(
   }: {
     cobranca: Cobranca;
     children: ReactNode;
-    plano: any;
-    onUpgrade?: (f: string, d: string) => void;
     onVerCobranca: () => void;
     onEditarCobranca: () => void;
     onRegistrarPagamento: () => void;
@@ -99,8 +89,6 @@ const CobrancaMobileItemWrapper = memo(
   }) => {
     const actions = useCobrancaActions({
       cobranca,
-      plano,
-      onUpgrade,
       onVerCobranca,
       onEditarCobranca,
       onRegistrarPagamento,
@@ -121,7 +109,6 @@ const CobrancaMobileItemWrapper = memo(
 export const CarteirinhaCobrancas = ({
   cobrancas,
   passageiro,
-  plano,
   yearFilter,
   availableYears,
   mostrarTodasCobrancas,
@@ -134,17 +121,12 @@ export const CarteirinhaCobrancas = ({
   onToggleMostrarTodas,
   onToggleClick,
   limiteCobrancasMobile = COBRANCAS_LIMIT_DEFAULT,
-  onUpgrade,
   onExcluirCobranca,
   onDesfazerPagamento,
 }: CarteirinhaCobrancasProps) => {
   const cobrancasMobile = mostrarTodasCobrancas
     ? cobrancas
     : cobrancas.slice(0, limiteCobrancasMobile);
-
-  // Verificar se o plano gera cobranças automaticamente (Back-office rule)
-  // Agora usamos a flag correta do backend
-  const { canUseAutomatedCharges: geraCobrancasAutomaticas } = usePermissions();
 
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
 
@@ -243,21 +225,10 @@ export const CarteirinhaCobrancas = ({
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
                     Nenhuma mensalidade encontrada
                   </h3>
-                  {geraCobrancasAutomaticas ? (
-                    <>
-                      <p className="text-sm text-gray-600 mt-1 max-w-sm mx-auto mb-6">
-                        A mensalidade do próximo mês será gerada automaticamente.
-                        Você também pode registrar mensalidades manualmente.
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-sm text-gray-500 mt-1 max-w-xs mx-auto mb-6">
-                        Não há registros de mensalidades para o ano de {yearFilter}
-                        . Você pode registrar mensalidades manualmente.
-                      </p>
-                    </>
-                  )}
+                  <p className="text-sm text-gray-600 mt-1 max-w-sm mx-auto mb-6">
+                    A mensalidade do próximo mês será gerada automaticamente.
+                    Você também pode registrar mensalidades manualmente.
+                  </p>
                   <Button
                     variant="outline"
                     className="border-blue-600 text-blue-600 hover:bg-blue-50"
@@ -345,8 +316,6 @@ export const CarteirinhaCobrancas = ({
 
                           <CobrancaMobileItemWrapper
                             cobranca={cobranca}
-                            plano={plano}
-                            onUpgrade={onUpgrade}
                             onVerCobranca={() =>
                               onNavigateToCobranca(cobranca?.id)
                             }
@@ -535,7 +504,6 @@ export const CarteirinhaCobrancas = ({
                           >
                             <CobrancaActionsMenu
                               cobranca={cobranca}
-                              plano={plano}
                               onVerCobranca={() =>
                                 onNavigateToCobranca(cobranca?.id)
                               }
@@ -544,9 +512,6 @@ export const CarteirinhaCobrancas = ({
                                 onRegistrarPagamento(cobranca)
                               }
                               onPagarPix={() => onPagarPix(cobranca)}
-                              onUpgrade={(feature) =>
-                                onUpgrade(feature, "Upgrade via Menu de Ações")
-                              }
                               onVerRecibo={() =>
                                 cobranca?.recibo_url &&
                                 setReceiptUrl(cobranca?.recibo_url)

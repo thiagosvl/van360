@@ -1,34 +1,28 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bot, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 interface CobrancasToolbarProps {
-  onUpgrade: (feature: string, description: string) => void;
   buscaAReceber: string;
   setBuscaAReceber: (value: string) => void;
   buscaRecebidos: string;
   setBuscaRecebidos: (value: string) => void;
   countAReceber: number;
   countRecebidos: number;
-  canUseAutomatedCharges: boolean;
   activeTab: string;
 }
 
 export function CobrancasToolbar({
-  onUpgrade,
   buscaAReceber,
   setBuscaAReceber,
   buscaRecebidos,
   setBuscaRecebidos,
   countAReceber,
   countRecebidos,
-  canUseAutomatedCharges,
   activeTab
 }: CobrancasToolbarProps) {
   
-  const showUpgradeButton = !canUseAutomatedCharges;
   const currentSearch = activeTab === "areceber" ? buscaAReceber : buscaRecebidos;
   const setCurrentSearch = activeTab === "areceber" ? setBuscaAReceber : setBuscaRecebidos;
 
@@ -62,7 +56,7 @@ export function CobrancasToolbar({
         </TabsTrigger>
       </TabsList>
 
-      {/* 2. Actions (Right - Desktop Only, automated button) */}
+      {/* 2. Actions (Right) */}
       <div className="flex items-center gap-3 w-full md:w-auto">
          {/* Search Bar - Full width on mobile, auto on desktop */}
         <div className="relative flex-1 md:w-72">
@@ -74,29 +68,7 @@ export function CobrancasToolbar({
             onChange={(e) => setCurrentSearch(e.target.value)}
             />
         </div>
-
-        {showUpgradeButton && (
-            <Button
-            variant="outline"
-            className="hidden md:flex h-10 md:h-12 border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800 gap-2 whitespace-nowrap rounded-xl"
-            onClick={() =>
-                onUpgrade(
-                "Cobranças Automáticas",
-                "Automatize o envio de cobranças e reduza a inadimplência."
-                )
-            }
-            >
-            <Bot className="w-4 h-4" />
-            Automatizar
-            </Button>
-        )}
       </div>
-       
-       {/* Mobile Automate Button - Below if needed or inline? 
-           Original code had it hidden on mobile? 
-           "className="hidden md:flex..." 
-           I will keep it hidden on mobile to match original requirement unless specified otherwise.
-       */}
     </div>
   );
 }

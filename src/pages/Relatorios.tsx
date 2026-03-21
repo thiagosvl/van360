@@ -16,12 +16,7 @@ export default function Relatorios() {
     setActiveTab,
     refreshAll,
     dados,
-    profilePlano
   } = useRelatoriosViewModel();
-
-  if (!profilePlano) {
-    return <div>Carregando...</div>;
-  }
 
   return (
     <div className="relative min-h-screen space-y-6 bg-gray-50/50">
@@ -88,7 +83,6 @@ export default function Relatorios() {
             <RelatoriosOperacional
               dados={dados.operacional}
               automacao={dados.automacao}
-              IsProfissionalPlan={!!profilePlano?.is_profissional}
             />
           </TabsContent>
         </Tabs>

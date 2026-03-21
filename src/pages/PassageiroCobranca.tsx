@@ -7,20 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
     useCobranca,
     useDeleteCobranca,
-    usePermissions,
     useProfile,
     useSession
 } from "@/hooks";
 import { useCobrancaOperations } from "@/hooks/ui/useCobrancaActions";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
-import { CobrancaStatus } from "@/types/enums";
+import { AtividadeEntidadeTipo, CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import {
     canSendNotification,
@@ -139,16 +137,13 @@ export default function PassageiroCobranca() {
     setPageTitle,
     openCobrancaEditDialog,
     openCobrancaDeleteDialog,
-    openCobrancaPixDrawer,
     openManualPaymentDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
-    openSubscriptionExpiredDialog,
   } = useLayout();
 
   const { user } = useSession();
-  const { plano } = useProfile(user?.id);
-  const { is_read_only, canUseAutomatedCharges } = usePermissions();
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
 
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
@@ -175,7 +170,7 @@ export default function PassageiroCobranca() {
     if (!cobranca_id) return;
 
     if (isCobrancaLoading) return;
-    if (isDeleting) return; // Fix: Prevent race condition during deletion
+    if (isDeleting) return; 
 
     const isNotFoundError =
       isCobrancaError &&
@@ -210,14 +205,10 @@ export default function PassageiroCobranca() {
     cobranca_id,
     navigate,
     queryClient,
-    isDeleting, // Add dependency
+    isDeleting,
   ]);
 
   const handleEditCobrancaClick = () => {
-    if (is_read_only) {
-      openSubscriptionExpiredDialog();
-      return;
-    }
     if (cobrancaNormalizadaParaEdicao) {
       openCobrancaEditDialog({
         cobranca: cobrancaNormalizadaParaEdicao,
@@ -236,36 +227,24 @@ export default function PassageiroCobranca() {
     handleToggleLembretes,
     handleEnviarNotificacao,
     handleDesfazerPagamento,
-    // handleDeleteCobranca, // We overlap this one
-    handleUpgrade,
     isActionLoading: originalIsActionLoading,
     isTogglingNotificacoes,
     isSendingNotification,
     isDesfazendoPagamento
   } = useCobrancaOperations({
     cobranca: cobranca!,
-    plano: plano,
   });
 
   const isActionLoading = originalIsActionLoading || isDeleting;
 
-  // Wrapper para adicionar navegação após exclusão
   const handleDeleteCobranca = async () => {
-    if (is_read_only) {
-      openSubscriptionExpiredDialog();
-      return;
-    }
     if (!cobranca) return;
-    
-    // Captura o ID antes da mutação pois o objeto pode ser limpo do cache (Success -> removeQueries)
     const passageiroIdCapturado = cobranca.passageiro_id;
     openCobrancaDeleteDialog({
       onConfirm: async () => {
          setIsDeleting(true);
          try {
             await deleteCobranca.mutateAsync(cobranca.id);
-            
-            // Lógica solicitada: Tenta VOLTAR (-1). Se não houver histórico, usa condicional.
             if (window.history.length > 2) { 
               navigate(-1);
             } else if (passageiroIdCapturado) {
@@ -341,7 +320,7 @@ export default function PassageiroCobranca() {
     return null;
   }
 
-  if (loading) {
+  if (loading || isProfileLoading) {
     return (
       <div className="w-full h-full">
         <CobrancaSkeleton />
@@ -359,13 +338,11 @@ export default function PassageiroCobranca() {
   const isPago = cobrancaTyped?.status === CobrancaStatus.PAGO;
   const statusText = getStatusText(
     cobrancaTyped?.status,
-    cobrancaTyped?.data_vencimento,
-    cobrancaTyped?.status_repasse
+    cobrancaTyped?.data_vencimento
   );
   const statusColorClass = getStatusColor(
     cobrancaTyped?.status,
-    cobrancaTyped?.data_vencimento,
-    cobrancaTyped?.status_repasse
+    cobrancaTyped?.data_vencimento
   );
 
   let headerBg =
@@ -596,13 +573,7 @@ export default function PassageiroCobranca() {
                     </div>
                   </div>
 
-                  {/* ALERTA DE LEMBRETES DESATIVADOS (NOVO) */}
-                  {cobrancaTyped?.desativar_lembretes && !isPago && (
-                    <div className="bg-orange-50 border-b border-orange-100 px-6 py-2 flex items-center justify-center gap-2 text-xs font-medium text-orange-700 animate-in fade-in slide-in-from-top-2">
-                      <BellOff className="w-3.5 h-3.5 text-orange-700" />
-                      <span>Notificações desativadas para esta mensalidade.</span>
-                    </div>
-                  )}
+
 
                   <div className="p-8 md:p-10 text-center flex-1 flex flex-col justify-center">
                     {/* Value Section */}
@@ -632,26 +603,7 @@ export default function PassageiroCobranca() {
 
                     {/* Primary Actions */}
                     <div className="flex flex-wrap flex-col sm:flex-row items-center justify-center gap-4 max-w-2xl mx-auto mb-8 w-full">
-                      {cobrancaTyped?.gateway_txid &&
-                        cobrancaTyped?.qr_code_payload &&
-                        !isPago && (
-                          <Button
-                            className="h-12 px-8 rounded-xl font-bold text-base bg-transparent border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 shadow-sm transition-all hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto min-w-[200px]"
-                            onClick={() =>
-                              openCobrancaPixDrawer({
-                                qrCodePayload:
-                                  cobrancaTyped.qr_code_payload || "",
-                                valor: Number(cobrancaTyped.valor),
-                                passageiroNome: cobrancaTyped.passageiro.nome,
-                                mes: cobrancaTyped.mes,
-                                ano: cobrancaTyped.ano,
-                              })
-                            }
-                          >
-                            <QrCode className="w-5 h-5 mr-2" />
-                            Ver PIX
-                          </Button>
-                        )}
+
                       {!disableRegistrarPagamento(cobrancaTyped) && (
                         <Button
                           className={cn(
@@ -659,10 +611,6 @@ export default function PassageiroCobranca() {
                             paymentButtonClass,
                           )}
                           onClick={() => {
-                            if (is_read_only) {
-                              openSubscriptionExpiredDialog();
-                              return;
-                            }
                             openManualPaymentDialog({
                               cobrancaId: cobrancaTyped.id,
                               passageiroNome: cobrancaTyped.passageiro.nome,
@@ -673,14 +621,6 @@ export default function PassageiroCobranca() {
                               dataVencimento: cobrancaTyped.data_vencimento,
                               onPaymentRecorded: () => {
                                 refetchCobranca();
-                                // Upsell Check
-                                if (!canUseAutomatedCharges) {
-                                  handleUpgrade(
-                                    FEATURE_COBRANCA_AUTOMATICA,
-                                    "Pagamento registrado! Sabia que o sistema pode dar baixa automática para você?",
-                                    "Cobrança Automática",
-                                  );
-                                }
                               },
                             });
                           }}
@@ -711,18 +651,7 @@ export default function PassageiroCobranca() {
                             </p>
                           </>
                         )}
-                      {cobrancaTyped.status === CobrancaStatus.PAGO &&
-                        !cobrancaTyped.pagamento_manual && (
-                          <>
-                            <div className="px-6 py-4 rounded-xl bg-green-50 border border-green-100 text-green-800 font-medium text-sm flex items-center justify-center gap-2 w-full">
-                              <CheckCircle2 className="w-5 h-5 text-green-600" />
-                              <span>Pagamento processado pelo sistema</span>
-                            </div>
-                            <p className="text-muted-foreground text-xs">
-                              Não é possível desfazer um pagamento compensado automaticamente pelo banco.
-                            </p>
-                          </>
-                        )}
+
                     </div>
 
                     {/* Secondary Actions - Vertical Stack */}
@@ -769,22 +698,7 @@ export default function PassageiroCobranca() {
                         />
                       )}
 
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full h-9 px-4 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 font-medium transition-colors border border-transparent hover:border-gray-200"
-                        disabled={seForPago(cobrancaTyped) || isActionLoading}
-                        onClick={handleToggleLembretes}
-                      >
-                        {isTogglingNotificacoes ? (
-                          <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
-                        ) : cobrancaTyped?.desativar_lembretes ? (
-                          <Bell className="w-3.5 h-3.5 mr-2" />
-                        ) : (
-                          <BellOff className="w-3.5 h-3.5 mr-2" />
-                        )}
-                        {cobrancaTyped?.desativar_lembretes ? "Ativar Lembretes Automáticos" : "Pausar Lembretes Automáticos"}
-                      </Button>
+
                     </div>
 
                     {/* Delete Action (Separado por borda para segurança) */}
@@ -800,93 +714,45 @@ export default function PassageiroCobranca() {
                         ) : (
                           <Trash2 className="w-3.5 h-3.5 mr-2" />
                         )}
-                        Excluir mensalidade
+                        Excluir Mensalidade
                       </Button>
                     </div>
                   </div>
                 </Card>
               </motion.div>
 
-              {/* DETAILS & TIMELINE GRID */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Details Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.2 }}
-                >
-                  <Card className="h-full bg-white border border-gray-100 shadow-lg">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="flex items-center gap-2 text-base font-bold text-gray-900">
-                        Detalhes
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 pt-4">
-                      <div className="grid grid-cols-1 gap-4">
-                        <InfoItem icon={CreditCard} label="Forma de Pagamento">
-                          {formatPaymentType(cobrancaTyped?.tipo_pagamento)}
-                        </InfoItem>
-                        <InfoItem icon={Calendar} label="Data do Pagamento">
-                          {cobrancaTyped?.data_pagamento
-                            ? cobrancaTyped.pagamento_manual
-                              ? formatDateToBR(cobrancaTyped.data_pagamento)
-                              : formatDateTimeToBR(cobrancaTyped.data_pagamento, { includeTime: true })
-                            : "—"}
-                        </InfoItem>
-                        <InfoItem icon={ArrowRight} label="Origem da Mensalidade">
-                          {formatCobrancaOrigem(cobrancaTyped?.origem)}
-                        </InfoItem>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              >
+                {/* Timeline de Pagamento */}
+                <PaymentTimeline cobranca={cobrancaTyped} />
 
-                {/* Lifecycle Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.25 }}
-                >
-                  <Card className="h-full bg-white border border-gray-100 shadow-lg">
-                    <CardHeader className="pb-2">
-                       <CardTitle className="flex items-center gap-2 text-base font-bold text-gray-900">
-                           Ciclo de Vida do Pagamento
-                       </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-4 pb-8 pl-4">
-                        <PaymentTimeline cobranca={cobrancaTyped} />
-                    </CardContent>
-                  </Card>
-                </motion.div>
-
-                {/* Timeline de Atividades Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.3 }}
-                  className="md:col-span-2"
-                >
-                  <Card className="h-full bg-white border border-gray-100 shadow-lg">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="flex items-center gap-2 text-base font-bold text-gray-900">
-                        Histórico da Cobrança
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-4 px-2 sm:pr-4">
-                      <ActivityTimeline 
-                        entidadeTipo="COBRANCA" 
-                        entidadeId={cobranca_id} 
-                      />
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </div>
+                {/* Histórico de Atividades */}
+                <Card className="border border-gray-100 shadow-lg">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                    <CardTitle className="text-lg font-bold flex items-center gap-2">
+                      <History className="w-5 h-5 text-indigo-600" />
+                      Histórico
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6 pb-6">
+                    <ActivityTimeline 
+                      entidadeTipo={AtividadeEntidadeTipo.COBRANCA}
+                      entidadeId={cobrancaTyped.id} 
+                      limit={5} 
+                    />
+                  </CardContent>
+                </Card>
+              </motion.div>
             </div>
           </div>
-
-          <LoadingOverlay active={isActionLoading} />
         </div>
       </PullToRefreshWrapper>
+
+      <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>
   );
 }

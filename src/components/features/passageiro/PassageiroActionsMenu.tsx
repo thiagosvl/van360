@@ -7,31 +7,17 @@ interface PassageiroActionsMenuProps {
   passageiro: Passageiro;
   onHistorico: (passageiro: Passageiro) => void;
   onEdit: (passageiro: Passageiro) => void;
-  onToggleCobrancaAutomatica: (passageiro: Passageiro) => void;
   onToggleStatus: (passageiro: Passageiro) => void;
   onDelete: (passageiro: Passageiro) => void;
-  onOpenUpgradeDialog?: (passageiroId?: string) => void;
   onGenerateContract?: (passageiro: Passageiro) => void;
 }
 
 export const PassageiroActionsMenu = memo(function PassageiroActionsMenu({
-  passageiro,
-  onHistorico,
-  onEdit,
-  onToggleCobrancaAutomatica,
-  onToggleStatus,
-  onDelete,
-  onOpenUpgradeDialog,
   onGenerateContract,
+  ...props
 }: PassageiroActionsMenuProps) {
   const actions = usePassageiroActions({
-    passageiro,
-    onHistorico,
-    onEdit,
-    onToggleCobrancaAutomatica,
-    onToggleStatus,
-    onDelete,
-    onOpenUpgradeDialog,
+    ...props,
     onGenerateContract,
   });
 

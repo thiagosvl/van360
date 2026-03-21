@@ -1,10 +1,10 @@
 import { CobrancaFormContent } from "@/components/forms/cobranca/CobrancaForm";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { useCobrancaForm } from "@/hooks/form/useCobrancaForm";
@@ -87,10 +87,10 @@ export default function CobrancaEditDialog({
                   }) : "-"}
                 </p>
               </div>
-              <span
+                <span
                 className={cn(
                   "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide shadow-sm",
-                  getStatusColor(cobranca?.status, cobranca?.data_vencimento, cobranca?.status_repasse)
+                  getStatusColor(cobranca?.status, cobranca?.data_vencimento)
                 )}
               >
                 {cobranca?.status === CobrancaStatus.PAGO
@@ -113,27 +113,6 @@ export default function CobrancaEditDialog({
               </div>
             </div>
           </div>
-
-          {/* Alerta de PIX */}
-          {cobranca?.gateway_txid && (
-            <div className="mb-6 p-3 bg-amber-50 rounded-lg border border-amber-200 flex items-start gap-3">
-              <div className="shrink-0 mt-0.5">
-                <AlertTriangle className="h-4 w-4 text-amber-600" />
-              </div>
-              <div className="text-sm">
-                <p className="font-bold text-amber-800 mb-0.5">Atenção!</p>
-                <p className="text-amber-700 leading-relaxed text-xs">
-                  Ao realizar alterações de preço ou data, <strong>o PIX atual será{" "}
-                  cancelado (ficará inválido) e um novo PIX será gerado</strong>.
-                </p>
-                {cobranca?.data_envio_ultima_notificacao && (
-                  <p className="text-amber-900 font-medium mt-1.5 text-xs">
-                    Como já havia sido enviada, nós <strong>reenviaremos automaticamente</strong> uma nova mensagem no WhatsApp com os dados atualizados!
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
 
           <Form {...form}>
             <CobrancaFormContent

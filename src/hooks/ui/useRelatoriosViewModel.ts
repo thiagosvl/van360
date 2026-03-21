@@ -1,7 +1,7 @@
 import { useLayout } from "@/contexts/LayoutContext";
 import { useCobrancas, useEscolas, useGastos, usePassageiros, useVeiculos } from "@/hooks";
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
-import { usePermissions } from "@/hooks/business/usePermissions";
+import { useProfile } from "@/hooks/business/useProfile";
 import { useRelatoriosCalculations } from "@/hooks/business/useRelatoriosCalculations";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -45,7 +45,7 @@ export function useRelatoriosViewModel() {
   }, []);
 
   // 3. Smart Data Fetching
-  const { profile, plano: profilePlano } = usePermissions();
+  const { profile } = useProfile();
   const usuarioId = profile?.id;
 
   // Always fetch Summary (Base for Visão Geral and Metadata)
@@ -96,19 +96,10 @@ export function useRelatoriosViewModel() {
     passageirosData: shouldFetchOperacional ? passageirosData : undefined,
     escolasData: shouldFetchOperacional ? escolasData : undefined,
     veiculosData: (shouldFetchOperacional || shouldFetchSaidas) ? veiculosData : undefined,
-    profilePlano,
     profile,
   });
 
-  // Override automation count with precise data from backend summary if available
-  const countAutomacao = systemSummary?.contadores.passageiros.com_automacao ?? 0;
-  const dadosOperacional = useMemo(() => ({
-    ...dados,
-    automacao: {
-      ...dados.automacao,
-      envios: countAutomacao,
-    },
-  }), [dados, countAutomacao]);
+
 
   const refreshAll = useCallback(async () => {
     const promises: Promise<any>[] = [refetchSummary()];
@@ -143,8 +134,7 @@ export function useRelatoriosViewModel() {
     refreshAll,
     
     // Data
-    dados: activeTab === "operacional" ? dadosOperacional : dados,
-    profilePlano,
+    dados,
     
     // Status
     isLoading: isLoadingSummary // Main loading state

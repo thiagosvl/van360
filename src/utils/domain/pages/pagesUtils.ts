@@ -41,11 +41,6 @@ const pagesItems = [
         href: "/relatorios",
         icon: ChartArea,
     },
-    {
-        title: "Minha Assinatura",
-        href: "/assinatura",
-        icon: Receipt,
-    },
 ];
 
 export { pagesItems };

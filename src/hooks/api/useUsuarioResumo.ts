@@ -1,43 +1,12 @@
-import { AssinaturaCobrancaStatus } from "@/types/enums";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "../../services/api/client";
 
 export interface SystemSummary {
   usuario: {
     ativo: boolean;
-    plano: {
-      slug: string;
-      nome: string;
-      status: string;
-      trial_end_at?: string;
-      limites: {
-        franquia_cobranca_max: number;
-        franquia_cobranca_restante: number;
-      };
-      funcionalidades: {
-        cobranca_automatica: boolean;
-        notificacoes_whatsapp: boolean;
-      };
-    };
     flags: {
-      is_trial_ativo: boolean;
-      is_trial_valido: boolean;
-      dias_restantes_trial: number | null;
-      dias_restantes_assinatura: number | null;
-      trial_dias_total: number;
-
-      ultima_fatura: AssinaturaCobrancaStatus | null;
-      ultima_fatura_id: string | null;
-      limite_franquia_atingido: boolean;
       pix_key_configurada: boolean;
-      is_plano_valido: boolean;
-      is_read_only: boolean;
       is_ativo: boolean;
-      is_pendente: boolean;
-      is_suspensa: boolean;
-      is_cancelada: boolean;
-      is_profissional: boolean;
-      is_essencial: boolean;
       contrato_configurado: boolean;
       usar_contratos: boolean;
     };
@@ -47,7 +16,6 @@ export interface SystemSummary {
       total: number;
       ativos: number;
       inativos: number;
-      com_automacao: number;
       solicitacoes_pendentes: number;
     };
     veiculos: {

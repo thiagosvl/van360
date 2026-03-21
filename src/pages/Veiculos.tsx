@@ -3,10 +3,6 @@ import { ROUTES } from "@/constants/routes";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-// Components - Dialogs
-
-
-
 // Components - Features
 import { VeiculosList } from "@/components/features/veiculo/VeiculosList";
 import { VeiculosToolbar } from "@/components/features/veiculo/VeiculosToolbar";
@@ -32,7 +28,6 @@ import {
     useToggleAtivoVeiculo,
     useVeiculos,
 } from "@/hooks";
-import { usePermissions } from "@/hooks/business/usePermissions";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
@@ -47,8 +42,7 @@ import { Veiculo } from "@/types/veiculo";
 import { Car } from "lucide-react";
 
 export default function Veiculos() {
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openVeiculoFormDialog, openPlanUpgradeDialog, openSubscriptionExpiredDialog } = useLayout();
-  const { is_read_only } = usePermissions();
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openVeiculoFormDialog } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const deleteVeiculo = useDeleteVeiculo();
@@ -56,9 +50,6 @@ export default function Veiculos() {
 
   const isActionLoading =
     deleteVeiculo.isPending || toggleAtivoVeiculo.isPending;
-
-
-
 
   const {
     searchTerm,
@@ -70,23 +61,16 @@ export default function Veiculos() {
     setFilters,
   } = useFilters();
   const { user } = useSession();
-  const { profile } = useProfile(user?.id);
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
   const navigate = useNavigate();
   const createVeiculo = useCreateVeiculo();
 
   const handleCadastrarRapido = useCallback(async () => {
-    if (is_read_only) {
-      openSubscriptionExpiredDialog();
-      return;
-    }
     if (!profile?.id) return;
     
     // Create new object to avoid reference issues
     const fakeVeiculo = { ...mockGenerator.veiculo() };
-    // Mutate plate to be unique-ish ONLY if needed. 
-    // The user requested "Use mock records". 
-    // But Vehicles MUST have unique plates usually. 
-    // I will keep the mutation for plate because otherwise I can't create more than 2 vehicles total.
+    
     const oldPlate = fakeVeiculo.placa;
     const suffix = Math.floor(Math.random() * 100).toString().padStart(2, '0');
     // Replace last 2 chars
@@ -147,7 +131,7 @@ export default function Veiculos() {
     setPageTitle("Veículos");
   }, [setPageTitle]);
 
-  const veiculosFiltrados = veiculos;
+  const veiculosFiltradas = veiculos;
 
   // Check for openModal param on mount
   useEffect(() => {
@@ -162,20 +146,12 @@ export default function Veiculos() {
   }, [searchParams, openVeiculoFormDialog, navigate]);
 
   const handleEdit = useCallback((veiculo: Veiculo) => {
-      if (is_read_only) {
-        openSubscriptionExpiredDialog();
-        return;
-      }
     openVeiculoFormDialog({
         editingVeiculo: veiculo
     });
   }, [openVeiculoFormDialog]);
 
   const handleDeleteClick = useCallback((veiculo: Veiculo) => {
-      if (is_read_only) {
-        openSubscriptionExpiredDialog();
-        return;
-      }
     if (veiculo.passageiros_ativos_count > 0) {
       toast.error("veiculo.erro.excluir", {
         description: "veiculo.erro.excluirComPassageiros",
@@ -201,10 +177,6 @@ export default function Veiculos() {
 
   const handleToggleAtivo = useCallback(
     async (veiculo: Veiculo) => {
-      if (is_read_only) {
-        openSubscriptionExpiredDialog();
-        return;
-      }
       if (!profile?.id) return;
 
       const novoStatus = !veiculo.ativo;
@@ -241,6 +213,14 @@ export default function Veiculos() {
   const pullToRefreshReload = useCallback(async () => {
     await refetchVeiculos();
   }, [refetchVeiculos]);
+
+  if (isProfileLoading || !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        <p>Carregando informações...</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -279,10 +259,6 @@ export default function Veiculos() {
                   hasActiveFilters={hasActiveFilters}
                   onApplyFilters={setFilters}
                   onRegister={() => {
-                    if (is_read_only) {
-                        openSubscriptionExpiredDialog();
-                        return;
-                    }
                     openVeiculoFormDialog({ allowBatchCreation: true });
                   }}
                 />
@@ -304,10 +280,6 @@ export default function Veiculos() {
                       ? {
                           label: "Novo Veículo",
                           onClick: () => {
-                            if (is_read_only) {
-                              openSubscriptionExpiredDialog();
-                              return;
-                            }
                             openVeiculoFormDialog();
                           },
                         }
@@ -325,10 +297,6 @@ export default function Veiculos() {
               )}
             </CardContent>
           </Card>
-
-
-
-
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="comum.aguarde" />

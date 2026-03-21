@@ -18,7 +18,7 @@ import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useDeleteGasto, useFilters, useGastos, useVeiculos } from "@/hooks";
 import { useGastosCalculations } from "@/hooks/business/useGastosCalculations";
-import { usePermissions } from "@/hooks/business/usePermissions";
+import { useProfile } from "@/hooks/business/useProfile";
 
 import { cn } from "@/lib/utils";
 
@@ -38,8 +38,6 @@ export default function Gastos() {
     openGastoFormDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
-    openPlanUpgradeDialog,
-    openSubscriptionExpiredDialog
   } = useLayout();
   const deleteGasto = useDeleteGasto();
 
@@ -77,8 +75,7 @@ export default function Gastos() {
   const {
     profile,
     isLoading: isAuthLoading,
-    is_read_only,
-  } = usePermissions();
+  } = useProfile();
   const loadingActions = isAuthLoading;
 
   const {
@@ -120,11 +117,6 @@ export default function Gastos() {
 
   const handleDelete = useCallback(
     async (id: string) => {
-      if (is_read_only) {
-        openSubscriptionExpiredDialog();
-        return;
-      }
-
       openConfirmationDialog({
         title: "Excluir gasto?",
         description:
@@ -142,8 +134,6 @@ export default function Gastos() {
       });
     },
     [
-      is_read_only,
-      openPlanUpgradeDialog,
       openConfirmationDialog,
       deleteGasto,
       closeConfirmationDialog,
@@ -152,17 +142,13 @@ export default function Gastos() {
 
   const openDialog = useCallback(
     (gasto: Gasto | null = null) => {
-      if (is_read_only) {
-        openSubscriptionExpiredDialog();
-        return;
-      }
       openGastoFormDialog({
         gastoToEdit: gasto,
         veiculos: veiculos.map((v) => ({ id: v.id, placa: v.placa })),
         usuarioId: profile?.id,
       });
     },
-    [is_read_only, openSubscriptionExpiredDialog, openGastoFormDialog, veiculos, profile?.id]
+    [openGastoFormDialog, veiculos, profile?.id]
   );
 
   const pullToRefreshReload = async () => {
@@ -259,10 +245,6 @@ export default function Gastos() {
                      });
                   }}
                   onRegistrarGasto={() => {
-                      if (is_read_only) {
-                          openSubscriptionExpiredDialog();
-                          return;
-                      }
                       openDialog();
                   }}
                   categorias={CATEGORIAS_GASTOS}

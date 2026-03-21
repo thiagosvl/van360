@@ -29,18 +29,10 @@ import { useFormContext } from "react-hook-form";
 
 interface PassageiroFormFinanceiroProps {
   editingPassageiro: Passageiro | null;
-  validacaoFranquia: {
-    podeAtivar: boolean;
-    franquiaContratada: number;
-    // Add other properties if needed
-  };
-  onRequestUpgrade: () => void;
 }
 
 export function PassageiroFormFinanceiro({
   editingPassageiro,
-  validacaoFranquia,
-  onRequestUpgrade,
 }: PassageiroFormFinanceiroProps) {
   const form = useFormContext();
 
@@ -131,45 +123,7 @@ export function PassageiroFormFinanceiro({
             )}
           />
         </div>
-        <div className="mt-4">
-          <FormField
-            control={form.control}
-            name="enviar_cobranca_automatica"
-            render={({ field }) => {
-              return (
-                <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      id="enviar_cobranca_automatica"
-                      checked={field.value}
-                      onCheckedChange={(checked) => {
-                        if (checked && !validacaoFranquia.podeAtivar) {
-                          onRequestUpgrade();
-                          return;
-                        }
-                        field.onChange(checked);
-                      }}
-                      disabled={false}
-                      className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 mt-0"
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none flex-1">
-                    <FormLabel
-                      htmlFor="enviar_cobranca_automatica"
-                      className="text-base font-medium text-gray-700 cursor-pointer"
-                    >
-                      Ativar Cobrança Automática
-                    </FormLabel>
-                    <FormDescription className="text-sm text-gray-500">
-                      As cobranças serão enviadas automaticamente todo mês para
-                      este passageiro.
-                    </FormDescription>
-                  </div>
-                </FormItem>
-              );
-            }}
-          />
-        </div>
+
       </AccordionContent>
     </AccordionItem>
   );

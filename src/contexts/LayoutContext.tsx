@@ -1,7 +1,3 @@
-import {
-    PlanUpgradeDialogProps,
-} from "@/components/dialogs/PlanUpgradeDialog";
-import { SubscriptionExpiredDialogProps } from "@/components/dialogs/SubscriptionExpiredDialog";
 import { PassageiroFormModes } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Gasto } from "@/types/gasto";
@@ -12,26 +8,6 @@ import {
     createContext,
     useContext,
 } from "react";
-
-export type OpenPlanUpgradeDialogProps = Omit<
-  PlanUpgradeDialogProps,
-  "open" | "onOpenChange"
-> & {
-  onClose?: () => void;
-  title?: string;
-  description?: string;
-  defaultTab?: string;
-  feature?: string;
-  targetPassengerCount?: number;
-  onSuccess?: () => void;
-};
-
-export type OpenSubscriptionExpiredDialogProps = Omit<
-  SubscriptionExpiredDialogProps,
-  "open" | "onOpenChange"
-> & {
-    onSuccess?: () => void;
-};
 
 export interface OpenConfirmationDialogProps {
   title: string;
@@ -82,13 +58,7 @@ export interface OpenCobrancaDeleteDialogProps {
   isLoading?: boolean;
 }
 
-export interface OpenCobrancaPixDrawerProps {
-  qrCodePayload: string;
-  valor: number;
-  passageiroNome: string;
-  mes?: number;
-  ano?: number;
-}
+
 
 export interface OpenManualPaymentDialogProps {
   cobrancaId: string;
@@ -115,32 +85,22 @@ export interface LayoutContextType {
   setPageTitle: (title: string) => void;
   pageSubtitle: string;
   setPageSubtitle: (subtitle: string) => void;
-  openPlanUpgradeDialog: (props?: OpenPlanUpgradeDialogProps) => void;
-  isPlanUpgradeDialogOpen: boolean;
+  
   openConfirmationDialog: (props: OpenConfirmationDialogProps) => void;
   closeConfirmationDialog: () => void;
   openEscolaFormDialog: (props?: OpenEscolaFormProps) => void;
   openVeiculoFormDialog: (props?: OpenVeiculoFormProps) => void;
   openPassageiroFormDialog: (props?: OpenPassageiroFormProps) => void;
   openGastoFormDialog: (props?: OpenGastoFormProps) => void;
-  openPixKeyDialog: (options?: {
-    onSuccess?: () => void;
-    canClose?: boolean;
-  }) => void;
-  closePixKeyDialog: () => void;
-  isPixKeyDialogOpen: boolean;
   openCobrancaDeleteDialog: (props: OpenCobrancaDeleteDialogProps) => void;
   closeCobrancaDeleteDialog: () => void;
   openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;
-  openCobrancaPixDrawer: (props: OpenCobrancaPixDrawerProps) => void;
   openManualPaymentDialog: (props: OpenManualPaymentDialogProps) => void;
   openFirstChargeDialog: (props: OpenFirstChargeDialogProps) => void;
   isFirstChargeDialogOpen: boolean;
-  openSubscriptionExpiredDialog: (props?: OpenSubscriptionExpiredDialogProps) => void;
-  isSubscriptionExpiredDialogOpen: boolean;
+  
   openContractSetupDialog: (props?: OpenContractSetupDialogProps) => void;
 }
-
 
 export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 

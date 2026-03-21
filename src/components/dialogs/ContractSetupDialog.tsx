@@ -14,7 +14,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { DEFAULT_CLAUSULAS_CONTRATO } from "@/constants/defaults";
 import { usePreviewContrato } from "@/hooks/api/useContratos";
-import { usePermissions } from "@/hooks/business/usePermissions";
+import { useProfile } from "@/hooks/business/useProfile";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { queryClient } from "@/services/queryClient";
 import { toast } from "@/utils/notifications/toast";
@@ -54,7 +54,7 @@ export default function ContractSetupDialog({
   onClose,
   onSuccess,
 }: ContractSetupDialogProps) {
-  const { profile, refreshProfile } = usePermissions();
+  const { profile, refreshProfile } = useProfile();
   const [step, setStep] = useState<SetupStep>(SetupStep.WELCOME);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showErrors, setShowErrors] = useState(false);

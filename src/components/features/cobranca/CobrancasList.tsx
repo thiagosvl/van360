@@ -1,4 +1,3 @@
-import { AutomaticChargesPrompt } from "@/components/alerts/AutomaticChargesPrompt";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -12,7 +11,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
@@ -28,8 +26,6 @@ import { Fragment, memo } from "react";
 interface CobrancasListProps {
   cobrancas: Cobranca[];
   variant: "pending" | "processing" | "paid";
-  plano: any;
-  permissions: any;
   isLoading: boolean;
   busca: string;
   mesFilter: number;
@@ -40,68 +36,47 @@ interface CobrancasListProps {
   onVerCarteirinha: (passageiroId: string) => void;
   onEditarCobranca: (cobranca: Cobranca) => void;
   onRegistrarPagamento: (cobranca: Cobranca) => void;
-  onPagarPix: (cobranca: Cobranca) => void;
   onExcluirCobranca: (cobranca: Cobranca) => void;
   onDesfazerPagamento?: (cobranca: Cobranca) => void;
   onActionSuccess: () => void;
-  onUpgrade: (feature: string, description?: string) => void;
 }
 
 const CobrancaMobileCard = memo(function CobrancaMobileCard({
   cobranca,
   index,
   variant,
-  plano,
-  permissions,
   onVerCobranca,
   onVerCarteirinha,
   onEditarCobranca,
   onRegistrarPagamento,
-  onPagarPix,
   onExcluirCobranca,
   onDesfazerPagamento,
   onActionSuccess,
-  onUpgrade,
 }: {
   cobranca: Cobranca;
   index: number;
   variant: "pending" | "processing" | "paid";
 } & Omit<CobrancasListProps, "cobrancas" | "isLoading" | "busca" | "mesFilter" | "meses">) {
   
-  const isPending = variant === "pending";
-
   return (
     <Fragment>
       <div className="mb-3">
-        {/* Card Content Wrapper */}
          <CardContentWrapper 
             cobranca={cobranca} 
             index={index}
             variant={variant}
-            plano={plano}
-            permissions={permissions}
             actionsProps={{
                 onVerCobranca: () => onVerCobranca(cobranca),
                 onVerCarteirinha: () => onVerCarteirinha(cobranca.passageiro_id),
                 onEditarCobranca: () => onEditarCobranca(cobranca),
                 onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
-                onPagarPix: () => onPagarPix(cobranca),
                 onExcluirCobranca: () => onExcluirCobranca(cobranca),
                 onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca) : undefined,
                 onActionSuccess,
-                onUpgrade,
             }}
             onVerCobranca={onVerCobranca}
          />
       </div>
-      
-      {/* Inline Prompt Mobile (Only for pending tab, after 3rd item) */}
-      {isPending && index === 2 && !permissions.canUseAutomatedCharges && (
-        <AutomaticChargesPrompt
-          variant="inline-mobile"
-          onUpgrade={() => onUpgrade(FEATURE_COBRANCA_AUTOMATICA)}
-        />
-      )}
     </Fragment>
   );
 });
@@ -110,14 +85,11 @@ function CardContentWrapper({
     cobranca, 
     index,
     variant,
-    plano, 
-    permissions,
     actionsProps,
     onVerCobranca
 }: any) {
     const actions = useCobrancaActions({
       cobranca,
-      plano,
       ...actionsProps
     });
 
@@ -133,7 +105,7 @@ function CardContentWrapper({
                     <div
                       className={cn(
                         "h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm",
-                        getStatusColor(cobranca?.status, cobranca?.data_vencimento, cobranca?.status_repasse)
+                        getStatusColor(cobranca?.status, cobranca?.data_vencimento)
                       )}
                     >
                       {cobranca?.passageiro.nome.charAt(0)}
@@ -164,7 +136,6 @@ function CardContentWrapper({
                             <StatusBadge
                             status={cobranca?.status}
                             dataVencimento={cobranca?.data_vencimento}
-                            statusRepasse={cobranca?.status_repasse}
                             className="font-semibold h-6 shadow-none"
                             />
                             {cobranca?.desativar_lembretes && (
@@ -187,10 +158,9 @@ function CardContentWrapper({
                       <>
                         <div className="flex flex-col gap-1 items-start">
                              <StatusBadge
-                                status={cobranca?.status}
-                                dataVencimento={cobranca?.data_vencimento}
-                                statusRepasse={cobranca?.status_repasse}
-                                className="font-semibold h-5 px-1.5 text-[10px] shadow-none mb-1"
+                                 status={cobranca?.status}
+                                 dataVencimento={cobranca?.data_vencimento}
+                                 className="font-semibold h-5 px-1.5 text-[10px] shadow-none mb-1"
                              />
                           <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
                             {formatPaymentType(cobranca?.tipo_pagamento)}
@@ -268,7 +238,6 @@ export function CobrancasList({
     <ResponsiveDataList
       data={cobrancas}
       isLoading={isLoading}
-      // loadingSkeleton={<ListSkeleton />} // Need to import or pass
       emptyState={getEmptyState()}
       mobileContainerClassName="space-y-3"
       mobileItemRenderer={(cobranca, index) => (
@@ -329,7 +298,7 @@ export function CobrancasList({
                     <div
                       className={cn(
                         "h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm",
-                        getStatusColor(cobranca?.status, cobranca?.data_vencimento, cobranca?.status_repasse)
+                        getStatusColor(cobranca?.status, cobranca?.data_vencimento)
                       )}
                     >
                       {cobranca?.passageiro.nome.charAt(0)}
@@ -404,14 +373,11 @@ export function CobrancasList({
                 <TableCell className="px-6 py-4 text-right">
                   <CobrancaActionsMenu
                     cobranca={cobranca}
-                    plano={props.plano}
                     onVerCarteirinha={() => props.onVerCarteirinha(cobranca.passageiro_id)}
                     onVerCobranca={() => props.onVerCobranca(cobranca)}
                     onEditarCobranca={() => props.onEditarCobranca(cobranca)}
                     onRegistrarPagamento={() => props.onRegistrarPagamento(cobranca)}
-                    onPagarPix={() => props.onPagarPix(cobranca)}
                     onActionSuccess={props.onActionSuccess}
-                    onUpgrade={props.onUpgrade}
                     onExcluirCobranca={() => props.onExcluirCobranca(cobranca)}
                     onDesfazerPagamento={props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined}
                   />

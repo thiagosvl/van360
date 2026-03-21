@@ -51,7 +51,6 @@ import {
     useDesfazerPagamento,
     useEnviarNotificacaoCobranca,
     usePassageiro,
-    usePermissions,
     useToggleAtivoPassageiro,
     useToggleNotificacoesCobranca,
     useUpdateCobranca,
@@ -63,10 +62,7 @@ import { useSession } from "@/hooks/business/useSession";
 import { ContratoStatus } from "@/types/enums";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { useFranchiseGate } from "@/hooks/business/useFranchiseGate";
-import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { openBrowserLink } from "@/utils/browser";
-import { safeCloseDialog } from "@/utils/dialogUtils";
 import { toast } from "@/utils/notifications/toast";
 
 import { Cobranca } from "@/types/cobranca";
@@ -81,13 +77,11 @@ export default function PassageiroCarteirinha() {
   const queryClient = useQueryClient();
   const {
     setPageTitle,
-    openPlanUpgradeDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
     openPassageiroFormDialog,
     openCobrancaDeleteDialog,
     openCobrancaEditDialog,
-    openCobrancaPixDrawer,
     openManualPaymentDialog,
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
@@ -103,7 +97,7 @@ export default function PassageiroCarteirinha() {
   const enviarNotificacao = useEnviarNotificacaoCobranca();
   const desfazerPagamento = useDesfazerPagamento();
   const toggleNotificacoes = useToggleNotificacoesCobranca();
-  const createContrato = useCreateContrato(); // Instantiated hook
+  const createContrato = useCreateContrato(); 
 
   const isActionLoading =
     createContrato.isPending ||
@@ -127,29 +121,7 @@ export default function PassageiroCarteirinha() {
   const [mostrarTodasCobrancas, setMostrarTodasCobrancas] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { user, loading: isSessionLoading } = useSession();
-  const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
-  const { canUseAutomatedCharges: canUseCobrancaAutomatica } = usePermissions();
-
-  const { limits } = usePlanLimits();
-
-  const validacaoFranquiaGeral = {
-    franquiaContratada: limits.franchise.limit,
-    cobrancasEmUso: limits.franchise.used,
-    podeAtivar: limits.franchise.canEnable,
-  };
-
-  const handleUpgrade = useCallback(
-    (featureName: string, description?: string, title?: string) => {
-      safeCloseDialog(() => {
-        openPlanUpgradeDialog({
-          feature: featureName,
-          description,
-          title,
-        });
-      });
-    },
-    [openPlanUpgradeDialog],
-  );
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
 
   const {
     data: passageiroData,
@@ -163,18 +135,7 @@ export default function PassageiroCarteirinha() {
 
   const passageiro = passageiroData as Passageiro;
 
-  const handlePagarPix = useCallback(
-    (cobranca: Cobranca) => {
-      openCobrancaPixDrawer({
-        qrCodePayload: cobranca.qr_code_payload || "",
-        valor: Number(cobranca.valor),
-        passageiroNome: passageiro?.nome || "",
-        mes: cobranca.mes,
-        ano: cobranca.ano,
-      });
-    },
-    [openCobrancaPixDrawer, passageiro],
-  );
+
 
   const {
     data: cobrancasData,
@@ -337,9 +298,6 @@ export default function PassageiroCarteirinha() {
     );
   };
 
-  /* New Hook Usage */
-  const { validateActivation, validateAutomationToggle } = useFranchiseGate();
-
   const handleToggleClick = (statusAtual: boolean) => {
     const action = statusAtual ? "desativar" : "ativar";
     openConfirmationDialog({
@@ -353,32 +311,16 @@ export default function PassageiroCarteirinha() {
       variant: action === "desativar" ? "warning" : "default",
       onConfirm: async () => {
         if (!passageiro || !passageiro_id) return;
-        
-        validateActivation(
-            passageiro,
-            async () => {
-                try {
-                    await toggleAtivoPassageiro.mutateAsync({
-                        id: passageiro_id,
-                        novoStatus: !passageiro.ativo,
-                    });
-                    closeConfirmationDialog();
-                } catch (error) {
-                    closeConfirmationDialog();
-                    throw error;
-                }
-            },
-            async () => {
-               // Fallback: Activate but without automation
-               try {
-                   await updatePassageiro.mutateAsync({
-                     id: passageiro.id,
-                     data: { ativo: true, enviar_cobranca_automatica: false }
-                   });
-                   closeConfirmationDialog();
-               } catch(e) { closeConfirmationDialog(); }
-            }
-        );
+        try {
+            await toggleAtivoPassageiro.mutateAsync({
+                id: passageiro_id,
+                novoStatus: !passageiro.ativo,
+            });
+            closeConfirmationDialog();
+        } catch (error) {
+            closeConfirmationDialog();
+            throw error;
+        }
       },
     });
   };
@@ -393,18 +335,6 @@ export default function PassageiroCarteirinha() {
     [toggleNotificacoes],
   );
 
-  const handleToggleCobrancaAutomatica = async () => {
-    if (!passageiro || !passageiro_id || !profile?.id) return;
-
-    const novoValor = !passageiro.enviar_cobranca_automatica;
-
-    validateAutomationToggle(passageiro, novoValor, () => {
-        updatePassageiro.mutate({
-          id: passageiro_id,
-          data: { enviar_cobranca_automatica: novoValor },
-        });
-    });
-  };
 
   const handleEnviarNotificacaoClick = useCallback(
     (cobrancaId: string) => {
@@ -555,9 +485,7 @@ export default function PassageiroCarteirinha() {
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="min-h-screen">
           <div className=" space-y-6">
-            {/* Grid Layout Principal */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Coluna Esquerda: Informações e Observações (Sticky no Desktop) */}
               <div className="contents lg:block lg:col-span-4 lg:space-y-6 lg:sticky lg:top-6 lg:h-fit">
                 <div className="order-1 lg:order-none">
                   <Suspense
@@ -565,15 +493,12 @@ export default function PassageiroCarteirinha() {
                   >
                     <CarteirinhaInfo
                       passageiro={passageiro}
-                      plano={plano}
                       temCobrancasVencidas={temCobrancasVencidas}
                       isCopiedEndereco={isCopiedEndereco}
                       isCopiedTelefone={isCopiedTelefone}
                       onEditClick={handleEditClick}
                       onCopyToClipboard={handleCopyToClipboard}
-                      onToggleCobrancaAutomatica={
-                        handleToggleCobrancaAutomatica
-                      }
+
                       onToggleClick={handleToggleClick}
                       onDeleteClick={() =>
                         openConfirmationDialog({
@@ -596,7 +521,6 @@ export default function PassageiroCarteirinha() {
                           },
                         })
                       }
-                      onUpgrade={handleUpgrade}
                        onContractAction={() => {
                           if (!passageiro || !passageiro_id) return;
                           
@@ -660,7 +584,6 @@ export default function PassageiroCarteirinha() {
                 </div>
               </div>
 
-              {/* Coluna Direita: Financeiro e Mensalidades */}
               <div className="contents lg:block lg:col-span-8 lg:space-y-6">
                 <div className="order-3 lg:order-none">
                   <Suspense
@@ -679,7 +602,6 @@ export default function PassageiroCarteirinha() {
                     <CarteirinhaCobrancas
                       cobrancas={cobrancas}
                       passageiro={passageiro}
-                      plano={plano}
                       yearFilter={yearFilter}
                       availableYears={availableYears}
                       mostrarTodasCobrancas={mostrarTodasCobrancas}
@@ -688,10 +610,10 @@ export default function PassageiroCarteirinha() {
                       onOpenCobrancaDialog={() => setCobrancaDialogOpen(true)}
                       onNavigateToCobranca={(id) =>
                         navigate(
-                          ROUTES.PRIVATE.MOTORISTA.PASSENGER_BILLING.replace(
+                           ROUTES.PRIVATE.MOTORISTA.PASSENGER_BILLING.replace(
                             ":cobranca_id",
                             id,
-                          ),
+                           ),
                         )
                       }
                       onEditCobranca={(cobranca) => {
@@ -703,13 +625,12 @@ export default function PassageiroCarteirinha() {
                       onRegistrarPagamento={(cobranca) => {
                         openPaymentDialog(cobranca);
                       }}
-                      onPagarPix={handlePagarPix}
+
                       onEnviarNotificacao={handleEnviarNotificacaoClick}
                       onToggleLembretes={handleToggleLembretes}
                       onDesfazerPagamento={handleDesfazerClick}
                       onExcluirCobranca={handleExcluirCobranca}
                       onToggleClick={handleToggleClick}
-                      onUpgrade={handleUpgrade}
                     />
                   </Suspense>
                 </div>

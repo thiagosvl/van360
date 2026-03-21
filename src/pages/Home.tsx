@@ -6,26 +6,22 @@ import {
     DollarSign,
     FileText,
     Plus,
-    Receipt,
     TrendingDown,
     UserCheck,
     Users,
     Wallet,
-    Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { getMessage } from "@/constants/messages";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    usePermissions,
+    useProfile,
     useSession,
-    useUpsellContent
 } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
@@ -43,32 +39,24 @@ import { getMesNome } from "@/utils/formatters";
 const Home = () => {
   const {
     setPageTitle,
-    openPlanUpgradeDialog,
     openEscolaFormDialog,
     openVeiculoFormDialog,
     openPassageiroFormDialog,
     openGastoFormDialog,
     openFirstChargeDialog,
-    openSubscriptionExpiredDialog,
   } = useLayout();
   const { loading: isSessionLoading } = useSession();
-  /* WhatsApp Global Mode Active */
 
   const {
     profile,
     isLoading: isProfileLoading,
-    plano,
-    is_profissional,
-    is_read_only,
     summary: systemSummary,
-  } = usePermissions();
-
-  const upsellContent = useUpsellContent(plano);
+  } = useProfile();
 
   const navigate = useNavigate();
 
-  const [novaEscolaId, setNovaEscolaId] = useState<string | null>(null);
-  const [novoVeiculoId, setNovoVeiculoId] = useState<string | null>(null);
+  const [/* novaEscolaId */, setNovaEscolaId] = useState<string | null>(null);
+  const [/* novoVeiculoId */, setNovoVeiculoId] = useState<string | null>(null);
 
   // Financial metrics from summary
   const recebido = systemSummary?.financeiro?.receita?.realizada ?? 0;
@@ -141,29 +129,17 @@ const Home = () => {
   }, [openFirstChargeDialog]);
 
   const handleOpenPassageiroDialog = useCallback(() => {
-    if (is_read_only) {
-      openSubscriptionExpiredDialog();
-      return;
-    }
     openPassageiroFormDialog({
       mode: PassageiroFormModes.CREATE,
       onSuccess: handleSuccessFormPassageiro,
     });
-  }, [openPassageiroFormDialog, handleSuccessFormPassageiro, is_read_only, openSubscriptionExpiredDialog]);
+  }, [openPassageiroFormDialog, handleSuccessFormPassageiro]);
 
   const handleOpenGastoDialog = useCallback(() => {
-    if (is_read_only) {
-      openSubscriptionExpiredDialog();
-      return;
-    }
-    const triggerGasto = () => {
-      openGastoFormDialog({
-        onSuccess: () => {},
-      });
-    };
-
-    triggerGasto();
-  }, [openPlanUpgradeDialog, openGastoFormDialog, is_read_only, openSubscriptionExpiredDialog]);
+    openGastoFormDialog({
+      onSuccess: () => {},
+    });
+  }, [openGastoFormDialog]);
 
   const handleEscolaCreated = useCallback(
     (novaEscola: any, keepOpen?: boolean) => {
@@ -207,7 +183,6 @@ const Home = () => {
             </p>
           </div>
 
-
           {/* Notificação de Solicitações Pendentes */}
           {passageirosSolicitacoesCount > 0 && (
             <section className="mb-4">
@@ -234,30 +209,18 @@ const Home = () => {
             <section>
               <QuickStartCard
                 onOpenVeiculoDialog={() => {
-                  if (is_read_only) {
-                    openSubscriptionExpiredDialog();
-                    return;
-                  }
                   openVeiculoFormDialog({
                     allowBatchCreation: true,
                     onSuccess: handleVeiculoCreated,
                   });
                 }}
                 onOpenEscolaDialog={() => {
-                   if (is_read_only) {
-                    openSubscriptionExpiredDialog();
-                    return;
-                  }
                   openEscolaFormDialog({
                     allowBatchCreation: true,
                     onSuccess: handleEscolaCreated,
                   });
                 }}
                 onOpenPassageiroDialog={() => {
-                   if (is_read_only) {
-                    openSubscriptionExpiredDialog();
-                    return;
-                  }
                   openPassageiroFormDialog({
                     mode: PassageiroFormModes.CREATE,
                     onSuccess: (passageiro) => {
@@ -265,7 +228,6 @@ const Home = () => {
                     },
                   });
                 }}
-
               />
             </section>
           )}
@@ -429,43 +391,12 @@ const Home = () => {
                 bgClass="bg-emerald-50"
               />
               <ShortcutCard
-                to={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION}
-                icon={Receipt}
-                label="Minha Assinatura"
-                colorClass="text-yellow-600"
-                bgClass="bg-yellow-50"
-              />
-              <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.CONTRACTS}
                 icon={FileText}
                 label="Contratos"
                 colorClass="text-cyan-600"
                 bgClass="bg-cyan-50"
               />
-            </div>
-          </section>
-
-          {/* Marketing / Upsell (Discreto) */}
-          <section className="pt-2">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10">
-                <Zap className="h-24 w-24" />
-              </div>
-              <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="font-bold text-lg">{upsellContent.title}</h3>
-                  <p className="text-indigo-100 text-sm mt-1 max-w-md">
-                    {upsellContent.description}
-                  </p>
-                </div>
-                <Button
-                  variant="secondary"
-                  className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold border-none shadow-sm shrink-0"
-                  onClick={upsellContent.action}
-                >
-                  {upsellContent.buttonText}
-                </Button>
-              </div>
             </div>
           </section>
         </div>

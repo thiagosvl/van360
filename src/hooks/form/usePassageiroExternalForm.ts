@@ -53,7 +53,6 @@ const prePassageiroSchema = z.object({
       message: "O valor deve ser no mínimo R$ 1,00",
     }),
   dia_vencimento: z.string().optional(),
-  enviar_cobranca_automatica: z.boolean().optional(),
   ativo: z.boolean().optional(),
 });
 
@@ -227,7 +226,6 @@ export function usePassageiroExternalForm() {
       dia_vencimento: "",
 
       ativo: true,
-      enviar_cobranca_automatica: false,
     });
 
     setSuccess(false);

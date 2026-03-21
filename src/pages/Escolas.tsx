@@ -22,7 +22,6 @@ import {
     useFilters,
     useToggleAtivoEscola,
 } from "@/hooks";
-import { usePermissions } from "@/hooks/business/usePermissions";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 
@@ -39,11 +38,8 @@ export default function Escolas() {
     openConfirmationDialog,
     closeConfirmationDialog,
     openEscolaFormDialog,
-    openPlanUpgradeDialog,
-    openSubscriptionExpiredDialog,
   } = useLayout();
   
-  const { is_read_only } = usePermissions();
   const [searchParams] = useSearchParams();
 
   const deleteEscola = useDeleteEscola();
@@ -67,10 +63,6 @@ export default function Escolas() {
   const createEscola = useCreateEscola();
 
   const handleCadastrarRapido = useCallback(async () => {
-    if (is_read_only) {
-      openSubscriptionExpiredDialog();
-      return;
-    }
     if (!profile?.id) return;
 
     const fakeEscola = { ...mockGenerator.escola() };
@@ -153,10 +145,6 @@ export default function Escolas() {
 
   const handleEdit = useCallback(
     (escola: Escola) => {
-      if (is_read_only) {
-        openSubscriptionExpiredDialog();
-        return;
-      }
       openEscolaFormDialog({
         editingEscola: escola,
       });
@@ -166,10 +154,6 @@ export default function Escolas() {
 
   const handleDeleteClick = useCallback(
     (escola: Escola) => {
-      if (is_read_only) {
-        openSubscriptionExpiredDialog();
-        return;
-      }
       if (escola.passageiros_ativos_count > 0) {
         toast.error("escola.erro.excluir", {
           description: "escola.erro.excluirComPassageiros",
@@ -193,15 +177,11 @@ export default function Escolas() {
         },
       });
     },
-    [deleteEscola]
+    [deleteEscola, openConfirmationDialog, closeConfirmationDialog]
   );
 
   const handleToggleAtivo = useCallback(
     async (escola: Escola) => {
-      if (is_read_only) {
-        openSubscriptionExpiredDialog();
-        return;
-      }
       if (!profile?.id) return;
 
       const novoStatus = !escola.ativo;
@@ -291,10 +271,6 @@ export default function Escolas() {
                   hasActiveFilters={hasActiveFilters}
                   onApplyFilters={setFilters}
                   onRegister={() => {
-                    if (is_read_only) {
-                        openSubscriptionExpiredDialog();
-                        return;
-                    }
                     openEscolaFormDialog({ allowBatchCreation: true });
                   }}
                 />
@@ -316,10 +292,6 @@ export default function Escolas() {
                       ? {
                           label: "Cadastrar Escola",
                           onClick: () => {
-                            if (is_read_only) {
-                              openSubscriptionExpiredDialog();
-                              return;
-                            }
                             openEscolaFormDialog();
                           },
                         }

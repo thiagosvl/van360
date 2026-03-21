@@ -1,5 +1,3 @@
-// Imports updated
-
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PassageirosList } from "@/components/features/passageiro/PassageirosList";
 import { PassageirosToolbar } from "@/components/features/passageiro/PassageirosToolbar";
@@ -11,9 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-    FEATURE_COBRANCA_AUTOMATICA
-} from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
     useCreateContrato,
@@ -23,21 +18,19 @@ import {
     useDeletePassageiro,
     useEscolas,
     useFilters,
-    useFranchiseGate,
     usePassageiros,
-    usePermissions,
-    usePlanLimits,
     useToggleAtivoPassageiro,
     useUpdatePassageiro,
     useVeiculos,
 } from "@/hooks";
-import { cn } from "@/lib/utils";
-import { Escola } from "@/types/escola";
-import { Passageiro } from "@/types/passageiro";
-import { Veiculo } from "@/types/veiculo";
+import { useProfile } from "@/hooks/business/useProfile";
+import { useSession } from "@/hooks/business/useSession";
 
 import { ROUTES } from "@/constants/routes";
 import { PassageiroFormModes } from "@/types/enums";
+import { Escola } from "@/types/escola";
+import { Passageiro } from "@/types/passageiro";
+import { Veiculo } from "@/types/veiculo";
 import { convertDateBrToISO } from "@/utils/formatters/date";
 import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
@@ -49,37 +42,31 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 export default function Passageiros() {
   const {
     setPageTitle,
-    openPlanUpgradeDialog,
     openConfirmationDialog,
     closeConfirmationDialog,
     openPassageiroFormDialog,
     openFirstChargeDialog,
-    openContractSetupDialog,
-    openSubscriptionExpiredDialog,
   } = useLayout();
 
+  const { user } = useSession();
   const {
-    canUseAutomatedCharges: canUseCobrancaAutomatica,
-    is_read_only,
     profile,
     isLoading: isProfileLoading,
-    plano,
     summary: resumo,
-  } = usePermissions();
+    refreshProfile
+  } = useProfile(user?.id);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Tab state from URL
   const activeTab = useMemo(() => {
     const tabParam = searchParams.get("tab");
     const validTabs = ["passageiros", "solicitacoes"];
     if (tabParam && validTabs.includes(tabParam)) {
       return tabParam;
     }
-    return "passageiros"; // Default
+    return "passageiros";
   }, [searchParams]);
 
-  // Sync tab to URL on mount if not present
   useEffect(() => {
     const currentTab = searchParams.get("tab");
     if (!currentTab || !["passageiros", "solicitacoes"].includes(currentTab)) {
@@ -126,7 +113,6 @@ export default function Passageiros() {
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
   const toggleAtivoPassageiro = useToggleAtivoPassageiro();
-
   const createContrato = useCreateContrato();
 
   const isActionLoading =
@@ -157,9 +143,7 @@ export default function Passageiros() {
       }),
   });
 
-  const countPrePassageiros =
-    resumo?.contadores.passageiros.solicitacoes_pendentes ?? 0;
-
+  const countPrePassageiros = resumo?.contadores.passageiros.solicitacoes_pendentes ?? 0;
   const totalPassageirosResumo = resumo?.contadores.passageiros.ativos;
 
   const { data: escolasData, refetch: refetchEscolas } = useEscolas(
@@ -179,63 +163,21 @@ export default function Passageiros() {
   );
 
   const passageiros = useMemo(
-    () =>
-      (
-        passageirosData as
-          | { list?: Passageiro[]; total?: number; ativos?: number }
-          | undefined
-      )?.list ?? ([] as Passageiro[]),
+    () => (passageirosData as any)?.list ?? ([] as Passageiro[]),
     [passageirosData],
   );
-  const countPassageiros =
-    totalPassageirosResumo ??
-    (
-      passageirosData as
-        | { list?: Passageiro[]; total?: number; ativos?: number }
-        | undefined
-    )?.total ??
-    null;
+  
+  const countPassageiros = totalPassageirosResumo ?? (passageirosData as any)?.total ?? null;
+
   const escolas = useMemo(
-    () =>
-      (
-        escolasData as
-          | {
-              list?: (Escola & { passageiros_ativos_count?: number })[];
-              total?: number;
-              ativas?: number;
-            }
-          | undefined
-      )?.list ?? ([] as (Escola & { passageiros_ativos_count?: number })[]),
+    () => (escolasData as any)?.list ?? ([] as Escola[]),
     [escolasData],
   );
+
   const veiculos = useMemo(
-    () =>
-      (
-        veiculosData as
-          | {
-              list?: (Veiculo & { passageiros_ativos_count?: number })[];
-              total?: number;
-              ativos?: number;
-            }
-          | undefined
-      )?.list ?? ([] as (Veiculo & { passageiros_ativos_count?: number })[]),
+    () => (veiculosData as any)?.list ?? ([] as Veiculo[]),
     [veiculosData],
   );
-
-  const { limits } = usePlanLimits();
-
-  const validacaoFranquiaGeral = {
-    franquiaContratada: limits.franchise.limit,
-    cobrancasEmUso: limits.franchise.used,
-    podeAtivar: limits.franchise.canEnable,
-  };
-
-  const handleOpenUpgradeDialog = useCallback(() => {
-    openPlanUpgradeDialog({
-      feature: FEATURE_COBRANCA_AUTOMATICA,
-    });
-  }, [openPlanUpgradeDialog]);
-
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -243,11 +185,11 @@ export default function Passageiros() {
     }, 400);
     return () => clearTimeout(handler);
   }, [searchTerm]);
+
   useEffect(() => {
     setPageTitle("Passageiros");
   }, [setPageTitle]);
 
-  // Check for openModal param on mount
   useEffect(() => {
     const openModal = searchParams.get("openModal");
     if (openModal === "true") {
@@ -262,14 +204,9 @@ export default function Passageiros() {
 
   const handleDeleteClick = useCallback(
     (passageiro: Passageiro) => {
-      if (is_read_only) {
-        openSubscriptionExpiredDialog();
-        return;
-      }
       openConfirmationDialog({
         title: "Excluir passageiro?",
-        description:
-          "Tem certeza que deseja excluir este passageiro? Essa ação não poderá ser desfeita.",
+        description: "Tem certeza que deseja excluir este passageiro? Essa ação não poderá ser desfeita.",
         confirmText: "Excluir",
         variant: "destructive",
         onConfirm: async () => {
@@ -285,99 +222,33 @@ export default function Passageiros() {
     [deletePassageiro, closeConfirmationDialog, openConfirmationDialog],
   );
 
-  /* 
-   * NEW HOOK USAGE
-   */
-  const { validateActivation, validateAutomationToggle } = useFranchiseGate();
-
   const handleToggleClick = useCallback(
     (passageiro: Passageiro) => {
-      if (is_read_only) {
-        openSubscriptionExpiredDialog();
-        return;
-      }
       const action = passageiro.ativo ? "desativar" : "ativar";
 
       openConfirmationDialog({
-        title:
-          action === "ativar"
-            ? "Reativar passageiro?"
-            : "Desativar passageiro?",
-        description:
-          action === "ativar"
+        title: action === "ativar" ? "Reativar passageiro?" : "Desativar passageiro?",
+        description: action === "ativar"
             ? "O passageiro voltará a aparecer nas listagens ativas e a geração de mensalidades será retomada."
             : "O passageiro ficará inativo e a geração de mensalidades será pausada. Você poderá reativá-lo depois.",
         confirmText: action === "ativar" ? "Reativar" : "Desativar",
         variant: action === "ativar" ? "success" : "warning",
         onConfirm: async () => {
-          // Use centralized validation
-          validateActivation(
-            passageiro, 
-            async () => {
-               // Success Callback (Execute Action)
-               try {
-                  await toggleAtivoPassageiro.mutateAsync({ id: passageiro.id, novoStatus: !passageiro.ativo });
-                  closeConfirmationDialog();
-               } catch (error) {
-                  console.error(error);
-                  closeConfirmationDialog();
-               }
-            },
-            async () => {
-              // Cancel/Fallback Callback (Reativar sem automação)
-              try {
-                await updatePassageiro.mutateAsync({
-                  id: passageiro.id,
-                  data: {
-                    ativo: true,
-                    enviar_cobranca_automatica: false,
-                  },
-                });
-                closeConfirmationDialog();
-              } catch(e) { console.error(e); closeConfirmationDialog(); }
-            }
-          );
+          try {
+            await toggleAtivoPassageiro.mutateAsync({ id: passageiro.id, novoStatus: !passageiro.ativo });
+            closeConfirmationDialog();
+          } catch (error) {
+            closeConfirmationDialog();
+          }
         },
       });
     },
-    [
-      openConfirmationDialog,
-      closeConfirmationDialog,
-      toggleAtivoPassageiro,
-      openPlanUpgradeDialog,
-      updatePassageiro,
-      validateActivation, 
-      is_read_only
-    ],
+    [openConfirmationDialog, closeConfirmationDialog, toggleAtivoPassageiro],
   );
 
-  const handleToggleCobrancaAutomatica = useCallback(
-    async (passageiro: Passageiro) => {
-      if (!profile?.id) return;
-
-      const novoValor = !passageiro.enviar_cobranca_automatica;
-
-      validateAutomationToggle(passageiro, novoValor, () => {
-          updatePassageiro.mutate({
-            id: passageiro.id,
-            data: { enviar_cobranca_automatica: novoValor },
-          });
-      });
-    },
-    [
-      profile?.id,
-      updatePassageiro,
-      validateAutomationToggle,
-      refetchPassageiros
-    ],
-  );
 
   const handleEdit = useCallback(
     (passageiro: Passageiro) => {
-      if (is_read_only) {
-        openSubscriptionExpiredDialog();
-        return;
-      }
       openPassageiroFormDialog({
         mode: PassageiroFormModes.EDIT,
         editingPassageiro: passageiro,
@@ -387,10 +258,6 @@ export default function Passageiros() {
   );
 
   const handleOpenNewDialog = useCallback(() => {
-    if (is_read_only) {
-      openSubscriptionExpiredDialog();
-      return;
-    }
     openPassageiroFormDialog({
       mode: PassageiroFormModes.CREATE,
       onSuccess: (passageiro) => {
@@ -400,19 +267,9 @@ export default function Passageiros() {
         }
       },
     });
-  }, [
-    openPassageiroFormDialog,
-    openFirstChargeDialog,
-    refetchPassageiros,
-    is_read_only,
-    openSubscriptionExpiredDialog,
-  ]);
+  }, [openPassageiroFormDialog, openFirstChargeDialog, refetchPassageiros]);
 
   const handleCadastrarRapido = useCallback(async () => {
-    if (is_read_only) {
-      openSubscriptionExpiredDialog();
-      return;
-    }
     if (!profile?.id) return;
 
     let escolaId = escolas?.[0]?.id;
@@ -421,7 +278,6 @@ export default function Passageiros() {
     try {
       if (!escolaId) {
         const fakeEscola = { ...mockGenerator.escola() };
-
         const novaEscola = await createEscola.mutateAsync({
           usuarioId: profile.id,
           data: { ...fakeEscola, ativo: true },
@@ -434,9 +290,7 @@ export default function Passageiros() {
       if (!veiculoId) {
         const fakeVeiculo = { ...mockGenerator.veiculo() };
         const oldPlate = fakeVeiculo.placa;
-        const suffix = Math.floor(Math.random() * 100)
-          .toString()
-          .padStart(2, "0");
+        const suffix = Math.floor(Math.random() * 100).toString().padStart(2, "0");
         fakeVeiculo.placa = oldPlate.substring(0, oldPlate.length - 2) + suffix;
 
         const novoVeiculo = await createVeiculo.mutateAsync({
@@ -448,12 +302,10 @@ export default function Passageiros() {
         }
       }
     } catch (e) {
-      console.error("Erro ao criar dependências fake", e);
       toast.error("sistema.erro.gerarDependencias");
       return;
     }
 
-    // Double check if we have IDs now
     if (!escolaId || !veiculoId) {
       toast.error("sistema.erro.gerarCadastroAutomatico");
       return;
@@ -474,49 +326,21 @@ export default function Passageiros() {
       dia_vencimento: parseInt(mockPassenger.dia_vencimento),
     };
 
-    let enviarCobrancaAutomatica = false;
-    if (canUseCobrancaAutomatica) {
-      enviarCobrancaAutomatica = limits.franchise.checkAvailability(false);
-    }
-
-    createPassageiro.mutate(
-      {
+    createPassageiro.mutate({
         ...fakeData,
         usuario_id: profile.id,
-        enviar_cobranca_automatica: enviarCobrancaAutomatica,
-      },
-      {
-        onError: () => {},
-      },
-    );
-  }, [
-    profile?.id,
-    escolas,
-    veiculos,
-    createPassageiro,
-    createEscola,
-    createVeiculo,
-  ]);
+      });
+  }, [profile?.id, escolas, veiculos, createPassageiro, createEscola, createVeiculo]);
 
   const handleHistorico = useCallback(
     (passageiro: Passageiro) => {
-      navigate(
-        ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(
-          ":passageiro_id",
-          passageiro.id,
-        ),
-      );
+      navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(":passageiro_id", passageiro.id));
     },
     [navigate],
   );
 
   const handleGenerateContract = useCallback(
     (passageiro: Passageiro) => {
-      if (is_read_only) {
-        openSubscriptionExpiredDialog();
-        return;
-      }
-
       openConfirmationDialog({
         title: "Gerar Contrato?",
         description: `Deseja gerar um novo contrato para ${passageiro.nome} agora?`,
@@ -531,7 +355,7 @@ export default function Passageiros() {
         },
       });
     },
-    [openConfirmationDialog, closeConfirmationDialog, createContrato, is_read_only, openSubscriptionExpiredDialog],
+    [openConfirmationDialog, closeConfirmationDialog, createContrato],
   );
 
   const pullToRefreshReload = useCallback(async () => {
@@ -539,8 +363,9 @@ export default function Passageiros() {
       refetchPassageiros(),
       refetchEscolas(),
       refetchVeiculos(),
+      refreshProfile(),
     ]);
-  }, [refetchPassageiros, refetchEscolas, refetchVeiculos]);
+  }, [refetchPassageiros, refetchEscolas, refetchVeiculos, refreshProfile]);
 
   if (isProfileLoading || !profile) {
     return (
@@ -560,64 +385,33 @@ export default function Passageiros() {
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6">
-          <Tabs
-            value={activeTab}
-            onValueChange={handleTabChange}
-            className="w-full space-y-6"
-          >
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <TabsList className="bg-slate-100/80 p-1 rounded-xl h-10 md:h-12 w-full md:w-auto self-start">
-                <TabsTrigger
-                  value="passageiros"
-                  className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none"
-                >
+                <TabsTrigger value="passageiros" className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none">
                   Passageiros
                   {countPassageiros != null && countPassageiros > 0 && (
-                    <Badge
-                      variant="secondary"
-                      className="ml-2 bg-gray-200 text-gray-700 hover:bg-gray-200 text-[10px] md:text-xs"
-                    >
+                    <Badge variant="secondary" className="ml-2 bg-gray-200 text-gray-700 hover:bg-gray-200 text-[10px] md:text-xs">
                       {countPassageiros}
                     </Badge>
                   )}
                 </TabsTrigger>
-                <TabsTrigger
-                  value="solicitacoes"
-                  className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none"
-                >
+                <TabsTrigger value="solicitacoes" className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none">
                   Solicitações
                   {countPrePassageiros > 0 && (
-                    <Badge
-                      variant="secondary"
-                      className="ml-2 bg-gray-200 text-gray-700 hover:bg-gray-200 text-[10px] md:text-xs"
-                    >
+                    <Badge variant="secondary" className="ml-2 bg-gray-200 text-gray-700 hover:bg-gray-200 text-[10px] md:text-xs">
                       {countPrePassageiros}
                     </Badge>
                   )}
                 </TabsTrigger>
               </TabsList>
             </div>
-            <TabsContent
-              value="passageiros"
-              className={cn("space-y-6 mt-0", "space-y-6 mt-0")}
-            >
+            
+            <TabsContent value="passageiros" className="space-y-6 mt-0">
               <Card className="border-none shadow-none bg-transparent">
                 <CardHeader className="p-0">
-                  <div className="flex justify-end mb-4 md:hidden">
-                    <Button
-                      onClick={handleCadastrarRapido}
-                      variant="outline"
-                      className="gap-2 text-uppercase w-full"
-                    >
-                      GERAR PASSAGEIRO FAKE
-                    </Button>
-                  </div>
-                  <div className="hidden md:flex justify-end mb-4">
-                    <Button
-                      onClick={handleCadastrarRapido}
-                      variant="outline"
-                      className="gap-2 text-uppercase"
-                    >
+                  <div className="flex justify-end mb-4">
+                    <Button onClick={handleCadastrarRapido} variant="outline" className="gap-2 text-uppercase w-full md:w-auto">
                       GERAR PASSAGEIRO FAKE
                     </Button>
                   </div>
@@ -651,32 +445,16 @@ export default function Passageiros() {
                     <UnifiedEmptyState
                       icon={Users2}
                       title="Nenhum passageiro encontrado"
-                      description={
-                        searchTerm.length > 0
-                          ? "Não encontramos passageiros com os filtros selecionados."
-                          : "Comece cadastrando seu primeiro passageiro para gerenciar o transporte."
-                      }
-                      action={
-                        searchTerm.length === 0
-                          ? {
-                              label: "Cadastrar Passageiro",
-                              onClick: handleOpenNewDialog,
-                            }
-                          : undefined
-                      }
+                      description={searchTerm.length > 0 ? "Não encontramos passageiros com os filtros selecionados." : "Comece cadastrando seu primeiro passageiro para gerenciar o transporte."}
+                      action={searchTerm.length === 0 ? { label: "Cadastrar Passageiro", onClick: handleOpenNewDialog } : undefined}
                     />
                   ) : (
                     <PassageirosList
                       passageiros={passageiros}
-                      plano={plano}
                       onHistorico={handleHistorico}
                       onEdit={handleEdit}
-                      onToggleCobrancaAutomatica={
-                        handleToggleCobrancaAutomatica
-                      }
                       onToggleClick={handleToggleClick}
                       onDeleteClick={handleDeleteClick}
-                      onOpenUpgradeDialog={handleOpenUpgradeDialog}
                       onGenerateContract={handleGenerateContract}
                     />
                   )}
@@ -684,12 +462,8 @@ export default function Passageiros() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="solicitacoes" className={cn("mt-0")}>
-              <PrePassageiros
-                onFinalizeNewPrePassageiro={async () => {}}
-                profile={profile}
-                plano={plano}
-              />
+            <TabsContent value="solicitacoes" className="mt-0">
+              <PrePassageiros onFinalizeNewPrePassageiro={async () => {}} profile={profile} />
             </TabsContent>
           </Tabs>
         </div>

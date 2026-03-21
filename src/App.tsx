@@ -36,7 +36,6 @@ const NovaSenha = lazyLoad(() => import("./pages/NovaSenha"));
 const Index = lazyLoad(() => import("./pages/lp/Index"));
 const Home = lazyLoad(() => import("./pages/Home"));
 
-const Assinatura = lazyLoad(() => import("./pages/Assinatura"));
 const Passageiros = lazyLoad(() => import("./pages/Passageiros"));
 const PassageiroCarteirinha = lazyLoad(() => import("./pages/PassageiroCarteirinha"));
 const PassageiroCobranca = lazyLoad(() => import("./pages/PassageiroCobranca"));
@@ -105,6 +104,7 @@ const App = () => {
           });
 
           await CapacitorUpdater.next({ id: version.id });
+          setShowUpdateDialog(false);
           localStorage.setItem("pendingUpdate", version.id);
 
                   toast.success("sistema.info.melhoriasProntas", {
@@ -241,7 +241,6 @@ const App = () => {
 
               {/* Motorista */}
               <Route path={ROUTES.PRIVATE.MOTORISTA.HOME} element={<Home />} />
-              <Route path={ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION} element={<Assinatura />} />
               <Route path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS} element={<Passageiros />} />
               <Route
                 path={ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS}
@@ -330,7 +329,6 @@ const App = () => {
           </div>
         )}
       </TooltipProvider>
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
   );
 };

@@ -9,7 +9,6 @@ import {
 import { ROUTES } from "@/constants/routes";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { AutomaticChargesPrompt } from "@/components/alerts/AutomaticChargesPrompt";
 import { DateNavigation } from "@/components/common/DateNavigation";
 import { KPICard } from "@/components/common/KPICard";
 
@@ -31,9 +30,7 @@ import { Cobranca } from "@/types/cobranca";
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { FEATURE_COBRANCA_AUTOMATICA } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
-import { usePermissions } from "@/hooks/business/usePermissions";
 import {
   CheckCircle2,
   TrendingUp,
@@ -45,16 +42,11 @@ const Cobrancas = () => {
 
   const {
     setPageTitle,
-    openPlanUpgradeDialog,
     openCobrancaDeleteDialog,
     openCobrancaEditDialog,
-    openCobrancaPixDrawer,
     openManualPaymentDialog,
-    openSubscriptionExpiredDialog,
   } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
-
-
 
   const deleteCobranca = useDeleteCobranca();
   const isActionLoading = deleteCobranca.isPending;
@@ -90,20 +82,7 @@ const Cobrancas = () => {
   const [anoFilter, setAnoFilter] = useState(new Date().getFullYear());
 
   const { user, loading: isSessionLoading } = useSession();
-  const { profile, plano, isLoading: isProfileLoading } = useProfile(user?.id);
-  const permissions = usePermissions();
-
-  const handleUpgrade = useCallback(
-    (feature: string, description?: string) => {
-      openPlanUpgradeDialog({
-        onSuccess: refetchCobrancas,
-        feature,
-        title: description ? "Cobrança Automática" : undefined,
-        description,
-      });
-    },
-    [openPlanUpgradeDialog]
-  );
+  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
 
   const [buscaAReceber, setBuscaAReceber] = useState("");
   const [buscaRecebidos, setBuscaRecebidos] = useState("");
@@ -112,7 +91,7 @@ const Cobrancas = () => {
   useEffect(() => {
     const term = activeTab === "areceber" ? buscaAReceber : buscaRecebidos;
     const handler = setTimeout(() => {
-        setDebouncedSearchTerm(term);
+      setDebouncedSearchTerm(term);
     }, 500);
     return () => clearTimeout(handler);
   }, [buscaAReceber, buscaRecebidos, activeTab]);
@@ -131,13 +110,11 @@ const Cobrancas = () => {
     {
       enabled: !!profile?.id,
       onError: (error) => {
-        console.error("Erro ao carregar mensalidades:", error); // Keep error log
+        console.error("Erro ao carregar mensalidades:", error);
         toast.error("cobranca.erro.carregar");
       },
     }
   );
-
-
 
   const cobrancasAReceber = useMemo(
     () => cobrancasData?.areceber ?? [],
@@ -149,30 +126,20 @@ const Cobrancas = () => {
   );
   const isInitialLoading = isCobrancasLoading && !cobrancasData;
 
-
-
   const navigate = useNavigate();
 
   // Handlers
   const handleEditCobrancaClick = useCallback(
     (cobranca: Cobranca) => {
-      if (permissions.is_read_only) {
-        openSubscriptionExpiredDialog();
-        return;
-      }
       openCobrancaEditDialog({
         cobranca,
       });
     },
-    [openCobrancaEditDialog, permissions.is_read_only, openSubscriptionExpiredDialog]
+    [openCobrancaEditDialog]
   );
 
   const handleDeleteCobrancaClick = useCallback(
     (cobranca: Cobranca) => {
-      if (permissions.is_read_only) {
-        openSubscriptionExpiredDialog();
-        return;
-      }
       openCobrancaDeleteDialog({
         onConfirm: async () => {
           try {
@@ -188,7 +155,7 @@ const Cobrancas = () => {
         }
       });
     },
-    [deleteCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog, permissions.is_read_only, openSubscriptionExpiredDialog]
+    [deleteCobranca, openCobrancaDeleteDialog, openCobrancaEditDialog]
   );
 
   const handleNavigation = useCallback((newMes: number, newAno: number) => {
@@ -198,10 +165,6 @@ const Cobrancas = () => {
 
   const openPaymentDialog = useCallback(
     (cobranca: Cobranca) => {
-      if (permissions.is_read_only) {
-        openSubscriptionExpiredDialog();
-        return;
-      }
       openManualPaymentDialog({
         cobrancaId: cobranca.id,
         passageiroNome: cobranca.passageiro.nome,
@@ -209,24 +172,13 @@ const Cobrancas = () => {
         valorOriginal: Number(cobranca.valor),
         status: cobranca.status,
         dataVencimento: cobranca.data_vencimento,
-        onPaymentRecorded: () => {},
+        onPaymentRecorded: () => { },
       });
     },
-    [openManualPaymentDialog, permissions.is_read_only, openSubscriptionExpiredDialog]
+    [openManualPaymentDialog]
   );
 
-  const handlePagarPix = useCallback(
-    (cobranca: Cobranca) => {
-      openCobrancaPixDrawer({
-        qrCodePayload: cobranca.qr_code_payload || "",
-        valor: Number(cobranca.valor),
-        passageiroNome: cobranca.passageiro.nome,
-        mes: cobranca.mes,
-        ano: cobranca.ano,
-      });
-    },
-    [openCobrancaPixDrawer]
-  );
+
 
   const navigateToDetails = useCallback(
     (cobranca: Cobranca) => {
@@ -251,10 +203,6 @@ const Cobrancas = () => {
       setBuscaRecebidos("");
     }
   }, [mesFilter, anoFilter]);
-
-  // Filtering (Server Side)
-  const cobrancasAReceberFiltradas = cobrancasAReceber;
-  const cobrancasRecebidasFiltradas = cobrancasRecebidas;
 
   // KPI Calculations
   const totalAReceber = useMemo(
@@ -287,10 +235,9 @@ const Cobrancas = () => {
     onVerCarteirinha: (id: string) => navigate(`/passageiros/${id}`),
     onEditarCobranca: handleEditCobrancaClick,
     onRegistrarPagamento: openPaymentDialog,
-    onPagarPix: handlePagarPix,
+
     onExcluirCobranca: handleDeleteCobrancaClick,
-    onActionSuccess: () => {},
-    onUpgrade: handleUpgrade
+    onActionSuccess: () => { },
   };
 
   return (
@@ -335,16 +282,6 @@ const Cobrancas = () => {
             />
           </div>
 
-          {/* Alerta Automático (Desktop Slim) */}
-          {!permissions.canUseAutomatedCharges && (
-            <div>
-              <AutomaticChargesPrompt
-                variant="slim-desktop"
-                onUpgrade={() => handleUpgrade(FEATURE_COBRANCA_AUTOMATICA)}
-              />
-            </div>
-          )}
-
           {/* 3. Main Content (Tabs & List) */}
           <Tabs
             value={activeTab}
@@ -352,45 +289,39 @@ const Cobrancas = () => {
             className="w-full"
           >
             <CobrancasToolbar
-              onUpgrade={handleUpgrade}
               buscaAReceber={buscaAReceber}
               setBuscaAReceber={setBuscaAReceber}
               buscaRecebidos={buscaRecebidos}
               setBuscaRecebidos={setBuscaRecebidos}
               countAReceber={cobrancasAReceber.length}
               countRecebidos={cobrancasRecebidas.length}
-              canUseAutomatedCharges={permissions.canUseAutomatedCharges}
               activeTab={activeTab}
             />
-  
+
             {/* Content: A Receber */}
             <TabsContent value="areceber" className="mt-0">
-               <CobrancasList
-                  variant="pending"
-                  cobrancas={cobrancasAReceberFiltradas}
-                  isLoading={isInitialLoading}
-                  busca={buscaAReceber}
-                  mesFilter={mesFilter}
-                  meses={meses}
-                  plano={plano}
-                  permissions={permissions}
-                  {...actionProps}
-               />
+              <CobrancasList
+                variant="pending"
+                cobrancas={cobrancasAReceber}
+                isLoading={isInitialLoading}
+                busca={buscaAReceber}
+                mesFilter={mesFilter}
+                meses={meses}
+                {...actionProps}
+              />
             </TabsContent>
 
             {/* Content: Recebidos */}
             <TabsContent value="recebidos" className="mt-0">
-                <CobrancasList
-                  variant="paid"
-                  cobrancas={cobrancasRecebidasFiltradas}
-                  isLoading={isInitialLoading}
-                  busca={buscaRecebidos}
-                  mesFilter={mesFilter}
-                  meses={meses}
-                  plano={plano}
-                  permissions={permissions}
-                  {...actionProps}
-               />
+              <CobrancasList
+                variant="paid"
+                cobrancas={cobrancasRecebidas}
+                isLoading={isInitialLoading}
+                busca={buscaRecebidos}
+                mesFilter={mesFilter}
+                meses={meses}
+                {...actionProps}
+              />
             </TabsContent>
           </Tabs>
 

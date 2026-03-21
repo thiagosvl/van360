@@ -27,22 +27,21 @@ import {
   Lock,
   LogOut,
   Menu,
-  Receipt,
   UserPen,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
+export function AppNavbar({ role }: { role: "motorista" }) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const { pageTitle, openPixKeyDialog } = useLayout();
+  const { pageTitle } = useLayout();
   const [openAlterarSenha, setOpenAlterarSenha] = useState(false);
   const [openEditarCadasto, setOpenEditarCadasto] = useState(false);
 
   const [isSigningOut, setIsSigningOut] = useState(false);
   const navigate = useNavigate();
   const { user } = useSession();
-  const { profile, is_profissional } = useProfile(user?.id);
+  const { profile } = useProfile(user?.id);
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -53,8 +52,6 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
 
       clearAppSession(true);
 
-      // No need to get session, as we just cleared it.
-      
       window.location.href = ROUTES.PUBLIC.LOGIN;
     } catch (err) {
       // Erro ao encerrar sessão - não crítico, redirecionamento já foi feito
@@ -65,10 +62,6 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
 
   const userInitial = useMemo(() => {
     return profile?.nome.charAt(0)?.toUpperCase();
-  }, [profile?.nome]);
-
-  const userFirstName = useMemo(() => {
-    return profile?.nome.split(" ")[0];
   }, [profile?.nome]);
 
   return (
@@ -106,7 +99,6 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
                     <AppSidebar
                       role={role}
                       onLinkClick={() => setIsSheetOpen(false)}
-                      plano={plano}
                     />
                   </div>
                 </SheetContent>
@@ -131,17 +123,9 @@ export function AppNavbar({ role, plano }: { role: "motorista"; plano?: any }) {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end">
-                <DropdownMenuItem onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION)}>
-                  <Receipt className="mr-2 h-4 w-4" /> Minha Assinatura
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setOpenEditarCadasto(true)}>
                   <UserPen className="mr-2 h-4 w-4" /> Editar Perfil
                 </DropdownMenuItem>
-                {is_profissional && (
-                  <DropdownMenuItem onClick={() => openPixKeyDialog({ canClose: true })}>
-                    <Key className="mr-2 h-4 w-4" /> Alterar Chave PIX
-                  </DropdownMenuItem>
-                )}
                 <DropdownMenuItem onClick={() => setOpenAlterarSenha(true)}>
                   <Lock className="mr-2 h-4 w-4" /> Alterar senha
                 </DropdownMenuItem>

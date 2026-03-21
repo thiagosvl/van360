@@ -27,7 +27,6 @@ export interface Passageiro {
   escola?: { nome: string };
   veiculo?: { placa: string };
 
-  enviar_cobranca_automatica?: boolean;
   status_contrato?: ContratoStatus;
   contrato_id?: string;
   contrato_url?: string;

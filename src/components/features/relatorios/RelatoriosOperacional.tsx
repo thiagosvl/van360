@@ -1,7 +1,5 @@
-import { AutomationPlanCard } from "@/components/common/AutomationPlanCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useLayout } from "@/contexts/LayoutContext";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { Users } from "lucide-react";
 
@@ -26,19 +24,11 @@ interface RelatoriosOperacionalProps {
       percentual: number;
     }[];
   };
-  automacao: {
-    envios: number;
-    limite: number;
-  };
-  IsProfissionalPlan: boolean;
 }
 
 export const RelatoriosOperacional = ({
   dados,
-  automacao,
-  IsProfissionalPlan,
 }: RelatoriosOperacionalProps) => {
-  const { openPlanUpgradeDialog } = useLayout();
 
   return (
     <div className="space-y-4 mt-0">
@@ -59,13 +49,6 @@ export const RelatoriosOperacional = ({
             </CardContent>
           </Card>
 
-        {/* Automação (Cobranças Automáticas) */}
-        <AutomationPlanCard
-          usage={automacao.envios}
-          limit={automacao.limite}
-          isProfessional={IsProfissionalPlan}
-          activePassengersCount={dados.passageirosAtivosCount}
-        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

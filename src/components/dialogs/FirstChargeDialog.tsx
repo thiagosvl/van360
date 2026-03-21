@@ -36,12 +36,10 @@ export interface FirstChargeDialogProps {
   onClose: () => void;
   passageiro: Passageiro;
 }
-
 type Step =
   | "REGISTER_CHECK"
   | "PAYMENT_STATUS"
-  | "PAYMENT_METHOD"
-  | "AUTOMATION_CHECK";
+  | "PAYMENT_METHOD";
 
 export default function FirstChargeDialog({
   isOpen,
@@ -74,13 +72,8 @@ export default function FirstChargeDialog({
     if (status === "PAID") {
       setStep("PAYMENT_METHOD");
     } else {
-      // Se pendente, verifica automação
-      if (passageiro.enviar_cobranca_automatica) {
-        setStep("AUTOMATION_CHECK");
-      } else {
-        // Sem automação, cria pendente direto
-        await submitCobranca(CobrancaStatus.PENDENTE, false);
-      }
+      // Sem automação, cria pendente direto
+      await submitCobranca(CobrancaStatus.PENDENTE, false);
     }
   };
 
@@ -89,8 +82,7 @@ export default function FirstChargeDialog({
       setStep("REGISTER_CHECK");
     } else if (step === "PAYMENT_METHOD") {
       setStep("PAYMENT_STATUS");
-    } else if (step === "AUTOMATION_CHECK") {
-      setStep("PAYMENT_STATUS");
+
     }
   };
 
@@ -345,42 +337,6 @@ export default function FirstChargeDialog({
             </div>
           )}
 
-          {step === "AUTOMATION_CHECK" && (
-            <div className="space-y-8 pt-4">
-              <div className="bg-violet-50/80 p-4 sm:p-6 rounded-3xl border border-violet-100/50 flex flex-col items-center text-center gap-3 sm:gap-4">
-                <div className="bg-violet-100 p-3 sm:p-4 rounded-full shrink-0 shadow-sm ring-4 ring-violet-50">
-                  <Send className="w-6 h-6 sm:w-8 sm:h-8 text-violet-600" />
-                </div>
-                <div className="space-y-1">
-                  <h4 className="font-bold text-lg sm:text-xl text-gray-900">
-                    Enviar cobrança via WhatsApp?
-                  </h4>
-                  <p className="text-gray-500 text-sm sm:text-base leading-relaxed max-w-full sm:max-w-[260px]">
-                    Este passageiro tem cobrança automática ativa. Deseja enviar a
-                    notificação no WhatsApp?
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3">
-                <Button
-                  onClick={() => submitCobranca(CobrancaStatus.PENDENTE, true)}
-                  disabled={isLoading}
-                  className="bg-violet-600 hover:bg-violet-700 text-white h-14 rounded-2xl font-bold text-lg shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 transition-all hover:translate-y-[-2px]"
-                >
-                  Sim, enviar no WhatsApp
-                </Button>
-                <Button
-                  onClick={() => submitCobranca(CobrancaStatus.PENDENTE, false)}
-                  variant="ghost"
-                  disabled={isLoading}
-                  className="h-12 rounded-2xl text-gray-500 hover:text-gray-900 font-medium hover:bg-gray-50"
-                >
-                  Não, apenas gerar pendente
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </DialogContent>
     </Dialog>

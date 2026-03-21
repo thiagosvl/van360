@@ -12,19 +12,13 @@ import { useNavigate } from "react-router-dom";
 interface PagamentoSucessoDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  nomePlano?: string;
-  quantidadePassageiros?: number;
   onIrParaInicio?: () => void;
-  onIrParaAssinatura?: () => void;
 }
 
 export function PagamentoSucessoDialog({
   isOpen,
   onClose,
-  nomePlano,
-  quantidadePassageiros,
   onIrParaInicio,
-  onIrParaAssinatura,
 }: PagamentoSucessoDialogProps) {
   const navigate = useNavigate();
 
@@ -37,12 +31,8 @@ export function PagamentoSucessoDialog({
     onClose();
   };
 
-  const handleIrParaAssinatura = () => {
-    if (onIrParaAssinatura) {
-      onIrParaAssinatura();
-    } else {
-      navigate(ROUTES.PRIVATE.MOTORISTA.SUBSCRIPTION);
-    }
+  const handleIrParaFinanceiro = () => {
+    navigate(ROUTES.PRIVATE.MOTORISTA.BILLING);
     onClose();
   };
 
@@ -68,24 +58,13 @@ export function PagamentoSucessoDialog({
         </div>
 
         <div className="p-6 pt-4 bg-white flex-1 overflow-y-auto">
-          {quantidadePassageiros !== undefined && quantidadePassageiros > 0 && (
-            <div className="mb-6 p-4 bg-emerald-50 rounded-xl border border-emerald-100">
-              <p className="text-sm font-medium text-emerald-900">
-                {quantidadePassageiros}{" "}
-                {quantidadePassageiros === 1
-                  ? "passageiro agora tem"
-                  : "passageiros agora têm"}{" "}
-                cobrança automática.
-              </p>
-            </div>
-          )}
 
           <div className="flex flex-col gap-3 pt-2">
             <Button
-              onClick={handleIrParaAssinatura}
+              onClick={handleIrParaFinanceiro}
               className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all"
             >
-              Ver minha assinatura
+              Ver financeiro
             </Button>
             <Button
               onClick={handleIrParaInicio}

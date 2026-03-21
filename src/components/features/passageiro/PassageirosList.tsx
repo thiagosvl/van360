@@ -20,13 +20,11 @@ import { PassageiroActionsMenu } from "./PassageiroActionsMenu";
 
 interface PassageirosListProps {
   passageiros: Passageiro[];
-  plano: any;
   onHistorico: (passageiro: Passageiro) => void;
   onEdit: (passageiro: Passageiro) => void;
-  onToggleCobrancaAutomatica: (passageiro: Passageiro) => void;
+
   onToggleClick: (passageiro: Passageiro) => void;
   onDeleteClick: (passageiro: Passageiro) => void;
-  onOpenUpgradeDialog?: (passageiroId?: string) => void;
   onGenerateContract?: (passageiro: Passageiro) => void;
 }
 
@@ -40,28 +38,16 @@ const getInitials = (name: string) => {
     .toUpperCase();
 };
 
-const RenderAutoBillingIcon = ({ passageiro }: { passageiro: Passageiro }) => {
-  if (!passageiro.enviar_cobranca_automatica) return null;
-  return (
-    <div
-      className="h-6 w-6 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center"
-      title="Cobrança Automática Ativa"
-    >
-      <Bot className="h-3.5 w-3.5 text-indigo-600" />
-    </div>
-  );
-};
+
 
 const PassageiroMobileCard = memo(function PassageiroMobileCard({
   passageiro,
   index,
-  plano,
   onHistorico,
   onEdit,
-  onToggleCobrancaAutomatica,
+
   onToggleClick,
   onDeleteClick,
-  onOpenUpgradeDialog,
   onGenerateContract,
 }: { passageiro: Passageiro; index: number } & Omit<
   PassageirosListProps,
@@ -71,10 +57,9 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
     passageiro,
     onHistorico,
     onEdit,
-    onToggleCobrancaAutomatica,
+
     onToggleStatus: onToggleClick,
     onDelete: onDeleteClick,
-    onOpenUpgradeDialog,
     onGenerateContract,
   });
 
@@ -104,7 +89,6 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
           </div>
           <div className="shrink-0 flex gap-2">
             <StatusBadge status={passageiro.ativo} />
-            <RenderAutoBillingIcon passageiro={passageiro} />
           </div>
         </div>
 
@@ -219,7 +203,6 @@ export function PassageirosList({
                 <TableCell className="py-4">
                   <div className="flex items-center gap-2">
                     <StatusBadge status={passageiro.ativo} />
-                    <RenderAutoBillingIcon passageiro={passageiro} />
                   </div>
                 </TableCell>
                 <TableCell className="py-4">

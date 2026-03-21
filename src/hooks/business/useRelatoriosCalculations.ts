@@ -54,7 +54,6 @@ interface UseRelatoriosCalculationsProps {
   passageirosData: any;
   escolasData: any;
   veiculosData: any;
-  profilePlano: any;
   profile: any;
   financeiro?: {
     receita: {
@@ -81,7 +80,6 @@ export const useRelatoriosCalculations = ({
   passageirosData,
   escolasData,
   veiculosData,
-  profilePlano,
   profile,
   financeiro,
 }: UseRelatoriosCalculationsProps) => {
@@ -374,15 +372,6 @@ export const useRelatoriosCalculations = ({
       })
       .sort((a, b) => b.passageiros - a.passageiros);
 
-    // Automação
-    const passageirosComAutomatica = passageirosList.filter(
-      (p: any) => p.enviar_cobranca_automatica && p.ativo
-    ).length;
-    const assinatura = profile?.assinatura || profile?.assinaturas_usuarios?.[0];
-    const limiteAutomatica =
-      assinatura?.franquia_contratada_cobrancas ||
-      profilePlano?.planoProfissional?.franquia_contratada_cobrancas ||
-      50;
 
     return {
       visaoGeral: {
@@ -422,10 +411,6 @@ export const useRelatoriosCalculations = ({
         periodos,
         veiculos,
       },
-      automacao: {
-        envios: passageirosComAutomatica,
-        limite: limiteAutomatica,
-      },
     };
   }, [
     cobrancasData,
@@ -433,8 +418,8 @@ export const useRelatoriosCalculations = ({
     passageirosData,
     escolasData,
     veiculosData,
-    profilePlano,
     profile,
+    financeiro
   ]);
 
   return dados;

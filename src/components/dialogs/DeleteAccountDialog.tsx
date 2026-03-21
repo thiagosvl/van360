@@ -75,9 +75,6 @@ export default function DeleteAccountDialog({
               <p>
                 Esta ação é <span className="underline decoration-red-400 decoration-2 underline-offset-2 font-bold text-red-700">irreversível</span>. Todos os seus dados pessoais serão anonimizados e você perderá acesso ao sistema imediatamente.
               </p>
-              <p>
-                A sua assinatura será cancelada imediatamente, sem direito a reembolso.
-              </p>
               <p className="text-[11px] text-red-700 pt-2">
                 Seus registros financeiros passados serão mantidos para fins fiscais.
               </p>

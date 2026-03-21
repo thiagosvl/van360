@@ -39,21 +39,7 @@ export function useUpdatePassageiro() {
       });
     },
     onSuccess: (data, variables) => {
-      const dataKeys = Object.keys(variables.data || {});
-      const isToggleOnly = 
-        dataKeys.length === 1 && 
-        dataKeys[0] === "enviar_cobranca_automatica" &&
-        variables.data.enviar_cobranca_automatica !== undefined;
-      
-      if (isToggleOnly) {
-        toast.success(
-          variables.data.enviar_cobranca_automatica
-            ? "sistema.sucesso.cobrancasAutomaticasAtivadas"
-            : "sistema.sucesso.cobrancasAutomaticasDesativadas"
-        );
-      } else {
-        toast.success("passageiro.sucesso.atualizado");
-      }
+      toast.success("passageiro.sucesso.atualizado");
 
       // Invalidações globais
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });

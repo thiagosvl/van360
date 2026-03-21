@@ -7,26 +7,10 @@ import FirstChargeDialog from "@/components/dialogs/FirstChargeDialog";
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
-import PixKeyDialog from "@/components/dialogs/PixKeyDialog";
-import {
-    PlanUpgradeDialog,
-} from "@/components/dialogs/PlanUpgradeDialog";
-import { SubscriptionExpiredDialog } from "@/components/dialogs/SubscriptionExpiredDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
-import { CobrancaPixDrawer } from "@/components/features/cobranca/CobrancaPixDrawer";
-import {
-    FEATURE_COBRANCA_AUTOMATICA,
-    FEATURE_GASTOS,
-    FEATURE_LIMITE_PASSAGEIROS,
-    FEATURE_NOTIFICACOES,
-    FEATURE_RELATORIOS,
-    PLANO_PROFISSIONAL,
-} from "@/constants";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { useContractGuard } from "@/hooks/ui/useContractGuard";
-import { usePixKeyGuard } from "@/hooks/ui/usePixKeyGuard";
 
 import { PassageiroFormModes } from "@/types/enums";
 import {
@@ -39,7 +23,7 @@ import {
     LayoutContext,
     OpenCobrancaDeleteDialogProps,
     OpenCobrancaEditDialogProps,
-    OpenCobrancaPixDrawerProps,
+
     OpenConfirmationDialogProps,
     OpenContractSetupDialogProps,
     OpenEscolaFormProps,
@@ -47,8 +31,6 @@ import {
     OpenGastoFormProps,
     OpenManualPaymentDialogProps,
     OpenPassageiroFormProps,
-    OpenPlanUpgradeDialogProps,
-    OpenSubscriptionExpiredDialogProps,
     OpenVeiculoFormProps
 } from "./LayoutContext";
 
@@ -62,19 +44,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       document.title = `${pageTitle} | Van360`;
     }
   }, [pageTitle]);
-
-  // Novo Plan Upgrade Dialog State (Unificado)
-  const [planUpgradeDialogState, setPlanUpgradeDialogState] = useState<{
-    open: boolean;
-    props?: OpenPlanUpgradeDialogProps;
-  }>({
-    open: false,
-  });
-
-  const [subscriptionExpiredDialogState, setSubscriptionExpiredDialogState] = useState<{
-    open: boolean;
-    props?: OpenSubscriptionExpiredDialogProps;
-  }>({ open: false });
 
   // Confirmation Dialog State
   const [confirmationDialogState, setConfirmationDialogState] = useState<{
@@ -119,21 +88,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useSession();
   const {
     profile,
-    is_profissional,
-    isLoading: isProfileLoading,
-    plano,
-    summary,
   } = useProfile(user?.id);
-
-  // Dialog States (Global)
-  const [pixKeyDialogState, setPixKeyDialogState] = useState<{
-    open: boolean;
-    onSuccess?: () => void;
-    canClose?: boolean;
-  }>({
-    open: false,
-    canClose: true,
-  });
 
 
 
@@ -151,12 +106,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
-  const [cobrancaPixDrawerState, setCobrancaPixDrawerState] = useState<{
-    open: boolean;
-    props?: OpenCobrancaPixDrawerProps;
-  }>({
-    open: false,
-  });
+
 
   const [manualPaymentDialogState, setManualPaymentDialogState] = useState<{
     open: boolean;
@@ -179,121 +129,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
-  const handleOpenPixKeyDialog = useCallback(() => {
-    setPixKeyDialogState({
-      open: true,
-      canClose: false,
-    });
-  }, []);
 
-  const isTrial = plano?.is_trial_ativo;
-  const isTrialExpired = isTrial && !plano?.is_trial_valido;
-  const isSuspendedOrCancelled = plano?.is_suspensa || plano?.is_cancelada;
-  const isInvalidPlan = !plano?.is_plano_valido;
-
-  const isPaymentBlocked = isTrialExpired || isSuspendedOrCancelled || isInvalidPlan;
-  const canShowUpgrade = !!summary?.usuario.flags.pix_key_configurada;
-
-  useEffect(() => {
-    if (isProfileLoading || !profile || !profile.assinatura) return;
-
-    if (isPaymentBlocked) {
-        if (isTrial || isTrialExpired) {
-             // Trial expirado -> Abre PlanUpgradeDialog
-             if (!planUpgradeDialogState.open) {
-                 if (canShowUpgrade) {
-                    openPlanUpgradeDialog({
-                      defaultTab: plano?.slug as any, 
-                      feature: "trial_conversion",
-                    });
-                 } else if (!subscriptionExpiredDialogState.open) {
-                    openSubscriptionExpiredDialog();
-                 }
-             }
-        } else {
-             if (!subscriptionExpiredDialogState.open) {
-                 openSubscriptionExpiredDialog();
-             }
-        }
-    }
-  }, [
-    isProfileLoading, 
-    profile, 
-    isPaymentBlocked, 
-    isTrial, 
-    isTrialExpired, 
-    canShowUpgrade, 
-    planUpgradeDialogState.open, 
-    subscriptionExpiredDialogState.open, 
-    plano?.slug
-  ]);
-
-  usePixKeyGuard({
-    profile,
-    isProfissional: !!is_profissional,
-    isLoading: isProfileLoading,
-    onShouldOpen: handleOpenPixKeyDialog,
-    disabled: isPaymentBlocked
-  });
-
-  useContractGuard({
-    profile,
-    isProfissional: !!is_profissional,
-    isLoading: isProfileLoading,
-    onShouldOpen: () => setContractSetupDialogState({ open: true }),
-    disabled: isPaymentBlocked
-  });
-
-  const openPlanUpgradeDialog = (props?: OpenPlanUpgradeDialogProps) => {
-    // 1. Impedir abertura se já estiver aberto
-    if (planUpgradeDialogState.open) return;
-
-    let defaultTab = props?.defaultTab;
-
-    // Inferência inteligente de aba baseada na feature/dor
-    if (!defaultTab && props?.feature) {
-      switch (props.feature) {
-        case FEATURE_COBRANCA_AUTOMATICA:
-        case FEATURE_RELATORIOS:
-        case FEATURE_NOTIFICACOES:
-          defaultTab = PLANO_PROFISSIONAL;
-          break;
-        case FEATURE_LIMITE_PASSAGEIROS:
-        case FEATURE_GASTOS:
-          defaultTab = "essencial";
-          break;
-      }
-    }
-
-    setPlanUpgradeDialogState({
-      open: true,
-      props: {
-        ...props,
-        defaultTab,
-      },
-    });
-  };
-
-
-
-  const openSubscriptionExpiredDialog = (props?: OpenSubscriptionExpiredDialogProps) => {
-    setSubscriptionExpiredDialogState({ open: true, props });
-  };
-
-  const openPixKeyDialog = (options?: {
-    onSuccess?: () => void;
-    canClose?: boolean;
-  }) => {
-    setPixKeyDialogState({
-      open: true,
-      onSuccess: options?.onSuccess,
-      canClose: options?.canClose ?? true,
-    });
-  };
-
-  const closePixKeyDialog = () => {
-    setPixKeyDialogState((prev) => ({ ...prev, open: false }));
-  };
 
   const openConfirmationDialog = (props: OpenConfirmationDialogProps) => {
     setConfirmationDialogState({
@@ -334,8 +170,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-
-
   const openCobrancaDeleteDialog = (props: OpenCobrancaDeleteDialogProps) => {
     setCobrancaDeleteDialogState({
       open: true,
@@ -354,12 +188,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const openCobrancaPixDrawer = (props: OpenCobrancaPixDrawerProps) => {
-    setCobrancaPixDrawerState({
-      open: true,
-      props,
-    });
-  };
+
 
   const openManualPaymentDialog = (props: OpenManualPaymentDialogProps) => {
     setManualPaymentDialogState({
@@ -382,24 +211,15 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         setPageTitle,
         pageSubtitle,
         setPageSubtitle,
-        openPlanUpgradeDialog,
-        isPlanUpgradeDialogOpen: planUpgradeDialogState.open,
-        openSubscriptionExpiredDialog,
-        isSubscriptionExpiredDialogOpen: subscriptionExpiredDialogState.open,
         openConfirmationDialog,
         closeConfirmationDialog,
         openEscolaFormDialog,
         openVeiculoFormDialog,
         openPassageiroFormDialog,
         openGastoFormDialog,
-        openPixKeyDialog,
-        closePixKeyDialog,
-        isPixKeyDialogOpen: pixKeyDialogState.open,
-
         openCobrancaDeleteDialog,
         closeCobrancaDeleteDialog,
         openCobrancaEditDialog,
-        openCobrancaPixDrawer,
         openManualPaymentDialog,
         openFirstChargeDialog,
         isFirstChargeDialogOpen: firstChargeDialogState.open,
@@ -408,48 +228,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 
     >
       {children}
-
-      {planUpgradeDialogState.open && (
-        <PlanUpgradeDialog
-          open={planUpgradeDialogState.open}
-          onOpenChange={(open) => {
-            if (!open) {
-                safeCloseDialog(() => {
-                    setPlanUpgradeDialogState((prev) => ({ ...prev, open: false }));
-                    planUpgradeDialogState.props?.onClose?.();
-                });
-            } else {
-                setPlanUpgradeDialogState((prev) => ({ ...prev, open }));
-            }
-          }}
-          defaultTab={planUpgradeDialogState.props?.defaultTab}
-          feature={planUpgradeDialogState.props?.feature}
-          targetPassengerCount={
-            planUpgradeDialogState.props?.targetPassengerCount
-          }
-          onSuccess={planUpgradeDialogState.props?.onSuccess}
-          title={planUpgradeDialogState.props?.title}
-          description={planUpgradeDialogState.props?.description}
-        />
-      )}
-
-
-
-      {subscriptionExpiredDialogState.open && (
-        <SubscriptionExpiredDialog
-            open={subscriptionExpiredDialogState.open}
-            onOpenChange={(open) => {
-                 if (!open) {
-                    safeCloseDialog(() => {
-                        setSubscriptionExpiredDialogState((prev) => ({ ...prev, open: false }));
-                        subscriptionExpiredDialogState.props?.onSuccess?.();
-                    });
-                 } else {
-                    setSubscriptionExpiredDialogState((prev) => ({ ...prev, open }));
-                 }
-            }}
-        />
-      )}
 
       {confirmationDialogState.open && confirmationDialogState.props && (
         <ConfirmationDialog
@@ -467,7 +245,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           description={confirmationDialogState.props.description}
           onConfirm={() =>
             safeCloseDialog(() => {
-              confirmationDialogState.props.onConfirm();
+              confirmationDialogState.props!.onConfirm();
             })
           }
           confirmText={confirmationDialogState.props.confirmText}
@@ -537,7 +315,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           mode={passageiroFormDialogState.props?.mode || PassageiroFormModes.CREATE}
           prePassageiro={passageiroFormDialogState.props?.prePassageiro}
           profile={profile}
-          plano={plano as any}
         />
       )}
 
@@ -560,21 +337,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           gastoToEdit={gastoFormDialogState.props?.gastoToEdit}
           veiculos={gastoFormDialogState.props?.veiculos || []}
           usuarioId={gastoFormDialogState.props?.usuarioId || profile?.id}
-        />
-      )}
-
-      {pixKeyDialogState.open && (
-        <PixKeyDialog
-          isOpen={true}
-          onClose={() =>
-            safeCloseDialog(() => 
-                setPixKeyDialogState((prev) => ({ ...prev, open: false }))
-            )
-          }
-          canClose={pixKeyDialogState.canClose}
-          onSuccess={() => {
-            pixKeyDialogState.onSuccess?.();
-          }}
         />
       )}
 
@@ -626,25 +388,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
-      {cobrancaPixDrawerState.open && cobrancaPixDrawerState.props && (
-        <CobrancaPixDrawer
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) {
-              safeCloseDialog(() => 
-                  setCobrancaPixDrawerState((prev) => ({ ...prev, open: false }))
-              )
-            } else {
-              setCobrancaPixDrawerState((prev) => ({ ...prev, open }));
-            }
-          }}
-          qrCodePayload={cobrancaPixDrawerState.props.qrCodePayload}
-          valor={cobrancaPixDrawerState.props.valor}
-          passageiroNome={cobrancaPixDrawerState.props.passageiroNome}
-          mes={cobrancaPixDrawerState.props.mes}
-          ano={cobrancaPixDrawerState.props.ano}
-        />
-      )}
+
 
       {manualPaymentDialogState.open && manualPaymentDialogState.props && (
         <ManualPaymentDialog
@@ -662,8 +406,6 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
           dataVencimento={manualPaymentDialogState.props.dataVencimento}
           onPaymentRecorded={() => {
             manualPaymentDialogState.props?.onPaymentRecorded();
-            // Optional: close dialog on success is handled by the component or we can close here if needed
-            // But usually the component props onClose handles it or the component calls onClose
           }}
         />
       )}

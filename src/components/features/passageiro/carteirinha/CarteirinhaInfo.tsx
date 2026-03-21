@@ -1,9 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useLayout } from "@/contexts/LayoutContext";
-import { usePermissions } from "@/hooks/business/usePermissions";
-import { usePlanLimits } from "@/hooks/business/usePlanLimits";
 import { cn } from "@/lib/utils";
 import { ContratoStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
@@ -12,28 +9,26 @@ import { formatarEnderecoCompleto } from "@/utils/formatters/address";
 import { formatarTelefone } from "@/utils/formatters/phone";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-    AlertCircle,
-    Bot,
-    BotOff,
-    CalendarDays,
-    Car,
-    ChevronDown,
-    ChevronUp,
-    Clock,
-    Copy,
-    CopyCheck,
-    CreditCard,
-    FileText,
-    HeartPulse,
-    Lock,
-    Mail,
+  AlertCircle,
+  CalendarDays,
+  Car,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Copy,
+  CopyCheck,
+  CreditCard,
+  FileText,
+  HeartPulse,
+  Mail,
     MapPin,
     Pencil,
     Phone,
     School,
     Trash2,
     User,
-    UserCheck
+    UserCheck,
+    Lock
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { InfoItem } from "./InfoItem";
@@ -45,11 +40,9 @@ interface CarteirinhaInfoProps {
   isCopiedTelefone: boolean;
   onEditClick: () => void;
   onCopyToClipboard: (text: string, label: string) => void;
-  onToggleCobrancaAutomatica: () => void;
+
   onToggleClick: (statusAtual: boolean) => void;
   onDeleteClick: () => void;
-  onUpgrade: (featureName: string, description: string) => void;
-  onReactivateWithoutAutomation?: () => Promise<void>; 
   onContractAction?: () => void;
 }
 
@@ -60,56 +53,15 @@ export const CarteirinhaInfo = ({
   isCopiedTelefone,
   onEditClick,
   onCopyToClipboard,
-  onToggleCobrancaAutomatica,
+
   onToggleClick,
   onDeleteClick,
-  onUpgrade,
-  onReactivateWithoutAutomation,
   onContractAction,
 }: CarteirinhaInfoProps) => {
   const [mostrarMaisInfo, setMostrarMaisInfo] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
-  
-  const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
-  const { 
-    canUseAutomatedCharges: hasCobrancaAutomaticaAccess,
-    canUseContracts,
-    isContractsEnabled
-  } = usePermissions();
-  const { limits } = usePlanLimits();
 
   const handleToggleClickInternal = async () => {
-      const isReactivating = !passageiro.ativo;
-      
-      if (
-          isReactivating && 
-          passageiro.enviar_cobranca_automatica && 
-          hasCobrancaAutomaticaAccess
-      ) {
-          const canEnable = limits.franchise.checkAvailability(false);
-
-          if (!canEnable) {
-              openConfirmationDialog({
-                  title: "Limite de Automação Atingido",
-                  description: "Você atingiu o limite de cobranças automáticas do seu plano.\n\nPara reativar este passageiro, você pode aumentar seu limite ou reativar sem a automação.",
-                  confirmText: "Aumentar Limites (Upgrade)",
-                  cancelText: "Reativar sem Automação",
-                  variant: "default", // or something else
-                  onConfirm: () => {
-                      closeConfirmationDialog();
-                      onUpgrade("Limite de Automação", "Aumente seu limite para continuar usando a automação.");
-                  },
-                  onCancel: async () => {
-                      if (onReactivateWithoutAutomation) {
-                          await onReactivateWithoutAutomation();
-                      }
-                      closeConfirmationDialog();
-                  }
-              });
-              return; // Stop execution
-          }
-      }
-
       try {
           await onToggleClick(passageiro.ativo);
       } catch (error: any) {
@@ -117,16 +69,7 @@ export const CarteirinhaInfo = ({
       }
   };
 
-  const handleCobrancaAutomaticaClick = () => {
-    if (hasCobrancaAutomaticaAccess) {
-      onToggleCobrancaAutomatica();
-    } else {
-      onUpgrade(
-        "Cobrança Automática",
-        "A Cobrança Automática envia as faturas e lembretes sozinha. Automatize sua rotina com o Plano Profissional."
-      );
-    }
-  };
+
 
   const handleToggleDetails = () => {
     setMostrarMaisInfo(!mostrarMaisInfo);
@@ -404,44 +347,9 @@ export const CarteirinhaInfo = ({
           </div>
 
           {/* Botões de Ação Sempre Visíveis */}
-          {passageiro.enviar_cobranca_automatica && (
-            <div className="mb-4 flex items-center gap-3 px-3 py-2 bg-indigo-50 border border-indigo-100 rounded-xl">
-              <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm">
-                <Bot className="h-4 w-4 text-indigo-600" />
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5 ">
-                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                  <p className="text-xs font-bold text-indigo-700 uppercase tracking-wide">
-                    Cobrança Automática Ativa
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+
           <div className="space-y-2 mb-6">
-            {/* Botão de Cobrança Automática - Sempre visível */}
-            {passageiro.enviar_cobranca_automatica ? (
-              <Button
-                variant="ghost"
-                disabled={!passageiro.ativo && hasCobrancaAutomaticaAccess}
-                className="w-full pl-0 text-muted-foreground hover:bg-transparent hover:text-primary justify-start"
-                onClick={handleCobrancaAutomaticaClick}
-              >
-                <BotOff className="h-4 w-4 mr-2" />
-                Pausar Cobrança Automática
-              </Button>
-            ) : (
-              <Button
-                variant="ghost"
-                disabled={!passageiro.ativo && hasCobrancaAutomaticaAccess}
-                className="w-full pl-0 text-muted-foreground hover:bg-transparent hover:text-primary justify-start"
-                onClick={handleCobrancaAutomaticaClick}
-              >
-                <Bot className="h-4 w-4 mr-2" />
-                Ativar Cobrança Automática
-              </Button>
-            )}
+
 
           {passageiro.ativo ? (
               <Button
@@ -463,7 +371,7 @@ export const CarteirinhaInfo = ({
               </Button>
             )}
 
-            {canUseContracts && isContractsEnabled && onContractAction && (
+            {onContractAction && (
                 <Button
                   variant="ghost"
                   className={cn(

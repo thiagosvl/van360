@@ -28,12 +28,12 @@ import {
   useSubstituirContrato,
 } from '@/hooks/api/useContratos';
 
-import { usePermissions } from '@/hooks/business/usePermissions';
+import { useProfile } from '@/hooks/business/useProfile';
 import { openBrowserLink } from '@/utils/browser';
 
 const Contratos = () => {
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog, openSubscriptionExpiredDialog } = useLayout();
-  const { profile, is_read_only } = usePermissions();
+  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog } = useLayout();
+  const { profile, isLoading: isProfileLoading } = useProfile();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isPreviewPdfOpen, setIsPreviewPdfOpen] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -111,10 +111,6 @@ const Contratos = () => {
   };
 
   const handleExcluir = (id: string) => {
-    if (is_read_only) {
-      openSubscriptionExpiredDialog();
-      return;
-    }
     openConfirmationDialog({
       title: 'Excluir Contrato?',
       description: 'Tem certeza que deseja excluir este contrato? Esta ação não pode ser desfeita.',
@@ -128,10 +124,6 @@ const Contratos = () => {
   };
 
   const handleSubstituir = (id: string) => {
-    if (is_read_only) {
-      openSubscriptionExpiredDialog();
-      return;
-    }
     openConfirmationDialog({
       title: 'Substituir Contrato?',
       description: 'O contrato atual será marcado como substituído e um novo será gerado com os dados atuais do passageiro. Deseja continuar?',
@@ -144,10 +136,6 @@ const Contratos = () => {
   };
 
   const handleGerarContrato = (passageiroId: string) => {
-    if (is_read_only) {
-      openSubscriptionExpiredDialog();
-      return;
-    }
     openConfirmationDialog({
       title: 'Gerar Contrato?',
       description: 'Deseja gerar um novo contrato para este passageiro agora?',
@@ -158,8 +146,6 @@ const Contratos = () => {
       }
     });
   };
-
-  const { isLoading: isProfileLoading } = usePermissions();
 
   const isActionLoading = 
     deleteMutation.isPending || 

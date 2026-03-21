@@ -4,9 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { getMessage } from "@/constants/messages";
 import { useGerarPixParaCobranca } from "@/hooks";
 import { supabase } from "@/integrations/supabase/client";
-import { assinaturaCobrancaApi } from "@/services/api/assinatura-cobranca.api";
 import { usuarioApi } from "@/services/api/usuario.api";
-import { AssinaturaCobrancaStatus } from "@/types/enums";
 import { toast } from "@/utils/notifications/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Copy, CopyCheck, HelpCircle, Loader2, Smartphone } from "lucide-react";
@@ -17,11 +15,9 @@ interface PagamentoPixContentProps {
   cobrancaId: string;
   onPaymentSuccess?: (success?: boolean) => void;
   usuarioId?: string;
-  onClose?: (success?: boolean) => void; 
-  nomePlano?: string; 
-  quantidadePassageiros?: number; 
-  onIrParaInicio?: () => void; 
-  onIrParaAssinatura?: () => void; 
+  onClose?: (success?: boolean) => void;
+  onIrParaInicio?: () => void;
+  onIrParaAssinatura?: () => void;
   onPaymentVerified?: () => void;
   context?: "register" | "upgrade";
   initialData?: {
@@ -38,8 +34,6 @@ export default function PagamentoPixContent({
   onPaymentSuccess,
   usuarioId,
   onClose,
-  nomePlano,
-  quantidadePassageiros,
   onIrParaInicio,
   onIrParaAssinatura,
   onPaymentVerified,
@@ -193,7 +187,7 @@ export default function PagamentoPixContent({
       while (tentativa < MAX_TENTATIVAS && !sucesso) {
         try {
           let profileData = null;
-            if (usuarioId) {
+          if (usuarioId) {
             profileData = await queryClient.fetchQuery({
               queryKey: ["profile", usuarioId],
               queryFn: () => usuarioApi.getProfile(usuarioId),
@@ -328,32 +322,32 @@ export default function PagamentoPixContent({
     const checkPaymentStatus = async () => {
       if (!mountedRef.current || !monitorandoRef.current || !dadosPagamento?.cobrancaId) return;
 
-        // Fallback: Verificar status via Backend (Polling)
-        try {
-          const data = await assinaturaCobrancaApi.getCobrancaStatus(dadosPagamento.cobrancaId);
+      // Fallback: Verificar status via Backend (Polling)
+      try {
+        const data = await assinaturaCobrancaApi.getCobrancaStatus(dadosPagamento.cobrancaId);
 
-          if (data && data.status === AssinaturaCobrancaStatus.PAGO) {
-             handlePaymentSuccessRef.current?.();
-             return;
-          }
-        } catch (err) {
-             // Ignora erros de polling (ex: 404 temporário, rede)
+        if (data && data.status === AssinaturaCobrancaStatus.PAGO) {
+          handlePaymentSuccessRef.current?.();
+          return;
         }
+      } catch (err) {
+        // Ignora erros de polling (ex: 404 temporário, rede)
+      }
 
-        // Também invalida profile para garantir sincronia em background
-        await queryClient.invalidateQueries({ queryKey: ["profile"] });
+      // Também invalida profile para garantir sincronia em background
+      await queryClient.invalidateQueries({ queryKey: ["profile"] });
     };
 
     // Setup Polling
     if (!pollerRef.current && monitorandoRef.current) {
-         // Polling a cada 10 segundos como fallback
-         pollerRef.current = setInterval(() => {
-            if (!mountedRef.current || !monitorandoRef.current || paymentConfirmed) {
-               if (pollerRef.current) clearInterval(pollerRef.current);
-               return;
-            }
-            checkPaymentStatus();
-         }, 10000);
+      // Polling a cada 10 segundos como fallback
+      pollerRef.current = setInterval(() => {
+        if (!mountedRef.current || !monitorandoRef.current || paymentConfirmed) {
+          if (pollerRef.current) clearInterval(pollerRef.current);
+          return;
+        }
+        checkPaymentStatus();
+      }, 10000);
     }
 
     return () => {
@@ -613,9 +607,8 @@ export default function PagamentoPixContent({
             </Button>
 
             <Button
-              className={`w-full hover:bg-blue-700 text-white font-bold h-12 rounded-xl shadow-lg shadow-blue-500/10 ${
-                isCopied ? "opacity-75 cursor-not-allowed" : "bg-blue-600"
-              }`}
+              className={`w-full hover:bg-blue-700 text-white font-bold h-12 rounded-xl shadow-lg shadow-blue-500/10 ${isCopied ? "opacity-75 cursor-not-allowed" : "bg-blue-600"
+                }`}
               onClick={handleCopyPix}
             >
               {isCopied ? getMessage("pix.sucesso.copiado") : getMessage("pix.info.copiar")}

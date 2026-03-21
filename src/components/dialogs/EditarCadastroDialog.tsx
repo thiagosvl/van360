@@ -22,8 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useLayout } from "@/contexts/LayoutContext";
-import { usePermissions } from "@/hooks/business/usePermissions";
+import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { emailSchema, phoneSchema } from "@/schemas/common";
 import { usuarioApi } from "@/services/api/usuario.api";
@@ -56,9 +55,7 @@ export default function EditarCadastroDialog({
   onClose,
 }: EditarCadastroDialogProps) {
   const { user } = useSession();
-  const { openPixKeyDialog } = useLayout();
-  // Usar usePermissions para acesso centralizado às flags de plano
-  const { profile, isLoading, refreshProfile, is_profissional } = usePermissions();
+  const { profile, isLoading, refreshProfile } = useProfile(user?.id);
   
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "dados-pessoais",
@@ -86,17 +83,14 @@ export default function EditarCadastroDialog({
         telefone: profile.telefone ? maskPhone(profile.telefone) : "",
         email: profile.email || "",
       });
-      // Abre ambas as sections se já tiver dados e for profissional
-      if (is_profissional) {
-        setOpenAccordionItems(["dados-pessoais", "dados-recebimento"]);
-      } else {
-        setOpenAccordionItems(["dados-pessoais"]);
-      }
+      setOpenAccordionItems(["dados-pessoais", "dados-recebimento"]);
     }
-  }, [profile, form, is_profissional]);
+  }, [profile, form]);
 
   const handleSubmit = async (data: FormData) => {
     try {
+      if (!profile?.id) return;
+      
       const nome = cleanString(data.nome, true);
       const apelido = cleanString(data.apelido || "", true);
       const telefone = data.telefone.replace(/\D/g, "");

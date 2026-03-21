@@ -1,27 +1,22 @@
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { useLayout } from "@/contexts/LayoutContext";
 
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
-import { FEATURE_COBRANCA_AUTOMATICA, FEATURE_LIMITE_FRANQUIA } from "@/constants";
 import {
-    useBuscarResponsavel,
-    useCreatePassageiro,
-    useEscolasWithFilters,
-    useFinalizePreCadastro,
-    useFranchiseGate,
-    usePassageiroForm,
-    usePermissions,
-    usePlanLimits,
-    useUpdatePassageiro,
-    useVeiculosWithFilters,
+  useBuscarResponsavel,
+  useCreatePassageiro,
+  useEscolasWithFilters,
+  useFinalizePreCadastro,
+  usePassageiroForm,
+  useUpdatePassageiro,
+  useVeiculosWithFilters,
 } from "@/hooks";
 import { PassageiroFormData } from "@/hooks/form/usePassageiroForm";
 import { Passageiro } from "@/types/passageiro";
@@ -40,22 +35,6 @@ import { PassageiroFormEndereco } from "../features/passageiro/form/PassageiroFo
 import { PassageiroFormFinanceiro } from "../features/passageiro/form/PassageiroFormFinanceiro";
 import { PassageiroFormResponsavel } from "../features/passageiro/form/PassageiroFormResponsavel";
 
-type PlanoUsuario = {
-  slug: string;
-  status: string;
-  trial_end_at: string | null;
-  ativo: boolean;
-  planoProfissional: any;
-  is_trial_ativo: boolean;
-  is_trial_valido: boolean;
-  is_ativo: boolean;
-  is_pendente?: boolean;
-  is_suspensa?: boolean;
-  is_cancelada?: boolean;
-  is_profissional: boolean;
-  is_essencial: boolean;
-} | null;
-
 interface PassengerFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -64,7 +43,6 @@ interface PassengerFormDialogProps {
   prePassageiro?: PrePassageiro | null;
   onSuccess: (passageiro?: any) => void;
   profile: Usuario | null | undefined;
-  plano: PlanoUsuario;
 }
 
 export default function PassengerFormDialog({
@@ -75,44 +53,25 @@ export default function PassengerFormDialog({
   prePassageiro,
   onSuccess,
   profile,
-  plano,
 }: PassengerFormDialogProps) {
-  const { openPlanUpgradeDialog } = useLayout();
-
   const createPassageiro = useCreatePassageiro();
   const updatePassageiro = useUpdatePassageiro();
   const finalizePreCadastro = useFinalizePreCadastro();
-
-  // Validação de Franquia (para upgrades)
-  const { limits } = usePlanLimits();
-
-  // Use centralized logic from hook to check availability
-  const podeAtivar = limits.franchise.checkAvailability(
-    !!editingPassageiro?.enviar_cobranca_automatica
-  );
-
-  const { canUseAutomatedCharges: hasCobrancaAutomaticaAccess, summary } = usePermissions();
-  
-  const validacaoFranquia = {
-    franquiaContratada: limits.franchise.limit,
-    cobrancasEmUso: limits.franchise.used,
-    podeAtivar,
-  };
 
   // Determine includeId for lists based on mode
   const includeEscolaId =
     mode === PassageiroFormModes.EDIT
       ? editingPassageiro?.escola_id
       : mode === PassageiroFormModes.FINALIZE
-      ? prePassageiro?.escola_id
-      : undefined;
+        ? prePassageiro?.escola_id
+        : undefined;
 
   const includeVeiculoId =
     mode === PassageiroFormModes.EDIT
       ? editingPassageiro?.veiculo_id
       : mode === PassageiroFormModes.FINALIZE
-      ? prePassageiro?.veiculo_id
-      : undefined;
+        ? prePassageiro?.veiculo_id
+        : undefined;
 
   // Fetch lists (Centralized)
   const { data: escolasData = [] } = useEscolasWithFilters(
@@ -133,8 +92,6 @@ export default function PassengerFormDialog({
       mode,
       editingPassageiro,
       prePassageiro,
-      plano,
-      podeAtivarCobrancaAutomatica: validacaoFranquia.podeAtivar,
     });
 
   const onFormError = (errors: any) => {
@@ -183,34 +140,9 @@ export default function PassengerFormDialog({
     }
   }, [cpfResponsavelValue]);
 
-  const handleUpgradeSuccess = () => {
-    // Resume action: re-enable check
-    form.setValue("enviar_cobranca_automatica", true);
-    toast.success("plano.sucesso.limiteExpandido");
-  };
-
-  const handleRequestUpgrade = () => {
-    // Determina o contexto do upgrade baseado no limite atual
-    let feature = FEATURE_LIMITE_FRANQUIA;
-    if (limits.franchise.limit === 0) {
-      feature = FEATURE_COBRANCA_AUTOMATICA;
-    } 
-
-    const passageirosAtivos = summary?.contadores?.passageiros?.ativos || 0;
-    const targetCount = (mode === PassageiroFormModes.CREATE || mode === PassageiroFormModes.FINALIZE)
-      ? passageirosAtivos + 1
-      : passageirosAtivos;
-
-    openPlanUpgradeDialog({
-        feature,
-        targetPassengerCount: targetCount,
-        onSuccess: handleUpgradeSuccess
-    });
-  };
-
   const handleFillMock = () => {
     const currentValues = form.getValues();
-    
+
     // Auto-pick school and vehicle if empty and lists are available
     let escolaId = currentValues.escola_id;
     if (!escolaId && escolasData.length > 0) {
@@ -225,11 +157,10 @@ export default function PassengerFormDialog({
     const mockData = mockGenerator.passenger({
       escola_id: escolaId,
       veiculo_id: veiculoId,
-      enviar_cobranca_automatica: true
     });
-    
+
     form.reset(mockData);
-    
+
     // Abrir todos os accordions para mostrar os dados preenchidos
     setOpenAccordionItems([
       "passageiro",
@@ -240,83 +171,63 @@ export default function PassengerFormDialog({
     ]);
   };
 
-  // useFranchiseGate
-  const { validateAutomationToggle } = useFranchiseGate();
-
   const handleSubmit = async (data: PassageiroFormData) => {
     if (!profile?.id) return;
 
-    const valorAtualEnviarCobranca =
-      editingPassageiro?.enviar_cobranca_automatica || false;
-    const novoValorEnviarCobranca = data.enviar_cobranca_automatica || false;
-
-    // Função interna para processar o salvamento após validação
     const processSubmit = () => {
-        const purePayload = { ...data };
-        
-        // Conversão de Data (DD/MM/YYYY -> YYYY-MM-DD)
-        if (purePayload.data_nascimento) {
-            purePayload.data_nascimento = convertDateBrToISO(purePayload.data_nascimento);
-        }
-        if (purePayload.data_inicio_transporte) {
-             purePayload.data_inicio_transporte = convertDateBrToISO(purePayload.data_inicio_transporte);
-        }
-    
-        const commonOptions = {
-          onSuccess: (data?: any) => {
-            onSuccess(data);
-            onClose();
-          },
-          onError: () => {
-            // Error handling
-          },
-        };
-    
-        if (mode === PassageiroFormModes.FINALIZE && prePassageiro) {
-          finalizePreCadastro.mutate(
-            {
-              prePassageiroId: prePassageiro.id,
-              data: {
-                ...purePayload,
-                usuario_id: prePassageiro.usuario_id,
-              },
-            },
-            commonOptions
-          );
-        } else if (editingPassageiro) {
-          updatePassageiro.mutate(
-            {
-              id: editingPassageiro.id,
-              data: purePayload,
-            },
-            {
-              onSuccess: commonOptions.onSuccess,
-            }
-          );
-        } else {
-          createPassageiro.mutate(
-            {
+      const purePayload = { ...data };
+
+      // Conversão de Data (DD/MM/YYYY -> YYYY-MM-DD)
+      if (purePayload.data_nascimento) {
+        purePayload.data_nascimento = convertDateBrToISO(purePayload.data_nascimento);
+      }
+      if (purePayload.data_inicio_transporte) {
+        purePayload.data_inicio_transporte = convertDateBrToISO(purePayload.data_inicio_transporte);
+      }
+
+      const commonOptions = {
+        onSuccess: (data?: any) => {
+          onSuccess(data);
+          onClose();
+        },
+        onError: () => {
+          // Error handling
+        },
+      };
+
+      if (mode === PassageiroFormModes.FINALIZE && prePassageiro) {
+        finalizePreCadastro.mutate(
+          {
+            prePassageiroId: prePassageiro.id,
+            data: {
               ...purePayload,
-              usuario_id: profile.id,
+              usuario_id: prePassageiro.usuario_id,
             },
-            commonOptions
-          );
-        }
+          },
+          commonOptions
+        );
+      } else if (editingPassageiro) {
+        updatePassageiro.mutate(
+          {
+            id: editingPassageiro.id,
+            data: purePayload,
+          },
+          {
+            onSuccess: commonOptions.onSuccess,
+          }
+        );
+      } else {
+        createPassageiro.mutate(
+          {
+            ...purePayload,
+            usuario_id: profile.id,
+          },
+          commonOptions
+        );
+      }
     };
 
-    // Verificar se está ativando automação
-    if (
-      novoValorEnviarCobranca &&
-      !valorAtualEnviarCobranca &&
-      hasCobrancaAutomaticaAccess
-    ) {
-       validateAutomationToggle(editingPassageiro, true, processSubmit);
-       // Reverter visualmente caso o usuário feche o modal de upgrade sem sucesso?
-       // O hook não tem um "onCancel". Se o usuário fechar o modal, o form fica com "true" marcado mas não salva.
-       // Se clicar em salvar de novo, abre o modal de novo. Aceitável.
-    } else {
-       processSubmit();
-    }
+    processSubmit();
   };
 
   const isSubmitting =
@@ -369,8 +280,8 @@ export default function PassengerFormDialog({
               {mode === PassageiroFormModes.EDIT
                 ? "Editar Passageiro"
                 : mode === PassageiroFormModes.FINALIZE
-                ? "Confirmar Cadastro"
-                : "Novo Passageiro"}
+                  ? "Confirmar Cadastro"
+                  : "Novo Passageiro"}
             </DialogTitle>
           </div>
 
@@ -391,16 +302,14 @@ export default function PassengerFormDialog({
                     onValueChange={setOpenAccordionItems}
                     className="space-y-4"
                   >
-                    <PassageiroFormDadosCadastrais 
-                      profile={profile} 
+                    <PassageiroFormDadosCadastrais
+                      profile={profile}
                       escolas={escolasData}
                       veiculos={veiculosData}
                     />
                     <PassageiroFormResponsavel isSearching={buscarResponsavel.isPending} />
                     <PassageiroFormFinanceiro
                       editingPassageiro={editingPassageiro}
-                      validacaoFranquia={validacaoFranquia}
-                      onRequestUpgrade={handleRequestUpgrade}
                     />
                     <PassageiroFormEndereco />
                   </Accordion>
@@ -440,8 +349,6 @@ export default function PassengerFormDialog({
         </DialogContent>
       </Dialog>
       <LoadingOverlay active={isSubmitting} text="Salvando..." />
-      
-
     </>
   );
 }

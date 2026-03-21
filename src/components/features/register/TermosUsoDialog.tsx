@@ -89,9 +89,9 @@ export function TermosUsoDialog() {
                 </ul>
               </div>
 
-              <SectionTitle icon={Wallet}>3. Pagamentos e Assinaturas</SectionTitle>
+              <SectionTitle icon={Wallet}>3. Gratuito</SectionTitle>
               <p className="text-gray-600 leading-relaxed">
-                O serviço é oferecido mediante planos de assinatura. O não pagamento poderá acarretar na suspensão temporária das funcionalidades premium, incluindo as automações de cobrança e envio de mensagens.
+                Nesta fase inicial, o <strong>Van360</strong> é 100% gratuito. Você tem acesso a todas as funcionalidades de gestão, automação de cobranças e notificações sem custos adicionais.
               </p>
 
               <SectionTitle icon={MessageSquare}>4. Uso do WhatsApp</SectionTitle>

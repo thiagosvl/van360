@@ -1,4 +1,3 @@
-import { usePermissions } from "@/hooks/business/usePermissions";
 import { ActionItem } from "@/types/actions";
 import { ContratoStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
@@ -21,9 +20,8 @@ interface UsePassageiroActionsProps {
   onToggleStatus: (passageiro: Passageiro) => void;
   onEdit: (passageiro: Passageiro) => void;
   onHistorico: (passageiro: Passageiro) => void;
-  onToggleCobrancaAutomatica: (passageiro: Passageiro) => void;
+
   onDelete: (passageiro: Passageiro) => void;
-  onOpenUpgradeDialog?: (featureOrId?: string) => void;
   onGenerateContract?: (passageiro: Passageiro) => void;
 }
 
@@ -32,16 +30,10 @@ export function usePassageiroActions({
   onToggleStatus,
   onEdit,
   onHistorico,
-  onToggleCobrancaAutomatica,
+
   onDelete,
-  onOpenUpgradeDialog,
   onGenerateContract,
 }: UsePassageiroActionsProps): ActionItem[] {
-  const { 
-    canUseAutomatedCharges: hasCobrancaAutomaticaAccess,
-    canUseContracts,
-    isContractsEnabled
-  } = usePermissions();
 
   const actions: ActionItem[] = [
     {
@@ -70,69 +62,38 @@ export function usePassageiroActions({
     },
   ];
 
-  if (passageiro.enviar_cobranca_automatica) {
-    if (hasCobrancaAutomaticaAccess) {
+
+
+  // Contract Actions are now enabled for everyone
+  if (passageiro.status_contrato === ContratoStatus.ASSINADO) {
+    const finalUrl = passageiro.contrato_final_url || passageiro.contrato_url;
+    if (finalUrl) {
       actions.push({
-        label: "Pausar Cobrança Automática",
-        icon: <BotOff className="h-4 w-4" />,
-        onClick: () => onToggleCobrancaAutomatica(passageiro),
-        swipeColor: "bg-slate-500",
+        label: "Ver Contrato Assinado",
+        icon: <FileCheck className="h-4 w-4" />,
+        onClick: () => openBrowserLink(finalUrl),
+        swipeColor: "bg-green-600",
         hasSeparatorAfter: true
       });
     }
-  } else {
+  } else if (passageiro.status_contrato === ContratoStatus.PENDENTE && passageiro.contrato_url) {
     actions.push({
-      label: "Ativar Cobrança Automática",
-      icon: <Bot className="h-4 w-4" />,
-      onClick: () => {
-        if (hasCobrancaAutomaticaAccess) {
-          onToggleCobrancaAutomatica(passageiro);
-        } else {
-          onOpenUpgradeDialog?.(passageiro.id);
-        }
-      },
-      swipeColor: "bg-indigo-600",
+      label: "Ver Contrato (Pendente)",
+      icon: <FileText className="h-4 w-4" />,
+      onClick: () => openBrowserLink(passageiro.contrato_url),
+      swipeColor: "bg-amber-600",
+      hasSeparatorAfter: true
+    });
+  } else if (onGenerateContract) {
+    actions.push({
+      label: "Gerar Contrato",
+      icon: <FilePlus className="h-4 w-4" />,
+      onClick: () => onGenerateContract(passageiro),
+      swipeColor: "bg-blue-600",
       hasSeparatorAfter: true
     });
   }
 
-  // Contract Actions - Conditional Logic
-  if (canUseContracts && isContractsEnabled) {
-    if (passageiro.status_contrato === ContratoStatus.ASSINADO) {
-      // Contract is signed - show link to final document
-      const finalUrl = passageiro.contrato_final_url || passageiro.contrato_url;
-      if (finalUrl) {
-        actions.push({
-          label: "Ver Contrato Assinado",
-          icon: <FileCheck className="h-4 w-4" />,
-          onClick: () => openBrowserLink(finalUrl),
-          swipeColor: "bg-green-600",
-          hasSeparatorAfter: true
-        });
-      }
-    } else if (passageiro.status_contrato === ContratoStatus.PENDENTE && passageiro.contrato_url) {
-      // Contract is pending signature - show link to signing page
-      actions.push({
-        label: "Ver Contrato (Pendente)",
-        icon: <FileText className="h-4 w-4" />,
-        onClick: () => openBrowserLink(passageiro.contrato_url),
-        swipeColor: "bg-amber-600",
-        hasSeparatorAfter: true
-      });
-    } else if (onGenerateContract) {
-      // No contract - show generate option
-      actions.push({
-        label: "Gerar Contrato",
-        icon: <FilePlus className="h-4 w-4" />,
-        onClick: () => onGenerateContract(passageiro),
-        swipeColor: "bg-blue-600",
-        hasSeparatorAfter: true
-      });
-    }
-  }
-
-
-  // Ação de Excluir (sempre por último)
   actions.push({
     label: "Excluir",
     icon: <Trash2 className="h-4 w-4" />,

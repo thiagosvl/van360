@@ -259,68 +259,8 @@ export const messages = {
       perfilAtualizado: "Atualizado com sucesso.",
       perfilAtualizadoDescricao: "Suas informações foram salvas.",
     },
-    info: {
-      pagamentoConfirmado: "Pagamento Confirmado.",
-      pagamentoConfirmadoDescricao: "Por favor, faça o login manual para acessar a plataforma.",
-    },
   },
 
-  // ========== ASSINATURA ==========
-  assinatura: {
-    erro: {
-      carregar: "Erro ao carregar informações da assinatura.",
-      processar: "Erro ao processar assinatura.",
-      pagamento: "Erro ao processar pagamento.",
-      gerarPix: "Erro ao gerar PIX.",
-      copiarPix: "Erro ao copiar PIX.",
-      copiarPixDescricao: "Não foi possível copiar o código PIX.",
-      franquiaInsuficiente: "Limite insuficiente",
-      franquiaInsuficienteDescricao: "Você possui {{ATIVOS}} passageiro(s) com automação ativa. Para reduzir sua franquia para {{NOVA}}, desative a automação de pelo menos {{EXCEDENTE}} passageiro(s) na lista de passageiros.",
-    },
-    sucesso: {
-      ativada: "Assinatura ativada com sucesso.",
-      atualizada: "Assinatura atualizada com sucesso.",
-      cobrancasAtivadas: "Cobranças automáticas ativadas.",
-      cobrancasAtivadasDescricao: "X passageiros foram ativados automaticamente.",
-      bemVindoProfissional: "Bem-vindo ao Plano Profissional!",
-      bemVindoProfissionalDescricao: "Agora você tem cobrança automática e todos os recursos.",
-      limiteAtualizado: "Limite atualizado!",
-      limiteAtualizadoDescricao: "Sua franquia de cobranças foi ajustada.",
-      confirmado: "Pagamento confirmado!",
-    },
-    info: {
-      pendente: "Você possui uma assinatura pendente.",
-      quantidadeIgual: "Você já está com este plano ativo.",
-      quantidadeIgualDescricao: "Não é necessário fazer alterações. Você já tem esta quantidade de passageiros com cobrança automática.",
-      liberacaoDemorando: "Pagamento recebido, mas a liberação está demorando. Ela ocorrerá automaticamente em instantes.",
-    },
-    status: {
-      validando: "Validando Pagamento...",
-      validandoDescricao: "Recebemos seu PIX! Estamos finalizando a configuração da sua assinatura. Isso leva apenas alguns segundos.",
-    },
-  },
-
-  // ========== PLANOS ==========
-  plano: {
-      erro: {
-        carregar: "Erro ao carregar planos.",
-        escolher: "Erro ao escolher o plano.",
-        selecionarQuantidade: "É necessário escolher a quantidade de cobranças automáticas que deseja.",
-        informarQuantidadePersonalizada: "Informe a quantidade de cobranças automáticas que deseja.",
-        quantidadeAbaixoMinimo: "A quantidade informada está abaixo do mínimo permitido.",
-        cobrancaAutomaticaApenasProfissional: "Cobranças automáticas estão disponíveis apenas no plano Profissional.",
-        minimoPassageiros: "O mínimo é de {{QUANTIDADE}} passageiros.",
-        minimoPassageirosDescricao: "Para quantidades menores, selecione uma das opções pré-definidas acima.",
-      },
-    sucesso: {
-      limiteExpandido: "Limite expandido! Agora você pode ativar a cobrança automática.",
-      atualizado: "Plano atualizado com sucesso!",
-    },
-    info: {
-      limiteAtingido: "Você atingiu o limite do seu plano.",
-      upgradeParaCobrancasAutomaticas: "Faça upgrade para o plano Profissional para ativar cobranças automáticas.",
-    },
-  },
 
   // ========== PIX ==========
   pix: {
@@ -355,12 +295,9 @@ export const messages = {
       copiarDescricao: "Não foi possível copiar o texto.",
       falhaCopiar: "Falha ao copiar.",
       falhaCopiarDescricao: "Tente copiar o link manualmente.",
-      validarFranquia: "Erro ao validar franquia.",
-      validarFranquiaDescricao: "Não foi possível verificar o limite de cobranças automáticas.",
       consultarCep: "Erro ao consultar CEP.",
       enviarDados: "Erro ao enviar dados.",
       linkInvalidoDescricao: "Este link de cadastro não é válido.",
-      calcularPreco: "Erro ao calcular preço do plano.",
       gerarDependencias: "Erro ao gerar dependências automáticas.",
       sessaoExpirada: "Erro de sessão. Tente recarregar a página.",
       motoristaNaoIdentificado: "Motorista não identificado na URL.",
@@ -369,13 +306,12 @@ export const messages = {
       atualizacaoDescricao: "Não foi possível aplicar a atualização. Tente novamente.",
     },
     atualizacao: {
-           titulo: "Nova versão disponível",
-           descricao: "Uma nova versão do aplicativo está disponível. O aplicativo será atualizado agora para garantir o melhor funcionamento.",
-           processando: "Atualizando o aplicativo...",
-           progresso: "{{PERCENTUAL}}% concluído",
+      titulo: "Nova versão disponível",
+      descricao: "Uma nova versão do aplicativo está disponível. O aplicativo será atualizado agora para garantir o melhor funcionamento.",
+      processando: "Atualizando o aplicativo...",
+      progresso: "{{PERCENTUAL}}% concluído",
     },
     sucesso: {
-      cobrancasAutomaticasDesativadas: "Cobranças automáticas desativadas com sucesso.",
       linkCopiado: "Link copiado!",
       linkCopiadoDescricao: "Envie para os pais.",
       processando: "Processando...",
@@ -391,7 +327,7 @@ export const messages = {
       appAtualizadoDescricao: "O aplicativo foi atualizado com sucesso para a versão mais recente.",
     },
   },
-  
+
   // ========== HOME ==========
   home: {
     info: {
@@ -470,7 +406,7 @@ export const messages = {
 /**
  * Tipo para as chaves de mensagens (para autocomplete)
  */
-export type MessageKey = 
+export type MessageKey =
   | `erro.${keyof typeof messages.erro}`
   | `sucesso.${keyof typeof messages.sucesso}`
   | `veiculo.erro.${keyof typeof messages.veiculo.erro}`
@@ -490,13 +426,6 @@ export type MessageKey =
   | `auth.labels.${keyof typeof messages.auth.labels}`
   | `cadastro.erro.${keyof typeof messages.cadastro.erro}`
   | `cadastro.sucesso.${keyof typeof messages.cadastro.sucesso}`
-  | `assinatura.erro.${keyof typeof messages.assinatura.erro}`
-  | `assinatura.sucesso.${keyof typeof messages.assinatura.sucesso}`
-  | `assinatura.info.${keyof typeof messages.assinatura.info}`
-  | `assinatura.status.${keyof typeof messages.assinatura.status}`
-  | `plano.erro.${keyof typeof messages.plano.erro}`
-  | `plano.sucesso.${keyof typeof messages.plano.sucesso}`
-  | `plano.info.${keyof typeof messages.plano.info}`
   | `validacao.${keyof typeof messages.validacao}`
   | `sistema.erro.${keyof typeof messages.sistema.erro}`
   | `sistema.sucesso.${keyof typeof messages.sistema.sucesso}`
@@ -520,12 +449,11 @@ export type MessageKey =
 
 /**
  * Função helper para obter mensagem por chave com suporte a parâmetros
- * Exemplo: getMessage('plano.erro.minimoPassageiros', { QUANTIDADE: 5 }) => "O mínimo é de 5 passageiros."
  */
 export function getMessage(key: MessageKey | string, params?: Record<string, string | number>): string {
   const keys = key.split('.');
   let value: unknown = messages;
-  
+
   for (const k of keys) {
     if (value && typeof value === 'object' && k in value) {
       value = value[k as keyof typeof value];
@@ -533,7 +461,7 @@ export function getMessage(key: MessageKey | string, params?: Record<string, str
       return key;
     }
   }
-  
+
   if (typeof value !== 'string') return key;
 
   if (params) {
@@ -543,7 +471,7 @@ export function getMessage(key: MessageKey | string, params?: Record<string, str
     });
     return msg;
   }
-  
+
   return value;
 }
 
