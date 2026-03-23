@@ -19,14 +19,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useLayout } from "@/contexts/LayoutContext";
 import { cn } from "@/lib/utils";
 import { Usuario } from "@/types/usuario";
+import {
+    usePassageiroFormDadosCadastraisViewModel,
+} from "@/hooks";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { generos, modalidades, periodos } from "@/utils/formatters";
 import { dateMask } from "@/utils/masks";
 import { Car, School, Sun, User } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 import { Escola } from "@/types/escola";
@@ -43,47 +44,13 @@ export function PassageiroFormDadosCadastrais({
   escolas,
   veiculos,
 }: PassageiroFormDadosCadastraisProps) {
-  const form = useFormContext();
-  const { openEscolaFormDialog, openVeiculoFormDialog } = useLayout();
-
-  const [newVeiculo, setNewVeiculo] = useState<any | null>(null);
-  const [newEscola, setNewEscola] = useState<any | null>(null);
-
-  const veiculosDisplay = useMemo(() => {
-    if (!newVeiculo) return veiculos;
-    const exists = veiculos.find((v) => v.id === newVeiculo.id);
-    if (exists) return veiculos;
-    return [...veiculos, newVeiculo];
-  }, [veiculos, newVeiculo]);
-
-  const escolasDisplay = useMemo(() => {
-    if (!newEscola) return escolas;
-    const exists = escolas.find((e) => e.id === newEscola.id);
-    if (exists) return escolas;
-    return [...escolas, newEscola];
-  }, [escolas, newEscola]);
-
-  // Guard clause para evitar updates redundantes/loops
-  useEffect(() => {
-    const currentId = form.getValues("veiculo_id");
-    if (newVeiculo && newVeiculo.id && currentId !== newVeiculo.id) {
-       form.setValue("veiculo_id", newVeiculo.id, { shouldValidate: true });
-    }
-  }, [newVeiculo, form]);
-
-  useEffect(() => {
-    const currentId = form.getValues("escola_id");
-    if (newEscola && newEscola.id && currentId !== newEscola.id) {
-       form.setValue("escola_id", newEscola.id, { shouldValidate: true });
-    }
-  }, [newEscola, form]);
-
-  // Auto-selecionar veículo único se nenhum estiver selecionado
-  useEffect(() => {
-    if (veiculos.length === 1 && !form.getValues("veiculo_id")) {
-      form.setValue("veiculo_id", veiculos[0].id, { shouldValidate: true });
-    }
-  }, [veiculos, form]);
+  const {
+      form,
+      veiculosDisplay,
+      escolasDisplay,
+      handleAddNewVehicle,
+      handleAddNewSchool,
+  } = usePassageiroFormDadosCadastraisViewModel({ escolas, veiculos });
 
   return (
     <AccordionItem
@@ -137,11 +104,7 @@ export function PassageiroFormDadosCadastrais({
                   value={field.value}
                   onValueChange={(value) => {
                     if (value === "add-new-vehicle") {
-                      openVeiculoFormDialog({
-                        onSuccess: (veiculo) => {
-                          setNewVeiculo(veiculo);
-                        },
-                      });
+                      handleAddNewVehicle();
                       return;
                     }
                     field.onChange(value);
@@ -193,12 +156,7 @@ export function PassageiroFormDadosCadastrais({
                   value={field.value}
                   onValueChange={(value) => {
                     if (value === "add-new-school") {
-                      openEscolaFormDialog({
-                        allowBatchCreation: false,
-                        onSuccess: (escola) => {
-                          setNewEscola(escola);
-                        },
-                      });
+                      handleAddNewSchool();
                       return;
                     }
                     field.onChange(value);

@@ -1,163 +1,39 @@
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
-import { CheckCircle2, FileText, Send, UserX } from 'lucide-react';
-import {
-  useEffect,
-  useRef,
-  useState
-} from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { CheckCircle2, FileText, Send, UserX } from "lucide-react";
 
-import { KPICard } from '@/components/common/KPICard';
+import { KPICard } from "@/components/common/KPICard";
 import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
-import { PullToRefreshWrapper } from '@/components/navigation/PullToRefreshWrapper';
-import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 
-import { ContratosList } from '@/components/features/contrato/ContratosList';
-import { ContratosToolbar } from '@/components/features/contrato/ContratosToolbar';
+import { ContratosList } from "@/components/features/contrato/ContratosList";
+import { ContratosToolbar } from "@/components/features/contrato/ContratosToolbar";
 
-import { ROUTES } from '@/constants/routes';
-import { useLayout } from '@/contexts/LayoutContext';
-import {
-  useContratos,
-  useContratosKPIs,
-  useCreateContrato,
-  useDeleteContrato,
-  usePreviewContrato,
-  useReenviarContrato,
-  useSubstituirContrato,
-} from '@/hooks/api/useContratos';
-
-import { useProfile } from '@/hooks/business/useProfile';
-import { openBrowserLink } from '@/utils/browser';
+import { useContratosViewModel } from "@/hooks";
+import { ContratoTab } from "@/types/enums";
 
 const Contratos = () => {
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openContractSetupDialog } = useLayout();
-  const { profile, isLoading: isProfileLoading } = useProfile();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [isPreviewPdfOpen, setIsPreviewPdfOpen] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const pdfUrlRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (pdfUrlRef.current) {
-        window.URL.revokeObjectURL(pdfUrlRef.current);
-      }
-    };
-  }, []);
-  const navigate = useNavigate();
-
-  const handleOpenContractSetup = () => {
-    openContractSetupDialog({
-        forceOpen: true,
-        onSuccess: (usarContratos) => {
-            if (usarContratos) {
-                refetchKPIs();
-                refetchContratos();
-            }
-        }
-    });
-  };
-
-  // Filtros e Abas
-  const activeTab = searchParams.get('tab') || 'pendentes';
-  const [busca, setBusca] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-
-  useEffect(() => {
-    const handler = setTimeout(() => setDebouncedSearch(busca), 500);
-    return () => clearTimeout(handler);
-  }, [busca]);
-
-  const handleTabChange = (val: string) => {
-    setSearchParams({ tab: val });
-  };
-
-  // Queries e Mutations
-  const { data: kpis, isLoading: isLoadingKPIs, refetch: refetchKPIs } = useContratosKPIs({
-      enabled: !!profile?.config_contrato?.usar_contratos
-  });
-  const { data: contratosRes, isLoading: isLoadingContratos, refetch: refetchContratos } = useContratos(
-    { tab: activeTab, search: debouncedSearch },
-    { enabled: !!profile?.config_contrato?.usar_contratos }
-  );
-
-  const deleteMutation = useDeleteContrato();
-  const reenviarMutation = useReenviarContrato();
-  const substituirMutation = useSubstituirContrato();
-  const createMutation = useCreateContrato();
-  const previewMutation = usePreviewContrato();
-
-  const onRefresh = async () => {
-    await Promise.all([refetchKPIs(), refetchContratos()]);
-  };
-
-  const handleVerPassageiro = (id: string) => {
-    navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS.replace(':passageiro_id', id));
-  };
-
-  const handleCopiarLink = (token: string) => {
-    const url = `${window.location.origin}/assinar/${token}`;
-    navigator.clipboard.writeText(url);
-  };
-
-  const handleVisualizarLink = (token: string) => {
-    openBrowserLink(`${window.location.origin}/assinar/${token}`);
-  };
-
-  const handleVisualizarFinal = (url: string) => {
-    openBrowserLink(url);
-  };
-
-  const handleExcluir = (id: string) => {
-    openConfirmationDialog({
-      title: 'Excluir Contrato?',
-      description: 'Tem certeza que deseja excluir este contrato? Esta ação não pode ser desfeita.',
-      confirmText: 'Excluir',
-      variant: 'destructive',
-      onConfirm: async () => {
-        await deleteMutation.mutateAsync(id);
-        closeConfirmationDialog();
-      }
-    });
-  };
-
-  const handleSubstituir = (id: string) => {
-    openConfirmationDialog({
-      title: 'Substituir Contrato?',
-      description: 'O contrato atual será marcado como substituído e um novo será gerado com os dados atuais do passageiro. Deseja continuar?',
-      confirmText: 'Continuar',
-      onConfirm: async () => {
-        await substituirMutation.mutateAsync(id);
-        closeConfirmationDialog();
-      }
-    });
-  };
-
-  const handleGerarContrato = (passageiroId: string) => {
-    openConfirmationDialog({
-      title: 'Gerar Contrato?',
-      description: 'Deseja gerar um novo contrato para este passageiro agora?',
-      confirmText: 'Gerar',
-      onConfirm: async () => {
-        await createMutation.mutateAsync({ passageiroId });
-        closeConfirmationDialog();
-      }
-    });
-  };
-
-  const isActionLoading = 
-    deleteMutation.isPending || 
-    reenviarMutation.isPending || 
-    substituirMutation.isPending ||
-    createMutation.isPending ||
-    previewMutation.isPending;
-
-  // Handlers
-  useEffect(() => {
-    setPageTitle('Contratos');
-  }, [setPageTitle]);
+  const {
+    profile,
+    isProfileLoading,
+    activeTab,
+    busca,
+    setBusca,
+    debouncedSearch,
+    handleTabChange,
+    kpis,
+    contratos,
+    isLoading,
+    isActionLoading,
+    handleRefresh,
+    handleOpenContractSetup,
+    handleOpenPreview,
+    isPreviewPdfOpen,
+    setIsPreviewPdfOpen,
+    pdfUrl,
+    actions,
+  } = useContratosViewModel();
 
   if (isProfileLoading || !profile) {
     return (
@@ -167,38 +43,30 @@ const Contratos = () => {
     );
   }
 
-  const actions = {
-    onVerPassageiro: handleVerPassageiro,
-    onCopiarLink: handleCopiarLink,
-    onReenviarNotificacao: (id: string) => reenviarMutation.mutate(id),
-    onExcluir: handleExcluir,
-    onSubstituir: handleSubstituir,
-    onGerarContrato: handleGerarContrato,
-    onVisualizarLink: handleVisualizarLink,
-    onVisualizarFinal: handleVisualizarFinal,
-  };
-
   return (
     <>
-      <PullToRefreshWrapper onRefresh={onRefresh}>
+      <PullToRefreshWrapper onRefresh={handleRefresh}>
         <div className="space-y-6">
           {/* Feature Disabled State */}
           {!profile?.config_contrato?.usar_contratos && (
-              <UnifiedEmptyState
-                icon={FileText}
-                title="Contratos Desativados"
-                description={
-                  <div className="space-y-1">
-                    <p>Ative agora mesmo para gerar contratos e coletar assinaturas digitais.</p>
-                  </div>
-                }
-                action={{
-                  label: "Ativar Contratos",
-                  onClick: () => handleOpenContractSetup(),
-                  icon: CheckCircle2
-                }}
-                className="mt-8 border-dashed border-gray-300 bg-gray-50/50"
-              />
+            <UnifiedEmptyState
+              icon={FileText}
+              title="Contratos Desativados"
+              description={
+                <div className="space-y-1">
+                  <p>
+                    Ative agora mesmo para gerar contratos e coletar assinaturas
+                    digitais.
+                  </p>
+                </div>
+              }
+              action={{
+                label: "Ativar Contratos",
+                onClick: handleOpenContractSetup,
+                icon: CheckCircle2,
+              }}
+              className="mt-8 border-dashed border-gray-300 bg-gray-50/50"
+            />
           )}
 
           {/* Active State */}
@@ -236,58 +104,47 @@ const Contratos = () => {
                 />
               </div>
 
-              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <ContratosToolbar 
+              <Tabs
+                value={activeTab}
+                onValueChange={handleTabChange}
+                className="w-full"
+              >
+                <ContratosToolbar
                   busca={busca}
                   setBusca={setBusca}
                   activeTab={activeTab}
-                   countPendentes={kpis?.pendentes}
-                   countAssinados={kpis?.assinados}
+                  countPendentes={kpis?.pendentes}
+                  countAssinados={kpis?.assinados}
                   countSemContrato={kpis?.semContrato}
                   onOpenConfig={handleOpenContractSetup}
-                  onOpenPreview={async () => {
-                    try {
-                        const result = await previewMutation.mutateAsync({});
-                        
-                        // Cleanup
-                        if (pdfUrlRef.current) {
-                            window.URL.revokeObjectURL(pdfUrlRef.current);
-                        }
-                        
-                        pdfUrlRef.current = result.url;
-                        setPdfUrl(result.url);
-                        setIsPreviewPdfOpen(true);
-                    } catch (err) {
-                        // Handled by mutation
-                    }
-                  }}
+                  onOpenPreview={handleOpenPreview}
                 />
 
-                <TabsContent value="pendentes" className="mt-0">
-                  <ContratosList 
-                    data={contratosRes?.data || []} 
-                    isLoading={isLoadingContratos} 
-                    activeTab="pendentes"
+                <TabsContent value={ContratoTab.PENDENTES} className="mt-0">
+                  <ContratosList
+                    data={contratos}
+                    isLoading={isLoading}
+                    activeTab={ContratoTab.PENDENTES}
                     busca={debouncedSearch}
                     {...actions}
                   />
                 </TabsContent>
 
-                <TabsContent value="assinados" className="mt-0">
-                  <ContratosList 
-                    data={contratosRes?.data || []} 
-                    isLoading={isLoadingContratos} 
-                    activeTab="assinados"
+                <TabsContent value={ContratoTab.ASSINADOS} className="mt-0">
+                  <ContratosList
+                    data={contratos}
+                    isLoading={isLoading}
+                    activeTab={ContratoTab.ASSINADOS}
                     busca={debouncedSearch}
                     {...actions}
                   />
                 </TabsContent>
 
-                <TabsContent value="sem_contrato" className="mt-0">
-                  <ContratosList 
-                    data={contratosRes?.data || []} 
-                    isLoading={isLoadingContratos} 
-                    activeTab="sem_contrato"
+                <TabsContent value={ContratoTab.SEM_CONTRATO} className="mt-0">
+                  <ContratosList
+                    data={contratos}
+                    isLoading={isLoading}
+                    activeTab={ContratoTab.SEM_CONTRATO}
                     busca={debouncedSearch}
                     {...actions}
                   />
@@ -298,8 +155,8 @@ const Contratos = () => {
         </div>
       </PullToRefreshWrapper>
 
-       <LoadingOverlay active={isActionLoading} text="Processando..." />
-      <PdfPreviewDialog 
+      <LoadingOverlay active={isActionLoading} text="Processando..." />
+      <PdfPreviewDialog
         isOpen={isPreviewPdfOpen}
         onClose={() => setIsPreviewPdfOpen(false)}
         pdfUrl={pdfUrl}

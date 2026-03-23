@@ -1,3 +1,4 @@
+import { Passageiro } from "@/types/passageiro";
 import { moneyToNumber } from "@/utils/masks";
 import { cleanString } from "@/utils/string";
 import { apiClient } from "./client";
@@ -5,32 +6,32 @@ import { apiClient } from "./client";
 const endpointBase = "/passageiros";
 
 export const passageiroApi = {
-  listPassageiros: (usuarioId: string, filtros?: Record<string, any>) =>
+  listPassageiros: (usuarioId: string, filtros?: Record<string, any>): Promise<Passageiro[]> =>
     apiClient
       .get(`${endpointBase}/usuario/${usuarioId}`, { params: filtros })
       .then(res => res.data),
 
-  getPassageiro: (passageiroId: string) =>
+  getPassageiro: (passageiroId: string): Promise<Passageiro> =>
     apiClient
       .get(`${endpointBase}/${passageiroId}`)
       .then(res => res.data),
 
-  deletePassageiro: (passageiroId: string) =>
+  deletePassageiro: (passageiroId: string): Promise<void> =>
     apiClient
       .delete(`${endpointBase}/${passageiroId}`)
       .then(res => res.data),
 
-  getNumeroCobrancas: (passageiroId: string) =>
+  getNumeroCobrancas: (passageiroId: string): Promise<number> =>
     apiClient
       .get(`${endpointBase}/${passageiroId}/numero-cobrancas`)
       .then(res => res.data.numeroCobrancas),
 
-  toggleAtivo: (passageiroId: string, novoStatus: boolean) =>
+  toggleAtivo: (passageiroId: string, novoStatus: boolean): Promise<Passageiro> =>
     apiClient
       .patch(`${endpointBase}/${passageiroId}/toggle-ativo`, { novoStatus })
       .then(res => res.data),
 
-  updatePassageiro: (passageiroId: string, data: any) => {
+  updatePassageiro: (passageiroId: string, data: any): Promise<Passageiro> => {
     const payload: any = { ...data };
 
     if (data.valor_cobranca !== undefined) payload.valor_cobranca = moneyToNumber(data.valor_cobranca);
@@ -47,7 +48,7 @@ export const passageiroApi = {
       .then(res => res.data);
   },
 
-  createPassageiro: (data: any) => {
+  createPassageiro: (data: any): Promise<Passageiro> => {
     const payload = {
       ...data,
       valor_cobranca: moneyToNumber(data.valor_cobranca),
@@ -65,7 +66,7 @@ export const passageiroApi = {
       .then(res => res.data);
   },
 
-  finalizePreCadastro: (prePassageiroId: string, data: any, usuarioId: string) => {
+  finalizePreCadastro: (prePassageiroId: string, data: any, usuarioId: string): Promise<{ success: boolean; passageiro: Passageiro }> => {
     const payload = {
       ...data,
       valor_cobranca: moneyToNumber(data.valor_cobranca),

@@ -47,6 +47,15 @@ export interface OpenVeiculoFormProps {
   allowBatchCreation?: boolean;
 }
 
+export interface OpenCobrancaFormProps {
+  passageiroId: string;
+  passageiroNome?: string;
+  passageiroResponsavelNome?: string;
+  valorCobranca?: number;
+  diaVencimento?: number;
+  onSuccess?: () => void;
+}
+
 export interface OpenCobrancaEditDialogProps {
   onSuccess?: () => void;
   cobranca: any; // Using any to avoid complex type issues for now, can be Cobranca
@@ -75,9 +84,18 @@ export interface OpenFirstChargeDialogProps {
   onSuccess?: () => void;
 }
 
+export interface OpenCobrancaHistoryProps {
+  cobrancaId: string;
+  passageiroNome: string;
+}
+
 export interface OpenContractSetupDialogProps {
     forceOpen?: boolean;
     onSuccess?: (usarContratos?: boolean) => void;
+}
+
+export interface OpenReceiptDialogProps {
+  url?: string | null;
 }
 
 export interface LayoutContextType {
@@ -96,10 +114,18 @@ export interface LayoutContextType {
   closeCobrancaDeleteDialog: () => void;
   openCobrancaEditDialog: (props: OpenCobrancaEditDialogProps) => void;
   openManualPaymentDialog: (props: OpenManualPaymentDialogProps) => void;
+  openCobrancaFormDialog: (props: OpenCobrancaFormProps) => void;
   openFirstChargeDialog: (props: OpenFirstChargeDialogProps) => void;
+  openCobrancaHistoryDialog: (props: OpenCobrancaHistoryProps) => void;
+  openReceiptDialog: (props: OpenReceiptDialogProps) => void;
   isFirstChargeDialogOpen: boolean;
   
   openContractSetupDialog: (props?: OpenContractSetupDialogProps) => void;
+  
+  // Perfil / Conta
+  openAlterarSenhaDialog: () => void;
+  openEditarCadastroDialog: () => void;
+  openDeleteAccountDialog: () => void;
 }
 
 export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);

@@ -1,57 +1,20 @@
-// React
-import { ROUTES } from "@/constants/routes";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-
-// Components - Features
-import { VeiculosList } from "@/components/features/veiculo/VeiculosList";
-import { VeiculosToolbar } from "@/components/features/veiculo/VeiculosToolbar";
-
-// Components - Empty & Skeletons
+import { Car } from "lucide-react";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { ListSkeleton } from "@/components/skeletons";
-
-// Components - Navigation
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-
-// Components - UI
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-
-// Hooks
-import { useLayout } from "@/contexts/LayoutContext";
-import {
-  useCreateVeiculo,
-  useDeleteVeiculo,
-  useFilters,
-  useToggleAtivoVeiculo,
-  useVeiculos,
-} from "@/hooks";
-import { useProfile } from "@/hooks/business/useProfile";
-import { useSession } from "@/hooks/business/useSession";
-
-// Utils
-import { mockGenerator } from "@/utils/mocks/generator";
-import { toast } from "@/utils/notifications/toast";
-
-// Types
-import { Veiculo } from "@/types/veiculo";
-
-// Icons
-import { Car } from "lucide-react";
+import { VeiculosList } from "@/components/features/veiculo/VeiculosList";
+import { VeiculosToolbar } from "@/components/features/veiculo/VeiculosToolbar";
+import { useVeiculosViewModel } from "@/hooks";
 
 export default function Veiculos() {
-  const { setPageTitle, openConfirmationDialog, closeConfirmationDialog, openVeiculoFormDialog } = useLayout();
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const deleteVeiculo = useDeleteVeiculo();
-  const toggleAtivoVeiculo = useToggleAtivoVeiculo();
-
-  const isActionLoading =
-    deleteVeiculo.isPending || toggleAtivoVeiculo.isPending;
-
   const {
+    isLoading,
+    isVeiculosLoading,
+    isActionLoading,
+    veiculos,
     searchTerm,
     setSearchTerm,
     selectedStatus,
@@ -59,162 +22,21 @@ export default function Veiculos() {
     clearFilters,
     hasActiveFilters,
     setFilters,
-  } = useFilters();
-  const { user } = useSession();
-  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
-  const navigate = useNavigate();
-  const createVeiculo = useCreateVeiculo();
+    handleCadastrarRapido,
+    handleEdit,
+    handleDeleteClick,
+    handleToggleAtivo,
+    handleRegister,
+    openVeiculoFormDialog,
+    refetch,
+    navigate,
+  } = useVeiculosViewModel();
 
-  const handleCadastrarRapido = useCallback(async () => {
-    if (!profile?.id) return;
-    
-    // Create new object to avoid reference issues
-    const fakeVeiculo = { ...mockGenerator.veiculo() };
-    
-    const oldPlate = fakeVeiculo.placa;
-    const suffix = Math.floor(Math.random() * 100).toString().padStart(2, '0');
-    // Replace last 2 chars
-    fakeVeiculo.placa = oldPlate.substring(0, oldPlate.length - 2) + suffix;
+  const handleRefresh = async () => {
+    await refetch();
+  };
 
-    try {
-        await createVeiculo.mutateAsync({
-            usuarioId: profile.id,
-            data: {
-                ...fakeVeiculo,
-                ativo: true
-            }
-        });
-    } catch (error) {
-        console.error("Failed to create fake vehicle", error);
-    }
-  }, [profile?.id, createVeiculo]);
-
-  /* Debounce Logic */
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 400);
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
-
-  const {
-    data: veiculosData,
-    isLoading: isVeiculosLoading,
-    refetch: refetchVeiculos,
-  } = useVeiculos(
-    {
-      usuarioId: profile?.id,
-      search: debouncedSearchTerm,
-      status: selectedStatus,
-    },
-    {
-      enabled: !!profile?.id,
-      onError: () => toast.error("veiculo.erro.carregar"),
-    }
-  );
-
-  const veiculos = useMemo(
-    () =>
-      (
-        veiculosData as
-          | {
-              list?: (Veiculo & { passageiros_ativos_count?: number })[];
-              ativas?: number;
-            }
-          | undefined
-      )?.list ?? ([] as (Veiculo & { passageiros_ativos_count?: number })[]),
-    [veiculosData]
-  );
-
-  useEffect(() => {
-    setPageTitle("Veículos");
-  }, [setPageTitle]);
-
-  const veiculosFiltrados = veiculos;
-
-  // Check for openModal param on mount
-  useEffect(() => {
-     const openModal = searchParams.get("openModal");
-     if (openModal === "true") {
-         openVeiculoFormDialog({
-            onSuccess: () => {
-                 navigate(ROUTES.PRIVATE.MOTORISTA.HOME, { replace: true });
-            }
-         });
-     }
-  }, [searchParams, openVeiculoFormDialog, navigate]);
-
-  const handleEdit = useCallback((veiculo: Veiculo) => {
-    openVeiculoFormDialog({
-        editingVeiculo: veiculo
-    });
-  }, [openVeiculoFormDialog]);
-
-  const handleDeleteClick = useCallback((veiculo: Veiculo) => {
-    if (veiculo.passageiros_ativos_count > 0) {
-      toast.error("veiculo.erro.excluir", {
-        description: "veiculo.erro.excluirComPassageiros",
-      });
-      return;
-    }
-    
-    openConfirmationDialog({
-      title: "veiculo.confirmar.excluir",
-      description: "veiculo.confirmar.excluirDescricao",
-      confirmText: "Excluir",
-      variant: "destructive",
-      onConfirm: async () => {
-         try {
-           await deleteVeiculo.mutateAsync(veiculo.id);
-           closeConfirmationDialog();
-         } catch (error) {
-           closeConfirmationDialog();
-         }
-      }
-    });
-  }, [deleteVeiculo, openConfirmationDialog, closeConfirmationDialog]);
-
-  const handleToggleAtivo = useCallback(
-    async (veiculo: Veiculo) => {
-      if (!profile?.id) return;
-
-      const novoStatus = !veiculo.ativo;
-
-      if (!novoStatus && veiculo.passageiros_ativos_count > 0) {
-        toast.error("veiculo.erro.desativar", {
-          description: "veiculo.erro.desativarComPassageiros",
-        });
-        return;
-      }
-
-      const action = novoStatus ? "Ativar" : "Desativar";
-      openConfirmationDialog({
-        title: novoStatus ? "veiculo.confirmar.ativar" : "veiculo.confirmar.desativar",
-        description: novoStatus 
-          ? "veiculo.confirmar.ativarDescricao"
-          : "veiculo.confirmar.desativarDescricao",
-        confirmText: action,
-        variant: novoStatus ? "success" : "warning",
-        onConfirm: async () => {
-          try {
-            await toggleAtivoVeiculo.mutateAsync({ id: veiculo.id, novoStatus });
-            closeConfirmationDialog();
-          } catch (error) {
-            console.error(error);
-            closeConfirmationDialog();
-          }
-        },
-      });
-    },
-    [profile?.id, toggleAtivoVeiculo, openConfirmationDialog, closeConfirmationDialog]
-  );
-
-  const pullToRefreshReload = useCallback(async () => {
-    await refetchVeiculos();
-  }, [refetchVeiculos]);
-
-  if (isProfileLoading || !profile) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
         <p>Carregando informações...</p>
@@ -224,7 +46,7 @@ export default function Veiculos() {
 
   return (
     <>
-      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
+      <PullToRefreshWrapper onRefresh={handleRefresh}>
         <div className="space-y-6">
           <Card className="border-none shadow-none bg-transparent">
             <CardHeader className="p-0">
@@ -258,15 +80,13 @@ export default function Veiculos() {
                   onClearFilters={clearFilters}
                   hasActiveFilters={hasActiveFilters}
                   onApplyFilters={setFilters}
-                  onRegister={() => {
-                    openVeiculoFormDialog({ allowBatchCreation: true });
-                  }}
+                  onRegister={handleRegister}
                 />
               </div>
 
               {isVeiculosLoading ? (
                 <ListSkeleton />
-              ) : veiculosFiltrados.length === 0 ? (
+              ) : veiculos.length === 0 ? (
                 <UnifiedEmptyState
                   icon={Car}
                   title="Nenhum veículo encontrado"
@@ -288,7 +108,7 @@ export default function Veiculos() {
                 />
               ) : (
                 <VeiculosList
-                  veiculos={veiculosFiltrados}
+                  veiculos={veiculos}
                   navigate={navigate}
                   onEdit={handleEdit}
                   onToggleAtivo={handleToggleAtivo}

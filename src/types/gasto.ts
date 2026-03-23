@@ -1,3 +1,5 @@
+import { GastoCategoria } from "./enums";
+
 export interface Gasto {
   id: string;
   created_at: string;
@@ -14,12 +16,4 @@ export interface Gasto {
   } | null;
 };
 
-export const CATEGORIAS_GASTOS = [
-  "Salário",
-  "Combustível",
-  "Manutenção",
-  "Vistorias",
-  "Documentação",
-  "Administrativa",
-  "Outro",
-];
+export const CATEGORIAS_GASTOS = Object.values(GastoCategoria);

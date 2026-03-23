@@ -27,24 +27,20 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useRegistrarPagamentoManual } from "@/hooks";
+import { PAYMENT_METHODS } from "@/constants/paymentMethods";
+import { useManualPaymentViewModel } from "@/hooks/ui/useManualPaymentViewModel";
 import { cn } from "@/lib/utils";
 import { CobrancaStatus } from "@/types/enums";
 import {
     getStatusColor,
-    getStatusText,
-    parseCurrencyToNumber
+    getStatusText
 } from "@/utils/formatters";
-import { moneyMask } from "@/utils/masks";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon, CreditCard, Loader2, User, Wallet, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { useEffect } from "react";
 
-interface ManualPaymentDialogProps {
+export interface ManualPaymentDialogProps {
   isOpen: boolean;
   onClose: () => void;
   cobrancaId: string;
@@ -56,20 +52,6 @@ interface ManualPaymentDialogProps {
   onPaymentRecorded: () => void;
 }
 
-const paymentSchema = z.object({
-  valor_pago: z
-    .string()
-    .min(1, "Campo obrigatório")
-    .refine((val) => parseCurrencyToNumber(val) > 0, {
-      message: "O valor deve ser maior que 0",
-    }),
-  data_pagamento: z.date({
-    required_error: "A data de pagamento é obrigatória.",
-  }),
-  tipo_pagamento: z.string().min(1, "A forma de pagamento é obrigatória."),
-});
-
-type PaymentFormData = z.infer<typeof paymentSchema>;
 
 export default function ManualPaymentDialog({
   isOpen,
@@ -82,28 +64,13 @@ export default function ManualPaymentDialog({
   dataVencimento,
   onPaymentRecorded,
 }: ManualPaymentDialogProps) {
-  const registrarPagamento = useRegistrarPagamentoManual();
-  const [openCalendar, setOpenCalendar] = useState(false);
-
-  const form = useForm<PaymentFormData>({
-    resolver: zodResolver(paymentSchema),
-    defaultValues: {
-      valor_pago: "",
-      data_pagamento: new Date(),
-      tipo_pagamento: "",
-    },
+  const { form, openCalendar, setOpenCalendar, handleSubmit, isPending } = useManualPaymentViewModel({
+    isOpen,
+    onClose,
+    cobrancaId,
+    valorOriginal,
+    onPaymentRecorded,
   });
-
-  useEffect(() => {
-    if (isOpen) {
-      const valorEmCentavos = Math.round(Number(valorOriginal) * 100);
-      form.reset({
-        valor_pago: moneyMask(String(valorEmCentavos)),
-        data_pagamento: new Date(),
-        tipo_pagamento: "",
-      });
-    }
-  }, [isOpen, valorOriginal, form]);
 
   // Cleanup effect to ensure body is unlocked when dialog closes
   useEffect(() => {
@@ -117,23 +84,7 @@ export default function ManualPaymentDialog({
     }
   }, [isOpen]);
 
-  const handleSubmit = async (data: PaymentFormData) => {
-    const pagamentoData = {
-      valor_pago: data.valor_pago,
-      data_pagamento: data.data_pagamento.toISOString(),
-      tipo_pagamento: data.tipo_pagamento,
-    };
 
-    registrarPagamento.mutate(
-      { cobrancaId, data: pagamentoData },
-      {
-        onSuccess: () => {
-          onPaymentRecorded();
-          onClose();
-        },
-      }
-    );
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -290,18 +241,14 @@ export default function ManualPaymentDialog({
                         </div>
                       </FormControl>
                       <SelectContent className="max-h-60 overflow-y-auto">
-                        <SelectItem value="dinheiro">Dinheiro</SelectItem>
-                        <SelectItem value="PIX">PIX</SelectItem>
-                        <SelectItem value="cartao-credito">
-                          Cartão de Crédito
-                        </SelectItem>
-                        <SelectItem value="cartao-debito">
-                          Cartão de Débito
-                        </SelectItem>
-                        <SelectItem value="transferencia">
-                          Transferência
-                        </SelectItem>
-                        <SelectItem value="boleto">Boleto</SelectItem>
+                        {PAYMENT_METHODS.map((method) => (
+                          <SelectItem key={method.value} value={method.value}>
+                            <div className="flex items-center gap-2">
+                              {method.icon}
+                              <span>{method.label}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -317,7 +264,7 @@ export default function ManualPaymentDialog({
             type="button"
             variant="outline"
             onClick={onClose}
-            disabled={registrarPagamento.isPending}
+            disabled={isPending}
             className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
           >
             Cancelar
@@ -325,10 +272,10 @@ export default function ManualPaymentDialog({
           <Button
             type="button"
             onClick={form.handleSubmit(handleSubmit)}
-            disabled={registrarPagamento.isPending}
+            disabled={isPending}
             className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:-translate-y-0.5"
           >
-            {registrarPagamento.isPending ? (
+            {isPending ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Registrando...

@@ -40,11 +40,11 @@ export function useVeiculos(
     refetchOnMount: true,
     refetchOnWindowFocus: false,
     placeholderData: (previousData) => previousData,
-    queryFn: async () => {
+    queryFn: async (): Promise<(Veiculo & { passageiros_ativos_count?: number })[]> => {
       if (!usuarioId) return [];
 
       const data = await veiculoApi.listVeiculosComContagemAtivos(usuarioId, apiFilters);
-      return (data as (Veiculo & { passageiros_ativos_count?: number })[]) ?? [];
+      return data ?? [];
     },
     select: (veiculos) => {
       const list = veiculos ?? [];

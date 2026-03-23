@@ -3,6 +3,7 @@ import { useCobrancas, useEscolas, useGastos, usePassageiros, useVeiculos } from
 import { useUsuarioResumo } from "@/hooks/api/useUsuarioResumo";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useRelatoriosCalculations } from "@/hooks/business/useRelatoriosCalculations";
+import { RelatorioTab } from "@/types/enums";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -13,8 +14,8 @@ export function useRelatoriosViewModel() {
   // 1. URL State Management (Tabs)
   const activeTab = useMemo(() => {
     const tabParam = searchParams.get("tab");
-    const validTabs = ["visao-geral", "entradas", "saidas", "operacional"];
-    return tabParam && validTabs.includes(tabParam) ? tabParam : "visao-geral";
+    const validTabs = Object.values(RelatorioTab) as string[];
+    return tabParam && validTabs.includes(tabParam) ? tabParam : RelatorioTab.VISAO_GERAL;
   }, [searchParams]);
 
   const setActiveTab = useCallback((value: string) => {
@@ -26,7 +27,7 @@ export function useRelatoriosViewModel() {
   // Sync default tab
   useEffect(() => {
     if (!searchParams.get("tab")) {
-      setActiveTab("visao-geral");
+      setActiveTab(RelatorioTab.VISAO_GERAL);
     }
   }, [searchParams, setActiveTab]);
 
@@ -49,7 +50,6 @@ export function useRelatoriosViewModel() {
   const usuarioId = profile?.id;
 
   // Always fetch Summary (Base for Visão Geral and Metadata)
-  // RefetchOnMount: "always" guarantees freshness on navigation as requested
   const { 
     data: systemSummary, 
     refetch: refetchSummary, 
@@ -57,9 +57,9 @@ export function useRelatoriosViewModel() {
   } = useUsuarioResumo(usuarioId, { mes, ano });
 
   // Conditional Fetches based on Active Tab
-  const shouldFetchEntradas = activeTab === "entradas";
-  const shouldFetchSaidas = activeTab === "saidas";
-  const shouldFetchOperacional = activeTab === "operacional";
+  const shouldFetchEntradas = activeTab === RelatorioTab.ENTRADAS;
+  const shouldFetchSaidas = activeTab === RelatorioTab.SAIDAS;
+  const shouldFetchOperacional = activeTab === RelatorioTab.OPERACIONAL;
 
   const { data: cobrancasData, refetch: refetchCobrancas } = useCobrancas(
     { usuarioId, mes, ano },
@@ -72,7 +72,6 @@ export function useRelatoriosViewModel() {
   );
 
   // Operational Data (Passageiros/Escolas/Veiculos) - Needed for 'Operacional'
-  // Note: Veiculos is also needed for 'Saidas' to map expenses
   const { data: passageirosData, refetch: refetchPassageiros } = usePassageiros(
     { usuarioId },
     { enabled: !!usuarioId && shouldFetchOperacional }
@@ -90,7 +89,7 @@ export function useRelatoriosViewModel() {
 
   // 4. Data Processing (Calculations)
   const dados = useRelatoriosCalculations({
-    financeiro: systemSummary?.financeiro, // Prioritize backend summary
+    financeiro: systemSummary?.financeiro,
     cobrancasData: shouldFetchEntradas ? cobrancasData : undefined,
     gastosData: shouldFetchSaidas ? gastosData : undefined,
     passageirosData: shouldFetchOperacional ? passageirosData : undefined,
@@ -98,8 +97,6 @@ export function useRelatoriosViewModel() {
     veiculosData: (shouldFetchOperacional || shouldFetchSaidas) ? veiculosData : undefined,
     profile,
   });
-
-
 
   const refreshAll = useCallback(async () => {
     const promises: Promise<any>[] = [refetchSummary()];
@@ -137,6 +134,6 @@ export function useRelatoriosViewModel() {
     dados,
     
     // Status
-    isLoading: isLoadingSummary // Main loading state
+    isLoading: isLoadingSummary
   };
 }

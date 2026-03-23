@@ -10,7 +10,6 @@ import {
 import { ROUTES } from "@/constants/routes";
 import { useNavigate, useParams } from "react-router-dom";
 
-import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
 
 import { CarteirinhaSkeleton } from "@/components/skeletons";
 
@@ -82,11 +81,11 @@ export default function PassageiroCarteirinha() {
     openPassageiroFormDialog,
     openCobrancaDeleteDialog,
     openCobrancaEditDialog,
+    openCobrancaFormDialog,
     openManualPaymentDialog,
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
-  const [cobrancaDialogOpen, setCobrancaDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const updatePassageiro = useUpdatePassageiro();
@@ -607,7 +606,17 @@ export default function PassageiroCarteirinha() {
                       mostrarTodasCobrancas={mostrarTodasCobrancas}
                       limiteCobrancasMobile={COBRANCAS_LIMIT}
                       onYearChange={setYearFilter}
-                      onOpenCobrancaDialog={() => setCobrancaDialogOpen(true)}
+                       onOpenCobrancaDialog={() => {
+                        if (!passageiro_id) return;
+                        openCobrancaFormDialog({
+                          passageiroId: passageiro_id,
+                          passageiroNome: passageiro?.nome,
+                          passageiroResponsavelNome: passageiro?.nome_responsavel,
+                          valorCobranca: Number(passageiro?.valor_cobranca),
+                          diaVencimento: Number(passageiro?.dia_vencimento),
+                          onSuccess: refetchCobrancas,
+                        });
+                      }}
                       onNavigateToCobranca={(id) =>
                         navigate(
                            ROUTES.PRIVATE.MOTORISTA.PASSENGER_BILLING.replace(
@@ -641,15 +650,7 @@ export default function PassageiroCarteirinha() {
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Aguarde..." />
 
-      <CobrancaDialog
-        isOpen={cobrancaDialogOpen}
-        onClose={() => setCobrancaDialogOpen(false)}
-        passageiroId={passageiro_id}
-        passageiroNome={passageiro?.nome}
-        passageiroResponsavelNome={passageiro?.nome_responsavel}
-        valorCobranca={Number(passageiro?.valor_cobranca)}
-        diaVencimento={Number(passageiro?.dia_vencimento)}
-      />
+      <LoadingOverlay active={isActionLoading} text="Aguarde..." />
     </>
   );
 }

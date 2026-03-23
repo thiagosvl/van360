@@ -1,5 +1,3 @@
-import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
-import EditarCadastroDialog from "@/components/dialogs/EditarCadastroDialog";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import {
   DropdownMenu,
@@ -34,9 +32,11 @@ import { useNavigate } from "react-router-dom";
 
 export function AppNavbar({ role }: { role: "motorista" }) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const { pageTitle } = useLayout();
-  const [openAlterarSenha, setOpenAlterarSenha] = useState(false);
-  const [openEditarCadasto, setOpenEditarCadasto] = useState(false);
+  const { 
+    pageTitle, 
+    openAlterarSenhaDialog, 
+    openEditarCadastroDialog 
+  } = useLayout();
 
   const [isSigningOut, setIsSigningOut] = useState(false);
   const navigate = useNavigate();
@@ -113,46 +113,35 @@ export function AppNavbar({ role }: { role: "motorista" }) {
           </div>
 
           <div className="flex items-center gap-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 rounded-full border border-transparent px-2 py-1 text-left hover:bg-slate-100">
-                  <div className="h-10 w-10 rounded-full bg-primary/5 border border-primary/10 text-primary/60 flex items-center justify-center font-semibold uppercase">
-                    <span>{userInitial}</span>
-                  </div>
-                  <ChevronDown className="h-4 w-4 hidden sm:inline text-slate-400" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end">
-                <DropdownMenuItem onClick={() => setOpenEditarCadasto(true)}>
-                  <UserPen className="mr-2 h-4 w-4" /> Editar Perfil
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setOpenAlterarSenha(true)}>
-                  <Lock className="mr-2 h-4 w-4" /> Alterar senha
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="text-red-500"
-                >
-                  <LogOut className="mr-2 h-4 w-4" /> Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 rounded-full border border-transparent px-2 py-1 text-left hover:bg-slate-100">
+                    <div className="h-10 w-10 rounded-full bg-primary/5 border border-primary/10 text-primary/60 flex items-center justify-center font-semibold uppercase">
+                      <span>{userInitial}</span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 hidden sm:inline text-slate-400" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end">
+                  <DropdownMenuItem onClick={openEditarCadastroDialog}>
+                    <UserPen className="mr-2 h-4 w-4" /> Editar Perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={openAlterarSenhaDialog}>
+                    <Lock className="mr-2 h-4 w-4" /> Alterar senha
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    className="text-red-500"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" /> Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </header>
-
-      {openAlterarSenha && (
-        <AlterarSenhaDialog
-          isOpen={openAlterarSenha}
-          onClose={() => safeCloseDialog(() => setOpenAlterarSenha(false))}
-        />
-      )}
-      {openEditarCadasto && (
-        <EditarCadastroDialog
-          isOpen={openEditarCadasto}
-          onClose={() => safeCloseDialog(() => setOpenEditarCadasto(false))}
-        />
-      )}
     </>
   );
 }

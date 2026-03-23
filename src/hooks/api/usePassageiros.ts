@@ -48,7 +48,7 @@ export function usePassageiros(
     staleTime: 1000 * 60,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
-    queryFn: async () => {
+    queryFn: async (): Promise<Passageiro[]> => {
       if (!filters.usuarioId) return [];
 
       const data = await passageiroApi.listPassageiros(
@@ -56,7 +56,7 @@ export function usePassageiros(
         normalizedFilters
       );
 
-      return (data as Passageiro[]) ?? [];
+      return data ?? [];
     },
     select: (passageiros): {
       list: Passageiro[];

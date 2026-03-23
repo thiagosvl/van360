@@ -1,4 +1,3 @@
-import DeleteAccountDialog from "@/components/dialogs/DeleteAccountDialog";
 import { PhoneInput } from "@/components/forms";
 import {
   Accordion,
@@ -24,6 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useLayout } from "@/contexts/LayoutContext";
 import { emailSchema, phoneSchema } from "@/schemas/common";
 import { usuarioApi } from "@/services/api/usuario.api";
 import { cpfMask as maskCpf, phoneMask as maskPhone } from "@/utils/masks";
@@ -54,13 +54,18 @@ export default function EditarCadastroDialog({
   isOpen,
   onClose,
 }: EditarCadastroDialogProps) {
+  const {
+    pageTitle,
+    openAlterarSenhaDialog,
+    openEditarCadastroDialog,
+    openDeleteAccountDialog
+  } = useLayout();
   const { user } = useSession();
   const { profile, isLoading, refreshProfile } = useProfile(user?.id);
   
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "dados-pessoais",
   ]);
-  const [openDeleteAccount, setOpenDeleteAccount] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(basicSchema),
@@ -279,7 +284,7 @@ export default function EditarCadastroDialog({
                 <Button 
                     type="button" 
                     variant="outline" 
-                    onClick={() => setOpenDeleteAccount(true)}
+                    onClick={openDeleteAccountDialog}
                     className="w-full border-red-200 text-red-600 hover:bg-red-100 hover:text-red-700 hover:border-red-300 transition-colors"
                 >
                     Excluir minha conta
@@ -288,12 +293,6 @@ export default function EditarCadastroDialog({
           </div>
         </div>
         
-        {openDeleteAccount && (
-            <DeleteAccountDialog 
-                isOpen={openDeleteAccount} 
-                onClose={() => setOpenDeleteAccount(false)}
-            />
-        )}
 
         <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
           <Button

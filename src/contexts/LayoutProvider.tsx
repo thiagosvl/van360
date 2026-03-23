@@ -1,24 +1,40 @@
+import AlterarSenhaDialog from "@/components/dialogs/AlterarSenhaDialog";
 import CobrancaDeleteDialog from "@/components/dialogs/CobrancaDeleteDialog";
+import CobrancaDialog from "@/components/dialogs/CobrancaDialog";
 import CobrancaEditDialog from "@/components/dialogs/CobrancaEditDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog";
 import ContractSetupDialog from "@/components/dialogs/ContractSetupDialog";
+import EditarCadastroDialog from "@/components/dialogs/EditarCadastroDialog";
 import EscolaFormDialog from "@/components/dialogs/EscolaFormDialog";
 import FirstChargeDialog from "@/components/dialogs/FirstChargeDialog";
 import GastoFormDialog from "@/components/dialogs/GastoFormDialog";
 import ManualPaymentDialog from "@/components/dialogs/ManualPaymentDialog";
 import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
+import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
+import DeleteAccountDialog from "@/components/dialogs/DeleteAccountDialog";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { useContractGuard } from "@/hooks/ui/useContractGuard";
+import { ActivityTimeline } from "@/components/common/ActivityTimeline";
+import { History } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { AtividadeEntidadeTipo, PassageiroFormModes } from "@/types/enums";
 
-import { PassageiroFormModes } from "@/types/enums";
 import { ReactNode, useEffect, useState } from "react";
 import {
   LayoutContext,
   OpenCobrancaDeleteDialogProps,
   OpenCobrancaEditDialogProps,
+  OpenCobrancaFormProps,
+  OpenCobrancaHistoryProps,
   OpenConfirmationDialogProps,
   OpenContractSetupDialogProps,
   OpenEscolaFormProps,
@@ -26,6 +42,7 @@ import {
   OpenGastoFormProps,
   OpenManualPaymentDialogProps,
   OpenPassageiroFormProps,
+  OpenReceiptDialogProps,
   OpenVeiculoFormProps,
 } from "./LayoutContext";
 
@@ -107,9 +124,30 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     open: false,
   });
 
+  const [cobrancaFormDialogState, setCobrancaFormDialogState] = useState<{
+    open: boolean;
+    props?: OpenCobrancaFormProps;
+  }>({
+    open: false,
+  });
+
   const [firstChargeDialogState, setFirstChargeDialogState] = useState<{
     open: boolean;
     props?: OpenFirstChargeDialogProps;
+  }>({
+    open: false,
+  });
+
+  const [cobrancaHistoryDialogState, setCobrancaHistoryDialogState] = useState<{
+    open: boolean;
+    props?: OpenCobrancaHistoryProps;
+  }>({
+    open: false,
+  });
+
+  const [receiptDialogState, setReceiptDialogState] = useState<{
+    open: boolean;
+    props?: OpenReceiptDialogProps;
   }>({
     open: false,
   });
@@ -120,6 +158,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   }>({
     open: false,
   });
+  
+  const [alterarSenhaDialogOpen, setAlterarSenhaDialogOpen] = useState(false);
+  const [editarCadastroDialogOpen, setEditarCadastroDialogOpen] = useState(false);
+  const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
 
   useContractGuard({
     profile,
@@ -192,12 +234,23 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const openFirstChargeDialog = (props: OpenFirstChargeDialogProps) => {
-    setFirstChargeDialogState({
+  const openCobrancaFormDialog = (props: OpenCobrancaFormProps) => {
+    setCobrancaFormDialogState({
       open: true,
       props,
     });
   };
+
+  const openFirstChargeDialog = (props: OpenFirstChargeDialogProps) => setFirstChargeDialogState({ open: true, props });
+  const closeFirstChargeDialog = () => safeCloseDialog(() => setFirstChargeDialogState(prev => ({ ...prev, open: false })));
+
+  const openCobrancaHistoryDialog = (props: OpenCobrancaHistoryProps) => setCobrancaHistoryDialogState({ open: true, props });
+  const closeCobrancaHistoryDialog = () => safeCloseDialog(() => setCobrancaHistoryDialogState(prev => ({ ...prev, open: false })));
+
+  const openReceiptDialog = (props: OpenReceiptDialogProps) => setReceiptDialogState({ open: true, props });
+  const closeReceiptDialog = () => safeCloseDialog(() => setReceiptDialogState(prev => ({ ...prev, open: false })));
+
+  const openContractSetupDialog = (props?: OpenContractSetupDialogProps) => setContractSetupDialogState({ open: true, props });
 
   return (
     <LayoutContext.Provider
@@ -216,10 +269,15 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         closeCobrancaDeleteDialog,
         openCobrancaEditDialog,
         openManualPaymentDialog,
+        openCobrancaFormDialog,
         openFirstChargeDialog,
+        openCobrancaHistoryDialog,
+        openReceiptDialog,
         isFirstChargeDialogOpen: firstChargeDialogState.open,
-        openContractSetupDialog: (props?: OpenContractSetupDialogProps) =>
-          setContractSetupDialogState({ open: true, props }),
+        openContractSetupDialog,
+        openAlterarSenhaDialog: () => setAlterarSenhaDialogOpen(true),
+        openEditarCadastroDialog: () => setEditarCadastroDialogOpen(true),
+        openDeleteAccountDialog: () => setDeleteAccountDialogOpen(true),
       }}
     >
       {children}
@@ -411,6 +469,67 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         />
       )}
 
+      {cobrancaFormDialogState.open && cobrancaFormDialogState.props && (
+        <CobrancaDialog
+          isOpen={true}
+          onClose={() =>
+            safeCloseDialog(() =>
+              setCobrancaFormDialogState((prev) => ({ ...prev, open: false })),
+            )
+          }
+          onCobrancaAdded={() => {
+            cobrancaFormDialogState.props?.onSuccess?.();
+            setCobrancaFormDialogState((prev) => ({ ...prev, open: false }));
+          }}
+          passageiroId={cobrancaFormDialogState.props.passageiroId}
+          passageiroNome={cobrancaFormDialogState.props.passageiroNome}
+          passageiroResponsavelNome={
+            cobrancaFormDialogState.props.passageiroResponsavelNome
+          }
+          valorCobranca={cobrancaFormDialogState.props.valorCobranca}
+          diaVencimento={cobrancaFormDialogState.props.diaVencimento}
+        />
+      )}
+
+      {cobrancaHistoryDialogState.open && cobrancaHistoryDialogState.props && (
+        <Dialog 
+          open={true} 
+          onOpenChange={(open) => {
+            if (!open) closeCobrancaHistoryDialog();
+          }}
+        >
+          <DialogContent className="w-[calc(100%-2rem)] max-w-sm rounded-2xl p-0 overflow-hidden border-0 shadow-2xl">
+            <DialogHeader className="px-5 pt-5 pb-4 border-b border-gray-100">
+              <DialogTitle className="text-base font-bold flex items-center gap-2">
+                <History className="w-4 h-4 text-indigo-600" />
+                Histórico da Mensalidade
+              </DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="max-h-[60vh]">
+              <div className="px-5 py-4">
+                {cobrancaHistoryDialogState.props && (
+                  <ActivityTimeline
+                    entidadeTipo={AtividadeEntidadeTipo.COBRANCA}
+                    entidadeId={cobrancaHistoryDialogState.props.cobrancaId}
+                    limit={10}
+                  />
+                )}
+              </div>
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {receiptDialogState.open && receiptDialogState.props && (
+        <ReceiptDialog
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) closeReceiptDialog();
+          }}
+          url={receiptDialogState.props.url}
+        />
+      )}
+
       {firstChargeDialogState.open && firstChargeDialogState.props && (
         <FirstChargeDialog
           isOpen={true}
@@ -427,6 +546,27 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         onClose={() => setContractSetupDialogState({ open: false })}
         onSuccess={contractSetupDialogState.props?.onSuccess}
       />
+
+      {alterarSenhaDialogOpen && (
+        <AlterarSenhaDialog
+          isOpen={alterarSenhaDialogOpen}
+          onClose={() => safeCloseDialog(() => setAlterarSenhaDialogOpen(false))}
+        />
+      )}
+
+      {editarCadastroDialogOpen && (
+        <EditarCadastroDialog
+          isOpen={editarCadastroDialogOpen}
+          onClose={() => safeCloseDialog(() => setEditarCadastroDialogOpen(false))}
+        />
+      )}
+
+      {deleteAccountDialogOpen && (
+        <DeleteAccountDialog
+          isOpen={deleteAccountDialogOpen}
+          onClose={() => safeCloseDialog(() => setDeleteAccountDialogOpen(false))}
+        />
+      )}
     </LayoutContext.Provider>
   );
 };

@@ -1,8 +1,7 @@
 import { apiClient } from '@/services/api/client';
+import { ContratoProvider, ContratoStatus } from '@/types/enums';
 import { toast } from '@/utils/notifications/toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-
-export type ContratoStatus = 'pendente' | 'assinado' | 'substituido';
 
 export interface PublicContract {
   id: string;
@@ -12,7 +11,7 @@ export interface PublicContract {
   minuta_url: string;
   contrato_url?: string;
   contrato_final_url?: string;
-  provider: 'inhouse' | 'assinafy';
+  provider: ContratoProvider;
   created_at: string;
 }
 

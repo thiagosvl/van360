@@ -17,7 +17,6 @@ export const ROUTES = {
     }, 
     MOTORISTA: {
       HOME: "/inicio",
-      SUBSCRIPTION: "/assinatura",
       PASSENGERS: "/passageiros",
       PASSENGER_DETAILS: "/passageiros/:passageiro_id",
       PASSENGER_BILLING: "/mensalidades/:cobranca_id",

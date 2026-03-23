@@ -1,165 +1,46 @@
-import { ROUTES } from "@/constants/routes";
-import {
-    Copy,
-    CopyCheck,
-    CreditCard,
-    DollarSign,
-    FileText,
-    Plus,
-    TrendingDown,
-    UserCheck,
-    Users,
-    Wallet,
-} from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { useQueryClient } from "@tanstack/react-query";
-
-import { getMessage } from "@/constants/messages";
-import { useLayout } from "@/contexts/LayoutContext";
-import {
-    useProfile,
-    useSession,
-} from "@/hooks";
-import { cn } from "@/lib/utils";
-import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
-import { formatCurrency } from "@/utils/formatters/currency";
-
+import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
 import { MiniKPI } from "@/components/features/home/MiniKPI";
-import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
-import {
-    PassageiroFormModes
-} from "@/types/enums";
+import { ROUTES } from "@/constants/routes";
+import { useDashboardViewModel } from "@/hooks";
+import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/utils/formatters/currency";
 import { getMesNome } from "@/utils/formatters";
+import {
+  Copy,
+  CopyCheck,
+  CreditCard,
+  DollarSign,
+  FileText,
+  Plus,
+  TrendingDown,
+  UserCheck,
+  Users,
+  Wallet,
+} from "lucide-react";
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+import { PassageiroTab } from "@/types/enums";
 
 const Home = () => {
   const {
-    setPageTitle,
-    openEscolaFormDialog,
-    openVeiculoFormDialog,
-    openPassageiroFormDialog,
-    openGastoFormDialog,
-    openFirstChargeDialog,
-  } = useLayout();
-  const { loading: isSessionLoading } = useSession();
-
-  const {
     profile,
-    isLoading: isProfileLoading,
-    summary: systemSummary,
-  } = useProfile();
+    isLoading,
+    financeiro,
+    contadores,
+    onboarding,
+    dateContext,
+    isCopied,
+    handlePullToRefresh,
+    handleCopyLink,
+    handleOpenPassageiroDialog,
+    handleOpenGastoDialog,
+    handleOpenVeiculoDialog,
+    handleOpenEscolaDialog,
+    navigateTo,
+  } = useDashboardViewModel();
 
-  const navigate = useNavigate();
-
-  const [/* novaEscolaId */, setNovaEscolaId] = useState<string | null>(null);
-  const [/* novoVeiculoId */, setNovoVeiculoId] = useState<string | null>(null);
-
-  // Financial metrics from summary
-  const recebido = systemSummary?.financeiro?.receita?.realizada ?? 0;
-  const aReceber = systemSummary?.financeiro?.receita?.pendente ?? 0;
-  const totalEmAtraso = systemSummary?.financeiro?.atrasos?.valor ?? 0;
-  const countAtrasos = systemSummary?.financeiro?.atrasos?.count ?? 0;
-
-  // Counters from summary
-  const escolasCount = systemSummary?.contadores?.escolas?.total ?? 0;
-  const veiculosCount = systemSummary?.contadores?.veiculos?.total ?? 0;
-  const passageirosCount = systemSummary?.contadores?.passageiros?.total ?? 0;
-  const passageirosAtivosCount = systemSummary?.contadores?.passageiros?.ativos ?? 0;
-  const passageirosInativosCount = systemSummary?.contadores?.passageiros?.inativos ?? 0;
-  const passageirosSolicitacoesCount = systemSummary?.contadores?.passageiros?.solicitacoes_pendentes ?? 0;
-
-  const completedSteps = [
-    veiculosCount > 0,
-    escolasCount > 0,
-    passageirosCount > 0,
-  ].filter((step) => step === true).length;
-
-  const totalSteps = 3;
-  const showOnboarding = completedSteps < totalSteps;
-
-  const dateContext = useMemo(() => {
-    const now = new Date();
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    };
-    return now.toLocaleDateString("pt-BR", options);
-  }, []);
-
-  // Effects
-  useEffect(() => {
-    if (profile?.apelido) {
-      setPageTitle(`Olá, ${profile.apelido}`);
-    } else {
-      setPageTitle("home.info.saudacaoPadrao");
-    }
-  }, [profile?.apelido, setPageTitle]);
-
-  const queryClient = useQueryClient();
-
-  const handlePullToRefresh = async () => {
-    await Promise.all([queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] })]);
-  };
-
-  const [isCopied, setIsCopied] = useState(false);
-
-  const handleCopyLink = () => {
-    if (!profile?.id) return;
-
-    try {
-      navigator.clipboard.writeText(buildPrepassageiroLink(profile?.id));
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch (error) {
-      console.error("Erro ao copiar link:", error);
-    }
-  };
-
-  const handleSuccessFormPassageiro = useCallback((passageiro?: any) => {
-    setNovoVeiculoId(null);
-    setNovaEscolaId(null);
-    if (passageiro) {
-      openFirstChargeDialog({ passageiro });
-    }
-  }, [openFirstChargeDialog]);
-
-  const handleOpenPassageiroDialog = useCallback(() => {
-    openPassageiroFormDialog({
-      mode: PassageiroFormModes.CREATE,
-      onSuccess: handleSuccessFormPassageiro,
-    });
-  }, [openPassageiroFormDialog, handleSuccessFormPassageiro]);
-
-  const handleOpenGastoDialog = useCallback(() => {
-    openGastoFormDialog({
-      onSuccess: () => {},
-    });
-  }, [openGastoFormDialog]);
-
-  const handleEscolaCreated = useCallback(
-    (novaEscola: any, keepOpen?: boolean) => {
-      queryClient.invalidateQueries({ queryKey: ["escolas"] });
-      if (keepOpen) return;
-      setNovaEscolaId(novaEscola.id);
-    },
-    [queryClient],
-  );
-
-  const handleVeiculoCreated = useCallback(
-    (novoVeiculo: any, keepOpen?: boolean) => {
-      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
-      if (keepOpen) return;
-      setNovoVeiculoId(novoVeiculo.id);
-    },
-    [queryClient],
-  );
-
-  if (isSessionLoading || isProfileLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -177,27 +58,27 @@ const Home = () => {
               {dateContext}
             </p>
             <p className="text-xs text-gray-400 mt-0.5">
-              {countAtrasos > 0
-                ? `${countAtrasos} ${getMessage("home.info.passageirosEmAtraso")}`
-                : getMessage("home.info.semPendencias")}
+              {financeiro.countAtrasos > 0
+                ? `${financeiro.countAtrasos} passageiros em atraso`
+                : "Tudo em dia por aqui!"}
             </p>
           </div>
 
           {/* Notificação de Solicitações Pendentes */}
-          {passageirosSolicitacoesCount > 0 && (
+          {contadores.passageirosSolicitacoes > 0 && (
             <section className="mb-4">
               <DashboardStatusCard
                 type="info"
                 title="Solicitações Pendentes"
                 description={
-                  passageirosSolicitacoesCount === 1
+                  contadores.passageirosSolicitacoes === 1
                     ? "Você tem 1 solicitação de novo passageiro aguardando aprovação."
-                    : `Você tem ${passageirosSolicitacoesCount} solicitações de novos passageiros aguardando aprovação.`
+                    : `Você tem ${contadores.passageirosSolicitacoes} solicitações de novos passageiros aguardando aprovação.`
                 }
                 actionLabel="Ver Solicitações"
                 onAction={() =>
-                  navigate(
-                    `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=solicitacoes`,
+                  navigateTo(
+                    `${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`,
                   )
                 }
               />
@@ -205,47 +86,30 @@ const Home = () => {
           )}
 
           {/* Onboarding - Primeiros Passos */}
-          {showOnboarding && (
+          {onboarding.showOnboarding && (
             <section>
               <QuickStartCard
-                onOpenVeiculoDialog={() => {
-                  openVeiculoFormDialog({
-                    allowBatchCreation: true,
-                    onSuccess: handleVeiculoCreated,
-                  });
-                }}
-                onOpenEscolaDialog={() => {
-                  openEscolaFormDialog({
-                    allowBatchCreation: true,
-                    onSuccess: handleEscolaCreated,
-                  });
-                }}
-                onOpenPassageiroDialog={() => {
-                  openPassageiroFormDialog({
-                    mode: PassageiroFormModes.CREATE,
-                    onSuccess: (passageiro) => {
-                      handleSuccessFormPassageiro(passageiro);
-                    },
-                  });
-                }}
+                onOpenVeiculoDialog={handleOpenVeiculoDialog}
+                onOpenEscolaDialog={handleOpenEscolaDialog}
+                onOpenPassageiroDialog={handleOpenPassageiroDialog}
               />
             </section>
           )}
 
           {/* Notificação de Mensalidades pendentes / em dia */}
-          {!showOnboarding && recebido > 0 && (
+          {!onboarding.showOnboarding && financeiro.recebido > 0 && (
             <section>
-              {countAtrasos > 0 ? (
+              {financeiro.countAtrasos > 0 ? (
                 <DashboardStatusCard
                   type="pending"
                   title="Passageiros em Atraso"
                   description={`Você tem ${formatCurrency(
-                    totalEmAtraso,
-                  )} em atraso de ${countAtrasos} passageiro${
-                    countAtrasos != 1 ? "s" : ""
+                    financeiro.totalEmAtraso,
+                  )} em atraso de ${financeiro.countAtrasos} passageiro${
+                    financeiro.countAtrasos != 1 ? "s" : ""
                   } referente ao mês de ${getMesNome(new Date().getMonth() + 1)}.`}
                   actionLabel="Ver Mensalidades"
-                  onAction={() => navigate(ROUTES.PRIVATE.MOTORISTA.BILLING)}
+                  onAction={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.BILLING)}
                 />
               ) : (
                 <DashboardStatusCard
@@ -261,30 +125,28 @@ const Home = () => {
           <div
             className={cn(
               "grid gap-4",
-              showOnboarding
+              onboarding.showOnboarding
                 ? "grid-cols-1 sm:grid-cols-1"
                 : "grid-cols-1 sm:grid-cols-3",
             )}
           >
-            {!showOnboarding && (
+            {!onboarding.showOnboarding && (
               <>
                 <MiniKPI
                   label="Recebido"
-                  value={formatCurrency(recebido)}
+                  value={formatCurrency(financeiro.recebido)}
                   icon={DollarSign}
                   colorClass="text-emerald-600"
                   bgClass="bg-emerald-50"
-                  loading={isProfileLoading}
                 />
                 <MiniKPI
                   label="A receber"
-                  value={formatCurrency(aReceber)}
+                  value={formatCurrency(financeiro.aReceber)}
                   icon={Wallet}
                   colorClass={
-                    aReceber > 0 ? "text-orange-600" : "text-gray-400"
+                    financeiro.aReceber > 0 ? "text-orange-600" : "text-gray-400"
                   }
-                  bgClass={aReceber > 0 ? "bg-orange-50" : "bg-gray-50"}
-                  loading={isProfileLoading}
+                  bgClass={financeiro.aReceber > 0 ? "bg-orange-50" : "bg-gray-50"}
                 />
               </>
             )}
@@ -292,14 +154,13 @@ const Home = () => {
             <MiniKPI
               className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative"
               label="Passageiros Ativos"
-              value={passageirosAtivosCount}
+              value={contadores.passageirosAtivos}
               icon={Users}
               colorClass="text-blue-600"
               bgClass="bg-blue-50"
-              subtext={`${passageirosInativosCount} inativo${
-                passageirosInativosCount !== 1 ? "s" : ""
+              subtext={`${contadores.passageirosInativos} inativo${
+                contadores.passageirosInativos !== 1 ? "s" : ""
               }`}
-              loading={isProfileLoading}
             />
           </div>
 
@@ -363,7 +224,7 @@ const Home = () => {
                 bgClass="bg-blue-50"
               />
               <ShortcutCard
-                to={`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=solicitacoes`}
+                to={`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`}
                 icon={UserCheck}
                 label="Solicitações"
                 colorClass="text-pink-600"

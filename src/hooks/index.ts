@@ -9,6 +9,19 @@ export { safeCloseDialog, useDialogClose } from "./ui/useDialogClose";
 export { useFilters } from "./ui/useFilters";
 export { useIsMobile } from "./ui/useIsMobile";
 export { useLoadingState } from "./ui/useLoadingState";
+export { useManualPaymentViewModel } from "./ui/useManualPaymentViewModel";
+export { useFirstChargeViewModel } from "./ui/useFirstChargeViewModel";
+export { usePassageirosViewModel } from "./ui/usePassageirosViewModel";
+export { useCobrancasViewModel } from "./ui/useCobrancasViewModel";
+export { useDashboardViewModel } from "./ui/useDashboardViewModel";
+export { useEscolasViewModel } from "./ui/useEscolasViewModel";
+export { useVeiculosViewModel } from "./ui/useVeiculosViewModel";
+export { useGastosViewModel } from "./ui/useGastosViewModel";
+export { useRelatoriosViewModel } from "./ui/useRelatoriosViewModel";
+export { useContratosViewModel } from "./ui/useContratosViewModel";
+export { useAssinarContratoViewModel } from "./ui/useAssinarContratoViewModel";
+export { usePassageiroFormViewModel } from "./ui/usePassageiroFormViewModel";
+export { usePassageiroFormDadosCadastraisViewModel } from "./ui/usePassageiroFormDadosCadastraisViewModel";
 
 // Form hooks
 export { usePassageiroForm } from "./form/usePassageiroForm";

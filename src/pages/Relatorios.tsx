@@ -7,6 +7,8 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRelatoriosViewModel } from "@/hooks/ui/useRelatoriosViewModel";
 
+import { RelatorioTab } from "@/types/enums";
+
 export default function Relatorios() {
   const {
     mes,
@@ -36,25 +38,25 @@ export default function Relatorios() {
             <div className="w-full overflow-x-auto pb-2 -mb-2 scrollbar-hide">
               <TabsList className="bg-slate-100/80 p-1 rounded-xl h-10 md:h-12 inline-flex w-auto min-w-full md:min-w-0">
                 <TabsTrigger
-                  value="visao-geral"
+                  value={RelatorioTab.VISAO_GERAL}
                   className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none whitespace-nowrap"
                 >
                   Visão Geral
                 </TabsTrigger>
                 <TabsTrigger
-                  value="entradas"
+                  value={RelatorioTab.ENTRADAS}
                   className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none whitespace-nowrap"
                 >
                   Entradas
                 </TabsTrigger>
                 <TabsTrigger
-                  value="saidas"
+                  value={RelatorioTab.SAIDAS}
                   className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none whitespace-nowrap"
                 >
                   Saídas
                 </TabsTrigger>
                 <TabsTrigger
-                  value="operacional"
+                  value={RelatorioTab.OPERACIONAL}
                   className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none whitespace-nowrap"
                 >
                   Operacional
@@ -64,25 +66,23 @@ export default function Relatorios() {
           </div>
 
           {/* Aba 1: Visão Geral */}
-          <TabsContent value="visao-geral">
+          <TabsContent value={RelatorioTab.VISAO_GERAL}>
             <RelatoriosVisaoGeral dados={dados.visaoGeral} />
           </TabsContent>
 
           {/* Aba 2: Entradas */}
-          <TabsContent value="entradas">
+          <TabsContent value={RelatorioTab.ENTRADAS}>
             <RelatoriosEntradas dados={dados.entradas} />
           </TabsContent>
 
           {/* Aba 3: Saídas */}
-          <TabsContent value="saidas">
+          <TabsContent value={RelatorioTab.SAIDAS}>
             <RelatoriosSaidas dados={dados.saidas} />
           </TabsContent>
 
-          {/* Aba 4: Operacional */}
-          <TabsContent value="operacional">
+          <TabsContent value={RelatorioTab.OPERACIONAL}>
             <RelatoriosOperacional
               dados={dados.operacional}
-              automacao={dados.automacao}
             />
           </TabsContent>
         </Tabs>

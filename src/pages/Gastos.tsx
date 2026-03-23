@@ -1,30 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
-
-import { toast } from "@/utils/notifications/toast";
-
+import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
+import { DateNavigation } from "@/components/common/DateNavigation";
+import { KPICard } from "@/components/common/KPICard";
+import { ListSkeleton } from "@/components/skeletons/ListSkeleton";
+import { GastosList } from "@/components/features/financeiro/GastosList";
+import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-
-import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-
-import { DateNavigation } from "@/components/common/DateNavigation";
-import { KPICard } from "@/components/common/KPICard";
-
-import { GastosList } from "@/components/features/financeiro/GastosList";
-import { GastosToolbar } from "@/components/features/financeiro/GastosToolbar";
-
-import { useLayout } from "@/contexts/LayoutContext";
-import { useDeleteGasto, useFilters, useGastos, useVeiculos } from "@/hooks";
-import { useGastosCalculations } from "@/hooks/business/useGastosCalculations";
-import { useProfile } from "@/hooks/business/useProfile";
-
+import { useGastosViewModel } from "@/hooks";
 import { cn } from "@/lib/utils";
-
-
-import { CATEGORIAS_GASTOS, Gasto } from "@/types/gasto";
-
+import { CATEGORIAS_GASTOS } from "@/types/gasto";
 import {
     CalendarIcon,
     TrendingDown,
@@ -34,132 +19,36 @@ import {
 
 export default function Gastos() {
   const {
-    setPageTitle,
-    openGastoFormDialog,
-    openConfirmationDialog,
-    closeConfirmationDialog,
-  } = useLayout();
-  const deleteGasto = useDeleteGasto();
-
-  const isActionLoading = deleteGasto.isPending;
-
-  const {
-    searchTerm,
-    setSearchTerm,
-    selectedMes: mesFilter = new Date().getMonth() + 1,
-    setSelectedMes,
-    selectedAno: anoFilter = new Date().getFullYear(),
-    setSelectedAno,
-    selectedCategoria: categoriaFilter = "todas",
-    setSelectedCategoria,
-    selectedVeiculo: veiculoFilter = "todos",
-    setSelectedVeiculo,
-    setFilters
-  } = useFilters({
-    mesParam: "mes",
-    anoParam: "ano",
-    categoriaParam: "categoria",
-    veiculoParam: "veiculo",
-    searchParam: "search",
-  });
-
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
-
-  const {
-    profile,
-    isLoading: isAuthLoading,
-  } = useProfile();
-  const loadingActions = isAuthLoading;
-
-  const {
-    data: gastos = [],
-    isLoading: isGastosLoading,
-    isFetching: isGastosFetching,
-    refetch: refetchGastos,
-  } = useGastos(
-    {
-      usuarioId: profile?.id,
-      mes: mesFilter,
-      ano: anoFilter,
-      categoria: categoriaFilter !== "todas" ? categoriaFilter : undefined,
-      veiculoId: veiculoFilter !== "todos" ? veiculoFilter : undefined,
-      search: debouncedSearchTerm,
-    },
-    {
-      enabled: !!profile?.id,
-      onError: () => toast.error("gasto.erro.carregar"),
-    }
-  );
-
-  const { data: veiculosData } = useVeiculos({ usuarioId: profile?.id }, {
-    enabled: !!profile?.id,
-  });
-  const veiculos = veiculosData?.list || [];
-
-  const displayData = useGastosCalculations({
-    gastos,
     mesFilter,
     anoFilter,
+    categoriaFilter,
+    veiculoFilter,
     searchTerm,
-    loadingActions,
-  });
+    setSearchTerm,
+    setSelectedMes,
+    setSelectedAno,
+    setSelectedCategoria,
+    setSelectedVeiculo,
+    setFilters,
+    gastos,
+    totalGasto,
+    mediaDiaria,
+    principalCategoriaData,
+    isLoading,
+    isActionLoading,
+    handleRefresh,
+    handleDelete,
+    handleOpenForm,
+    veiculos,
+    isProfileLoading,
+  } = useGastosViewModel();
 
-  useEffect(() => {
-    setPageTitle("Controle de Gastos");
-  }, [setPageTitle]);
-
-  const handleDelete = useCallback(
-    async (id: string) => {
-      openConfirmationDialog({
-        title: "Excluir gasto?",
-        description:
-          "Tem certeza que deseja excluir este registro de gasto? Essa ação não poderá ser desfeita.",
-        confirmText: "Excluir",
-        variant: "destructive",
-        onConfirm: async () => {
-          try {
-            await deleteGasto.mutateAsync(id);
-            closeConfirmationDialog();
-          } catch (error) {
-            closeConfirmationDialog();
-          }
-        },
-      });
-    },
-    [
-      openConfirmationDialog,
-      deleteGasto,
-      closeConfirmationDialog,
-    ]
-  );
-
-  const openDialog = useCallback(
-    (gasto: Gasto | null = null) => {
-      openGastoFormDialog({
-        gastoToEdit: gasto,
-        veiculos: veiculos.map((v) => ({ id: v.id, placa: v.placa })),
-        usuarioId: profile?.id,
-      });
-    },
-    [openGastoFormDialog, veiculos, profile?.id]
-  );
-
-  const pullToRefreshReload = async () => {
-    await refetchGastos();
-  };
-
-  const loading = isGastosLoading || isGastosFetching;
+  const loading = isLoading;
+  const loadingActions = isProfileLoading;
 
   return (
     <>
-      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
+      <PullToRefreshWrapper onRefresh={handleRefresh}>
         <div>
           <div className="space-y-6 md:space-y-8">
             {/* 1. Header & Navigation */}
@@ -168,8 +57,8 @@ export default function Gastos() {
                 mes={mesFilter}
                 ano={anoFilter}
                 onNavigate={(m, a) => {
-                  if (setSelectedMes) setSelectedMes(m);
-                  if (setSelectedAno) setSelectedAno(a);
+                  setSelectedMes(m);
+                  setSelectedAno(a);
                 }}
                 disabled={false}
               />
@@ -179,8 +68,8 @@ export default function Gastos() {
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               <KPICard
                 title="Gasto Total"
-                value={new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(displayData.totalGasto)}
-                count={displayData.gastosFiltrados.length}
+                value={new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(totalGasto)}
+                count={gastos.length}
                 icon={TrendingDown}
                 bgClass="bg-red-50"
                 colorClass="text-red-600"
@@ -193,20 +82,20 @@ export default function Gastos() {
                 title="Top Categoria"
                 value={
                     <span className={cn(
-                        (displayData.principalCategoriaData?.name?.length >= 12)
+                        (principalCategoriaData?.name?.length || 0 >= 12)
                           ? "text-xs sm:text-lg"
                           : "text-base sm:text-lg",
                         "font-bold"
                     )}>
-                        {displayData.principalCategoriaData?.name || "-"}
+                        {principalCategoriaData?.name || "-"}
                     </span>
                 }
                 icon={TrendingUp}
                 bgClass="bg-orange-50"
                 colorClass="text-orange-600"
                 countText={
-                    displayData.principalCategoriaData
-                      ? `${Number(displayData.principalCategoriaData.percentage).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% do total`
+                    principalCategoriaData
+                      ? `${Number(principalCategoriaData.percentage).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% do total`
                       : "0% do total"
                 }
                 countVisible={true}
@@ -214,7 +103,7 @@ export default function Gastos() {
 
               <KPICard
                 title="Média Diária"
-                value={new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(displayData.mediaDiaria)}
+                value={new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(mediaDiaria)}
                 icon={CalendarIcon}
                 bgClass="bg-blue-50"
                 colorClass="text-blue-600"
@@ -232,11 +121,11 @@ export default function Gastos() {
                 <GastosToolbar
                   categoriaFilter={categoriaFilter}
                   onCategoriaChange={(val) =>
-                    setSelectedCategoria && setSelectedCategoria(val)
+                    setSelectedCategoria(val)
                   }
                   veiculoFilter={veiculoFilter}
                   onVeiculoChange={(val) =>
-                    setSelectedVeiculo && setSelectedVeiculo(val)
+                    setSelectedVeiculo(val)
                   }
                   onApplyFilters={(filters) => {
                      setFilters({
@@ -245,32 +134,28 @@ export default function Gastos() {
                      });
                   }}
                   onRegistrarGasto={() => {
-                      openDialog();
+                      handleOpenForm();
                   }}
                   categorias={CATEGORIAS_GASTOS}
-                  veiculos={veiculos.map((v) => ({ id: v.id, placa: v.placa }))}
+                  veiculos={veiculos}
                   disabled={loading || loadingActions}
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
                 />
 
                 {loading ? (
-                  <Skeleton className="h-40 w-full" />
+                  <ListSkeleton />
                 ) : (
                   <div className="relative">
                     <GastosList
-                      gastos={displayData.gastosFiltrados}
-                      onEdit={openDialog}
+                      gastos={gastos}
+                      onEdit={handleOpenForm}
                       onDelete={handleDelete}
-                      veiculos={veiculos.map((v) => ({
-                            id: v.id,
-                            placa: v.placa,
-                        }))
-                      }
+                      veiculos={veiculos}
                     />
 
                     {!loading &&
-                      displayData.gastosFiltrados.length === 0 && (
+                      gastos.length === 0 && (
                         <UnifiedEmptyState
                            icon={Wallet}
                            title="Nenhum gasto encontrado"
@@ -283,7 +168,7 @@ export default function Gastos() {
                              !searchTerm
                                ? {
                                    label: "Registrar Gasto",
-                                   onClick: () => openDialog(),
+                                   onClick: () => handleOpenForm(),
                                  }
                                : undefined
                            }

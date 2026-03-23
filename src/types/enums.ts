@@ -33,10 +33,40 @@ export enum PixKeyStatus {
 
 export enum CobrancaTipoPagamento {
   DINHEIRO = "dinheiro",
-  PIX = "pix",
+  PIX = "PIX",
   TRANSFERENCIA = "transferencia",
   BOLETO = "boleto",
-  CARTAO = "cartao"
+  CARTAO_CREDITO = "cartao-credito",
+  CARTAO_DEBITO = "cartao-debito"
+}
+
+
+export enum PassageiroTab {
+  PASSAGEIROS = "passageiros",
+  SOLICITACOES = "solicitacoes",
+}
+
+export enum CobrancaTab {
+  ARECEBER = "areceber",
+  RECEBIDOS = "recebidos",
+}
+
+export enum ContratoTab {
+  PENDENTES = "pendentes",
+  ASSINADOS = "assinados",
+  SEM_CONTRATO = "sem_contrato",
+}
+
+export enum RelatorioTab {
+  VISAO_GERAL = "visao-geral",
+  ENTRADAS = "entradas",
+  SAIDAS = "saidas",
+  OPERACIONAL = "operacional",
+}
+
+export enum FilterDefaults {
+  TODOS = "todos",
+  TODAS = "todas",
 }
 
 export enum PassageiroFormModes {
@@ -74,6 +104,13 @@ export enum ParentescoResponsavel {
   MADRASTA = "madrasta",
   RESPONSAVEL_LEGAL = "responsavel_legal",
   OUTRO = "outro"
+}
+
+export enum PassageiroPeriodo {
+  MANHA = "manha",
+  TARDE = "tarde",
+  NOITE = "noite",
+  INTEGRAL = "integral"
 }
 
 export enum AtividadeEntidadeTipo {
@@ -135,4 +172,20 @@ export enum AtividadeAcao {
   // Jobs
   COBRANCAS_GERADAS = "COBRANCAS_GERADAS",
   LOG_LIMPEZA = "LOG_LIMPEZA"
+}
+
+export enum GastoCategoria {
+  SALARIO = "Salário",
+  COMBUSTIVEL = "Combustível",
+  MANUTENCAO = "Manutenção",
+  VISTORIAS = "Vistorias",
+  DOCUMENTACAO = "Documentação",
+  ADMINISTRATIVA = "Administrativa",
+  OUTRO = "Outro"
+}
+
+export enum ContratoProvider {
+  INHOUSE = "inhouse",
+  ASSINAFY = "assinafy",
+  DOCUSIGN = "docusign"
 }

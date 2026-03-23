@@ -1,232 +1,42 @@
-import { ROUTES } from "@/constants/routes";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-
-import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
-import { EscolasList } from "@/components/features/escola/EscolasList";
-import { EscolasToolbar } from "@/components/features/escola/EscolasToolbar";
-
-import { ListSkeleton } from "@/components/skeletons";
-
+import { GraduationCap } from "lucide-react";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-
+import { ListSkeleton } from "@/components/skeletons";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-
-import { useLayout } from "@/contexts/LayoutContext";
-import {
-    useCreateEscola,
-    useDeleteEscola,
-    useEscolas,
-    useFilters,
-    useToggleAtivoEscola,
-} from "@/hooks";
-import { useProfile } from "@/hooks/business/useProfile";
-import { useSession } from "@/hooks/business/useSession";
-
-import { mockGenerator } from "@/utils/mocks/generator";
-import { toast } from "@/utils/notifications/toast";
-
-import { Escola } from "@/types/escola";
-
-import { GraduationCap } from "lucide-react";
+import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
+import { EscolasList } from "@/components/features/escola/EscolasList";
+import { EscolasToolbar } from "@/components/features/escola/EscolasToolbar";
+import { useEscolasViewModel } from "@/hooks";
 
 export default function Escolas() {
   const {
-    setPageTitle,
-    openConfirmationDialog,
-    closeConfirmationDialog,
-    openEscolaFormDialog,
-  } = useLayout();
-  
-  const [searchParams] = useSearchParams();
-
-  const deleteEscola = useDeleteEscola();
-  const toggleAtivoEscola = useToggleAtivoEscola();
-
-  const isActionLoading = deleteEscola.isPending || toggleAtivoEscola.isPending;
-
-  const {
+    isLoading,
+    isEscolasLoading,
+    isActionLoading,
+    escolas,
     searchTerm,
     setSearchTerm,
     selectedStatus,
     setSelectedStatus,
     clearFilters,
     setFilters,
-  } = useFilters();
+    handleCadastrarRapido,
+    handleEdit,
+    handleDeleteClick,
+    handleToggleAtivo,
+    handleRegister,
+    openEscolaFormDialog,
+    refetch,
+    navigate,
+    hasActiveFilters,
+  } = useEscolasViewModel();
 
-  const { user, loading: isSessionLoading } = useSession();
-  const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
+  const handleRefresh = async () => {
+    await refetch();
+  };
 
-  const navigate = useNavigate();
-  const createEscola = useCreateEscola();
-
-  const handleCadastrarRapido = useCallback(async () => {
-    if (!profile?.id) return;
-
-    const fakeEscola = { ...mockGenerator.escola() };
-    try {
-      await createEscola.mutateAsync({
-        usuarioId: profile.id,
-        data: {
-          ...fakeEscola,
-          ativo: true,
-        },
-      });
-    } catch (error) {
-      console.error("Failed to create fake school", error);
-    }
-  }, [profile?.id, createEscola]);
-
-  /* Debounce Logic */
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 400);
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
-
-  const {
-    data: escolasData,
-    isLoading: isEscolasLoading,
-    refetch: refetchEscolas,
-  } = useEscolas(
-    {
-      usuarioId: profile?.id,
-      search: debouncedSearchTerm,
-      status: selectedStatus,
-    },
-    {
-      enabled: !!profile?.id,
-      onError: () => toast.error("escola.erro.carregar"),
-    }
-  );
-
-  const escolas = useMemo(
-    () =>
-      (
-        escolasData as
-          | {
-              list?: (Escola & { passageiros_ativos_count?: number })[];
-              ativas?: number;
-            }
-          | undefined
-      )?.list ?? ([] as (Escola & { passageiros_ativos_count?: number })[]),
-    [escolasData]
-  );
-  const countEscolasAtivas =
-    (
-      escolasData as
-        | {
-            list?: (Escola & { passageiros_ativos_count?: number })[];
-            ativas?: number;
-          }
-        | undefined
-    )?.ativas ?? null;
-
-  useEffect(() => {
-    setPageTitle("Escolas");
-  }, [countEscolasAtivas, setPageTitle]);
-
-  const escolasFiltradas = escolas;
-
-  useEffect(() => {
-    const openModal = searchParams.get("openModal");
-    if (openModal === "true") {
-      openEscolaFormDialog({
-        onSuccess: (escola) => {
-          navigate(ROUTES.PRIVATE.MOTORISTA.HOME, { replace: true });
-        },
-      });
-    }
-  }, [searchParams, openEscolaFormDialog, navigate]);
-
-  const handleEdit = useCallback(
-    (escola: Escola) => {
-      openEscolaFormDialog({
-        editingEscola: escola,
-      });
-    },
-    [openEscolaFormDialog]
-  );
-
-  const handleDeleteClick = useCallback(
-    (escola: Escola) => {
-      if (escola.passageiros_ativos_count > 0) {
-        toast.error("escola.erro.excluir", {
-          description: "escola.erro.excluirComPassageiros",
-        });
-        return;
-      }
-
-      openConfirmationDialog({
-        title: "escola.confirmar.excluir",
-        description: "escola.confirmar.excluirDescricao",
-        confirmText: "Excluir",
-        variant: "destructive",
-        onConfirm: async () => {
-          try {
-            await deleteEscola.mutateAsync(escola.id);
-            closeConfirmationDialog();
-          } catch (error) {
-            console.error(error);
-            closeConfirmationDialog();
-          }
-        },
-      });
-    },
-    [deleteEscola, openConfirmationDialog, closeConfirmationDialog]
-  );
-
-  const handleToggleAtivo = useCallback(
-    async (escola: Escola) => {
-      if (!profile?.id) return;
-
-      const novoStatus = !escola.ativo;
-
-      if (!novoStatus && escola.passageiros_ativos_count > 0) {
-        toast.error("escola.erro.desativar", {
-          description: "escola.erro.desativarComPassageiros",
-        });
-        return;
-      }
-
-      const action = novoStatus ? "Ativar" : "Desativar";
-      openConfirmationDialog({
-        title: novoStatus ? "escola.confirmar.ativar" : "escola.confirmar.desativar",
-        description: novoStatus
-          ? "A escola voltará a aparecer nas listagens ativas."
-          : "A escola deixará de aparecer nas listagens ativas. Você poderá reativá-la depois.",
-        confirmText: action,
-        variant: novoStatus ? "success" : "warning",
-        onConfirm: async () => {
-          try {
-            await toggleAtivoEscola.mutateAsync({ id: escola.id, novoStatus });
-            closeConfirmationDialog();
-          } catch (error) {
-            console.error(error);
-            closeConfirmationDialog();
-          }
-        },
-      });
-    },
-    [
-      profile?.id,
-      toggleAtivoEscola,
-      openConfirmationDialog,
-      closeConfirmationDialog,
-    ]
-  );
-
-  const pullToRefreshReload = useCallback(async () => {
-    await refetchEscolas();
-  }, [refetchEscolas]);
-
-  const hasActiveFilters = selectedStatus !== "todos" || !!searchTerm;
-
-  if (isSessionLoading || isProfileLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
         <p>Carregando informações...</p>
@@ -236,7 +46,7 @@ export default function Escolas() {
 
   return (
     <>
-      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
+      <PullToRefreshWrapper onRefresh={handleRefresh}>
         <div className="space-y-6">
           <Card className="border-none shadow-none bg-transparent">
             <CardHeader className="p-0">
@@ -270,15 +80,13 @@ export default function Escolas() {
                   onClearFilters={clearFilters}
                   hasActiveFilters={hasActiveFilters}
                   onApplyFilters={setFilters}
-                  onRegister={() => {
-                    openEscolaFormDialog({ allowBatchCreation: true });
-                  }}
+                  onRegister={handleRegister}
                 />
               </div>
 
               {isEscolasLoading ? (
                 <ListSkeleton />
-              ) : escolasFiltradas.length === 0 ? (
+              ) : escolas.length === 0 ? (
                 <UnifiedEmptyState
                   icon={GraduationCap}
                   title="Nenhuma escola encontrada"
@@ -300,7 +108,7 @@ export default function Escolas() {
                 />
               ) : (
                 <EscolasList
-                  escolas={escolasFiltradas}
+                  escolas={escolas}
                   navigate={navigate}
                   onEdit={handleEdit}
                   onToggleAtivo={handleToggleAtivo}

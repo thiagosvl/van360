@@ -1,3 +1,4 @@
+import { CreateCobrancaDTO, RegistrarPagamentoManualDTO, UpdateCobrancaDTO } from "@/types/dtos/cobranca.dto";
 import { cobrancaApi } from "@/services/api/cobranca.api";
 import { getErrorMessage } from "@/utils/errorHandler";
 import { toast } from "@/utils/notifications/toast";
@@ -7,7 +8,7 @@ export function useCreateCobranca() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => cobrancaApi.createCobranca(data),
+    mutationFn: (data: CreateCobrancaDTO) => cobrancaApi.createCobranca(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobrancas-by-passageiro"] });
@@ -38,7 +39,7 @@ export function useUpdateCobranca() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data, cobrancaOriginal }: { id: string; data: any; cobrancaOriginal?: any }) =>
+    mutationFn: ({ id, data, cobrancaOriginal }: { id: string; data: UpdateCobrancaDTO; cobrancaOriginal?: any }) =>
       cobrancaApi.updateCobranca(id, data, cobrancaOriginal),
     onError: (error: any) => {
       toast.error("cobranca.erro.atualizar", {
@@ -106,7 +107,7 @@ export function useRegistrarPagamentoManual() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ cobrancaId, data }: { cobrancaId: string; data: any }) =>
+    mutationFn: ({ cobrancaId, data }: { cobrancaId: string; data: RegistrarPagamentoManualDTO }) =>
       cobrancaApi.registrarPagamentoManual(cobrancaId, data),
     onSuccess: (updatedCobranca, { cobrancaId }) => {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"], refetchType: "active" });

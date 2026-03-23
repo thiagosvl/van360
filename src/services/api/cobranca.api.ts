@@ -1,21 +1,22 @@
+import { CreateCobrancaDTO, RegistrarPagamentoManualDTO, UpdateCobrancaDTO } from "@/types/dtos/cobranca.dto";
 import { moneyToNumber } from "@/utils/masks";
 import { apiClient } from "./client";
 
 const endpointBase = "/cobrancas";
 
 export const cobrancaApi = {
-    createCobranca: (data: any) => {
+    createCobranca: (data: CreateCobrancaDTO) => {
         const payload = {
             ...data,
-            valor: moneyToNumber(data.valor),
+            valor: typeof data.valor === 'string' ? moneyToNumber(data.valor) : data.valor,
         };
         return apiClient.post(`${endpointBase}`, payload).then(res => res.data);
     },
 
-    updateCobranca: (id: string, data: any, cobrancaOriginal?: any) => {
+    updateCobranca: (id: string, data: UpdateCobrancaDTO, cobrancaOriginal?: any) => {
         const cleanedData = {
             ...data,
-            valor: data.valor !== undefined ? moneyToNumber(data.valor) : undefined,
+            valor: data.valor !== undefined ? (typeof data.valor === 'string' ? moneyToNumber(data.valor) : data.valor) : undefined,
         };
         return apiClient.put(`${endpointBase}/${id}`, { data: cleanedData, cobrancaOriginal }).then(res => res.data);
     },
@@ -43,10 +44,10 @@ export const cobrancaApi = {
     desfazerPagamento: (cobrancaId: string) =>
         apiClient.post(`${endpointBase}/${cobrancaId}/desfazer-pagamento-manual`).then(res => res.data),
 
-    registrarPagamentoManual: (cobrancaId: string, data: any) => {
+    registrarPagamentoManual: (cobrancaId: string, data: RegistrarPagamentoManualDTO) => {
         const payload = {
             ...data,
-            valor_pago: data.valor_pago !== undefined ? moneyToNumber(data.valor_pago) : undefined,
+            valor_pago: typeof data.valor_pago === 'string' ? moneyToNumber(data.valor_pago) : data.valor_pago,
         };
         return apiClient
             .post(`${endpointBase}/${cobrancaId}/registrar-pagamento-manual`, payload)

@@ -1,13 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ContratoTab } from "@/types/enums";
 import { Eye, Search, Settings } from "lucide-react";
 import { memo } from "react";
 
 interface ContratosToolbarProps {
   busca: string;
   setBusca: (val: string) => void;
-  activeTab: string;
+  activeTab: ContratoTab;
   countPendentes?: number;
   countAssinados?: number;
   countSemContrato?: number;
@@ -32,7 +33,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
         <div className="overflow-x-auto pb-1 -mb-1 scrollbar-hide">
           <TabsList className="bg-gray-100/80 p-1 rounded-xl w-fit flex-nowrap border-0">
             <TabsTrigger
-              value="pendentes"
+              value={ContratoTab.PENDENTES}
               className="rounded-lg px-4 py-2 text-sm font-bold data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all"
             >
               Pendentes
@@ -43,7 +44,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
               )}
             </TabsTrigger>
             <TabsTrigger
-              value="assinados"
+              value={ContratoTab.ASSINADOS}
               className="rounded-lg px-4 py-2 text-sm font-bold data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm transition-all"
             >
               Assinados
@@ -54,7 +55,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
               )}
             </TabsTrigger>
             <TabsTrigger
-              value="sem_contrato"
+              value={ContratoTab.SEM_CONTRATO}
               className="rounded-lg px-4 py-2 text-sm font-bold data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm transition-all"
             >
               Sem Contrato
@@ -66,8 +67,6 @@ export const ContratosToolbar = memo(function ContratosToolbar({
             </TabsTrigger>
           </TabsList>
         </div>
-
-
 
         <div className="flex items-center gap-2 w-full md:w-auto">
           {/* Busca */}

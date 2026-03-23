@@ -7,13 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getMessage } from "@/constants/messages";
-import { useCreateCobranca } from "@/hooks/api/useCobrancaMutations";
 import { cn } from "@/lib/utils";
-import { CobrancaOrigem, CobrancaStatus } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
-import { calculateSafeDueDate, toLocalDateString } from "@/utils/dateUtils";
-import { moneyToNumber } from "@/utils/masks";
 import {
   AlertCircle,
   CheckCircle2,
@@ -22,8 +17,7 @@ import {
   Loader2,
   Wallet
 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { CobrancaStatus } from "@/types/enums";
 
 export interface FirstChargeDialogProps {
   isOpen: boolean;
@@ -31,7 +25,11 @@ export interface FirstChargeDialogProps {
   passageiro: Passageiro;
 }
 
-type Step = "REGISTER_CHECK" | "PAYMENT_STATUS" | "PAYMENT_METHOD";
+import { PAYMENT_METHODS } from "@/constants/paymentMethods";
+import {
+  FirstChargeStep as Step,
+  useFirstChargeViewModel
+} from "@/hooks/ui/useFirstChargeViewModel";
 
 const STEP_INDEX: Record<Step, number> = {
   REGISTER_CHECK: 0,
@@ -44,14 +42,19 @@ export default function FirstChargeDialog({
   onClose,
   passageiro,
 }: FirstChargeDialogProps) {
-  const [step, setStep] = useState<Step>("REGISTER_CHECK");
-  const [paymentStatus, setPaymentStatus] = useState<"PAID" | "PENDING" | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<string>("");
-  const [customValue] = useState<string>(
-    passageiro.valor_cobranca ? String(passageiro.valor_cobranca) : "",
-  );
-
-  const createCobranca = useCreateCobranca();
+  const {
+    step,
+    paymentStatus,
+    setPaymentStatus,
+    paymentMethod,
+    setPaymentMethod,
+    handleBack,
+    handleNext,
+    isLoading
+  } = useFirstChargeViewModel({
+    passageiro,
+    onClose
+  });
 
   const currentMonthName = new Date().toLocaleString("pt-BR", { month: "long" });
   const currentMonthNameCapitalized =
@@ -61,85 +64,10 @@ export default function FirstChargeDialog({
   const firstNameResponsavel = passageiro.nome_responsavel?.split(" ")[0];
 
   const stepIndex = STEP_INDEX[step];
-  const isLoading = createCobranca.isPending;
-
-  const handleBack = () => {
-    if (step === "PAYMENT_STATUS") {
-      setStep("REGISTER_CHECK");
-      setPaymentStatus(null);
-    } else if (step === "PAYMENT_METHOD") {
-      setStep("PAYMENT_STATUS");
-    }
-  };
-
-  const handleNext = async () => {
-    if (step === "REGISTER_CHECK") {
-      setStep("PAYMENT_STATUS");
-      return;
-    }
-
-    if (step === "PAYMENT_STATUS") {
-      if (!paymentStatus) return;
-      if (paymentStatus === "PAID") {
-        setStep("PAYMENT_METHOD");
-      } else {
-        await submitCobranca(CobrancaStatus.PENDENTE);
-      }
-      return;
-    }
-
-    if (step === "PAYMENT_METHOD") {
-      if (!paymentMethod) {
-        toast.error(getMessage("cobranca.erro.selecioneFormaPagamento"));
-        return;
-      }
-      await submitCobranca(CobrancaStatus.PAGO);
-    }
-  };
-
-  const submitCobranca = async (status: CobrancaStatus) => {
-    const today = new Date();
-    const vencimentoDate = calculateSafeDueDate(
-      passageiro.dia_vencimento || today.getDate(),
-      today.getMonth(),
-      today.getFullYear(),
-    );
-    const vencimento = toLocalDateString(vencimentoDate);
-
-    try {
-      let valor = passageiro.valor_cobranca || 0;
-      if (customValue) {
-        valor = moneyToNumber(customValue);
-      }
-
-      const payload: any = {
-        passageiro_id: passageiro.id,
-        usuario_id: passageiro.usuario_id,
-        valor,
-        data_vencimento: vencimento,
-        status,
-        mes: today.getMonth() + 1,
-        ano: today.getFullYear(),
-        origem: CobrancaOrigem.MANUAL,
-      };
-
-      if (status === CobrancaStatus.PAGO) {
-        payload.tipo_pagamento = paymentMethod;
-        payload.data_pagamento = new Date().toISOString();
-        payload.valor_pago = valor;
-        payload.pagamento_manual = true;
-      }
-
-      await createCobranca.mutateAsync(payload);
-      onClose();
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   const primaryButtonText = () => {
     if (step === "PAYMENT_METHOD") return "Confirmar";
-    if (step === "PAYMENT_STATUS" && paymentStatus === "PENDING") return "Registrar";
+    if (step === "PAYMENT_STATUS" && paymentStatus === CobrancaStatus.PENDENTE) return "Registrar";
     if (step === "REGISTER_CHECK") return "Sim, registrar";
     return "Próximo";
   };
@@ -148,6 +76,7 @@ export default function FirstChargeDialog({
     isLoading ||
     (step === "PAYMENT_STATUS" && !paymentStatus) ||
     (step === "PAYMENT_METHOD" && !paymentMethod);
+
 
   return (
     <Dialog open={isOpen} onOpenChange={() => { }}>
@@ -230,23 +159,23 @@ export default function FirstChargeDialog({
               <div className="space-y-3">
                 <button
                   type="button"
-                  onClick={() => setPaymentStatus("PAID")}
-                  className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-3 ${paymentStatus === "PAID"
+                  onClick={() => setPaymentStatus(CobrancaStatus.PAGO)}
+                  className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-3 ${paymentStatus === CobrancaStatus.PAGO
                     ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-200"
                     : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
                 >
                   <div
-                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${paymentStatus === "PAID" ? "bg-emerald-500" : "bg-gray-100"
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${paymentStatus === CobrancaStatus.PAGO ? "bg-emerald-500" : "bg-gray-100"
                       }`}
                   >
                     <CheckCircle2
-                      className={`w-5 h-5 ${paymentStatus === "PAID" ? "text-white" : "text-gray-500"}`}
+                      className={`w-5 h-5 ${paymentStatus === CobrancaStatus.PAGO ? "text-white" : "text-gray-500"}`}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p
-                      className={`font-semibold text-sm ${paymentStatus === "PAID" ? "text-emerald-900" : "text-gray-800"}`}
+                      className={`font-semibold text-sm ${paymentStatus === CobrancaStatus.PAGO ? "text-emerald-900" : "text-gray-800"}`}
                     >
                       Sim, já recebi
                     </p>
@@ -255,12 +184,12 @@ export default function FirstChargeDialog({
                     </p>
                   </div>
                   <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${paymentStatus === "PAID"
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${paymentStatus === CobrancaStatus.PAGO
                       ? "border-emerald-500 bg-emerald-500"
                       : "border-gray-300"
                       }`}
                   >
-                    {paymentStatus === "PAID" && (
+                    {paymentStatus === CobrancaStatus.PAGO && (
                       <div className="w-2 h-2 bg-white rounded-full" />
                     )}
                   </div>
@@ -268,23 +197,23 @@ export default function FirstChargeDialog({
 
                 <button
                   type="button"
-                  onClick={() => setPaymentStatus("PENDING")}
-                  className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-3 ${paymentStatus === "PENDING"
+                  onClick={() => setPaymentStatus(CobrancaStatus.PENDENTE)}
+                  className={`w-full p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-3 ${paymentStatus === CobrancaStatus.PENDENTE
                     ? "border-amber-500 bg-amber-50 ring-1 ring-amber-200"
                     : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
                 >
                   <div
-                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${paymentStatus === "PENDING" ? "bg-amber-500" : "bg-gray-100"
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${paymentStatus === CobrancaStatus.PENDENTE ? "bg-amber-500" : "bg-gray-100"
                       }`}
                   >
                     <AlertCircle
-                      className={`w-5 h-5 ${paymentStatus === "PENDING" ? "text-white" : "text-gray-500"}`}
+                      className={`w-5 h-5 ${paymentStatus === CobrancaStatus.PENDENTE ? "text-white" : "text-gray-500"}`}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p
-                      className={`font-semibold text-sm ${paymentStatus === "PENDING" ? "text-amber-900" : "text-gray-800"}`}
+                      className={`font-semibold text-sm ${paymentStatus === CobrancaStatus.PENDENTE ? "text-amber-900" : "text-gray-800"}`}
                     >
                       Não, ainda vai pagar
                     </p>
@@ -293,12 +222,12 @@ export default function FirstChargeDialog({
                     </p>
                   </div>
                   <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${paymentStatus === "PENDING"
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${paymentStatus === CobrancaStatus.PENDENTE
                       ? "border-amber-500 bg-amber-500"
                       : "border-gray-300"
                       }`}
                   >
-                    {paymentStatus === "PENDING" && (
+                    {paymentStatus === CobrancaStatus.PENDENTE && (
                       <div className="w-2 h-2 bg-white rounded-full" />
                     )}
                   </div>
@@ -332,23 +261,20 @@ export default function FirstChargeDialog({
                   </div>
                 </SelectTrigger>
                 <SelectContent className="max-h-[280px] rounded-2xl border-gray-100 shadow-xl p-2">
-                  {[
-                    { value: "dinheiro", label: "Dinheiro" },
-                    { value: "PIX", label: "PIX" },
-                    { value: "cartao-credito", label: "Cartão de Crédito" },
-                    { value: "cartao-debito", label: "Cartão de Débito" },
-                    { value: "transferencia", label: "Transferência" },
-                    { value: "boleto", label: "Boleto" },
-                  ].map(({ value, label }) => (
+                  {PAYMENT_METHODS.map((method) => (
                     <SelectItem
-                      key={value}
-                      value={value}
+                      key={method.value}
+                      value={method.value}
                       className="py-3 px-4 rounded-xl cursor-pointer focus:bg-gray-50 text-base"
                     >
-                      {label}
+                      <div className="flex items-center gap-2">
+                        {method.icon}
+                        <span>{method.label}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
+
               </Select>
             </div>
           )}

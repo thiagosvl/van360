@@ -27,19 +27,13 @@ export const anos = [
   },
 ];
 
+import { CobrancaTipoPagamento } from "@/types/enums";
+
 export const tiposPagamento = [
-  { value: "PIX", label: "PIX" },
-  { value: "dinheiro", label: "Dinheiro" },
-  { value: "cartao-debito", label: "Cartão de Débito" },
-  { value: "cartao-credito", label: "Cartão de Crédito" },
-  { value: "transferencia", label: "Transferência" },
-  { value: "boleto", label: "Boleto" },
+  { value: CobrancaTipoPagamento.PIX, label: "PIX" },
+  { value: CobrancaTipoPagamento.DINHEIRO, label: "Dinheiro" },
+  { value: CobrancaTipoPagamento.CARTAO_DEBITO, label: "Cartão de Débito" },
+  { value: CobrancaTipoPagamento.CARTAO_CREDITO, label: "Cartão de Crédito" },
+  { value: CobrancaTipoPagamento.TRANSFERENCIA, label: "Transferência" },
+  { value: CobrancaTipoPagamento.BOLETO, label: "Boleto Bancário" },
 ];
-
-export const periodos = [
-  { value: "integral", label: "Integral" },
-  { value: "manha", label: "Manhã" },
-  { value: "tarde", label: "Tarde" },
-  { value: "noite", label: "Noite" },
-];
-

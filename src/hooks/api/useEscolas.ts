@@ -32,11 +32,11 @@ export function useEscolas(
     refetchOnMount: true,
     refetchOnWindowFocus: false,
     placeholderData: (previousData) => previousData,
-    queryFn: async () => {
+    queryFn: async (): Promise<(Escola & { passageiros_ativos_count?: number })[]> => {
       if (!usuarioId) return [];
 
       const data = await escolaApi.listEscolasComContagemAtivos(usuarioId, apiFilters);
-      return (data as (Escola & { passageiros_ativos_count?: number })[]) ?? [];
+      return data ?? [];
     },
     select: (escolas): {
       list: (Escola & { passageiros_ativos_count?: number })[];

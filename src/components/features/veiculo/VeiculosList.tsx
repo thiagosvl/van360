@@ -39,7 +39,7 @@ export function VeiculosList({
         return (
           <MobileActionItem
             key={veiculo.id}
-            actions={actions as any}
+            actions={actions}
             showHint={index === 0}
           >
             <div

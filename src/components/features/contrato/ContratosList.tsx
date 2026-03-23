@@ -5,17 +5,17 @@ import { UnifiedEmptyState } from "@/components/empty";
 import { ListSkeleton } from "@/components/skeletons";
 import { Badge } from "@/components/ui/badge";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useContratoActions } from "@/hooks/ui/useContratoActions";
 import { cn } from "@/lib/utils";
-import { ContratoStatus } from "@/types/enums";
+import { ContratoStatus, ContratoTab } from "@/types/enums";
 import { ChevronsLeft, Eye, FileText, Send } from "lucide-react";
 import { memo } from "react";
 import { ContratoActionsMenu } from "./ContratoActionsMenu";
@@ -23,9 +23,23 @@ import { ContratoActionsMenu } from "./ContratoActionsMenu";
 interface ContratosListProps {
   data: any[];
   isLoading: boolean;
-  activeTab: string;
+  activeTab: ContratoTab;
   busca: string;
   // Ações
+  onVerPassageiro: (id: string) => void;
+  onCopiarLink: (token: string) => void;
+  onReenviarNotificacao: (id: string) => void;
+  onExcluir: (id: string) => void;
+  onSubstituir: (id: string) => void;
+  onGerarContrato: (passageiroId: string) => void;
+  onVisualizarLink: (token: string) => void;
+  onVisualizarFinal: (url: string) => void;
+}
+
+interface ContratoMobileCardProps {
+  item: any;
+  index: number;
+  activeTab: ContratoTab;
   onVerPassageiro: (id: string) => void;
   onCopiarLink: (token: string) => void;
   onReenviarNotificacao: (id: string) => void;
@@ -39,7 +53,6 @@ interface ContratosListProps {
 const ContratoMobileCard = memo(function ContratoMobileCard({
   item,
   index,
-  activeTab,
   onVerPassageiro,
   onCopiarLink,
   onReenviarNotificacao,
@@ -48,11 +61,11 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   onGerarContrato,
   onVisualizarLink,
   onVisualizarFinal,
-}: any) {
+}: ContratoMobileCardProps) {
   const actions = useContratoActions({
     item,
     tipo: item.tipo,
-    status: item.status,
+    status: item.status as ContratoStatus,
     onVerPassageiro,
     onCopiarLink,
     onReenviarNotificacao,
@@ -67,12 +80,12 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   const status = item.status;
 
   // Mapeia as ações do hook para o formato do MobileActionItem
-  const swipeActions = actions.map(action => ({
+  const swipeActions = actions.map((action) => ({
     label: action.label,
     icon: action.icon,
     onClick: action.onClick,
-    swipeColor: action.swipeColor || 'bg-gray-500',
-    isDestructive: action.isDestructive
+    swipeColor: action.swipeColor || "bg-gray-500",
+    isDestructive: action.isDestructive,
   }));
 
   return (
@@ -117,16 +130,17 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
             </span>
           </div>
           <div className="text-right">
-            
-          {!isPassageiro ? (
-             <Badge variant={status === ContratoStatus.ASSINADO ? "success" : "destructive"}>
+            {!isPassageiro ? (
+              <Badge
+                variant={
+                  status === ContratoStatus.ASSINADO ? "success" : "destructive"
+                }
+              >
                 {status === ContratoStatus.ASSINADO ? "Assinado" : "Pendente"}
-             </Badge>
-          ) : (
-            <Badge variant="secondary">
-              Sem Contrato
-            </Badge>
-          )}
+              </Badge>
+            ) : (
+              <Badge variant="secondary">Sem Contrato</Badge>
+            )}
           </div>
         </div>
       </div>
@@ -168,25 +182,28 @@ export const ContratosList = memo(function ContratosList({
       );
     }
 
-    const configs: Record<string, any> = {
-      pendentes: {
+    const configs: Record<
+      ContratoTab,
+      { icon: any; title: string; desc: string }
+    > = {
+      [ContratoTab.PENDENTES]: {
         icon: Send,
         title: "Nenhum contrato pendente",
         desc: "Todos os seus contratos foram assinados!",
       },
-      assinados: {
+      [ContratoTab.ASSINADOS]: {
         icon: Eye,
         title: "Nenhum contrato assinado",
         desc: "Aguardando assinaturas dos responsáveis.",
       },
-      sem_contrato: {
+      [ContratoTab.SEM_CONTRATO]: {
         icon: FileText,
         title: "Todos os passageiros com contrato",
         desc: "Bom trabalho! Tudo organizado.",
       },
     };
 
-    const config = configs[activeTab] || configs.pendentes;
+    const config = configs[activeTab] || configs[ContratoTab.PENDENTES];
 
     return (
       <UnifiedEmptyState

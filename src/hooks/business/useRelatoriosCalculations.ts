@@ -1,5 +1,5 @@
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
-import { periodos as periodosConstants } from "@/utils/formatters/constants";
+import { periodos as periodosConstants } from "@/utils/formatters/periodo";
 import {
     ClipboardCheck,
     Cog,
@@ -11,42 +11,54 @@ import {
 } from "lucide-react";
 import { useMemo } from "react";
 
+import { 
+    CobrancaTipoPagamento, 
+    GastoCategoria,
+    PassageiroPeriodo
+} from "@/types/enums";
+
+// Constantes para agrupamento
+const VEICULO_OUTROS = "outros";
+const PERIODO_OUTROS = "Outros";
+
 export const CATEGORIA_ICONS: Record<
   string,
   { icon: any; color: string; bg: string }
 > = {
-  Combustível: { icon: Fuel, color: "text-orange-600", bg: "bg-orange-100" },
-  Manutenção: { icon: Wrench, color: "text-blue-600", bg: "bg-blue-100" },
-  Salário: { icon: Wallet, color: "text-green-600", bg: "bg-green-100" },
-  Vistorias: {
+  [GastoCategoria.COMBUSTIVEL]: { icon: Fuel, color: "text-orange-600", bg: "bg-orange-100" },
+  [GastoCategoria.MANUTENCAO]: { icon: Wrench, color: "text-blue-600", bg: "bg-blue-100" },
+  [GastoCategoria.SALARIO]: { icon: Wallet, color: "text-green-600", bg: "bg-green-100" },
+  [GastoCategoria.VISTORIAS]: {
     icon: ClipboardCheck,
     color: "text-purple-600",
     bg: "bg-purple-100",
   },
-  Documentação: {
+  [GastoCategoria.DOCUMENTACAO]: {
     icon: FileText,
     color: "text-yellow-600",
     bg: "bg-yellow-100",
   },
-  Administrativa: {
+  [GastoCategoria.ADMINISTRATIVA]: {
     icon: Cog,
     color: "text-purple-600",
     bg: "bg-purple-100",
   },
-  Outros: { icon: HelpCircle, color: "text-gray-600", bg: "bg-gray-100" },
+  [GastoCategoria.OUTRO]: { icon: HelpCircle, color: "text-gray-600", bg: "bg-gray-100" },
 };
+
 
 export const FORMAS_PAGAMENTO_LABELS: Record<
   string,
   { label: string; color: string }
 > = {
-  pix: { label: "PIX", color: "bg-emerald-500" },
-  dinheiro: { label: "Dinheiro", color: "bg-green-500" },
-  "cartao-credito": { label: "Cartão de Crédito", color: "bg-orange-500" },
-  "cartao-debito": { label: "Cartão de Débito", color: "bg-yellow-500" },
-  transferencia: { label: "Transferência", color: "bg-blue-500" },
-  boleto: { label: "Boleto", color: "bg-purple-500" },
+  [CobrancaTipoPagamento.PIX]: { label: "PIX", color: "bg-emerald-500" },
+  [CobrancaTipoPagamento.DINHEIRO]: { label: "Dinheiro", color: "bg-green-500" },
+  [CobrancaTipoPagamento.CARTAO_CREDITO]: { label: "Cartão de Crédito", color: "bg-orange-500" },
+  [CobrancaTipoPagamento.CARTAO_DEBITO]: { label: "Cartão de Débito", color: "bg-yellow-500" },
+  [CobrancaTipoPagamento.TRANSFERENCIA]: { label: "Transferência", color: "bg-blue-500" },
+  [CobrancaTipoPagamento.BOLETO]: { label: "Boleto", color: "bg-purple-500" },
 };
+
 
 interface UseRelatoriosCalculationsProps {
   cobrancasData: any;
@@ -134,7 +146,7 @@ export const useRelatoriosCalculations = ({
     // Formas de pagamento
     const formasPagamentoMap: Record<string, { valor: number; count: number }> = {};
     cobrancasPagas.forEach((c: any) => {
-      const tipo = c.tipo_pagamento?.toLowerCase() || "";
+      const tipo = c.tipo_pagamento || "";
       if (tipo) {
         if (!formasPagamentoMap[tipo]) {
           formasPagamentoMap[tipo] = { valor: 0, count: 0 };
@@ -194,8 +206,8 @@ export const useRelatoriosCalculations = ({
     > = {};
 
     gastos.forEach((g: any) => {
-      const cat = g.categoria || "Outros";
-      const veiculoId = g.veiculo_id || "outros";
+      const cat = g.categoria || GastoCategoria.OUTRO;
+      const veiculoId = g.veiculo_id || VEICULO_OUTROS;
       const valor = Number(g.valor || 0);
 
       if (!categoriasMap[cat]) {
@@ -214,7 +226,7 @@ export const useRelatoriosCalculations = ({
     const topCategorias = Object.values(categoriasMap)
       .sort((a, b) => b.valor - a.valor)
       .map((cat) => {
-        const iconData = CATEGORIA_ICONS[cat.nome] || CATEGORIA_ICONS.Outros;
+        const iconData = CATEGORIA_ICONS[cat.nome] || CATEGORIA_ICONS[GastoCategoria.OUTRO];
         const veiculos = Object.entries(cat.veiculos).map(([vId, data]) => {
           const info = veiculosMap[vId] || { nome: "Geral / Não especificado", placa: "-" };
           return {
@@ -225,8 +237,8 @@ export const useRelatoriosCalculations = ({
             count: data.count
           };
         }).sort((a, b) => {
-          if (a.id === "outros" || a.placa === "-") return 1;
-          if (b.id === "outros" || b.placa === "-") return -1;
+          if (a.id === VEICULO_OUTROS || a.placa === "-") return 1;
+          if (b.id === VEICULO_OUTROS || b.placa === "-") return -1;
           return b.valor - a.valor;
         });
 
@@ -248,7 +260,7 @@ export const useRelatoriosCalculations = ({
     > = {};
 
     gastos.forEach((g: any) => {
-      const veiculoId = g.veiculo_id || "outros";
+      const veiculoId = g.veiculo_id || VEICULO_OUTROS;
       const valor = Number(g.valor || 0);
 
       if (!gastosPorVeiculoMap[veiculoId]) {
@@ -272,13 +284,13 @@ export const useRelatoriosCalculations = ({
         };
       })
       .sort((a, b) => {
-        if (a.veiculoId === "outros" || a.placa === "-") return 1;
-        if (b.veiculoId === "outros" || b.placa === "-") return -1;
+        if (a.veiculoId === VEICULO_OUTROS || a.placa === "-") return 1;
+        if (b.veiculoId === VEICULO_OUTROS || b.placa === "-") return -1;
         return b.valor - a.valor;
       });
 
     const temGastosVinculados = gastosPorVeiculo.some(
-      (v) => v.veiculoId !== "outros" && v.placa !== "-"
+      (v) => v.veiculoId !== VEICULO_OUTROS && v.placa !== "-"
     );
 
     // --- OPERATIONAL DATA (METADATA - Visible even if restricted) ---
@@ -346,7 +358,7 @@ export const useRelatoriosCalculations = ({
     passageirosList
       .filter((p: any) => p.ativo)
       .forEach((p: any) => {
-        const periodo = p.periodo || "Outros";
+        const periodo = p.periodo || PERIODO_OUTROS;
         if (!periodosMap[periodo]) {
           periodosMap[periodo] = { count: 0, valor: 0 };
         }
@@ -361,7 +373,7 @@ export const useRelatoriosCalculations = ({
 
     const periodos = Object.entries(periodosMap)
       .map(([value, data]) => {
-        const periodoData = periodosConstants.find((p) => p.value === value);
+        const periodoData = periodosConstants.find((p: any) => p.value === value);
         return {
           nome: periodoData?.label || value,
           passageiros: data.count,
@@ -424,3 +436,4 @@ export const useRelatoriosCalculations = ({
 
   return dados;
 };
+

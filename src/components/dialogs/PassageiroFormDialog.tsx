@@ -10,26 +10,13 @@ import { Form } from "@/components/ui/form";
 
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-  useBuscarResponsavel,
-  useCreatePassageiro,
-  useEscolasWithFilters,
-  useFinalizePreCadastro,
-  usePassageiroForm,
-  useUpdatePassageiro,
-  useVeiculosWithFilters,
+  usePassageiroFormViewModel,
 } from "@/hooks";
-import { PassageiroFormData } from "@/hooks/form/usePassageiroForm";
+import { PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { Usuario } from "@/types/usuario";
-import { convertDateBrToISO } from "@/utils/formatters/date";
-import { phoneMask } from "@/utils/masks";
-import { mockGenerator } from "@/utils/mocks/generator";
-import { toast } from "@/utils/notifications/toast";
-
-import { PassageiroFormModes } from "@/types/enums";
 import { Loader2, User, Wand2, X } from "lucide-react";
-import { useEffect } from "react";
 import { PassageiroFormDadosCadastrais } from "../features/passageiro/form/PassageiroFormDadosCadastrais";
 import { PassageiroFormEndereco } from "../features/passageiro/form/PassageiroFormEndereco";
 import { PassageiroFormFinanceiro } from "../features/passageiro/form/PassageiroFormFinanceiro";
@@ -54,186 +41,27 @@ export default function PassengerFormDialog({
   onSuccess,
   profile,
 }: PassengerFormDialogProps) {
-  const createPassageiro = useCreatePassageiro();
-  const updatePassageiro = useUpdatePassageiro();
-  const finalizePreCadastro = useFinalizePreCadastro();
-
-  // Determine includeId for lists based on mode
-  const includeEscolaId =
-    mode === PassageiroFormModes.EDIT
-      ? editingPassageiro?.escola_id
-      : mode === PassageiroFormModes.FINALIZE
-        ? prePassageiro?.escola_id
-        : undefined;
-
-  const includeVeiculoId =
-    mode === PassageiroFormModes.EDIT
-      ? editingPassageiro?.veiculo_id
-      : mode === PassageiroFormModes.FINALIZE
-        ? prePassageiro?.veiculo_id
-        : undefined;
-
-  // Fetch lists (Centralized)
-  const { data: escolasData = [] } = useEscolasWithFilters(
-    profile?.id,
-    { ativo: "true", includeId: includeEscolaId || undefined },
-    { enabled: isOpen && !!profile?.id }
-  ) as { data: import("@/types/escola").Escola[] };
-
-  const { data: veiculosData = [] } = useVeiculosWithFilters(
-    profile?.id,
-    { ativo: "true", includeId: includeVeiculoId || undefined },
-    { enabled: isOpen && !!profile?.id }
-  ) as { data: import("@/types/veiculo").Veiculo[] };
-
-  const { form, refreshing, openAccordionItems, setOpenAccordionItems } =
-    usePassageiroForm({
-      isOpen,
-      mode,
-      editingPassageiro,
-      prePassageiro,
-    });
-
-  const onFormError = (errors: any) => {
-    toast.error("validacao.formularioComErros");
-    setOpenAccordionItems([
-      "passageiro",
-      "responsavel",
-      "cobranca",
-      "endereco",
-      "observacoes",
-    ]);
-  };
-
-  const buscarResponsavel = useBuscarResponsavel();
-
-  const handleSearchResponsavel = async (cpf: string) => {
-    if (mode === PassageiroFormModes.EDIT || mode === PassageiroFormModes.FINALIZE) return;
-    if (cpf.length !== 11 || !profile?.id) return;
-
-    try {
-      const responsavel = await buscarResponsavel.mutateAsync({
-        cpf,
-      });
-
-      if (responsavel) {
-        form.setValue("nome_responsavel", responsavel.nome_responsavel || "");
-        form.setValue("email_responsavel", responsavel.email_responsavel || "");
-        form.setValue(
-          "telefone_responsavel",
-          phoneMask(responsavel.telefone_responsavel) || ""
-        );
-      }
-    } catch (error) {
-      // Silencioso se não encontrar ou erro
-    }
-  };
-
-  // Monitorar mudanças no CPF para busca automática
-  const cpfResponsavelValue = form.watch("cpf_responsavel");
-  useEffect(() => {
-    if (
-      cpfResponsavelValue &&
-      cpfResponsavelValue.replace(/\D/g, "").length === 11
-    ) {
-      handleSearchResponsavel(cpfResponsavelValue.replace(/\D/g, ""));
-    }
-  }, [cpfResponsavelValue]);
-
-  const handleFillMock = () => {
-    const currentValues = form.getValues();
-
-    // Auto-pick school and vehicle if empty and lists are available
-    let escolaId = currentValues.escola_id;
-    if (!escolaId && escolasData.length > 0) {
-      escolaId = escolasData[Math.floor(Math.random() * escolasData.length)].id;
-    }
-
-    let veiculoId = currentValues.veiculo_id;
-    if (!veiculoId && veiculosData.length > 0) {
-      veiculoId = veiculosData[Math.floor(Math.random() * veiculosData.length)].id;
-    }
-
-    const mockData = mockGenerator.passenger({
-      escola_id: escolaId,
-      veiculo_id: veiculoId,
-    });
-
-    form.reset(mockData);
-
-    // Abrir todos os accordions para mostrar os dados preenchidos
-    setOpenAccordionItems([
-      "passageiro",
-      "responsavel",
-      "cobranca",
-      "endereco",
-      "observacoes",
-    ]);
-  };
-
-  const handleSubmit = async (data: PassageiroFormData) => {
-    if (!profile?.id) return;
-
-    const processSubmit = () => {
-      const purePayload = { ...data };
-
-      // Conversão de Data (DD/MM/YYYY -> YYYY-MM-DD)
-      if (purePayload.data_nascimento) {
-        purePayload.data_nascimento = convertDateBrToISO(purePayload.data_nascimento);
-      }
-      if (purePayload.data_inicio_transporte) {
-        purePayload.data_inicio_transporte = convertDateBrToISO(purePayload.data_inicio_transporte);
-      }
-
-      const commonOptions = {
-        onSuccess: (data?: any) => {
-          onSuccess(data);
-          onClose();
-        },
-        onError: () => {
-          // Error handling
-        },
-      };
-
-      if (mode === PassageiroFormModes.FINALIZE && prePassageiro) {
-        finalizePreCadastro.mutate(
-          {
-            prePassageiroId: prePassageiro.id,
-            data: {
-              ...purePayload,
-              usuario_id: prePassageiro.usuario_id,
-            },
-          },
-          commonOptions
-        );
-      } else if (editingPassageiro) {
-        updatePassageiro.mutate(
-          {
-            id: editingPassageiro.id,
-            data: purePayload,
-          },
-          {
-            onSuccess: commonOptions.onSuccess,
-          }
-        );
-      } else {
-        createPassageiro.mutate(
-          {
-            ...purePayload,
-            usuario_id: profile.id,
-          },
-          commonOptions
-        );
-      }
-    };
-
-    processSubmit();
-  };
-
-  const isSubmitting =
-    createPassageiro.isPending ||
-    updatePassageiro.isPending ||
-    finalizePreCadastro.isPending;
+  const {
+    form,
+    refreshing,
+    openAccordionItems,
+    setOpenAccordionItems,
+    escolas,
+    veiculos,
+    isSubmitting,
+    isSearchingResponsavel,
+    handleFillMock,
+    handleSubmit,
+    onFormError,
+  } = usePassageiroFormViewModel({
+    isOpen,
+    onClose,
+    editingPassageiro,
+    mode,
+    prePassageiro,
+    onSuccess,
+    profile,
+  });
 
   return (
     <>
@@ -304,10 +132,10 @@ export default function PassengerFormDialog({
                   >
                     <PassageiroFormDadosCadastrais
                       profile={profile}
-                      escolas={escolasData}
-                      veiculos={veiculosData}
+                      escolas={escolas}
+                      veiculos={veiculos}
                     />
-                    <PassageiroFormResponsavel isSearching={buscarResponsavel.isPending} />
+                    <PassageiroFormResponsavel isSearching={isSearchingResponsavel} />
                     <PassageiroFormFinanceiro
                       editingPassageiro={editingPassageiro}
                     />

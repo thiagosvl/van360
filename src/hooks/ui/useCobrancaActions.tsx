@@ -248,7 +248,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // Opção de Ver PIX removida conforme plano base.
+
 
     if (onVerCobranca) {
       actions.push({
@@ -284,7 +284,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-    // Lembretes automáticos desativados conforme plano base.
+
 
     if (!disableExcluirCobranca(cobranca)) {
       actions.push({

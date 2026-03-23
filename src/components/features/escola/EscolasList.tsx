@@ -38,7 +38,7 @@ export function EscolasList({
         return (
           <MobileActionItem
             key={escola.id}
-            actions={actions as any}
+            actions={actions}
             showHint={index === 0}
           >
             <div

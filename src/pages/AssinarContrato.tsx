@@ -7,17 +7,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import {
-    useGetPublicContract,
-    useSignContract,
-} from "@/hooks/api/usePublicContract";
+import { useAssinarContratoViewModel } from "@/hooks";
 import { ContratoStatus } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
-import { toast } from "@/utils/notifications/toast";
 import { CheckCircle2, Download, FileSignature, Loader2 } from "lucide-react";
-import { useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import SignatureCanvas from "react-signature-canvas";
 
 // Configurar worker do PDF.js
@@ -25,70 +20,20 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 
 export default function AssinarContrato() {
   const { token } = useParams<{ token: string }>();
-  const navigate = useNavigate();
 
-  const [modalAberto, setModalAberto] = useState(false);
-  const [numPages, setNumPages] = useState<number>(0);
-
-  const sigCanvas = useRef<SignatureCanvas>(null);
-
-  // Hook for fetching contract
   const {
-    data: contrato,
+    contrato,
     isLoading,
     isError,
-  } = useGetPublicContract(token || "");
-
-  // Hook for signing
-  const signMutation = useSignContract();
-
-  const obterIP = async (): Promise<string> => {
-    try {
-      const response = await fetch("https://api.ipify.org?format=json");
-      const data = await response.json();
-      return data.ip;
-    } catch {
-      return "unknown";
-    }
-  };
-
-  const handleAssinar = async () => {
-    if (!sigCanvas.current || sigCanvas.current.isEmpty()) {
-      toast.error("contrato.erro.assinaturaVazia");
-      return;
-    }
-
-    if (!token) return;
-
-    try {
-      const assinaturaBase64 = sigCanvas.current.toDataURL();
-      const ip = await obterIP();
-
-      const metadados = {
-        ip,
-        userAgent: navigator.userAgent,
-        timestamp: new Date().toISOString(),
-      };
-
-      await signMutation.mutateAsync({
-        token,
-        assinatura: assinaturaBase64,
-        metadados,
-      });
-
-      toast.success("contrato.sucesso.assinado", {
-        description: "contrato.sucesso.assinadoDescricao",
-      });
-      setModalAberto(false);
-      // O estado do contrato será atualizado pelo hook useGetPublicContract ou refresh manual
-    } catch (error: any) {
-      toast.error("contrato.erro.assinar");
-    }
-  };
-
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    setNumPages(numPages);
-  };
+    modalAberto,
+    setModalAberto,
+    numPages,
+    sigCanvas,
+    handleAssinar,
+    onDocumentLoadSuccess,
+    clearSignature,
+    isSigning
+  } = useAssinarContratoViewModel({ token });
 
   if (isLoading) {
     return (
@@ -168,7 +113,7 @@ export default function AssinarContrato() {
 
   return (
     <div className="min-h-screen bg-neutral-100/50 flex flex-col">
-      {/* Dark Header similar to competitor */}
+      {/* Dark Header */}
       <header className="sticky top-0 z-40 bg-[#002554] border-b border-white/10 shadow-lg shrink-0">
         <div className="container mx-auto px-4 h-16 flex items-center justify-center">
           <img
@@ -203,7 +148,6 @@ export default function AssinarContrato() {
             }
           >
             {
-              // Limit pages rendered for performance if needed, or render all
               Array.from(new Array(numPages), (_, index) => (
                 <div key={`page_${index + 1}`} className="mb-4 shadow-sm">
                   <Page
@@ -219,7 +163,7 @@ export default function AssinarContrato() {
         </div>
       </main>
 
-      {/* Fixed Action Buttons - Fixed at bottom corners */}
+      {/* Fixed Action Buttons */}
       <div className="fixed bottom-0 left-0 right-0 p-4 sm:p-8 bg-gradient-to-t from-white via-white/90 to-transparent z-50 flex items-center justify-between pointer-events-none">
         <Button
           onClick={() => openBrowserLink(contrato.minuta_url)}
@@ -280,7 +224,7 @@ export default function AssinarContrato() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => sigCanvas.current?.clear()}
+              onClick={clearSignature}
               className="w-full text-muted-foreground hover:text-destructive"
             >
               Limpar assinatura
@@ -291,13 +235,13 @@ export default function AssinarContrato() {
             <Button
               variant="outline"
               onClick={() => setModalAberto(false)}
-              disabled={signMutation.isPending}
+              disabled={isSigning}
             >
               Cancelar
             </Button>
 
-            <Button onClick={handleAssinar} disabled={signMutation.isPending}>
-              {signMutation.isPending ? (
+            <Button onClick={handleAssinar} disabled={isSigning}>
+              {isSigning ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Assinando...

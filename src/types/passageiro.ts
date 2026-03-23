@@ -1,4 +1,10 @@
-import { ContratoStatus } from "./enums";
+import {
+    ContratoStatus,
+    ParentescoResponsavel,
+    PassageiroGenero,
+    PassageiroModalidade,
+    PassageiroPeriodo,
+} from "./enums";
 
 export interface Passageiro {
   id?: string;
@@ -9,7 +15,7 @@ export interface Passageiro {
   cidade: string;
   estado: string;
   cep: string;
-  periodo: string;
+  periodo: PassageiroPeriodo;
   nome_responsavel: string;
   email_responsavel: string;
   telefone_responsavel: string;
@@ -34,10 +40,10 @@ export interface Passageiro {
   minuta_url?: string;
   contrato_final_url?: string;
 
-  // Novos Campos
-  modalidade?: string;
+  // Campos Tipados com Enums
+  modalidade?: PassageiroModalidade;
   data_nascimento?: string;
-  genero?: string;
-  parentesco_responsavel?: string;
+  genero?: PassageiroGenero;
+  parentesco_responsavel?: ParentescoResponsavel;
   data_inicio_transporte?: string;
 }
