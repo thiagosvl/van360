@@ -64,10 +64,8 @@ CustomInput.displayName = "CustomInput";
 export default function Login() {
   // Permitir indexação da página de login
   useSEO({
-    noindex: false,
-    title: "Login - Van360 | Acesse sua conta",
-    description:
-      "Acesse sua conta Van360. Faça login para gerenciar seu transporte escolar.",
+    title: "Login | Van360",
+    description: "Acesse sua conta para gerenciar seu transporte escolar.",
   });
   const [tab, setTab] = useState("motorista");
   const [showPassword, setShowPassword] = useState(false);

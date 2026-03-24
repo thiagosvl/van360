@@ -6,9 +6,8 @@ import { Wand2 } from "lucide-react";
 
 export default function Register() {
   useSEO({
-    noindex: false,
-    title: "Cadastro - Van360 | Crie sua conta grátis",
-    description: "Cadastre-se no Van360 e comece a gerenciar seu transporte escolar. Tudo incluso, sem restrições.",
+    title: "Cadastro | Van360",
+    description: "Crie sua conta no Van360 e comece a gerenciar seu transporte escolar.",
   });
 
   const {

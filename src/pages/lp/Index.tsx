@@ -87,12 +87,9 @@ const ANNUAL_DISCOUNT_PCT = 17;
 // ── Main component ──
 const Index = () => {
   useSEO({
-    noindex: false,
-    title: "Van360 — Toda a gestão da sua van escolar no celular",
-    description:
-      "Van360 organiza passageiros, mensalidades, contratos e recibos da sua van escolar. 15 dias grátis, sem cartão.",
+    title: "Van360 - Gestão Completa para Transporte Escolar",
+    description: "O Van360 é o sistema definitivo para motoristas de van escolar. Organize passageiros, automatize mensalidades, gere contratos e emita recibos, tudo pelo celular.",
   });
-
   const [menuOpen, setMenuOpen] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"anual" | "mensal">("anual");
   const CTA = ROUTES.PUBLIC.REGISTER;
