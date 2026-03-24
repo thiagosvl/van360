@@ -111,30 +111,30 @@ export default function Login() {
   const handleForgotPassword = useCallback(async () => {
     const cpfDigits = formMotorista.getValues("cpfcnpj")?.replace(/\D/g, "");
     if (!cpfDigits) {
-        toast.info("auth.info.informeCpf", {
-            description: "auth.info.informeCpfDescricao",
-        });
-        return;
+      toast.info("auth.info.informeCpf", {
+        description: "auth.info.informeCpfDescricao",
+      });
+      return;
     }
 
     try {
-        setRefreshing(true);
+      setRefreshing(true);
 
-        const { data } = await apiClient.post("/auth/reset-password", {
-            identifier: cpfDigits,
-            redirectTo: `${import.meta.env.VITE_PUBLIC_APP_DOMAIN}${ROUTES.PUBLIC.NEW_PASSWORD}`
-        });
+      const { data } = await apiClient.post("/auth/reset-password", {
+        identifier: cpfDigits,
+        redirectTo: `${import.meta.env.VITE_PUBLIC_APP_DOMAIN}${ROUTES.PUBLIC.NEW_PASSWORD}`
+      });
 
-        toast.success("auth.sucesso.emailEnviado", {
-            description: data.message || "auth.sucesso.emailEnviado",
-        });
+      toast.success("auth.sucesso.emailEnviado", {
+        description: data.message || "auth.sucesso.emailEnviado",
+      });
 
     } catch (err: any) {
-        toast.error("auth.erro.emailNaoEncontrado", {
-            description: err.userMessage || "Tente novamente em alguns minutos.",
-        });
+      toast.error("auth.erro.emailNaoEncontrado", {
+        description: err.userMessage || "Tente novamente em alguns minutos.",
+      });
     } finally {
-        setRefreshing(false);
+      setRefreshing(false);
     }
   }, [formMotorista]);
 
@@ -149,39 +149,39 @@ export default function Login() {
       const cpfcnpjDigits = data.cpfcnpj.replace(/\D/g, "");
 
       const { data: authResult } = await apiClient.post("/auth/login", {
-          identifier: cpfcnpjDigits,
-          password: data.senha
+        identifier: cpfcnpjDigits,
+        password: data.senha
       });
-      
+
       if (!authResult || !authResult.access_token) {
-           formMotorista.setError("cpfcnpj", {
-              type: "manual",
-              message: "Credenciais inválidas."
-           });
-           setLoading(false);
-           return;
+        formMotorista.setError("cpfcnpj", {
+          type: "manual",
+          message: "Credenciais inválidas."
+        });
+        setLoading(false);
+        return;
       }
 
       if (!authResult || !authResult.access_token) {
-          throw new Error("Falha ao obter sessão do servidor.");
+        throw new Error("Falha ao obter sessão do servidor.");
       }
 
       clearAppSession();
 
       // Hydrate Session locally so checks work
       const { error: sessionError } = await sessionManager.setSession(
-          authResult.access_token,
-          authResult.refresh_token,
-          authResult.user
+        authResult.access_token,
+        authResult.refresh_token,
+        authResult.user
       );
 
       if (sessionError) throw sessionError;
 
       const role = authResult.user?.app_metadata?.role as string | undefined;
-      
+
       // Validação final de sessão
       const { data: { session } } = await sessionManager.getSession();
-      
+
       if (!session) {
         throw new Error("Sessão não foi estabelecida corretamente.");
       }
@@ -196,19 +196,19 @@ export default function Login() {
     } catch (error: any) {
       console.error(error);
       const msg = error.userMessage || error.message || "Erro ao fazer login.";
-      
+
       if (msg.includes("inválidas") || msg.includes("incorreta") || msg.includes("credentials")) {
-          formMotorista.setError("senha", { type: "manual", message: "Senha inválida" });
+        formMotorista.setError("senha", { type: "manual", message: "Senha inválida" });
       } else if (msg.toLowerCase().includes("usuário não encontrado") || msg.includes("not found")) {
-          formMotorista.setError("cpfcnpj", { type: "manual", message: "CPF não encontrado" });
+        formMotorista.setError("cpfcnpj", { type: "manual", message: "CPF não encontrado" });
       } else {
-          // toast.error("auth.erro.login", {
-          //   description: msg,
-          // });
-          formMotorista.setError("root", {
-            type: "manual",
-            message: msg,
-          });
+        // toast.error("auth.erro.login", {
+        //   description: msg,
+        // });
+        formMotorista.setError("root", {
+          type: "manual",
+          message: msg,
+        });
       }
       setLoading(false);
     }
@@ -224,8 +224,8 @@ export default function Login() {
     try {
       // Use backend endpoint
       const { data: passageiros } = await apiClient.post("/auth/login/responsavel", {
-          cpf,
-          email
+        cpf,
+        email
       });
 
       if (!passageiros || passageiros.length === 0) {
@@ -297,7 +297,7 @@ export default function Login() {
                     </Button>
                   </div>
                   <h1 className="text-2xl font-bold text-slate-900 mb-0">
-                    Bem-vindo de volta!
+                    Bem-vind(a) de volta!
                   </h1>
                   <p className="text-slate-500 text-xs sm:text-sm">
                     Insira seus dados para continuar

@@ -126,6 +126,12 @@ export interface LayoutContextType {
   openAlterarSenhaDialog: () => void;
   openEditarCadastroDialog: () => void;
   openDeleteAccountDialog: () => void;
+  
+  // Mobile Menu
+  isMobileMenuOpen: boolean;
+  setIsMobileMenuOpen: (open: boolean) => void;
+  isHelpOpen: boolean;
+  setIsHelpOpen: (open: boolean) => void;
 }
 
 export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);

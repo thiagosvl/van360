@@ -162,6 +162,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [alterarSenhaDialogOpen, setAlterarSenhaDialogOpen] = useState(false);
   const [editarCadastroDialogOpen, setEditarCadastroDialogOpen] = useState(false);
   const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   useContractGuard({
     profile,
@@ -278,6 +280,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openAlterarSenhaDialog: () => setAlterarSenhaDialogOpen(true),
         openEditarCadastroDialog: () => setEditarCadastroDialogOpen(true),
         openDeleteAccountDialog: () => setDeleteAccountDialogOpen(true),
+        isMobileMenuOpen,
+        setIsMobileMenuOpen,
+        isHelpOpen,
+        setIsHelpOpen,
       }}
     >
       {children}

@@ -37,7 +37,7 @@ export function TermosUsoDialog() {
   return (
     <div className="px-4 pt-2 pb-0 text-center text-xs sm:text-sm text-gray-500 leading-relaxed">
       <span>Ao criar sua conta, você concorda com nossos </span>
-      
+
       {/* --- DIALOG TERMOS DE USO --- */}
       <Dialog open={openTermos} onOpenChange={setOpenTermos}>
         <DialogTrigger asChild>
@@ -61,12 +61,12 @@ export function TermosUsoDialog() {
               </DialogDescription>
             </DialogHeader>
           </div>
-          
+
           {/* Conteúdo com ScrollArea */}
           <ScrollArea className="flex-1 bg-white">
             <div className="p-6 sm:p-8 space-y-4">
               <p className="text-gray-600 leading-relaxed text-base">
-                Bem-vindo ao <strong>Van360</strong>. Ao utilizar nossa plataforma, você concorda com os termos descritos abaixo, estabelecidos para garantir a melhor experiência e segurança para todos.
+                Bem-vind(a) ao <strong>Van360</strong>. Ao utilizar nossa plataforma, você concorda com os termos descritos abaixo, estabelecidos para garantir a melhor experiência e segurança para todos.
               </p>
 
               <SectionTitle icon={Truck}>1. O Serviço</SectionTitle>
@@ -100,7 +100,7 @@ export function TermosUsoDialog() {
               </p>
             </div>
           </ScrollArea>
-          
+
           {/* Footer Fixo */}
           <div className="p-4 border-t bg-gray-50 flex justify-end gap-2">
             <Button variant="default" onClick={() => setOpenTermos(false)} className="bg-blue-600 hover:bg-blue-700 text-white px-8">

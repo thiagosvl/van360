@@ -1,47 +1,40 @@
-import { AppSidebar } from "@/components/layout/AppSidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { ROUTES } from "@/constants/routes";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { apiClient } from "@/services/api/client";
-import { safeCloseDialog } from "@/utils/dialogUtils";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
 import {
   ChevronDown,
-  Key,
+  HelpCircle,
   Lock,
   LogOut,
-  Menu,
   UserPen,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { pagesItems } from "@/utils/domain/pages/pagesUtils";
 
 export function AppNavbar({ role }: { role: "motorista" }) {
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const { 
-    pageTitle, 
-    openAlterarSenhaDialog, 
-    openEditarCadastroDialog 
+  const {
+    openAlterarSenhaDialog,
+    openEditarCadastroDialog,
+    setIsHelpOpen
   } = useLayout();
 
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const location = useLocation();
   const navigate = useNavigate();
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
+
+  const currentPage = pagesItems.find(item => item.href === location.pathname);
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -49,12 +42,10 @@ export function AppNavbar({ role }: { role: "motorista" }) {
 
     try {
       await apiClient.post("/auth/logout");
-
       clearAppSession(true);
-
       window.location.href = ROUTES.PUBLIC.LOGIN;
     } catch (err) {
-      // Erro ao encerrar sessão - não crítico, redirecionamento já foi feito
+      // Erro ao encerrar sessão - não crítico
     } finally {
       setIsSigningOut(false);
     }
@@ -65,83 +56,85 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   }, [profile?.nome]);
 
   return (
-    <>
-      <header className="fixed top-0 right-0 left-0 md:left-72 z-30 border-b border-gray-100 bg-white touch-none">
-        <div className="flex h-20 items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-3">
-            <div className="md:hidden">
-              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                <SheetTrigger asChild>
-                  <button className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-blue-100 bg-white text-blue-600 hover:bg-blue-50">
-                    <Menu className="h-5 w-5" />
-                  </button>
-                </SheetTrigger>
-                <SheetContent
-                  side="left"
-                  className="w-80 border-r border-gray-100 bg-white p-0"
-                  onOpenAutoFocus={(e) => e.preventDefault()}
-                >
-                  <SheetHeader className="flex flex-col items-center justify-center py-6 border-b border-gray-100">
-                    <SheetTitle className="text-lg font-semibold tracking-wide">
-                      <img
-                        src="/assets/logo-van360.png"
-                        alt="Van360"
-                        className="h-14 cursor-pointer"
-                        title="Van360"
-                        onClick={() => {
-                          navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
-                          setIsSheetOpen(false);
-                        }}
-                      />
-                    </SheetTitle>
-                  </SheetHeader>
-                  <div className="p-5">
-                    <AppSidebar
-                      role={role}
-                      onLinkClick={() => setIsSheetOpen(false)}
-                    />
-                  </div>
-                </SheetContent>
-              </Sheet>
+    <header className="fixed top-0 right-0 left-0 md:left-72 z-30 border-b border-gray-100 bg-white/95 backdrop-blur-md h-16 sm:h-20 transition-all">
+      <div className="flex h-full items-center justify-between px-4 sm:px-8 relative">
+        {/* Esquerda: Central de Ajuda (Mobile) / Título (Desktop) */}
+        <div className="flex-1 flex items-center">
+          {/* Botão de Ajuda - Apenas Mobile */}
+          <button
+            onClick={() => setIsHelpOpen(true)}
+            className="md:hidden group flex items-center gap-2 text-slate-400 hover:text-blue-600 transition-all p-1.5"
+          >
+            <div className="h-9 w-9 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors border border-slate-100">
+              <HelpCircle className="h-5 w-5" />
             </div>
+          </button>
 
-            <div>
-              <h1 className="text-md sm:text-xl font-bold text-slate-900 leading-tight sm:text-3xl sm:text-2xl">
-                {pageTitle || "Dashboard"}
-              </h1>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 rounded-full border border-transparent px-2 py-1 text-left hover:bg-slate-100">
-                    <div className="h-10 w-10 rounded-full bg-primary/5 border border-primary/10 text-primary/60 flex items-center justify-center font-semibold uppercase">
-                      <span>{userInitial}</span>
-                    </div>
-                    <ChevronDown className="h-4 w-4 hidden sm:inline text-slate-400" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end">
-                  <DropdownMenuItem onClick={openEditarCadastroDialog}>
-                    <UserPen className="mr-2 h-4 w-4" /> Editar Perfil
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={openAlterarSenhaDialog}>
-                    <Lock className="mr-2 h-4 w-4" /> Alterar senha
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleSignOut}
-                    className="text-red-500"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" /> Sair
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+          {/* Título da Página - Apenas Desktop */}
+          <div className="hidden md:flex items-center gap-3">
+            {currentPage && (
+              <>
+                <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100/50">
+                  <currentPage.icon className="h-5 w-5" strokeWidth={2.5} />
+                </div>
+                <div className="flex flex-col">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none mb-1">Seção Atual</p>
+                  <h2 className="text-lg font-black text-slate-900 tracking-tight leading-none">
+                    {currentPage.title}
+                  </h2>
+                </div>
+              </>
+            )}
           </div>
         </div>
-      </header>
-    </>
+
+        {/* Centro: Logo (Apenas mobile) */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center md:hidden">
+          <img
+            src="/assets/logo-van360.png"
+            alt="Van360"
+            className="h-9 sm:h-12 w-auto cursor-pointer transition-opacity hover:opacity-80"
+            onClick={() => navigate(ROUTES.PRIVATE.MOTORISTA.HOME)}
+          />
+        </div>
+
+        {/* Direita: Perfil de Usuário */}
+        <div className="flex-1 flex justify-end items-center">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="group flex items-center gap-x-2 outline-none p-1">
+                <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-bold text-sm sm:text-base group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
+                  <span>{userInitial}</span>
+                </div>
+                <ChevronDown className="h-4 w-4 hidden sm:block text-slate-400 group-hover:text-slate-600 transition-colors" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-64 mt-2 rounded-[22px] p-2 shadow-2xl border-gray-100" align="end">
+              <div className="px-3 py-3 border-b border-gray-50 mb-1">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Bem-vindo(a),</p>
+                <p className="text-sm font-black text-slate-900 truncate">{profile?.nome}</p>
+              </div>
+              <DropdownMenuItem onClick={openEditarCadastroDialog} className="rounded-xl px-3 py-2.5">
+                <UserPen className="mr-3 h-4 w-4 text-slate-400" />
+                <span className="font-semibold text-sm">Gerenciar Perfil</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={openAlterarSenhaDialog} className="rounded-xl px-3 py-2.5">
+                <Lock className="mr-3 h-4 w-4 text-slate-400" />
+                <span className="font-semibold text-sm">Alterar Senha</span>
+              </DropdownMenuItem>
+              <div className="h-px bg-gray-50 my-1.5" />
+              <DropdownMenuItem
+                onClick={handleSignOut}
+                className="text-rose-500 rounded-xl px-3 py-2.5 bg-rose-50/30 hover:bg-rose-50 transition-colors"
+                disabled={isSigningOut}
+              >
+                <LogOut className="mr-3 h-4 w-4" />
+                <span className="font-bold text-sm">Encerrar Sessão</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+    </header>
   );
 }
