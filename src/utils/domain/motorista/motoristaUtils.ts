@@ -2,10 +2,16 @@ import { BASE_DOMAIN } from "@/constants";
 
 
 export const clearAppSession = (force: boolean = false) => {
-    // We now trust Supabase persistence. 
-    // If we want to clear the session (logout), we clear everything.
-    // The force parameter is kept for compatibility but functionally we just clear.
+    // Preservamos o que não é sessão (ex: onboarding, preferência de tema, etc)
+    const onboardingDone = localStorage.getItem("onboarding_completed");
+    
+    // Limpamos o localStorage de forma segura
     localStorage.clear();
+    
+    // Restauramos as flags de experiência de usuário
+    if (onboardingDone) {
+        localStorage.setItem("onboarding_completed", onboardingDone);
+    }
 }
 
 export const buildPrepassageiroLink = (profileId: string) => {

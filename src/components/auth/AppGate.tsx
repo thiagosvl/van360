@@ -40,32 +40,25 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
 
   useEffect(() => {
-    // Só mostramos onboarding no Mobile e no primeiro acesso à ROOT
-    const checkOnboarding = () => {
-      // 🛠️ MODO PREVIEW: Permite ver o Onboarding via URL (?onboarding=true)
-      const searchParams = new URLSearchParams(window.location.search);
-      if (searchParams.has("onboarding")) {
-        setShowOnboarding(true);
-        setCheckingOnboarding(false);
-        return;
-      }
-
-      const isMobile = Capacitor.isNativePlatform();
-      const hasCompleted = localStorage.getItem("onboarding_completed") === "true";
-      
-      // 🛡️ SEGURANÇA: Não mostrar onboarding se for um link externo de cadastro de passageiro
-      const isExternalForm = location.pathname.startsWith("/cadastro-passageiro");
-      
-      // O Onboarding agora é "Mestre" e Universal (Web e App):
-      // Se não completou e não é um link externo, ele aparece ANTES de tudo.
-      // Isso inclui novos cadastros que ainda não viram as funcionalidades básicas.
-      if (!hasCompleted && !isExternalForm) {
-        setShowOnboarding(true);
-      }
+    const isExternalForm = location.pathname.startsWith("/cadastro-passageiro");
+    const hasCompleted = localStorage.getItem("onboarding_completed") === "true";
+    
+    // 🛠️ MODO PREVIEW: Permite ver o Onboarding via URL (?onboarding=true)
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.has("onboarding")) {
+      setShowOnboarding(true);
       setCheckingOnboarding(false);
-    };
+      return;
+    }
 
-    checkOnboarding();
+    // REGRAS DE EXIBIÇÃO:
+    // 1. Só mostra se estiver logado (session existe)
+    // 2. Só mostra se ainda não completou
+    // 3. Não mostra em formulários externos de passageiro
+    const shouldShow = !!session && !hasCompleted && !isExternalForm;
+
+    setShowOnboarding(shouldShow);
+    setCheckingOnboarding(false);
   }, [location.pathname, session]);
 
   const handleOnboardingComplete = () => {
