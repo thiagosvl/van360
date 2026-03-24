@@ -26,15 +26,13 @@ function FaqItem({ question, answer }: FaqItemProps) {
           {question}
         </span>
         <ChevronDown
-          className={`h-4 w-4 text-slate-400 transition-transform duration-300 flex-shrink-0 ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`h-4 w-4 text-slate-400 transition-transform duration-300 flex-shrink-0 ${isOpen ? "rotate-180" : ""
+            }`}
         />
       </button>
       <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          isOpen ? "max-h-40 pb-4" : "max-h-0"
-        }`}
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? "max-h-40 pb-4" : "max-h-0"
+          }`}
       >
         <p className="text-sm text-slate-500 leading-relaxed">
           {answer}
@@ -67,14 +65,14 @@ export function HelpSheet() {
   ];
 
   const handleWhatsAppSupport = () => {
-    window.open("https://wa.me/5511999999999?text=Olá, preciso de ajuda com o Van360", "_blank");
+    window.open("https://wa.me/5511962508068'?text=Olá, preciso de ajuda com o Van360", "_blank");
   };
 
   return (
     <Sheet open={isHelpOpen} onOpenChange={setIsHelpOpen}>
       <SheetContent side="bottom" className="h-[85vh] sm:h-[70vh] rounded-t-[32px] p-0 border-0 shadow-2xl overflow-hidden">
         <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-slate-200 rounded-full" />
-        
+
         <div className="h-full flex flex-col pt-8 pb-6">
           <SheetHeader className="px-6 mb-6">
             <div className="flex items-center gap-3 mb-1">
@@ -103,25 +101,12 @@ export function HelpSheet() {
                     <MessageCircle className="h-6 w-6 fill-current" />
                   </div>
                   <div className="text-left">
-                    <p className="font-black text-emerald-900">Chamar no WhatsApp</p>
-                    <p className="text-xs text-emerald-700 opacity-80 font-medium">Resposta rápida em horário comercial</p>
+                    <p className="font-black text-emerald-900">WhatsApp</p>
+                    <p className="text-xs text-emerald-700 opacity-80 font-medium">Fale diretamente conosco</p>
                   </div>
                 </div>
                 <ExternalLink className="h-5 w-5 text-emerald-600 opacity-40" />
               </button>
-            </section>
-
-            {/* Vídeos e Tutoriais (Placeholder placeholder) */}
-            <section>
-              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <PlayCircle className="h-3 w-3" /> Vídeos e Tutoriais
-              </h3>
-              <div className="p-5 bg-blue-50/50 border border-blue-100 border-dashed rounded-[24px] flex items-center gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-white border border-blue-100 flex items-center justify-center text-blue-400">
-                  <PlayCircle className="h-6 w-6" />
-                </div>
-                <p className="text-sm text-blue-800 font-bold opacity-60 italic">Vídeos aulas chegando em breve...</p>
-              </div>
             </section>
 
             {/* FAQs */}
@@ -138,7 +123,7 @@ export function HelpSheet() {
 
             {/* Versão */}
             <div className="text-center pt-4">
-                <p className="text-[10px] font-bold text-slate-300 uppercase tracking-tighter">Van360 Beta v1.0.4</p>
+              <p className="text-[10px] font-bold text-slate-300 uppercase tracking-tighter">Van360 Beta v1.0.4</p>
             </div>
           </div>
         </div>
