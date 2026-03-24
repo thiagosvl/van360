@@ -41,19 +41,21 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const isExternalForm = location.pathname.startsWith("/cadastro-passageiro");
-    const hasCompleted = localStorage.getItem("onboarding_completed") === "true";
+    // Usamos uma chave vinculada ao ID do usuário para evitar conflitos entre contas
+    const storageKey = `onboarding_done_${session?.user?.id || "anon"}`;
+    const hasCompleted = localStorage.getItem(storageKey) === "true";
     
     // 🛠️ MODO PREVIEW: Permite ver o Onboarding via URL (?onboarding=true)
     const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.has("onboarding")) {
-      setShowOnboarding(true);
+      setShowOnboarding(true); 
       setCheckingOnboarding(false);
       return;
     }
 
     // REGRAS DE EXIBIÇÃO:
     // 1. Só mostra se estiver logado (session existe)
-    // 2. Só mostra se ainda não completou
+    // 2. Só mostra se ainda não completou para ESTE usuário
     // 3. Não mostra em formulários externos de passageiro
     const shouldShow = !!session && !hasCompleted && !isExternalForm;
 
@@ -62,8 +64,19 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   }, [location.pathname, session]);
 
   const handleOnboardingComplete = () => {
-    localStorage.setItem("onboarding_completed", "true");
-    setShowOnboarding(false);
+    if (session?.user?.id) {
+        const storageKey = `onboarding_done_${session.user.id}`;
+        localStorage.setItem(storageKey, "true");
+        // Log para auditoria em dev/prod
+        console.log(`[Onboarding] Completed for user ${session.user.id}`);
+    } else {
+        localStorage.setItem("onboarding_completed", "true"); // Fallback
+    }
+
+    // Pequeno delay para garantir que o storage foi persistido e dar feedback visual suave
+    setTimeout(() => {
+        setShowOnboarding(false);
+    }, 100);
   };
 
   const publicPaths: string[] = [
