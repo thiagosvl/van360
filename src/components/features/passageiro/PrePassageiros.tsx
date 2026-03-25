@@ -337,6 +337,12 @@ export default function PrePassageiros({
             {prePassageiros.map((prePassageiro, index) => {
               const actions: MobileAction[] = [
                 {
+                  label: "Revisar",
+                  icon: <Eye className="w-4 h-4" />,
+                  onClick: () => handleFinalizeClick(prePassageiro),
+                  swipeColor: "bg-blue-600",
+                },
+                {
                   label: "Excluir",
                   icon: <Trash2 className="w-4 h-4" />,
                   onClick: () => {
@@ -364,12 +370,6 @@ export default function PrePassageiros({
                   isDestructive: true,
                   swipeColor: "bg-red-600",
                 },
-                {
-                  label: "Revisar",
-                  icon: <Eye className="w-4 h-4" />,
-                  onClick: () => handleFinalizeClick(prePassageiro),
-                  swipeColor: "bg-blue-600",
-                },
               ];
 
               return (
@@ -381,7 +381,6 @@ export default function PrePassageiros({
                 >
                   <div
                     className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
-                    onClick={() => handleFinalizeClick(prePassageiro)}
                   >
                     <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
                       <span className="text-white font-headline font-bold text-sm leading-none">

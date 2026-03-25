@@ -19,6 +19,8 @@ export const CobrancasToolbar = memo(function CobrancasToolbar({
   setBuscaAReceber,
   buscaRecebidos,
   setBuscaRecebidos,
+  countAReceber,
+  countRecebidos,
   activeTab,
 }: CobrancasToolbarProps) {
   
@@ -35,12 +37,18 @@ export const CobrancasToolbar = memo(function CobrancasToolbar({
             className="rounded-xl h-full font-headline font-bold text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400"
           >
             A Receber
+            <span className={`ml-2 px-1.5 py-0.5 rounded-lg text-[10px] font-bold ${activeTab === CobrancaTab.ARECEBER ? "bg-white/20 text-white" : "bg-slate-200 text-slate-500"}`}>
+              {countAReceber || 0}
+            </span>
           </TabsTrigger>
           <TabsTrigger
             value={CobrancaTab.RECEBIDOS}
             className="rounded-xl h-full font-headline font-bold text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400"
           >
             Recebidos
+            <span className={`ml-2 px-1.5 py-0.5 rounded-lg text-[10px] font-bold ${activeTab === CobrancaTab.RECEBIDOS ? "bg-white/20 text-white" : "bg-slate-200 text-slate-500"}`}>
+              {countRecebidos || 0}
+            </span>
           </TabsTrigger>
         </TabsList>
       </div>

@@ -75,12 +75,18 @@ export default function Passageiros() {
                   className="rounded-xl h-full font-headline font-bold text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400"
                 >
                   Passageiros
+                  <span className={`ml-2 px-1.5 py-0.5 rounded-lg text-[10px] font-bold ${activeTab === PassageiroTab.PASSAGEIROS ? "bg-white/20 text-white" : "bg-slate-200 text-slate-500"}`}>
+                    {countPassageiros || 0}
+                  </span>
                 </TabsTrigger>
                 <TabsTrigger
                   value={PassageiroTab.SOLICITACOES}
                   className="rounded-xl h-full font-headline font-bold text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400"
                 >
                   Solicitações
+                  <span className={`ml-2 px-1.5 py-0.5 rounded-lg text-[10px] font-bold ${activeTab === PassageiroTab.SOLICITACOES ? "bg-white/20 text-white" : "bg-slate-200 text-slate-500"}`}>
+                    {countPrePassageiros || 0}
+                  </span>
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -109,10 +115,12 @@ export default function Passageiros() {
                   searchPlaceholder={isMainTab ? "Buscar por nome ou responsável..." : "Buscar solicitação..."}
                 />
 
-                <QuickRegistrationLink
-                  profile={profile}
-                  pendingCount={countPrePassageiros}
-                />
+                {((isMainTab && countPrePassageiros === 0) || (!isMainTab && countPrePassageiros > 0)) && (
+                  <QuickRegistrationLink
+                    profile={profile}
+                    pendingCount={countPrePassageiros}
+                  />
+                )}
               </div>
 
               <div className="flex items-center justify-between px-1">
