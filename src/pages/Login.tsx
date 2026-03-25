@@ -295,7 +295,7 @@ export default function Login() {
                     </Button>
                   </div>
                   <h1 className="text-2xl font-bold text-slate-900 mb-0">
-                    Bem-vind(a) de volta!
+                    Bem-vindo de volta!
                   </h1>
                   <p className="text-slate-500 text-xs sm:text-sm">
                     Insira seus dados para continuar

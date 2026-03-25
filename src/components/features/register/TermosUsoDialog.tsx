@@ -66,7 +66,7 @@ export function TermosUsoDialog() {
           <ScrollArea className="flex-1 bg-white">
             <div className="p-6 sm:p-8 space-y-4">
               <p className="text-gray-600 leading-relaxed text-base">
-                Bem-vind(a) ao <strong>Van360</strong>. Ao utilizar nossa plataforma, você concorda com os termos descritos abaixo, estabelecidos para garantir a melhor experiência e segurança para todos.
+                Bem-vindo ao <strong>Van360</strong>. Ao utilizar nossa plataforma, você concorda com os termos descritos abaixo, estabelecidos para garantir a melhor experiência e segurança para todos.
               </p>
 
               <SectionTitle icon={Truck}>1. O Serviço</SectionTitle>

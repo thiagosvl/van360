@@ -16,6 +16,7 @@ import DeleteAccountDialog from "@/components/dialogs/DeleteAccountDialog";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
+import { useOnboarding } from "@/components/auth/AppGate";
 import { useContractGuard } from "@/hooks/ui/useContractGuard";
 import { ActivityTimeline } from "@/components/common/ActivityTimeline";
 import { History } from "lucide-react";
@@ -165,11 +166,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
+  const { showOnboarding } = useOnboarding();
+
   useContractGuard({
     profile,
     isLoading: isProfileLoading,
     onShouldOpen: () => setContractSetupDialogState({ open: true }),
-    disabled: false
+    disabled: showOnboarding
   });
 
   const openConfirmationDialog = (props: OpenConfirmationDialogProps) => {

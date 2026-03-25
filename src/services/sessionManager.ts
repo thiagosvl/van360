@@ -76,8 +76,14 @@ class SessionManager {
   }
 
   async signOut() {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      // Ignoramos erro de sessão inexistente no logout manual
+    } finally {
+      clearAppSession();
+      queryClient.clear();
+    }
   }
 
   onAuthStateChange(callback: (event: AuthChangeEvent, session: Session) => void): { data: AuthListener } {

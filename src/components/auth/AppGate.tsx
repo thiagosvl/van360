@@ -1,8 +1,16 @@
 import { ROUTES } from "@/constants/routes";
 import { useSession } from "@/hooks/business/useSession";
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { Onboarding } from "../features/onboarding/Onboarding";
+
+interface OnboardingContextType {
+  showOnboarding: boolean;
+}
+
+const OnboardingContext = createContext<OnboardingContextType>({ showOnboarding: false });
+
+export const useOnboarding = () => useContext(OnboardingContext);
 
 // Tela de Carregamento Inicial Premium (Splash Screen simulada)
 const InitialLoading = () => (
@@ -104,11 +112,6 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
     return <InitialLoading />;
   }
 
-  // Se precisa mostrar onboarding no mobile pela primeira vez
-  if (showOnboarding) {
-    return <Onboarding onComplete={handleOnboardingComplete} />;
-  }
-
   // 🔹 Se não está logado e a rota é pública → libera
   if (!session && isPublic) {
     return <>{children}</>;
@@ -125,6 +128,11 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to={ROUTES.PRIVATE.MOTORISTA.HOME} replace />;
   }
 
-  // Caso normal → renderiza conteúdo
-  return <>{children}</>;
+  // Caso normal → renderiza conteúdo com o Onboarding como overlay se necessário
+  return (
+    <OnboardingContext.Provider value={{ showOnboarding }}>
+      {children}
+      {showOnboarding && <Onboarding onComplete={handleOnboardingComplete} />}
+    </OnboardingContext.Provider>
+  );
 };
