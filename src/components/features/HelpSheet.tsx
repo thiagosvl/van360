@@ -1,11 +1,11 @@
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { useLayout } from "@/contexts/LayoutContext";
-import { ChevronDown, MessageCircle, HelpCircle, ExternalLink, PlayCircle, Lightbulb } from "lucide-react";
+import { ChevronDown, MessageCircle, HelpCircle, ExternalLink, Lightbulb } from "lucide-react";
 import { useState } from "react";
 
 interface FaqItemProps {
@@ -69,22 +69,20 @@ export function HelpSheet() {
   };
 
   return (
-    <Sheet open={isHelpOpen} onOpenChange={setIsHelpOpen}>
-      <SheetContent side="bottom" className="h-[85vh] sm:h-[70vh] rounded-t-[32px] p-0 border-0 shadow-2xl overflow-hidden">
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-slate-200 rounded-full" />
-
-        <div className="h-full flex flex-col pt-8 pb-6">
-          <SheetHeader className="px-6 mb-6">
+    <Drawer open={isHelpOpen} onOpenChange={setIsHelpOpen}>
+      <DrawerContent className="h-[85vh] sm:h-[70vh] rounded-t-[32px] p-0 border-0 shadow-2xl overflow-hidden">
+        <div className="h-full flex flex-col pt-4 pb-6">
+          <DrawerHeader className="px-6 mb-6">
             <div className="flex items-center gap-3 mb-1">
               <div className="h-10 w-10 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
                 <HelpCircle className="h-6 w-6" />
               </div>
               <div>
-                <SheetTitle className="text-xl font-black text-slate-900 text-left">Central de Ajuda</SheetTitle>
+                <DrawerTitle className="text-xl font-black text-slate-900 text-left">Central de Ajuda</DrawerTitle>
                 <p className="text-sm text-slate-500 text-left">Como podemos te ajudar hoje?</p>
               </div>
             </div>
-          </SheetHeader>
+          </DrawerHeader>
 
           <div className="flex-1 overflow-y-auto px-6 space-y-8 pb-10">
             {/* Suporte Direto */}
@@ -127,7 +125,7 @@ export function HelpSheet() {
             </div>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }

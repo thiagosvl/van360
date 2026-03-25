@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-} from "@/components/ui/sheet";
+    Drawer,
+    DrawerContent,
+    DrawerHeader,
+    DrawerTitle,
+} from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { ReactNode } from "react";
@@ -33,27 +33,22 @@ export function ActionSheet({
   actions,
 }: ActionSheetProps) {
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="bottom"
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent
         className="h-auto max-h-[92vh] rounded-t-[32px] flex flex-col px-0 pb-8 bg-[#F9F9F9] dark:bg-zinc-950 border-0 outline-none shadow-2xl overflow-hidden"
-        onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        {/* Handle */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-10 h-1 bg-zinc-300 dark:bg-zinc-800 rounded-full" />
-
-        {/* Header - Apenas se tiver título, no Threads geralmente é oculto/limpo */}
+        {/* Header - Apenas se tiver título */}
         {title && (
-          <SheetHeader className="text-center px-6 pt-10 mb-2">
-            <SheetTitle className="text-lg font-black text-zinc-900 dark:text-zinc-100">
+          <DrawerHeader className="text-center px-6 pt-6 mb-2">
+            <DrawerTitle className="text-lg font-black text-zinc-900 dark:text-zinc-100">
               {title}
-            </SheetTitle>
-          </SheetHeader>
+            </DrawerTitle>
+          </DrawerHeader>
         )}
 
         <div className={cn(
-          "px-4 pt-8 flex flex-col gap-2 overflow-y-auto",
-           !title && "pt-10" // Compensação se não houver título
+          "px-4 pt-4 flex flex-col gap-2 overflow-y-auto",
+           !title && "pt-6" // Compensação se não houver título
         )}>
           {/* Agrupamento tipo Threads/Instagram */}
           <div className="bg-white dark:bg-zinc-900 rounded-[28px] overflow-hidden border border-zinc-100 dark:border-zinc-800/50">
@@ -92,8 +87,8 @@ export function ActionSheet({
             ))}
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
 

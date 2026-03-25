@@ -51,8 +51,7 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
         <SheetContent side="right" className="w-[85%] sm:w-80 p-0 border-l border-gray-100 bg-white">
           <div className="p-6 border-b border-gray-50 bg-slate-50/50">
             <SheetTitle className="text-left">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-1 text-blue-600">Menu</span>
-              <span className="text-xl font-black text-slate-900 tracking-tight">O que deseja fazer?</span>
+              <span className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-1 text-blue-600">Menu</span>
             </SheetTitle>
           </div>
           <div className="p-4 h-[calc(100vh-100px)] overflow-y-auto scrollbar-hide">
