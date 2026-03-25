@@ -36,6 +36,9 @@ export default function Veiculos() {
     await refetch();
   };
 
+  const sectionCount = veiculos.length;
+  const countLabel = searchTerm || hasActiveFilters ? "ENCONTRADOS" : "VEÍCULOS";
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
@@ -48,78 +51,62 @@ export default function Veiculos() {
     <>
       <PullToRefreshWrapper onRefresh={handleRefresh}>
         <div className="space-y-6">
-          <Card className="border-none shadow-none bg-transparent">
-            <CardHeader className="p-0">
-                <div className="flex justify-end mb-4 md:hidden">
-                  <Button
-                    onClick={handleCadastrarRapido}
-                    variant="outline"
-                    className="gap-2 text-uppercase w-full"
-                  >
-                    GERAR VEÍCULO FAKE
-                  </Button>
-                </div>
-                <div className="hidden md:flex justify-end mb-4">
-                  <Button
-                    onClick={handleCadastrarRapido}
-                    variant="outline"
-                    className="gap-2 text-uppercase"
-                  >
-                    GERAR VEÍCULO FAKE
-                  </Button>
-                </div>
-            </CardHeader>
+          <VeiculosToolbar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            selectedStatus={selectedStatus}
+            onStatusChange={setSelectedStatus}
+            onClearFilters={clearFilters}
+            hasActiveFilters={hasActiveFilters}
+            onApplyFilters={setFilters}
+            onRegister={handleRegister}
+          />
 
-            <CardContent className="px-0">
-              <div className="mb-6">
-                <VeiculosToolbar
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                  selectedStatus={selectedStatus}
-                  onStatusChange={setSelectedStatus}
-                  onClearFilters={clearFilters}
-                  hasActiveFilters={hasActiveFilters}
-                  onApplyFilters={setFilters}
-                  onRegister={handleRegister}
-                />
-              </div>
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
+              Veículos
+            </h2>
+            {sectionCount != null && (
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                {sectionCount} {countLabel}
+              </span>
+            )}
+          </div>
 
-              {isVeiculosLoading ? (
-                <ListSkeleton />
-              ) : veiculos.length === 0 ? (
-                <UnifiedEmptyState
-                  icon={Car}
-                  title="Nenhum veículo encontrado"
-                  description={
-                    searchTerm
-                      ? `Nenhum veículo encontrado para "${searchTerm}"`
-                      : "Cadastre seus veículos para vincular aos passageiros."
-                  }
-                  action={
-                    !searchTerm
-                      ? {
-                          label: "Novo Veículo",
-                          onClick: () => {
-                            openVeiculoFormDialog();
-                          },
-                        }
-                      : undefined
-                  }
-                />
-              ) : (
-                <VeiculosList
-                  veiculos={veiculos}
-                  navigate={navigate}
-                  onEdit={handleEdit}
-                  onToggleAtivo={handleToggleAtivo}
-                  onDelete={handleDeleteClick}
-                />
-              )}
-            </CardContent>
-          </Card>
+            {isVeiculosLoading ? (
+              <ListSkeleton count={5} />
+            ) : veiculos.length === 0 ? (
+              <UnifiedEmptyState
+                icon={Car}
+                title="Nenhum veículo encontrado"
+                description={
+                  searchTerm || hasActiveFilters
+                    ? `Não encontramos veículos com os filtros selecionados.`
+                    : "Comece cadastrando seu primeiro veículo para gerenciar a frota."
+                }
+                action={
+                  !searchTerm && !hasActiveFilters
+                    ? {
+                        label: "Cadastrar Veículo",
+                        onClick: () => {
+                          handleRegister();
+                        },
+                      }
+                    : undefined
+                }
+              />
+            ) : (
+              <VeiculosList
+                veiculos={veiculos}
+                navigate={navigate}
+                onEdit={handleEdit}
+                onToggleAtivo={handleToggleAtivo}
+                onDelete={handleDeleteClick}
+              />
+            )}
         </div>
       </PullToRefreshWrapper>
-      <LoadingOverlay active={isActionLoading} text="comum.aguarde" />
+      <LoadingOverlay active={isActionLoading} text="Processando..." />
     </>
   );
 }

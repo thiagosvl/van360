@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
-import { 
-  CreditCard, 
-  GraduationCap, 
-  LayoutDashboard, 
-  Menu, 
-  Users 
+import {
+  CreditCard,
+  FileText,
+  LayoutDashboard,
+  Menu,
+  Users
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
@@ -13,7 +13,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 
 export function BottomNavbar() {
   const { setIsMobileMenuOpen } = useLayout();
-  
+
   const navItems = [
     {
       title: "Início",
@@ -31,9 +31,9 @@ export function BottomNavbar() {
       icon: CreditCard,
     },
     {
-      title: "Escolas",
-      href: ROUTES.PRIVATE.MOTORISTA.SCHOOLS,
-      icon: GraduationCap,
+      title: "Contratos",
+      href: ROUTES.PRIVATE.MOTORISTA.CONTRACTS,
+      icon: FileText,
     },
   ];
 
@@ -45,7 +45,7 @@ export function BottomNavbar() {
           to={item.href}
           className={({ isActive }) =>
             cn(
-              "flex flex-col items-center justify-center gap-1 transition-colors px-3 py-1 rounded-xl",
+              "flex flex-col items-center justify-center gap-1 transition-colors px-2 py-1 rounded-xl",
               isActive ? "text-blue-600" : "text-slate-400"
             )
           }
@@ -54,10 +54,10 @@ export function BottomNavbar() {
           <span className="text-[10px] font-medium">{item.title}</span>
         </NavLink>
       ))}
-      
+
       <button
         onClick={() => setIsMobileMenuOpen(true)}
-        className="flex flex-col items-center justify-center gap-1 px-3 py-1 text-slate-400"
+        className="flex flex-col items-center justify-center gap-1 pl-2 py-1 text-slate-400"
       >
         <Menu className="h-5 w-5" />
         <span className="text-[10px] font-medium">Mais</span>

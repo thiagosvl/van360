@@ -2,8 +2,9 @@ import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { useEscolaActions } from "@/hooks/ui/useEscolaActions";
+import { cn } from "@/lib/utils";
 import { Escola } from "@/types/escola";
-import { Eye, Users2 } from "lucide-react";
+import { Eye, GraduationCap, Users2 } from "lucide-react";
 import { NavigateFunction } from "react-router-dom";
 import { EscolaActionsMenu } from "./EscolaActionsMenu";
 
@@ -40,53 +41,61 @@ export function EscolasList({
             key={escola.id}
             actions={actions}
             showHint={index === 0}
+            className="bg-transparent"
           >
             <div
               onClick={() => onEdit(escola)}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 active:scale-[0.99] transition-transform"
+              className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
             >
-              <div className="flex items-start justify-between gap-3 mb-3">
-                <div className="min-w-0">
-                  <p className="font-bold text-gray-900 text-sm">
-                    {escola.nome}
-                  </p>
-                </div>
-                <Eye className="h-4 w-4 text-gray-300 absolute right-4 top-3" />
+              <div className="flex-shrink-0 w-9 h-9 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center">
+                <GraduationCap className="h-5 w-5 text-[#1a3a5c]" />
               </div>
 
-              <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-                <div className="shrink-0">
-                  <StatusBadge status={escola.ativo} />
-                </div>
-                <div className="flex flex-col items-end gap-0.5">
-                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-                    Passageiros
-                  </span>
-                  <p className="text-xs text-gray-600 font-medium flex gap-1">
-                    <Users2 className="w-4 h-4" />
-                    {escola.passageiros_ativos_count ?? 0} ativos
+              <div className="flex-grow min-w-0 pr-10">
+                <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+                  {escola.nome}
+                </p>
+                {escola.bairro && (
+                  <p className="text-[10px] text-gray-500 font-medium truncate opacity-60 mt-0.5">
+                    {escola.bairro}
                   </p>
+                )}
+              </div>
+
+              <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
+                <div className="flex items-center gap-1">
+                  <Users2 className="w-3 h-3 text-[#1a3a5c]/40" />
+                  <span className="text-[12px] font-black text-[#1a3a5c] leading-none">
+                    {escola.passageiros_ativos_count ?? 0}
+                  </span>
                 </div>
+                <StatusBadge
+                  status={escola.ativo}
+                  className={cn(
+                    "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
+                    escola.ativo ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-400"
+                  )}
+                />
               </div>
             </div>
           </MobileActionItem>
         );
       }}
     >
-      <div className="rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
-        <table className="w-full">
-          <thead className="bg-gray-50/50">
-            <tr className="border-b border-gray-100">
-              <th className="py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider pl-6">
+      <div className="rounded-[28px] overflow-hidden bg-white shadow-diff-shadow border-none">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-50/50 border-b border-gray-100/80">
+              <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Escola
               </th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Quantidade Passageiros
+              <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                Passageiros
               </th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Status
               </th>
-              <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <th className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Ações
               </th>
             </tr>
@@ -95,30 +104,42 @@ export function EscolasList({
             {escolas.map((escola) => (
               <tr
                 key={escola.id}
-                className="hover:bg-gray-50/80 transition-colors cursor-pointer border-b border-gray-50 last:border-0"
                 onClick={() => onEdit(escola)}
+                className="group hover:bg-slate-50/50 transition-colors cursor-pointer"
               >
-                <td className="py-4 pl-6 align-middle">
-                  <span className="font-bold text-gray-900 text-sm">
-                    {escola.nome}
-                  </span>
+                <td className="px-8 py-5 align-middle">
+                  <div className="flex flex-col">
+                    <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                      {escola.nome}
+                    </p>
+                    {escola.bairro && (
+                      <p className="text-[10px] text-gray-400 font-medium tracking-wider">
+                        {escola.bairro}
+                      </p>
+                    )}
+                  </div>
                 </td>
-                <td className="px-6 py-4 align-middle">
-                  <div className="flex items-center gap-1.5">
-                    <Users2 className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-muted-foreground">
-                      {escola.passageiros_ativos_count || 0} ativos
+                <td className="px-8 py-5 align-middle">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50/50 border border-slate-100 w-fit group-hover:bg-white group-hover:border-slate-200 transition-all">
+                    <Users2 className="w-4 h-4 text-[#1a3a5c]/40" />
+                    <span className="text-sm font-semibold text-slate-700">
+                      {escola.passageiros_ativos_count ?? 0}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Ativos
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-4 align-middle">
+                <td className="px-8 py-5 align-middle">
                   <StatusBadge
                     status={escola.ativo}
-                    trueLabel="Ativa"
-                    falseLabel="Desativada"
+                    className={cn(
+                      "font-bold text-[8px] h-3.5 px-1.5 rounded-sm border-none shadow-none uppercase tracking-widest inline-flex items-center",
+                      escola.ativo ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-400"
+                    )}
                   />
                 </td>
-                <td className="px-6 py-4 text-right align-middle">
+                <td className="px-8 py-5 text-right align-middle" onClick={(e) => e.stopPropagation()}>
                   <EscolaActionsMenu
                     escola={escola}
                     navigate={navigate}

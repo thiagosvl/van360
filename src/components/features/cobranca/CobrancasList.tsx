@@ -154,8 +154,8 @@ export function CobrancasList({
     return (
       <UnifiedEmptyState
         icon={isPendingTab ? Wallet : DollarSign}
-        title="Nenhuma informação"
-        description="Não há mensalidades para o período."
+        title="Nenhuma mensalidade"
+        description="Não há mensalidades para este período."
       />
     );
   };
@@ -176,20 +176,23 @@ export function CobrancasList({
         />
       )}
     >
-      <div className="rounded-xl overflow-hidden bg-white shadow-diff-shadow border-none">
+      <div className="rounded-[28px] overflow-hidden bg-white shadow-diff-shadow border-none">
         <Table>
-          <TableHeader className="bg-surface-container-low/30">
-            <TableRow className="hover:bg-transparent border-b border-surface-container-low">
-              <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+          <TableHeader className="bg-gray-50/50">
+            <TableRow className="hover:bg-transparent border-b border-gray-100/80">
+              <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Passageiro
               </TableHead>
-              <TableHead className="px-6 py-4 text-right text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+              <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Valor
               </TableHead>
-              <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+              <TableHead className="px-8 py-5 text-center text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                Status
+              </TableHead>
+              <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 {isPendingTab ? "Vencimento" : "Pagamento"}
               </TableHead>
-              <TableHead className="px-6 py-4 text-right text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+              <TableHead className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Ações
               </TableHead>
             </TableRow>
@@ -204,13 +207,13 @@ export function CobrancasList({
                   onClick={() => props.onVerCobranca(cobranca)}
                   className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors cursor-pointer"
                 >
-                  <TableCell className="px-6 py-4">
+                  <TableCell className="px-8 py-5">
                     <div className="flex flex-col">
                       <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                        {cobranca?.passageiro?.nome || "Not informed"}
+                        {formatShortName(cobranca?.passageiro?.nome)}
                       </p>
-                      <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
-                        Responsável: {firstName}
+                      <p className="text-[10px] text-gray-400 font-medium tracking-wider">
+                        {firstName}
                       </p>
                     </div>
                   </TableCell>
@@ -223,7 +226,22 @@ export function CobrancasList({
                     </span>
                   </TableCell>
 
-                  <TableCell className="px-6 py-4">
+                  <TableCell className="px-6 py-4 text-center">
+                    <StatusBadge
+                      status={cobranca?.status}
+                      dataVencimento={cobranca?.data_vencimento}
+                      className={cn(
+                        "font-bold text-[8px] h-3.5 px-1.5 rounded-sm border-none shadow-none uppercase tracking-widest inline-flex items-center",
+                        cobranca?.status === CobrancaStatus.PAGO
+                          ? "bg-emerald-50 text-emerald-600"
+                          : checkCobrancaEmAtraso(cobranca?.data_vencimento)
+                            ? "bg-red-50 text-red-600"
+                            : "bg-amber-50 text-amber-600"
+                      )}
+                    />
+                  </TableCell>
+
+                  <TableCell className="px-8 py-5">
                     <div className="flex flex-col">
                       <span className={cn(
                         "text-sm font-bold",
@@ -234,7 +252,7 @@ export function CobrancasList({
                           : formatDateToBR(cobranca?.data_pagamento)}
                       </span>
                       {!isPendingTab && (
-                        <span className="text-[9px] text-gray-400 font-medium uppercase">
+                        <span className="text-[9px] text-gray-400 font-medium">
                           {formatPaymentType(cobranca?.tipo_pagamento)}
                         </span>
                       )}

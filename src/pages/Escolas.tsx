@@ -70,18 +70,25 @@ export default function Escolas() {
               </div>
             </CardHeader>
 
-            <CardContent className="px-0">
-              <div className="mb-6">
-                <EscolasToolbar
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                  selectedStatus={selectedStatus}
-                  onStatusChange={setSelectedStatus}
-                  onClearFilters={clearFilters}
-                  hasActiveFilters={hasActiveFilters}
-                  onApplyFilters={setFilters}
-                  onRegister={handleRegister}
-                />
+            <CardContent className="px-0 space-y-6">
+              <EscolasToolbar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                selectedStatus={selectedStatus}
+                onStatusChange={setSelectedStatus}
+                onClearFilters={clearFilters}
+                hasActiveFilters={hasActiveFilters}
+                onApplyFilters={setFilters}
+                onRegister={handleRegister}
+              />
+
+              <div className="flex items-center justify-between px-1">
+                <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
+                  Escolas
+                </h2>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                  {escolas.length} {searchTerm || hasActiveFilters ? "ENCONTRADAS" : "ESCOLAS"}
+                </span>
               </div>
 
               {isEscolasLoading ? (
@@ -92,7 +99,7 @@ export default function Escolas() {
                   title="Nenhuma escola encontrada"
                   description={
                     searchTerm
-                      ? `Nenhuma escola encontrada para "${searchTerm}"`
+                      ? `Nenhuma escola encontrada for "${searchTerm}"`
                       : "Cadastre as escolas que você atende para organizar seus passageiros."
                   }
                   action={

@@ -3,7 +3,6 @@ import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { UnifiedEmptyState } from "@/components/empty";
 import { ListSkeleton } from "@/components/skeletons";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -15,8 +14,10 @@ import {
 import { useLayout } from "@/contexts/LayoutContext";
 import { useContratoActions } from "@/hooks/ui/useContratoActions";
 import { cn } from "@/lib/utils";
+import { formatShortName, formatFirstName } from "@/utils/formatters";
+import { formatRelativeTime } from "@/utils/formatters";
 import { ContratoStatus, ContratoTab } from "@/types/enums";
-import { ChevronsLeft, Eye, FileText, Send } from "lucide-react";
+import { ChevronsLeft, Clock, Eye, FileText, Send } from "lucide-react";
 import { memo } from "react";
 import { ContratoActionsMenu } from "./ContratoActionsMenu";
 
@@ -78,8 +79,9 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
 
   const isPassageiro = item.tipo === "passageiro";
   const status = item.status;
+  const nomeExibicao = item.passageiro?.nome || item.nome || "Não informado";
+  const responsavelExibicao = item.passageiro?.nome_responsavel || item.nome_responsavel || "Responsável não inf.";
 
-  // Mapeia as ações do hook para o formato do MobileActionItem
   const swipeActions = actions.map((action) => ({
     label: action.label,
     icon: action.icon,
@@ -89,57 +91,46 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
   }));
 
   return (
-    <MobileActionItem actions={swipeActions} showHint={index === 0}>
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-2">
-        <div className="flex justify-between items-start relative">
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                "h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm",
-                item.passageiro?.ativo
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "bg-gray-100 text-slate-600",
-              )}
-            >
-              {(item.passageiro?.nome || item.nome || "?").charAt(0)}
-            </div>
-            <div>
-              <p className="font-bold text-gray-900 text-sm">
-                {item.passageiro?.nome || item.nome || "Não informado"}
-              </p>
-              <p className="text-xs text-gray-500">
-                {item.passageiro?.nome_responsavel ||
-                  item.nome_responsavel ||
-                  "Responsável não inf."}
-              </p>
-            </div>
-            <ChevronsLeft className="h-4 w-4 text-gray-300 absolute right-0 top-0" />
+    <MobileActionItem actions={swipeActions} showHint={index === 0} className="bg-transparent">
+      <div className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50">
+        <div className="flex-shrink-0 w-9 h-9 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center">
+          <FileText className="w-5 h-5 text-[#1a3a5c]" />
+        </div>
+
+        <div className="flex-grow min-w-0 pr-10">
+          <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+            {formatShortName(nomeExibicao)}
+          </p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
+              {formatFirstName(responsavelExibicao)}
+            </p>
           </div>
         </div>
 
-        <div className="flex justify-between items-center mt-1 pt-2 border-t border-gray-50">
-          <div>
-            <span className="text-sm font-bold text-gray-700">
-              {(
-                Number(
-                  item.dados_contrato?.valorMensal ||
-                    item.valor_parcela ||
-                    item.valor_mensal,
-                ) || 0
-              ).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-            </span>
-          </div>
-          <div className="text-right">
-            {!isPassageiro ? (
-              <Badge
-                variant={
-                  status === ContratoStatus.ASSINADO ? "success" : "destructive"
-                }
-              >
-                {status === ContratoStatus.ASSINADO ? "Assinado" : "Pendente"}
-              </Badge>
+        <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
+          <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
+            {(
+              Number(
+                item.dados_contrato?.valorMensal ||
+                  item.valor_parcela ||
+                  item.valor_mensal,
+              ) || 0
+            ).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+          </p>
+          <div className="flex items-center gap-1.5">
+            {(status === ContratoStatus.PENDENTE || isPassageiro) ? (
+              <div className="flex items-center gap-1 text-[8px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                <Clock className="w-2.5 h-2.5" />
+                {formatRelativeTime(item.created_at)}
+              </div>
             ) : (
-              <Badge variant="secondary">Sem Contrato</Badge>
+              <StatusBadge 
+                status={status === ContratoStatus.ASSINADO} 
+                trueLabel="ASSINADO" 
+                falseLabel="PENDENTE"
+                className="font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none"
+              />
             )}
           </div>
         </div>
@@ -220,7 +211,7 @@ export const ContratosList = memo(function ContratosList({
       isLoading={isLoading}
       loadingSkeleton={<ListSkeleton count={5} />}
       emptyState={getEmptyState()}
-      mobileContainerClassName="space-y-3"
+      mobileContainerClassName="space-y-4"
       mobileItemRenderer={(item, index) => (
         <ContratoMobileCard
           key={item.id}
@@ -232,80 +223,75 @@ export const ContratosList = memo(function ContratosList({
         />
       )}
     >
-      <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white shadow-sm">
+      <div className="rounded-[28px] overflow-hidden bg-white shadow-diff-shadow border-none">
         <Table>
-          <TableHeader className="bg-gray-50/50">
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
-                Passageiro
+          <TableHeader className="bg-slate-50/50">
+            <TableRow className="hover:bg-transparent border-b border-slate-100">
+              <TableHead className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                Passageiro / Responsável
               </TableHead>
-              <TableHead className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
-                Status Passageiro
+              <TableHead className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                Valor Mensal
               </TableHead>
-              <TableHead className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
-                Valor
-              </TableHead>
-              <TableHead className="px-6 py-4 text-xs font-bold text-gray-400 uppercase text-right">
+              <TableHead className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] text-right">
                 Ações
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((item) => (
-              <TableRow
-                key={item.id}
-                className="hover:bg-gray-50/50 transition-colors border-b border-gray-50 last:border-0"
-              >
-                <TableCell className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        "h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm",
-                        item.passageiro?.ativo
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-gray-100 text-slate-600",
-                      )}
-                    >
-                      {(item.passageiro?.nome || item.nome || "?").charAt(0)}
+            {data.map((item) => {
+              const nomePassageiro = item.passageiro?.nome || item.nome || "Não informado";
+              const nomeResponsavel = item.passageiro?.nome_responsavel || item.nome_responsavel || "Não informado";
+
+              return (
+                <TableRow
+                  key={item.id}
+                  className="hover:bg-slate-50/50 transition-colors border-b border-slate-50 last:border-0"
+                >
+                  <TableCell className="px-8 py-5">
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100">
+                        <FileText className="w-5 h-5 text-[#1a3a5c]" />
+                      </div>
+                      <div className="flex flex-col">
+                        <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                          {formatShortName(nomePassageiro)}
+                        </p>
+                        <p className="text-[10px] text-gray-400 font-medium tracking-wider">
+                          {formatFirstName(nomeResponsavel)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <p className="font-bold text-gray-900 text-sm">
-                        {item.passageiro?.nome || item.nome || "Não informado"}
-                      </p>
-                      <p className="text-xs font-semibold text-gray-900">
-                        {item.passageiro?.nome_responsavel ||
-                          item.nome_responsavel ||
-                          "Não informado"}
-                      </p>
+                  </TableCell>
+
+                  <TableCell className="px-8 py-5">
+                    <span className="text-sm font-black text-[#1a3a5c]">
+                      {(
+                        Number(
+                          item.dados_contrato?.valorMensal ||
+                            item.valor_parcela ||
+                            item.valor_mensal,
+                        ) || 0
+                      ).toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      })}
+                    </span>
+                  </TableCell>
+                  <TableCell className="px-8 py-5 text-right">
+                    <div className="flex justify-end pr-2">
+                       <ContratoActionsMenu
+                        item={item}
+                        tipo={item.tipo}
+                        status={item.status}
+                        {...actions}
+                        onReenviarNotificacao={handleReenviarNotificacao}
+                      />
                     </div>
-                  </div>
-                </TableCell>
-                <TableCell className="px-6 py-4">
-                  <StatusBadge status={item.passageiro?.ativo} />
-                </TableCell>
-                <TableCell className="px-6 py-4 font-bold text-gray-900 text-sm">
-                  {(
-                    Number(
-                      item.dados_contrato?.valorMensal ||
-                        item.valor_parcela ||
-                        item.valor_mensal,
-                    ) || 0
-                  ).toLocaleString("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                  })}
-                </TableCell>
-                <TableCell className="px-6 py-4 text-right">
-                  <ContratoActionsMenu
-                    item={item}
-                    tipo={item.tipo}
-                    status={item.status}
-                    {...actions}
-                    onReenviarNotificacao={handleReenviarNotificacao}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>

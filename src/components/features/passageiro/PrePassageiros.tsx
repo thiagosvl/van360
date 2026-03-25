@@ -293,8 +293,8 @@ export default function PrePassageiros({
                               <p className="font-headline font-bold text-[#1a3a5c] text-sm">
                                 {formatShortName(prePassageiro.nome)}
                               </p>
-                              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
-                                Responsável: {formatFirstName(prePassageiro.nome_responsavel)}
+                              <p className="text-[10px] text-gray-400 font-medium tracking-wider">
+                                {formatFirstName(prePassageiro.nome_responsavel)}
                               </p>
                             </div>
                           </div>
@@ -307,7 +307,7 @@ export default function PrePassageiros({
                           </span>
                         </TableCell>
                         <TableCell className="py-4">
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-gray-500 uppercase">
                             {formatRelativeTime(prePassageiro.created_at)}
                           </span>
                         </TableCell>
@@ -376,45 +376,45 @@ export default function PrePassageiros({
                     },
                   ];
 
-                    return (
-                      <MobileActionItem
-                        key={prePassageiro.id}
-                        actions={actions}
-                        showHint={index === 0}
-                        className="bg-transparent"
+                  return (
+                    <MobileActionItem
+                      key={prePassageiro.id}
+                      actions={actions}
+                      showHint={index === 0}
+                      className="bg-transparent"
+                    >
+                      <div
+                        className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
+                        onClick={() => handleFinalizeClick(prePassageiro)}
                       >
-                        <div
-                          className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
-                          onClick={() => handleFinalizeClick(prePassageiro)}
-                        >
-                          <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
-                            <span className="text-white font-headline font-bold text-sm leading-none">
-                              {getInitials(prePassageiro.nome)}
-                            </span>
-                          </div>
+                        <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
+                          <span className="text-white font-headline font-bold text-sm leading-none">
+                            {getInitials(prePassageiro.nome)}
+                          </span>
+                        </div>
 
-                          <div className="flex-grow min-w-0 pr-10">
-                            <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-                              {formatShortName(prePassageiro.nome)}
-                            </p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
-                                {formatFirstName(prePassageiro.nome_responsavel)}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
-                            <span className="text-[8px] font-bold text-blue-600 border border-blue-200 uppercase tracking-widest bg-blue-50 px-1 py-0.5 rounded-sm">
-                              Pendente
-                            </span>
-                            <p className="text-[8px] text-gray-400 font-medium uppercase opacity-60">
-                              {formatRelativeTime(prePassageiro.created_at)}
+                        <div className="flex-grow min-w-0 pr-10">
+                          <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+                            {formatShortName(prePassageiro.nome)}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
+                              {formatFirstName(prePassageiro.nome_responsavel)}
                             </p>
                           </div>
                         </div>
-                      </MobileActionItem>
-                    );
+
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
+                          <span className="text-[8px] font-bold text-blue-600 border border-blue-200 uppercase tracking-widest bg-blue-50 px-1 py-0.5 rounded-sm">
+                            Pendente
+                          </span>
+                          <p className="text-[8px] text-gray-400 font-medium uppercase opacity-60">
+                            {formatRelativeTime(prePassageiro.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                    </MobileActionItem>
+                  );
                 })}
               </div>
             </>

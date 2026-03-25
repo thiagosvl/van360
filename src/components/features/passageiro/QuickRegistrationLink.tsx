@@ -5,21 +5,19 @@ import { openBrowserLink } from "@/utils/browser";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import { toast } from "@/utils/notifications/toast";
 import {
-    Copy,
-    CopyCheck,
-    LinkIcon,
-    MessageCircle
+  Copy,
+  CopyCheck,
+  LinkIcon,
+  MessageCircle
 } from "lucide-react";
 import { useState } from "react";
 
 interface QuickRegistrationLinkProps {
   profile: any;
-  pendingCount?: number;
 }
 
 export function QuickRegistrationLink({
   profile,
-  pendingCount = 0,
 }: QuickRegistrationLinkProps) {
   const [isCopied, setIsCopied] = useState(false);
 
@@ -61,15 +59,8 @@ export function QuickRegistrationLink({
               >
                 <LinkIcon className="h-6 w-6" />
               </div>
-              {pendingCount > 0 && (
-                <Badge 
-                  className="absolute -top-2 -right-2 h-5 min-w-[20px] px-1.5 flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white border-2 border-white text-[10px] font-bold shadow-sm"
-                >
-                  {pendingCount}
-                </Badge>
-              )}
             </div>
-            
+
             <div className="flex-1">
               <div className="flex items-center justify-center md:justify-start gap-2">
                 <h3 className={`text-base font-bold leading-tight text-[#1a3a5c] font-headline`}>
@@ -96,11 +87,10 @@ export function QuickRegistrationLink({
               variant="outline"
               size="sm"
               onClick={handleCopyLink}
-              className={`flex-1 md:flex-none font-bold border-blue-100 text-[#1a3a5c] hover:bg-blue-50 hover:text-[#1a3a5c] transition-all rounded-xl h-10 px-4 ${
-                isCopied
-                  ? "bg-green-50 text-green-700 border-green-200"
-                  : ""
-              }`}
+              className={`flex-1 md:flex-none font-bold border-blue-100 text-[#1a3a5c] hover:bg-blue-50 hover:text-[#1a3a5c] transition-all rounded-xl h-10 px-4 ${isCopied
+                ? "bg-green-50 text-green-700 border-green-200"
+                : ""
+                }`}
             >
               {isCopied ? (
                 <>

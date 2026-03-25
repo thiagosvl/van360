@@ -96,7 +96,7 @@ export default function Cobrancas() {
               />
             </div>
 
-            <div className="flex items-center justify-between mb-2 mt-4 px-1">
+            <div className="flex items-center justify-between px-1">
               <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
                 {activeTab === CobrancaTab.ARECEBER ? "Próximos Vencimentos" : "Histórico de Recebimentos"}
               </h2>

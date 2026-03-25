@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { ContratoTab } from "@/types/enums";
 import { Eye, Search, Settings } from "lucide-react";
 import { memo } from "react";
@@ -27,40 +28,61 @@ export const ContratosToolbar = memo(function ContratosToolbar({
   onOpenPreview,
 }: ContratosToolbarProps) {
   return (
-    <div className="flex flex-col gap-4 mb-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Tabs - Estilo mobile scrollable */}
-        <div className="overflow-x-auto pb-1 -mb-1 scrollbar-hide">
-          <TabsList className="bg-gray-100/80 p-1 rounded-xl w-fit flex-nowrap border-0">
+    <div className="flex flex-col gap-6 mb-8">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5">
+        {/* Tabs - Estilo Corretor */}
+        <div className="bg-slate-100/50 p-1.5 rounded-2xl w-full sm:w-fit overflow-x-auto scrollbar-hide">
+          <TabsList className="bg-transparent h-11 p-0 gap-1 border-0 w-max sm:w-auto">
             <TabsTrigger
               value={ContratoTab.PENDENTES}
-              className="rounded-lg px-4 py-2 text-sm font-bold data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all"
+              className={cn(
+                "rounded-xl px-5 h-full font-headline font-bold text-[10px] uppercase tracking-widest transition-all duration-300",
+                "data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-md",
+                "data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c]"
+              )}
             >
               Pendentes
               {countPendentes !== undefined && (
-                <span className="ml-2 bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full text-[10px]">
+                <span className={cn(
+                  "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold",
+                  activeTab === ContratoTab.PENDENTES ? "bg-white/20 text-white" : "bg-slate-200 text-slate-500"
+                )}>
                   {countPendentes}
                 </span>
               )}
             </TabsTrigger>
             <TabsTrigger
               value={ContratoTab.ASSINADOS}
-              className="rounded-lg px-4 py-2 text-sm font-bold data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm transition-all"
+              className={cn(
+                "rounded-xl px-5 h-full font-headline font-bold text-[10px] uppercase tracking-widest transition-all duration-300",
+                "data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-md",
+                "data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c]"
+              )}
             >
               Assinados
               {countAssinados !== undefined && (
-                <span className="ml-2 bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full text-[10px]">
+                <span className={cn(
+                  "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold",
+                  activeTab === ContratoTab.ASSINADOS ? "bg-white/20 text-white" : "bg-slate-200 text-slate-500"
+                )}>
                   {countAssinados}
                 </span>
               )}
             </TabsTrigger>
             <TabsTrigger
               value={ContratoTab.SEM_CONTRATO}
-              className="rounded-lg px-4 py-2 text-sm font-bold data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm transition-all"
+              className={cn(
+                "rounded-xl px-5 h-full font-headline font-bold text-[10px] uppercase tracking-widest transition-all duration-300",
+                "data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-md",
+                "data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c]"
+              )}
             >
               Sem Contrato
               {countSemContrato !== undefined && (
-                <span className="ml-2 bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full text-[10px]">
+                <span className={cn(
+                  "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold",
+                  activeTab === ContratoTab.SEM_CONTRATO ? "bg-white/20 text-white" : "bg-slate-200 text-slate-500"
+                )}>
                   {countSemContrato}
                 </span>
               )}
@@ -68,36 +90,36 @@ export const ContratosToolbar = memo(function ContratosToolbar({
           </TabsList>
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto">
+        <div className="flex items-center gap-3 w-full xl:w-auto">
           {/* Busca */}
-          <div className="relative w-full md:w-72 lg:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <div className="relative group flex-grow xl:w-80">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#1a3a5c] transition-colors" />
             <Input
               placeholder="Buscar por passageiro ou responsável..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className="pl-10 bg-white border-gray-200 rounded-xl h-11 focus:ring-blue-500/20"
+              className="pl-11 pr-4 bg-white border-none shadow-diff-shadow h-12 rounded-xl text-sm font-medium text-slate-600 placeholder:text-slate-400 transition-all focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/10"
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 shrink-0">
             <Button
               variant="outline"
               size="icon"
-              className="h-11 w-11 bg-white border-gray-200 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-colors"
+              className="h-12 w-12 bg-white border-none rounded-xl shadow-diff-shadow hover:bg-slate-50 hover:text-[#1a3a5c] transition-all active:scale-95"
               onClick={onOpenPreview}
               title="Visualizar Modelo"
             >
-              <Eye className="w-5 h-5" />
+              <Eye className="w-5 h-5 text-slate-400" />
             </Button>
             <Button
               variant="outline"
               size="icon"
-              className="h-11 w-11 bg-white border-gray-200 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-colors"
+              className="h-12 w-12 bg-white border-none rounded-xl shadow-diff-shadow hover:bg-slate-50 hover:text-[#1a3a5c] transition-all active:scale-95"
               onClick={onOpenConfig}
               title="Configurações"
             >
-              <Settings className="w-5 h-5" />
+              <Settings className="w-5 h-5 text-slate-400" />
             </Button>
           </div>
         </div>

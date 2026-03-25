@@ -72,42 +72,10 @@ const Contratos = () => {
           {/* Active State */}
           {profile?.config_contrato?.usar_contratos && (
             <>
-              {/* KPIs */}
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-                <KPICard
-                  title="Pendentes"
-                  value={kpis?.pendentes ?? 0}
-                  icon={Send}
-                  bgClass="bg-blue-50"
-                  colorClass="text-blue-600"
-                  countVisible={false}
-                  format="number"
-                />
-                <KPICard
-                  title="Assinados"
-                  value={kpis?.assinados ?? 0}
-                  icon={CheckCircle2}
-                  bgClass="bg-green-50"
-                  colorClass="text-green-600"
-                  countVisible={false}
-                  format="number"
-                />
-                <KPICard
-                  title="Sem Contrato"
-                  value={kpis?.semContrato ?? 0}
-                  icon={UserX}
-                  bgClass="bg-orange-50"
-                  colorClass="text-orange-600"
-                  countVisible={false}
-                  format="number"
-                  className="col-span-2 md:col-span-1"
-                />
-              </div>
-
               <Tabs
                 value={activeTab}
                 onValueChange={handleTabChange}
-                className="w-full"
+                className="w-full space-y-6"
               >
                 <ContratosToolbar
                   busca={busca}
@@ -120,7 +88,17 @@ const Contratos = () => {
                   onOpenPreview={handleOpenPreview}
                 />
 
-                <TabsContent value={ContratoTab.PENDENTES} className="mt-0">
+                <div className="flex items-center justify-between px-1">
+                  <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
+                    {activeTab === ContratoTab.PENDENTES ? "Contratos Pendentes" : 
+                     activeTab === ContratoTab.ASSINADOS ? "Contratos Assinados" : "Passageiros s/ Contrato"}
+                  </h2>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                    {contratos.length} {debouncedSearch ? "ENCONTRADOS" : "TOTAL"}
+                  </span>
+                </div>
+
+                <TabsContent value={ContratoTab.PENDENTES} className="mt-0 outline-none">
                   <ContratosList
                     data={contratos}
                     isLoading={isLoading}
@@ -130,7 +108,7 @@ const Contratos = () => {
                   />
                 </TabsContent>
 
-                <TabsContent value={ContratoTab.ASSINADOS} className="mt-0">
+                <TabsContent value={ContratoTab.ASSINADOS} className="mt-0 outline-none">
                   <ContratosList
                     data={contratos}
                     isLoading={isLoading}
@@ -140,7 +118,7 @@ const Contratos = () => {
                   />
                 </TabsContent>
 
-                <TabsContent value={ContratoTab.SEM_CONTRATO} className="mt-0">
+                <TabsContent value={ContratoTab.SEM_CONTRATO} className="mt-0 outline-none">
                   <ContratosList
                     data={contratos}
                     isLoading={isLoading}
