@@ -47,7 +47,7 @@ export const RelatoriosOperacional = ({
         {/* Escolas */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden group">
           <div className="pt-6 px-6 flex items-center gap-3">
-             <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
+            <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
               <Users className="h-5 w-5 opacity-80 group-hover:opacity-100" />
             </div>
             <div className="flex flex-col">
@@ -70,7 +70,7 @@ export const RelatoriosOperacional = ({
                     <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
                       {escola.passageiros}{" "}
                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                        pass.
+                        passageiros
                       </span>
                     </span>
                   </div>
@@ -98,7 +98,7 @@ export const RelatoriosOperacional = ({
         {/* Períodos */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden group">
           <div className="pt-6 px-6 flex items-center gap-3">
-             <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
+            <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
               <Users className="h-5 w-5 opacity-80 group-hover:opacity-100" />
             </div>
             <div className="flex flex-col">
@@ -121,7 +121,7 @@ export const RelatoriosOperacional = ({
                     <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
                       {periodo.passageiros}{" "}
                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                        pass.
+                        passageiros
                       </span>
                     </span>
                   </div>
@@ -152,7 +152,7 @@ export const RelatoriosOperacional = ({
         {/* Veículos */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden group">
           <div className="pt-6 px-6 flex items-center gap-3">
-             <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
+            <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
               <Users className="h-5 w-5 opacity-80 group-hover:opacity-100" />
             </div>
             <div className="flex flex-col">
@@ -175,7 +175,7 @@ export const RelatoriosOperacional = ({
                     <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
                       {veiculo.passageiros}{" "}
                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                        pass.
+                        passageiros
                       </span>
                     </span>
                   </div>

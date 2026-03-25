@@ -31,7 +31,7 @@ export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
   const totalFinanceiro = Math.max(dados.recebido, dados.gasto);
   const percEntradas = totalFinanceiro > 0 ? (dados.recebido / totalFinanceiro) * 100 : 0;
   const percSaidas = totalFinanceiro > 0 ? (dados.gasto / totalFinanceiro) * 100 : 0;
-  
+
   // Balanço relativo ao total movimentado
   const percBalanco = totalFinanceiro > 0 ? (Math.abs(dados.lucroEstimado) / totalFinanceiro) * 100 : 0;
 
@@ -59,7 +59,7 @@ export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
       {/* KPIs Secundários */}
       <div className="grid grid-cols-2 gap-4">
         <KPICard
-          label="Custo Médio / Pass."
+          label="Custo Médio por Passageiro"
           icon={Users}
           variant={KPICardVariant.OUTLINE}
           value={formatCurrency(dados.custoPorPassageiro)}
@@ -98,10 +98,10 @@ export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
                 {formatCurrency(dados.recebido)}
               </span>
             </div>
-            <Progress 
-              value={percEntradas} 
-              className="h-2 bg-slate-50 rounded-full" 
-              indicatorClassName="bg-emerald-500 rounded-full" 
+            <Progress
+              value={percEntradas}
+              className="h-2 bg-slate-50 rounded-full"
+              indicatorClassName="bg-emerald-500 rounded-full"
             />
           </div>
 
@@ -113,10 +113,10 @@ export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
                 {formatCurrency(dados.gasto)}
               </span>
             </div>
-            <Progress 
-              value={percSaidas} 
-              className="h-2 bg-slate-50 rounded-full" 
-              indicatorClassName="bg-rose-500 rounded-full" 
+            <Progress
+              value={percSaidas}
+              className="h-2 bg-slate-50 rounded-full"
+              indicatorClassName="bg-rose-500 rounded-full"
             />
           </div>
 
@@ -131,13 +131,13 @@ export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
                 {lucroPositivo ? "+" : ""}{formatCurrency(dados.lucroEstimado)}
               </span>
             </div>
-            <Progress 
-              value={percBalanco} 
-              className="h-2 bg-slate-50 rounded-full" 
+            <Progress
+              value={percBalanco}
+              className="h-2 bg-slate-50 rounded-full"
               indicatorClassName={cn(
                 "rounded-full",
                 lucroPositivo ? "bg-emerald-500" : "bg-rose-500"
-              )} 
+              )}
             />
           </div>
         </div>
