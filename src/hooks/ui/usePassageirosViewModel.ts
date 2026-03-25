@@ -131,7 +131,7 @@ export function usePassageirosViewModel() {
   });
 
   const countPrePassageiros = resumo?.contadores.passageiros.solicitacoes_pendentes ?? 0;
-  const totalPassageirosResumo = resumo?.contadores.passageiros.ativos;
+  const totalPassageirosResumo = resumo?.contadores.passageiros.total;
 
   const { data: escolasData, refetch: refetchEscolas } = useEscolas(
     { usuarioId: profile?.id },

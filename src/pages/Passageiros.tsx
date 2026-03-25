@@ -1,16 +1,14 @@
+import { KPICard } from "@/components/common/KPICard";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PassageirosList } from "@/components/features/passageiro/PassageirosList";
 import { PassageirosToolbar } from "@/components/features/passageiro/PassageirosToolbar";
 import PrePassageiros from "@/components/features/passageiro/PrePassageiros";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePassageirosViewModel } from "@/hooks/ui/usePassageirosViewModel";
-import { PassageiroTab } from "@/types/enums";
+import { KPICardVariant, PassageiroTab } from "@/types/enums";
 import { Users2 } from "lucide-react";
 
 export default function Passageiros() {
@@ -38,7 +36,6 @@ export default function Passageiros() {
     isPassageirosLoading,
     passageiros,
     isActionLoading,
-    handleCadastrarRapido,
     handleOpenNewDialog,
     handleHistorico,
     handleEdit,
@@ -57,74 +54,89 @@ export default function Passageiros() {
     );
   }
 
+  const isMainTab = activeTab === PassageiroTab.PASSAGEIROS;
+  const sectionTitle = isMainTab ? "Passageiros" : "Solicitações Pendentes";
+  const sectionCount = isMainTab ? (countPassageiros ?? passageiros.length) : countPrePassageiros;
+  const countLabel = isMainTab ? "TOTAL" : "AGUARDANDO";
+
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="space-y-6">
-          <Tabs 
-            value={activeTab} 
-            onValueChange={handleTabChange} 
+          <Tabs
+            value={activeTab}
+            onValueChange={handleTabChange}
             className="w-full space-y-6"
           >
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <TabsList className="bg-slate-100/80 p-1 rounded-xl h-10 md:h-12 w-full md:w-auto self-start">
-                <TabsTrigger 
-                  value={PassageiroTab.PASSAGEIROS} 
-                  className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none"
+            <div className="bg-gray-100/40 p-1 rounded-2xl">
+              <TabsList className="grid grid-cols-2 w-full h-11 bg-transparent p-0 gap-1 mt-0">
+                <TabsTrigger
+                  value={PassageiroTab.PASSAGEIROS}
+                  className="rounded-xl h-full font-headline font-bold text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400"
                 >
                   Passageiros
-                  {countPassageiros != null && countPassageiros > 0 && (
-                    <Badge variant="secondary" className="ml-2 bg-gray-200 text-gray-700 hover:bg-gray-200 text-[10px] md:text-xs">
-                      {countPassageiros}
-                    </Badge>
-                  )}
                 </TabsTrigger>
-                <TabsTrigger 
-                  value={PassageiroTab.SOLICITACOES} 
-                  className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none"
+                <TabsTrigger
+                  value={PassageiroTab.SOLICITACOES}
+                  className="rounded-xl h-full font-headline font-bold text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400"
                 >
                   Solicitações
-                  {countPrePassageiros > 0 && (
-                    <Badge variant="secondary" className="ml-2 bg-gray-200 text-gray-700 hover:bg-gray-200 text-[10px] md:text-xs">
-                      {countPrePassageiros}
-                    </Badge>
-                  )}
                 </TabsTrigger>
               </TabsList>
             </div>
-            
-            <TabsContent value={PassageiroTab.PASSAGEIROS} className="space-y-6 mt-0">
-              <Card className="border-none shadow-none bg-transparent">
-                <CardHeader className="p-0">
-                  <div className="flex justify-end mb-4">
-                    <Button onClick={handleCadastrarRapido} variant="outline" className="gap-2 text-uppercase w-full md:w-auto">
-                      GERAR PASSAGEIRO FAKE
-                    </Button>
-                  </div>
-                </CardHeader>
 
-                <CardContent className="px-0">
-                  <div className="mb-6">
-                    <PassageirosToolbar
-                      searchTerm={searchTerm}
-                      onSearchChange={setSearchTerm}
-                      selectedStatus={selectedStatus}
-                      onStatusChange={setSelectedStatus}
-                      selectedEscola={selectedEscola}
-                      onEscolaChange={setSelectedEscola}
-                      selectedVeiculo={selectedVeiculo}
-                      onVeiculoChange={setSelectedVeiculo}
-                      selectedPeriodo={selectedPeriodo}
-                      onPeriodoChange={setSelectedPeriodo}
-                      escolas={escolas}
-                      veiculos={veiculos}
-                      onClearFilters={clearFilters}
-                      hasActiveFilters={hasActiveFilters}
-                      onApplyFilters={setFilters}
-                      onRegister={handleOpenNewDialog}
-                    />
-                  </div>
+            <TabsContent value={activeTab} className="space-y-6 mt-0">
+              {isMainTab && (
+                <div>
+                  <PassageirosToolbar
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    selectedStatus={selectedStatus}
+                    onStatusChange={setSelectedStatus}
+                    selectedEscola={selectedEscola}
+                    onEscolaChange={setSelectedEscola}
+                    selectedVeiculo={selectedVeiculo}
+                    onVeiculoChange={setSelectedVeiculo}
+                    selectedPeriodo={selectedPeriodo}
+                    onPeriodoChange={setSelectedPeriodo}
+                    escolas={escolas}
+                    veiculos={veiculos}
+                    onClearFilters={clearFilters}
+                    hasActiveFilters={hasActiveFilters}
+                    onApplyFilters={setFilters}
+                    onRegister={handleOpenNewDialog}
+                  />
+                </div>
+              )}
 
+              <div className="grid grid-cols-2 gap-4">
+                <KPICard
+                  label="Passageiros"
+                  value={String(countPassageiros ?? passageiros.length ?? 0)}
+                  variant={KPICardVariant.PRIMARY}
+                  countLabel="TOTAL"
+                />
+                <KPICard
+                  label="Novas Solicitações"
+                  value={String(countPrePassageiros || 0)}
+                  variant={KPICardVariant.OUTLINE}
+                  countLabel="AGUARDANDO"
+                />
+              </div>
+
+              <div className="flex items-center justify-between mb-2 mt-4 px-1">
+                <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
+                  {sectionTitle}
+                </h2>
+                {sectionCount != null && (
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                    {sectionCount} {countLabel}
+                  </span>
+                )}
+              </div>
+
+              {isMainTab ? (
+                <>
                   {isPassageirosLoading ? (
                     <ListSkeleton count={5} />
                   ) : passageiros.length === 0 ? (
@@ -144,12 +156,10 @@ export default function Passageiros() {
                       onGenerateContract={handleGenerateContract}
                     />
                   )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value={PassageiroTab.SOLICITACOES} className="mt-0">
-              <PrePassageiros onFinalizeNewPrePassageiro={async () => {}} profile={profile} />
+                </>
+              ) : (
+                <PrePassageiros onFinalizeNewPrePassageiro={async () => { }} profile={profile} />
+              )}
             </TabsContent>
           </Tabs>
         </div>

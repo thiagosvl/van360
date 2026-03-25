@@ -1,7 +1,6 @@
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -11,10 +10,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { usePassageiroActions } from "@/hooks/ui/usePassageiroActions";
+import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
-import { formatPeriodo } from "@/utils/formatters";
-import { Bot } from "lucide-react";
 import { memo } from "react";
 import { PassageiroActionsMenu } from "./PassageiroActionsMenu";
 
@@ -22,30 +20,23 @@ interface PassageirosListProps {
   passageiros: Passageiro[];
   onHistorico: (passageiro: Passageiro) => void;
   onEdit: (passageiro: Passageiro) => void;
-
   onToggleClick: (passageiro: Passageiro) => void;
   onDeleteClick: (passageiro: Passageiro) => void;
   onGenerateContract?: (passageiro: Passageiro) => void;
 }
 
-// Helpers
-const getInitials = (name: string) => {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 1)
-    .join("")
-    .toUpperCase();
+const formatShortName = (fullName?: string) => {
+  if (!fullName) return "Sem nome";
+  const names = fullName.trim().split(/\s+/);
+  if (names.length <= 2) return fullName;
+  return `${names[0]} ${names[1]}`;
 };
-
-
 
 const PassageiroMobileCard = memo(function PassageiroMobileCard({
   passageiro,
   index,
   onHistorico,
   onEdit,
-
   onToggleClick,
   onDeleteClick,
   onGenerateContract,
@@ -57,65 +48,60 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
     passageiro,
     onHistorico,
     onEdit,
-
     onToggleStatus: onToggleClick,
-    onDelete: onDeleteClick,
+    onDelete: onDeleteClick as any,
     onGenerateContract,
   });
 
-  return (
-    <MobileActionItem actions={actions as any} showHint={index === 0}>
-      <div
-        onClick={() => onHistorico(passageiro)}
-        className="bg-white p-4 rounded-xl border-b border-gray-100 flex flex-col gap-3 active:bg-gray-50 transition-colors duration-200 cursor-pointer"
-      >
-        <div className="flex justify-between items-start mb-1 relative">
-          <div className="flex items-center gap-3">
-            <div
-              className={`h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm ${
-                passageiro.ativo
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "bg-gray-100 text-slate-600"
-              }`}
-            >
-              {getInitials(passageiro.nome)}
-            </div>
-            <div className="pr-2">
-              <p className="font-bold text-gray-900 text-sm">{passageiro.nome}</p>
-              <p className="text-xs text-gray-500">
-                {passageiro.nome_responsavel}
-              </p>
-            </div>
-          </div>
-          <div className="shrink-0 flex gap-2">
-            <StatusBadge status={passageiro.ativo} />
-          </div>
-        </div>
+  const getInitial = (name?: string) => {
+    if (!name) return "?";
+    return name.charAt(0).toUpperCase();
+  };
 
-        <div className="flex justify-between items-end border-t border-gray-50 pt-2.5">
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">
-              Escola
-            </span>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-700">
-                {passageiro.escola?.nome}
-              </span>
+  const initial = getInitial(passageiro?.nome);
+  
+  const shortName = formatShortName(passageiro?.nome);
+  const respName = formatShortName(passageiro?.nome_responsavel);
+
+  return (
+    <MobileActionItem actions={actions as any} className="bg-transparent">
+        <div
+            onClick={() => onHistorico(passageiro)}
+            className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
+        >
+            <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
+                <span className="text-white font-headline font-bold text-sm leading-none">
+                    {initial}
+                </span>
             </div>
-          </div>
-          <div className="text-right">
-            <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase block">
-              Valor
-            </span>
-            <span className="text-sm font-bold text-gray-950">
-              {Number(passageiro.valor_cobranca).toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })}
-            </span>
-          </div>
+
+            <div className="flex-grow min-w-0 pr-10">
+                <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+                    {shortName}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
+                       Responsável: {respName}
+                    </p>
+                </div>
+            </div>
+
+            <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
+                <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
+                    {Number(passageiro?.valor_cobranca).toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                    })}
+                </p>
+                <StatusBadge
+                    status={passageiro?.ativo}
+                    className={cn(
+                        "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
+                         passageiro?.ativo ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-400"
+                    )}
+                />
+            </div>
         </div>
-      </div>
     </MobileActionItem>
   );
 });
@@ -133,95 +119,80 @@ export function PassageirosList({
           key={passageiro.id}
           passageiro={passageiro}
           index={index}
+          onDeleteClick={props.onDeleteClick}
           {...props}
         />
       )}
     >
-      <div className="hidden md:block rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
+       <div className="rounded-xl overflow-hidden bg-white shadow-diff-shadow border-none">
         <Table>
-          <TableHeader className="bg-gray-50/50">
-            <TableRow className="hover:bg-transparent border-b border-gray-100">
-              <TableHead className="w-[300px] py-4 text-xs font-bold text-gray-400 uppercase tracking-wider pl-6">
+          <TableHeader className="bg-surface-container-low/30">
+            <TableRow className="hover:bg-transparent border-b border-surface-container-low">
+              <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest w-[350px]">
                 Passageiro
               </TableHead>
-              <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Escola / Período
-              </TableHead>
-              <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <TableHead className="px-6 py-4 text-center text-[9px] font-bold text-gray-400 uppercase tracking-widest">
                 Status
               </TableHead>
-              <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">
                 Veículo
               </TableHead>
-              <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <TableHead className="px-6 py-4 text-right text-[9px] font-bold text-gray-400 uppercase tracking-widest">
                 Valor
               </TableHead>
-              <TableHead className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <TableHead className="px-6 py-4 text-right text-[9px] font-bold text-gray-400 uppercase tracking-widest">
                 Ações
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {passageiros.map((passageiro) => (
+            {passageiros.map((passageiro) => {
+              const shortName = formatShortName(passageiro?.nome);
+              const respName = formatShortName(passageiro?.nome_responsavel);
+              
+              return (
               <TableRow
                 key={passageiro.id}
                 onClick={() => props.onHistorico(passageiro)}
-                className="hover:bg-gray-50/80 border-b border-gray-50 last:border-0 transition-colors cursor-pointer"
+                className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors cursor-pointer"
               >
-                <TableCell className="py-4 pl-6">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm ${
-                        passageiro.ativo
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-gray-100 text-slate-600"
-                      }`}
-                    >
-                      {getInitials(passageiro.nome)}
-                    </div>
-
-                    <div className="flex flex-col">
-                      <p className="font-bold text-gray-900 text-sm">
-                        {passageiro.nome}
-                      </p>
-                      <p className="text-xs font-semibold text-gray-900">
-                        {passageiro.nome_responsavel}
-                      </p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="py-4">
+                <TableCell className="px-6 py-4">
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium text-gray-700">
-                      {passageiro.escola?.nome}
-                    </span>
-                    <span className="text-xs text-gray-500 capitalize">
-                      {formatPeriodo(passageiro.periodo)}
-                    </span>
+                      <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                        {shortName}
+                      </p>
+                      <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                        Responsável: {respName}
+                      </p>
                   </div>
                 </TableCell>
-                <TableCell className="py-4">
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={passageiro.ativo} />
-                  </div>
+                <TableCell className="px-6 py-4 text-center">
+                    <StatusBadge 
+                        status={passageiro.ativo} 
+                        className="font-bold text-[8px] h-3.5 px-1.5 rounded-sm border-none uppercase tracking-widest"
+                    />
                 </TableCell>
-                <TableCell className="py-4">
-                  <Badge
-                    variant="secondary"
-                    className="font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-200"
-                  >
-                    {passageiro.veiculo
-                      ? formatarPlacaExibicao(passageiro.veiculo.placa)
-                      : "-"}
-                  </Badge>
+                <TableCell className="px-6 py-4">
+                  {passageiro.veiculo ? (
+                     <div className="flex flex-col">
+                        <span className="text-sm font-bold text-[#1a3a5c]">
+                            {formatarPlacaExibicao(passageiro.veiculo.placa)}
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-medium uppercase truncate w-32">
+                            {(passageiro.veiculo as any).modelo}
+                        </span>
+                     </div>
+                  ) : "-"}
                 </TableCell>
-                <TableCell className="py-4 text-gray-700">
-                  {Number(passageiro.valor_cobranca).toLocaleString("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                  })}
+                <TableCell className="px-6 py-4 text-right">
+                    <span className="font-headline font-bold text-[#1a3a5c] text-sm">
+                        {Number(passageiro.valor_cobranca).toLocaleString("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                        })}
+                    </span>
                 </TableCell>
-                <TableCell className="text-right py-4 pr-6">
+                <TableCell className="px-6 py-4 text-right">
                   <PassageiroActionsMenu 
                     passageiro={passageiro} 
                     {...props} 
@@ -230,7 +201,7 @@ export function PassageirosList({
                   />
                 </TableCell>
               </TableRow>
-            ))}
+            )})}
           </TableBody>
         </Table>
       </div>
