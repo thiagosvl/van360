@@ -94,7 +94,7 @@ const Contratos = () => {
                      activeTab === ContratoTab.ASSINADOS ? "Contratos Assinados" : "Passageiros s/ Contrato"}
                   </h2>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                    {contratos.length} {debouncedSearch ? "ENCONTRADOS" : "TOTAL"}
+                    {contratos.length} {busca ? "ENCONTRADOS" : activeTab === ContratoTab.SEM_CONTRATO ? "PASSAGEIROS" : "CONTRATOS"}
                   </span>
                 </div>
 

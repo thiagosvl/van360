@@ -22,7 +22,6 @@ export default function Veiculos() {
     clearFilters,
     hasActiveFilters,
     setFilters,
-    handleCadastrarRapido,
     handleEdit,
     handleDeleteClick,
     handleToggleAtivo,
@@ -41,16 +40,16 @@ export default function Veiculos() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
-        <p>Carregando informações...</p>
+      <div className="min-h-screen flex items-center justify-center text-gray-600 bg-[#F8FAFB]">
+        <p className="font-medium animate-pulse">Carregando informações...</p>
       </div>
     );
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-[#F8FAFB] pb-24">
       <PullToRefreshWrapper onRefresh={handleRefresh}>
-        <div className="space-y-6">
+        <div className="max-w-4xl mx-auto space-y-6">
           <VeiculosToolbar
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
@@ -73,40 +72,40 @@ export default function Veiculos() {
             )}
           </div>
 
-            {isVeiculosLoading ? (
-              <ListSkeleton count={5} />
-            ) : veiculos.length === 0 ? (
-              <UnifiedEmptyState
-                icon={Car}
-                title="Nenhum veículo encontrado"
-                description={
-                  searchTerm || hasActiveFilters
-                    ? `Não encontramos veículos com os filtros selecionados.`
-                    : "Comece cadastrando seu primeiro veículo para gerenciar a frota."
-                }
-                action={
-                  !searchTerm && !hasActiveFilters
-                    ? {
-                        label: "Cadastrar Veículo",
-                        onClick: () => {
-                          handleRegister();
-                        },
-                      }
-                    : undefined
-                }
-              />
-            ) : (
-              <VeiculosList
-                veiculos={veiculos}
-                navigate={navigate}
-                onEdit={handleEdit}
-                onToggleAtivo={handleToggleAtivo}
-                onDelete={handleDeleteClick}
-              />
-            )}
+          {isVeiculosLoading ? (
+            <ListSkeleton count={5} />
+          ) : veiculos.length === 0 ? (
+            <UnifiedEmptyState
+              icon={Car}
+              title="Nenhum veículo encontrado"
+              description={
+                searchTerm || hasActiveFilters
+                  ? `Não encontramos veículos com os filtros selecionados.`
+                  : "Comece cadastrando seu primeiro veículo para gerenciar a frota."
+              }
+              action={
+                !searchTerm && !hasActiveFilters
+                  ? {
+                      label: "Cadastrar Veículo",
+                      onClick: () => {
+                        handleRegister();
+                      },
+                    }
+                  : undefined
+              }
+            />
+          ) : (
+            <VeiculosList
+              veiculos={veiculos}
+              navigate={navigate}
+              onEdit={handleEdit}
+              onToggleAtivo={handleToggleAtivo}
+              onDelete={handleDeleteClick}
+            />
+          )}
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="Processando..." />
-    </>
+    </div>
   );
 }

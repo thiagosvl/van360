@@ -1,14 +1,17 @@
 import { cn } from "@/lib/utils";
 import { KPICardVariant } from "@/types/enums";
 import { LucideIcon } from "lucide-react";
+import { ReactNode } from "react";
 
 interface KPICardProps {
   label: string;
-  value: string;
+  value: ReactNode;
   icon?: LucideIcon;
   variant?: KPICardVariant;
   className?: string;
   countLabel?: string;
+  labelClassName?: string;
+  valueClassName?: string;
 }
 
 const variants = {
@@ -23,6 +26,8 @@ export function KPICard({
   variant = KPICardVariant.OUTLINE,
   countLabel,
   className,
+  labelClassName,
+  valueClassName,
 }: KPICardProps) {
   return (
     <div
@@ -34,13 +39,13 @@ export function KPICard({
     >
       <div className="flex items-center gap-2 mb-1">
         {Icon && <Icon className={cn("w-3.5 h-3.5 opacity-40")} />}
-        <span className="text-[10px] font-headline font-bold uppercase tracking-widest opacity-40">
+        <span className={cn("text-[10px] font-headline font-bold uppercase tracking-widest opacity-40", labelClassName)}>
           {label}
         </span>
       </div>
       
       <div className="flex items-baseline gap-2">
-        <h3 className="text-[22px] font-headline font-black leading-tight tracking-tight">
+        <h3 className={cn("text-[22px] font-headline font-black leading-tight tracking-tight", valueClassName)}>
           {value}
         </h3>
         {countLabel && (

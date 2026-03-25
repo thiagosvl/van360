@@ -1,22 +1,21 @@
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { useGastoActions } from "@/hooks/ui/useGastoActions";
-import { cn } from "@/lib/utils";
 import { Gasto } from "@/types/gasto";
 import { formatarPlacaExibicao } from "@/utils/domain";
 import { formatCurrency, formatDateToBR } from "@/utils/formatters";
 import {
-    Bus,
-    Calendar,
-    ClipboardCheck,
-    Cog,
-    Ellipsis,
-    Eye,
-    FileText,
-    Fuel,
-    HelpCircle,
-    Wallet,
-    Wrench,
+  Bus,
+  Calendar,
+  ClipboardCheck,
+  Cog,
+  Ellipsis,
+  Eye,
+  FileText,
+  Fuel,
+  HelpCircle,
+  Wallet,
+  Wrench,
 } from "lucide-react";
 import { memo } from "react";
 import { GastoActionsMenu } from "./GastoActionsMenu";
@@ -31,37 +30,21 @@ interface GastosListProps {
 const getCategoryConfig = (categoria: string) => {
   switch (categoria) {
     case "Combustível":
-      return { icon: Fuel, color: "text-orange-600", bg: "bg-orange-100" };
+      return { icon: Fuel };
     case "Manutenção":
-      return { icon: Wrench, color: "text-blue-600", bg: "bg-blue-100" };
+      return { icon: Wrench };
     case "Salário":
-      return { icon: Wallet, color: "text-green-600", bg: "bg-green-100" };
+      return { icon: Wallet };
     case "Vistorias":
-      return {
-        icon: ClipboardCheck,
-        color: "text-purple-600",
-        bg: "bg-purple-100",
-      };
+      return { icon: ClipboardCheck };
     case "Documentação":
-      return { icon: FileText, color: "text-yellow-600", bg: "bg-yellow-100" };
+      return { icon: FileText };
     case "Administrativa":
-      return {
-        icon: Cog,
-        color: "text-purple-600",
-        bg: "bg-purple-100",
-      };
+      return { icon: Cog };
     case "Outro":
-      return {
-        icon: Ellipsis,
-        color: "text-red-600",
-        bg: "bg-red-100",
-      };
+      return { icon: Ellipsis };
     default:
-      return {
-        icon: HelpCircle,
-        color: "text-gray-600",
-        bg: "bg-gray-100",
-      };
+      return { icon: HelpCircle };
   }
 };
 
@@ -72,7 +55,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
   onDelete,
   veiculos,
 }: { gasto: Gasto; index: number } & GastosListProps) {
-  const { icon: Icon, color, bg } = getCategoryConfig(gasto.categoria);
+  const { icon: Icon } = getCategoryConfig(gasto.categoria);
 
   const getVeiculoPlaca = (veiculoId?: string | null) => {
     if (!veiculoId) return null;
@@ -83,57 +66,35 @@ const GastoMobileCard = memo(function GastoMobileCard({
   const actions = useGastoActions({ gasto, onEdit, onDelete });
 
   return (
-    <MobileActionItem actions={actions as any} showHint={index === 0}>
+    <MobileActionItem actions={actions as any} showHint={index === 0} className="bg-transparent">
       <div
         onClick={() => onEdit(gasto)}
-        className={cn(
-          "bg-white rounded-xl shadow-sm border border-gray-100 pt-3 pb-2 px-4 transition-transform",
-          "active:scale-[0.99]"
-        )}
+        className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
       >
-        <div className="flex items-start justify-between gap-3 mb-2">
-          <div className="flex items-center gap-3">
-            <div
-              className={`h-8 w-8 rounded-full flex items-center justify-center ${bg} ${color}`}
-            >
-              <Icon className="h-4 w-4" />
-            </div>
-            <div className="flex flex-col">
-              <p className="font-bold text-gray-900 text-sm leading-tight">
-                {gasto.categoria}
-              </p>
-              <div className="flex items-center gap-1.5 mt-1">
-                {placa ? (
-                  <span className="text-[10px] font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded-md border border-gray-200 inline-flex items-center gap-1">
-                    <Bus className="w-3 h-3 text-gray-500" />
-                    {formatarPlacaExibicao(placa)}
-                  </span>
-                ) : (
-                  <span className="text-[10px] font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100 inline-flex items-center gap-1 whitespace-nowrap">
-                    <Bus className="w-3 h-3 text-gray-400" />
-                    Não especificado
-                  </span>
-                )}
-              </div>
-            </div>
-            {gasto.usuario_id !== "mock" ? (
-              <Eye className="h-4 w-4 text-gray-300 absolute right-4 top-4" />
-            ) : null}
+        <div className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center border border-slate-100 bg-slate-50/50">
+          <Icon className="h-5 w-5 text-[#1a3a5c] opacity-60" />
+        </div>
+
+        <div className="flex-grow min-w-0 pr-24">
+          <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+            {gasto.categoria}
+          </p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
+              {gasto.descricao || "Sem descrição"}
+            </p>
           </div>
         </div>
 
-        <div className="flex justify-between items-center py-2">
-          <p className="text-xs text-muted-foreground max-w-[60%] line-clamp-2 font-normal">
-            {gasto.descricao || "Sem descrição"}
-          </p>
-          <p className="font-bold text-gray-900 text-base">
+        <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
+          <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
             {formatCurrency(gasto.valor)}
           </p>
-        </div>
-
-        <div className="flex items-center pt-2 border-t border-gray-50 text-xs text-gray-500">
-          <Calendar className="w-3 h-3 mr-1.5" />
-          {formatDateToBR(gasto.data)}
+          <div className="flex items-center gap-1.5 grayscale opacity-50">
+            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap leading-none">
+              {formatDateToBR(gasto.data)}
+            </span>
+          </div>
         </div>
       </div>
     </MobileActionItem>
@@ -166,89 +127,76 @@ export function GastosList({
         />
       )}
     >
-      <div className="rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
-        <table className="w-full">
-          <thead className="bg-gray-50/50">
-            <tr className="border-b border-gray-100">
-              <th className="w-[250px] py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider pl-6">
+      <div className="rounded-[28px] overflow-hidden bg-white shadow-diff-shadow border-none">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-50/50 border-b border-gray-100/80">
+              <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Categoria
               </th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Veículo
               </th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Descrição
               </th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <th className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Data
               </th>
-              <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <th className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Valor
               </th>
-              <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <th className="px-8 py-5 text-right text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Ações
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {gastos.map((gasto) => {
-              const {
-                icon: Icon,
-                color,
-                bg,
-              } = getCategoryConfig(gasto.categoria);
+              const { icon: Icon } = getCategoryConfig(gasto.categoria);
               const placa = getVeiculoPlaca(gasto.veiculo_id);
 
               return (
                 <tr
                   key={gasto.id}
                   onClick={() => onEdit(gasto)}
-                  className={cn(
-                    "border-b border-gray-50 last:border-0 transition-colors",
-                    "hover:bg-gray-50/80 cursor-pointer"
-                  )}
+                  className="group hover:bg-slate-50/50 transition-colors cursor-pointer"
                 >
-                  <td className="py-4 pl-6 align-middle">
+                  <td className="px-8 py-5 align-middle">
                     <div className="flex items-center gap-3">
-                      <div
-                        className={`h-10 w-10 rounded-full flex items-center justify-center ${bg} ${color}`}
-                      >
-                        <Icon className="h-5 w-5" />
+                      <div className="h-10 w-10 rounded-xl flex items-center justify-center border border-slate-100 bg-slate-50/50">
+                        <Icon className="h-5 w-5 text-[#1a3a5c] opacity-60" />
                       </div>
-                      <span className="font-bold text-gray-900 text-sm">
+                      <span className="font-headline font-bold text-[#1a3a5c] text-sm">
                         {gasto.categoria}
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 align-middle">
-                    <div className="flex items-center gap-2">
-                      {placa ? (
-                        <span className="text-xs font-semibold text-gray-700 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
-                          {placa}
-                        </span>
-                      ) : (
-                        <span className="text-xs font-semibold text-gray-400 bg-gray-50 px-2 py-1 rounded-md border border-gray-100 italic whitespace-nowrap">
-                          Não especificado
-                        </span>
-                      )}
-                    </div>
+                  <td className="px-8 py-5 align-middle">
+                    {placa ? (
+                      <span className="text-xs font-semibold text-gray-700 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-lg">
+                        {formatarPlacaExibicao(placa)}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic opacity-50">
+                        N/A
+                      </span>
+                    )}
                   </td>
-                  <td className="px-6 py-4 align-middle">
-                    <span className="text-sm text-gray-500 max-w-[200px] block truncate">
+                  <td className="px-8 py-5 align-middle">
+                    <span className="text-sm text-slate-500 max-w-[180px] block truncate">
                       {gasto.descricao || "-"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 align-middle">
-                    <span className="text-sm text-gray-600 font-medium">
-                      {formatDateToBR(gasto.data)}
-                    </span>
+                  <td className="px-8 py-5 align-middle text-sm font-medium text-slate-600">
+                    {formatDateToBR(gasto.data)}
                   </td>
-                  <td className="px-6 py-4 text-right align-middle">
-                    <span className="font-bold text-gray-900 text-sm">
+                  <td className="px-8 py-5 text-right align-middle">
+                    <span className="font-headline font-black text-[#1a3a5c] text-sm">
                       {formatCurrency(gasto.valor)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right align-middle">
+                  <td className="px-8 py-5 text-right align-middle" onClick={(e) => e.stopPropagation()}>
                     <GastoActionsMenu
                       gasto={gasto}
                       onEdit={onEdit}

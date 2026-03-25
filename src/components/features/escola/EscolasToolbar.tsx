@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Filter, ListFilter, Plus, Search, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 interface EscolasToolbarProps {
   searchTerm: string;
@@ -30,7 +30,7 @@ interface EscolasToolbarProps {
   isRegisterDisabled?: boolean;
 }
 
-export function EscolasToolbar({
+export const EscolasToolbar = memo(function EscolasToolbar({
   searchTerm,
   onSearchChange,
   selectedStatus,
@@ -41,24 +41,24 @@ export function EscolasToolbar({
   onRegister,
   isRegisterDisabled = false,
 }: EscolasToolbarProps) {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [tempFilters, setTempFilters] = useState({
     status: selectedStatus || "todos",
   });
 
   useEffect(() => {
-    if (isDrawerOpen) {
+    if (isSheetOpen) {
       setTempFilters({
         status: selectedStatus || "todos",
       });
     }
-  }, [isDrawerOpen, selectedStatus]);
+  }, [isSheetOpen, selectedStatus]);
 
   const handleApplyFilters = () => {
     onApplyFilters({
       status: tempFilters.status,
     });
-    setIsDrawerOpen(false);
+    setIsSheetOpen(false);
   };
 
   const handleClearMobileFilters = () => {
@@ -68,160 +68,163 @@ export function EscolasToolbar({
   };
 
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between py-1">
-      <div className="relative flex-1 max-w-full">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 z-10" />
-        <Input
-          placeholder="Buscar escolas..."
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-11 pr-4 py-6 bg-white border-none shadow-diff-shadow focus-visible:ring-[#1a3a5c]/10 rounded-2xl text-sm font-medium text-slate-600 placeholder:text-slate-400/80 transition-all"
-        />
-        {searchTerm && (
-          <button
-            onClick={() => onSearchChange("")}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded-full transition-colors"
-          >
-            <X className="h-3.5 w-3.5 text-slate-400" />
-          </button>
-        )}
-      </div>
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+        {/* Search Bar */}
+        <div className="relative group flex-grow">
+          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-gray-400 group-focus-within:text-[#1a3a5c] transition-colors" />
+          </div>
+          <Input
+            placeholder="Buscar escolas..."
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="w-full bg-white border border-gray-100/50 h-12 pl-11 pr-4 rounded-xl shadow-diff-shadow font-medium text-sm text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all"
+          />
+        </div>
 
-      <div className="hidden md:flex items-center gap-3">
-        {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClearFilters}
-            className="text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase tracking-widest transition-colors h-11 px-4"
-          >
-            Limpar Filtros
-          </Button>
-        )}
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "h-11 px-5 rounded-2xl bg-white border-none shadow-diff-shadow hover:bg-slate-50 transition-all font-headline font-bold text-[11px] uppercase tracking-widest text-[#1a3a5c] gap-2.5",
-                hasActiveFilters && "text-blue-600"
-              )}
+        {/* Buttons Section (Desktop) */}
+        <div className="hidden md:flex items-center gap-3">
+          <Popover modal={true}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "bg-white border-[#1a3a5c]/10 text-[#1a3a5c] font-black uppercase text-[10px] tracking-widest gap-2 h-12 rounded-xl px-5 shadow-diff-shadow hover:bg-gray-50",
+                  hasActiveFilters && "border-amber-500/50 bg-amber-50/10"
+                )}
+              >
+                <ListFilter className="h-4 w-4" />
+                Filtros
+                {hasActiveFilters && (
+                  <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" />
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent 
+              className="w-[320px] p-6 rounded-2xl shadow-xl border-none ring-1 ring-gray-100" 
+              align="end"
+              onOpenAutoFocus={(e) => e.preventDefault()}
             >
-              <ListFilter className={cn("h-4 w-4", hasActiveFilters ? "text-blue-600" : "text-slate-400")} />
-              Filtros
-              {hasActiveFilters && (
-                <span className="flex h-1.5 w-1.5 rounded-full bg-blue-500 shadow-sm shadow-blue-500/50" />
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[300px] p-5 rounded-[24px] border-none shadow-2xl mr-4 mt-2" align="end">
-            <div className="space-y-5">
-              <div className="flex items-center justify-between border-b border-slate-50 pb-3">
-                <span className="font-headline font-bold text-xs uppercase tracking-widest text-[#1a3a5c]">Filtros</span>
-                <ListFilter className="h-3.5 w-3.5 text-slate-300" />
-              </div>
-
-              <div className="space-y-2.5">
-                <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Status</Label>
-                <Select value={selectedStatus} onValueChange={onStatusChange}>
-                  <SelectTrigger className="w-full h-11 rounded-2xl bg-slate-50 border-none shadow-none focus:ring-1 focus:ring-slate-200 transition-all font-medium text-slate-600">
-                    <SelectValue placeholder="Todos os status" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-none shadow-xl">
-                    <SelectItem value="todos" className="rounded-xl focus:bg-slate-100">Todos Status</SelectItem>
-                    <SelectItem value="true" className="rounded-xl focus:bg-slate-100 text-emerald-600 font-medium">Somente Ativas</SelectItem>
-                    <SelectItem value="false" className="rounded-xl focus:bg-slate-100 text-slate-400 font-medium">Somente Desativadas</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        <Button
-          onClick={onRegister}
-          disabled={isRegisterDisabled}
-          className="h-11 px-6 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-lg shadow-[#1a3a5c]/20 transition-all font-headline font-bold text-[11px] uppercase tracking-widest gap-2.5"
-        >
-          <Plus className="h-4 w-4" />
-          Nova Escola
-        </Button>
-      </div>
-
-      <div className="md:hidden flex gap-3">
-        <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-          <DrawerTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "flex-1 h-12 rounded-2xl bg-white border-none shadow-diff-shadow hover:bg-slate-50 font-headline font-bold text-[11px] uppercase tracking-widest text-[#1a3a5c] gap-2.5",
-                hasActiveFilters && "text-blue-600"
-              )}
-            >
-              <Filter className={cn("h-4 w-4", hasActiveFilters ? "text-blue-600" : "text-slate-400")} />
-              Filtros
-              {hasActiveFilters && (
-                <span className="flex h-1.5 w-1.5 rounded-full bg-blue-500 shadow-sm shadow-blue-500/50" />
-              )}
-            </Button>
-          </DrawerTrigger>
-          <DrawerContent className="h-auto max-h-[90vh] rounded-t-[32px] flex flex-col px-0 bg-white border-none shadow-2xl pb-8">
-            <DrawerHeader className="text-left mb-2 px-8 pt-6">
-              <DrawerTitle className="font-headline font-black text-[#1a3a5c] text-xl">Filtrar Escolas</DrawerTitle>
-              <DrawerDescription className="text-xs font-medium text-gray-400">
-                Refine sua busca para encontrar escolas específicas.
-              </DrawerDescription>
-            </DrawerHeader>
-
-            <div className="flex-1 overflow-y-auto px-8">
-              <div className="grid grid-cols-1 gap-5 mt-4">
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Status da Escola</Label>
-                  <Select
-                    value={tempFilters.status}
-                    onValueChange={(val) => setTempFilters((prev) => ({ ...prev, status: val }))}
-                  >
-                    <SelectTrigger className="h-14 rounded-2xl bg-gray-50 border-gray-100 font-semibold text-[#1a3a5c]">
-                      <SelectValue placeholder="Selecione o status" />
-                    </SelectTrigger>
-                    <SelectContent className="z-[9999]">
-                      <SelectItem value="todos">Todos os Status</SelectItem>
-                      <SelectItem value="true">Somente Ativas</SelectItem>
-                      <SelectItem value="false">Somente Desativadas</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-5">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-headline font-black text-[#1a3a5c] text-sm uppercase tracking-wider">Filtragem Avançada</h4>
+                  {hasActiveFilters && (
+                    <button 
+                      onClick={onClearFilters} 
+                      className="text-[10px] font-bold text-red-500 uppercase tracking-widest hover:underline"
+                    >
+                      Limpar
+                    </button>
+                  )}
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Status</Label>
+                    <Select value={selectedStatus} onValueChange={onStatusChange}>
+                      <SelectTrigger className="w-full h-11 rounded-lg bg-gray-50 border-gray-100 font-medium">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent className="z-[9999]">
+                        <SelectItem value="todos">Todos Status</SelectItem>
+                        <SelectItem value="true">Ativo</SelectItem>
+                        <SelectItem value="false">Desativado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
+            </PopoverContent>
+          </Popover>
 
-              <div className="pt-10 flex flex-col gap-3">
-                <Button
-                  className="w-full h-14 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-black uppercase tracking-widest text-xs shadow-lg"
-                  onClick={handleApplyFilters}
-                >
-                  Aplicar Filtros
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full h-12 rounded-xl text-gray-400 font-bold uppercase tracking-widest text-[10px]"
-                  onClick={handleClearMobileFilters}
-                >
-                  Limpar Filtros
-                </Button>
+          <Button
+            onClick={onRegister}
+            disabled={isRegisterDisabled}
+            className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-6 shadow-md transition-all active:scale-95"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Escola
+          </Button>
+        </div>
+
+        {/* Buttons Section (Mobile) */}
+        <div className="md:hidden flex gap-3">
+          <Drawer open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <DrawerTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "flex-1 bg-white border border-[#1a3a5c]/10 text-[#1a3a5c] font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-5 shadow-diff-shadow",
+                  hasActiveFilters && "border-amber-500/50 bg-amber-50/5"
+                )}
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Filtros
+                {hasActiveFilters && (
+                  <span className="ml-1.5 flex h-1.5 w-1.5 rounded-full bg-amber-500" />
+                )}
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent className="h-auto max-h-[90vh] rounded-t-[32px] flex flex-col px-0 bg-white border-none shadow-2xl pb-8">
+              <DrawerHeader className="text-left mb-2 px-8 pt-6">
+                <DrawerTitle className="font-headline font-black text-[#1a3a5c] text-xl">Filtrar Escolas</DrawerTitle>
+                <DrawerDescription className="text-xs font-medium text-gray-400">
+                  Refine sua busca para encontrar escolas específicas.
+                </DrawerDescription>
+              </DrawerHeader>
+
+              <div className="flex-1 overflow-y-auto px-8">
+                <div className="grid grid-cols-1 gap-5 mt-4">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Status</Label>
+                    <Select
+                      value={tempFilters.status}
+                      onValueChange={(val) =>
+                        setTempFilters((prev) => ({ ...prev, status: val }))
+                      }
+                    >
+                      <SelectTrigger className="h-14 rounded-2xl bg-gray-50 border-gray-100 font-semibold text-[#1a3a5c]">
+                        <SelectValue placeholder="Selecione o status" />
+                      </SelectTrigger>
+                      <SelectContent className="z-[9999]">
+                        <SelectItem value="todos">Todos</SelectItem>
+                        <SelectItem value="true">Ativo</SelectItem>
+                        <SelectItem value="false">Desativado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="pt-10 flex flex-col gap-3">
+                  <Button 
+                    className="w-full h-14 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-black uppercase tracking-widest text-xs shadow-lg" 
+                    onClick={handleApplyFilters}
+                  >
+                    Aplicar Filtros
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full h-12 rounded-xl text-gray-400 font-bold uppercase tracking-widest text-[10px]"
+                    onClick={handleClearMobileFilters}
+                  >
+                    Limpar Filtros
+                  </Button>
+                </div>
               </div>
-            </div>
-          </DrawerContent>
-        </Drawer>
+            </DrawerContent>
+          </Drawer>
 
-        <Button
-          onClick={onRegister}
-          disabled={isRegisterDisabled}
-          className="flex-1 h-12 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white shadow-lg shadow-[#1a3a5c]/20 font-headline font-bold text-[11px] uppercase tracking-widest gap-2.5"
-        >
-          <Plus className="h-4 w-4" />
-          Nova
-        </Button>
+          <Button
+            onClick={onRegister}
+            disabled={isRegisterDisabled}
+            className="flex-1 bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-5 shadow-md active:scale-95"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nova
+          </Button>
+        </div>
       </div>
     </div>
   );
-}
+});

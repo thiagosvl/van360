@@ -36,7 +36,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
             <TabsTrigger
               value={ContratoTab.PENDENTES}
               className={cn(
-                "rounded-xl px-5 h-full font-headline font-bold text-[10px] uppercase tracking-widest transition-all duration-300",
+                "rounded-xl px-5 h-full font-headline font-bold text-sm transition-all duration-300",
                 "data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-md",
                 "data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c]"
               )}
@@ -54,7 +54,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
             <TabsTrigger
               value={ContratoTab.ASSINADOS}
               className={cn(
-                "rounded-xl px-5 h-full font-headline font-bold text-[10px] uppercase tracking-widest transition-all duration-300",
+                "rounded-xl px-5 h-full font-headline font-bold text-sm transition-all duration-300",
                 "data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-md",
                 "data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c]"
               )}
@@ -72,7 +72,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
             <TabsTrigger
               value={ContratoTab.SEM_CONTRATO}
               className={cn(
-                "rounded-xl px-5 h-full font-headline font-bold text-[10px] uppercase tracking-widest transition-all duration-300",
+                "rounded-xl px-5 h-full font-headline font-bold text-sm transition-all duration-300",
                 "data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-md",
                 "data-[state=inactive]:text-slate-400 hover:text-[#1a3a5c]"
               )}
