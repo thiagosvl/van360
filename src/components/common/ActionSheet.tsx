@@ -11,6 +11,7 @@ import { ReactNode } from "react";
 
 export interface ActionSheetItem {
   label: string;
+  description?: string;
   icon?: ReactNode;
   onClick: () => void;
   disabled?: boolean;
@@ -67,8 +68,8 @@ export function ActionSheet({
                 variant="ghost"
                 disabled={action.disabled || action.isLoading}
                 className={cn(
-                  "w-full justify-between h-14 px-6 text-[15px] font-semibold transition-all active:scale-[0.98] rounded-none border-b last:border-0",
-                  "border-zinc-50 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+                  "w-full justify-between h-auto py-4 px-6 text-[15px] font-semibold transition-all active:scale-[0.98] rounded-none border-b last:border-0",
+                  "border-zinc-50 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 items-center",
                   // Estilo Destrutivo
                   action.isDestructive 
                       ? "text-[#FF3B30] hover:text-[#FF3B30]" 
@@ -83,9 +84,16 @@ export function ActionSheet({
                   action.onClick();
                 }}
               >
-                <span className="flex-1 text-left truncate">{action.label}</span>
+                <div className="flex-1 text-left min-w-0 pr-4">
+                  <div className="text-[15px] font-semibold truncate">{action.label}</div>
+                  {action.description && (
+                    <div className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mt-0.5 leading-tight">
+                      {action.description}
+                    </div>
+                  )}
+                </div>
                 
-                <span className={cn("shrink-0 ml-4", action.isDestructive ? "text-[#FF3B30]" : "text-zinc-400 dark:text-zinc-500")}>
+                <span className={cn("shrink-0", action.isDestructive ? "text-[#FF3B30]" : "text-zinc-400 dark:text-zinc-500")}>
                   {action.isLoading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (

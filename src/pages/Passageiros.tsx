@@ -3,6 +3,7 @@ import { PassageirosList } from "@/components/features/passageiro/PassageirosLis
 import { PassageirosToolbar } from "@/components/features/passageiro/PassageirosToolbar";
 import PrePassageiros from "@/components/features/passageiro/PrePassageiros";
 import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
+import { PassengerOnboardingDrawer } from "@/components/features/quickstart/PassengerOnboardingDrawer";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
@@ -10,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePassageirosViewModel } from "@/hooks/ui/usePassageirosViewModel";
 import { PassageiroTab } from "@/types/enums";
 import { Users2 } from "lucide-react";
+import { useState } from "react";
 
 export default function Passageiros() {
   const {
@@ -45,6 +47,8 @@ export default function Passageiros() {
     pullToRefreshReload,
     hasActiveFilters,
   } = usePassageirosViewModel();
+
+  const [isPassengerDrawerOpen, setIsPassengerDrawerOpen] = useState(false);
 
   if (isProfileLoading || !profile) {
     return (
@@ -143,7 +147,10 @@ export default function Passageiros() {
                       icon={Users2}
                       title="Nenhum passageiro encontrado"
                       description={searchTerm.length > 0 ? "Não encontramos passageiros com os filtros selecionados." : "Comece cadastrando seu primeiro passageiro para gerenciar o transporte."}
-                      action={searchTerm.length === 0 ? { label: "Cadastrar Passageiro", onClick: handleOpenNewDialog } : undefined}
+                      action={searchTerm.length === 0 ? { 
+                        label: "Cadastrar Passageiro", 
+                        onClick: () => setIsPassengerDrawerOpen(true) 
+                      } : undefined}
                     />
                   ) : (
                     <PassageirosList
@@ -169,6 +176,13 @@ export default function Passageiros() {
       </PullToRefreshWrapper>
 
       <LoadingOverlay active={isActionLoading} text="Processando..." />
+
+      <PassengerOnboardingDrawer
+        open={isPassengerDrawerOpen}
+        onOpenChange={setIsPassengerDrawerOpen}
+        onManualRegistration={handleOpenNewDialog}
+        profile={profile}
+      />
     </>
   );
 }
