@@ -1,6 +1,5 @@
 import { ROUTES } from "@/constants/routes";
 import { useSession } from "@/hooks/business/useSession";
-import { Capacitor } from "@capacitor/core";
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { Onboarding } from "../features/onboarding/Onboarding";
@@ -12,14 +11,14 @@ const InitialLoading = () => (
       {/* Círculos de pulsação ao fundo */}
       <div className="absolute inset-0 scale-150 bg-primary/10 rounded-full animate-pulse" />
       <div className="absolute inset-0 scale-125 bg-primary/20 rounded-full animate-ping duration-[3000ms]" />
-      
-      <img 
-        src="/assets/logo-van360.png" 
-        alt="Van360" 
-        className="w-32 h-32 relative z-10 drop-shadow-2xl animate-in zoom-in-50 duration-700"
+
+      <img
+        src="/assets/logo-van360.png"
+        alt="Van360"
+        className="w-32 h-auto relative z-10 drop-shadow-2xl animate-in zoom-in-50 duration-700 object-contain"
       />
     </div>
-    
+
     <div className="mt-12 flex flex-col items-center gap-4">
       <div className="flex gap-1.5">
         <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
@@ -38,17 +37,26 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+  const [minLoadingTimePassed, setMinLoadingTimePassed] = useState(false);
+
+  useEffect(() => {
+    // Garante que o splash screen apareça por pelo menos 1.2 segundos para uma experiência suave
+    const timer = setTimeout(() => {
+      setMinLoadingTimePassed(true);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const isExternalForm = location.pathname.startsWith("/cadastro-passageiro");
     // Usamos uma chave vinculada ao ID do usuário para evitar conflitos entre contas
     const storageKey = `onboarding_done_${session?.user?.id || "anon"}`;
     const hasCompleted = localStorage.getItem(storageKey) === "true";
-    
+
     // 🛠️ MODO PREVIEW: Permite ver o Onboarding via URL (?onboarding=true)
     const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.has("onboarding")) {
-      setShowOnboarding(true); 
+      setShowOnboarding(true);
       setCheckingOnboarding(false);
       return;
     }
@@ -65,17 +73,17 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
 
   const handleOnboardingComplete = () => {
     if (session?.user?.id) {
-        const storageKey = `onboarding_done_${session.user.id}`;
-        localStorage.setItem(storageKey, "true");
-        // Log para auditoria em dev/prod
-        console.log(`[Onboarding] Completed for user ${session.user.id}`);
+      const storageKey = `onboarding_done_${session.user.id}`;
+      localStorage.setItem(storageKey, "true");
+      // Log para auditoria em dev/prod
+      console.log(`[Onboarding] Completed for user ${session.user.id}`);
     } else {
-        localStorage.setItem("onboarding_completed", "true"); // Fallback
+      localStorage.setItem("onboarding_completed", "true"); // Fallback
     }
 
     // Pequeno delay para garantir que o storage foi persistido e dar feedback visual suave
     setTimeout(() => {
-        setShowOnboarding(false);
+      setShowOnboarding(false);
     }, 100);
   };
 
@@ -91,7 +99,8 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
     location.pathname.startsWith("/cadastro-passageiro");
 
   // Enquanto ainda carrega sessão ou verifica onboarding, mostra tela premium
-  if (loading || checkingOnboarding) {
+  // Adicionado minLoadingTimePassed para evitar flicker e garantir experiência visual
+  if (loading || checkingOnboarding || !minLoadingTimePassed) {
     return <InitialLoading />;
   }
 

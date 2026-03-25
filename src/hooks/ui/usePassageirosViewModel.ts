@@ -207,7 +207,7 @@ export function usePassageirosViewModel() {
         },
       });
     },
-    [deletePassageiro, closeConfirmationDialog, openConfirmationDialog],
+    [deletePassageiro, closeConfirmationDialog, openConfirmationDialog, refetchPassageiros],
   );
 
   const handleToggleClick = useCallback(
@@ -232,7 +232,7 @@ export function usePassageirosViewModel() {
         },
       });
     },
-    [openConfirmationDialog, closeConfirmationDialog, toggleAtivoPassageiro],
+    [openConfirmationDialog, closeConfirmationDialog, toggleAtivoPassageiro, refetchPassageiros],
   );
 
   const handleEdit = useCallback(
@@ -243,7 +243,7 @@ export function usePassageirosViewModel() {
         onSuccess: () => refetchPassageiros(),
       });
     },
-    [openPassageiroFormDialog],
+    [openPassageiroFormDialog, refetchPassageiros],
   );
 
   const handleOpenNewDialog = useCallback(() => {

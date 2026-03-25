@@ -21,6 +21,7 @@ import {
     CheckCircle2,
     DollarSign,
     FilePen,
+    History,
     QrCode,
     Receipt,
     RotateCcw,
@@ -46,6 +47,7 @@ export function useCobrancaOperations({
     closeConfirmationDialog,
     openCobrancaDeleteDialog,
     openCobrancaEditDialog,
+    openCobrancaHistoryDialog,
   } = useLayout();
 
   // Mutations
@@ -143,6 +145,13 @@ export function useCobrancaOperations({
     cobranca,
   ]);
 
+  const handleShowHistory = useCallback(() => {
+    openCobrancaHistoryDialog({
+      cobrancaId: cobranca.id,
+      passageiroNome: cobranca.passageiro?.nome || "Passageiro",
+    });
+  }, [openCobrancaHistoryDialog, cobranca]);
+
   const isActionLoading =
     toggleNotificacoes.isPending ||
     enviarNotificacao.isPending ||
@@ -154,6 +163,7 @@ export function useCobrancaOperations({
     handleEnviarNotificacao,
     handleDesfazerPagamento,
     handleDeleteCobranca,
+    handleShowHistory,
     isActionLoading,
     isTogglingNotificacoes: toggleNotificacoes.isPending,
     isSendingNotification: enviarNotificacao.isPending,
@@ -187,6 +197,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     handleEnviarNotificacao,
     handleDesfazerPagamento,
     handleDeleteCobranca,
+    handleShowHistory,
     isActionLoading,
     isTogglingNotificacoes,
     isSendingNotification,
@@ -250,14 +261,13 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
 
 
 
-    if (onVerCobranca) {
-      actions.push({
-        label: "Ver Detalhes",
-        icon: <DollarSign className="h-4 w-4" />,
-        onClick: onVerCobranca,
-        swipeColor: "bg-slate-600",
-      });
-    }
+    actions.push({
+      label: "Histórico de Alterações",
+      icon: <History className="h-4 w-4" />,
+      onClick: handleShowHistory,
+      swipeColor: "bg-slate-600",
+      hasSeparatorAfter: true,
+    });
 
     const canSend = canSendNotification(cobranca);
     if (canSend) {

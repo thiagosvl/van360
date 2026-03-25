@@ -14,10 +14,12 @@ import { useState } from "react";
 
 interface QuickRegistrationLinkProps {
   profile: any;
+  pendingCount?: number;
 }
 
 export function QuickRegistrationLink({
   profile,
+  pendingCount = 0,
 }: QuickRegistrationLinkProps) {
   const [isCopied, setIsCopied] = useState(false);
 
@@ -59,6 +61,12 @@ export function QuickRegistrationLink({
               >
                 <LinkIcon className="h-6 w-6" />
               </div>
+
+              {pendingCount > 0 && (
+                <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white shadow-sm ring-2 ring-white animate-in zoom-in-50 duration-300">
+                  {pendingCount}
+                </div>
+              )}
             </div>
 
             <div className="flex-1">
@@ -78,7 +86,7 @@ export function QuickRegistrationLink({
               variant="outline"
               size="sm"
               onClick={handleShareWhatsApp}
-              className="flex-1 md:flex-none font-bold border-green-100 text-green-700 hover:bg-green-50 hover:text-green-800 transition-all rounded-xl h-10 px-4"
+              className="flex-1 md:flex-none font-black border-green-100 text-green-700 hover:bg-green-50 hover:text-green-800 transition-all rounded-xl h-10 px-4 text-[10px] uppercase tracking-widest"
             >
               <MessageCircle className="h-4 w-4 mr-2" />
               WhatsApp
@@ -87,8 +95,8 @@ export function QuickRegistrationLink({
               variant="outline"
               size="sm"
               onClick={handleCopyLink}
-              className={`flex-1 md:flex-none font-bold border-blue-100 text-[#1a3a5c] hover:bg-blue-50 hover:text-[#1a3a5c] transition-all rounded-xl h-10 px-4 ${isCopied
-                ? "bg-green-50 text-green-700 border-green-200"
+              className={`flex-1 md:flex-none font-black border-blue-100 text-[#1a3a5c] hover:bg-blue-50 hover:text-[#1a3a5c] transition-all rounded-xl h-10 px-4 text-[10px] uppercase tracking-widest ${isCopied
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                 : ""
                 }`}
             >

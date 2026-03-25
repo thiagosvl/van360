@@ -220,209 +220,202 @@ export default function PrePassageiros({
   );
 
   return (
-    <>
-      <div className="space-y-6 pt-2">
-        <div className="space-y-4">
-          {/* Header e Search removidos - agora gerenciados pelo Toolbar pai */}
-
-          {loading ? (
-            <PrePassengerListSkeleton />
-          ) : prePassageiros.length === 0 ? (
-            <UnifiedEmptyState
-              icon={Users2}
-              title="Tudo limpo por aqui!"
-              description={
-                externalSearchTerm.length > 0
-                  ? "Nenhuma solicitação encontrada para sua busca."
-                  : "Envie seu link de cadastro para os pais e receba novas solicitações aqui."
+    <div className="space-y-4">
+      {loading ? (
+        <PrePassengerListSkeleton />
+      ) : prePassageiros.length === 0 ? (
+        <UnifiedEmptyState
+          icon={Users2}
+          title="Tudo limpo por aqui!"
+          description={
+            externalSearchTerm.length > 0
+              ? "Nenhuma solicitação encontrada para sua busca."
+              : "Envie seu link de cadastro para os pais e receba novas solicitações aqui."
+          }
+          action={
+            externalSearchTerm.length === 0
+              ? {
+                label: "Link de Cadastro",
+                icon: Copy,
+                onClick: () => {
+                  if (!profile?.id) return;
+                  navigator.clipboard.writeText(
+                    buildPrepassageiroLink(profile.id),
+                  );
+                  toast.success("sistema.sucesso.linkCopiado", {
+                    description: "sistema.sucesso.linkCopiadoDescricao",
+                  });
+                },
               }
-              action={
-                externalSearchTerm.length === 0
-                  ? {
-                    label: "Copiar Link",
-                    icon: Copy,
-                    onClick: () => {
-                      if (!profile?.id) return;
-                      navigator.clipboard.writeText(
-                        buildPrepassageiroLink(profile.id),
-                      );
-                      toast.success("sistema.sucesso.linkCopiado", {
-                        description: "sistema.sucesso.linkCopiadoDescricao",
-                      });
-                    },
-                  }
-                  : undefined
-              }
-            />
-          ) : (
-            <>
-              {/* Desktop Table */}
-              <div className="hidden md:block rounded-xl border border-gray-100 overflow-hidden bg-white shadow-sm">
-                <Table>
-                  <TableHeader className="bg-gray-50/50">
-                    <TableRow className="hover:bg-transparent border-b border-gray-100">
-                      <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest w-[300px]">
-                        Passageiro
-                      </TableHead>
-                      <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                        WhatsApp
-                      </TableHead>
-                      <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                        Quando
-                      </TableHead>
-                      <TableHead className="px-6 py-4 text-right text-[9px] font-bold text-gray-400 uppercase tracking-widest pr-20">
-                        Ações
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {prePassageiros.map((prePassageiro) => (
-                      <TableRow
-                        key={prePassageiro.id}
-                        className="hover:bg-gray-50/80 border-b border-gray-50 last:border-0 transition-colors cursor-pointer"
-                        onClick={() => handleFinalizeClick(prePassageiro)}
-                      >
-                        <TableCell className="py-4 pl-6">
-                          <div className="flex items-center gap-3">
-                            <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
-                              <span className="text-white font-headline font-bold text-sm leading-none">
-                                {getInitials(prePassageiro.nome)}
-                              </span>
-                            </div>
-                            <div className="flex flex-col">
-                              <p className="font-headline font-bold text-[#1a3a5c] text-sm">
-                                {formatShortName(prePassageiro.nome)}
-                              </p>
-                              <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                                {formatFirstName(prePassageiro.nome_responsavel)}
-                              </p>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-4">
-                          <span className="text-sm text-gray-500">
-                            {formatarTelefone(
-                              prePassageiro.telefone_responsavel,
-                            )}
-                          </span>
-                        </TableCell>
-                        <TableCell className="py-4">
-                          <span className="text-sm text-gray-500 uppercase">
-                            {formatRelativeTime(prePassageiro.created_at)}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right py-4 pr-6">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              size="sm"
-                              className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-8"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleFinalizeClick(prePassageiro);
-                              }}
-                            >
-                              <Eye className="w-4 h-4 mr-2" />
-                              Revisar
-                            </Button>
-                            <ActionsMenu
-                              prePassageiro={prePassageiro}
-                              showReviewOption={false}
-                            />
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {/* Mobile Cards */}
-              <div className="md:hidden space-y-3">
-                {prePassageiros.map((prePassageiro, index) => {
-                  const actions: MobileAction[] = [
-                    {
-                      label: "Excluir",
-                      icon: <Trash2 className="w-4 h-4" />,
-                      onClick: () => {
-                        openConfirmationDialog({
-                          title: "Excluir solicitação?",
-                          description:
-                            "Tem certeza que deseja excluir esta solicitação? Essa ação não poderá ser desfeita.",
-                          variant: "destructive",
-                          confirmText: "Excluir",
-                          cancelText: "Cancelar",
-                          onConfirm: async () => {
-                            if (prePassageiro.id) {
-                              try {
-                                await deletePrePassageiro.mutateAsync(
-                                  prePassageiro.id,
-                                );
-                                closeConfirmationDialog();
-                              } catch (error) {
-                                console.error(error);
-                              }
-                            }
-                          },
-                        });
-                      },
-                      isDestructive: true,
-                      swipeColor: "bg-red-600",
-                    },
-                    {
-                      label: "Revisar",
-                      icon: <Eye className="w-4 h-4" />,
-                      onClick: () => handleFinalizeClick(prePassageiro),
-                      swipeColor: "bg-blue-600",
-                    },
-                  ];
-
-                  return (
-                    <MobileActionItem
-                      key={prePassageiro.id}
-                      actions={actions}
-                      showHint={index === 0}
-                      className="bg-transparent"
-                    >
-                      <div
-                        className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
-                        onClick={() => handleFinalizeClick(prePassageiro)}
-                      >
+              : undefined
+          }
+        />
+      ) : (
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block rounded-xl border border-gray-100 overflow-hidden bg-white shadow-sm">
+            <Table>
+              <TableHeader className="bg-gray-50/50">
+                <TableRow className="hover:bg-transparent border-b border-gray-100">
+                  <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest w-[300px]">
+                    Passageiro
+                  </TableHead>
+                  <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                    WhatsApp
+                  </TableHead>
+                  <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                    Quando
+                  </TableHead>
+                  <TableHead className="px-6 py-4 text-right text-[9px] font-bold text-gray-400 uppercase tracking-widest pr-20">
+                    Ações
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {prePassageiros.map((prePassageiro) => (
+                  <TableRow
+                    key={prePassageiro.id}
+                    className="hover:bg-gray-50/80 border-b border-gray-50 last:border-0 transition-colors cursor-pointer"
+                    onClick={() => handleFinalizeClick(prePassageiro)}
+                  >
+                    <TableCell className="py-4 pl-6">
+                      <div className="flex items-center gap-3">
                         <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
                           <span className="text-white font-headline font-bold text-sm leading-none">
                             {getInitials(prePassageiro.nome)}
                           </span>
                         </div>
-
-                        <div className="flex-grow min-w-0 pr-10">
-                          <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+                        <div className="flex flex-col">
+                          <p className="font-headline font-bold text-[#1a3a5c] text-sm">
                             {formatShortName(prePassageiro.nome)}
                           </p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
-                              {formatFirstName(prePassageiro.nome_responsavel)}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
-                          <span className="text-[8px] font-bold text-blue-600 border border-blue-200 uppercase tracking-widest bg-blue-50 px-1 py-0.5 rounded-sm">
-                            Pendente
-                          </span>
-                          <p className="text-[8px] text-gray-400 font-medium uppercase opacity-60">
-                            {formatRelativeTime(prePassageiro.created_at)}
+                          <p className="text-[10px] text-gray-400 font-medium tracking-wider">
+                            {formatFirstName(prePassageiro.nome_responsavel)}
                           </p>
                         </div>
                       </div>
-                    </MobileActionItem>
-                  );
-                })}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <span className="text-sm text-gray-500">
+                        {formatarTelefone(
+                          prePassageiro.telefone_responsavel,
+                        )}
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <span className="text-sm text-gray-500 uppercase">
+                        {formatRelativeTime(prePassageiro.created_at)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right py-4 pr-6">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          size="sm"
+                          className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-8"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFinalizeClick(prePassageiro);
+                          }}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Revisar
+                        </Button>
+                        <ActionsMenu
+                          prePassageiro={prePassageiro}
+                          showReviewOption={false}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {prePassageiros.map((prePassageiro, index) => {
+              const actions: MobileAction[] = [
+                {
+                  label: "Excluir",
+                  icon: <Trash2 className="w-4 h-4" />,
+                  onClick: () => {
+                    openConfirmationDialog({
+                      title: "Excluir solicitação?",
+                      description:
+                        "Tem certeza que deseja excluir esta solicitação? Essa ação não poderá ser desfeita.",
+                      variant: "destructive",
+                      confirmText: "Excluir",
+                      cancelText: "Cancelar",
+                      onConfirm: async () => {
+                        if (prePassageiro.id) {
+                          try {
+                            await deletePrePassageiro.mutateAsync(
+                              prePassageiro.id,
+                            );
+                            closeConfirmationDialog();
+                          } catch (error) {
+                            console.error(error);
+                          }
+                        }
+                      },
+                    });
+                  },
+                  isDestructive: true,
+                  swipeColor: "bg-red-600",
+                },
+                {
+                  label: "Revisar",
+                  icon: <Eye className="w-4 h-4" />,
+                  onClick: () => handleFinalizeClick(prePassageiro),
+                  swipeColor: "bg-blue-600",
+                },
+              ];
+
+              return (
+                <MobileActionItem
+                  key={prePassageiro.id}
+                  actions={actions}
+                  showHint={index === 0}
+                  className="bg-transparent"
+                >
+                  <div
+                    className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
+                    onClick={() => handleFinalizeClick(prePassageiro)}
+                  >
+                    <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
+                      <span className="text-white font-headline font-bold text-sm leading-none">
+                        {getInitials(prePassageiro.nome)}
+                      </span>
+                    </div>
+
+                    <div className="flex-grow min-w-0 pr-10">
+                      <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+                        {formatShortName(prePassageiro.nome)}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
+                          {formatFirstName(prePassageiro.nome_responsavel)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
+                      <span className="text-[8px] font-bold text-blue-600 border border-blue-200 uppercase tracking-widest bg-blue-50 px-1 py-0.5 rounded-sm">
+                        Pendente
+                      </span>
+                      <p className="text-[8px] text-gray-400 font-medium uppercase opacity-60">
+                        {formatRelativeTime(prePassageiro.created_at)}
+                      </p>
+                    </div>
+                  </div>
+                </MobileActionItem>
+              );
+            })}
+          </div>
+        </>
+      )}
       <LoadingOverlay active={isActionLoading} text="sistema.sucesso.processando" />
-    </>
+    </div>
   );
 }

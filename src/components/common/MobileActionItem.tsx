@@ -30,12 +30,15 @@ interface MobileActionItemProps {
   showHint?: boolean;
   /** Custom className for the container */
   className?: string;
+  /** Optional header content to show in the Action Sheet */
+  renderHeader?: () => ReactNode;
 }
 
 export function MobileActionItem({
   children,
   actions,
   className,
+  renderHeader,
 }: MobileActionItemProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -48,29 +51,23 @@ export function MobileActionItem({
 
   return (
     <div className={cn("relative group/mobile-action", className)}>
-      {/* Foreground Content */}
-      <div className="relative z-10">
+      {/* Foreground Content - Clickable area */}
+      <div 
+        className="relative z-10 cursor-pointer touch-manipulation"
+        onClick={() => setIsSheetOpen(true)}
+      >
         {children}
       </div>
 
-      {/* Trigger Button - 3 dots (Threads style) */}
-      <Button
-        variant="ghost"
-        size="icon"
+      {/* Trigger Button - Discrete MoreVertical indicator */}
+      <div
         className={cn(
-          "absolute top-2.5 right-2 h-7 w-7 rounded-full z-20 transition-all",
-          "bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-zinc-100 dark:border-zinc-800 shadow-sm",
-          "text-zinc-400 hover:text-zinc-600 dark:text-zinc-500",
-          "active:scale-90"
+          "absolute top-1/2 -translate-y-1/2 right-1.5 h-6 w-6 z-20 flex items-center justify-center pointer-events-none transition-opacity",
+          "text-zinc-400 opacity-30 dark:text-zinc-500"
         )}
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          setIsSheetOpen(true);
-        }}
       >
-        <MoreVertical className="h-3.5 w-3.5" />
-      </Button>
+        <MoreVertical className="h-4 w-4" />
+      </div>
 
       {/* Action Sheet (Bottom Drawer) */}
       <ActionSheet
@@ -85,7 +82,9 @@ export function MobileActionItem({
           isDestructive: action.isDestructive || action.variant === "destructive",
           className: action.drawerClass,
         }))}
-      />
+      >
+        {renderHeader && renderHeader()}
+      </ActionSheet>
     </div>
   );
 }

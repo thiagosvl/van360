@@ -62,7 +62,7 @@ export default function EditarCadastroDialog({
   } = useLayout();
   const { user } = useSession();
   const { profile, isLoading, refreshProfile } = useProfile(user?.id);
-  
+
   const [openAccordionItems, setOpenAccordionItems] = useState([
     "dados-pessoais",
   ]);
@@ -77,7 +77,7 @@ export default function EditarCadastroDialog({
       email: "",
     },
   });
-  
+
   // Carrega dados do perfil no form
   React.useEffect(() => {
     if (profile) {
@@ -95,15 +95,15 @@ export default function EditarCadastroDialog({
   const handleSubmit = async (data: FormData) => {
     try {
       if (!profile?.id) return;
-      
+
       const nome = cleanString(data.nome, true);
       const apelido = cleanString(data.apelido || "", true);
       const telefone = data.telefone.replace(/\D/g, "");
 
       await usuarioApi.atualizarUsuario(profile.id, {
-          nome,
-          apelido,
-          telefone,
+        nome,
+        apelido,
+        telefone,
       });
 
       toast.success("cadastro.sucesso.perfilAtualizado", {
@@ -122,8 +122,8 @@ export default function EditarCadastroDialog({
   };
 
   const onFormError = () => {
-       toast.error("validacao.formularioComErros");
-       setOpenAccordionItems(["dados-pessoais"]);
+    toast.error("validacao.formularioComErros");
+    setOpenAccordionItems(["dados-pessoais"]);
   }
 
   return (
@@ -138,32 +138,32 @@ export default function EditarCadastroDialog({
             <X className="h-6 w-6" />
             <span className="sr-only">Close</span>
           </DialogClose>
-          
+
           <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
             <User className="w-5 h-5 text-white" />
           </div>
           <DialogTitle className="text-xl font-bold text-white">
-            Editar Perfil
+            Editar Cadastro
           </DialogTitle>
         </div>
 
         <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
           {isLoading ? (
-          <div className="flex items-center justify-center py-6">
-            <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
-          </div>
-        ) : (
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-              className="space-y-6"
-            >
-              <Accordion 
-                type="multiple" 
-                value={openAccordionItems} 
-                onValueChange={setOpenAccordionItems}
-                className="w-full space-y-4"
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
+            </div>
+          ) : (
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(handleSubmit, onFormError)}
+                className="space-y-6"
               >
+                <Accordion
+                  type="multiple"
+                  value={openAccordionItems}
+                  onValueChange={setOpenAccordionItems}
+                  className="w-full space-y-4"
+                >
                   <AccordionItem value="dados-pessoais" className="border-b-0">
                     <AccordionTrigger className="hover:no-underline py-2">
                       <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
@@ -172,127 +172,127 @@ export default function EditarCadastroDialog({
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="nome"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-gray-700 font-medium ml-1">Nome completo <span className="text-red-500">*</span></FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <Input
+                                  placeholder="Digite seu nome completo"
+                                  {...field}
+                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="apelido"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-gray-700 font-medium ml-1">Apelido <span className="text-red-500">*</span></FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <Input
+                                  placeholder="Ex: Tio Fulano"
+                                  {...field}
+                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="telefone"
+                        render={({ field }) => (
+                          <PhoneInput
+                            field={field}
+                            label="WhatsApp"
+                            placeholder="(00) 00000-0000"
+                            required
+                            inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                          />
+                        )}
+                      />
+
+                      <div className="grid grid-cols-1 gap-4">
                         <FormField
-                            control={form.control}
-                            name="nome"
-                            render={({ field }) => (
+                          control={form.control}
+                          name="cpfcnpj"
+                          render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-gray-700 font-medium ml-1">Nome completo <span className="text-red-500">*</span></FormLabel>
-                                <FormControl>
+                              <FormLabel className="text-gray-700 font-medium ml-1">CPF <span className="text-red-500">*</span></FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  readOnly
+                                  className="h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-gray-700 font-medium ml-1">E-mail <span className="text-red-500">*</span></FormLabel>
+                              <FormControl>
                                 <div className="relative">
-                                    <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                                    <Input
-                                    placeholder="Digite seu nome completo"
+                                  <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                  <Input
                                     {...field}
-                                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                                    />
+                                    readOnly
+                                    className="pl-12 h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                                  />
                                 </div>
-                                </FormControl>
-                                <FormMessage />
+                              </FormControl>
+                              <FormMessage />
                             </FormItem>
-                            )}
+                          )}
                         />
-
-                        <FormField
-                            control={form.control}
-                            name="apelido"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="text-gray-700 font-medium ml-1">Apelido <span className="text-red-500">*</span></FormLabel>
-                                <FormControl>
-                                <div className="relative">
-                                    <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                                    <Input 
-                                    placeholder="Ex: Tio Fulano" 
-                                    {...field} 
-                                    className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                                    />
-                                </div>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-
-                        <FormField
-                            control={form.control}
-                            name="telefone"
-                            render={({ field }) => (
-                            <PhoneInput
-                                field={field}
-                                label="WhatsApp"
-                                placeholder="(00) 00000-0000"
-                                required
-                                inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
-                            />
-                            )}
-                        />
-                        
-                        <div className="grid grid-cols-1 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="cpfcnpj"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-gray-700 font-medium ml-1">CPF <span className="text-red-500">*</span></FormLabel>
-                                    <FormControl>
-                                    <Input
-                                        {...field}
-                                        readOnly
-                                        className="h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                                    />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="email"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-gray-700 font-medium ml-1">E-mail <span className="text-red-500">*</span></FormLabel>
-                                    <FormControl>
-                                    <div className="relative">
-                                        <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                                        <Input
-                                        {...field}
-                                        readOnly
-                                        className="pl-12 h-12 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                                        />
-                                    </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                        </div>
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
-                  
 
-              </Accordion>
-            </form>
-          </Form>
-          )} 
+
+                </Accordion>
+              </form>
+            </Form>
+          )}
 
           <div className="mt-8 pt-6 border-t border-gray-100">
             <div className="bg-red-50 border border-red-100 rounded-xl p-4">
-                <p className="text-sm text-red-700 mb-3">
-                    Deseja excluir sua conta permanentemente? Esta ação não pode ser desfeita.
-                </p>
-                <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={openDeleteAccountDialog}
-                    className="w-full border-red-200 text-red-600 hover:bg-red-100 hover:text-red-700 hover:border-red-300 transition-colors"
-                >
-                    Excluir minha conta
-                </Button>
+              <p className="text-sm text-red-700 mb-3">
+                Deseja excluir sua conta permanentemente? Esta ação não pode ser desfeita.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={openDeleteAccountDialog}
+                className="w-full border-red-200 text-red-600 hover:bg-red-100 hover:text-red-700 hover:border-red-300 transition-colors"
+              >
+                Excluir minha conta
+              </Button>
             </div>
           </div>
         </div>
-        
+
 
         <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
           <Button
@@ -304,8 +304,8 @@ export default function EditarCadastroDialog({
           >
             Cancelar
           </Button>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             onClick={form.handleSubmit(handleSubmit, onFormError)}
             disabled={form.formState.isSubmitting}
             className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:-translate-y-0.5"

@@ -173,17 +173,6 @@ export function useCobrancasViewModel() {
     [openManualPaymentDialog, refetchCobrancas]
   );
 
-  const navigateToDetails = useCallback(
-    (cobranca: Cobranca) => {
-      navigate(
-        ROUTES.PRIVATE.MOTORISTA.PASSENGER_BILLING.replace(
-          ":cobranca_id",
-          cobranca.id
-        )
-      );
-    },
-    [navigate]
-  );
 
   const navigateToPassageiro = useCallback(
     (passageiroId: string) => {
@@ -224,7 +213,6 @@ export function useCobrancasViewModel() {
     isActionLoading,
     pullToRefreshReload,
     // Actions
-    navigateToDetails,
     navigateToPassageiro,
     handleEditCobrancaClick,
     handleDeleteCobrancaClick,

@@ -1,13 +1,13 @@
 import { KPICard } from "@/components/common/KPICard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { KPICardVariant } from "@/types/enums";
+import { formatCurrency } from "@/utils/formatters";
 import {
-    ArrowDownCircle,
-    ArrowUpCircle,
-    Percent,
-    Users,
-    Wallet
+  Percent,
+  TrendingUp,
+  Users,
+  Wallet,
 } from "lucide-react";
 
 interface RelatoriosVisaoGeralProps {
@@ -24,138 +24,124 @@ interface RelatoriosVisaoGeralProps {
   };
 }
 
-export const RelatoriosVisaoGeral = ({
-  dados,
-}: RelatoriosVisaoGeralProps) => {
+export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
   const lucroPositivo = dados.lucroEstimado >= 0;
 
+  // Cálculos para as barras de progresso
+  const totalFinanceiro = Math.max(dados.recebido, dados.gasto);
+  const percEntradas = totalFinanceiro > 0 ? (dados.recebido / totalFinanceiro) * 100 : 0;
+  const percSaidas = totalFinanceiro > 0 ? (dados.gasto / totalFinanceiro) * 100 : 0;
+  
+  // Balanço relativo ao total movimentado
+  const percBalanco = totalFinanceiro > 0 ? (Math.abs(dados.lucroEstimado) / totalFinanceiro) * 100 : 0;
+
   return (
-    <div className="space-y-4 mt-0">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-4 px-1">
+      <div className="grid grid-cols-2 gap-4">
         {/* Lucro Estimado */}
         <KPICard
-          title="Lucro Estimado"
+          label="Lucro Estimado"
           icon={Wallet}
-          bgClass={lucroPositivo ? "bg-emerald-50" : "bg-red-50"}
-          colorClass={lucroPositivo ? "text-emerald-600" : "text-red-600"}
-          value={
-             <span className={cn(
-                "font-bold tracking-tight",
-                lucroPositivo ? "text-emerald-600" : "text-red-600"
-              )}>
-               {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.lucroEstimado)}
-             </span>
-          }
-          countText="Entradas - Saídas do mês"
-          countVisible={true}
-          className="md:col-span-1"
+          variant={KPICardVariant.PRIMARY}
+          value={formatCurrency(dados.lucroEstimado)}
+          valueClassName={lucroPositivo ? "text-emerald-600" : "text-red-600"}
         />
 
         {/* A Receber */}
         <KPICard
-          title="A Receber"
+          label="A Receber"
           icon={Wallet}
-          bgClass="bg-orange-50"
-          colorClass="text-orange-600"
-          value={
-             <span className="font-bold tracking-tight text-orange-600">
-               {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.aReceber.valor)}
-             </span>
-          }
-          countText={
-            <div className="inline-flex items-center gap-1.5 bg-orange-50 px-2.5 py-1 rounded-md text-orange-700">
-                {dados.aReceber.passageiros} passageiros
-            </div>
-          }
-          countVisible={true}
-          className="md:col-span-1"
+          variant={KPICardVariant.OUTLINE}
+          value={formatCurrency(dados.aReceber.valor)}
         />
       </div>
 
       {/* KPIs Secundários */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Custo por Passageiro */}
+      <div className="grid grid-cols-2 gap-4">
         <KPICard
-          title="Custo por Passageiro"
+          label="Custo Médio / Pass."
           icon={Users}
-          bgClass="bg-orange-50"
-          colorClass="text-orange-500"
-          value={new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.custoPorPassageiro)}
-          countText="Média de custo por assento ocupado"
-          countVisible={true}
+          variant={KPICardVariant.OUTLINE}
+          value={formatCurrency(dados.custoPorPassageiro)}
         />
 
-        {/* Taxa de Recebimento */}
         <KPICard
-            title="Taxa de Recebimento"
-            icon={Percent}
-            bgClass="bg-emerald-50"
-            colorClass="text-emerald-500"
-            value={
-                <span className="text-emerald-600">
-                    {Math.round(dados.taxaRecebimento)}%
-                </span>
-            }
-            countText="do previsto"
-            countVisible={true}
+          label="Taxa de Recebimento"
+          icon={Percent}
+          variant={KPICardVariant.OUTLINE}
+          value={`${Math.round(dados.taxaRecebimento)}%`}
         />
       </div>
 
-      {/* Comparativo Barras */}
-      <Card className="border-none shadow-sm rounded-2xl bg-white">
-        <CardHeader className="pt-6 px-6">
-          <CardTitle className="text-lg font-bold text-gray-900">
-            Fluxo do Mês
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-8 px-6 pb-8 relative">
-          {(() => {
-            // Calcular o valor máximo entre recebido e gasto para usar como base (100%)
-            const maxValor = Math.max(dados.recebido, dados.gasto);
-            const percentualEntradas =
-              maxValor > 0 ? (dados.recebido / maxValor) * 100 : 0;
-            const percentualSaidas =
-              maxValor > 0 ? (dados.gasto / maxValor) * 100 : 0;
+      {/* Fluxo do Mês */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden group">
+        <div className="pt-6 px-6 flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
+            <TrendingUp className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+          </div>
+          <div className="flex flex-col">
+            <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+              Fluxo do Mês
+            </h3>
+            <span className="text-[11px] font-headline font-black text-[#1a3a5c] uppercase">
+              Resumo Financeiro
+            </span>
+          </div>
+        </div>
 
-            return (
-              <>
-                <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 flex items-center gap-2 font-medium">
-                      <ArrowUpCircle className="h-5 w-5 text-emerald-500" />
-                      Entradas
-                    </span>
-                    <span className="font-bold text-gray-900 text-base">
-                      {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.recebido)}
-                    </span>
-                  </div>
-                  <Progress
-                    value={percentualEntradas}
-                    className="h-3 bg-gray-100 rounded-full"
-                    indicatorClassName="bg-emerald-500 rounded-full"
-                  />
-                </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 flex items-center gap-2 font-medium">
-                      <ArrowDownCircle className="h-5 w-5 text-red-500" />
-                      Saídas
-                    </span>
-                    <span className="font-bold text-gray-900 text-base">
-                       {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.gasto)}
-                    </span>
-                  </div>
-                  <Progress
-                    value={percentualSaidas}
-                    className="h-3 bg-gray-100 rounded-full"
-                    indicatorClassName="bg-red-500 rounded-full"
-                  />
-                </div>
-              </>
-            );
-          })()}
-        </CardContent>
-      </Card>
+        <div className="p-6 pt-6 space-y-6">
+          {/* Entradas progress */}
+          <div className="space-y-2.5">
+            <div className="flex justify-between items-end">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Entradas</span>
+              <span className="text-[11px] font-headline font-black text-emerald-600">
+                {formatCurrency(dados.recebido)}
+              </span>
+            </div>
+            <Progress 
+              value={percEntradas} 
+              className="h-2 bg-slate-50 rounded-full" 
+              indicatorClassName="bg-emerald-500 rounded-full" 
+            />
+          </div>
+
+          {/* Saídas progress */}
+          <div className="space-y-2.5">
+            <div className="flex justify-between items-end">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Saídas</span>
+              <span className="text-[11px] font-headline font-black text-rose-600">
+                {formatCurrency(dados.gasto)}
+              </span>
+            </div>
+            <Progress 
+              value={percSaidas} 
+              className="h-2 bg-slate-50 rounded-full" 
+              indicatorClassName="bg-rose-500 rounded-full" 
+            />
+          </div>
+
+          {/* Balanço progress */}
+          <div className="space-y-2.5">
+            <div className="flex justify-between items-end">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Balanço (Líquido)</span>
+              <span className={cn(
+                "text-[11px] font-headline font-black",
+                lucroPositivo ? "text-emerald-600" : "text-rose-600"
+              )}>
+                {lucroPositivo ? "+" : ""}{formatCurrency(dados.lucroEstimado)}
+              </span>
+            </div>
+            <Progress 
+              value={percBalanco} 
+              className="h-2 bg-slate-50 rounded-full" 
+              indicatorClassName={cn(
+                "rounded-full",
+                lucroPositivo ? "bg-emerald-500" : "bg-rose-500"
+              )} 
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

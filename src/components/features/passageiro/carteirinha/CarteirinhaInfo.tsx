@@ -1,443 +1,277 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { ContratoStatus } from "@/types/enums";
-import { Passageiro } from "@/types/passageiro";
-import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
-import { formatarEnderecoCompleto } from "@/utils/formatters/address";
-import { formatarTelefone } from "@/utils/formatters/phone";
-import { AnimatePresence, motion } from "framer-motion";
 import {
-  AlertCircle,
-  CalendarDays,
-  Car,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Copy,
-  CopyCheck,
-  CreditCard,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import { ContratoStatus, PassageiroPeriodo } from "@/types/enums";
+import { Passageiro } from "@/types/passageiro";
+import { phoneMask } from "@/utils/masks";
+import {
+  ExternalLink,
+  FileCheck,
+  FileSignature,
   FileText,
-  HeartPulse,
-  Mail,
-    MapPin,
-    Pencil,
-    Phone,
-    School,
-    Trash2,
-    User,
-    UserCheck,
-    Lock
+  MapPin,
+  MessageCircle,
+  MoreHorizontal,
+  Pencil,
+  Phone,
+  Power,
+  PowerOff,
+  ShieldCheck,
+  ShieldQuestion,
+  User,
+  Trash2,
 } from "lucide-react";
-import { useRef, useState } from "react";
-import { InfoItem } from "./InfoItem";
 
 interface CarteirinhaInfoProps {
   passageiro: Passageiro;
-  temCobrancasVencidas?: boolean;
+  temCobrancasVencidas: boolean;
   isCopiedEndereco: boolean;
   isCopiedTelefone: boolean;
   onEditClick: () => void;
   onCopyToClipboard: (text: string, label: string) => void;
-
   onToggleClick: (statusAtual: boolean) => void;
   onDeleteClick: () => void;
-  onContractAction?: () => void;
+  onContractAction: () => void;
 }
 
 export const CarteirinhaInfo = ({
   passageiro,
-  temCobrancasVencidas = false,
+  temCobrancasVencidas,
   isCopiedEndereco,
   isCopiedTelefone,
   onEditClick,
   onCopyToClipboard,
-
   onToggleClick,
   onDeleteClick,
   onContractAction,
 }: CarteirinhaInfoProps) => {
-  const [mostrarMaisInfo, setMostrarMaisInfo] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  const handleToggleClickInternal = async () => {
-      try {
-          await onToggleClick(passageiro.ativo);
-      } catch (error: any) {
-          throw error;
-      }
-  };
-
-
-
-  const handleToggleDetails = () => {
-    setMostrarMaisInfo(!mostrarMaisInfo);
-    if (!mostrarMaisInfo) {
-      setTimeout(() => {
-        cardRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-        });
-      }, 100);
+  const getPeriodoLabel = (periodo?: PassageiroPeriodo) => {
+    switch (periodo) {
+      case PassageiroPeriodo.MANHA:
+        return "Manhã";
+      case PassageiroPeriodo.TARDE:
+        return "Tarde";
+      case PassageiroPeriodo.NOITE:
+        return "Noite";
+      case PassageiroPeriodo.INTEGRAL:
+        return "Integral";
+      default:
+        return "-";
     }
   };
 
-  const infoAdicionais = [
-    {
-      icon: Phone,
-      label: "WhatsApp",
-      content: (
-        <div className="flex items-center gap-2">
-          <span className="text-sm">
-            {formatarTelefone(passageiro.telefone_responsavel)}
-          </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            title={isCopiedTelefone ? "Telefone copiado!" : "Copiar Telefone"}
-            className="h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-50 shrink-0"
-            onClick={() =>
-              onCopyToClipboard(
-                formatarTelefone(passageiro.telefone_responsavel),
-                "Telefone"
-              )
-            }
-          >
-            {isCopiedTelefone ? (
-              <CopyCheck className="h-4 w-4 text-green-500" />
-            ) : (
-              <Copy className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
-      ),
-    },
-    {
-      icon: MapPin,
-      label: "Endereço",
-      content: (
-        <div className="flex flex-col gap-1 w-full">
-          <div className="flex items-start justify-between gap-2 w-full">
-            <span
-              className="text-sm leading-snug break-words"
-              title={formatarEnderecoCompleto(passageiro)}
-            >
-              {formatarEnderecoCompleto(passageiro)}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              title={isCopiedEndereco ? "Endereço copiado!" : "Copiar Endereço"}
-              className="h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-50 shrink-0"
-              onClick={() => {
-                const passageiroSemReferencia = {
-                  ...passageiro,
-                  referencia: "",
-                };
-                onCopyToClipboard(
-                  formatarEnderecoCompleto(passageiroSemReferencia),
-                  "Endereço"
-                );
-              }}
-            >
-              {isCopiedEndereco ? (
-                <CopyCheck className="h-4 w-4 text-green-500" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-        </div>
-      ),
-    },
-    {
-      icon: Car,
-      label: "Veículo",
-      content:
-        formatarPlacaExibicao(passageiro.veiculo?.placa) || "Não informado",
-    },
-    {
-      icon: CalendarDays,
-      label: "Data de Vencimento",
-      content: `Todo dia ${passageiro.dia_vencimento}`,
-    },
-    {
-      icon: Mail,
-      label: "E-mail",
-      content: passageiro.email_responsavel || "Não informado",
-    },
-    {
-      icon: User,
-      label: "Gênero",
-      content: passageiro.genero ? passageiro.genero.charAt(0).toUpperCase() + passageiro.genero.slice(1) : "Não informado",
-    },
-    {
-      icon: CalendarDays,
-      label: "Nascimento",
-      content: passageiro.data_nascimento ? new Date(passageiro.data_nascimento).toLocaleDateString('pt-BR') : "Não informado",
-    },
-    {
-      icon: User,
-      label: "Parentesco",
-      content: passageiro.parentesco_responsavel ? passageiro.parentesco_responsavel.charAt(0).toUpperCase() + passageiro.parentesco_responsavel.slice(1) : "Não informado",
-    },
-    {
-      icon: Car,
-      label: "Modalidade",
-      content: passageiro.modalidade === 'ida_volta' ? 'Ida e Volta' : passageiro.modalidade === 'ida' ? 'Ida' : passageiro.modalidade === 'volta' ? 'Volta' : 'Não informado',
-    },
-    {
-       icon: CalendarDays,
-       label: "Início Transporte",
-       content: passageiro.data_inicio_transporte ? new Date(passageiro.data_inicio_transporte).toLocaleDateString('pt-BR') : "Não informado"
-    }
-  ];
+  const getContratoStatusStyles = (status?: ContratoStatus) => {
+    if (status === ContratoStatus.ASSINADO)
+      return {
+        label: "Assinado",
+        color: "text-emerald-500 bg-emerald-50",
+        icon: ShieldCheck,
+      };
+    if (status === ContratoStatus.PENDENTE)
+      return {
+        label: "Pendente",
+        color: "text-amber-500 bg-amber-50",
+        icon: ShieldQuestion,
+      };
+    return {
+      label: "Sem Contrato",
+      color: "text-slate-400 bg-slate-50",
+      icon: FileSignature,
+    };
+  };
+
+  const contratoStyle = getContratoStatusStyles(passageiro.status_contrato);
+
+  const getEnderecoFormatado = () => {
+    if (!passageiro.logradouro) return "Endereço não informado";
+    return `${passageiro.logradouro}, ${passageiro.numero || "S/N"} - ${passageiro.bairro || ""}`;
+  };
+
+  const enderecoFormatado = getEnderecoFormatado();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Card className="overflow-hidden border-0 shadow-lg ring-1 ring-black/5 bg-white">
-        {/* Header com Gradiente e Avatar */}
-        <div
-          className={cn(
-            "relative h-20 sm:26 lg:h-32",
-            passageiro.ativo
-              ? "bg-gradient-to-r from-green-600 via-blue-600 to-blue-600"
-              : "bg-gradient-to-r from-red-600 via-blue-600 to-blue-600"
-          )}
-        >
-          <div className="absolute -bottom-12 left-6">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
-              className={cn(
-                "h-24 w-24 rounded-full border-4 border-white bg-white shadow-md flex items-center justify-center relative",
-                passageiro.ativo
-                  ? "ring-2 ring-green-500 ring-offset-2"
-                  : "ring-2 ring-red-500 ring-offset-2"
-              )}
-            >
-              <div className="h-full w-full rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
-                <User className="h-12 w-12 text-gray-400" />
+    <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow overflow-hidden group/card transition-all relative">
+      <div className="h-24 bg-gradient-to-br from-[#1a3a5c] to-[#002444] relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent)]" />
+        <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full bg-white/5 blur-2xl" />
+      </div>
+
+      <div className="px-6 pb-8 relative">
+        <div className="flex flex-col items-center -mt-12 mb-6">
+          <div className="relative group/avatar">
+            <div className="h-24 w-24 rounded-[2rem] bg-white p-1.5 shadow-xl transition-transform group-hover/avatar:scale-105 duration-500">
+              <div className="h-full w-full rounded-[1.6rem] bg-slate-100 flex items-center justify-center text-[#1a3a5c] overflow-hidden relative group-hover/avatar:shadow-inner transition-all">
+                <User className="h-10 w-10 opacity-20" />
+                <div
+                  className={cn(
+                    "absolute inset-0 border-2 rounded-[1.6rem] transition-all duration-700",
+                    passageiro.ativo ? "border-emerald-500/30 group-hover/avatar:border-emerald-500" : "border-slate-300/30 group-hover/avatar:border-slate-300"
+                  )}
+                />
               </div>
-              <div
-                className={cn(
-                  "absolute bottom-1 right-1 h-5 w-5 rounded-full border-2 border-white",
-                  passageiro.ativo ? "bg-green-500" : "bg-red-500"
-                )}
-                title={passageiro.ativo ? "Ativo" : "Desativado"}
-              />
-            </motion.div>
+            </div>
+            <div className={cn(
+              "absolute bottom-0 right-0 h-7 w-7 rounded-2xl border-4 border-white shadow-lg flex items-center justify-center",
+              passageiro.ativo ? "bg-emerald-500" : "bg-slate-400"
+            )}>
+              {passageiro.ativo ? <Power className="h-3 w-3 text-white" /> : <PowerOff className="h-3 w-3 text-white" />}
+            </div>
           </div>
 
-          {/* Ações Rápidas no Topo (Desktop) */}
-          <div className="absolute top-4 right-4 flex gap-2 z-10">
-            <Button
-              size="icon"
-              variant="secondary"
-              className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm"
-              onClick={onEditClick}
-              title="Editar Cadastro"
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
+          <div className="text-center mt-4">
+            <h2 className="text-xl font-headline font-black text-[#1a3a5c] tracking-tight">
+              {passageiro.nome}
+            </h2>
+            <div className="flex items-center justify-center gap-2 mt-1">
+              <Badge variant="outline" className={cn(
+                "border-none px-2 py-0.5 text-[9px] font-black uppercase tracking-widest",
+                passageiro.ativo ? "text-emerald-500 bg-emerald-50" : "text-slate-400 bg-slate-50"
+              )}>
+                {passageiro.ativo ? "Ativo" : "Inativo"}
+              </Badge>
+              {temCobrancasVencidas && (
+                <Badge className="bg-rose-50 text-rose-500 border-none px-2 py-0.5 text-[9px] font-black uppercase tracking-widest animate-pulse">
+                  Possui Débitos
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
 
-        <CardContent className="pt-14 pb-6 px-6 relative">
-          {/* Identidade Principal */}
-          <div className="mb-6">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-gray-900 leading-tight">
-                  {passageiro.nome}
-                </h2>
-                <p className="text-sm text-muted-foreground font-medium flex items-center gap-1 mt-1">
-                  {passageiro.nome_responsavel}
-                </p>
-              </div>
-              {/* Indicador de Cobranças Vencidas */}
-              {temCobrancasVencidas && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3, duration: 0.3 }}
-                  className="shrink-0 absolute top-5 lg:-top-3.5 right-4"
-                >
-                  <div className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-700 px-2.5 py-1 rounded-sm shadow-sm">
-                    <AlertCircle className="h-3.5 w-3.5" />
-                    <span className="text-xs font-semibold whitespace-nowrap">
-                      Em atraso
-                    </span>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          </div>
-
-          {/* Grid de Informações Chave */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col justify-center">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <HeartPulse className="h-4 w-4" />
-                <span className="text-xs font-medium uppercase tracking-wider">
-                  Status
-                </span>
-              </div>
-              <div>
-                <Badge
-                  variant={passageiro.ativo ? "default" : "destructive"}
-                  className={cn(
-                    "px-2 py-0.5 text-xs font-semibold shadow-none",
-                    passageiro.ativo
-                      ? "bg-green-100 text-green-700 hover:bg-green-200"
-                      : "bg-red-100 text-red-700 hover:bg-red-200"
-                  )}
-                >
-                  {passageiro.ativo ? "ATIVO" : "DESATIVADO"}
-                </Badge>
-              </div>
-            </div>
-            <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <School className="h-4 w-4" />
-                <span className="text-xs font-medium uppercase tracking-wider">
-                  Escola
-                </span>
-              </div>
-              <p
-                className="font-semibold text-gray-900 text-sm sm:text-base"
-                title={passageiro.escola?.nome}
-              >
-                {passageiro.escola?.nome || "—"}
-              </p>
-            </div>
-
-            <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <Clock className="h-4 w-4" />
-                <span className="text-xs font-medium uppercase tracking-wider">
-                  Vencimento
-                </span>
-              </div>
-              <p className="font-semibold text-gray-900 text-sm sm:text-base">
-                Dia {passageiro.dia_vencimento}
-              </p>
-            </div>
-
-            <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <CreditCard className="h-4 w-4" />
-                <span className="text-xs font-medium uppercase tracking-wider">
-                  Valor
-                </span>
-              </div>
-              <p className="font-semibold text-gray-900 text-sm sm:text-base">
-                {passageiro.valor_cobranca.toLocaleString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                })}
-              </p>
-            </div>
-          </div>
-
-          {/* Botões de Ação Sempre Visíveis */}
-
-          <div className="space-y-2 mb-6">
-
-
-          {passageiro.ativo ? (
+        <div className="flex items-center justify-center gap-4 mb-8">
+          <Button
+            size="icon"
+            onClick={() => window.open(`tel:${passageiro.telefone_responsavel}`, "_self")}
+            className="h-12 w-12 rounded-2xl bg-[#1a3a5c]/5 text-[#1a3a5c] hover:bg-[#1a3a5c] hover:text-white transition-all shadow-sm hover:shadow-md"
+          >
+            <Phone className="h-5 w-5" />
+          </Button>
+          <Button
+            size="icon"
+            onClick={() => window.open(`https://wa.me/55${passageiro.telefone_responsavel?.replace(/\D/g, "")}`, "_blank")}
+            className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all shadow-sm hover:shadow-md"
+          >
+            <MessageCircle className="h-5 w-5" />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <Button
-                variant="ghost"
-                className="w-full pl-0 text-muted-foreground hover:bg-transparent hover:text-primary justify-start"
-                onClick={handleToggleClickInternal}
+                size="icon"
+                className="h-12 w-12 rounded-2xl bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-[#1a3a5c] transition-all shadow-sm"
               >
-                <Lock className="h-4 w-4 mr-2" />
-                Desativar Passageiro
+                <MoreHorizontal className="h-5 w-5" />
               </Button>
-            ) : (
-              <Button
-                variant="ghost"
-                className="w-full pl-0 text-muted-foreground hover:bg-transparent hover:text-primary justify-start"
-                onClick={handleToggleClickInternal}
-              >
-                <UserCheck className="h-4 w-4 mr-2" />
-                Reativar Passageiro
-              </Button>
-            )}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-56 rounded-2xl p-2 shadow-xl border-slate-100">
+              <DropdownMenuItem onClick={onEditClick} className="rounded-xl px-3 py-2.5 text-[11px] font-black uppercase tracking-wider text-[#1a3a5c] cursor-pointer">
+                <Pencil className="h-3.5 w-3.5 mr-2 opacity-60" />
+                Editar Cadastro
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onToggleClick(!!passageiro.ativo)} className="rounded-xl px-3 py-2.5 text-[11px] font-black uppercase tracking-wider text-[#1a3a5c] cursor-pointer">
+                {passageiro.ativo ? <PowerOff className="h-3.5 w-3.5 mr-2 opacity-60 text-amber-500" /> : <Power className="h-3.5 w-3.5 mr-2 opacity-60 text-emerald-500" />}
+                {passageiro.ativo ? "Desativar Passageiro" : "Reativar Passageiro"}
+              </DropdownMenuItem>
+              <div className="h-px bg-slate-50 my-1" />
+              <DropdownMenuItem onClick={onDeleteClick} className="rounded-xl px-3 py-2.5 text-[11px] font-black uppercase tracking-wider text-rose-500 cursor-pointer">
+                <Trash2 className="h-3.5 w-3.5 mr-2 opacity-60" />
+                Remover cadastro
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
-            {onContractAction && (
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    "w-full pl-0 justify-start",
-                    passageiro.status_contrato === ContratoStatus.ASSINADO ? "text-green-600 hover:text-green-700" :
-                    passageiro.status_contrato === ContratoStatus.PENDENTE ? "text-yellow-600 hover:text-yellow-700" :
-                    "text-muted-foreground hover:bg-transparent hover:text-primary"
-                  )}
-                  onClick={onContractAction}
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  {passageiro.status_contrato === ContratoStatus.ASSINADO ? 'Ver Contrato Assinado' : 
-                   passageiro.status_contrato === ContratoStatus.PENDENTE ? 'Ver Contrato Pendente' : 
-                   'Gerar Contrato'}
-                </Button>
-            )}
-
-            <Button
-              variant="ghost"
-              className="w-full pl-0 text-red-400 hover:text-red-600 hover:bg-transparent justify-start"
-              onClick={onDeleteClick}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Excluir Passageiro
-            </Button>
+        <div className="grid grid-cols-2 gap-3 mb-8">
+          <div className="bg-slate-50/80 rounded-2xl p-4 transition-colors hover:bg-slate-100/80">
+            <span className="block text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">
+              Período
+            </span>
+            <span className="text-sm font-black text-[#1a3a5c]">
+              {getPeriodoLabel(passageiro.periodo)}
+            </span>
           </div>
 
-          {/* Informações Expansíveis */}
-          <div className="border-t border-gray-100 pt-4" ref={cardRef}>
-            <Button
-              variant="ghost"
-              className="w-full flex justify-between items-center text-muted-foreground hover:text-primary hover:bg-transparent p-0 h-auto group"
-              onClick={handleToggleDetails}
-            >
-              <span className="text-sm font-medium">
-                {mostrarMaisInfo ? "Ocultar detalhes" : "Ver mais detalhes"}
+          <div
+            onClick={onContractAction}
+            className={cn(
+              "rounded-2xl p-4 transition-all cursor-pointer group/tile",
+              contratoStyle.color
+            )}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="block text-[8px] font-black uppercase tracking-[0.2em] opacity-60">
+                Contrato
               </span>
-              {mostrarMaisInfo ? (
-                <ChevronUp className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" />
-              ) : (
-                <ChevronDown className="h-4 w-4 transition-transform group-hover:translate-y-0.5" />
-              )}
-            </Button>
-
-            <AnimatePresence>
-              {mostrarMaisInfo && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
-                  <div className="pt-4 space-y-4">
-                    {infoAdicionais.map((info, index) => (
-                      <InfoItem key={index} icon={info.icon} label={info.label}>
-                        {info.content}
-                      </InfoItem>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+              <ExternalLink className="h-3 w-3 opacity-0 group-hover/tile:opacity-40 transition-opacity" />
+            </div>
+            <div className="flex items-center gap-2">
+              <contratoStyle.icon className="h-4 w-4" />
+              <span className="text-sm font-black">
+                {contratoStyle.label}
+              </span>
+            </div>
           </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+
+          <div className="col-span-2 bg-slate-50/80 rounded-2xl p-4 transition-colors hover:bg-slate-100/80">
+            <span className="block text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">
+              Representante Legal
+            </span>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="block text-sm font-black text-[#1a3a5c]">
+                  {passageiro.nome_responsavel}
+                </span>
+                <span className="text-[11px] font-medium text-slate-500">
+                  {phoneMask(passageiro.telefone_responsavel)}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onCopyToClipboard(passageiro.telefone_responsavel || "", "Telefone")}
+                className="h-8 rounded-xl text-[10px] font-black uppercase tracking-wider px-3 hover:bg-white"
+              >
+                {isCopiedTelefone ? "Copiado!" : "Copiar"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="col-span-2 bg-slate-50/80 rounded-2xl p-4 transition-colors hover:bg-slate-100/80">
+            <div className="flex items-center gap-2 mb-3">
+              <MapPin className="h-3.5 w-3.5 text-slate-400" />
+              <span className="block text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">
+                Rota de Embarque
+              </span>
+            </div>
+            <div className="flex items-start justify-between gap-4">
+              <p className="text-xs font-bold text-slate-600 leading-relaxed">
+                {enderecoFormatado}
+              </p>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onCopyToClipboard(enderecoFormatado, "Endereço")}
+                className="h-8 w-8 rounded-xl shrink-0 hover:bg-white"
+              >
+                {isCopiedEndereco ? <FileCheck className="h-4 w-4 text-emerald-500" /> : <FileText className="h-4 w-4 text-slate-400" />}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <Button
+          onClick={onEditClick}
+          className="w-full h-14 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md text-[#1a3a5c] font-black uppercase tracking-[0.15em] text-[10px] group/edit transition-all"
+        >
+          <Pencil className="h-4 w-4 mr-2 group-hover/edit:rotate-12 transition-transform" />
+          Gerenciar Cadastro
+        </Button>
+      </div>
+    </div>
   );
 };

@@ -36,7 +36,6 @@ const Home = lazyLoad(() => import("./pages/Home"));
 
 const Passageiros = lazyLoad(() => import("./pages/Passageiros"));
 const PassageiroCarteirinha = lazyLoad(() => import("./pages/PassageiroCarteirinha"));
-const PassageiroCobranca = lazyLoad(() => import("./pages/PassageiroCobranca"));
 const PassageiroExternalForm = lazyLoad(() => import("./pages/PassageiroExternalForm"));
 const AssinarContrato = lazyLoad(() => import("./pages/AssinarContrato"));
 const Cobrancas = lazyLoad(() => import("./pages/Cobrancas"));
@@ -232,10 +231,6 @@ const App = () => {
               <Route
                 path={ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS}
                 element={<PassageiroCarteirinha />}
-              />
-              <Route
-                path={ROUTES.PRIVATE.MOTORISTA.PASSENGER_BILLING}
-                element={<PassageiroCobranca />}
               />
               <Route path={ROUTES.PRIVATE.MOTORISTA.BILLING} element={<Cobrancas />} />
               <Route path={ROUTES.PRIVATE.MOTORISTA.SCHOOLS} element={<Escolas />} />

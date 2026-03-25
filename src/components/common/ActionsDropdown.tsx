@@ -47,7 +47,10 @@ export function ActionsDropdown({
         <Button
           variant="ghost"
           size={triggerSize}
-          className={cn("h-8 w-8 rounded-full text-gray-400 hover:text-gray-600", triggerClassName)}
+          className={cn(
+            "h-8 w-8 rounded-full border-0 text-zinc-400 opacity-30 hover:opacity-100 transition-opacity",
+            triggerClassName
+          )}
           onClick={(e) => e.stopPropagation()}
         >
           <MoreVertical className="h-4 w-4" />

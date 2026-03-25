@@ -24,6 +24,7 @@ interface ActionSheetProps {
   onOpenChange: (open: boolean) => void;
   title?: string;
   actions: ActionSheetItem[];
+  children?: ReactNode;
 }
 
 export function ActionSheet({
@@ -31,6 +32,7 @@ export function ActionSheet({
   onOpenChange,
   title,
   actions,
+  children,
 }: ActionSheetProps) {
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -50,6 +52,13 @@ export function ActionSheet({
           "px-4 pt-4 flex flex-col gap-2 overflow-y-auto",
            !title && "pt-6" // Compensação se não houver título
         )}>
+          {/* Conteúdo customizado (Header/Resumo) */}
+          {children && (
+            <div className="mb-2">
+              {children}
+            </div>
+          )}
+
           {/* Agrupamento tipo Threads/Instagram */}
           <div className="bg-white dark:bg-zinc-900 rounded-[28px] overflow-hidden border border-zinc-100 dark:border-zinc-800/50">
             {actions.map((action, idx) => (

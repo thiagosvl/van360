@@ -21,71 +21,67 @@ export default function Relatorios() {
   } = useRelatoriosViewModel();
 
   return (
-    <div className="relative min-h-screen space-y-6 bg-gray-50/50">
+    <div className="min-h-screen bg-[#F8FAFB] pb-24">
       <PullToRefreshWrapper onRefresh={refreshAll}>
-        {/* Header & Navigation */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Header & Navigation */}
           <DateNavigation mes={mes} ano={ano} onNavigate={handleNavigate} />
-        </div>
 
-        {/* Main Content */}
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="w-full space-y-6 pt-6"
-        >
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="w-full overflow-x-auto pb-2 -mb-2 scrollbar-hide">
-              <TabsList className="bg-slate-100/80 p-1 rounded-xl h-10 md:h-12 inline-flex w-auto min-w-full md:min-w-0">
+          {/* Main Content */}
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full space-y-6"
+          >
+            <div className="bg-gray-100/40 p-1 rounded-2xl overflow-x-auto scrollbar-hide">
+              <TabsList className="flex w-full h-11 bg-transparent p-0 gap-1 mt-0 min-w-max sm:min-w-0 sm:grid sm:grid-cols-4">
                 <TabsTrigger
                   value={RelatorioTab.VISAO_GERAL}
-                  className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none whitespace-nowrap"
+                  className="rounded-xl h-full font-headline font-bold text-[11px] sm:text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400 px-4 flex-1 whitespace-nowrap"
                 >
                   Visão Geral
                 </TabsTrigger>
                 <TabsTrigger
                   value={RelatorioTab.ENTRADAS}
-                  className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none whitespace-nowrap"
+                  className="rounded-xl h-full font-headline font-bold text-[11px] sm:text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400 px-4 flex-1 whitespace-nowrap"
                 >
                   Entradas
                 </TabsTrigger>
                 <TabsTrigger
                   value={RelatorioTab.SAIDAS}
-                  className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none whitespace-nowrap"
+                  className="rounded-xl h-full font-headline font-bold text-[11px] sm:text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400 px-4 flex-1 whitespace-nowrap"
                 >
                   Saídas
                 </TabsTrigger>
                 <TabsTrigger
                   value={RelatorioTab.OPERACIONAL}
-                  className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none whitespace-nowrap"
+                  className="rounded-xl h-full font-headline font-bold text-[11px] sm:text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400 px-4 flex-1 whitespace-nowrap"
                 >
                   Operacional
                 </TabsTrigger>
               </TabsList>
             </div>
-          </div>
 
-          {/* Aba 1: Visão Geral */}
-          <TabsContent value={RelatorioTab.VISAO_GERAL}>
-            <RelatoriosVisaoGeral dados={dados.visaoGeral} />
-          </TabsContent>
+            {/* Aba 1: Visão Geral */}
+            <TabsContent value={RelatorioTab.VISAO_GERAL} className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+              <RelatoriosVisaoGeral dados={dados.visaoGeral} />
+            </TabsContent>
 
-          {/* Aba 2: Entradas */}
-          <TabsContent value={RelatorioTab.ENTRADAS}>
-            <RelatoriosEntradas dados={dados.entradas} />
-          </TabsContent>
+            {/* Aba 2: Entradas */}
+            <TabsContent value={RelatorioTab.ENTRADAS} className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+              <RelatoriosEntradas dados={dados.entradas} />
+            </TabsContent>
 
-          {/* Aba 3: Saídas */}
-          <TabsContent value={RelatorioTab.SAIDAS}>
-            <RelatoriosSaidas dados={dados.saidas} />
-          </TabsContent>
+            {/* Aba 3: Saídas */}
+            <TabsContent value={RelatorioTab.SAIDAS} className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+              <RelatoriosSaidas dados={dados.saidas} />
+            </TabsContent>
 
-          <TabsContent value={RelatorioTab.OPERACIONAL}>
-            <RelatoriosOperacional
-              dados={dados.operacional}
-            />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value={RelatorioTab.OPERACIONAL} className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+              <RelatoriosOperacional dados={dados.operacional} />
+            </TabsContent>
+          </Tabs>
+        </div>
       </PullToRefreshWrapper>
     </div>
   );

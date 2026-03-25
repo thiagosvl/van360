@@ -30,11 +30,6 @@ const CarteirinhaObservacoes = lazyLoad(() =>
     default: mod.CarteirinhaObservacoes,
   })),
 );
-const CarteirinhaResumoFinanceiro = lazyLoad(() =>
-  import("@/components/features/passageiro/carteirinha").then((mod) => ({
-    default: mod.CarteirinhaResumoFinanceiro,
-  })),
-);
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
@@ -409,39 +404,6 @@ export default function PassageiroCarteirinha() {
     });
   };
 
-  const yearlySummary = useMemo(() => {
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    return cobrancas.reduce(
-      (acc, c) => {
-        if (c.status === CobrancaStatus.PAGO) {
-          acc.valorPago += Number(c.valor);
-          acc.qtdPago++;
-        } else {
-          const vencimento = new Date(c.data_vencimento + "T00:00:00");
-          vencimento.setHours(0, 0, 0, 0);
-
-          if (vencimento < hoje) {
-            acc.qtdEmAtraso += 1;
-            acc.valorEmAtraso += Number(c.valor);
-          } else {
-            acc.qtdPendente++;
-            acc.valorPendente += Number(c.valor);
-          }
-        }
-        return acc;
-      },
-      {
-        qtdPago: 0,
-        valorPago: 0,
-        qtdPendente: 0,
-        valorPendente: 0,
-        qtdEmAtraso: 0,
-        valorEmAtraso: 0,
-      },
-    );
-  }, [cobrancas]);
-
   const temCobrancasVencidas = useMemo(() => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -482,122 +444,98 @@ export default function PassageiroCarteirinha() {
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div className="min-h-screen">
-          <div className=" space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="contents lg:block lg:col-span-4 lg:space-y-6 lg:sticky lg:top-6 lg:h-fit">
-                <div className="order-1 lg:order-none">
-                  <Suspense
-                    fallback={<Skeleton className="h-96 w-full rounded-2xl" />}
-                  >
-                    <CarteirinhaInfo
-                      passageiro={passageiro}
-                      temCobrancasVencidas={temCobrancasVencidas}
-                      isCopiedEndereco={isCopiedEndereco}
-                      isCopiedTelefone={isCopiedTelefone}
-                      onEditClick={handleEditClick}
-                      onCopyToClipboard={handleCopyToClipboard}
-
-                      onToggleClick={handleToggleClick}
-                      onDeleteClick={() =>
-                        openConfirmationDialog({
-                          title: "Excluir passageiro?",
-                          description:
-                            "Tem certeza que deseja excluir este passageiro? Essa ação não poderá ser desfeita.",
-                          confirmText: "Excluir",
-                          variant: "destructive",
-                          onConfirm: async () => {
-                            if (!passageiro_id) return;
-                            setIsDeleting(true);
-                            try {
-                              await deletePassageiro.mutateAsync(passageiro_id);
-                              closeConfirmationDialog();
-                              navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS);
-                            } catch (error) {
-                            } finally {
-                              setIsDeleting(false);
-                            }
-                          },
-                        })
-                      }
-                       onContractAction={() => {
-                          if (!passageiro || !passageiro_id) return;
-                          
-                          if (passageiro.status_contrato === ContratoStatus.PENDENTE || passageiro.status_contrato === ContratoStatus.ASSINADO) {
-                              const url = passageiro.status_contrato === ContratoStatus.ASSINADO 
-                                ? (passageiro.contrato_final_url || passageiro.contrato_url)
-                                : passageiro.contrato_url;
-
-                              if (url) {
-                                  openBrowserLink(url);
-                              } else {
-                                  toast.error("contrato.erro.semUrl", {
-                                      description: "contrato.erro.semUrlDescricao"
-                                  });
-                              }
-                              return;
+        <div className="min-h-screen pb-20">
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Lado Esquerdo: Perfil e Notas */}
+              <div className="lg:col-span-4 space-y-8 lg:sticky lg:top-6 lg:h-fit">
+                <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
+                  <CarteirinhaInfo
+                    passageiro={passageiro}
+                    temCobrancasVencidas={temCobrancasVencidas}
+                    isCopiedEndereco={isCopiedEndereco}
+                    isCopiedTelefone={isCopiedTelefone}
+                    onEditClick={handleEditClick}
+                    onCopyToClipboard={handleCopyToClipboard}
+                    onToggleClick={handleToggleClick}
+                    onDeleteClick={() =>
+                      openConfirmationDialog({
+                        title: "Excluir passageiro?",
+                        description:
+                          "Tem certeza que deseja excluir este passageiro? Essa ação não poderá ser desfeita.",
+                        confirmText: "Excluir",
+                        variant: "destructive",
+                        onConfirm: async () => {
+                          if (!passageiro_id) return;
+                          setIsDeleting(true);
+                          try {
+                            await deletePassageiro.mutateAsync(passageiro_id);
+                            closeConfirmationDialog();
+                            navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS);
+                          } catch (error) {
+                          } finally {
+                            setIsDeleting(false);
                           }
+                        },
+                      })
+                    }
+                    onContractAction={() => {
+                      if (!passageiro || !passageiro_id) return;
 
-                          openConfirmationDialog({
-                              title: "Gerar Contrato?",
-                              description: `Deseja gerar um novo contrato para ${passageiro.nome}? Isso usará a configuração atual de contrato.`,
-                              confirmText: "Gerar Contrato",
-                              onConfirm: async () => {
-                                  if (!passageiro || !passageiro_id) return;
-                                  
-                                  try {
-                                      await createContrato.mutateAsync({
-                                          passageiroId: passageiro.id,
-                                          modalidade: passageiro.periodo,
-                                          valorMensal: Number(passageiro.valor_cobranca),
-                                          diaVencimento: Number(passageiro.dia_vencimento),
-                                      });
-                                      closeConfirmationDialog();
-                                  } catch (error) {
-                                      closeConfirmationDialog();
-                                  }
-                              }
+                      if (
+                        passageiro.status_contrato === ContratoStatus.PENDENTE ||
+                        passageiro.status_contrato === ContratoStatus.ASSINADO
+                      ) {
+                        const url =
+                          passageiro.status_contrato === ContratoStatus.ASSINADO
+                            ? passageiro.contrato_final_url || passageiro.contrato_url
+                            : passageiro.contrato_url;
+
+                        if (url) {
+                          openBrowserLink(url);
+                        } else {
+                          toast.error("contrato.erro.semUrl", {
+                            description: "Link do contrato não disponível.",
                           });
-                       }}
-                    />
-                  </Suspense>
-                </div>
+                        }
+                        return;
+                      }
 
-                <div className="order-4 lg:order-none">
-                  <Suspense
-                    fallback={<Skeleton className="h-48 w-full rounded-2xl" />}
-                  >
-                    <CarteirinhaObservacoes
-                      obsText={obsText}
-                      isEditing={isObservacoesEditing}
-                      textareaRef={textareaRef}
-                      onStartEditing={() => setIsObservacoesEditing(true)}
-                      onTextChange={setObsText}
-                      onSave={handleSaveObservacoes}
-                      onCancel={() => {
-                        setObsText(passageiro?.observacoes || "");
-                        setIsObservacoesEditing(false);
-                      }}
-                    />
-                  </Suspense>
-                </div>
+                      openConfirmationDialog({
+                        title: "Gerar Contrato?",
+                        description: `Deseja gerar um novo contrato para ${passageiro.nome}? Isso usará a configuração atual de contrato.`,
+                        confirmText: "Gerar Contrato",
+                        onConfirm: async () => {
+                          if (!passageiro || !passageiro_id) return;
+                          try {
+                            await createContrato.mutateAsync({
+                              passageiroId: passageiro.id,
+                              modalidade: passageiro.periodo,
+                              valorMensal: Number(passageiro.valor_cobranca),
+                              diaVencimento: Number(passageiro.dia_vencimento),
+                            });
+                            closeConfirmationDialog();
+                          } catch (error) {
+                            closeConfirmationDialog();
+                          }
+                        },
+                      });
+                    }}
+                  />
+                </Suspense>
+
+                <Suspense fallback={<Skeleton className="h-48 w-full rounded-[2rem]" />}>
+                  <CarteirinhaObservacoes
+                    observacoes={passageiro.observacoes}
+                    onEditClick={handleEditClick}
+                  />
+                </Suspense>
               </div>
 
-              <div className="contents lg:block lg:col-span-8 lg:space-y-6">
-                <div className="order-3 lg:order-none">
-                  <Suspense
-                    fallback={<Skeleton className="h-48 w-full rounded-2xl" />}
-                  >
-                    <CarteirinhaResumoFinanceiro
-                      yearlySummary={yearlySummary}
-                    />
-                  </Suspense>
-                </div>
-
-                <div className="order-2 lg:order-none" id="cobrancas-section">
-                  <Suspense
-                    fallback={<Skeleton className="h-96 w-full rounded-2xl" />}
-                  >
+              {/* Lado Direito: Financeiro e Listagem */}
+              <div className="lg:col-span-8 space-y-8">
+                <div id="cobrancas-section">
+                  <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
                     <CarteirinhaCobrancas
                       cobrancas={cobrancas}
                       passageiro={passageiro}
@@ -606,7 +544,7 @@ export default function PassageiroCarteirinha() {
                       mostrarTodasCobrancas={mostrarTodasCobrancas}
                       limiteCobrancasMobile={COBRANCAS_LIMIT}
                       onYearChange={setYearFilter}
-                       onOpenCobrancaDialog={() => {
+                      onOpenCobrancaDialog={() => {
                         if (!passageiro_id) return;
                         openCobrancaFormDialog({
                           passageiroId: passageiro_id,
@@ -617,14 +555,6 @@ export default function PassageiroCarteirinha() {
                           onSuccess: refetchCobrancas,
                         });
                       }}
-                      onNavigateToCobranca={(id) =>
-                        navigate(
-                           ROUTES.PRIVATE.MOTORISTA.PASSENGER_BILLING.replace(
-                            ":cobranca_id",
-                            id,
-                           ),
-                        )
-                      }
                       onEditCobranca={(cobranca) => {
                         openCobrancaEditDialog({
                           cobranca,
@@ -634,7 +564,6 @@ export default function PassageiroCarteirinha() {
                       onRegistrarPagamento={(cobranca) => {
                         openPaymentDialog(cobranca);
                       }}
-
                       onEnviarNotificacao={handleEnviarNotificacaoClick}
                       onToggleLembretes={handleToggleLembretes}
                       onDesfazerPagamento={handleDesfazerClick}
@@ -648,8 +577,6 @@ export default function PassageiroCarteirinha() {
           </div>
         </div>
       </PullToRefreshWrapper>
-      <LoadingOverlay active={isActionLoading} text="Aguarde..." />
-
       <LoadingOverlay active={isActionLoading} text="Aguarde..." />
     </>
   );

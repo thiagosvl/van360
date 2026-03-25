@@ -1,9 +1,20 @@
 import { MobileActionItem } from "@/components/common/MobileActionItem";
+import { StatusBadge } from "@/components/common/StatusBadge";
+import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import {
+  Calendar,
+  CheckCircle2,
+  Clock,
+  History,
+  Plus,
+  AlertCircle,
+} from "lucide-react";
+import { useState } from "react";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
-import { CobrancaActionsMenu } from "@/components/features/cobranca/CobrancaActionsMenu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -11,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus } from "@/types/enums";
@@ -19,491 +29,188 @@ import { Passageiro } from "@/types/passageiro";
 import {
   formatDateToBR,
   getMesNome,
-  getStatusColor,
-  getStatusText,
 } from "@/utils/formatters";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  AlertTriangle,
-  BellOff,
-  Calendar,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  DollarSign,
-  Eye,
-  Plus,
-  RotateCcw,
-} from "lucide-react";
-import { memo, ReactNode, useState } from "react";
+import { CobrancaSummary } from "@/components/features/cobranca/CobrancaSummary";
 
 interface CarteirinhaCobrancasProps {
   cobrancas: Cobranca[];
   passageiro: Passageiro;
-
   yearFilter: string;
   availableYears: string[];
   mostrarTodasCobrancas: boolean;
   onYearChange: (year: string) => void;
   onOpenCobrancaDialog: () => void;
-  onNavigateToCobranca: (cobrancaId: string) => void;
   onEditCobranca: (cobranca: Cobranca) => void;
   onRegistrarPagamento: (cobranca: Cobranca) => void;
-  onPagarPix: (cobranca: Cobranca) => void;
+  onExcluirCobranca: (cobranca: Cobranca) => void;
   onEnviarNotificacao: (cobrancaId: string) => void;
   onToggleLembretes: (cobranca: Cobranca) => void;
   onDesfazerPagamento: (cobrancaId: string) => void;
-  onExcluirCobranca: (cobranca: Cobranca) => void;
-  onToggleMostrarTodas: () => void;
   onToggleClick: (statusAtual: boolean) => void;
   limiteCobrancasMobile?: number;
 }
-
-const COBRANCAS_LIMIT_DEFAULT = 3;
-
-// Wrapper for Mobile Actions ensuring Hooks compliance
-const CobrancaMobileItemWrapper = memo(
-  ({
-    cobranca,
-    children,
-    onVerCobranca,
-    onEditarCobranca,
-    onRegistrarPagamento,
-    onPagarPix,
-    onExcluirCobranca,
-    onDesfazerPagamento,
-    onVerRecibo,
-    showHint,
-  }: {
-    cobranca: Cobranca;
-    children: ReactNode;
-    onVerCobranca: () => void;
-    onEditarCobranca: () => void;
-    onRegistrarPagamento: () => void;
-    onPagarPix: () => void;
-    onExcluirCobranca: () => void;
-    onDesfazerPagamento: () => void;
-    onVerRecibo?: () => void;
-    showHint?: boolean;
-  }) => {
-    const actions = useCobrancaActions({
-      cobranca,
-      onVerCobranca,
-      onEditarCobranca,
-      onRegistrarPagamento,
-      onPagarPix,
-      onExcluirCobranca,
-      onDesfazerPagamento,
-      onVerRecibo,
-    });
-
-    return (
-      <MobileActionItem actions={actions} showHint={showHint}>
-        {children}
-      </MobileActionItem>
-    );
-  }
-);
 
 export const CarteirinhaCobrancas = ({
   cobrancas,
   passageiro,
   yearFilter,
   availableYears,
-  mostrarTodasCobrancas,
   onYearChange,
   onOpenCobrancaDialog,
-  onNavigateToCobranca,
   onEditCobranca,
   onRegistrarPagamento,
-  onPagarPix,
-  onToggleMostrarTodas,
-  onToggleClick,
-  limiteCobrancasMobile = COBRANCAS_LIMIT_DEFAULT,
   onExcluirCobranca,
+  onEnviarNotificacao,
+  onToggleLembretes,
   onDesfazerPagamento,
 }: CarteirinhaCobrancasProps) => {
-  const cobrancasMobile = mostrarTodasCobrancas
-    ? cobrancas
-    : cobrancas.slice(0, limiteCobrancasMobile);
-
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
 
+  const isAtrasado = (dataVencimento: string) => {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const vencimento = new Date(dataVencimento + "T00:00:00");
+    vencimento.setHours(0, 0, 0, 0);
+    return vencimento < hoje;
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.1 }}
-      className="h-full"
-    >
-      <Card className="h-full border-0 shadow-lg ring-1 ring-black/5 bg-white">
-        <CardHeader className="border-b border-gray-100 pb-4">
-          <div
-            className={cn(
-              "flex justify-between",
-              availableYears.length > 1
-                ? "flex-col items-start gap-3 md:flex-row md:items-center"
-                : "items-center"
-            )}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col">
+          <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+            Histórico Mensal
+          </span>
+          <h3 className="text-sm font-headline font-black text-[#1a3a5c]">
+            Listagem de Pagamentos
+          </h3>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {availableYears.length > 1 && (
+            <Select value={yearFilter} onValueChange={onYearChange}>
+              <SelectTrigger className="w-[90px] h-11 bg-white border-slate-100 rounded-2xl shadow-sm text-xs font-bold text-[#1a3a5c]">
+                <SelectValue placeholder="Ano" />
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
+                {availableYears.map((ano) => (
+                  <SelectItem key={ano} value={ano} className="rounded-xl text-xs font-bold py-2.5">
+                    {ano}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          <Button
+            onClick={onOpenCobrancaDialog}
+            className="h-11 rounded-2xl bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white px-5 font-bold shadow-diff-shadow transition-all group"
           >
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-lg font-bold text-gray-900">
-                Mensalidades
-              </CardTitle>
-            </div>
-            <div
-              className={cn(
-                "flex items-center gap-2",
-                availableYears.length > 1 ? "w-full md:w-auto" : ""
-              )}
-            >
-              <div
-                className={`${availableYears.length <= 1 ? "hidden" : "inline"
-                  }`}
-              >
-                <Select value={yearFilter} onValueChange={onYearChange}>
-                  <SelectTrigger className="w-[90px] h-9 text-sm bg-gray-50 border-gray-200 rounded-lg">
-                    <SelectValue placeholder="Ano" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableYears.map((ano) => (
-                      <SelectItem key={ano} value={ano}>
-                        {ano}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                size="sm"
-                className={cn(
-                  "h-9 bg-blue-600 hover:bg-blue-700 text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed",
-                  availableYears.length > 1 ? "flex-1 md:flex-none" : ""
-                )}
-                onClick={onOpenCobrancaDialog}
-                title={"Registrar mensalidade manualmente"}
-              >
-                <Plus className="w-4 h-4" />
-                <span>Registrar</span>
-              </Button>
-            </div>
+            <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform" />
+            Lançamento
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3">
+        {cobrancas.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-12 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-100">
+            <History className="h-10 w-10 text-slate-200 mb-4" />
+            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest text-center">
+              Nenhum registro em {yearFilter}
+            </p>
           </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          {cobrancas.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-              {!passageiro.ativo ? (
-                <>
-                  <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mb-4">
-                    <AlertTriangle className="w-8 h-8 text-orange-500" />
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Passageiro desativado
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 max-w-sm mx-auto mb-6">
-                    Não é possível registrar mensalidades para passageiros desativados.
-                    Para voltar a registrar mensalidades, reative o cadastro do
-                    passageiro.
-                  </p>
-                  <Button
-                    variant="default"
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                    onClick={() => onToggleClick(passageiro.ativo)}
+        ) : (
+          <AnimatePresence mode="popLayout">
+            {cobrancas.map((cobranca, idx) => {
+              const atrasado = !cobranca.status.includes(CobrancaStatus.PAGO) && isAtrasado(cobranca.data_vencimento);
+              const isPago = cobranca.status === CobrancaStatus.PAGO;
+
+              const actions = useCobrancaActions({
+                cobranca,
+                onVerCobranca: () => {},
+                onVerCarteirinha: undefined,
+                onEditarCobranca: () => onEditCobranca(cobranca),
+                onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
+                onExcluirCobranca: () => onExcluirCobranca(cobranca),
+                onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca.id) : undefined,
+                onVerRecibo: cobranca.recibo_url ? () => setReceiptUrl(cobranca.recibo_url || null) : undefined,
+              });
+
+              const renderHeader = () => <CobrancaSummary cobranca={cobranca} />;
+
+              return (
+                <motion.div
+                  key={cobranca.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.03 }}
+                >
+                  <MobileActionItem 
+                    actions={actions}
+                    renderHeader={renderHeader}
                   >
-                    <RotateCcw className="w-4 h-4 mr-2" />
-                    Reativar Passageiro
-                  </Button>
-                </>
-              ) : (
-                <>
-                  {/* Passageiro Ativo */}
-                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                    <DollarSign className="w-8 h-8 text-gray-300" />
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Nenhuma mensalidade encontrada
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1 max-w-sm mx-auto mb-6">
-                    A mensalidade do próximo mês será gerada automaticamente.
-                    Você também pode registrar mensalidades manualmente.
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="border-blue-600 text-blue-600 hover:bg-blue-50"
-                    onClick={onOpenCobrancaDialog}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Registrar Mensalidade
-                  </Button>
-                </>
-              )}
-            </div>
-          ) : (
-            <>
-              {/* Mobile View - Timeline Style Ajustado */}
-              <div className="md:hidden">
-                <div className="relative pl-11 pr-4 py-6">
-                  {" "}
-                  {/* Aumentado de pl-9 para pl-11 para mais respiro */}
-                  {/* Linha vertical ajustada para o novo espaçamento */}
-                  <div className="absolute left-[29px] top-8 bottom-8 w-px bg-gray-200" />
-                  <AnimatePresence>
-                    {cobrancasMobile.map((cobranca, index) => {
-                      const statusColor = getStatusColor(
-                        cobranca?.status,
-                        cobranca?.data_vencimento,
-                      );
-                      const isPago =
-                        cobranca?.status === CobrancaStatus.PAGO;
-                      const statusText = getStatusText(
-                        cobranca?.status,
-                        cobranca?.data_vencimento,
-                      );
+                    <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow p-4 pr-8 flex items-center gap-4 group transition-all active:scale-[0.98]">
+                      {/* Status Circle Icon */}
+                      <div className={cn(
+                        "h-14 w-14 rounded-[1.4rem] flex items-center justify-center shrink-0 transition-transform shadow-sm relative",
+                        isPago ? "bg-emerald-50 text-emerald-500 shadow-emerald-100/30" : 
+                        atrasado ? "bg-rose-50 text-rose-500 shadow-rose-100/30" : 
+                        "bg-amber-50 text-amber-500 shadow-amber-100/30"
+                      )}>
+                        {isPago ? <CheckCircle2 className="h-7 w-7" /> : 
+                         atrasado ? <AlertCircle className="h-7 w-7" /> : 
+                         <Clock className="h-7 w-7" />}
+                      </div>
 
-                      // Lógica de cores e ícones (mantida)
-                      let circleBgColor = "bg-orange-100";
-                      let circleBorderColor = "border-orange-400";
-                      let circleIcon = <Clock className="w-3.5 h-3.5 text-orange-600" />;
-
-                      return (
-                        <motion.div
-                          key={cobranca?.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="relative pl-3 mb-6 last:mb-0"
-                        >
-                          {/* Círculo da timeline ajustado centralizado na linha */}
-                          <div
-                            className={cn(
-                              "absolute -left-[29px] top-0 w-7 h-7 rounded-full border-2 flex items-center justify-center z-10 bg-white shadow-sm",
-                              circleBgColor,
-                              circleBorderColor
-                            )}
-                          >
-                            {circleIcon}
-                          </div>
-
-                          <CobrancaMobileItemWrapper
-                            cobranca={cobranca}
-                            onVerCobranca={() =>
-                              onNavigateToCobranca(cobranca?.id)
-                            }
-                            onEditarCobranca={() => onEditCobranca(cobranca)}
-                            onRegistrarPagamento={() =>
-                              onRegistrarPagamento(cobranca)
-                            }
-                            onPagarPix={() => onPagarPix(cobranca)}
-                            onExcluirCobranca={() => onExcluirCobranca(cobranca)}
-                            onDesfazerPagamento={() => onDesfazerPagamento(cobranca?.id)}
-                            showHint={index === 0}
-                          >
-                            <div
-                              className="bg-white rounded-xl border border-gray-100 shadow-sm transition-all p-4 cursor-pointer"
-                              onClick={() => onNavigateToCobranca(cobranca?.id)}
-                            >
-                              {/* Cabeçalho: Mês e Data */}
-                              <div className="flex justify-between items-start mb-4">
-                                <div className="flex-1">
-                                  <h4 className="text-base font-bold text-gray-900">
-                                    {getMesNome(cobranca?.mes)}
-                                  </h4>
-                                  <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                                    <Calendar className="w-3 h-3" />
-                                    {cobranca?.status ===
-                                      CobrancaStatus.PAGO ? (
-                                      <>
-                                        Paga em{" "}
-                                        {formatDateToBR(
-                                          cobranca?.data_pagamento
-                                        )}
-                                      </>
-                                    ) : (
-                                      <>
-                                        Vence em{" "}
-                                        {formatDateToBR(
-                                          cobranca?.data_vencimento
-                                        )}
-                                      </>
-                                    )}
-                                  </p>
-                                </div>
-                                <Eye className="h-4 w-4 text-gray-300 absolute right-4 top-3" />
-                              </div>
-
-                              {/* CORPO: Valor e Status lado a lado */}
-                              <div className="flex justify-between items-end mb-1">
-                                <div>
-                                  <span className="text-[11px] tracking-wider uppercase text-gray-500 font-medium">
-                                    Valor
-                                  </span>
-                                  <p className="font-semibold text-gray-900 leading-none mt-0.5 text-md">
-                                    {Number(cobranca?.valor).toLocaleString(
-                                      "pt-BR",
-                                      {
-                                        style: "currency",
-                                        currency: "BRL",
-                                      }
-                                    )}
-                                  </p>
-                                </div>
-
-                                <div className="pb-0.5">
-                                  <Badge
-                                    variant="secondary"
-                                    className={cn(
-                                      "font-medium px-2.5 py-1 text-xs rounded-md whitespace-nowrap shadow-sm",
-                                      statusColor
-                                    )}
-                                  >
-                                    {statusText}
-                                  </Badge>
-                                </div>
-                              </div>
-
-                              {/* Alerta de Lembretes (Estilo Full-width Warning) */}
-                              {cobranca?.desativar_lembretes && !isPago && (
-                                <div className="mt-4 -mx-4 -mb-4 px-4 py-2.5 bg-orange-50 border-t border-orange-100 rounded-b-xl flex items-center gap-2">
-                                  <BellOff className="w-4 h-4 text-orange-700" />
-                                  <span className="text-xs font-medium text-orange-700">
-                                    Envio de notificações desativado
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </CobrancaMobileItemWrapper>
-                        </motion.div>
-                      );
-                    })}
-                  </AnimatePresence>
-                </div>
-
-                {cobrancas.length > limiteCobrancasMobile && (
-                  <div className="px-4 pb-6">
-                    <Button
-                      variant="ghost"
-                      className="w-full text-muted-foreground hover:text-primary text-sm font-medium"
-                      onClick={onToggleMostrarTodas}
-                    >
-                      {mostrarTodasCobrancas ? (
-                        <>
-                          <ChevronUp className="mr-2 h-4 w-4" />
-                          Recolher histórico
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown className="mr-2 h-4 w-4" />
-                          Ver histórico completo ({cobrancas.length})
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Desktop View - Table */}
-              <div className="hidden md:block overflow-hidden">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-100">
-                    <tr>
-                      <th className="px-6 py-3">Mês/Vencimento</th>
-                      <th className="px-6 py-3">Valor</th>
-                      <th className="px-6 py-3">Status</th>
-                      <th className="px-6 py-3 text-right">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {cobrancas.map((cobranca, index) => {
-                      const statusColor = getStatusColor(
-                        cobranca?.status,
-                        cobranca?.data_vencimento,
-                      );
-                      const isPago =
-                        cobranca?.status === CobrancaStatus.PAGO;
-
-                      return (
-                        <motion.tr
-                          key={cobranca?.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.03 }}
-                          className="group hover:bg-gray-50/50 transition-colors cursor-pointer"
-                          onClick={() => onNavigateToCobranca(cobranca?.id)}
-                        >
-                          <td className="px-6 py-4">
-                            <div className="flex flex-col">
-                              <span className="font-medium text-gray-900 capitalize">
-                                {getMesNome(cobranca?.mes)}
-                              </span>
-                              <span className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                                <Calendar className="w-3 h-3" />
-                                Vence em{" "}
-                                {formatDateToBR(cobranca?.data_vencimento)}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 font-semibold text-gray-900">
-                            {Number(cobranca?.valor).toLocaleString("pt-BR", {
+                      {/* Content Detail */}
+                      <div className="flex-1 min-w-0 text-left">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="text-sm font-headline font-black text-[#1a3a5c] uppercase truncate tracking-tight">
+                            {getMesNome(cobranca.mes)}
+                          </h4>
+                          <span className="text-sm font-black text-[#1a3a5c] font-headline">
+                            {Number(cobranca.valor).toLocaleString("pt-BR", {
                               style: "currency",
                               currency: "BRL",
                             })}
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              <Badge
-                                variant="secondary"
-                                className={cn("font-medium", statusColor)}
-                              >
-                                {getStatusText(
-                                  cobranca?.status,
-                                  cobranca?.data_vencimento,
-                                )}
-                              </Badge>
-                              {cobranca?.desativar_lembretes && !isPago && (
-                                <span title="Envio de notificações desativado">
-                                  <BellOff className="w-3.5 h-3.5 text-orange-700" />
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td
-                            className="px-6 py-4 text-right"
-                            onClick={(e) => e.stopPropagation()}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5 text-slate-400">
+                            <Calendar className="h-3 w-3" />
+                            <span className="text-[10px] font-bold">
+                              Venc: {formatDateToBR(cobranca.data_vencimento)}
+                            </span>
+                          </div>
+                          <div className="w-1 h-1 rounded-full bg-slate-100" />
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "border-none bg-transparent p-0 text-[10px] font-black uppercase tracking-widest leading-none h-auto",
+                              isPago ? "text-emerald-500" : atrasado ? "text-rose-500" : "text-amber-500"
+                            )}
                           >
-                            <CobrancaActionsMenu
-                              cobranca={cobranca}
-                              onVerCobranca={() =>
-                                onNavigateToCobranca(cobranca?.id)
-                              }
-                              onEditarCobranca={() => onEditCobranca(cobranca)}
-                              onRegistrarPagamento={() =>
-                                onRegistrarPagamento(cobranca)
-                              }
-                              onPagarPix={() => onPagarPix(cobranca)}
-                              onVerRecibo={() =>
-                                cobranca?.recibo_url &&
-                                setReceiptUrl(cobranca?.recibo_url)
-                              }
-                              onExcluirCobranca={() => onExcluirCobranca(cobranca)}
-                              onDesfazerPagamento={() => onDesfazerPagamento(cobranca?.id)}
-                            />
-                          </td>
-                        </motion.tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+                            {isPago ? "Liquidado" : atrasado ? "Atrasado" : "Pendente"}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </MobileActionItem>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        )}
+      </div>
+
       <ReceiptDialog
-        url={receiptUrl}
         open={!!receiptUrl}
         onOpenChange={(open) => !open && setReceiptUrl(null)}
+        url={receiptUrl || ""}
       />
-    </motion.div>
+    </div>
   );
 };

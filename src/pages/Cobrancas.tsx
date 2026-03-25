@@ -47,7 +47,6 @@ export default function Cobrancas() {
   }
 
   const actionProps = {
-    onVerCobranca: navigateToDetails,
     onVerCarteirinha: navigateToPassageiro,
     onEditarCobranca: handleEditCobrancaClick,
     onRegistrarPagamento: openPaymentDialog,

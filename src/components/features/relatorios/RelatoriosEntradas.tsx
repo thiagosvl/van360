@@ -1,7 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { KPICard } from "@/components/common/KPICard";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { Coins, TrendingUp } from "lucide-react";
+import { KPICardVariant } from "@/types/enums";
+import { formatCurrency } from "@/utils/formatters";
+import { Coins, TrendingUp, CreditCard } from "lucide-react";
 
 interface RelatoriosEntradasProps {
   dados: {
@@ -16,92 +18,68 @@ interface RelatoriosEntradasProps {
   };
 }
 
-export const RelatoriosEntradas = ({
-  dados,
-}: RelatoriosEntradasProps) => {
-
+export const RelatoriosEntradas = ({ dados }: RelatoriosEntradasProps) => {
   return (
-    <div className="space-y-4 mt-0">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
-          <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-              Receita Realizada
-            </CardTitle>
-            <div className="p-2 rounded-full bg-emerald-50 text-emerald-600">
-              <TrendingUp className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent className="px-6 pb-6 relative">
-            <div className="text-3xl font-bold text-gray-900">
-              {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.realizado)}
-            </div>
-            <p className="text-xs text-gray-400 mt-1">
-              Total recebido no mês
-            </p>
-          </CardContent>
-        </Card>
+    <div className="space-y-4 px-1">
+      <div className="grid grid-cols-2 gap-4">
+        <KPICard
+          label="Receita Realizada"
+          icon={TrendingUp}
+          variant={KPICardVariant.PRIMARY}
+          value={formatCurrency(dados.realizado)}
+        />
 
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
-          <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-              Ticket Médio
-            </CardTitle>
-            <div className="p-2 rounded-full bg-blue-50 text-blue-600">
-              <Coins className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent className="px-6 pb-6 relative">
-            <div className="text-3xl font-bold text-gray-900">
-               {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.ticketMedio)}
-            </div>
-            <p className="text-xs text-gray-400 mt-1">
-              Valor médio por passageiro
-            </p>
-          </CardContent>
-        </Card>
+        <KPICard
+          label="Ticket Médio"
+          icon={Coins}
+          variant={KPICardVariant.OUTLINE}
+          value={formatCurrency(dados.ticketMedio)}
+        />
       </div>
 
       {/* Formas de Pagamento */}
-      <Card className="border-none shadow-sm rounded-2xl bg-white">
-        <CardHeader className="pt-6 px-6">
-          <CardTitle className="text-lg font-bold text-gray-900">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden">
+        <div className="pt-6 px-6 flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
+            <CreditCard className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+          </div>
+          <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
             Formas de Pagamento
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="px-6 pb-8 relative">
+          </h3>
+        </div>
+        <div className="p-6 pt-4 space-y-6">
           <div className="space-y-4">
             {dados.formasPagamento.map((forma, index) => (
               <div key={index} className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="font-medium text-gray-700">
-                    {forma.metodo}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-gray-900">
-                       {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(forma.valor)}
+                <div className="flex justify-between items-end">
+                  <div className="flex flex-col">
+                    <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                      {forma.metodo}
                     </span>
-                    <span className="text-gray-400 text-xs w-10 text-right">
-                       {Math.round(forma.percentual)}%
+                    <span className="font-headline font-black text-[#1a3a5c] text-base mt-0.5">
+                      {formatCurrency(forma.valor)}
                     </span>
                   </div>
+                  <span className="text-[10px] font-black text-slate-400 mb-1">
+                    {Math.round(forma.percentual)}%
+                  </span>
                 </div>
                 <Progress
-                  value={forma.percentual}
-                  className="h-2 bg-gray-100 rounded-full"
-                  indicatorClassName={cn(forma.color, "rounded-full")}
+                  value={Math.max(2, forma.percentual)}
+                  className="h-2 bg-slate-50 rounded-full"
+                  indicatorClassName="bg-[#1a3a5c] rounded-full"
                 />
               </div>
             ))}
 
             {dados.formasPagamento.length === 0 && (
-              <div className="text-center py-8 text-gray-400 text-sm">
+              <div className="text-center py-8 text-slate-400 text-xs font-bold uppercase tracking-widest">
                 Nenhum pagamento registrado neste mês.
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,6 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { KPICard } from "@/components/common/KPICard";
 import { Progress } from "@/components/ui/progress";
+import { KPICardVariant } from "@/types/enums";
 import { formatarPlacaExibicao } from "@/utils/domain";
+import { formatCurrency } from "@/utils/formatters";
 import { Users } from "lucide-react";
 
 interface RelatoriosOperacionalProps {
@@ -16,6 +18,7 @@ interface RelatoriosOperacionalProps {
       placa: string;
       passageiros: number;
       percentual: number;
+      valor: number;
     }[];
     periodos: {
       nome: string;
@@ -29,158 +32,176 @@ interface RelatoriosOperacionalProps {
 export const RelatoriosOperacional = ({
   dados,
 }: RelatoriosOperacionalProps) => {
-
   return (
-    <div className="space-y-4 mt-0">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="border-none shadow-sm rounded-2xl bg-white relative overflow-hidden">
-            <CardHeader className="pb-0 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                Passageiros Ativos
-              </CardTitle>
-              <div className="p-2 rounded-full bg-blue-50 text-blue-600">
-                <Users className="h-4 w-4" />
-              </div>
-            </CardHeader>
-            <CardContent className="px-6 pb-6">
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900 leading-none">
-                {dados.passageirosAtivosCount}
-              </h3>
-            </CardContent>
-          </Card>
-
+    <div className="space-y-4 px-1">
+      <div className="grid grid-cols-2 gap-4">
+        <KPICard
+          label="Passageiros Ativos"
+          icon={Users}
+          variant={KPICardVariant.PRIMARY}
+          value={dados.passageirosAtivosCount}
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         {/* Escolas */}
-        <Card className="border-none shadow-sm rounded-2xl bg-white relative">
-          <CardHeader className="pb-2 pt-5 px-6">
-            <CardTitle className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              Por Escola
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-8 pt-4 space-y-4">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden group">
+          <div className="pt-6 px-6 flex items-center gap-3">
+             <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
+              <Users className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                Escolas
+              </h3>
+              <span className="text-[11px] font-headline font-black text-[#1a3a5c] uppercase">
+                Distribuição
+              </span>
+            </div>
+          </div>
+          <div className="p-6 pt-6 space-y-6">
             {dados.escolas.map((escola, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex justify-between items-end text-sm">
-                  <span className="font-medium text-gray-700 truncate max-w-[140px] md:max-w-[180px]">
-                    {escola.nome}
-                  </span>
-                  <div className="text-right">
-                    <div className="text-xs text-gray-500">
-                        {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(escola.valor)}
-                    </div>
-                    <div className="font-semibold text-gray-900">
+              <div key={index} className="space-y-2.5">
+                <div className="flex justify-between items-end">
+                  <div className="flex flex-col max-w-[65%]">
+                    <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider truncate">
+                      {escola.nome}
+                    </span>
+                    <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
                       {escola.passageiros}{" "}
-                      <span className="text-xs text-gray-400 mt-1">
-                        {escola.passageiros === 1
-                          ? "passageiro"
-                          : "passageiros"}
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                        pass.
                       </span>
-                    </div>
+                    </span>
                   </div>
-                </div>
-                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-indigo-500 rounded-full"
-                    style={{
-                      width: `${
-                        (escola.passageiros / dados.passageirosCount) * 100
-                      }%`,
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-            {dados.escolas.length === 0 && (
-              <p className="text-center text-gray-400 text-xs py-4">
-                Nenhuma escola vinculada.
-              </p>
-            )}
-
-          </CardContent>
-        </Card>
-
-        {/* Períodos */}
-        <Card className="border-none shadow-sm rounded-2xl bg-white relative">
-          <CardHeader className="pb-2 pt-5 px-6">
-            <CardTitle className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              Por Período
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-8 pt-4 space-y-4">
-            {dados.periodos.map((periodo, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex justify-between items-end text-sm">
-                  <span className="font-medium text-gray-700">
-                    {periodo.nome}
-                  </span>
                   <div className="text-right">
-                    <div className="text-xs text-gray-500">
-                        {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(periodo.valor)}
-                    </div>
-                    <div className="font-semibold text-gray-900">
-                      {periodo.passageiros}{" "}
-                      <span className="text-xs text-gray-400 mt-1">
-                        {periodo.passageiros === 1
-                          ? "passageiro"
-                          : "passageiros"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <Progress
-                  value={periodo.percentual}
-                  className="h-1.5 bg-gray-100 rounded-full"
-                  indicatorClassName="bg-amber-500 rounded-full"
-                />
-              </div>
-            ))}
-            {dados.periodos.length === 0 && (
-              <p className="text-center text-gray-400 text-xs py-4">
-                Nenhum dado por período.
-              </p>
-            )}
-
-          </CardContent>
-        </Card>
-
-        {/* Veículos */}
-        <Card className="border-none shadow-sm rounded-2xl bg-white relative">
-          <CardHeader className="pb-2 pt-5 px-6">
-            <CardTitle className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              Por Veículo
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-8 pt-4 space-y-4">
-            {dados.veiculos.map((veiculo, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex justify-between items-end text-sm">
-                  <span className="font-medium text-gray-700">
-                    {formatarPlacaExibicao(veiculo.placa)}
-                  </span>
-                  <div className="font-semibold text-gray-900">
-                    {veiculo.passageiros}{" "}
-                    <span className="text-xs text-gray-400 mt-1">
-                      {veiculo.passageiros === 1 ? "passageiro" : "passageiros"}
+                    <span className="text-[10px] font-black text-[#1a3a5c] bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                      {formatCurrency(escola.valor)}
                     </span>
                   </div>
                 </div>
                 <Progress
-                  value={veiculo.percentual}
-                  className="h-1.5 bg-gray-100 rounded-full"
-                  indicatorClassName="bg-blue-500 rounded-full"
+                  value={Math.max(2, (escola.passageiros / dados.passageirosCount) * 100)}
+                  className="h-2 bg-slate-50 rounded-full"
+                  indicatorClassName="bg-[#1a3a5c] rounded-full"
+                />
+              </div>
+            ))}
+            {dados.escolas.length === 0 && (
+              <div className="text-center py-6 text-slate-400 text-[9px] font-black uppercase tracking-[0.2em]">
+                Nenhuma escola vinculada
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Períodos */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden group">
+          <div className="pt-6 px-6 flex items-center gap-3">
+             <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
+              <Users className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                Períodos
+              </h3>
+              <span className="text-[11px] font-headline font-black text-[#1a3a5c] uppercase">
+                Distribuição
+              </span>
+            </div>
+          </div>
+          <div className="p-6 pt-6 space-y-6">
+            {dados.periodos.map((periodo, index) => (
+              <div key={index} className="space-y-2.5">
+                <div className="flex justify-between items-end">
+                  <div className="flex flex-col">
+                    <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                      {periodo.nome}
+                    </span>
+                    <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
+                      {periodo.passageiros}{" "}
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                        pass.
+                      </span>
+                    </span>
+                  </div>
+                  <div className="text-right flex flex-col items-end">
+                    <span className="text-[10px] font-black text-[#1a3a5c] bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                      {formatCurrency(periodo.valor)}
+                    </span>
+                    <span className="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest">
+                      {Math.round(periodo.percentual)}%
+                    </span>
+                  </div>
+                </div>
+                <Progress
+                  value={Math.max(2, periodo.percentual)}
+                  className="h-2 bg-slate-50 rounded-full"
+                  indicatorClassName="bg-[#1a3a5c] rounded-full"
+                />
+              </div>
+            ))}
+            {dados.periodos.length === 0 && (
+              <div className="text-center py-6 text-slate-400 text-[9px] font-black uppercase tracking-[0.2em]">
+                Nenhum dado disponível
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Veículos */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden group">
+          <div className="pt-6 px-6 flex items-center gap-3">
+             <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
+              <Users className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                Veículos
+              </h3>
+              <span className="text-[11px] font-headline font-black text-[#1a3a5c] uppercase">
+                Ocupação
+              </span>
+            </div>
+          </div>
+          <div className="p-6 pt-6 space-y-6">
+            {dados.veiculos.map((veiculo, index) => (
+              <div key={index} className="space-y-2.5">
+                <div className="flex justify-between items-end">
+                  <div className="flex flex-col">
+                    <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                      {veiculo.placa}
+                    </span>
+                    <span className="font-headline font-black text-[#1a3a5c] text-sm mt-0.5">
+                      {veiculo.passageiros}{" "}
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                        pass.
+                      </span>
+                    </span>
+                  </div>
+                  <div className="text-right flex flex-col items-end">
+                    <span className="text-[10px] font-black text-[#1a3a5c] bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                      {formatCurrency(veiculo.valor)}
+                    </span>
+                    <span className="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest">
+                      {Math.round(veiculo.percentual)}%
+                    </span>
+                  </div>
+                </div>
+                <Progress
+                  value={Math.max(2, veiculo.percentual)}
+                  className="h-2 bg-slate-50 rounded-full"
+                  indicatorClassName="bg-[#1a3a5c] rounded-full"
                 />
               </div>
             ))}
             {dados.veiculos.length === 0 && (
-              <p className="text-center text-gray-400 text-xs py-4">
-                Nenhum veículo cadastrado.
-              </p>
+              <div className="text-center py-6 text-slate-400 text-[9px] font-black uppercase tracking-[0.2em]">
+                Nenhum veículo vinculado
+              </div>
             )}
-
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

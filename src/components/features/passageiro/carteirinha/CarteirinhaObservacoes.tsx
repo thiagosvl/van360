@@ -1,112 +1,63 @@
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { motion } from "framer-motion";
-import { Pencil } from "lucide-react";
+import { StickyNote, Pencil } from "lucide-react";
 
 interface CarteirinhaObservacoesProps {
-  obsText: string;
-  isEditing: boolean;
-  textareaRef: React.RefObject<HTMLTextAreaElement>;
-  onStartEditing: () => void;
-  onTextChange: (value: string) => void;
-  onSave: () => void;
-  onCancel: () => void;
+  observacoes?: string;
+  onEditClick: () => void;
 }
 
 export const CarteirinhaObservacoes = ({
-  obsText,
-  isEditing,
-  textareaRef,
-  onStartEditing,
-  onTextChange,
-  onSave,
-  onCancel,
+  observacoes,
+  onEditClick,
 }: CarteirinhaObservacoesProps) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.3 }}
-    >
-      <Card className="border-0 shadow-md bg-[#fffdf5] ring-1 ring-black/5 relative overflow-hidden">
-        {/* Decorative top strip */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-yellow-400/50" />
-        
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
-            Observações
-          </CardTitle>
-          {!isEditing && (
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Editar Observações"
-              onClick={onStartEditing}
-              className="h-8 w-8 text-gray-500 hover:text-gray-900 hover:bg-yellow-100"
-            >
-              <Pencil className="w-4 h-4" />
-            </Button>
-          )}
-        </CardHeader>
-        <CardContent>
-          {isEditing ? (
-            <Textarea
-              ref={textareaRef}
-              value={obsText}
-              onChange={(e) => onTextChange(e.target.value)}
-              rows={6}
-              className="bg-white border-yellow-200 focus-visible:ring-yellow-400 resize-none text-gray-700 leading-relaxed"
-              placeholder="Ex: Alergia a amendoim, deixar na casa da avó às sextas, precisa de ajuda para colocar o cinto..."
-            />
-          ) : obsText ? (
-            <div 
-              className="text-sm text-gray-700 whitespace-pre-line leading-relaxed p-1 cursor-pointer hover:bg-yellow-50/50 rounded-md transition-colors"
-              onClick={onStartEditing}
-              title="Clique para editar"
-            >
-              {obsText}
-            </div>
-          ) : (
-            <div
-              className="flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-yellow-200 rounded-xl text-muted-foreground cursor-pointer hover:bg-yellow-50 transition-colors group"
-              onClick={onStartEditing}
-            >
-              <div className="bg-yellow-100 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
-                 <Pencil className="w-5 h-5 text-yellow-600" />
-              </div>
-              <p className="font-semibold text-gray-800">Adicionar Nota</p>
-              <p className="text-xs text-gray-500 mt-1 max-w-[200px]">
-                Toque aqui para adicionar informações importantes sobre o passageiro.
-              </p>
-            </div>
-          )}
-        </CardContent>
-        {isEditing && (
-          <CardFooter className="flex justify-end gap-2 pt-0 pb-4">
-            <Button 
-              variant="ghost" 
-              onClick={onCancel}
-              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-            >
-              Cancelar
-            </Button>
-            <Button 
-              onClick={onSave}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white shadow-sm"
-            >
-              Salvar Nota
-            </Button>
-          </CardFooter>
+    <div className="bg-white rounded-[2rem] border border-slate-100/60 shadow-diff-shadow overflow-hidden group">
+      <div className="px-6 py-6 border-b border-slate-50 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center shadow-sm">
+            <StickyNote className="h-5 w-5" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+              Informações Extras
+            </span>
+            <h3 className="text-sm font-headline font-black text-[#1a3a5c]">
+              Observações
+            </h3>
+          </div>
+        </div>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onEditClick}
+          className="h-10 w-10 rounded-xl text-slate-300 hover:text-[#1a3a5c] hover:bg-slate-50 transition-all opacity-0 group-hover:opacity-100"
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <div className="p-6">
+        {observacoes ? (
+          <p className="text-xs font-bold text-slate-500 leading-relaxed italic border-l-2 border-amber-100 pl-4 py-1">
+            "{observacoes}"
+          </p>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-4 opacity-30">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Nenhuma anotação registrada
+            </p>
+          </div>
         )}
-      </Card>
-    </motion.div>
+
+        <Button
+          variant="ghost"
+          onClick={onEditClick}
+          className="w-full mt-6 h-11 rounded-xl border border-dashed border-slate-200 text-slate-400 hover:text-[#1a3a5c] hover:border-[#1a3a5c]/20 hover:bg-slate-50 text-[10px] font-black uppercase tracking-widest transition-all"
+        >
+          {observacoes ? "Editar Observações" : "Adicionar Observação"}
+        </Button>
+      </div>
+    </div>
   );
 };
-

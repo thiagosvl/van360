@@ -1,7 +1,15 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { KPICard } from "@/components/common/KPICard";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { KPICardVariant } from "@/types/enums";
 import { formatarPlacaExibicao } from "@/utils/domain";
-import { BarChart3, ChevronDown, ChevronRight, TrendingDown } from "lucide-react";
+import { formatCurrency } from "@/utils/formatters";
+import {
+  BarChart3,
+  ChevronDown,
+  ChevronRight,
+  TrendingDown,
+} from "lucide-react";
 import { useState } from "react";
 
 interface RelatoriosSaidasProps {
@@ -16,11 +24,11 @@ interface RelatoriosSaidasProps {
       bg: string;
       color: string;
       veiculos: {
-          id: string;
-          nome: string;
-          placa: string;
-          valor: number;
-          count: number;
+        id: string;
+        nome: string;
+        placa: string;
+        valor: number;
+        count: number;
       }[];
     }[];
     gastosPorVeiculo?: {
@@ -35,9 +43,7 @@ interface RelatoriosSaidasProps {
   };
 }
 
-export const RelatoriosSaidas = ({
-  dados,
-}: RelatoriosSaidasProps) => {
+export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
   );
@@ -52,214 +58,168 @@ export const RelatoriosSaidas = ({
     setExpandedCategories(newSet);
   };
 
-  return (
-    <div className="space-y-4 mt-0">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
-          <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-              Total de Despesas
-            </CardTitle>
-            <div className="p-2 rounded-full bg-red-50 text-red-600">
-              <TrendingDown className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent className="px-6 pb-6 relative">
-            <div className="text-3xl font-bold text-gray-900">
-               {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(dados.total)}
-            </div>
-            <p className="text-xs text-gray-400 mt-1">
-              Acumulado no mês
-            </p>
-          </CardContent>
-        </Card>
+  const getMargemStatus = (m: number) => {
+    if (m > 30) return { label: "Saudável", color: "text-emerald-600 bg-emerald-50" };
+    if (m > 10) return { label: "Atenção", color: "text-amber-600 bg-amber-50" };
+    return { label: "Crítico", color: "text-red-600 bg-red-50" };
+  };
 
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
-          <CardHeader className="pb-2 pt-5 px-6 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-              Margem Operacional
-            </CardTitle>
-            <div className="p-2 rounded-full bg-indigo-50 text-indigo-600">
-              <BarChart3 className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent className="px-6 pb-6 relative">
-            <div className="flex items-center gap-2">
-              <div className="text-3xl font-bold text-gray-900">
-                 {Math.round(dados.margemOperacional)}%
-              </div>
-                <span
-                  className={cn(
-                    "text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wide",
-                    dados.margemOperacional > 30
-                      ? "bg-emerald-100 text-emerald-700"
-                      : dados.margemOperacional > 10
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-red-100 text-red-700"
-                  )}
-                >
-                  {dados.margemOperacional > 30
-                    ? "Saudável"
-                    : dados.margemOperacional > 10
-                    ? "Atenção"
-                    : "Crítico"}
-                </span>
-            </div>
-            <p className="text-xs text-gray-400 mt-1">
-              Quanto sobra de cada real
-            </p>
-          </CardContent>
-        </Card>
+  const status = getMargemStatus(dados.margemOperacional);
+
+  return (
+    <div className="space-y-4 px-1">
+      <div className="grid grid-cols-2 gap-4">
+        <KPICard
+          label="Total de Despesas"
+          icon={TrendingDown}
+          variant={KPICardVariant.PRIMARY}
+          value={formatCurrency(dados.total)}
+        />
+
+        <KPICard
+          label="Margem Operacional"
+          icon={BarChart3}
+          variant={KPICardVariant.OUTLINE}
+          value={`${Math.round(dados.margemOperacional)}%`}
+          valueClassName={dados.margemOperacional > 10 ? "text-emerald-600" : "text-rose-600"}
+        />
       </div>
 
-      {/* Onde gastei mais */}
-      <Card className="border-none shadow-sm rounded-2xl bg-white">
-        <CardHeader className="pt-6 px-6">
-          <CardTitle className="text-lg font-bold text-gray-900">
-            Onde gastei mais?
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="px-6 pb-8 relative">
-          <div className="space-y-4">
-            {dados.topCategorias.map((cat, index) => {
-              const Icon = cat.icon;
-              const isExpanded = expandedCategories.has(cat.nome);
-              const hasVeiculos = cat.veiculos && cat.veiculos.length > 0;
+      {/* Categorias */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden">
+        <div className="pt-6 px-6">
+          <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+            Categorias de Gasto
+          </h3>
+        </div>
+        <div className="p-4 space-y-3">
+          {dados.topCategorias.map((cat, index) => {
+            const Icon = cat.icon;
+            const isExpanded = expandedCategories.has(cat.nome);
+            const hasVeiculos = cat.veiculos && cat.veiculos.length > 0;
 
-              return (
+            return (
+              <div
+                key={index}
+                className="rounded-xl border border-slate-100/50 overflow-hidden bg-slate-50/30"
+              >
                 <div
-                  key={index}
-                  className="rounded-xl bg-gray-50 border border-gray-100 overflow-hidden"
+                  className={cn(
+                    "group flex items-center justify-between p-3 cursor-pointer transition-colors hover:bg-slate-50",
+                    isExpanded && "bg-slate-50"
+                  )}
+                  onClick={() => toggleCategory(cat.nome)}
                 >
-                  <div 
-                    className={cn(
-                        "flex items-center justify-between p-3 cursor-pointer transition-colors hover:bg-gray-100",
-                        isExpanded ? "bg-gray-100" : ""
-                    )}
-                    onClick={() => toggleCategory(cat.nome)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={cn(
-                          "h-10 w-10 rounded-full flex items-center justify-center shrink-0",
-                          cat.bg,
-                          cat.color
-                        )}
-                      >
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-medium text-gray-900">
-                          {cat.nome}
-                        </span>
-                        <span className="text-xs text-gray-500 flex items-center gap-1">
-                          <span className="font-bold text-gray-900">
-                             {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cat.valor)}
-                          </span>
-                          <span>•</span>
-                          <span>
-                            {cat.count} <span className="text-gray-400 font-normal">registro{cat.count === 1 ? "" : "s"}</span>
-                          </span>
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
+                  <Icon className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+                </div>
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                        {cat.nome}
+                      </span>
+                      <div className="flex items-center gap-1.5 font-headline font-black text-[#1a3a5c] text-sm">
+                        {formatCurrency(cat.valor)}
+                        <span className="text-[10px] text-slate-300">•</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">
+                          {cat.count} reg.
                         </span>
                       </div>
-                    </div>
-                    
-                    {/* Seta indicativa */}
-                    <div className="text-gray-400">
-                        {isExpanded ? (
-                            <ChevronDown className="h-5 w-5" />
-                        ) : (
-                            <ChevronRight className="h-5 w-5" />
-                        )}
                     </div>
                   </div>
-
-                  {/* Conteúdo Expandido (Detalhamento por Veículo) */}
-                  {isExpanded && hasVeiculos && (
-                      <div className="px-3 pb-3 pt-1 border-t border-gray-100 bg-white">
-                          <div className="space-y-2 mt-2">
-                             {cat.veiculos.map((v, vIndex) => (
-                                 <div key={vIndex} className="flex items-center justify-between py-1 px-2 rounded">
-                                     <div className="flex flex-col">
-                                         <span className="text-sm font-semibold text-gray-800">
-                                            {v.placa !== "-" ? formatarPlacaExibicao(v.placa) : v.nome}
-                                         </span>
-                                         {v.placa !== "-" && (
-                                             <span className="text-[10px] text-gray-500">{v.nome}</span>
-                                         )}
-                                     </div>
-                                     <div className="text-right">
-                                         <div className="text-sm font-medium text-gray-900">
-                                            {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v.valor)}
-                                         </div>
-                                         <div className="text-[10px] text-gray-400">
-                                            {v.count} registro{v.count === 1 ? "" : "s"}
-                                         </div>
-                                     </div>
-                                 </div>
-                             ))}
-                          </div>
-                      </div>
-                  )}
+                  <div className="text-slate-300">
+                    {isExpanded ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </div>
                 </div>
-              );
-            })}
-            
-            {dados.topCategorias.length === 0 && (
-              <div className="text-center py-8 text-gray-400 text-sm">
-                Nenhuma despesa registrada neste mês.
+
+                {isExpanded && hasVeiculos && (
+                  <div className="px-3 pb-3 border-t border-slate-100/50 bg-white">
+                    <div className="space-y-1 mt-3">
+                      {cat.veiculos.map((v, vIndex) => (
+                        <div
+                          key={vIndex}
+                          className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-50/50"
+                        >
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                              {v.placa !== "-"
+                                ? formatarPlacaExibicao(v.placa)
+                                : v.nome}
+                            </span>
+                            {v.placa !== "-" && (
+                              <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">
+                                {v.nome}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <div className="text-[12px] font-black text-[#1a3a5c]">
+                              {formatCurrency(v.valor)}
+                            </div>
+                            <div className="text-[9px] font-bold text-slate-300 uppercase">
+                              {v.count} reg.
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-           
-          </div>
-        </CardContent>
-      </Card>
+            );
+          })}
 
+          {dados.topCategorias.length === 0 && (
+            <div className="text-center py-8 text-slate-400 text-xs font-bold uppercase tracking-widest">
+              Nenhuma despesa registrada neste mês.
+            </div>
+          )}
+        </div>
+      </div>
 
-      {/* Gastos por Veículo - Visão Geral */}
-      {dados.gastosPorVeiculo && 
-       dados.gastosPorVeiculo.length > 0 && 
-       (dados.veiculosCount || 0) > 1 && 
-       dados.temGastosVinculados && (
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
-          <CardHeader className="pt-6 px-6">
-            <CardTitle className="text-lg font-bold text-gray-900">
-              Gastos por Veículo
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-8">
-            <div className="space-y-4">
+      {/* Gastos por Veículo */}
+      {dados.gastosPorVeiculo &&
+        dados.gastosPorVeiculo.length > 0 &&
+        (dados.veiculosCount || 0) > 1 &&
+        dados.temGastosVinculados && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden">
+            <div className="pt-6 px-6">
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                Gastos por Veículo
+              </h3>
+            </div>
+            <div className="p-6 pt-4 space-y-6">
               {dados.gastosPorVeiculo.map((v, index) => (
                 <div key={index} className="space-y-2">
-                  <div className="flex justify-between items-center text-sm">
+                  <div className="flex justify-between items-end">
                     <div className="flex flex-col">
-                       <span className="font-bold text-gray-900">{v.placa !== "-" ? formatarPlacaExibicao(v.placa) : v.nome}</span>
-                       {v.placa !== "-" && <span className="text-xs text-gray-500 font-normal">{v.nome}</span>}
+                      <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
+                        {v.placa !== "-"
+                          ? formatarPlacaExibicao(v.placa)
+                          : v.nome}
+                      </span>
+                      <span className="font-headline font-black text-[#1a3a5c] text-base mt-0.5">
+                        {formatCurrency(v.valor)}
+                      </span>
                     </div>
-                    <span className="font-bold text-gray-900">
-                       {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v.valor)}
+                    <span className="text-[10px] font-black text-slate-400 mb-1">
+                      {Math.round(v.percentual)}%
                     </span>
                   </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-500 rounded-full"
-                      style={{ width: `${v.percentual}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>
-                      {v.count} registro{v.count === 1 ? "" : "s"}
-                    </span>
-                    <span>
-                      {Math.round(v.percentual)}% do total
-                    </span>
-                  </div>
+                  <Progress
+                    value={Math.max(2, v.percentual)}
+                    className="h-2 bg-slate-50 rounded-full"
+                    indicatorClassName="bg-[#1a3a5c] rounded-full"
+                  />
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
     </div>
   );
 };

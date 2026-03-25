@@ -5,7 +5,6 @@ import { Cobranca } from "@/types/cobranca";
 interface CobrancaActionsMenuProps {
   cobranca: Cobranca;
   variant?: "default" | "mobile";
-  onVerCobranca?: () => void;
   onEditarCobranca?: () => void;
   onRegistrarPagamento?: () => void;
   onPagarPix?: () => void;
@@ -21,7 +20,6 @@ interface CobrancaActionsMenuProps {
 export const CobrancaActionsMenu = ({
   cobranca,
   variant = "default",
-  onVerCobranca,
   onEditarCobranca,
   onRegistrarPagamento,
   onPagarPix,
@@ -33,7 +31,6 @@ export const CobrancaActionsMenu = ({
 }: CobrancaActionsMenuProps) => {
   const actions = useCobrancaActions({
     cobranca,
-    onVerCobranca,
     onVerCarteirinha,
     onEditarCobranca,
     onRegistrarPagamento,

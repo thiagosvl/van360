@@ -111,6 +111,7 @@ export default function Passageiros() {
 
                 <QuickRegistrationLink
                   profile={profile}
+                  pendingCount={countPrePassageiros}
                 />
               </div>
 

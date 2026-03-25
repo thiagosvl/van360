@@ -19,7 +19,6 @@ export const ROUTES = {
       HOME: "/inicio",
       PASSENGERS: "/passageiros",
       PASSENGER_DETAILS: "/passageiros/:passageiro_id",
-      PASSENGER_BILLING: "/mensalidades/:cobranca_id",
       BILLING: "/mensalidades",
       SCHOOLS: "/escolas",
       VEHICLES: "/veiculos",

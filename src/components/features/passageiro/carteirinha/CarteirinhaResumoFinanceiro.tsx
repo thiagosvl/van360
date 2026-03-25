@@ -1,10 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
-import { motion } from "framer-motion";
-import { AlertCircle, CheckCircle2, DollarSign } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { CheckCircle2, Clock, AlertCircle } from "lucide-react";
 
-interface YearlySummary {
+interface FinanceSummary {
   qtdPago: number;
   valorPago: number;
   qtdPendente: number;
@@ -14,151 +11,90 @@ interface YearlySummary {
 }
 
 interface CarteirinhaResumoFinanceiroProps {
-  yearlySummary: YearlySummary;
+  yearlySummary: FinanceSummary;
 }
 
 export const CarteirinhaResumoFinanceiro = ({
   yearlySummary,
 }: CarteirinhaResumoFinanceiroProps) => {
-  // Animações dos valores
-  const animatedValorPago = useAnimatedNumber(yearlySummary.valorPago, 1000);
-  const animatedValorPendente = useAnimatedNumber(
-    yearlySummary.valorPendente,
-    1000
-  );
-  const animatedValorEmAtraso = useAnimatedNumber(
-    yearlySummary.valorEmAtraso,
-    1000
-  );
-
-  // Animações dos contadores
-  const animatedQtdPago = useAnimatedNumber(yearlySummary.qtdPago, 1000);
-  const animatedQtdPendente = useAnimatedNumber(
-    yearlySummary.qtdPendente,
-    1000
-  );
-  const animatedQtdEmAtraso = useAnimatedNumber(
-    yearlySummary.qtdEmAtraso,
-    1000
-  );
-
-  const totalValor = yearlySummary.valorPago + yearlySummary.valorPendente;
-  const percentualPago =
-    totalValor > 0 ? (yearlySummary.valorPago / totalValor) * 100 : 0;
+  const kpis = [
+    {
+      label: "Pago",
+      value: yearlySummary.valorPago,
+      count: yearlySummary.qtdPago,
+      color: "text-emerald-500",
+      bgColor: "bg-emerald-50/50",
+      icon: CheckCircle2,
+    },
+    {
+      label: "Pendente",
+      value: yearlySummary.valorPendente,
+      count: yearlySummary.qtdPendente,
+      color: "text-amber-500",
+      bgColor: "bg-amber-50/50",
+      icon: Clock,
+    },
+    {
+      label: "Atrasado",
+      value: yearlySummary.valorEmAtraso,
+      count: yearlySummary.qtdEmAtraso,
+      color: "text-rose-500",
+      bgColor: "bg-rose-50/50",
+      icon: AlertCircle,
+    },
+  ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
-    >
-      <Card className="border-0 shadow-lg ring-1 ring-black/5 bg-white overflow-hidden">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            Resumo Financeiro do Ano
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Progress Bar */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm font-medium">
-              <span className="text-gray-600">Progresso de Pagamentos</span>
-              <span className="text-gray-900">
-                {Math.round(percentualPago)}%
+    <div className="space-y-4">
+      <div className="flex flex-col">
+        <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+          Resumo Anual
+        </span>
+        <h3 className="text-sm font-headline font-black text-[#1a3a5c]">
+          Saúde Financeira
+        </h3>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {kpis.map((kpi) => (
+          <div
+            key={kpi.label}
+            className={cn(
+              "p-4 rounded-[2rem] border border-slate-100/60 shadow-sm transition-all hover:shadow-md group",
+              kpi.bgColor
+            )}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className={cn("h-8 w-8 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110", kpi.color, "bg-white shadow-sm")}>
+                <kpi.icon className="h-4 w-4" />
+              </div>
+              <span className={cn("text-[8px] font-black uppercase tracking-[0.2em] opacity-60", kpi.color)}>
+                {kpi.label}
               </span>
             </div>
-            <Progress
-              value={percentualPago}
-              className="h-2 bg-gray-100"
-              indicatorClassName="bg-green-500"
-            />
+            
+            <div className="space-y-1">
+              <div className="text-lg font-headline font-black text-[#1a3a5c] tracking-tight">
+                {kpi.value.toLocaleString("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                })}
+              </div>
+              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                {kpi.count} {kpi.count === 1 ? "parcela" : "parcelas"}
+              </div>
+            </div>
+
+            {/* Subtle Progress Indicator */}
+            <div className="mt-4 h-1.5 w-full bg-white/50 rounded-full overflow-hidden">
+                <div 
+                    className={cn("h-full rounded-full transition-all duration-1000", kpi.color.replace('text-', 'bg-'))}
+                    style={{ width: kpi.value > 0 ? '100%' : '0%' }}
+                />
+            </div>
           </div>
-
-          {/* Stat Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
-              className="bg-green-50 rounded-xl p-4 border border-green-100"
-            >
-              <div className="flex items-center gap-2 text-green-700 mb-1">
-                <CheckCircle2 className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">
-                  Pago
-                </span>
-              </div>
-              <div className="text-2xl font-semibold text-gray-900">
-                {animatedValorPago.toLocaleString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                })}
-              </div>
-              <div className="text-xs text-green-600 mt-1 font-medium">
-                {`${
-                  yearlySummary.qtdPago === 1
-                    ? "1 mensalidade"
-                    : `${yearlySummary.qtdPago} mensalidades`
-                }`}
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4 }}
-              className="bg-orange-50 rounded-xl p-4 border border-orange-100"
-            >
-              <div className="flex items-center gap-2 text-orange-800 mb-1">
-                <DollarSign className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">
-                  Pendente
-                </span>
-              </div>
-              <div className="text-2xl font-semibold text-gray-900">
-                {animatedValorPendente.toLocaleString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                })}
-              </div>
-              <div className="text-xs text-orange-800 mt-1 font-medium">
-                {`${
-                  yearlySummary.qtdPendente === 1
-                    ? "1 mensalidade"
-                    : `${yearlySummary.qtdPendente} mensalidades`
-                }`}
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5 }}
-              className="bg-red-50 rounded-xl p-4 border border-red-100"
-            >
-              <div className="flex items-center gap-2 text-red-700 mb-1">
-                <AlertCircle className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">
-                  Em Atraso
-                </span>
-              </div>
-              <div className="text-2xl font-semibold text-gray-900">
-                {animatedValorEmAtraso.toLocaleString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                })}
-              </div>
-              <div className="text-xs text-red-600 mt-1 font-medium">
-                {`${
-                  yearlySummary.qtdEmAtraso === 1
-                    ? "1 mensalidade"
-                    : `${yearlySummary.qtdEmAtraso} mensalidades`
-                }`}
-              </div>
-            </motion.div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+        ))}
+      </div>
+    </div>
   );
 };

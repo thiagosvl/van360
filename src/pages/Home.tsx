@@ -1,6 +1,6 @@
 import { ShortcutCard } from "@/components/features/home/ShortcutCard";
 import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
-import { MiniKPI } from "@/components/features/home/MiniKPI";
+import { KPICard } from "@/components/common/KPICard";
 import { QuickStartCard } from "@/components/features/quickstart/QuickStartCard";
 import { ROUTES } from "@/constants/routes";
 import { useDashboardViewModel } from "@/hooks";
@@ -20,7 +20,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
-import { PassageiroTab } from "@/types/enums";
+import { KPICardVariant, PassageiroTab } from "@/types/enums";
 
 const Home = () => {
   const {
@@ -120,37 +120,40 @@ const Home = () => {
             </section>
           )}
 
-          {/* Mini KPIs */}
           <div
             className={cn(
-              "grid gap-4",
+              "grid gap-4 px-1",
               onboarding.showOnboarding
                 ? "grid-cols-1"
-                : "grid-cols-2 sm:grid-cols-3",
+                : "grid-cols-2 lg:grid-cols-3",
             )}
           >
             {!onboarding.showOnboarding && (
               <>
-                <MiniKPI
+                <KPICard
                   label="Recebido"
                   value={formatCurrency(financeiro.recebido)}
                   icon={DollarSign}
+                  variant={KPICardVariant.PRIMARY}
+                  loading={isLoading}
                 />
-                <MiniKPI
+                <KPICard
                   label="A receber"
                   value={formatCurrency(financeiro.aReceber)}
                   icon={Wallet}
+                  variant={KPICardVariant.OUTLINE}
+                  loading={isLoading}
                 />
               </>
             )}
-
-            <MiniKPI
-              className={cn(!onboarding.showOnboarding && "col-span-2 sm:col-span-1")}
+            <KPICard
+              className={cn(!onboarding.showOnboarding && "col-span-2 lg:col-span-1")}
               label="Passageiros Ativos"
               value={contadores.passageirosAtivos}
               icon={Users}
-              subtext={`${contadores.passageirosInativos} inativo${contadores.passageirosInativos !== 1 ? "s" : ""
-                }`}
+              variant={KPICardVariant.OUTLINE}
+              countLabel={`${contadores.passageirosInativos} inativos`}
+              loading={isLoading}
             />
           </div>
 
@@ -170,38 +173,13 @@ const Home = () => {
                 icon={Plus}
                 label="Registrar Gasto"
               />
-              <div
+              <ShortcutCard
                 onClick={handleCopyLink}
-                className={cn(
-                  "flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100/50 shadow-diff-shadow transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] h-26 w-full cursor-pointer group select-none",
-                  isCopied && "border-emerald-100 bg-emerald-50/50",
-                )}
-              >
-                <div
-                  className={cn(
-                    "h-11 w-11 rounded-2xl flex items-center justify-center mb-2.5 shrink-0 border border-slate-100/60 transition-all duration-300",
-                    isCopied
-                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-200"
-                      : "bg-slate-50 text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white group-hover:border-[#1a3a5c] group-hover:shadow-lg group-hover:shadow-slate-100",
-                  )}
-                >
-                  {isCopied ? (
-                    <CopyCheck className="h-6 w-6" />
-                  ) : (
-                    <Copy className="h-6 w-6 opacity-80 group-hover:opacity-100" />
-                  )}
-                </div>
-                <span
-                  className={cn(
-                    "text-[9px] font-bold uppercase tracking-[0.15em] text-center leading-tight transition-colors duration-200 px-1",
-                    isCopied
-                      ? "text-emerald-600"
-                      : "text-[#1a3a5c]/90 group-hover:text-[#1a3a5c]",
-                  )}
-                >
-                  {isCopied ? "Copiado!" : "Copiar Link"}
-                </span>
-              </div>
+                icon={Copy}
+                activeIcon={CopyCheck}
+                label={isCopied ? "Copiado!" : "Copiar Link"}
+                isActive={isCopied}
+              />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.PASSENGERS}
                 icon={Users}

@@ -116,7 +116,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
               </div>
               <DropdownMenuItem onClick={openEditarCadastroDialog} className="rounded-xl px-3 py-2.5">
                 <UserPen className="mr-3 h-4 w-4 text-slate-400" />
-                <span className="font-semibold text-sm">Gerenciar Perfil</span>
+                <span className="font-semibold text-sm">Editar Cadastro</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={openAlterarSenhaDialog} className="rounded-xl px-3 py-2.5">
                 <Lock className="mr-3 h-4 w-4 text-slate-400" />

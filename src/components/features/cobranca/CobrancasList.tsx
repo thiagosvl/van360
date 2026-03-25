@@ -1,3 +1,4 @@
+import { ActionSheet } from "@/components/common/ActionSheet";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -22,9 +23,11 @@ import {
   formatShortName,
 } from "@/utils/formatters";
 import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { DollarSign, Wallet } from "lucide-react";
-import { memo } from "react";
-
+import { memo, useState } from "react";
+import { CobrancaSummary } from "./CobrancaSummary";
 interface CobrancasListProps {
   cobrancas: Cobranca[];
   activeTab: CobrancaTab;
@@ -33,7 +36,6 @@ interface CobrancasListProps {
   mesFilter: number;
   meses: string[];
 
-  onVerCobranca: (cobranca: Cobranca) => void;
   onVerCarteirinha: (passageiroId: string) => void;
   onEditarCobranca: (cobranca: Cobranca) => void;
   onRegistrarPagamento: (cobranca: Cobranca) => void;
@@ -45,7 +47,7 @@ interface CobrancasListProps {
 const CobrancaMobileCard = memo(function CobrancaMobileCard({
   cobranca,
   index,
-  onVerCobranca,
+  activeTab,
   onVerCarteirinha,
   onEditarCobranca,
   onRegistrarPagamento,
@@ -60,7 +62,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
 
   const actions = useCobrancaActions({
     cobranca,
-    onVerCobranca: () => onVerCobranca(cobranca),
+    onVerCobranca: () => {},
     onVerCarteirinha: () => onVerCarteirinha(cobranca.passageiro_id),
     onEditarCobranca: () => onEditarCobranca(cobranca),
     onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
@@ -86,11 +88,15 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
   const statusColor = isPaid
     ? "bg-emerald-50 text-emerald-600"
     : (isAtrasado ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600");
+  const renderHeader = () => <CobrancaSummary cobranca={cobranca} />;
 
   return (
-    <MobileActionItem actions={actions} className="bg-transparent">
+    <MobileActionItem 
+      actions={actions} 
+      className="bg-transparent"
+      renderHeader={renderHeader}
+    >
       <div
-        onClick={() => onVerCobranca(cobranca)}
         className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
       >
         <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
@@ -99,7 +105,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
           </span>
         </div>
 
-        <div className="flex-grow min-w-0 pr-10">
+        <div className="flex-grow min-w-0 pr-8">
           <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
             {shortName}
           </p>
@@ -110,7 +116,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
+        <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-8 top-1/2 -translate-y-1/2">
           <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
             {Number(cobranca?.valor).toLocaleString("pt-BR", {
               style: "currency",
@@ -139,6 +145,7 @@ export function CobrancasList({
   ...props
 }: CobrancasListProps) {
 
+  const [openedCobranca, setOpenedCobranca] = useState<Cobranca | null>(null);
   const isPendingTab = activeTab === CobrancaTab.ARECEBER;
 
   const getEmptyState = () => {
@@ -161,6 +168,7 @@ export function CobrancasList({
   };
 
   return (
+    <>
     <ResponsiveDataList
       data={cobrancas}
       isLoading={isLoading}
@@ -172,7 +180,12 @@ export function CobrancasList({
           cobranca={cobranca}
           index={index}
           activeTab={activeTab}
-          {...props}
+          onVerCarteirinha={props.onVerCarteirinha}
+          onEditarCobranca={props.onEditarCobranca}
+          onRegistrarPagamento={props.onRegistrarPagamento}
+          onExcluirCobranca={props.onExcluirCobranca}
+          onDesfazerPagamento={props.onDesfazerPagamento}
+          onActionSuccess={props.onActionSuccess}
         />
       )}
     >
@@ -204,8 +217,8 @@ export function CobrancasList({
               return (
                 <TableRow
                   key={cobranca.id}
-                  onClick={() => props.onVerCobranca(cobranca)}
-                  className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors cursor-pointer"
+                  onClick={() => setOpenedCobranca(cobranca)}
+                  className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors cursor-pointer group/row"
                 >
                   <TableCell className="px-8 py-5">
                     <div className="flex flex-col">
@@ -263,7 +276,6 @@ export function CobrancasList({
                     <CobrancaActionsMenu
                       cobranca={cobranca}
                       onVerCarteirinha={() => props.onVerCarteirinha(cobranca.passageiro_id)}
-                      onVerCobranca={() => props.onVerCobranca(cobranca)}
                       onEditarCobranca={() => props.onEditarCobranca(cobranca)}
                       onRegistrarPagamento={() => props.onRegistrarPagamento(cobranca)}
                       onActionSuccess={props.onActionSuccess}
@@ -278,5 +290,56 @@ export function CobrancasList({
         </Table>
       </div>
     </ResponsiveDataList>
+
+    {/* Desktop-triggered ActionSheet (Quick View) */}
+    {openedCobranca && (
+      <ActionSheetWrapper
+        cobranca={openedCobranca}
+        open={!!openedCobranca}
+        onOpenChange={(open) => !open && setOpenedCobranca(null)}
+        props={props}
+      />
+    )}
+    </>
+  );
+}
+
+// Wrapper to avoid calling useCobrancaActions for all rows upfront
+function ActionSheetWrapper({ 
+  cobranca, 
+  open, 
+  onOpenChange, 
+  props 
+}: { 
+  cobranca: Cobranca; 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  props: any;
+}) {
+  const actions = useCobrancaActions({
+    cobranca,
+    onVerCobranca: () => {},
+    onVerCarteirinha: () => props.onVerCarteirinha(cobranca.passageiro_id),
+    onEditarCobranca: () => props.onEditarCobranca(cobranca),
+    onRegistrarPagamento: () => props.onRegistrarPagamento(cobranca),
+    onExcluirCobranca: () => props.onExcluirCobranca(cobranca),
+    onDesfazerPagamento: props.onDesfazerPagamento ? () => props.onDesfazerPagamento(cobranca) : undefined,
+    onActionSuccess: props.onActionSuccess,
+  });
+
+  return (
+    <ActionSheet 
+      open={open} 
+      onOpenChange={onOpenChange} 
+      actions={actions.map(a => ({
+        ...a,
+        onClick: () => {
+          onOpenChange(false);
+          a.onClick();
+        }
+      }))}
+    >
+      <CobrancaSummary cobranca={cobranca} />
+    </ActionSheet>
   );
 }
