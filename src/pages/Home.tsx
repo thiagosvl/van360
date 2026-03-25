@@ -105,9 +105,8 @@ const Home = () => {
                   title="Passageiros em Atraso"
                   description={`Você tem ${formatCurrency(
                     financeiro.totalEmAtraso,
-                  )} em atraso de ${financeiro.countAtrasos} passageiro${
-                    financeiro.countAtrasos != 1 ? "s" : ""
-                  } referente ao mês de ${getMesNome(new Date().getMonth() + 1)}.`}
+                  )} em atraso de ${financeiro.countAtrasos} passageiro${financeiro.countAtrasos != 1 ? "s" : ""
+                    } referente ao mês de ${getMesNome(new Date().getMonth() + 1)}.`}
                   actionLabel="Ver Mensalidades"
                   onAction={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.BILLING)}
                 />
@@ -150,9 +149,8 @@ const Home = () => {
               label="Passageiros Ativos"
               value={contadores.passageirosAtivos}
               icon={Users}
-              subtext={`${contadores.passageirosInativos} inativo${
-                contadores.passageirosInativos !== 1 ? "s" : ""
-              }`}
+              subtext={`${contadores.passageirosInativos} inativo${contadores.passageirosInativos !== 1 ? "s" : ""
+                }`}
             />
           </div>
 
@@ -175,22 +173,22 @@ const Home = () => {
               <div
                 onClick={handleCopyLink}
                 className={cn(
-                  "flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100/30 shadow-diff-shadow transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] h-26 w-full cursor-pointer group select-none",
+                  "flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100/50 shadow-diff-shadow transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] h-26 w-full cursor-pointer group select-none",
                   isCopied && "border-emerald-100 bg-emerald-50/50",
                 )}
               >
                 <div
                   className={cn(
-                    "h-11 w-11 rounded-[1.2rem] flex items-center justify-center mb-2.5 shrink-0 border border-slate-100/50 transition-all duration-300",
+                    "h-11 w-11 rounded-2xl flex items-center justify-center mb-2.5 shrink-0 border border-slate-100/60 transition-all duration-300",
                     isCopied
                       ? "bg-emerald-500 text-white shadow-lg shadow-emerald-200"
-                      : "bg-slate-50/80 text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white group-hover:border-[#1a3a5c] group-hover:shadow-lg group-hover:shadow-slate-100",
+                      : "bg-slate-50 text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white group-hover:border-[#1a3a5c] group-hover:shadow-lg group-hover:shadow-slate-100",
                   )}
                 >
                   {isCopied ? (
-                    <CopyCheck className="h-5 w-5" />
+                    <CopyCheck className="h-6 w-6" />
                   ) : (
-                    <Copy className="h-5 w-5 opacity-70 group-hover:opacity-100" />
+                    <Copy className="h-6 w-6 opacity-80 group-hover:opacity-100" />
                   )}
                 </div>
                 <span
@@ -198,10 +196,10 @@ const Home = () => {
                     "text-[9px] font-bold uppercase tracking-[0.15em] text-center leading-tight transition-colors duration-200 px-1",
                     isCopied
                       ? "text-emerald-600"
-                      : "text-slate-400 group-hover:text-[#1a3a5c]",
+                      : "text-[#1a3a5c]/90 group-hover:text-[#1a3a5c]",
                   )}
                 >
-                  {isCopied ? "Copiado!" : "Link de Cadastro"}
+                  {isCopied ? "Copiado!" : "Copiar Link"}
                 </span>
               </div>
               <ShortcutCard
