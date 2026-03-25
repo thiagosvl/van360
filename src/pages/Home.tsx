@@ -152,7 +152,6 @@ const Home = () => {
               value={contadores.passageirosAtivos}
               icon={Users}
               variant={KPICardVariant.OUTLINE}
-              countLabel={`${contadores.passageirosInativos} inativos`}
               loading={isLoading}
             />
           </div>

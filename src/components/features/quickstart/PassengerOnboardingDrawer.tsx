@@ -58,8 +58,8 @@ export function PassengerOnboardingDrawer({
       title="Cadastrar Passageiro"
       actions={actions}
     >
-        <div className="flex flex-col items-center justify-center py-4 px-6 text-center">
-             <div className="h-16 w-16 rounded-3xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0 mb-4 shadow-sm border border-blue-100/50 dark:border-blue-800/30">
+        <div className="flex flex-col items-center justify-center pt-2 pb-6 px-6 text-center">
+             <div className="h-16 w-16 rounded-3xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0 mb-4 shadow-sm border border-blue-100/50 dark:border-blue-800/30 transition-transform active:scale-95">
                <Users className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             </div>
             <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 max-w-[260px] leading-relaxed">
