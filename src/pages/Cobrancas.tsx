@@ -1,13 +1,13 @@
 import { DateNavigation } from "@/components/common/DateNavigation";
-import { KPICard, KPICardVariant } from "@/components/common/KPICard";
+import { KPICard } from "@/components/common/KPICard";
 import { CobrancasList } from "@/components/features/cobranca/CobrancasList";
 import { CobrancasToolbar } from "@/components/features/cobranca/CobrancasToolbar";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useCobrancasViewModel } from "@/hooks";
-import { CobrancaTab } from "@/types/enums";
-import { meses } from "@/utils/formatters";
+import { CobrancaTab, KPICardVariant } from "@/types/enums";
+import { formatCurrency, meses } from "@/utils/formatters";
 
 export default function Cobrancas() {
   const {
@@ -83,24 +83,22 @@ export default function Cobrancas() {
               activeTab={activeTab}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 px-1">
               <KPICard
-                title="TOTAL PENDENTE"
-                value={totalAReceber}
-                count={countAReceber}
+                label="TOTAL PENDENTE"
+                value={formatCurrency(totalAReceber)}
                 variant={KPICardVariant.PRIMARY}
               />
               <KPICard
-                title="TOTAL RECEBIDO"
-                value={totalRecebido}
-                count={countRecebidos}
+                label="TOTAL RECEBIDO"
+                value={formatCurrency(totalRecebido)}
                 variant={KPICardVariant.OUTLINE}
               />
             </div>
 
-            <div className="flex items-center justify-between mb-2 px-1">
-              <h2 className="text-sm font-bold text-slate-800 font-headline">
-                Próximos Vencimentos
+            <div className="flex items-center justify-between mb-2 mt-4 px-1">
+              <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
+                {activeTab === CobrancaTab.ARECEBER ? "Próximos Vencimentos" : "Histórico de Recebimentos"}
               </h2>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
                 {currentCount} {statusLabel}

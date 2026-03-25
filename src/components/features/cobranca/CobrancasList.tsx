@@ -19,6 +19,7 @@ import {
     formatDateToBR,
     formatPaymentType,
 } from "@/utils/formatters";
+import { checkCobrancaEmAtraso } from "@/utils/formatters/cobranca";
 import { DollarSign, Wallet } from "lucide-react";
 import { memo } from "react";
 
@@ -75,7 +76,22 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
 
   const vencDia = getVencimentoDia(cobranca?.data_vencimento);
   const isPaid = cobranca?.status === CobrancaStatus.PAGO;
+  const isAtrasado = !isPaid && checkCobrancaEmAtraso(cobranca?.data_vencimento);
+  
+  // Name Truncation logic: First + Second Name only for better space
+  const formatShortName = (fullName?: string) => {
+    if (!fullName) return "Sem nome";
+    const names = fullName.trim().split(/\s+/);
+    if (names.length <= 2) return fullName;
+    return `${names[0]} ${names[1]}`;
+  };
+
+  const shortName = formatShortName(cobranca?.passageiro?.nome);
   const firstNomeResponsavel = cobranca?.passageiro?.nome_responsavel?.split(" ")[0] || "N/Inf.";
+
+  const statusColor = isPaid 
+    ? "bg-emerald-50 text-emerald-600" 
+    : (isAtrasado ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600");
 
   return (
     <MobileActionItem actions={actions} className="bg-transparent">
@@ -83,27 +99,23 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
             onClick={() => onVerCobranca(cobranca)}
             className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
         >
-            {/* 1. Day Block - Smaller and more discrete */}
             <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
                 <span className="text-white font-headline font-bold text-sm leading-none">
                     {vencDia}
                 </span>
             </div>
 
-            {/* 2. Main Info - Optimized spacing */}
             <div className="flex-grow min-w-0 pr-10">
                 <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-                    {cobranca?.passageiro?.nome || "Sem nome"}
+                    {shortName}
                 </p>
                 <div className="flex items-center gap-2 mt-0.5">
                     <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
                        Responsável: {firstNomeResponsavel}
                     </p>
-                    {/* Move Badge here if it fits better, but let's keep the right side for value/status if it's too crowded */}
                 </div>
             </div>
 
-            {/* 3. Value & Status - Vertical Right Stack */}
             <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
                 <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
                     {Number(cobranca?.valor).toLocaleString("pt-BR", {
@@ -116,7 +128,7 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
                     dataVencimento={cobranca?.data_vencimento}
                     className={cn(
                         "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
-                         isPaid ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+                         statusColor
                     )}
                 />
             </div>

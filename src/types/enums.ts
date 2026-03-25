@@ -189,3 +189,8 @@ export enum ContratoProvider {
   ASSINAFY = "assinafy",
   DOCUSIGN = "docusign"
 }
+
+export enum KPICardVariant {
+  PRIMARY = "primary",
+  OUTLINE = "outline"
+}

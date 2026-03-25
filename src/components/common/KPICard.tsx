@@ -1,50 +1,54 @@
 import { cn } from "@/lib/utils";
-import { memo } from "react";
-
-export enum KPICardVariant {
-  PRIMARY = "primary",
-  OUTLINE = "outline"
-}
+import { KPICardVariant } from "@/types/enums";
+import { LucideIcon } from "lucide-react";
 
 interface KPICardProps {
-  title: string;
-  value: number;
-  count: number;
+  label: string;
+  value: string;
+  icon?: LucideIcon;
   variant?: KPICardVariant;
   className?: string;
+  countLabel?: string;
 }
 
-export const KPICard = memo(function KPICard({
-  title,
+const variants = {
+  [KPICardVariant.PRIMARY]: "bg-[#F8FAFB] border-[#1a3a5c]/10 text-[#1a3a5c] shadow-sm",
+  [KPICardVariant.OUTLINE]: "bg-white border-gray-200/50 text-[#1a3a5c] shadow-diff-shadow",
+};
+
+export function KPICard({
+  label,
   value,
+  icon: Icon,
   variant = KPICardVariant.OUTLINE,
+  countLabel,
   className,
 }: KPICardProps) {
-  const isPrimary = variant === KPICardVariant.PRIMARY;
-
   return (
     <div
       className={cn(
-        "rounded-2xl px-5 py-6 flex flex-col justify-center gap-1 transition-all duration-300",
-        isPrimary 
-          ? "bg-[#1a3a5c] text-white shadow-lg shadow-navy/20" 
-          : "bg-white text-gray-900 shadow-diff-shadow border border-gray-100/50",
+        "p-4 rounded-xl flex flex-col transition-all border",
+        variants[variant],
         className
       )}
     >
-      <p className={cn(
-          "text-[9px] font-bold uppercase tracking-[0.1em] mb-1 opacity-70",
-          isPrimary ? "text-white" : "text-gray-400"
-      )}>
-        {title}
-      </p>
-
-      <span className="text-xl font-headline font-extrabold leading-tight tracking-tight">
-        {Number(value).toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        })}
-      </span>
+      <div className="flex items-center gap-2 mb-1">
+        {Icon && <Icon className={cn("w-3.5 h-3.5 opacity-40")} />}
+        <span className="text-[10px] font-headline font-bold uppercase tracking-widest opacity-40">
+          {label}
+        </span>
+      </div>
+      
+      <div className="flex items-baseline gap-2">
+        <h3 className="text-[22px] font-headline font-black leading-tight tracking-tight">
+          {value}
+        </h3>
+        {countLabel && (
+          <span className="text-[10px] font-medium opacity-30">
+            {countLabel}
+          </span>
+        )}
+      </div>
     </div>
   );
-});
+}
