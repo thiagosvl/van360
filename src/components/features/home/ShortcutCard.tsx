@@ -1,51 +1,48 @@
 import { cn } from "@/lib/utils";
-import { NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 interface ShortcutCardProps {
   to?: string;
   onClick?: () => void;
   icon: any;
   label: string;
-  colorClass?: string;
-  bgClass?: string;
+  className?: string;
 }
 
 export const ShortcutCard = ({
-  to,
-  onClick,
   icon: Icon,
   label,
-  colorClass = "text-blue-600",
-  bgClass = "bg-blue-50",
+  to,
+  onClick,
+  className,
 }: ShortcutCardProps) => {
   const content = (
-    <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all duration-200 hover:border-blue-200 hover:shadow-md h-24 w-full cursor-pointer">
-      <div
-        className={cn(
-          "h-10 w-10 rounded-xl flex items-center justify-center mb-2 transition-transform group-hover:scale-110",
-          bgClass,
-          colorClass
-        )}
-      >
-        <Icon className="h-5 w-5" />
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100/30 shadow-diff-shadow transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] h-26 w-full group select-none cursor-pointer",
+        className,
+      )}
+    >
+      <div className="h-11 w-11 rounded-[1.2rem] bg-slate-50/80 flex items-center justify-center mb-2.5 shrink-0 border border-slate-100/50 transition-all duration-300 group-hover:bg-[#1a3a5c] group-hover:border-[#1a3a5c] group-hover:shadow-lg group-hover:shadow-slate-100">
+        <Icon className="h-5 w-5 text-[#1a3a5c] transition-colors duration-300 group-hover:text-white" />
       </div>
-      <span className="text-xs font-semibold text-gray-700 text-center leading-tight group-hover:text-blue-700">
+      <span className="text-[9px] font-bold text-slate-400 group-hover:text-[#1a3a5c] uppercase tracking-[0.15em] text-center leading-tight px-1 transition-colors duration-200">
         {label}
       </span>
     </div>
   );
 
-  if (onClick) {
+  if (to) {
     return (
-      <div onClick={onClick} className="group">
+      <Link to={to} className="block w-full">
         {content}
-      </div>
+      </Link>
     );
   }
 
   return (
-    <NavLink to={to!} className="group">
+    <button onClick={onClick} className="block w-full outline-none">
       {content}
-    </NavLink>
+    </button>
   );
 };

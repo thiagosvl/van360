@@ -86,100 +86,97 @@ export const QuickStartCard = ({
 
   return (
     <>
-      <Card className="border shadow-sm rounded-2xl overflow-hidden bg-white border-indigo-100">
-        <CardContent className="p-4 md:p-5">
-          {/* Header */}
-          <div className="flex items-start gap-4 mb-4">
-            <div className="h-10 w-10 rounded-full flex items-center justify-center shrink-0 bg-indigo-50 text-indigo-600">
-              <Rocket className="h-5 w-5" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-lg leading-tight text-gray-900">
-                Primeiros Passos
-              </h3>
-              <p className="text-sm mt-1 mb-3 text-gray-500">
-                Complete as etapas para configurar o seu acesso.
-              </p>
-            </div>
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden relative">
+      <div className="p-4 md:p-5">
+        {/* Header */}
+        <div className="flex items-start gap-4 mb-5">
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 bg-slate-50/50 text-[#1a3a5c]">
+            <Rocket className="h-5 w-5 opacity-70" />
           </div>
+          <div className="flex-1">
+            <h3 className="font-headline font-bold text-lg leading-tight text-[#1a3a5c]">
+              Primeiros Passos
+            </h3>
+            <p className="text-xs font-medium text-slate-500 mt-1 opacity-80 leading-relaxed">
+              Complete as etapas para configurar o seu acesso.
+            </p>
+          </div>
+        </div>
 
-          {/* Steps List */}
-          <div className="space-y-3 md:ml-14">
-            {steps.map((step, index) => {
-              const isDone = step.done;
-              // If it's the first undone step, it's the "current" one.
-              // Or: allow any order? Home uses sequential logic mostly for highlighting.
-              // Let's copy Home logic: "isCurrent" if previous are done.
-              const previousStepsDone = steps
-                .slice(0, index)
-                .every((s) => s.done);
-              const isCurrent = !isDone && previousStepsDone;
-              const StepIcon = step.icon;
+        {/* Steps List */}
+        <div className="space-y-3">
+          {steps.map((step, index) => {
+            const isDone = step.done;
+            const previousStepsDone = steps
+              .slice(0, index)
+              .every((s) => s.done);
+            const isCurrent = !isDone && previousStepsDone;
+            const StepIcon = step.icon;
 
-              return (
-                <div
-                  key={step.id}
-                  className={cn(
-                    "flex items-center justify-between p-3 rounded-xl border transition-colors duration-200",
-                    isCurrent
-                      ? "bg-indigo-50 border-indigo-200 shadow-sm"
-                      : "bg-white border-gray-100",
-                    isDone && "bg-gray-50 border-gray-100 opacity-70"
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        "h-8 w-8 rounded-full flex items-center justify-center shrink-0 transition-colors",
-                        isDone
-                          ? "bg-green-100 text-green-600"
-                          : isCurrent
-                          ? "bg-purple-100 text-purple-600 border border-purple-200"
-                          : "bg-gray-100 text-gray-400"
-                      )}
-                    >
-                      {isDone ? (
-                        <CheckCircle2 className="h-4 w-4" />
-                      ) : (
-                        <StepIcon className="h-4 w-4" />
-                      )}
-                    </div>
-                    <span
-                      className={cn(
-                        "text-sm font-medium",
-                        isDone
-                          ? "text-gray-400 line-through"
-                          : isCurrent
-                          ? "text-indigo-900 font-bold"
-                          : "text-gray-400"
-                      )}
-                    >
-                      {step.label}
-                    </span>
+            return (
+              <div
+                key={step.id}
+                className={cn(
+                  "flex items-center justify-between p-3.5 rounded-xl border transition-all duration-300",
+                  isCurrent
+                    ? "bg-slate-50/50 border-slate-200/50 shadow-sm"
+                    : "bg-white border-gray-100/50",
+                  isDone && "bg-gray-50/50 border-gray-100/30 opacity-60"
+                )}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div
+                    className={cn(
+                      "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                      isDone
+                        ? "bg-emerald-50 text-emerald-600 border border-emerald-100/50"
+                        : isCurrent
+                        ? "bg-[#1a3a5c] text-white shadow-lg shadow-[#1a3a5c]/20"
+                        : "bg-gray-50 text-gray-400 border border-gray-100"
+                    )}
+                  >
+                    {isDone ? (
+                      <CheckCircle2 className="h-4 w-4" />
+                    ) : (
+                      <StepIcon className="h-4 w-4" />
+                    )}
                   </div>
-
-                  {isCurrent && (
-                    <Button
-                      size="sm"
-                      onClick={step.onAction}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white h-8 px-3 rounded-lg text-xs font-bold shadow-indigo-200/50 shadow-lg"
-                    >
-                      {step.buttonText}
-                    </Button>
-                  )}
+                  <span
+                    className={cn(
+                      "text-[13px] font-bold min-w-0 truncate",
+                      isDone
+                        ? "text-slate-400 line-through font-medium"
+                        : isCurrent
+                        ? "text-[#1a3a5c]"
+                        : "text-slate-400"
+                    )}
+                  >
+                    {step.label}
+                  </span>
                 </div>
-              );
-            })}
 
-            <div className="flex items-center gap-2 justify-center pt-2 opacity-60">
-              <LockIcon className="h-3 w-3 text-gray-400" />
-              <p className="text-[10px] text-gray-500 font-medium text-center">
-                Complete as etapas para organizar seu painel.
-              </p>
-            </div>
+                {isCurrent && (
+                  <Button
+                    size="sm"
+                    onClick={step.onAction}
+                    className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#1a3a5c]/10 ml-2"
+                  >
+                    {step.buttonText}
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+
+          <div className="flex items-center gap-2 justify-center pt-3 opacity-60">
+            <LockIcon className="h-3 w-3 text-slate-400" />
+            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest text-center">
+              Complete as etapas para organizar seu painel.
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+    </div>
 
       <PassengerOnboardingDrawer
         open={isPassengerDrawerOpen}

@@ -1,4 +1,3 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -7,8 +6,6 @@ interface MiniKPIProps {
   value: string | number;
   subtext?: string;
   icon: any;
-  colorClass?: string;
-  bgClass?: string;
   loading?: boolean;
   className?: string;
 }
@@ -18,40 +15,38 @@ export const MiniKPI = ({
   value,
   subtext,
   icon: Icon,
-  colorClass = "text-gray-600",
-  bgClass = "bg-gray-50",
   loading = false,
   className = "",
 }: MiniKPIProps) => (
-  <Card
+  <div
     className={cn(
-      "border-none shadow-sm bg-white rounded-2xl overflow-hidden relative",
+      "p-4 bg-white rounded-2xl border border-gray-100/50 shadow-diff-shadow flex items-center justify-between relative",
       className
     )}
   >
-    <CardContent className="p-4 flex items-center justify-between">
-      <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-          {label}
+    <div className="flex-1 min-w-0">
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">
+        {label}
+      </p>
+      {loading ? (
+        <Skeleton className="h-7 w-24 mb-1" />
+      ) : (
+        <h3 className="text-xl md:text-2xl font-headline font-bold text-[#1a3a5c] leading-none tracking-tight">
+          {value}
+        </h3>
+      )}
+      {subtext && (
+        <p className="text-[10px] text-slate-400 font-medium mt-1.5 opacity-60">
+          {subtext}
         </p>
-        {loading ? (
-          <Skeleton className="h-7 w-24 mb-1" />
-        ) : (
-          <h3 className="text-xl md:text-2xl font-bold text-gray-900 leading-none">
-            {value}
-          </h3>
-        )}
-        {subtext && <p className="text-xs text-gray-400 mt-1">{subtext}</p>}
-      </div>
-      <div
-        className={cn(
-          "h-10 w-10 rounded-xl flex items-center justify-center",
-          bgClass,
-          colorClass
-        )}
-      >
-        <Icon className="h-5 w-5" />
-      </div>
-    </CardContent>
-  </Card>
+      )}
+    </div>
+    <div
+      className={cn(
+        "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 bg-slate-50/50 text-[#1a3a5c]",
+      )}
+    >
+      <Icon className="h-5 w-5 opacity-60" />
+    </div>
+  </div>
 );

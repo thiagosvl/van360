@@ -95,14 +95,14 @@ export default function Gastos() {
               variant={KPICardVariant.PRIMARY}
               value={formatCurrency(totalGasto)}
               icon={TrendingDown}
-              countLabel={`${gastos.length} Registros`}
+              countLabel={`${gastos.length === 1 ? 'Gasto' : 'Gastos'}`}
               className="col-span-1"
             />
           </div>
 
           <div className="flex items-center justify-between px-1">
             <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-              Gastos
+              Controle de Gastos
             </h2>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
               {gastos.length} REGISTROS

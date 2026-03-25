@@ -43,7 +43,7 @@ const Home = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1a3a5c]"></div>
       </div>
     );
   }
@@ -54,10 +54,10 @@ const Home = () => {
         <div className="space-y-6">
           {/* Header Contextual */}
           <div className="px-1">
-            <p className="text-sm text-gray-500 capitalize font-medium">
+            <p className="font-headline font-bold text-[#1a3a5c] text-sm capitalize">
               {dateContext}
             </p>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-70">
               {financeiro.countAtrasos > 0
                 ? `${financeiro.countAtrasos} passageiros em atraso`
                 : "Tudo em dia por aqui!"}
@@ -126,8 +126,8 @@ const Home = () => {
             className={cn(
               "grid gap-4",
               onboarding.showOnboarding
-                ? "grid-cols-1 sm:grid-cols-1"
-                : "grid-cols-1 sm:grid-cols-3",
+                ? "grid-cols-1"
+                : "grid-cols-2 sm:grid-cols-3",
             )}
           >
             {!onboarding.showOnboarding && (
@@ -136,28 +136,20 @@ const Home = () => {
                   label="Recebido"
                   value={formatCurrency(financeiro.recebido)}
                   icon={DollarSign}
-                  colorClass="text-emerald-600"
-                  bgClass="bg-emerald-50"
                 />
                 <MiniKPI
                   label="A receber"
                   value={formatCurrency(financeiro.aReceber)}
                   icon={Wallet}
-                  colorClass={
-                    financeiro.aReceber > 0 ? "text-orange-600" : "text-gray-400"
-                  }
-                  bgClass={financeiro.aReceber > 0 ? "bg-orange-50" : "bg-gray-50"}
                 />
               </>
             )}
 
             <MiniKPI
-              className="border-none shadow-sm bg-white rounded-2xl overflow-hidden relative"
+              className={cn(!onboarding.showOnboarding && "col-span-2 sm:col-span-1")}
               label="Passageiros Ativos"
               value={contadores.passageirosAtivos}
               icon={Users}
-              colorClass="text-blue-600"
-              bgClass="bg-blue-50"
               subtext={`${contadores.passageirosInativos} inativo${
                 contadores.passageirosInativos !== 1 ? "s" : ""
               }`}
@@ -166,7 +158,7 @@ const Home = () => {
 
           {/* Acessos Rápidos */}
           <section>
-            <h2 className="text-lg font-bold text-gray-900 mb-4 px-1">
+            <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">
               Acesso Rápido
             </h2>
             <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-4">
@@ -174,43 +166,39 @@ const Home = () => {
                 onClick={handleOpenPassageiroDialog}
                 icon={Plus}
                 label="Cadastrar Passageiro"
-                colorClass="text-indigo-600"
-                bgClass="bg-indigo-50"
               />
               <ShortcutCard
                 onClick={handleOpenGastoDialog}
                 icon={Plus}
                 label="Registrar Gasto"
-                colorClass="text-red-600"
-                bgClass="bg-red-50"
               />
               <div
                 onClick={handleCopyLink}
                 className={cn(
-                  "cursor-pointer group flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all duration-200 hover:border-blue-200 hover:shadow-md h-24 w-full",
-                  isCopied && "border-green-200 bg-green-50",
+                  "flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100/30 shadow-diff-shadow transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] h-26 w-full cursor-pointer group select-none",
+                  isCopied && "border-emerald-100 bg-emerald-50/50",
                 )}
               >
                 <div
                   className={cn(
-                    "h-10 w-10 rounded-xl flex items-center justify-center mb-2 transition-all duration-300",
+                    "h-11 w-11 rounded-[1.2rem] flex items-center justify-center mb-2.5 shrink-0 border border-slate-100/50 transition-all duration-300",
                     isCopied
-                      ? "bg-green-100 text-green-600 scale-110"
-                      : "bg-blue-50 text-blue-600 group-hover:scale-110",
+                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-200"
+                      : "bg-slate-50/80 text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white group-hover:border-[#1a3a5c] group-hover:shadow-lg group-hover:shadow-slate-100",
                   )}
                 >
                   {isCopied ? (
                     <CopyCheck className="h-5 w-5" />
                   ) : (
-                    <Copy className="h-5 w-5" />
+                    <Copy className="h-5 w-5 opacity-70 group-hover:opacity-100" />
                   )}
                 </div>
                 <span
                   className={cn(
-                    "text-xs font-semibold text-center leading-tight transition-colors duration-200",
+                    "text-[9px] font-bold uppercase tracking-[0.15em] text-center leading-tight transition-colors duration-200 px-1",
                     isCopied
-                      ? "text-green-700"
-                      : "text-gray-700 group-hover:text-blue-700",
+                      ? "text-emerald-600"
+                      : "text-slate-400 group-hover:text-[#1a3a5c]",
                   )}
                 >
                   {isCopied ? "Copiado!" : "Link de Cadastro"}
@@ -220,43 +208,31 @@ const Home = () => {
                 to={ROUTES.PRIVATE.MOTORISTA.PASSENGERS}
                 icon={Users}
                 label="Passageiros"
-                colorClass="text-blue-600"
-                bgClass="bg-blue-50"
               />
               <ShortcutCard
                 to={`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`}
                 icon={UserCheck}
                 label="Solicitações"
-                colorClass="text-pink-600"
-                bgClass="bg-pink-50"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.EXPENSES}
                 icon={TrendingDown}
                 label="Controle de Gastos"
-                colorClass="text-red-600"
-                bgClass="bg-red-50"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.REPORTS}
                 icon={FileText}
                 label="Relatórios"
-                colorClass="text-purple-600"
-                bgClass="bg-purple-50"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.BILLING}
                 icon={CreditCard}
                 label="Mensalidades"
-                colorClass="text-emerald-600"
-                bgClass="bg-emerald-50"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.CONTRACTS}
                 icon={FileText}
                 label="Contratos"
-                colorClass="text-cyan-600"
-                bgClass="bg-cyan-50"
               />
             </div>
           </section>
