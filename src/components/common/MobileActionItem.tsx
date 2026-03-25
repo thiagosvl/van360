@@ -58,9 +58,9 @@ export function MobileActionItem({
         variant="ghost"
         size="icon"
         className={cn(
-          "absolute top-3 right-3 h-8 w-8 rounded-full z-20 transition-all",
-          "bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 shadow-sm",
-          "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100",
+          "absolute top-2.5 right-2 h-7 w-7 rounded-full z-20 transition-all",
+          "bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-zinc-100 dark:border-zinc-800 shadow-sm",
+          "text-zinc-400 hover:text-zinc-600 dark:text-zinc-500",
           "active:scale-90"
         )}
         onClick={(e) => {
@@ -69,7 +69,7 @@ export function MobileActionItem({
           setIsSheetOpen(true);
         }}
       >
-        <MoreVertical className="h-4 w-4" />
+        <MoreVertical className="h-3.5 w-3.5" />
       </Button>
 
       {/* Action Sheet (Bottom Drawer) */}

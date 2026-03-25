@@ -14,24 +14,22 @@ import {
 import { useCobrancaActions } from "@/hooks/ui/useCobrancaActions";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
-import { CobrancaStatus } from "@/types/enums";
+import { CobrancaStatus, CobrancaTab } from "@/types/enums";
 import {
     formatDateToBR,
     formatPaymentType,
-    getStatusColor,
 } from "@/utils/formatters";
-import { BellOff, DollarSign, Wallet } from "lucide-react";
-import { Fragment, memo } from "react";
+import { DollarSign, Wallet } from "lucide-react";
+import { memo } from "react";
 
 interface CobrancasListProps {
   cobrancas: Cobranca[];
-  variant: "pending" | "processing" | "paid";
+  activeTab: CobrancaTab;
   isLoading: boolean;
   busca: string;
   mesFilter: number;
   meses: string[];
   
-  // Actions
   onVerCobranca: (cobranca: Cobranca) => void;
   onVerCarteirinha: (passageiroId: string) => void;
   onEditarCobranca: (cobranca: Cobranca) => void;
@@ -44,7 +42,6 @@ interface CobrancasListProps {
 const CobrancaMobileCard = memo(function CobrancaMobileCard({
   cobranca,
   index,
-  variant,
   onVerCobranca,
   onVerCarteirinha,
   onEditarCobranca,
@@ -55,183 +52,106 @@ const CobrancaMobileCard = memo(function CobrancaMobileCard({
 }: {
   cobranca: Cobranca;
   index: number;
-  variant: "pending" | "processing" | "paid";
+  activeTab: CobrancaTab;
 } & Omit<CobrancasListProps, "cobrancas" | "isLoading" | "busca" | "mesFilter" | "meses">) {
   
+  const actions = useCobrancaActions({
+    cobranca,
+    onVerCobranca: () => onVerCobranca(cobranca),
+    onVerCarteirinha: () => onVerCarteirinha(cobranca.passageiro_id),
+    onEditarCobranca: () => onEditarCobranca(cobranca),
+    onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
+    onExcluirCobranca: () => onExcluirCobranca(cobranca),
+    onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca) : undefined,
+    onActionSuccess,
+  });
+
+  const getVencimentoDia = (dateStr?: string) => {
+    if (!dateStr) return "??";
+    const parts = dateStr.split("-");
+    if (parts.length === 3) return parts[2].substring(0, 2);
+    return "??";
+  };
+
+  const vencDia = getVencimentoDia(cobranca?.data_vencimento);
+  const isPaid = cobranca?.status === CobrancaStatus.PAGO;
+  const firstNomeResponsavel = cobranca?.passageiro?.nome_responsavel?.split(" ")[0] || "N/Inf.";
+
   return (
-    <Fragment>
-      <div className="mb-3">
-         <CardContentWrapper 
-            cobranca={cobranca} 
-            index={index}
-            variant={variant}
-            actionsProps={{
-                onVerCobranca: () => onVerCobranca(cobranca),
-                onVerCarteirinha: () => onVerCarteirinha(cobranca.passageiro_id),
-                onEditarCobranca: () => onEditarCobranca(cobranca),
-                onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
-                onExcluirCobranca: () => onExcluirCobranca(cobranca),
-                onDesfazerPagamento: onDesfazerPagamento ? () => onDesfazerPagamento(cobranca) : undefined,
-                onActionSuccess,
-            }}
-            onVerCobranca={onVerCobranca}
-         />
-      </div>
-    </Fragment>
+    <MobileActionItem actions={actions} className="bg-transparent">
+        <div
+            onClick={() => onVerCobranca(cobranca)}
+            className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
+        >
+            {/* 1. Day Block - Smaller and more discrete */}
+            <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
+                <span className="text-white font-headline font-bold text-sm leading-none">
+                    {vencDia}
+                </span>
+            </div>
+
+            {/* 2. Main Info - Optimized spacing */}
+            <div className="flex-grow min-w-0 pr-10">
+                <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+                    {cobranca?.passageiro?.nome || "Sem nome"}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
+                       Responsável: {firstNomeResponsavel}
+                    </p>
+                    {/* Move Badge here if it fits better, but let's keep the right side for value/status if it's too crowded */}
+                </div>
+            </div>
+
+            {/* 3. Value & Status - Vertical Right Stack */}
+            <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
+                <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
+                    {Number(cobranca?.valor).toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                    })}
+                </p>
+                <StatusBadge
+                    status={cobranca?.status}
+                    dataVencimento={cobranca?.data_vencimento}
+                    className={cn(
+                        "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
+                         isPaid ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+                    )}
+                />
+            </div>
+        </div>
+    </MobileActionItem>
   );
 });
 
-function CardContentWrapper({ 
-    cobranca, 
-    index,
-    variant,
-    actionsProps,
-    onVerCobranca
-}: any) {
-    const actions = useCobrancaActions({
-      cobranca,
-      ...actionsProps
-    });
-
-    return (
-        <MobileActionItem actions={actions} showHint={index === 0}>
-             <div
-                onClick={() => onVerCobranca(cobranca)}
-                className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
-              >
-                {/* Header: Avatar + Name + Value */}
-                <div className="flex justify-between items-start mb-1 relative">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        "h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm",
-                        getStatusColor(cobranca?.status, cobranca?.data_vencimento)
-                      )}
-                    >
-                      {cobranca?.passageiro.nome.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900 text-sm">
-                        {cobranca?.passageiro.nome}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {cobranca?.passageiro.nome_responsavel || "Não inf."}{" "}
-                        •{" "}
-                        <span className="text-sm font-bold text-gray-900 tracking-tight">
-                          {Number(cobranca?.valor).toLocaleString("pt-BR", {
-                            style: "currency",
-                            currency: "BRL",
-                          })}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer depending on variant */}
-                <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-                  {variant === "pending" || variant === "processing" ? (
-                      <>
-                        <div className="flex items-center gap-2">
-                            <StatusBadge
-                            status={cobranca?.status}
-                            dataVencimento={cobranca?.data_vencimento}
-                            className="font-semibold h-6 shadow-none"
-                            />
-                            {cobranca?.desativar_lembretes && (
-                            <BellOff className="w-3 h-3 text-orange-700" />
-                            )}
-                        </div>
-
-                        <div className="flex flex-col items-end gap-0.5">
-                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-                            VENCIMENTO
-                            </span>
-                            <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
-                            {cobranca?.data_vencimento
-                                ? formatDateToBR(cobranca?.data_vencimento)
-                                : "-"}
-                            </p>
-                        </div>
-                      </>
-                  ) : (
-                      <>
-                        <div className="flex flex-col gap-1 items-start">
-                             <StatusBadge
-                                 status={cobranca?.status}
-                                 dataVencimento={cobranca?.data_vencimento}
-                                 className="font-semibold h-5 px-1.5 text-[10px] shadow-none mb-1"
-                             />
-                          <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
-                            {formatPaymentType(cobranca?.tipo_pagamento)}
-                          </p>
-                        </div>
-
-                        <div className="flex flex-col items-end gap-0.5">
-                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-                            PAGO EM
-                          </span>
-                          <p className="text-xs text-gray-600 font-medium flex items-center gap-1">
-                            {cobranca?.data_pagamento
-                              ? formatDateToBR(cobranca?.data_pagamento)
-                              : "-"}
-                          </p>
-                        </div>
-                      </>
-                  )}
-                </div>
-              </div>
-        </MobileActionItem>
-    )
-}
-
 export function CobrancasList({
   cobrancas,
-  variant,
+  activeTab,
   isLoading,
   busca,
-  mesFilter,
-  meses,
   ...props
 }: CobrancasListProps) {
   
-  // Empty State Logic
+  const isPendingTab = activeTab === CobrancaTab.ARECEBER;
+
   const getEmptyState = () => {
     if (busca !== "") {
         return (
             <UnifiedEmptyState
             icon={Wallet}
             title="Nenhum resultado"
-            description="Nenhuma mensalidade encontrada com este filtro de busca."
+            description="Tente buscar por outro nome ou termo."
             />
         );
     }
-
-    if (variant === "pending") {
-         return (
-             <UnifiedEmptyState
-               icon={Wallet}
-               title="Nenhuma mensalidade pendente"
-               description={`Não há mensalidades pendentes para ${meses[mesFilter - 1]}.`}
-             />
-         );
-    } else if (variant === "processing") {
-         return (
-             <UnifiedEmptyState
-               icon={Wallet}
-               title="Nenhum pagamento em processamento"
-               description={`Não há pagamentos em aprovação/processamento em ${meses[mesFilter - 1]}.`}
-             />
-         );
-    } else {
-        return (
-            <UnifiedEmptyState
-            icon={DollarSign}
-            title="Nenhum pagamento"
-            description={`Não há pagamentos registrados em ${meses[mesFilter - 1]}.`}
-            />
-        );
-    }
+    return (
+        <UnifiedEmptyState
+        icon={isPendingTab ? Wallet : DollarSign}
+        title="Nenhuma informação"
+        description="Não há mensalidades para o período."
+        />
+    );
   };
 
   return (
@@ -245,77 +165,51 @@ export function CobrancasList({
           key={cobranca.id}
           cobranca={cobranca}
           index={index}
-          variant={variant}
+          activeTab={activeTab}
           {...props}
         />
       )}
     >
-      <div className="rounded-2xl md:rounded-[28px] border border-gray-100 overflow-hidden bg-white shadow-sm">
+      <div className="rounded-xl overflow-hidden bg-white shadow-diff-shadow border-none">
         <Table>
-          <TableHeader className="bg-gray-50/50">
-            <TableRow className="hover:bg-transparent border-b border-gray-100">
-              <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+          <TableHeader className="bg-surface-container-low/30">
+            <TableRow className="hover:bg-transparent border-b border-surface-container-low">
+              <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">
                 Passageiro
               </TableHead>
-              <TableHead className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <TableHead className="px-6 py-4 text-right text-[9px] font-bold text-gray-400 uppercase tracking-widest">
                 Valor
               </TableHead>
-              
-              {variant === "pending" || variant === "processing" ? (
-                  <>
-                    <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Vencimento
-                    </TableHead>
-                     <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Status
-                    </TableHead>
-                  </>
-              ) : (
-                  <>
-                     <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Data Pagamento
-                    </TableHead>
-                     <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Forma de Pagamento
-                    </TableHead>
-                  </>
-              )}
-              
-              <TableHead className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                {isPendingTab ? "Vencimento" : "Pagamento"}
+              </TableHead>
+              <TableHead className="px-6 py-4 text-right text-[9px] font-bold text-gray-400 uppercase tracking-widest">
                 Ações
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {cobrancas.map((cobranca) => (
+            {cobrancas.map((cobranca) => {
+              const firstName = cobranca?.passageiro?.nome_responsavel?.split(" ")[0] || "N/Inf.";
+              
+              return (
               <TableRow
                 key={cobranca.id}
                 onClick={() => props.onVerCobranca(cobranca)}
-                className="hover:bg-gray-50/80 border-b border-gray-50 last:border-0 transition-colors cursor-pointer group"
+                className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors cursor-pointer"
               >
                 <TableCell className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        "h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm",
-                        getStatusColor(cobranca?.status, cobranca?.data_vencimento)
-                      )}
-                    >
-                      {cobranca?.passageiro.nome.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900 text-sm">
-                        {cobranca?.passageiro.nome}
+                  <div className="flex flex-col">
+                      <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                        {cobranca?.passageiro?.nome || "Not informed"}
                       </p>
-                      <p className="text-xs text-gray-500">
-                        {cobranca?.passageiro.nome_responsavel ||
-                          "Responsável não inf."}
+                      <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                        Responsável: {firstName}
                       </p>
-                    </div>
                   </div>
                 </TableCell>
                 <TableCell className="px-6 py-4 text-right">
-                  <span className="font-bold text-gray-900 text-sm">
+                  <span className="font-headline font-bold text-[#1a3a5c] text-sm">
                     {Number(cobranca?.valor).toLocaleString("pt-BR", {
                       style: "currency",
                       currency: "BRL",
@@ -323,52 +217,23 @@ export function CobrancasList({
                   </span>
                 </TableCell>
                 
-                {variant === "pending" || variant === "processing" ? (
-                    <>
-                        <TableCell className="px-6 py-4">
-                            <span className="text-sm text-gray-600 font-medium">
-                                {formatDateToBR(cobranca?.data_vencimento)}
-                            </span>
-                        </TableCell>
-                        <TableCell className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                                <StatusBadge
-                                status={cobranca?.status}
-                                dataVencimento={cobranca?.data_vencimento}
-                                className="font-semibold shadow-none"
-                                />
-                                {cobranca?.desativar_lembretes &&
-                                cobranca?.status !== CobrancaStatus.PAGO && (
-                                    <span title="Envio de notificações desativado">
-                                    <BellOff className="w-3.5 h-3.5 text-orange-700" />
-                                    </span>
-                                )}
-                            </div>
-                        </TableCell>
-                    </>
-                ) : (
-                    <>
-                        <TableCell className="px-6 py-4">
-                            <span className="text-sm text-gray-600 font-medium">
-                            {cobranca?.data_pagamento
-                                ? formatDateToBR(cobranca?.data_pagamento)
-                                : "-"}
-                            </span>
-                        </TableCell>
-                        <TableCell className="px-6 py-4">
-                            <div className="flex flex-col">
-                            <span className="text-sm text-gray-700 font-medium">
+                <TableCell className="px-6 py-4">
+                    <div className="flex flex-col">
+                        <span className={cn(
+                            "text-sm font-bold",
+                            !isPendingTab ? "text-emerald-500" : "text-[#1a3a5c]"
+                        )}>
+                            {isPendingTab 
+                                ? formatDateToBR(cobranca?.data_vencimento) 
+                                : formatDateToBR(cobranca?.data_pagamento)}
+                        </span>
+                        {!isPendingTab && (
+                             <span className="text-[9px] text-gray-400 font-medium uppercase">
                                 {formatPaymentType(cobranca?.tipo_pagamento)}
-                            </span>
-                            {cobranca?.pagamento_manual && (
-                                <span className="text-[10px] text-gray-400">
-                                Pagamento Registrado Manualmente
-                                </span>
-                            )}
-                            </div>
-                        </TableCell>
-                    </>
-                )}
+                             </span>
+                        )}
+                    </div>
+                </TableCell>
 
                 <TableCell className="px-6 py-4 text-right">
                   <CobrancaActionsMenu
@@ -383,7 +248,7 @@ export function CobrancasList({
                   />
                 </TableCell>
               </TableRow>
-            ))}
+            )})}
           </TableBody>
         </Table>
       </div>

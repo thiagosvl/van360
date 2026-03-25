@@ -1,74 +1,62 @@
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CobrancaTab } from "@/types/enums";
 import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { memo } from "react";
 
 interface CobrancasToolbarProps {
   buscaAReceber: string;
-  setBuscaAReceber: (value: string) => void;
+  setBuscaAReceber: (busca: string) => void;
   buscaRecebidos: string;
-  setBuscaRecebidos: (value: string) => void;
+  setBuscaRecebidos: (busca: string) => void;
   countAReceber: number;
   countRecebidos: number;
-  activeTab: string;
+  activeTab: CobrancaTab;
 }
 
-export function CobrancasToolbar({
+export const CobrancasToolbar = memo(function CobrancasToolbar({
   buscaAReceber,
   setBuscaAReceber,
   buscaRecebidos,
   setBuscaRecebidos,
-  countAReceber,
-  countRecebidos,
-  activeTab
+  activeTab,
 }: CobrancasToolbarProps) {
   
-  const currentSearch = activeTab === "areceber" ? buscaAReceber : buscaRecebidos;
-  const setCurrentSearch = activeTab === "areceber" ? setBuscaAReceber : setBuscaRecebidos;
+  const isPending = activeTab === CobrancaTab.ARECEBER;
+  const busca = isPending ? buscaAReceber : buscaRecebidos;
+  const setBusca = isPending ? setBuscaAReceber : setBuscaRecebidos;
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-      {/* 1. Tabs (Left) */}
-      <TabsList className="bg-gray-100/80 p-1 rounded-xl h-10 md:h-12 w-full md:w-auto self-start">
-        <TabsTrigger
-          value="areceber"
-          className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none"
-        >
-          A receber
-          <Badge
-            variant="secondary"
-            className="ml-2 bg-gray-200 text-gray-700 hover:bg-gray-200 text-[10px] md:text-xs"
+    <div className="flex flex-col gap-5">
+      <div className="bg-gray-100/40 p-1 rounded-2xl">
+        <TabsList className="grid grid-cols-2 w-full h-11 bg-transparent p-0 gap-1 mt-0">
+          <TabsTrigger
+            value={CobrancaTab.ARECEBER}
+            className="rounded-xl h-full font-headline font-bold text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400"
           >
-            {countAReceber}
-          </Badge>
-        </TabsTrigger>
-        <TabsTrigger
-          value="recebidos"
-          className="rounded-lg h-8 md:h-10 px-4 md:px-6 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-500 transition-all flex-1 md:flex-none"
-        >
-          Recebidos
-          <Badge
-            variant="secondary"
-            className="ml-2 bg-gray-200 text-gray-700 hover:bg-gray-200 text-[10px] md:text-xs"
+            A Receber
+          </TabsTrigger>
+          <TabsTrigger
+            value={CobrancaTab.RECEBIDOS}
+            className="rounded-xl h-full font-headline font-bold text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400"
           >
-            {countRecebidos}
-          </Badge>
-        </TabsTrigger>
-      </TabsList>
+            Recebidos
+          </TabsTrigger>
+        </TabsList>
+      </div>
 
-      {/* 2. Actions (Right) */}
-      <div className="flex items-center gap-3 w-full md:w-auto">
-         {/* Search Bar - Full width on mobile, auto on desktop */}
-        <div className="relative flex-1 md:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-            placeholder="Buscar passageiro..."
-            className="pl-10 h-10 md:h-12 bg-white border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm sm:text-base"
-            value={currentSearch}
-            onChange={(e) => setCurrentSearch(e.target.value)}
-            />
+      <div className="relative group">
+        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+          <Search className="h-4 w-4 text-gray-400 group-focus-within:text-[#1a3a5c] transition-colors" />
         </div>
+        <Input
+          type="search"
+          placeholder="Buscar passageiro ou responsável..."
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          className="w-full bg-white border border-gray-100/50 h-12 pl-11 pr-4 rounded-xl shadow-diff-shadow font-medium text-sm text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all"
+        />
       </div>
     </div>
   );
-}
+});

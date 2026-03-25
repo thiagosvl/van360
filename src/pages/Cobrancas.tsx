@@ -1,5 +1,5 @@
 import { DateNavigation } from "@/components/common/DateNavigation";
-import { KPICard } from "@/components/common/KPICard";
+import { KPICard, KPICardVariant } from "@/components/common/KPICard";
 import { CobrancasList } from "@/components/features/cobranca/CobrancasList";
 import { CobrancasToolbar } from "@/components/features/cobranca/CobrancasToolbar";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
@@ -8,7 +8,6 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useCobrancasViewModel } from "@/hooks";
 import { CobrancaTab } from "@/types/enums";
 import { meses } from "@/utils/formatters";
-import { CheckCircle2, TrendingUp, Wallet } from "lucide-react";
 
 export default function Cobrancas() {
   const {
@@ -19,7 +18,6 @@ export default function Cobrancas() {
     handleNavigation,
     totalAReceber,
     totalRecebido,
-    totalPrevisto,
     countAReceber,
     countRecebidos,
     activeTab,
@@ -42,8 +40,8 @@ export default function Cobrancas() {
 
   if (isProfileLoading || !profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
-        <p>Carregando informações...</p>
+      <div className="min-h-screen flex items-center justify-center text-gray-600 bg-[#F8FAFB]">
+        <p className="font-medium animate-pulse">Carregando informações...</p>
       </div>
     );
   }
@@ -57,50 +55,23 @@ export default function Cobrancas() {
     onActionSuccess: () => { },
   };
 
-  return (
-    <>
-      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div className="space-y-6 md:space-y-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <DateNavigation
-              mes={mesFilter}
-              ano={anoFilter}
-              onNavigate={handleNavigation}
-            />
-          </div>
+  const currentCount = activeTab === CobrancaTab.ARECEBER ? countAReceber : countRecebidos;
+  const statusLabel = activeTab === CobrancaTab.ARECEBER ? "PENDENTES" : "RECEBIDOS";
 
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-            <KPICard
-              title="A Receber"
-              value={totalAReceber}
-              count={countAReceber}
-              icon={Wallet}
-              bgClass="bg-orange-50"
-              colorClass="text-orange-600"
-            />
-            <KPICard
-              title="Recebido"
-              value={totalRecebido}
-              count={countRecebidos}
-              icon={CheckCircle2}
-              bgClass="bg-green-50"
-              colorClass="text-green-600"
-            />
-            <KPICard
-              title="Total Previsto"
-              value={totalPrevisto}
-              count={countAReceber + countRecebidos}
-              icon={TrendingUp}
-              bgClass="bg-blue-50"
-              colorClass="text-blue-600"
-              className="col-span-2 md:col-span-1"
-            />
-          </div>
+  return (
+    <div className="min-h-screen bg-[#F8FAFB] pb-24">
+      <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
+        <div className="max-w-4xl mx-auto space-y-6">
+          <DateNavigation
+            mes={mesFilter}
+            ano={anoFilter}
+            onNavigate={handleNavigation}
+          />
 
           <Tabs
             value={activeTab}
             onValueChange={handleTabChange}
-            className="w-full"
+            className="w-full space-y-6"
           >
             <CobrancasToolbar
               buscaAReceber={buscaAReceber}
@@ -112,9 +83,33 @@ export default function Cobrancas() {
               activeTab={activeTab}
             />
 
-            <TabsContent value={CobrancaTab.ARECEBER} className="mt-0">
+            <div className="grid grid-cols-2 gap-4">
+              <KPICard
+                title="TOTAL PENDENTE"
+                value={totalAReceber}
+                count={countAReceber}
+                variant={KPICardVariant.PRIMARY}
+              />
+              <KPICard
+                title="TOTAL RECEBIDO"
+                value={totalRecebido}
+                count={countRecebidos}
+                variant={KPICardVariant.OUTLINE}
+              />
+            </div>
+
+            <div className="flex items-center justify-between mb-2 px-1">
+              <h2 className="text-sm font-bold text-slate-800 font-headline">
+                Próximos Vencimentos
+              </h2>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                {currentCount} {statusLabel}
+              </span>
+            </div>
+
+            <TabsContent value={CobrancaTab.ARECEBER} className="mt-1 outline-none">
               <CobrancasList
-                variant="pending"
+                activeTab={CobrancaTab.ARECEBER}
                 cobrancas={cobrancasAReceber}
                 isLoading={isInitialLoading}
                 busca={buscaAReceber}
@@ -124,9 +119,9 @@ export default function Cobrancas() {
               />
             </TabsContent>
 
-            <TabsContent value={CobrancaTab.RECEBIDOS} className="mt-0">
+            <TabsContent value={CobrancaTab.RECEBIDOS} className="mt-1 outline-none">
               <CobrancasList
-                variant="paid"
+                activeTab={CobrancaTab.RECEBIDOS}
                 cobrancas={cobrancasRecebidas}
                 isLoading={isInitialLoading}
                 busca={buscaRecebidos}
@@ -139,6 +134,6 @@ export default function Cobrancas() {
         </div>
       </PullToRefreshWrapper>
       <LoadingOverlay active={isActionLoading} text="sistema.sucesso.processando" />
-    </>
+    </div>
   );
 }

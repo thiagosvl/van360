@@ -28,31 +28,34 @@ export function DateNavigation({ mes, ano, onNavigate, disabled }: DateNavigatio
   };
 
   return (
-    <div className="flex items-center justify-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 max-w-md mx-auto w-full md:w-auto">
-      <Button
+    <div className="flex items-center justify-between bg-surface-container-lowest p-4 rounded-xl shadow-diff-shadow max-w-md mx-auto w-full md:w-auto">
+      <button
         disabled={disabled}
-        variant="ghost"
-        size="icon"
         onClick={handlePrevious}
-        className="h-8 w-8 text-gray-400 hover:text-gray-900 hover:bg-gray-50"
+        className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors active:scale-90 duration-150 disabled:opacity-30"
       >
         <ChevronLeft className="h-5 w-5" />
-      </Button>
-      <div className="flex items-center gap-2 min-w-[140px] justify-center">
-        <CalendarDays className="h-4 w-4 text-gray-400" />
-        <span className={cn("text-sm font-bold text-gray-900 uppercase tracking-wide", disabled ? "text-gray-400 opacity-50" : "")}>
+      </button>
+
+      <div className="text-center">
+        <p className={cn(
+          "font-headline font-bold text-lg text-primary",
+          disabled && "text-gray-400 opacity-50"
+        )}>
           {meses[mes - 1]} {ano}
-        </span>
+        </p>
+        <p className="text-[10px] text-gray-400 font-medium uppercase tracking-widest mt-0.5">
+          Fluxo Financeiro Mensal
+        </p>
       </div>
-      <Button
+
+      <button
         disabled={disabled}
-        variant="ghost"
-        size="icon"
         onClick={handleNext}
-        className="h-8 w-8 text-gray-400 hover:text-gray-900 hover:bg-gray-50"
+        className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors active:scale-90 duration-150 disabled:opacity-30"
       >
         <ChevronRight className="h-5 w-5" />
-      </Button>
+      </button>
     </div>
   );
 }

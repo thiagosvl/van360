@@ -26,7 +26,9 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					container: 'hsl(var(--primary-container))',
+					'on-container': 'hsl(var(--on-primary-container))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -52,6 +54,11 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				surface: {
+					DEFAULT: 'hsl(var(--surface))',
+					'container-low': 'hsl(var(--surface-container-low))',
+					'container-lowest': 'hsl(var(--surface-container-lowest))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -63,10 +70,19 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
+			fontFamily: {
+				headline: ['var(--font-headline)', 'sans-serif'],
+				body: ['var(--font-body)', 'sans-serif']
+			},
 			borderRadius: {
+				xl: 'var(--radius-xl)',
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			boxShadow: {
+				'diff-shadow': '0px 12px 32px rgba(25, 28, 30, 0.04)',
+				'soft-xl': '0 20px 25px -5px rgb(0 0 0 / 0.04), 0 8px 10px -6px rgb(0 0 0 / 0.04)'
 			},
 			keyframes: {
 				'accordion-down': {
