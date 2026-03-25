@@ -753,7 +753,7 @@ export default function ContractSetupDialog({
               <div className="flex items-center gap-2">
                 <span>
                   {step === SetupStep.PREVIEW
-                    ? "Ativar Agora"
+                    ? "Confirmar"
                     : step === SetupStep.WELCOME && !usarContratos
                       ? "Confirmar"
                       : "Continuar"}
