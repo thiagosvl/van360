@@ -92,12 +92,12 @@ export default function FirstChargeDialog({
             <div className="h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 bg-slate-50/50 text-[#1a3a5c] border border-slate-100 shadow-sm">
               <Wallet className="w-5 h-5 opacity-80" />
             </div>
-            <div className="flex flex-col min-w-0">
-              <DialogTitle className="text-base sm:text-lg font-headline font-black text-[#1a3a5c] uppercase tracking-tight truncate">
+            <div className="flex flex-col min-w-0 flex-1">
+              <DialogTitle className="text-sm sm:text-lg font-headline font-black text-[#1a3a5c] uppercase tracking-tight truncate">
                 Mensalidade de {currentMonthNameCapitalized}
               </DialogTitle>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">
+                <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider">
                   ETAPA {stepIndex + 1} DE 3
                 </span>
                 <div className="flex gap-1">
@@ -127,7 +127,7 @@ export default function FirstChargeDialog({
                   <Wallet className="w-10 h-10 text-[#1a3a5c] opacity-80" />
                 </div>
                 <div className="space-y-1">
-                  <h2 className="text-xl font-headline font-black text-[#1a3a5c] uppercase">
+                  <h2 className="text-lg sm:text-xl font-headline font-black text-[#1a3a5c] uppercase leading-tight">
                     Registrar mensalidade?
                   </h2>
                   <p className="text-[13px] text-slate-500 font-medium leading-relaxed px-4">
@@ -262,10 +262,9 @@ export default function FirstChargeDialog({
             <div className="space-y-5">
               <div className="space-y-1 pb-2">
                 <div className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-[#1a3a5c] opacity-80" />
                   <h3 className="font-headline font-black text-[#1a3a5c] text-lg uppercase">Forma de pagamento</h3>
                 </div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-7">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   Como o pagamento foi realizado?
                 </p>
               </div>
@@ -313,7 +312,7 @@ export default function FirstChargeDialog({
             <Button
               variant="ghost"
               onClick={onClose}
-              className="flex-1 h-12 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] text-slate-400 hover:text-slate-600 transition-all hover:bg-slate-100 active:scale-95"
+              className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider text-slate-400 hover:text-slate-600 transition-all hover:bg-slate-100 active:scale-95"
               disabled={isLoading}
             >
               Agora não
@@ -322,17 +321,17 @@ export default function FirstChargeDialog({
             <Button
               variant="ghost"
               onClick={handleBack}
-              className="flex-1 h-12 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] text-slate-400 hover:text-slate-600 transition-all hover:bg-slate-100 active:scale-95"
+              className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider text-slate-400 hover:text-slate-600 transition-all hover:bg-slate-100 active:scale-95"
               disabled={isLoading}
             >
-              <ChevronLeft className="w-4 h-4 mr-1.5" /> Voltar
+              <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
             </Button>
           )}
 
           <Button
             onClick={handleNext}
             disabled={isPrimaryDisabled}
-            className="flex-1 h-12 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white shadow-lg shadow-[#1a3a5c]/20 hover:shadow-xl hover:shadow-[#1a3a5c]/30 transition-all active:scale-95 border-b-2 border-black/20"
+            className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white shadow-lg shadow-[#1a3a5c]/20 hover:shadow-xl hover:shadow-[#1a3a5c]/30 transition-all active:scale-95 border-b-2 border-black/20"
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />

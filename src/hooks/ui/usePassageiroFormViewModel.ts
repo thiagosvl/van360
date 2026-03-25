@@ -15,7 +15,7 @@ import { convertDateBrToISO } from "@/utils/formatters/date";
 import { phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { PassageiroFormData } from "../form/usePassageiroForm";
 
 interface UsePassageiroFormViewModelProps {
@@ -40,7 +40,9 @@ export function usePassageiroFormViewModel({
   const createPassageiro = useCreatePassageiro();
   const updatePassageiro = useUpdatePassageiro();
   const finalizePreCadastro = useFinalizePreCadastro();
-  const buscarResponsavel = useBuscarResponsavel();
+  const { mutateAsync: lookupResponsavel, isPending: isSearchingResponsavel } = useBuscarResponsavel();
+  
+  const searchedCpfRef = useRef<string>("");
 
   // Determine include IDs for lists based on mode
   const includeEscolaId =
@@ -82,9 +84,11 @@ export function usePassageiroFormViewModel({
   const handleSearchResponsavel = useCallback(async (cpf: string) => {
     if (mode === PassageiroFormModes.EDIT || mode === PassageiroFormModes.FINALIZE) return;
     if (cpf.length !== 11 || !profile?.id) return;
+    if (searchedCpfRef.current === cpf) return;
 
     try {
-      const responsavel = await buscarResponsavel.mutateAsync({ cpf });
+      searchedCpfRef.current = cpf;
+      const responsavel = await lookupResponsavel({ cpf });
 
       if (responsavel) {
         form.setValue("nome_responsavel", responsavel.nome_responsavel || "");
@@ -97,16 +101,18 @@ export function usePassageiroFormViewModel({
     } catch (error) {
       // Silencioso
     }
-  }, [mode, profile?.id, buscarResponsavel, form]);
+  }, [mode, profile?.id, lookupResponsavel, form]);
 
   // Monitor CPF changes
   const cpfResponsavelValue = form.watch("cpf_responsavel");
   useEffect(() => {
     const pureCpf = cpfResponsavelValue?.replace(/\D/g, "");
-    if (pureCpf && pureCpf.length === 11) {
+    const { invalid } = form.getFieldState("cpf_responsavel", form.formState);
+    
+    if (pureCpf && pureCpf.length === 11 && !invalid) {
       handleSearchResponsavel(pureCpf);
     }
-  }, [cpfResponsavelValue, handleSearchResponsavel]);
+  }, [cpfResponsavelValue, handleSearchResponsavel, form.formState]);
 
   // Mock Filling
   const handleFillMock = useCallback(() => {
@@ -217,7 +223,7 @@ export function usePassageiroFormViewModel({
     escolas: escolasData,
     veiculos: veiculosData,
     isSubmitting,
-    isSearchingResponsavel: buscarResponsavel.isPending,
+    isSearchingResponsavel,
     handleFillMock,
     handleSubmit,
     onFormError,
