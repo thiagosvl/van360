@@ -53,6 +53,7 @@ interface PassageirosToolbarProps {
   onRegister: () => void;
   isRegisterDisabled?: boolean;
   showAdvancedFilters?: boolean;
+  showRegister?: boolean;
   searchPlaceholder?: string;
 }
 
@@ -75,6 +76,7 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
   onRegister,
   isRegisterDisabled,
   showAdvancedFilters = true,
+  showRegister = true,
   searchPlaceholder = "Buscar por nome ou responsável...",
 }: PassageirosToolbarProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -240,14 +242,16 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
             </Popover>
           )}
 
-          <Button
-            onClick={onRegister}
-            disabled={isRegisterDisabled}
-            className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-6 shadow-md transition-all active:scale-95"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Passageiro
-          </Button>
+          {showRegister && (
+            <Button
+              onClick={onRegister}
+              disabled={isRegisterDisabled}
+              className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-6 shadow-md transition-all active:scale-95"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Passageiro
+            </Button>
+          )}
         </div>
 
         {/* Buttons Section (Mobile) */}
@@ -387,14 +391,16 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
             </DrawerContent>
             </Drawer>
 
-            <Button
-            onClick={onRegister}
-            disabled={isRegisterDisabled}
-            className="flex-1 bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-5 shadow-md active:scale-95"
-            >
-            <Plus className="h-4 w-4 mr-2" />
-            Novo
-            </Button>
+            {showRegister && (
+              <Button
+                onClick={onRegister}
+                disabled={isRegisterDisabled}
+                className="flex-1 bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-5 shadow-md active:scale-95"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Novo
+              </Button>
+            )}
         </div>
       </div>
     </div>

@@ -105,6 +105,7 @@ export default function Passageiros() {
                   onApplyFilters={setFilters}
                   onRegister={handleOpenNewDialog}
                   showAdvancedFilters={isMainTab}
+                  showRegister={isMainTab}
                   searchPlaceholder={isMainTab ? "Buscar por nome ou responsável..." : "Buscar solicitação..."}
                 />
 
