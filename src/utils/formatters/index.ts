@@ -3,6 +3,7 @@ export * from "./cobranca";
 export * from "./constants";
 export * from "./currency";
 export * from "./date";
+export * from "./name";
 export * from "./passenger";
 export * from "./periodo";
 export * from "./phone";

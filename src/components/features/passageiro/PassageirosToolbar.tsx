@@ -52,6 +52,8 @@ interface PassageirosToolbarProps {
   }) => void;
   onRegister: () => void;
   isRegisterDisabled?: boolean;
+  showAdvancedFilters?: boolean;
+  searchPlaceholder?: string;
 }
 
 export const PassageirosToolbar = memo(function PassageirosToolbar({
@@ -72,6 +74,8 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
   onApplyFilters,
   onRegister,
   isRegisterDisabled,
+  showAdvancedFilters = true,
+  searchPlaceholder = "Buscar por nome ou responsável...",
 }: PassageirosToolbarProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [tempFilters, setTempFilters] = useState({
@@ -126,7 +130,7 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
             <Search className="h-4 w-4 text-gray-400 group-focus-within:text-[#1a3a5c] transition-colors" />
           </div>
           <Input
-            placeholder="Buscar por nome ou responsável..."
+            placeholder={searchPlaceholder}
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full bg-white border border-gray-100/50 h-12 pl-11 pr-4 rounded-xl shadow-diff-shadow font-medium text-sm text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all"
@@ -135,104 +139,106 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
 
         {/* Buttons Section (Desktop) */}
         <div className="hidden md:flex items-center gap-3">
-          <Popover modal={true}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "bg-white border-[#1a3a5c]/10 text-[#1a3a5c] font-black uppercase text-[10px] tracking-widest gap-2 h-12 rounded-xl px-5 shadow-diff-shadow hover:bg-gray-50",
-                  hasActiveFilters && "border-amber-500/50 bg-amber-50/10"
-                )}
+          {showAdvancedFilters && (
+            <Popover modal={true}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "bg-white border-[#1a3a5c]/10 text-[#1a3a5c] font-black uppercase text-[10px] tracking-widest gap-2 h-12 rounded-xl px-5 shadow-diff-shadow hover:bg-gray-50",
+                    hasActiveFilters && "border-amber-500/50 bg-amber-50/10"
+                  )}
+                >
+                  <ListFilter className="h-4 w-4" />
+                  Filtros
+                  {hasActiveFilters && (
+                    <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent 
+                className="w-[320px] p-6 rounded-2xl shadow-xl border-none ring-1 ring-gray-100" 
+                align="end"
+                onOpenAutoFocus={(e) => e.preventDefault()}
               >
-                <ListFilter className="h-4 w-4" />
-                Filtros
-                {hasActiveFilters && (
-                  <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" />
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent 
-              className="w-[320px] p-6 rounded-2xl shadow-xl border-none ring-1 ring-gray-100" 
-              align="end"
-              onOpenAutoFocus={(e) => e.preventDefault()}
-            >
-              <div className="space-y-5">
-                <div className="flex items-center justify-between mb-2">
-                   <h4 className="font-headline font-black text-[#1a3a5c] text-sm uppercase tracking-wider">Filtragem Avançada</h4>
-                    {hasActiveFilters && (
-                        <button onClick={onClearFilters} className="text-[10px] font-bold text-red-500 uppercase tracking-widest hover:underline">Limpar</button>
-                    )}
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between mb-2">
+                     <h4 className="font-headline font-black text-[#1a3a5c] text-sm uppercase tracking-wider">Filtragem Avançada</h4>
+                      {hasActiveFilters && (
+                          <button onClick={onClearFilters} className="text-[10px] font-bold text-red-500 uppercase tracking-widest hover:underline">Limpar</button>
+                      )}
+                  </div>
+                  
+                  <div className="space-y-4">
+                      <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Status</Label>
+                      <Select value={selectedStatus} onValueChange={onStatusChange}>
+                          <SelectTrigger className="w-full h-11 rounded-lg bg-gray-50 border-gray-100 font-medium">
+                          <SelectValue placeholder="Status" />
+                          </SelectTrigger>
+                          <SelectContent className="z-[9999]">
+                          <SelectItem value="todos">Todos Status</SelectItem>
+                          <SelectItem value="true">Ativo</SelectItem>
+                          <SelectItem value="false">Inativo</SelectItem>
+                          </SelectContent>
+                      </Select>
+                      </div>
+  
+                      <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Escola</Label>
+                      <Select value={selectedEscola} onValueChange={onEscolaChange}>
+                          <SelectTrigger className="w-full h-11 rounded-lg bg-gray-50 border-gray-100 font-medium">
+                          <SelectValue placeholder="Escola" />
+                          </SelectTrigger>
+                          <SelectContent className="z-[9999]">
+                          <SelectItem value="todas">Todas Escolas</SelectItem>
+                          {escolas.map((escola) => (
+                          <SelectItem key={escola.id} value={escola.id}>
+                              {escola.nome}
+                          </SelectItem>
+                          ))}
+                          </SelectContent>
+                      </Select>
+                      </div>
+  
+                      <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Veículo</Label>
+                      <Select value={selectedVeiculo} onValueChange={onVeiculoChange}>
+                          <SelectTrigger className="w-full h-11 rounded-lg bg-gray-50 border-gray-100 font-medium">
+                          <SelectValue placeholder="Veículo" />
+                          </SelectTrigger>
+                          <SelectContent className="z-[9999]">
+                          <SelectItem value="todos">Todos Veículos</SelectItem>
+                          {veiculos.map((veiculo) => (
+                          <SelectItem key={veiculo.id} value={veiculo.id}>
+                              {formatarPlacaExibicao(veiculo.placa)}
+                          </SelectItem>
+                          ))}
+                          </SelectContent>
+                      </Select>
+                      </div>
+  
+                      <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Período</Label>
+                      <Select value={selectedPeriodo} onValueChange={onPeriodoChange}>
+                          <SelectTrigger className="w-full h-11 rounded-lg bg-gray-50 border-gray-100 font-medium">
+                          <SelectValue placeholder="Período" />
+                          </SelectTrigger>
+                          <SelectContent className="z-[9999]">
+                          <SelectItem value="todos">Todos Períodos</SelectItem>
+                          {periodos.map((periodo) => (
+                          <SelectItem key={periodo.value} value={periodo.value}>
+                              {periodo.label}
+                          </SelectItem>
+                          ))}
+                          </SelectContent>
+                      </Select>
+                      </div>
+                  </div>
                 </div>
-                
-                <div className="space-y-4">
-                    <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Status</Label>
-                    <Select value={selectedStatus} onValueChange={onStatusChange}>
-                        <SelectTrigger className="w-full h-11 rounded-lg bg-gray-50 border-gray-100 font-medium">
-                        <SelectValue placeholder="Status" />
-                        </SelectTrigger>
-                        <SelectContent className="z-[9999]">
-                        <SelectItem value="todos">Todos Status</SelectItem>
-                        <SelectItem value="true">Ativo</SelectItem>
-                        <SelectItem value="false">Inativo</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Escola</Label>
-                    <Select value={selectedEscola} onValueChange={onEscolaChange}>
-                        <SelectTrigger className="w-full h-11 rounded-lg bg-gray-50 border-gray-100 font-medium">
-                        <SelectValue placeholder="Escola" />
-                        </SelectTrigger>
-                        <SelectContent className="z-[9999]">
-                        <SelectItem value="todas">Todas Escolas</SelectItem>
-                        {escolas.map((escola) => (
-                        <SelectItem key={escola.id} value={escola.id}>
-                            {escola.nome}
-                        </SelectItem>
-                        ))}
-                        </SelectContent>
-                    </Select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Veículo</Label>
-                    <Select value={selectedVeiculo} onValueChange={onVeiculoChange}>
-                        <SelectTrigger className="w-full h-11 rounded-lg bg-gray-50 border-gray-100 font-medium">
-                        <SelectValue placeholder="Veículo" />
-                        </SelectTrigger>
-                        <SelectContent className="z-[9999]">
-                        <SelectItem value="todos">Todos Veículos</SelectItem>
-                        {veiculos.map((veiculo) => (
-                        <SelectItem key={veiculo.id} value={veiculo.id}>
-                            {formatarPlacaExibicao(veiculo.placa)}
-                        </SelectItem>
-                        ))}
-                        </SelectContent>
-                    </Select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Período</Label>
-                    <Select value={selectedPeriodo} onValueChange={onPeriodoChange}>
-                        <SelectTrigger className="w-full h-11 rounded-lg bg-gray-50 border-gray-100 font-medium">
-                        <SelectValue placeholder="Período" />
-                        </SelectTrigger>
-                        <SelectContent className="z-[9999]">
-                        <SelectItem value="todos">Todos Períodos</SelectItem>
-                        {periodos.map((periodo) => (
-                        <SelectItem key={periodo.value} value={periodo.value}>
-                            {periodo.label}
-                        </SelectItem>
-                        ))}
-                        </SelectContent>
-                    </Select>
-                    </div>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+              </PopoverContent>
+            </Popover>
+          )}
 
           <Button
             onClick={onRegister}
@@ -248,19 +254,21 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
         <div className="md:hidden flex gap-3">
             <Drawer open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <DrawerTrigger asChild>
+              {showAdvancedFilters && (
                 <Button
-                variant="outline"
-                className={cn(
+                  variant="outline"
+                  className={cn(
                     "flex-1 bg-white border border-[#1a3a5c]/10 text-[#1a3a5c] font-black uppercase text-[10px] tracking-widest h-12 rounded-xl px-5 shadow-diff-shadow",
                      hasActiveFilters && "border-amber-500/50 bg-amber-50/5"
-                )}
+                  )}
                 >
-                <Filter className="h-4 w-4 mr-2" />
-                Filtros
-                {hasActiveFilters && (
-                    <span className="ml-1.5 flex h-1.5 w-1.5 rounded-full bg-amber-500" />
-                )}
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filtros
+                  {hasActiveFilters && (
+                      <span className="ml-1.5 flex h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  )}
                 </Button>
+              )}
             </DrawerTrigger>
             <DrawerContent
                 className="h-auto max-h-[90vh] rounded-t-[32px] flex flex-col px-0 bg-white border-none shadow-2xl pb-8"

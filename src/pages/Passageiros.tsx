@@ -1,14 +1,14 @@
-import { KPICard } from "@/components/common/KPICard";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { PassageirosList } from "@/components/features/passageiro/PassageirosList";
 import { PassageirosToolbar } from "@/components/features/passageiro/PassageirosToolbar";
 import PrePassageiros from "@/components/features/passageiro/PrePassageiros";
+import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { ListSkeleton } from "@/components/skeletons";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePassageirosViewModel } from "@/hooks/ui/usePassageirosViewModel";
-import { KPICardVariant, PassageiroTab } from "@/types/enums";
+import { PassageiroTab } from "@/types/enums";
 import { Users2 } from "lucide-react";
 
 export default function Passageiros() {
@@ -55,9 +55,9 @@ export default function Passageiros() {
   }
 
   const isMainTab = activeTab === PassageiroTab.PASSAGEIROS;
-  const sectionTitle = isMainTab ? "Passageiros" : "Solicitações Pendentes";
-  const sectionCount = isMainTab ? (countPassageiros ?? passageiros.length) : countPrePassageiros;
-  const countLabel = isMainTab ? "TOTAL" : "AGUARDANDO";
+  const sectionTitle = isMainTab ? "Passageiros" : "Solicitações";
+  const sectionCount = isMainTab ? passageiros.length : countPrePassageiros;
+  const countLabel = isMainTab ? (searchTerm || hasActiveFilters ? "ENCONTRADOS" : "PASSAGEIROS") : "SOLICITAÇÕES";
 
   return (
     <>
@@ -86,41 +86,31 @@ export default function Passageiros() {
             </div>
 
             <TabsContent value={activeTab} className="space-y-6 mt-0">
-              {isMainTab && (
-                <div>
-                  <PassageirosToolbar
-                    searchTerm={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    selectedStatus={selectedStatus}
-                    onStatusChange={setSelectedStatus}
-                    selectedEscola={selectedEscola}
-                    onEscolaChange={setSelectedEscola}
-                    selectedVeiculo={selectedVeiculo}
-                    onVeiculoChange={setSelectedVeiculo}
-                    selectedPeriodo={selectedPeriodo}
-                    onPeriodoChange={setSelectedPeriodo}
-                    escolas={escolas}
-                    veiculos={veiculos}
-                    onClearFilters={clearFilters}
-                    hasActiveFilters={hasActiveFilters}
-                    onApplyFilters={setFilters}
-                    onRegister={handleOpenNewDialog}
-                  />
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <KPICard
-                  label="Passageiros"
-                  value={String(countPassageiros ?? passageiros.length ?? 0)}
-                  variant={KPICardVariant.PRIMARY}
-                  countLabel="TOTAL"
+              <div className="space-y-6">
+                <PassageirosToolbar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  selectedStatus={selectedStatus}
+                  onStatusChange={setSelectedStatus}
+                  selectedEscola={selectedEscola}
+                  onEscolaChange={setSelectedEscola}
+                  selectedVeiculo={selectedVeiculo}
+                  onVeiculoChange={setSelectedVeiculo}
+                  selectedPeriodo={selectedPeriodo}
+                  onPeriodoChange={setSelectedPeriodo}
+                  escolas={escolas}
+                  veiculos={veiculos}
+                  onClearFilters={clearFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  onApplyFilters={setFilters}
+                  onRegister={handleOpenNewDialog}
+                  showAdvancedFilters={isMainTab}
+                  searchPlaceholder={isMainTab ? "Buscar por nome ou responsável..." : "Buscar solicitação..."}
                 />
-                <KPICard
-                  label="Novas Solicitações"
-                  value={String(countPrePassageiros || 0)}
-                  variant={KPICardVariant.OUTLINE}
-                  countLabel="AGUARDANDO"
+
+                <QuickRegistrationLink
+                  profile={profile}
+                  pendingCount={countPrePassageiros}
                 />
               </div>
 
@@ -158,7 +148,11 @@ export default function Passageiros() {
                   )}
                 </>
               ) : (
-                <PrePassageiros onFinalizeNewPrePassageiro={async () => { }} profile={profile} />
+                <PrePassageiros
+                  onFinalizeNewPrePassageiro={async () => { }}
+                  profile={profile}
+                  searchTerm={searchTerm}
+                />
               )}
             </TabsContent>
           </Tabs>

@@ -1,6 +1,6 @@
 import {
-    MobileAction,
-    MobileActionItem,
+  MobileAction,
+  MobileActionItem,
 } from "@/components/common/MobileActionItem";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
 import { QuickRegistrationLink } from "@/components/features/passageiro/QuickRegistrationLink";
@@ -8,56 +8,59 @@ import { PrePassengerListSkeleton } from "@/components/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useCreatePrePassageiro,
-    useDeletePrePassageiro,
-    usePrePassageiros,
+  useCreatePrePassageiro,
+  useDeletePrePassageiro,
+  usePrePassageiros,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { PassageiroFormModes } from "@/types/enums";
 import { PrePassageiro } from "@/types/prePassageiro";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
 import {
-    formatarTelefone,
-    formatRelativeTime
+  formatarTelefone,
+  formatFirstName,
+  formatRelativeTime,
+  formatShortName,
+  getInitials,
 } from "@/utils/formatters";
 import { convertDateBrToISO } from "@/utils/formatters/date";
 import { moneyToNumber, phoneMask } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
 import { toast } from "@/utils/notifications/toast";
 import {
-    Clock,
-    Copy,
-    Eye,
-    MoreVertical,
-    Search,
-    Trash2,
-    Users2,
+  Clock,
+  Copy,
+  Eye,
+  MoreVertical,
+  Search,
+  Trash2,
+  Users2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 export default function PrePassageiros({
   onFinalizeNewPrePassageiro,
   profile: initialProfile,
+  searchTerm: externalSearchTerm = "",
 }) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(externalSearchTerm);
   const {
     openConfirmationDialog,
     closeConfirmationDialog,
@@ -96,10 +99,10 @@ export default function PrePassageiros({
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
+      setDebouncedSearchTerm(externalSearchTerm);
     }, 400);
     return () => clearTimeout(handler);
-  }, [searchTerm]);
+  }, [externalSearchTerm]);
 
   const solicitacoesPendentesCount = summary?.contadores?.passageiros?.solicitacoes_pendentes || 0;
 
@@ -154,14 +157,6 @@ export default function PrePassageiros({
     });
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .slice(0, 1)
-      .join("")
-      .toUpperCase();
-  };
 
   const ActionsMenu = ({
     prePassageiro,
@@ -226,40 +221,9 @@ export default function PrePassageiros({
 
   return (
     <>
-      <div className="space-y-6">
-        <Button
-          onClick={handleCadastrarRapidoLink}
-          variant="outline"
-          className="w-full md:w-auto gap-2 text-uppercase"
-        >
-          GERAR PRÉ-CADASTRO FAKE
-        </Button>
-
-        <QuickRegistrationLink profile={profile} />
-
+      <div className="space-y-6 pt-2">
         <div className="space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              Solicitações Pendentes
-              {prePassageiros.length > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="bg-blue-50 text-blue-700 hover:bg-blue-100"
-                >
-                  {prePassageiros.length}
-                </Badge>
-              )}
-            </h2>
-            <div className="relative w-full md:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Buscar solicitação..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 text-sm sm:text-base bg-white border-gray-200"
-              />
-            </div>
-          </div>
+          {/* Header e Search removidos - agora gerenciados pelo Toolbar pai */}
 
           {loading ? (
             <PrePassengerListSkeleton />
@@ -268,25 +232,25 @@ export default function PrePassageiros({
               icon={Users2}
               title="Tudo limpo por aqui!"
               description={
-                searchTerm.length > 0
+                externalSearchTerm.length > 0
                   ? "Nenhuma solicitação encontrada para sua busca."
                   : "Envie seu link de cadastro para os pais e receba novas solicitações aqui."
               }
               action={
-                searchTerm.length === 0
+                externalSearchTerm.length === 0
                   ? {
-                      label: "Copiar Link",
-                      icon: Copy,
-                      onClick: () => {
-                        if (!profile?.id) return;
-                        navigator.clipboard.writeText(
-                          buildPrepassageiroLink(profile.id),
-                        );
-                        toast.success("sistema.sucesso.linkCopiado", {
-                          description: "sistema.sucesso.linkCopiadoDescricao",
-                        });
-                      },
-                    }
+                    label: "Copiar Link",
+                    icon: Copy,
+                    onClick: () => {
+                      if (!profile?.id) return;
+                      navigator.clipboard.writeText(
+                        buildPrepassageiroLink(profile.id),
+                      );
+                      toast.success("sistema.sucesso.linkCopiado", {
+                        description: "sistema.sucesso.linkCopiadoDescricao",
+                      });
+                    },
+                  }
                   : undefined
               }
             />
@@ -297,16 +261,16 @@ export default function PrePassageiros({
                 <Table>
                   <TableHeader className="bg-gray-50/50">
                     <TableRow className="hover:bg-transparent border-b border-gray-100">
-                      <TableHead className="w-[300px] py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider pl-6">
+                      <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest w-[300px]">
                         Passageiro
                       </TableHead>
-                      <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">
                         WhatsApp
                       </TableHead>
-                      <TableHead className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      <TableHead className="px-6 py-4 text-left text-[9px] font-bold text-gray-400 uppercase tracking-widest">
                         Quando
                       </TableHead>
-                      <TableHead className="text-right pr-20 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      <TableHead className="px-6 py-4 text-right text-[9px] font-bold text-gray-400 uppercase tracking-widest pr-20">
                         Ações
                       </TableHead>
                     </TableRow>
@@ -320,19 +284,17 @@ export default function PrePassageiros({
                       >
                         <TableCell className="py-4 pl-6">
                           <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-3">
-                              <div
-                                className={`h-10 w-10 rounded-full flex items-center justify-center text-gray-500 font-bold text-sm bg-blue-50`}
-                              >
+                            <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
+                              <span className="text-white font-headline font-bold text-sm leading-none">
                                 {getInitials(prePassageiro.nome)}
-                              </div>
+                              </span>
                             </div>
                             <div className="flex flex-col">
-                              <p className="font-bold text-gray-900 text-sm">
-                                {prePassageiro.nome}
+                              <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                                {formatShortName(prePassageiro.nome)}
                               </p>
-                              <p className="text-xs font-semibold text-gray-500">
-                                {prePassageiro.nome_responsavel}
+                              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                                Responsável: {formatFirstName(prePassageiro.nome_responsavel)}
                               </p>
                             </div>
                           </div>
@@ -414,51 +376,45 @@ export default function PrePassageiros({
                     },
                   ];
 
-                  return (
-                    <MobileActionItem
-                      key={prePassageiro.id}
-                      actions={actions}
-                      showHint={index === 0}
-                    >
-                      <div
-                        className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3 active:scale-[0.99] transition-transform duration-100"
-                        onClick={() => handleFinalizeClick(prePassageiro)}
+                    return (
+                      <MobileActionItem
+                        key={prePassageiro.id}
+                        actions={actions}
+                        showHint={index === 0}
+                        className="bg-transparent"
                       >
-                        {/* Linha 1: Avatar + Nome + Ações */}
-                        <div className="flex justify-between items-start mb-1 relative">
-                          <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full flex items-center justify-center bg-gray-100 text-gray-500 font-bold text-sm">
+                        <div
+                          className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
+                          onClick={() => handleFinalizeClick(prePassageiro)}
+                        >
+                          <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
+                            <span className="text-white font-headline font-bold text-sm leading-none">
                               {getInitials(prePassageiro.nome)}
-                            </div>
-                            <div className="pr-6">
-                              <p className="font-bold text-gray-900 text-sm">
-                                {prePassageiro.nome}
-                              </p>
-                              <p className="text-xs font-semibold text-gray-900">
-                                {prePassageiro.nome_responsavel}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Botão de Ação no Topo Direito (Removido pois agora tem swipe) */}
-                        </div>
-
-                        {/* Linha 2: Detalhes Secundários */}
-                        <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-                          <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
-                            <Clock className="w-3.5 h-3.5 text-gray-400" />
-                            <span>
-                              {formatRelativeTime(prePassageiro.created_at)}
                             </span>
                           </div>
 
-                          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-full">
-                            Pendente
-                          </span>
+                          <div className="flex-grow min-w-0 pr-10">
+                            <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+                              {formatShortName(prePassageiro.nome)}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
+                                {formatFirstName(prePassageiro.nome_responsavel)}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
+                            <span className="text-[8px] font-bold text-blue-600 border border-blue-200 uppercase tracking-widest bg-blue-50 px-1 py-0.5 rounded-sm">
+                              Pendente
+                            </span>
+                            <p className="text-[8px] text-gray-400 font-medium uppercase opacity-60">
+                              {formatRelativeTime(prePassageiro.created_at)}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </MobileActionItem>
-                  );
+                      </MobileActionItem>
+                    );
                 })}
               </div>
             </>

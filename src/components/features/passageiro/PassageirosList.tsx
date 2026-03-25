@@ -12,7 +12,14 @@ import {
 import { usePassageiroActions } from "@/hooks/ui/usePassageiroActions";
 import { cn } from "@/lib/utils";
 import { Passageiro } from "@/types/passageiro";
-import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
+import {
+  formatarPlacaExibicao,
+} from "@/utils/domain/veiculo/placaUtils";
+import {
+  formatFirstName,
+  formatShortName,
+  getInitials,
+} from "@/utils/formatters";
 import { memo } from "react";
 import { PassageiroActionsMenu } from "./PassageiroActionsMenu";
 
@@ -25,12 +32,6 @@ interface PassageirosListProps {
   onGenerateContract?: (passageiro: Passageiro) => void;
 }
 
-const formatShortName = (fullName?: string) => {
-  if (!fullName) return "Sem nome";
-  const names = fullName.trim().split(/\s+/);
-  if (names.length <= 2) return fullName;
-  return `${names[0]} ${names[1]}`;
-};
 
 const PassageiroMobileCard = memo(function PassageiroMobileCard({
   passageiro,
@@ -53,55 +54,50 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
     onGenerateContract,
   });
 
-  const getInitial = (name?: string) => {
-    if (!name) return "?";
-    return name.charAt(0).toUpperCase();
-  };
+  const initial = getInitials(passageiro?.nome);
 
-  const initial = getInitial(passageiro?.nome);
-  
   const shortName = formatShortName(passageiro?.nome);
-  const respName = formatShortName(passageiro?.nome_responsavel);
+  const respName = formatFirstName(passageiro?.nome_responsavel);
 
   return (
     <MobileActionItem actions={actions as any} className="bg-transparent">
-        <div
-            onClick={() => onHistorico(passageiro)}
-            className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
-        >
-            <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
-                <span className="text-white font-headline font-bold text-sm leading-none">
-                    {initial}
-                </span>
-            </div>
-
-            <div className="flex-grow min-w-0 pr-10">
-                <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
-                    {shortName}
-                </p>
-                <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
-                       Responsável: {respName}
-                    </p>
-                </div>
-            </div>
-
-            <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
-                <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
-                    {Number(passageiro?.valor_cobranca).toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                    })}
-                </p>
-                <StatusBadge
-                    status={passageiro?.ativo}
-                    className={cn(
-                        "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
-                         passageiro?.ativo ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-400"
-                    )}
-                />
-            </div>
+      <div
+        onClick={() => onHistorico(passageiro)}
+        className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
+      >
+        <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center">
+          <span className="text-white font-headline font-bold text-sm leading-none">
+            {initial}
+          </span>
         </div>
+
+        <div className="flex-grow min-w-0 pr-10">
+          <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
+            {shortName}
+          </p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
+              {respName}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
+          <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
+            {Number(passageiro?.valor_cobranca).toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}
+          </p>
+          <StatusBadge
+            status={passageiro?.ativo}
+            className={cn(
+              "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
+              passageiro?.ativo ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-400"
+            )}
+          />
+        </div>
+      </div>
     </MobileActionItem>
   );
 });
@@ -124,7 +120,7 @@ export function PassageirosList({
         />
       )}
     >
-       <div className="rounded-xl overflow-hidden bg-white shadow-diff-shadow border-none">
+      <div className="rounded-xl overflow-hidden bg-white shadow-diff-shadow border-none">
         <Table>
           <TableHeader className="bg-surface-container-low/30">
             <TableRow className="hover:bg-transparent border-b border-surface-container-low">
@@ -148,60 +144,61 @@ export function PassageirosList({
           <TableBody>
             {passageiros.map((passageiro) => {
               const shortName = formatShortName(passageiro?.nome);
-              const respName = formatShortName(passageiro?.nome_responsavel);
-              
+              const respName = formatFirstName(passageiro?.nome_responsavel);
+
               return (
-              <TableRow
-                key={passageiro.id}
-                onClick={() => props.onHistorico(passageiro)}
-                className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors cursor-pointer"
-              >
-                <TableCell className="px-6 py-4">
-                  <div className="flex flex-col">
+                <TableRow
+                  key={passageiro.id}
+                  onClick={() => props.onHistorico(passageiro)}
+                  className="hover:bg-surface-container-low/20 border-b border-surface-container-low/50 last:border-0 transition-colors cursor-pointer"
+                >
+                  <TableCell className="px-6 py-4">
+                    <div className="flex flex-col">
                       <p className="font-headline font-bold text-[#1a3a5c] text-sm">
                         {shortName}
                       </p>
                       <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
                         Responsável: {respName}
                       </p>
-                  </div>
-                </TableCell>
-                <TableCell className="px-6 py-4 text-center">
-                    <StatusBadge 
-                        status={passageiro.ativo} 
-                        className="font-bold text-[8px] h-3.5 px-1.5 rounded-sm border-none uppercase tracking-widest"
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-center">
+                    <StatusBadge
+                      status={passageiro.ativo}
+                      className="font-bold text-[8px] h-3.5 px-1.5 rounded-sm border-none uppercase tracking-widest"
                     />
-                </TableCell>
-                <TableCell className="px-6 py-4">
-                  {passageiro.veiculo ? (
-                     <div className="flex flex-col">
+                  </TableCell>
+                  <TableCell className="px-6 py-4">
+                    {passageiro.veiculo ? (
+                      <div className="flex flex-col">
                         <span className="text-sm font-bold text-[#1a3a5c]">
-                            {formatarPlacaExibicao(passageiro.veiculo.placa)}
+                          {formatarPlacaExibicao(passageiro.veiculo.placa)}
                         </span>
                         <span className="text-[10px] text-gray-400 font-medium uppercase truncate w-32">
-                            {(passageiro.veiculo as any).modelo}
+                          {(passageiro.veiculo as any).modelo}
                         </span>
-                     </div>
-                  ) : "-"}
-                </TableCell>
-                <TableCell className="px-6 py-4 text-right">
+                      </div>
+                    ) : "-"}
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-right">
                     <span className="font-headline font-bold text-[#1a3a5c] text-sm">
-                        {Number(passageiro.valor_cobranca).toLocaleString("pt-BR", {
-                            style: "currency",
-                            currency: "BRL",
-                        })}
+                      {Number(passageiro.valor_cobranca).toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      })}
                     </span>
-                </TableCell>
-                <TableCell className="px-6 py-4 text-right">
-                  <PassageiroActionsMenu 
-                    passageiro={passageiro} 
-                    {...props} 
-                    onToggleStatus={props.onToggleClick}
-                    onDelete={props.onDeleteClick}
-                  />
-                </TableCell>
-              </TableRow>
-            )})}
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-right">
+                    <PassageiroActionsMenu
+                      passageiro={passageiro}
+                      {...props}
+                      onToggleStatus={props.onToggleClick}
+                      onDelete={props.onDeleteClick}
+                    />
+                  </TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
       </div>
