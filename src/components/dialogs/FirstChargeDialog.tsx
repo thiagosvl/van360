@@ -289,7 +289,7 @@ export default function FirstChargeDialog({
                       <SelectItem
                         key={method.value}
                         value={method.value}
-                        className="py-2.5 px-3 rounded-lg cursor-pointer focus:bg-slate-50 text-slate-600 focus:text-[#1a3a5c] text-[12px] font-bold uppercase"
+                        className="py-2.5 rounded-lg cursor-pointer focus:bg-slate-50 text-slate-600 focus:text-[#1a3a5c] text-[12px] font-bold uppercase"
                       >
                         <div className="flex items-center gap-2.5">
                           <div className="w-4 h-4 flex items-center justify-center opacity-70 group-focus:opacity-100 scale-90">

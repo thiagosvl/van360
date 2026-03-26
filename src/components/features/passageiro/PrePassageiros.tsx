@@ -232,23 +232,7 @@ export default function PrePassageiros({
               ? "Nenhuma solicitação encontrada para sua busca."
               : "Envie seu link de cadastro para os pais e receba novas solicitações aqui."
           }
-          action={
-            externalSearchTerm.length === 0
-              ? {
-                label: "Link de Cadastro",
-                icon: Copy,
-                onClick: () => {
-                  if (!profile?.id) return;
-                  navigator.clipboard.writeText(
-                    buildPrepassageiroLink(profile.id),
-                  );
-                  toast.success("sistema.sucesso.linkCopiado", {
-                    description: "sistema.sucesso.linkCopiadoDescricao",
-                  });
-                },
-              }
-              : undefined
-          }
+          action={undefined}
         />
       ) : (
         <>

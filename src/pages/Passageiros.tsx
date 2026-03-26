@@ -97,6 +97,13 @@ export default function Passageiros() {
 
             <TabsContent value={activeTab} className="space-y-6 mt-0">
               <div className="space-y-6">
+                {(isMainTab ? countPassageiros === 0 : true) && (
+                  <QuickRegistrationLink
+                    profile={profile}
+                    pendingCount={countPrePassageiros}
+                  />
+                )}
+
                 <PassageirosToolbar
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
@@ -118,13 +125,6 @@ export default function Passageiros() {
                   showRegister={isMainTab}
                   searchPlaceholder={isMainTab ? "Buscar por nome ou responsável..." : "Buscar solicitação..."}
                 />
-
-                {((isMainTab && countPrePassageiros === 0) || (!isMainTab && countPrePassageiros > 0)) && (
-                  <QuickRegistrationLink
-                    profile={profile}
-                    pendingCount={countPrePassageiros}
-                  />
-                )}
               </div>
 
               <div className="flex items-center justify-between px-1">
