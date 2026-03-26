@@ -280,7 +280,6 @@ export function CobrancaFormContent({
                                                 setOpenCalendarVencimento(false);
                                             }
                                         }}
-                                        disabled={(date) => date < startOfDay(new Date())}
                                         defaultMonth={cobrancaMesAnoDate}
                                         fromMonth={startOfMonth(cobrancaMesAnoDate)}
                                         toMonth={endOfMonth(cobrancaMesAnoDate)}

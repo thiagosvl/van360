@@ -37,7 +37,7 @@ export default function CobrancaDialog({
   diaVencimento,
   onCobrancaAdded,
 }: CobrancaDialogProps) {
-  
+
   const handleClose = () => {
     onClose();
   };
@@ -48,10 +48,10 @@ export default function CobrancaDialog({
     diaVencimento,
     valor: valorCobranca,
     onSuccess: () => {
-        if (onCobrancaAdded) {
-           onCobrancaAdded();
-        }
-        onClose();
+      if (onCobrancaAdded) {
+        onCobrancaAdded();
+      }
+      onClose();
     },
   });
 
@@ -72,7 +72,7 @@ export default function CobrancaDialog({
             <PlusCircle className="w-5 h-5 text-white" />
           </div>
           <DialogTitle className="text-xl font-bold text-white">
-            Registrar Mensalidades
+            Registrar Mensalidade
           </DialogTitle>
         </div>
 
@@ -86,21 +86,21 @@ export default function CobrancaDialog({
               <p className="text-xs text-gray-500">{passageiroResponsavelNome}</p>
             </div>
             <div className="text-right">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Vencimento</span>
-                <span className="text-sm font-bold text-gray-900">
-                    {form.watch("data_vencimento") ? format(form.watch("data_vencimento"), "'Dia' dd") : "-"}
-                </span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Vencimento</span>
+              <span className="text-sm font-bold text-gray-900">
+                {form.watch("data_vencimento") ? format(form.watch("data_vencimento"), "'Dia' dd") : "-"}
+              </span>
             </div>
           </div>
 
           <Form {...form}>
             <form onSubmit={onSubmit} className="space-y-4">
-                <CobrancaFormContent
-                    form={form}
-                    mode="create"
-                    diaVencimento={diaVencimento}
-                    hideButtons={true}
-                />
+              <CobrancaFormContent
+                form={form}
+                mode="create"
+                diaVencimento={diaVencimento}
+                hideButtons={true}
+              />
             </form>
           </Form>
         </div>
@@ -115,7 +115,7 @@ export default function CobrancaDialog({
           >
             Cancelar
           </Button>
-          <Button 
+          <Button
             type="button"
             onClick={onSubmit}
             disabled={isSubmitting}
