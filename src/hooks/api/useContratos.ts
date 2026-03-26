@@ -17,7 +17,7 @@ export function useContratos(filters?: Record<string, any>, options?: UseContrat
       return data;
     },
     enabled: options?.enabled !== false, // default true
-    staleTime: 3000, 
+    staleTime: 3000,
     refetchOnMount: true,
   });
 }
@@ -69,7 +69,7 @@ export function useDeleteContrato() {
       toast.success('contrato.sucesso.removido');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || getMessage('contrato.erro.remover');
+      const message = error.response?.data?.error || getMessage('contrato.erro.excluir');
       toast.error(message);
     },
   });
@@ -117,10 +117,10 @@ export function usePreviewContrato() {
       const { data } = await apiClient.post('/contratos/preview', draftConfig || {}, {
         responseType: 'blob',
       });
-      
+
       const blob = new Blob([data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
-      
+
       return { url, blob };
     },
     onError: (error: any) => {

@@ -95,7 +95,7 @@ export default function Gastos() {
               variant={KPICardVariant.PRIMARY}
               value={formatCurrency(totalGasto)}
               icon={TrendingDown}
-              countLabel={`${gastos.length === 1 ? 'Gasto' : 'Gastos'}`}
+              countLabel="no Mês"
               className="col-span-1"
             />
           </div>

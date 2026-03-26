@@ -190,7 +190,7 @@ export default function ContractSetupDialog({
       case SetupStep.FEES: return "Penalidades e Multas";
       case SetupStep.CLAUSES: return "Cláusulas e Termos";
       case SetupStep.SIGNATURE: return "Assinatura Digital";
-      case SetupStep.PREVIEW: return "Revisão Final";
+      case SetupStep.PREVIEW: return "Revisão do Contrato";
       default: return "Configurar Contratos";
     }
   };
@@ -488,7 +488,7 @@ export default function ContractSetupDialog({
                 type="button"
                 onClick={() => setClausulas(clausulas.filter((_, i) => i !== idx))}
                 className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-95"
-                title="Remover cláusula"
+                title="Excluir cláusula"
               >
                 <Trash2 className="w-4 h-4" />
               </button>

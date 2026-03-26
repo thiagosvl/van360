@@ -3,6 +3,7 @@ import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { UnifiedEmptyState } from "@/components/empty";
 import { ListSkeleton } from "@/components/skeletons";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -113,21 +114,23 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
             {(
               Number(
                 item.dados_contrato?.valorMensal ||
-                  item.valor_parcela ||
-                  item.valor_mensal,
+                item.valor_parcela ||
+                item.valor_mensal,
               ) || 0
             ).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
           </p>
           <div className="flex items-center gap-1.5">
             {(status === ContratoStatus.PENDENTE || isPassageiro) ? (
-              <div className="flex items-center gap-1 text-[8px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">
-                <Clock className="w-2.5 h-2.5" />
-                {formatRelativeTime(item.created_at)}
-              </div>
+              item.created_at && (
+                <div className="flex items-center gap-1 text-[8px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                  <Clock className="w-2.5 h-2.5" />
+                  {formatRelativeTime(item.created_at)}
+                </div>
+              )
             ) : (
-              <StatusBadge 
-                status={status === ContratoStatus.ASSINADO} 
-                trueLabel="ASSINADO" 
+              <StatusBadge
+                status={status === ContratoStatus.ASSINADO}
+                trueLabel="ASSINADO"
                 falseLabel="PENDENTE"
                 className="font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none"
               />
@@ -231,6 +234,9 @@ export const ContratosList = memo(function ContratosList({
                 Passageiro / Responsável
               </TableHead>
               <TableHead className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                Status
+              </TableHead>
+              <TableHead className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                 Valor Mensal
               </TableHead>
               <TableHead className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] text-right">
@@ -242,6 +248,7 @@ export const ContratosList = memo(function ContratosList({
             {data.map((item) => {
               const nomePassageiro = item.passageiro?.nome || item.nome || "Não informado";
               const nomeResponsavel = item.passageiro?.nome_responsavel || item.nome_responsavel || "Não informado";
+              const isPassageiro = item.tipo === "passageiro";
 
               return (
                 <TableRow
@@ -263,14 +270,26 @@ export const ContratosList = memo(function ContratosList({
                       </div>
                     </div>
                   </TableCell>
-
+                  <TableCell className="px-8 py-5">
+                    {!isPassageiro ? (
+                      <StatusBadge
+                        status={item.status === ContratoStatus.ASSINADO}
+                        trueLabel="ASSINADO"
+                        falseLabel="PENDENTE"
+                      />
+                    ) : (
+                      <Badge variant="secondary" className="rounded-lg text-[9px] font-black uppercase tracking-widest bg-orange-100 text-orange-700 border-none px-2.5 py-1">
+                        PENDENTE
+                      </Badge>
+                    )}
+                  </TableCell>
                   <TableCell className="px-8 py-5">
                     <span className="text-sm font-black text-[#1a3a5c]">
                       {(
                         Number(
                           item.dados_contrato?.valorMensal ||
-                            item.valor_parcela ||
-                            item.valor_mensal,
+                          item.valor_parcela ||
+                          item.valor_mensal,
                         ) || 0
                       ).toLocaleString("pt-BR", {
                         style: "currency",
@@ -280,7 +299,7 @@ export const ContratosList = memo(function ContratosList({
                   </TableCell>
                   <TableCell className="px-8 py-5 text-right">
                     <div className="flex justify-end pr-2">
-                       <ContratoActionsMenu
+                      <ContratoActionsMenu
                         item={item}
                         tipo={item.tipo}
                         status={item.status}

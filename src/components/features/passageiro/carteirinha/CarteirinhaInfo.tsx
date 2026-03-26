@@ -180,7 +180,7 @@ export const CarteirinhaInfo = ({
               <div className="h-px bg-slate-50 my-1" />
               <DropdownMenuItem onClick={onDeleteClick} className="rounded-xl px-3 py-2.5 text-[11px] font-black uppercase tracking-wider text-rose-500 cursor-pointer">
                 <Trash2 className="h-3.5 w-3.5 mr-2 opacity-60" />
-                Remover cadastro
+                Excluir cadastro
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -269,7 +269,7 @@ export const CarteirinhaInfo = ({
           className="w-full h-14 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md text-[#1a3a5c] font-black uppercase tracking-[0.15em] text-[10px] group/edit transition-all"
         >
           <Pencil className="h-4 w-4 mr-2 group-hover/edit:rotate-12 transition-transform" />
-          Gerenciar Cadastro
+          Editar Cadastro
         </Button>
       </div>
     </div>

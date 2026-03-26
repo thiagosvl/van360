@@ -1,14 +1,14 @@
 import { ActionItem } from "@/types/actions";
 import { ContratoStatus } from "@/types/enums";
 import {
-    Copy,
-    ExternalLink,
-    Eye,
-    FileText,
-    RefreshCcw,
-    Send,
-    Trash2,
-    User
+  Copy,
+  ExternalLink,
+  Eye,
+  FileText,
+  RefreshCcw,
+  Send,
+  Trash2,
+  User
 } from "lucide-react";
 import { useMemo } from "react";
 
@@ -65,12 +65,12 @@ export function useContratoActions({
           });
         }
         if (onCopiarLink) {
-           list.push({
+          list.push({
             label: 'Copiar Link',
             icon: <Copy className="h-4 w-4" />,
             onClick: () => onCopiarLink(item.token_acesso),
             swipeColor: 'bg-indigo-600',
-           });
+          });
         }
         if (onReenviarNotificacao) {
           list.push({
@@ -91,7 +91,7 @@ export function useContratoActions({
             swipeColor: 'bg-green-600',
           });
         }
-        
+
         if (onSubstituir) {
           list.push({
             label: 'Substituir Contrato',
@@ -105,7 +105,7 @@ export function useContratoActions({
 
     // Common Action: Ver Passageiro
     list.push({
-      label: 'Ver Passageiro',
+      label: 'Ver Carteirinha',
       icon: <User className="h-4 w-4" />,
       onClick: () => onVerPassageiro(tipo === 'passageiro' ? item.id : item.passageiro_id),
       swipeColor: 'bg-gray-500'

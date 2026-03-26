@@ -55,11 +55,6 @@ export function EscolasList({
                 <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
                   {escola.nome}
                 </p>
-                {escola.bairro && (
-                  <p className="text-[10px] text-gray-500 font-medium truncate opacity-60 mt-0.5">
-                    {escola.bairro}
-                  </p>
-                )}
               </div>
 
               <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
@@ -109,14 +104,9 @@ export function EscolasList({
               >
                 <td className="px-8 py-5 align-middle">
                   <div className="flex flex-col">
-                    <p className="font-headline font-bold text-[#1a3a5c] text-sm">
+                    <p className="font-headline font-bold text-[#1a3a5c] text-sm tracking-tight">
                       {escola.nome}
                     </p>
-                    {escola.bairro && (
-                      <p className="text-[10px] text-gray-400 font-medium tracking-wider">
-                        {escola.bairro}
-                      </p>
-                    )}
                   </div>
                 </td>
                 <td className="px-8 py-5 align-middle">

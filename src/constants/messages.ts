@@ -360,7 +360,7 @@ export const messages = {
     erro: {
       carregar: "Erro ao carregar contratos.",
       criar: "Erro ao criar contrato.",
-      remover: "Erro ao remover contrato.",
+      excluir: "Erro ao excluir contrato.",
       substituir: "Erro ao gerar novo contrato.",
       reenviar: "Erro ao reenviar notificação.",
       cancelar: "Erro ao cancelar contrato.",

@@ -79,47 +79,46 @@ export default function ConfirmationDialog({
   };
 
   const actionButtonClass = cn(
-    "h-10 px-6 rounded-xl font-semibold shadow-sm transition-all text-white",
-    variant === "destructive" && "bg-red-600 hover:bg-red-700",
-    variant === "warning" && "bg-amber-600 hover:bg-amber-700",
-    variant === "success" && "bg-emerald-600 hover:bg-emerald-700",
-    variant === "default" && "bg-blue-600 hover:bg-blue-700"
+    "h-12 px-8 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-blue-900/10 transition-all text-white active:scale-95 disabled:opacity-50",
+    variant === "destructive" ? "bg-rose-500 hover:bg-rose-600 shadow-rose-200" : "bg-[#1a3a5c] hover:bg-[#1e446d] shadow-blue-200"
   );
 
   const ActionContent = () => (
-      <>
-        {showLoading ? (
-            <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Processando...
-            </>
-        ) : (
-            confirmText
-        )}
-      </>
+    <div className="flex items-center justify-center gap-2">
+      {showLoading ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Processando</span>
+        </>
+      ) : (
+        <span>{confirmText}</span>
+      )}
+    </div>
   );
 
   // If allowClose is true, use Dialog (Dismissible)
   if (allowClose) {
-      return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-          <DialogContent className="w-[90vw] max-w-sm rounded-2xl border-0 shadow-lg p-6 bg-white gap-6">
-            <DialogHeader className="space-y-3 text-left">
-              <DialogTitle className="text-xl font-medium text-gray-900 leading-none">
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="w-[92vw] max-w-[400px] rounded-[2rem] border-0 shadow-2xl p-0 bg-white overflow-hidden">
+          <div className="p-8 space-y-6">
+            <DialogHeader className="space-y-4 text-left">
+              <DialogTitle className="text-2xl font-black text-[#1a3a5c] tracking-tight leading-tight">
                 {title}
               </DialogTitle>
-              <DialogDescription className="text-gray-600 text-[15px] leading-relaxed">
+              <DialogDescription className="text-slate-500 text-sm font-medium leading-relaxed">
                 {description}
               </DialogDescription>
             </DialogHeader>
 
-            <DialogFooter className="flex-row justify-end gap-2 space-x-0">
-               {/* Cancel Button - Manually calling onCancel */}
-               {/* Standard Dialog Close (X) handles dismissal via onOpenChange */}
+            <DialogFooter className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
               <button
                 disabled={showLoading}
-                onClick={() => onCancel?.()}
-                className="mt-0 h-10 px-4 rounded-xl border-none bg-transparent hover:bg-gray-100 text-gray-700 font-medium transition-colors"
+                onClick={() => {
+                  onCancel?.();
+                  onOpenChange(false);
+                }}
+                className="flex-1 h-12 rounded-2xl bg-slate-50 text-slate-400 font-bold text-[11px] uppercase tracking-widest hover:bg-slate-100 transition-colors disabled:opacity-50"
               >
                 {cancelText}
               </button>
@@ -127,45 +126,48 @@ export default function ConfirmationDialog({
               <button
                 onClick={handleConfirm}
                 disabled={showLoading}
-                className={cn(actionButtonClass, "flex items-center justify-center")}
+                className={cn("flex-1", actionButtonClass)}
               >
-                 <ActionContent />
+                <ActionContent />
               </button>
             </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      );
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   // Default: AlertDialog (Blocking)
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="w-[90vw] max-w-sm rounded-2xl border-0 shadow-lg p-6 bg-white gap-6">
-        <AlertDialogHeader className="space-y-3 text-left">
-          <AlertDialogTitle className="text-xl font-medium text-gray-900 leading-none">
-            {title}
-          </AlertDialogTitle>
-          <AlertDialogDescription className="text-gray-600 text-[15px] leading-relaxed">
-            {description}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+      <AlertDialogContent className="w-[92vw] max-w-[400px] rounded-[2rem] border-0 shadow-2xl p-0 bg-white overflow-hidden">
+        <div className="p-8 space-y-6">
+          <AlertDialogHeader className="space-y-4 text-left">
+            <AlertDialogTitle className="text-2xl font-black text-[#1a3a5c] tracking-tight leading-tight">
+              {title}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-500 text-sm font-medium leading-relaxed">
+              {description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
 
-        <AlertDialogFooter className="flex-row justify-end gap-2 space-x-0">
-          <AlertDialogCancel
-            disabled={showLoading}
-            onClick={() => onCancel?.()}
-            className="mt-0 h-10 px-4 rounded-xl border-none bg-transparent hover:bg-gray-100 text-gray-700 font-medium transition-colors"
-          >
-            {cancelText}
-          </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleConfirm}
-            disabled={showLoading}
-            className={actionButtonClass}
-          >
-            <ActionContent />
-          </AlertDialogAction>
-        </AlertDialogFooter>
+          <AlertDialogFooter className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+            <AlertDialogCancel
+              disabled={showLoading}
+              onClick={() => onCancel?.()}
+              className="flex-1 mt-0 h-12 rounded-2xl bg-slate-50 border-0 text-slate-400 font-bold text-[11px] uppercase tracking-widest hover:bg-slate-100 transition-colors disabled:opacity-50"
+            >
+              {cancelText}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirm}
+              disabled={showLoading}
+              className={cn("flex-1", actionButtonClass)}
+            >
+              <ActionContent />
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </div>
       </AlertDialogContent>
     </AlertDialog>
   );
