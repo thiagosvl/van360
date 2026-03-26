@@ -51,7 +51,7 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
         <SheetContent side="right" className="w-[85%] sm:w-80 p-0 border-l border-gray-100 bg-white">
           <div className="p-6 border-b border-gray-50 bg-slate-50/50">
             <SheetTitle className="text-left">
-              <span className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-1 text-blue-600">Menu</span>
+              <span className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-1">Menu</span>
             </SheetTitle>
           </div>
           <div className="p-4 h-[calc(100vh-100px)] overflow-y-auto scrollbar-hide">
@@ -86,7 +86,7 @@ export default function AppLayout() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="relative flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent shadow-lg"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#1a3a5c] border-t-transparent shadow-lg"></div>
           <img src="/assets/logo-van360.png" alt="Carregando..." className="h-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20" />
         </div>
       </div>

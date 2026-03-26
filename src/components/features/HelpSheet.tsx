@@ -22,7 +22,7 @@ function FaqItem({ question, answer }: FaqItemProps) {
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between py-4 text-left group"
       >
-        <span className="text-sm font-semibold text-slate-700 group-hover:text-blue-600 transition-colors leading-tight pr-4">
+        <span className="text-sm font-semibold text-slate-700 group-hover:text-[#1a3a5c] transition-colors leading-tight pr-4">
           {question}
         </span>
         <ChevronDown
@@ -74,7 +74,7 @@ export function HelpSheet() {
         <div className="h-full flex flex-col pt-4 pb-6">
           <DrawerHeader className="px-6 mb-6">
             <div className="flex items-center gap-3 mb-1">
-              <div className="h-10 w-10 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
+              <div className="h-10 w-10 rounded-2xl bg-[#1a3a5c]/5 flex items-center justify-center text-[#1a3a5c]">
                 <HelpCircle className="h-6 w-6" />
               </div>
               <div>

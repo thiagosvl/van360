@@ -22,8 +22,8 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
               cn(
                 "flex items-center gap-3 rounded-xl px-4 py-1.5 text-sm font-semibold transition-colors md:py-2.5",
                 isActive
-                  ? "bg-blue-600 text-white shadow-[0_12px_35px_-25px_rgba(59,130,246,0.7)]"
-                  : "text-slate-500 hover:bg-blue-50 hover:text-blue-600"
+                  ? "bg-[#1a3a5c] text-white shadow-[0_12px_35px_-25px_rgba(26,58,92,0.7)]"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-[#1a3a5c]"
               )
             }
           >
@@ -32,7 +32,7 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
                 <span
                   className={cn(
                     "flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-base",
-                    isActive ? "bg-white/20 text-white" : "hover:text-blue-600"
+                    isActive ? "bg-white/20 text-white" : "hover:text-[#1a3a5c]"
                   )}
                 >
                   <item.icon
@@ -46,7 +46,7 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
 
                 {(item as any).badge !== undefined &&
                   (item as any).badge > 0 && (
-                    <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-600">
+                    <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-[#1a3a5c]/10 text-[10px] font-bold text-[#1a3a5c]">
                       {(item as any).badge}
                     </span>
                   )}

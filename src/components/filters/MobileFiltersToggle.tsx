@@ -20,7 +20,7 @@ export function MobileFiltersToggle({
       title={showFilters ? "Esconder Filtros" : "Mostrar Filtros"}
     >
       {showFilters ? (
-        <FilterX className="h-4 w-4 text-blue-600 border-primary" />
+        <FilterX className="h-4 w-4 text-[#1a3a5c] border-primary" />
       ) : (
         <Filter className="h-4 w-4" />
       )}

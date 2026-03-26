@@ -51,13 +51,13 @@ export function QuickRegistrationLink({
   };
 
   return (
-    <Card className="rounded-2xl shadow-sm transition-all duration-300 bg-white border-blue-100 shadow-blue-50/50 overflow-hidden">
+    <Card className="rounded-2xl shadow-sm transition-all duration-300 bg-white border-[#1a3a5c]/10 shadow-[#1a3a5c]/5 overflow-hidden">
       <CardContent className="p-5 relative z-10">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4 text-center md:text-left w-full md:w-auto relative">
             <div className="relative shrink-0">
               <div
-                className={`h-12 w-12 rounded-xl flex items-center justify-center bg-blue-50 text-blue-600 shadow-sm transition-transform duration-300 hover:rotate-6`}
+                className={`h-12 w-12 rounded-xl flex items-center justify-center bg-[#1a3a5c]/5 text-[#1a3a5c] shadow-sm transition-transform duration-300 hover:rotate-6`}
               >
                 <LinkIcon className="h-6 w-6" />
               </div>
@@ -95,7 +95,7 @@ export function QuickRegistrationLink({
               variant="outline"
               size="sm"
               onClick={handleCopyLink}
-              className={`flex-1 md:flex-none font-black border-blue-100 text-[#1a3a5c] hover:bg-blue-50 hover:text-[#1a3a5c] transition-all rounded-xl h-10 px-4 text-[10px] uppercase tracking-widest ${isCopied
+              className={`flex-1 md:flex-none font-black border-[#1a3a5c]/10 text-[#1a3a5c] hover:bg-[#1a3a5c]/5 hover:text-[#1a3a5c] transition-all rounded-xl h-10 px-4 text-[10px] uppercase tracking-widest ${isCopied
                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                 : ""
                 }`}
