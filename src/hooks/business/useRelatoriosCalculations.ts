@@ -98,8 +98,8 @@ export const useRelatoriosCalculations = ({
   const dados = useMemo(() => {
     // 1. Safe guards for optional data
     const cobrancas = cobrancasData?.all || [];
-    const cobrancasPagas = cobrancasData?.pagas || [];
-    const cobrancasAbertas = cobrancasData?.abertas || [];
+    const cobrancasPagas = cobrancasData?.recebidos || [];
+    const cobrancasAbertas = cobrancasData?.areceber || [];
     const gastos = gastosData || [];
     const passageirosList = passageirosData?.list || [];
     const escolasList = (escolasData as any)?.list || [];
