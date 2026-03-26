@@ -13,6 +13,7 @@ import PassageiroFormDialog from "@/components/dialogs/PassageiroFormDialog";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import DeleteAccountDialog from "@/components/dialogs/DeleteAccountDialog";
+import UpdateContractDialog from "@/components/dialogs/UpdateContractDialog";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -29,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AtividadeEntidadeTipo, PassageiroFormModes } from "@/types/enums";
+import { Passageiro } from "@/types/passageiro";
 
 import { ReactNode, useEffect, useState } from "react";
 import {
@@ -45,6 +47,7 @@ import {
   OpenManualPaymentDialogProps,
   OpenPassageiroFormProps,
   OpenReceiptDialogProps,
+  OpenUpdateContractDialogProps,
   OpenVeiculoFormProps,
 } from "./LayoutContext";
 import { X } from "lucide-react";
@@ -101,9 +104,9 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const { user } = useSession();
-  const { 
-    isLoading: isProfileLoading, 
-    profile 
+  const {
+    isLoading: isProfileLoading,
+    profile
   } = useProfile(user?.id);
 
   const [cobrancaEditDialogState, setCobrancaEditDialogState] = useState<{
@@ -161,7 +164,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   }>({
     open: false,
   });
-  
+
+  const [updateContractDialogState, setUpdateContractDialogState] = useState<{
+    open: boolean;
+    props?: OpenUpdateContractDialogProps;
+  }>({
+    open: false,
+  });
+
   const [alterarSenhaDialogOpen, setAlterarSenhaDialogOpen] = useState(false);
   const [editarCadastroDialogOpen, setEditarCadastroDialogOpen] = useState(false);
   const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
@@ -280,6 +290,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         openFirstChargeDialog,
         openCobrancaHistoryDialog,
         openReceiptDialog,
+        openUpdateContractDialog: (props: OpenUpdateContractDialogProps) => setUpdateContractDialogState({ open: true, props }),
         isFirstChargeDialogOpen: firstChargeDialogState.open,
         openContractSetupDialog,
         openAlterarSenhaDialog: () => setAlterarSenhaDialogOpen(true),
@@ -372,9 +383,21 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
               })),
             )
           }
-          onSuccess={(data) => {
+          onSuccess={(data, metadata) => {
+            const oldPassageiro = passageiroFormDialogState.props?.editingPassageiro;
+            const isEdit = passageiroFormDialogState.props?.mode === PassageiroFormModes.EDIT;
+
             setPassageiroFormDialogState((prev) => ({ ...prev, open: false }));
             passageiroFormDialogState.props?.onSuccess?.(data);
+
+            if (isEdit && oldPassageiro && profile?.config_contrato?.usar_contratos && metadata?.hasCriticalContractChanges) {
+              // Ensure we have a valid passenger object for the dialog
+              const passengerForDialog = (data?.id ? data : (data?.passageiro || oldPassageiro)) as Passageiro;
+              
+              setTimeout(() => {
+                setUpdateContractDialogState({ open: true, props: { passageiro: passengerForDialog } });
+              }, 300);
+            }
           }}
           editingPassageiro={
             passageiroFormDialogState.props?.editingPassageiro || null
@@ -503,13 +526,13 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       )}
 
       {cobrancaHistoryDialogState.open && cobrancaHistoryDialogState.props && (
-        <Dialog 
-          open={true} 
+        <Dialog
+          open={true}
           onOpenChange={(open) => {
             if (!open) closeCobrancaHistoryDialog();
           }}
         >
-          <DialogContent 
+          <DialogContent
             className="w-[calc(100%-2rem)] max-w-sm rounded-[2.5rem] p-0 overflow-hidden border-0 shadow-soft-2xl"
             hideCloseButton
           >
@@ -584,6 +607,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         <DeleteAccountDialog
           isOpen={deleteAccountDialogOpen}
           onClose={() => safeCloseDialog(() => setDeleteAccountDialogOpen(false))}
+        />
+      )}
+
+      {updateContractDialogState.open && updateContractDialogState.props && (
+        <UpdateContractDialog
+          isOpen={true}
+          onClose={() => setUpdateContractDialogState({ open: false })}
+          passageiro={updateContractDialogState.props.passageiro}
         />
       )}
     </LayoutContext.Provider>

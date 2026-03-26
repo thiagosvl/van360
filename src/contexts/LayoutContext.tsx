@@ -98,6 +98,10 @@ export interface OpenReceiptDialogProps {
   url?: string | null;
 }
 
+export interface OpenUpdateContractDialogProps {
+  passageiro: Passageiro;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -118,6 +122,7 @@ export interface LayoutContextType {
   openFirstChargeDialog: (props: OpenFirstChargeDialogProps) => void;
   openCobrancaHistoryDialog: (props: OpenCobrancaHistoryProps) => void;
   openReceiptDialog: (props: OpenReceiptDialogProps) => void;
+  openUpdateContractDialog: (props: OpenUpdateContractDialogProps) => void;
   isFirstChargeDialogOpen: boolean;
   
   openContractSetupDialog: (props?: OpenContractSetupDialogProps) => void;

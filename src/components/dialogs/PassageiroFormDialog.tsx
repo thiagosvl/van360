@@ -28,7 +28,7 @@ interface PassengerFormDialogProps {
   editingPassageiro: Passageiro | null;
   mode?: PassageiroFormModes;
   prePassageiro?: PrePassageiro | null;
-  onSuccess: (passageiro?: any) => void;
+  onSuccess: (passageiro?: any, formData?: any) => void;
   profile: Usuario | null | undefined;
 }
 
@@ -82,8 +82,8 @@ export default function PassengerFormDialog({
             // Se necessário, impedir fechar, mas sem dependência de estado local
           }}
         >
-          <div className="bg-blue-600 p-4 text-center relative shrink-0">
-            <div className="absolute left-4 top-4 flex gap-2">
+          <div className="bg-blue-600 px-4 py-5 sm:py-6 text-center relative shrink-0">
+            <div className="absolute left-4 top-4 sm:top-5 flex gap-2">
               <Button
                 type="button"
                 variant="ghost"
@@ -96,21 +96,25 @@ export default function PassengerFormDialog({
               </Button>
             </div>
 
-            <DialogClose className="absolute right-4 top-4 text-white/70 hover:text-white transition-colors">
+            <DialogClose className="absolute right-4 top-4 sm:top-5 text-white/70 hover:text-white transition-colors">
               <X className="h-6 w-6" />
               <span className="sr-only">Close</span>
             </DialogClose>
 
-            <div className="mx-auto bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2 backdrop-blur-sm">
-              <User className="w-5 h-5 text-white" />
+            <div className="flex flex-col items-center">
+              <div className="flex items-center justify-center gap-3">
+                <div className="bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-sm shrink-0">
+                  <User className="w-5 h-5 text-white" />
+                </div>
+                <DialogTitle className="text-xl font-bold text-white leading-none">
+                  {mode === PassageiroFormModes.EDIT
+                    ? "Editar Passageiro"
+                    : mode === PassageiroFormModes.FINALIZE
+                      ? "Confirmar Cadastro"
+                      : "Novo Passageiro"}
+                </DialogTitle>
+              </div>
             </div>
-            <DialogTitle className="text-xl font-bold text-white">
-              {mode === PassageiroFormModes.EDIT
-                ? "Editar Passageiro"
-                : mode === PassageiroFormModes.FINALIZE
-                  ? "Confirmar Cadastro"
-                  : "Novo Passageiro"}
-            </DialogTitle>
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">

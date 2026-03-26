@@ -24,7 +24,7 @@ interface UsePassageiroFormViewModelProps {
   editingPassageiro: Passageiro | null;
   mode?: PassageiroFormModes;
   prePassageiro?: PrePassageiro | null;
-  onSuccess: (passageiro?: any) => void;
+  onSuccess: (passageiro?: any, formData?: any) => void;
   profile: Usuario | null | undefined;
 }
 
@@ -169,8 +169,30 @@ export function usePassageiroFormViewModel({
     }
 
     const commonOptions = {
-      onSuccess: (data?: any) => {
-        onSuccess(data);
+      onSuccess: (responseData?: any) => {
+        // Business Logic: Detect if critical contract fields changed
+        const isEdit = mode === PassageiroFormModes.EDIT;
+        let hasCriticalContractChanges = false;
+
+        if (isEdit && editingPassageiro) {
+          const moneyToNumber = (v: any) => {
+            if (typeof v === 'number') return v;
+            if (typeof v === 'string') return Number(v.replace(/\D/g, "")) / 100;
+            return 0;
+          };
+
+          const valorForm = moneyToNumber(purePayload.valor_cobranca);
+          const vencimentoForm = Number(purePayload.dia_vencimento);
+
+          hasCriticalContractChanges =
+            Math.abs(valorForm - (editingPassageiro.valor_cobranca || 0)) > 0.01 ||
+            vencimentoForm !== editingPassageiro.dia_vencimento;
+        }
+
+        onSuccess(responseData, { 
+           formData: purePayload, 
+           hasCriticalContractChanges 
+        });
         onClose();
       },
       onError: () => {
