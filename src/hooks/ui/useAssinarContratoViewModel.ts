@@ -1,10 +1,10 @@
-import { 
-    useGetPublicContract, 
-    useSignContract 
+import {
+  useGetPublicContract,
+  useSignContract
 } from "@/hooks/api/usePublicContract";
 import { toast } from "@/utils/notifications/toast";
 import { useCallback, useRef, useState } from "react";
-import SignatureCanvas from "react-signature-canvas";
+import { SignaturePadRef } from "@/components/common/SignaturePad";
 
 interface UseAssinarContratoViewModelProps {
   token: string | undefined;
@@ -13,7 +13,7 @@ interface UseAssinarContratoViewModelProps {
 export function useAssinarContratoViewModel({ token }: UseAssinarContratoViewModelProps) {
   const [modalAberto, setModalAberto] = useState(false);
   const [numPages, setNumPages] = useState<number>(0);
-  const sigCanvas = useRef<SignatureCanvas>(null);
+  const sigCanvas = useRef<SignaturePadRef>(null);
 
   const {
     data: contrato,
@@ -57,9 +57,6 @@ export function useAssinarContratoViewModel({ token }: UseAssinarContratoViewMod
         metadados,
       });
 
-      toast.success("contrato.sucesso.assinado", {
-        description: "contrato.sucesso.assinadoDescricao",
-      });
       setModalAberto(false);
     } catch (error: any) {
       toast.error("contrato.erro.assinar");

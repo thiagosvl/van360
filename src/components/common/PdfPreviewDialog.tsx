@@ -137,9 +137,9 @@ export function PdfPreviewDialog({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent 
         className="w-[calc(100%-1.25rem)] sm:w-full max-w-4xl p-0 gap-0 bg-white h-full max-h-[95vh] sm:h-[95vh] flex flex-col overflow-hidden rounded-[2rem] sm:rounded-[2rem] border-0 shadow-2xl"
-        hideCloseButton
-      >        {/* Premium Header Re-structured */}
-        <div className="p-5 sm:p-6 flex flex-col gap-4 bg-white border-b border-slate-100/60 shrink-0 z-10">
+      >
+        {/* Premium Header Re-structured */}
+        <div className="p-5 sm:p-6 flex flex-col gap-4 bg-white border-b border-slate-100/60 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 min-w-0 flex-1">
               <div className="h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 bg-slate-50/50 text-[#1a3a5c] border border-slate-100 shadow-sm transition-all duration-500">
@@ -157,11 +157,7 @@ export function PdfPreviewDialog({
               </div>
             </div>
 
-            <DialogClose className="ml-2 text-slate-300 hover:text-slate-600 transition-colors p-2.5 hover:bg-slate-50 rounded-2xl" onClick={onClose}>
-              <X className="h-5 w-5" />
-              <span className="sr-only">Fechar</span>
-            </DialogClose>
-          </div>
+            </div>
 
           {/* Zoom Controls Line (Refined Size) */}
           <div className="flex items-center justify-center -mt-2">

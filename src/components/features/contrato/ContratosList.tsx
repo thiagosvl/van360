@@ -110,15 +110,6 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
         </div>
 
         <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
-          <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
-            {(
-              Number(
-                item.dados_contrato?.valorMensal ||
-                item.valor_parcela ||
-                item.valor_mensal,
-              ) || 0
-            ).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-          </p>
           <div className="flex items-center gap-1.5">
             {(status === ContratoStatus.PENDENTE || isPassageiro) ? (
               item.created_at && (

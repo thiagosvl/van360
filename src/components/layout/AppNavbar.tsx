@@ -67,7 +67,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
             onClick={() => setIsHelpOpen(true)}
             className="md:hidden group flex items-center gap-2 text-slate-400 hover:text-[#1a3a5c] transition-all p-1.5"
           >
-            <div className="h-9 w-9 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:bg-[#1a3a5c]/5 group-hover:text-[#1a3a5c] transition-colors border border-slate-100">
+            <div className="h-9 w-9 rounded-2xl flex items-center justify-center group-hover:bg-[#1a3a5c]/5 group-hover:text-[#1a3a5c] transition-colors">
               <HelpCircle className="h-5 w-5" />
             </div>
           </button>
@@ -105,7 +105,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="group flex items-center gap-x-2 outline-none p-1">
-                <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-bold text-sm sm:text-base group-hover:bg-[#1a3a5c] group-hover:text-white transition-all shadow-sm">
+                <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-[#1a3a5c] font-bold text-sm sm:text-base group-hover:bg-[#1a3a5c] group-hover:text-white transition-all shadow-sm">
                   <span>{userInitial}</span>
                 </div>
                 <ChevronDown className="h-4 w-4 hidden sm:block text-slate-400 group-hover:text-slate-600 transition-colors" />

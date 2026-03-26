@@ -378,8 +378,6 @@ export const messages = {
       reenviado: "Notificação reenviada com sucesso!",
       cancelado: "Contrato cancelado com sucesso!",
       baixado: "Contrato baixado com sucesso!",
-      assinado: "Contrato assinado com sucesso!",
-      assinadoDescricao: "O documento final foi gerado e enviado para o seu WhatsApp.",
     },
   },
 

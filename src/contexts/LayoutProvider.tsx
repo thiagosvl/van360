@@ -22,6 +22,7 @@ import { ActivityTimeline } from "@/components/common/ActivityTimeline";
 import { History } from "lucide-react";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -46,6 +47,7 @@ import {
   OpenReceiptDialogProps,
   OpenVeiculoFormProps,
 } from "./LayoutContext";
+import { X } from "lucide-react";
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [pageTitle, setPageTitle] = useState("Carregando...");
@@ -507,20 +509,28 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             if (!open) closeCobrancaHistoryDialog();
           }}
         >
-          <DialogContent className="w-[calc(100%-2rem)] max-w-sm rounded-2xl p-0 overflow-hidden border-0 shadow-2xl">
-            <DialogHeader className="px-5 pt-5 pb-4 border-b border-gray-100">
-              <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <History className="w-4 h-4 text-indigo-600" />
-                Histórico da Mensalidade
+          <DialogContent 
+            className="w-[calc(100%-2rem)] max-w-sm rounded-[2.5rem] p-0 overflow-hidden border-0 shadow-soft-2xl"
+            hideCloseButton
+          >
+            <DialogHeader className="px-6 pt-6 pb-4 border-b border-gray-100/50 bg-white/70 backdrop-blur-md sticky top-0 z-20 flex-row items-center justify-between space-y-0">
+              <DialogTitle className="text-lg font-black flex items-center gap-3 font-headline text-foreground/80">
+                <div className="p-2 rounded-2xl bg-primary/10 text-primary">
+                  <History className="w-5 h-5" />
+                </div>
+                Histórico
               </DialogTitle>
+              <DialogClose className="p-2 rounded-full hover:bg-gray-100 transition-colors text-foreground/30 hover:text-foreground/60">
+                <X className="w-5 h-5" />
+              </DialogClose>
             </DialogHeader>
-            <ScrollArea className="max-h-[60vh]">
-              <div className="px-5 py-4">
+            <ScrollArea className="max-h-[75vh]">
+              <div className="px-6 py-4 bg-gray-50/20">
                 {cobrancaHistoryDialogState.props && (
                   <ActivityTimeline
                     entidadeTipo={AtividadeEntidadeTipo.COBRANCA}
                     entidadeId={cobrancaHistoryDialogState.props.cobrancaId}
-                    limit={10}
+                    limit={15}
                   />
                 )}
               </div>

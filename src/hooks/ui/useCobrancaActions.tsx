@@ -1,33 +1,33 @@
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useDeleteCobranca,
-    useDesfazerPagamento,
-    useEnviarNotificacaoCobranca,
-    useToggleNotificacoesCobranca
+  useDeleteCobranca,
+  useDesfazerPagamento,
+  useEnviarNotificacaoCobranca,
+  useToggleNotificacoesCobranca
 } from "@/hooks";
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
 import {
-    canSendNotification,
-    canViewReceipt,
-    disableEditarCobranca,
-    disableExcluirCobranca,
-    disableRegistrarPagamento,
-    seForPago
+  canSendNotification,
+  canViewReceipt,
+  disableEditarCobranca,
+  disableExcluirCobranca,
+  disableRegistrarPagamento,
+  seForPago
 } from "@/utils/domain/cobranca/disableActions";
 import {
-    Bell,
-    BellOff,
-    CheckCircle2,
-    DollarSign,
-    FilePen,
-    History,
-    QrCode,
-    Receipt,
-    RotateCcw,
-    Send,
-    Trash2,
-    User
+  Bell,
+  BellOff,
+  CheckCircle2,
+  DollarSign,
+  FilePen,
+  History,
+  QrCode,
+  Receipt,
+  RotateCcw,
+  Send,
+  Trash2,
+  User
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
@@ -191,7 +191,7 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
     onRegistrarPagamento,
     onPagarPix,
   } = props;
-  
+
   const {
     handleToggleLembretes,
     handleEnviarNotificacao,
@@ -224,59 +224,14 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         label: "Desfazer Pagamento",
         icon: <RotateCcw className="h-4 w-4" />,
         onClick: () => {
-           if (props.onDesfazerPagamento) {
-               props.onDesfazerPagamento(cobranca);
-           } else {
-               handleDesfazerPagamento();
-           }
+          if (props.onDesfazerPagamento) {
+            props.onDesfazerPagamento(cobranca);
+          } else {
+            handleDesfazerPagamento();
+          }
         },
         swipeColor: "bg-amber-500",
         isLoading: isDesfazendoPagamento,
-        disabled: isActionLoading
-      });
-    }
-
-    if (onVerCarteirinha) {
-      actions.push({
-        label: "Ver Carteirinha",
-        icon: <User className="h-4 w-4" />,
-        onClick: onVerCarteirinha,
-        swipeColor: "bg-indigo-600",
-        hasSeparatorAfter: true,
-      });
-    }
-
-    if (!disableRegistrarPagamento(cobranca) && onRegistrarPagamento) {
-      actions.push({
-        label: "Registrar Pagamento",
-        icon: <CheckCircle2 className="h-4 w-4" />,
-        onClick: () => {
-          document.body.click(); // Close menus
-          setTimeout(() => onRegistrarPagamento(), 10);
-        },
-        swipeColor: "bg-emerald-500",
-        disabled: isActionLoading
-      });
-    }
-
-
-
-    actions.push({
-      label: "Histórico de Alterações",
-      icon: <History className="h-4 w-4" />,
-      onClick: handleShowHistory,
-      swipeColor: "bg-slate-600",
-      hasSeparatorAfter: true,
-    });
-
-    const canSend = canSendNotification(cobranca);
-    if (canSend) {
-      actions.push({
-        label: "Cobrar via WhatsApp",
-        icon: <Send className="h-4 w-4" />,
-        onClick: handleEnviarNotificacao,
-        swipeColor: "bg-emerald-500",
-        isLoading: isSendingNotification,
         disabled: isActionLoading
       });
     }
@@ -294,8 +249,6 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
       });
     }
 
-
-
     if (!disableExcluirCobranca(cobranca)) {
       actions.push({
         label: "Excluir",
@@ -303,8 +256,49 @@ export function useCobrancaActions(props: UseCobrancaActionsProps): ActionItem[]
         onClick: props.onExcluirCobranca || handleDeleteCobranca,
         isDestructive: true,
         swipeColor: "bg-red-600",
-        className: "text-red-600",
+        className: "text-red-600 font-bold",
         isLoading: isDeleting,
+        disabled: isActionLoading
+      });
+    }
+
+    if (onVerCarteirinha) {
+      actions.push({
+        label: "Ver Carteirinha",
+        icon: <User className="h-4 w-4" />,
+        onClick: onVerCarteirinha,
+        swipeColor: "bg-indigo-600",
+      });
+    }
+
+    if (!disableRegistrarPagamento(cobranca) && onRegistrarPagamento) {
+      actions.push({
+        label: "Registrar Pagamento",
+        icon: <CheckCircle2 className="h-4 w-4" />,
+        onClick: () => {
+          document.body.click(); 
+          setTimeout(() => onRegistrarPagamento(), 10);
+        },
+        swipeColor: "bg-emerald-500",
+        disabled: isActionLoading
+      });
+    }
+
+    actions.push({
+      label: "Histórico de Alterações",
+      icon: <History className="h-4 w-4" />,
+      onClick: handleShowHistory,
+      swipeColor: "bg-slate-600",
+    });
+
+    const canSend = canSendNotification(cobranca);
+    if (canSend) {
+      actions.push({
+        label: "Cobrar via WhatsApp",
+        icon: <Send className="h-4 w-4" />,
+        onClick: handleEnviarNotificacao,
+        swipeColor: "bg-emerald-500",
+        isLoading: isSendingNotification,
         disabled: isActionLoading
       });
     }

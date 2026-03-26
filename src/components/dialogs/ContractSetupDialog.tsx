@@ -31,7 +31,7 @@ import {
   X
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import SignatureCanvas from "react-signature-canvas";
+import { SignaturePad, SignaturePadRef } from "@/components/common/SignaturePad";
 
 interface ContractSetupDialogProps {
   isOpen: boolean;
@@ -70,7 +70,7 @@ export default function ContractSetupDialog({
   }>({ valor: 15, tipo: "percentual" });
   const [clausulas, setClausulas] = useState<string[]>([]);
   const [signatureTemp, setSignatureTemp] = useState<string | null>(null);
-  const sigPad = useRef<SignatureCanvas>(null);
+  const sigPad = useRef<SignaturePadRef>(null);
   const [isPreviewPdfOpen, setIsPreviewPdfOpen] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
@@ -528,7 +528,7 @@ export default function ContractSetupDialog({
   );
 
   const renderSignature = () => (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="text-center space-y-2 mb-2">
         <h3 className="font-black text-[#1a3a5c] text-lg uppercase tracking-tight">Assinatura Digital</h3>
         <p className="text-[11px] text-slate-500 italic px-6 font-medium leading-relaxed">
@@ -536,49 +536,17 @@ export default function ContractSetupDialog({
         </p>
       </div>
 
-      <div className="relative group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-slate-200 to-slate-100 rounded-[2.2rem] blur opacity-40 group-hover:opacity-60 transition-opacity" />
-        <div className="relative border-4 border-white rounded-[2.1rem] bg-slate-50/50 overflow-hidden shadow-inner touch-none">
-          <SignatureCanvas
-            ref={(ref) => {
-              // @ts-ignore
-              sigPad.current = ref;
-              if (ref && signatureTemp && ref.isEmpty()) {
-                ref.fromDataURL(signatureTemp);
-              }
-            }}
-            penColor="#1a3a5c"
-            minWidth={1.5}
-            maxWidth={3.5}
-            canvasProps={{
-              className: "w-full h-52 cursor-crosshair",
-            }}
-            onEnd={() => {
-              if (sigPad.current && !sigPad.current.isEmpty()) {
-                setSignatureTemp(sigPad.current.toDataURL("image/png"));
-              }
-            }}
-          />
-          <div className="absolute top-4 right-4 pointer-events-none">
-            <div className="bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-slate-100 shadow-sm">
-              <PenTool className="w-3 h-3 text-[#1a3a5c] opacity-60" />
-              <span className="text-[9px] font-black text-[#1a3a5c] uppercase tracking-wider">Faça sua assinatura</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <SignaturePad
+        ref={sigPad}
+        initialValue={signatureTemp}
+        onChange={setSignatureTemp}
+      />
 
-      <div className="flex flex-col items-center gap-4 pt-2">
-        <button
-          type="button"
-          onClick={() => {
-            sigPad.current?.clear();
-            setSignatureTemp(null);
-          }}
-          className="text-[9px] font-black text-slate-300 hover:text-red-400 flex items-center gap-1.5 uppercase tracking-widest transition-all active:scale-95"
-        >
-          <Trash2 className="w-3.5 h-3.5" /> Limpar e refazer
-        </button>
+      <div className="bg-amber-50 rounded-3xl p-4 border border-amber-100 flex gap-3 mx-2">
+        <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
+        <p className="text-[10px] text-amber-700 leading-relaxed font-medium">
+          <strong>Atenção:</strong> Esta assinatura tem validade jurídica. Certifique-se de que ela esteja legível e represente sua assinatura oficial.
+        </p>
       </div>
     </div>
   );
@@ -663,7 +631,7 @@ export default function ContractSetupDialog({
     >
       <DialogContent
         className="w-[calc(100%-1.25rem)] sm:w-full max-w-md p-0 overflow-hidden bg-white rounded-[2rem] border border-slate-200/50 shadow-diff-shadow flex flex-col max-h-[92vh]"
-        hideCloseButton
+        hideCloseButton={!podeFechar}
         onPointerDownOutside={(e) => !podeFechar && e.preventDefault()}
         onEscapeKeyDown={(e) => !podeFechar && e.preventDefault()}
       >
@@ -697,14 +665,6 @@ export default function ContractSetupDialog({
               </div>
             </div>
           </div>
-          {podeFechar && (
-            <DialogClose
-              className="ml-2 text-slate-300 hover:text-slate-600 transition-colors p-2 hover:bg-slate-50 rounded-xl"
-              onClick={onClose}
-            >
-              <X className="h-5 w-5" />
-            </DialogClose>
-          )}
         </div>
 
         <div ref={scrollContainerRef} className="p-6 pt-2 flex-1 overflow-y-auto min-h-[300px]">

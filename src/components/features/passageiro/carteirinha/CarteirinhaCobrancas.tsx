@@ -129,7 +129,7 @@ export const CarteirinhaCobrancas = ({
 
               const actions = useCobrancaActions({
                 cobranca,
-                onVerCobranca: () => {},
+                onVerCobranca: () => { },
                 onVerCarteirinha: undefined,
                 onEditarCobranca: () => onEditCobranca(cobranca),
                 onRegistrarPagamento: () => onRegistrarPagamento(cobranca),
@@ -138,7 +138,11 @@ export const CarteirinhaCobrancas = ({
                 onVerRecibo: cobranca.recibo_url ? () => setReceiptUrl(cobranca.recibo_url || null) : undefined,
               });
 
-              const renderHeader = () => <CobrancaSummary cobranca={cobranca} />;
+              const renderHeader = () => (
+                <CobrancaSummary
+                  cobranca={{ ...cobranca, passageiro: cobranca.passageiro || passageiro }}
+                />
+              );
 
               return (
                 <motion.div
@@ -147,7 +151,7 @@ export const CarteirinhaCobrancas = ({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.03 }}
                 >
-                  <MobileActionItem 
+                  <MobileActionItem
                     actions={actions}
                     renderHeader={renderHeader}
                   >
@@ -155,13 +159,13 @@ export const CarteirinhaCobrancas = ({
                       {/* Status Circle Icon */}
                       <div className={cn(
                         "h-14 w-14 rounded-[1.4rem] flex items-center justify-center shrink-0 transition-transform shadow-sm relative",
-                        isPago ? "bg-emerald-50 text-emerald-500 shadow-emerald-100/30" : 
-                        atrasado ? "bg-rose-50 text-rose-500 shadow-rose-100/30" : 
-                        "bg-amber-50 text-amber-500 shadow-amber-100/30"
+                        isPago ? "bg-emerald-50 text-emerald-500 shadow-emerald-100/30" :
+                          atrasado ? "bg-rose-50 text-rose-500 shadow-rose-100/30" :
+                            "bg-amber-50 text-amber-500 shadow-amber-100/30"
                       )}>
-                        {isPago ? <CheckCircle2 className="h-7 w-7" /> : 
-                         atrasado ? <AlertCircle className="h-7 w-7" /> : 
-                         <Clock className="h-7 w-7" />}
+                        {isPago ? <CheckCircle2 className="h-7 w-7" /> :
+                          atrasado ? <AlertCircle className="h-7 w-7" /> :
+                            <Clock className="h-7 w-7" />}
                       </div>
 
                       {/* Content Detail */}
@@ -177,12 +181,12 @@ export const CarteirinhaCobrancas = ({
                             })}
                           </span>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1.5 text-slate-400">
+                          <div className="flex items-center gap-1.5 text-slate-600">
                             <Calendar className="h-3 w-3" />
                             <span className="text-[10px] font-bold">
-                              Venc: {formatDateToBR(cobranca.data_vencimento)}
+                              Venc.: {formatDateToBR(cobranca.data_vencimento)}
                             </span>
                           </div>
                           <div className="w-1 h-1 rounded-full bg-slate-100" />

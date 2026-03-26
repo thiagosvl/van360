@@ -57,7 +57,7 @@ const Home = () => {
             </p>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-70">
               {financeiro.countAtrasos > 0
-                ? `${financeiro.countAtrasos} passageiros em atraso`
+                ? `${financeiro.countAtrasos} mensalidades em atraso`
                 : "Tudo em dia por aqui!"}
             </p>
           </div>
@@ -99,7 +99,7 @@ const Home = () => {
             <section>
               <DashboardStatusCard
                 type="pending"
-                title="Passageiros em Atraso"
+                title="Mensalidades em Atraso"
                 description={`Você tem ${formatCurrency(
                   financeiro.totalEmAtraso,
                 )} em atraso de ${financeiro.countAtrasos} passageiro${financeiro.countAtrasos != 1 ? "s" : ""
@@ -154,11 +154,13 @@ const Home = () => {
                 onClick={handleOpenPassageiroDialog}
                 icon={Plus}
                 label="Cadastrar Passageiro"
+                variant="blue"
               />
               <ShortcutCard
                 onClick={handleOpenGastoDialog}
                 icon={Plus}
                 label="Registrar Gasto"
+                variant="rose"
               />
               <ShortcutCard
                 onClick={handleCopyLink}
@@ -166,36 +168,43 @@ const Home = () => {
                 activeIcon={CopyCheck}
                 label={isCopied ? "Copiado!" : "Link de Cadastro"}
                 isActive={isCopied}
+                variant="violet"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.PASSENGERS}
                 icon={Users}
                 label="Passageiros"
+                variant="indigo"
               />
               <ShortcutCard
                 to={`${ROUTES.PRIVATE.MOTORISTA.PASSENGERS}?tab=${PassageiroTab.SOLICITACOES}`}
                 icon={UserCheck}
                 label="Solicitações"
+                variant="emerald"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.EXPENSES}
                 icon={TrendingDown}
                 label="Gastos"
+                variant="orange"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.REPORTS}
                 icon={FileText}
                 label="Relatórios"
+                variant="amber"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.BILLING}
                 icon={CreditCard}
                 label="Mensalidades"
+                variant="emerald"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.CONTRACTS}
                 icon={FileText}
                 label="Contratos"
+                variant="sky"
               />
             </div>
           </section>
