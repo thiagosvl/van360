@@ -9,6 +9,7 @@ lerna-debug.log*
 
 .history
 
+.claude
 .scannerwork
 node_modules
 dist

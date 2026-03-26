@@ -2,20 +2,28 @@ import { ROUTES } from "@/constants/routes";
 import { RegisterFormData, registerSchema } from "@/schemas/registerSchema";
 import { usuarioApi } from "@/services";
 import { sessionManager } from "@/services/sessionManager";
+import { isNativeApp } from "@/utils/detectPlatform";
 import { toast } from "@/utils/notifications/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
+export interface PostRegisterData {
+  cpf: string;
+  accessToken: string;
+  refreshToken: string;
+  user: any;
+}
+
 export function useRegisterController() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [postRegisterData, setPostRegisterData] = useState<PostRegisterData | null>(null);
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       nome: "",
-
       cpfcnpj: "",
       email: "",
       telefone: "",
@@ -27,7 +35,6 @@ export function useRegisterController() {
     form.reset({
       ...form.getValues(),
       nome: "Thiago Barros",
-
       cpfcnpj: "395.423.918-38",
       email: "thiago-svl@hotmail.com",
       telefone: "(11) 95118-6951",
@@ -41,21 +48,33 @@ export function useRegisterController() {
       const result = await usuarioApi.registrar(data);
       if (result?.error) throw new Error(result.error);
 
-      const { error } = await sessionManager.setSession(
-        result.session.access_token,
-        result.session.refresh_token,
-        result.session.user || result.user
-      );
+      // App nativo: login automático + redirect (fluxo existente)
+      if (isNativeApp()) {
+        const { error } = await sessionManager.setSession(
+          result.session.access_token,
+          result.session.refresh_token,
+          result.session.user || result.user
+        );
 
-      if (error) {
-        toast.error("auth.erro.login", {
-          description: "Cadastro realizado, mas não foi possível fazer login automático.",
-        });
-        navigate(ROUTES.PUBLIC.LOGIN);
-      } else {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
+        if (error) {
+          toast.error("auth.erro.login", {
+            description: "Cadastro realizado, mas não foi possível fazer login automático.",
+          });
+          navigate(ROUTES.PUBLIC.LOGIN);
+        } else {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
+        }
+        return;
       }
+
+      // Web: mostrar tela pós-cadastro (NÃO faz login automático)
+      setPostRegisterData({
+        cpf: data.cpfcnpj,
+        accessToken: result.session.access_token,
+        refreshToken: result.session.refresh_token,
+        user: result.session.user || result.user,
+      });
     } catch (err: any) {
       const respData = err.response?.data;
       if (respData?.field) {
@@ -78,10 +97,32 @@ export function useRegisterController() {
     return true;
   };
 
+  const handleContinueInBrowser = async () => {
+    if (!postRegisterData) return;
+
+    const { error } = await sessionManager.setSession(
+      postRegisterData.accessToken,
+      postRegisterData.refreshToken,
+      postRegisterData.user
+    );
+
+    if (error) {
+      toast.error("auth.erro.login", {
+        description: "Não foi possível fazer login. Tente novamente.",
+      });
+      navigate(ROUTES.PUBLIC.LOGIN);
+    } else {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
+    }
+  };
+
   return {
     form,
     loading,
     handleNextStep,
     handleFillMagic,
+    postRegisterData,
+    handleContinueInBrowser,
   };
 }

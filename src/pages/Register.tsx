@@ -1,3 +1,4 @@
+import { PostRegisterScreen } from "@/components/features/register/PostRegisterScreen";
 import { RegistrationFormStep } from "@/components/features/register/steps/RegistrationFormStep";
 import { Button } from "@/components/ui/button";
 import { useRegisterController } from "@/hooks/register/useRegisterController";
@@ -15,10 +16,21 @@ export default function Register() {
     loading,
     handleNextStep,
     handleFillMagic,
+    postRegisterData,
+    handleContinueInBrowser,
   } = useRegisterController();
 
-  const finalStep = 1;
   const WandIcon = Wand2;
+
+  // Tela pós-cadastro condicional (somente web)
+  if (postRegisterData) {
+    return (
+      <PostRegisterScreen
+        data={postRegisterData}
+        onContinueInBrowser={handleContinueInBrowser}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#60a5fa] to-[#dbeafe] py-8 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
@@ -26,15 +38,15 @@ export default function Register() {
 
         {/* Main Card */}
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-          
+
           {/* Progress Bar */}
           <div className="relative h-1.5 bg-gray-100 w-full">
-            <div 
+            <div
               className="absolute top-0 left-0 h-full bg-blue-600 transition-all duration-500 ease-out rounded-r-full"
               style={{ width: `100%` }}
             />
           </div>
-        
+
         {/* Header */}
         <div className="text-center space-y-2 p-6 pb-0 relative">
           <div className="absolute right-0 sm:right-6 top-10 z-20">
@@ -68,7 +80,7 @@ export default function Register() {
             />
           </div>
         </div>
-        
+
         {/* Footer */}
         <div className="text-center pt-4">
           <p className="text-sm text-slate-600 font-medium">

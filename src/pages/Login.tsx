@@ -34,6 +34,12 @@ import { sessionManager } from "@/services/sessionManager";
 import { useSEO } from "@/hooks/useSEO";
 import { UserType } from "@/types/enums";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
+import {
+  detectPlatform,
+  isNativeApp,
+  PLAY_STORE_URL,
+  QR_CODE_PLACEHOLDER,
+} from "@/utils/detectPlatform";
 import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
 
@@ -60,6 +66,59 @@ const CustomInput = forwardRef<HTMLInputElement, any>(
   }
 );
 CustomInput.displayName = "CustomInput";
+
+function LoginPlatformSuggestion() {
+  const platform = detectPlatform();
+
+  if (platform === "android-web") {
+    return (
+      <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+        <p className="text-xs text-slate-500 mb-2">
+          Você também pode acessar pelo app!
+        </p>
+        <a
+          href={PLAY_STORE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-500 hover:text-blue-600 transition-colors"
+        >
+          Baixar na Play Store
+        </a>
+      </div>
+    );
+  }
+
+  if (platform === "desktop") {
+    return (
+      <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+        <p className="text-xs text-slate-500 mb-3">
+          Para a melhor experiência, baixe o app:
+        </p>
+        <img
+          src={QR_CODE_PLACEHOLDER}
+          alt="QR Code para baixar Van360 na Play Store"
+          className="w-[120px] h-[120px] mx-auto rounded-lg shadow-sm mb-2"
+          loading="lazy"
+        />
+        <p className="text-[10px] text-slate-400">
+          Disponível para Android. App iOS em breve.
+        </p>
+      </div>
+    );
+  }
+
+  if (platform === "ios-web") {
+    return (
+      <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+        <p className="text-xs text-slate-400">
+          App iOS em desenvolvimento. Use o navegador por enquanto.
+        </p>
+      </div>
+    );
+  }
+
+  return null;
+}
 
 export default function Login() {
   // Permitir indexação da página de login
@@ -408,6 +467,9 @@ export default function Login() {
                       </button>
                     </p>
                   </div>
+
+                  {/* Sugestão de app por dispositivo (somente web) */}
+                  {!isNativeApp() && <LoginPlatformSuggestion />}
                 </form>
               </Form>
             </CardContent>
