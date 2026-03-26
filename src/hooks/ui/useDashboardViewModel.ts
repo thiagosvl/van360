@@ -3,6 +3,7 @@ import { useLayout } from "@/contexts/LayoutContext";
 import { useProfile, useSession } from "@/hooks";
 import { PassageiroFormModes } from "@/types/enums";
 import { buildPrepassageiroLink } from "@/utils/domain/motorista/motoristaUtils";
+import { formatFirstName } from "@/utils/formatters";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -74,12 +75,12 @@ export function useDashboardViewModel() {
 
   // Sync page title
   useEffect(() => {
-    if (profile?.apelido) {
-      setPageTitle(`Olá, ${profile.apelido}`);
+    if (profile?.nome) {
+      setPageTitle(`Olá, ${formatFirstName(profile.nome)}`);
     } else {
       setPageTitle("home.info.saudacaoPadrao");
     }
-  }, [profile?.apelido, setPageTitle]);
+  }, [profile?.nome, setPageTitle]);
 
   // Handlers
   const handlePullToRefresh = async () => {

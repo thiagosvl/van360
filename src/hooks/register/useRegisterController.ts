@@ -15,7 +15,7 @@ export function useRegisterController() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       nome: "",
-      apelido: "",
+
       cpfcnpj: "",
       email: "",
       telefone: "",
@@ -27,7 +27,7 @@ export function useRegisterController() {
     form.reset({
       ...form.getValues(),
       nome: "Thiago Barros",
-      apelido: "Tio Thiago",
+
       cpfcnpj: "395.423.918-38",
       email: "thiago-svl@hotmail.com",
       telefone: "(11) 95118-6951",
@@ -70,7 +70,7 @@ export function useRegisterController() {
   };
 
   const handleNextStep = async () => {
-    const fields: (keyof RegisterFormData)[] = ["nome", "apelido", "cpfcnpj", "email", "telefone", "senha"];
+    const fields: (keyof RegisterFormData)[] = ["nome", "cpfcnpj", "email", "telefone", "senha"];
     const ok = await form.trigger(fields as any);
     if (!ok) return false;
 

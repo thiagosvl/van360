@@ -11,8 +11,9 @@ import { cepSchema, cpfSchema, dateSchema, phoneSchema } from "@/schemas/common"
 import { apiClient } from "@/services/api/client";
 import { prePassageiroApi } from "@/services/api/pre-passageiro.api";
 import {
-    convertDateBrToISO,
-    parseCurrencyToNumber
+  convertDateBrToISO,
+  formatFirstName,
+  parseCurrencyToNumber
 } from "@/utils/formatters";
 import { moneyToNumber } from "@/utils/masks";
 import { mockGenerator } from "@/utils/mocks/generator";
@@ -133,7 +134,7 @@ export function usePassageiroExternalForm() {
         return;
       }
 
-      setMotoristaApelido((data as any).apelido);
+      setMotoristaApelido((data as any).apelido || formatFirstName((data as any).nome));
 
       setLoading(false);
     };
@@ -178,12 +179,12 @@ export function usePassageiroExternalForm() {
 
       // Conversão de Data (DD/MM/YYYY -> YYYY-MM-DD)
       if (payload.data_nascimento) {
-          payload.data_nascimento = convertDateBrToISO(payload.data_nascimento);
+        payload.data_nascimento = convertDateBrToISO(payload.data_nascimento);
       }
       if (payload.data_inicio_transporte) {
-          payload.data_inicio_transporte = convertDateBrToISO(payload.data_inicio_transporte);
+        payload.data_inicio_transporte = convertDateBrToISO(payload.data_inicio_transporte);
       }
-      
+
       await prePassageiroApi.createPrePassageiro({
         ...payload,
         escola_id: payload.escola_id === "none" ? null : payload.escola_id,

@@ -24,7 +24,7 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {/* Linha 1: Nome e Apelido */}
+        {/* Linha 1: Nome */}
         <FormField
           control={form.control}
           name="nome"
@@ -36,26 +36,6 @@ export const CadastroForm = ({ form }: CadastroFormProps) => {
               <FormControl>
                 <Input
                   placeholder="Digite seu nome completo"
-                  {...field}
-                  className="h-12 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="apelido"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-gray-700 font-medium">
-                Como quer ser chamado? <span className="text-red-600">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Ex: Tio João"
                   {...field}
                   className="h-12 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all"
                 />

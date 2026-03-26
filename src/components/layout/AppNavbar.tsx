@@ -21,6 +21,7 @@ import {
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { pagesItems } from "@/utils/domain/pages/pagesUtils";
+import { formatFirstName } from "@/utils/formatters";
 
 export function AppNavbar({ role }: { role: "motorista" }) {
   const {
@@ -114,7 +115,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
             <DropdownMenuContent className="w-64 mt-2 rounded-[22px] p-2 shadow-2xl border-gray-100" align="end">
               <div className="px-3 py-3 border-b border-gray-50 mb-1">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Bem-vindo,</p>
-                <p className="text-sm font-black text-slate-900 truncate">{profile?.apelido}</p>
+                <p className="text-sm font-black text-slate-900 truncate">{formatFirstName(profile?.nome)}</p>
               </div>
               <DropdownMenuItem onClick={openEditarCadastroDialog} className="rounded-xl px-3 py-2.5">
                 <UserPen className="mr-3 h-4 w-4 text-slate-400" />

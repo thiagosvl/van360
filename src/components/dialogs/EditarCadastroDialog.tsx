@@ -42,7 +42,7 @@ interface EditarCadastroDialogProps {
 
 const basicSchema = z.object({
   nome: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
-  apelido: z.string().min(2, "Deve ter pelo menos 2 caracteres"),
+  apelido: z.string().optional(),
   cpfcnpj: z.string(), // Apenas leitura/exibição
   telefone: phoneSchema,
   email: emailSchema,
@@ -198,7 +198,7 @@ export default function EditarCadastroDialog({
                         name="apelido"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-gray-700 font-medium ml-1">Apelido <span className="text-red-500">*</span></FormLabel>
+                            <FormLabel className="text-gray-700 font-medium ml-1">Apelido</FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
