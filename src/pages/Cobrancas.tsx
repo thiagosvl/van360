@@ -31,7 +31,6 @@ export default function Cobrancas() {
     isInitialLoading,
     isActionLoading,
     pullToRefreshReload,
-    navigateToDetails,
     navigateToPassageiro,
     handleEditCobrancaClick,
     handleDeleteCobrancaClick,

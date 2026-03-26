@@ -11,13 +11,11 @@ import {
   Copy,
   CopyCheck,
   CreditCard,
-  DollarSign,
   FileText,
   Plus,
   TrendingDown,
   UserCheck,
   Users,
-  Wallet,
 } from "lucide-react";
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 import { KPICardVariant, PassageiroTab } from "@/types/enums";
@@ -123,17 +121,15 @@ const Home = () => {
             {!onboarding.showOnboarding && (
               <>
                 <KPICard
-                  label="A receber"
+                  label="TOTAL PENDENTE"
                   value={formatCurrency(financeiro.aReceber)}
-                  icon={Wallet}
-                  variant={KPICardVariant.OUTLINE}
+                  variant={KPICardVariant.PRIMARY}
                   loading={isLoading}
                 />
                 <KPICard
-                  label="Recebido"
+                  label="TOTAL RECEBIDO"
                   value={formatCurrency(financeiro.recebido)}
-                  icon={DollarSign}
-                  variant={KPICardVariant.PRIMARY}
+                  variant={KPICardVariant.OUTLINE}
                   loading={isLoading}
                 />
               </>

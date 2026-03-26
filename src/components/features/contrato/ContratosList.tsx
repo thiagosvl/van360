@@ -3,7 +3,7 @@ import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { UnifiedEmptyState } from "@/components/empty";
 import { ListSkeleton } from "@/components/skeletons";
-import { Badge } from "@/components/ui/badge";
+
 import {
   Table,
   TableBody,
@@ -231,10 +231,7 @@ export const ContratosList = memo(function ContratosList({
           <TableHeader className="bg-slate-50/50">
             <TableRow className="hover:bg-transparent border-b border-slate-100">
               <TableHead className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-                Passageiro / Responsável
-              </TableHead>
-              <TableHead className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-                Status
+                Passageiro
               </TableHead>
               <TableHead className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                 Valor Mensal
@@ -248,8 +245,6 @@ export const ContratosList = memo(function ContratosList({
             {data.map((item) => {
               const nomePassageiro = item.passageiro?.nome || item.nome || "Não informado";
               const nomeResponsavel = item.passageiro?.nome_responsavel || item.nome_responsavel || "Não informado";
-              const isPassageiro = item.tipo === "passageiro";
-
               return (
                 <TableRow
                   key={item.id}
@@ -270,19 +265,7 @@ export const ContratosList = memo(function ContratosList({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="px-8 py-5">
-                    {!isPassageiro ? (
-                      <StatusBadge
-                        status={item.status === ContratoStatus.ASSINADO}
-                        trueLabel="ASSINADO"
-                        falseLabel="PENDENTE"
-                      />
-                    ) : (
-                      <Badge variant="secondary" className="rounded-lg text-[9px] font-black uppercase tracking-widest bg-orange-100 text-orange-700 border-none px-2.5 py-1">
-                        PENDENTE
-                      </Badge>
-                    )}
-                  </TableCell>
+
                   <TableCell className="px-8 py-5">
                     <span className="text-sm font-black text-[#1a3a5c]">
                       {(
