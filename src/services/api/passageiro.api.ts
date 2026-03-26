@@ -21,11 +21,6 @@ export const passageiroApi = {
       .delete(`${endpointBase}/${passageiroId}`)
       .then(res => res.data),
 
-  getNumeroCobrancas: (passageiroId: string): Promise<number> =>
-    apiClient
-      .get(`${endpointBase}/${passageiroId}/numero-cobrancas`)
-      .then(res => res.data.numeroCobrancas),
-
   toggleAtivo: (passageiroId: string, novoStatus: boolean): Promise<Passageiro> =>
     apiClient
       .patch(`${endpointBase}/${passageiroId}/toggle-ativo`, { novoStatus })
