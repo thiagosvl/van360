@@ -15,6 +15,7 @@ import { Passageiro } from "@/types/passageiro";
 import {
   formatarPlacaExibicao,
 } from "@/utils/domain/veiculo/placaUtils";
+import { PassageiroPeriodo } from "@/types/enums";
 import {
   formatFirstName,
   formatShortName,
@@ -22,6 +23,20 @@ import {
 } from "@/utils/formatters";
 import { memo } from "react";
 import { PassageiroActionsMenu } from "./PassageiroActionsMenu";
+
+const getPeriodoColor = (periodo?: PassageiroPeriodo) => {
+  return "bg-gray-50/50 text-gray-400 border-gray-100/80";
+};
+
+const getPeriodoSuffix = (periodo?: PassageiroPeriodo) => {
+  const labels: Record<string, string> = {
+    [PassageiroPeriodo.MANHA]: "Manhã",
+    [PassageiroPeriodo.TARDE]: "Tarde",
+    [PassageiroPeriodo.NOITE]: "Noite",
+    [PassageiroPeriodo.INTEGRAL]: "Integral",
+  };
+  return labels[periodo || ""] || "N/I";
+};
 
 interface PassageirosListProps {
   passageiros: Passageiro[];
@@ -82,20 +97,20 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
-          <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
-            {Number(passageiro?.valor_cobranca).toLocaleString("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            })}
+        <div className="flex flex-col items-end gap-1.5 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
+          <div className="flex">
+            <span
+              className={cn(
+                "text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full border",
+                getPeriodoColor(passageiro.periodo)
+              )}
+            >
+              {getPeriodoSuffix(passageiro.periodo)}
+            </span>
+          </div>
+          <p className="text-[10px] text-gray-500 font-medium truncate opacity-60 text-right max-w-[140px]">
+            {passageiro.escola?.nome || "Escola N/I"}
           </p>
-          <StatusBadge
-            status={passageiro?.ativo}
-            className={cn(
-              "font-bold text-[8px] h-3.5 px-1 rounded-sm border-none shadow-none uppercase tracking-widest whitespace-nowrap leading-none",
-              passageiro?.ativo ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-400"
-            )}
-          />
         </div>
       </div>
     </MobileActionItem>
@@ -129,6 +144,9 @@ export function PassageirosList({
               </TableHead>
               <TableHead className="px-8 py-5 text-center text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Status
+              </TableHead>
+              <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                Escola / Turno
               </TableHead>
               <TableHead className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                 Veículo
@@ -170,6 +188,23 @@ export function PassageirosList({
                         passageiro.ativo ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-400"
                       )}
                     />
+                  </TableCell>
+                  <TableCell className="px-8 py-5 text-left">
+                    <div className="flex flex-col gap-1">
+                      <p className="text-[10px] text-gray-400 font-medium tracking-wider">
+                        {passageiro.escola?.nome || "Não informada"}
+                      </p>
+                      <div className="flex">
+                        <span
+                          className={cn(
+                            "text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border shadow-sm",
+                            getPeriodoColor(passageiro.periodo)
+                          )}
+                        >
+                          {getPeriodoSuffix(passageiro.periodo)}
+                        </span>
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell className="px-8 py-5">
                     {passageiro.veiculo ? (
