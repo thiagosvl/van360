@@ -57,8 +57,7 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const isExternalForm = location.pathname.startsWith("/cadastro-passageiro");
-    // Usamos uma chave vinculada ao ID do usuário para evitar conflitos entre contas
-    const storageKey = `onboarding_done_${session?.user?.id || "anon"}`;
+    const storageKey = "van360_onboarding_done";
     const hasCompleted = localStorage.getItem(storageKey) === "true";
 
     // 🛠️ MODO PREVIEW: Permite ver o Onboarding via URL (?onboarding=true)
@@ -71,7 +70,7 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
 
     // REGRAS DE EXIBIÇÃO:
     // 1. Só mostra se estiver logado (session existe)
-    // 2. Só mostra se ainda não completou para ESTE usuário
+    // 2. Só mostra se ainda não completou no dispositivo
     // 3. Não mostra em formulários externos de passageiro
     const shouldShow = !!session && !hasCompleted && !isExternalForm;
 
@@ -80,14 +79,9 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   }, [location.pathname, session]);
 
   const handleOnboardingComplete = () => {
-    if (session?.user?.id) {
-      const storageKey = `onboarding_done_${session.user.id}`;
-      localStorage.setItem(storageKey, "true");
-      // Log para auditoria em dev/prod
-      console.log(`[Onboarding] Completed for user ${session.user.id}`);
-    } else {
-      localStorage.setItem("onboarding_completed", "true"); // Fallback
-    }
+    localStorage.setItem("van360_onboarding_done", "true");
+    // Log para auditoria em dev/prod
+    console.log(`[Onboarding] Completed on device`);
 
     // Pequeno delay para garantir que o storage foi persistido e dar feedback visual suave
     setTimeout(() => {
