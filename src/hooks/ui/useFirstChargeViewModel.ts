@@ -7,32 +7,49 @@ import { calculateSafeDueDate, toLocalDateString } from "@/utils/dateUtils";
 import { moneyToNumber } from "@/utils/masks";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { useProfile } from "@/hooks/business/useProfile";
+import { useCreateContrato } from "@/hooks/api/useContratos";
 
 interface FirstChargeViewModelProps {
   passageiro: Passageiro;
   onClose: () => void;
 }
 
-export type FirstChargeStep = "REGISTER_CHECK" | "PAYMENT_STATUS" | "PAYMENT_METHOD";
+export type FirstChargeStep = "CONTRACT_CHECK" | "REGISTER_CHECK" | "PAYMENT_STATUS" | "PAYMENT_METHOD";
 
 export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeViewModelProps) {
-  const [step, setStep] = useState<FirstChargeStep>("REGISTER_CHECK");
+  const { profile } = useProfile();
+  const showContractStep = !!profile?.config_contrato?.usar_contratos && !!profile?.config_contrato?.configurado;
+
+  const [step, setStep] = useState<FirstChargeStep>(showContractStep ? "CONTRACT_CHECK" : "REGISTER_CHECK");
   const [paymentStatus, setPaymentStatus] = useState<CobrancaStatus | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string>("");
+  const [wantsContract, setWantsContract] = useState<boolean>(true);
+  const [wantsMonthlyCharge, setWantsMonthlyCharge] = useState<boolean>(true);
+  const [isGeneratingContract, setIsGeneratingContract] = useState(false);
+
   const [customValue] = useState<string>(
     passageiro.valor_cobranca ? String(passageiro.valor_cobranca) : "",
   );
 
   const createCobranca = useCreateCobranca();
+  const createContrato = useCreateContrato();
 
   const handleBack = useCallback(() => {
-    if (step === "PAYMENT_STATUS") {
+    if (step === "REGISTER_CHECK") {
+      if (showContractStep) {
+        setStep("CONTRACT_CHECK");
+        setWantsMonthlyCharge(true);
+      }
+    } else if (step === "PAYMENT_STATUS") {
       setStep("REGISTER_CHECK");
       setPaymentStatus(null);
+      setPaymentMethod("");
     } else if (step === "PAYMENT_METHOD") {
       setStep("PAYMENT_STATUS");
+      setPaymentMethod("");
     }
-  }, [step]);
+  }, [step, showContractStep, setWantsMonthlyCharge, setPaymentStatus, setPaymentMethod]);
 
   const submitCobranca = useCallback(async (status: CobrancaStatus) => {
     const today = new Date();
@@ -68,15 +85,35 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
       }
 
       await createCobranca.mutateAsync(payload);
-      onClose();
     } catch (err) {
       console.error(err);
+      throw err;
     }
   }, [passageiro, customValue, paymentMethod, createCobranca, onClose]);
 
   const handleNext = useCallback(async () => {
+    if (step === "CONTRACT_CHECK") {
+      setStep("REGISTER_CHECK");
+      return;
+    }
+
     if (step === "REGISTER_CHECK") {
-      setStep("PAYMENT_STATUS");
+      if (wantsMonthlyCharge) {
+        setStep("PAYMENT_STATUS");
+      } else {
+        // Finaliza o fluxo registrando apenas o que foi solicitado
+        setIsGeneratingContract(true);
+        try {
+          if (wantsContract) {
+            await createContrato.mutateAsync({ passageiroId: passageiro.id });
+          }
+          onClose();
+        } catch (error) {
+          console.error("Falha ao finalizar fluxo:", error);
+        } finally {
+          setIsGeneratingContract(false);
+        }
+      }
       return;
     }
 
@@ -85,7 +122,18 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
       if (paymentStatus === CobrancaStatus.PAGO) {
         setStep("PAYMENT_METHOD");
       } else {
-        await submitCobranca(CobrancaStatus.PENDENTE);
+        setIsGeneratingContract(true);
+        try {
+          if (wantsContract) {
+            await createContrato.mutateAsync({ passageiroId: passageiro.id });
+          }
+          await submitCobranca(CobrancaStatus.PENDENTE);
+          onClose();
+        } catch (error) {
+          console.error("Falha ao finalizar fluxo:", error);
+        } finally {
+          setIsGeneratingContract(false);
+        }
       }
       return;
     }
@@ -95,18 +143,34 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
         toast.error(getMessage("cobranca.erro.selecioneFormaPagamento"));
         return;
       }
-      await submitCobranca(CobrancaStatus.PAGO);
+      setIsGeneratingContract(true);
+      try {
+        if (wantsContract) {
+          await createContrato.mutateAsync({ passageiroId: passageiro.id });
+        }
+        await submitCobranca(CobrancaStatus.PAGO);
+        onClose();
+      } catch (error) {
+        console.error("Falha ao finalizar fluxo:", error);
+      } finally {
+        setIsGeneratingContract(false);
+      }
     }
-  }, [step, paymentStatus, paymentMethod, submitCobranca]);
+  }, [step, wantsContract, wantsMonthlyCharge, createContrato, passageiro.id, paymentStatus, paymentMethod, submitCobranca, onClose]);
 
   return {
     step,
+    showContractStep,
     paymentStatus,
     setPaymentStatus,
     paymentMethod,
     setPaymentMethod,
+    wantsContract,
+    setWantsContract,
+    wantsMonthlyCharge,
+    setWantsMonthlyCharge,
     handleBack,
     handleNext,
-    isLoading: createCobranca.isPending,
+    isLoading: createCobranca.isPending || isGeneratingContract,
   };
 }

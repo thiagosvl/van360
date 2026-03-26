@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useContratoActions } from "@/hooks/ui/useContratoActions";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { cn } from "@/lib/utils";
 import { formatShortName, formatFirstName } from "@/utils/formatters";
 import { formatRelativeTime } from "@/utils/formatters";
@@ -27,6 +28,7 @@ interface ContratosListProps {
   isLoading: boolean;
   activeTab: ContratoTab;
   busca: string;
+  isDesativado?: boolean;
   // Ações
   onVerPassageiro: (id: string) => void;
   onCopiarLink: (token: string) => void;
@@ -42,6 +44,7 @@ interface ContratoMobileCardProps {
   item: any;
   index: number;
   activeTab: ContratoTab;
+  isDesativado?: boolean;
   onVerPassageiro: (id: string) => void;
   onCopiarLink: (token: string) => void;
   onReenviarNotificacao: (id: string) => void;
@@ -55,6 +58,7 @@ interface ContratoMobileCardProps {
 const ContratoMobileCard = memo(function ContratoMobileCard({
   item,
   index,
+  isDesativado,
   onVerPassageiro,
   onCopiarLink,
   onReenviarNotificacao,
@@ -68,6 +72,7 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
     item,
     tipo: item.tipo,
     status: item.status as ContratoStatus,
+    isDesativado,
     onVerPassageiro,
     onCopiarLink,
     onReenviarNotificacao,
@@ -140,6 +145,7 @@ export const ContratosList = memo(function ContratosList({
   isLoading,
   activeTab,
   busca,
+  isDesativado,
   ...actions
 }: ContratosListProps) {
   const { openConfirmationDialog, closeConfirmationDialog } = useLayout();
@@ -153,7 +159,7 @@ export const ContratosList = memo(function ContratosList({
       variant: "default",
       onConfirm: () => {
         actions.onReenviarNotificacao(id);
-        closeConfirmationDialog();
+        safeCloseDialog(closeConfirmationDialog);
       },
     });
   };
@@ -214,6 +220,7 @@ export const ContratosList = memo(function ContratosList({
           item={item}
           index={index}
           activeTab={activeTab}
+          isDesativado={isDesativado}
           {...actions}
           onReenviarNotificacao={handleReenviarNotificacao}
         />
@@ -279,6 +286,7 @@ export const ContratosList = memo(function ContratosList({
                         item={item}
                         tipo={item.tipo}
                         status={item.status}
+                        isDesativado={isDesativado}
                         {...actions}
                         onReenviarNotificacao={handleReenviarNotificacao}
                       />

@@ -3,7 +3,8 @@ import {
   useDeleteCobranca,
   useDesfazerPagamento,
   useEnviarNotificacaoCobranca,
-  useToggleNotificacoesCobranca
+  useToggleNotificacoesCobranca,
+  safeCloseDialog,
 } from "@/hooks";
 import { ActionItem } from "@/types/actions";
 import { Cobranca } from "@/types/cobranca";
@@ -77,10 +78,10 @@ export function useCobrancaOperations({
       onConfirm: async () => {
         try {
           await enviarNotificacao.mutateAsync(cobranca.id);
-          closeConfirmationDialog();
+          safeCloseDialog(closeConfirmationDialog);
           if (onActionSuccess) onActionSuccess();
         } catch (error) {
-          closeConfirmationDialog();
+          safeCloseDialog(closeConfirmationDialog);
           console.error(error);
         }
       },
@@ -103,10 +104,10 @@ export function useCobrancaOperations({
       onConfirm: async () => {
         try {
           await desfazerPagamento.mutateAsync(cobranca.id);
-          closeConfirmationDialog();
+          safeCloseDialog(closeConfirmationDialog);
           if (onActionSuccess) onActionSuccess();
         } catch (error) {
-          closeConfirmationDialog();
+          safeCloseDialog(closeConfirmationDialog);
           console.error(error);
         }
       },

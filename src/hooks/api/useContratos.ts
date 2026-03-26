@@ -46,7 +46,7 @@ export function useCreateContrato() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
       queryClient.invalidateQueries({ queryKey: ['passageiros'] });
-      toast.success('contrato.sucesso.criado');
+      toast.success('contrato.sucesso.gerado');
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || getMessage('contrato.erro.criar');

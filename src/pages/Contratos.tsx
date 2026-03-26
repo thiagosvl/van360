@@ -1,5 +1,7 @@
+import { DashboardStatusCard } from "@/components/features/home/DashboardStatusCard";
+import { Button } from "@/components/ui/button";
 import { UnifiedEmptyState } from "@/components/empty/UnifiedEmptyState";
-import { CheckCircle2, FileText, Send, UserX } from "lucide-react";
+import { AlertCircle, CheckCircle2, FileText, Send, UserX } from "lucide-react";
 
 import { KPICard } from "@/components/common/KPICard";
 import { PdfPreviewDialog } from "@/components/common/PdfPreviewDialog";
@@ -26,6 +28,7 @@ const Contratos = () => {
     contratos,
     isLoading,
     isActionLoading,
+    isContratoAtivo,
     handleRefresh,
     handleOpenContractSetup,
     handleOpenPreview,
@@ -47,89 +50,77 @@ const Contratos = () => {
     <>
       <PullToRefreshWrapper onRefresh={handleRefresh}>
         <div className="space-y-6">
-          {/* Feature Disabled State */}
-          {!profile?.config_contrato?.usar_contratos && (
-            <UnifiedEmptyState
-              icon={FileText}
+          {/* Banner de Estado Desativado */}
+          {!isContratoAtivo && (
+            <DashboardStatusCard
+              type="pending"
               title="Contratos Desativados"
-              description={
-                <div className="space-y-1">
-                  <p>
-                    Ative agora mesmo para gerar contratos e coletar assinaturas
-                    digitais.
-                  </p>
-                </div>
-              }
-              action={{
-                label: "Ativar Contratos",
-                onClick: handleOpenContractSetup,
-                icon: CheckCircle2,
-              }}
-              className="mt-8 border-dashed border-gray-300 bg-gray-50/50"
+              description="Para gerar, editar ou substituir contratos, você precisa ativar o módulo. Por enquanto, as ações de alteração estão bloqueadas, mas seus dados continuam disponíveis para consulta."
+              actionLabel="Ativar Agora"
+              onAction={handleOpenContractSetup}
             />
           )}
 
-          {/* Active State */}
-          {profile?.config_contrato?.usar_contratos && (
-            <>
-              <Tabs
-                value={activeTab}
-                onValueChange={handleTabChange}
-                className="w-full space-y-6"
-              >
-                <ContratosToolbar
-                  busca={busca}
-                  setBusca={setBusca}
-                  activeTab={activeTab}
-                  countPendentes={kpis?.pendentes}
-                  countAssinados={kpis?.assinados}
-                  countSemContrato={kpis?.semContrato}
-                  onOpenConfig={handleOpenContractSetup}
-                  onOpenPreview={handleOpenPreview}
-                />
+          <Tabs
+            value={activeTab}
+            onValueChange={handleTabChange}
+            className="w-full space-y-6"
+          >
+            <ContratosToolbar
+              busca={busca}
+              setBusca={setBusca}
+              activeTab={activeTab}
+              countPendentes={kpis?.pendentes}
+              countAssinados={kpis?.assinados}
+              countSemContrato={kpis?.semContrato}
+              onOpenConfig={handleOpenContractSetup}
+              onOpenPreview={handleOpenPreview}
+              isDesativado={!isContratoAtivo}
+            />
 
-                <div className="flex items-center justify-between px-1">
-                  <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-                    {activeTab === ContratoTab.PENDENTES ? "Contratos Pendentes" :
-                      activeTab === ContratoTab.ASSINADOS ? "Contratos Assinados" : "Sem Contrato"}
-                  </h2>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                    {contratos.length} {busca ? "ENCONTRADOS" : activeTab === ContratoTab.SEM_CONTRATO ? "PASSAGEIROS" : "CONTRATOS"}
-                  </span>
-                </div>
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
+                {activeTab === ContratoTab.PENDENTES ? "Contratos Pendentes" :
+                  activeTab === ContratoTab.ASSINADOS ? "Contratos Assinados" : "Sem Contrato"}
+              </h2>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                {contratos.length} {busca ? "ENCONTRADOS" : activeTab === ContratoTab.SEM_CONTRATO ? "PASSAGEIROS" : "CONTRATOS"}
+              </span>
+            </div>
 
-                <TabsContent value={ContratoTab.PENDENTES} className="mt-0 outline-none">
-                  <ContratosList
-                    data={contratos}
-                    isLoading={isLoading}
-                    activeTab={ContratoTab.PENDENTES}
-                    busca={debouncedSearch}
-                    {...actions}
-                  />
-                </TabsContent>
+            <TabsContent value={ContratoTab.PENDENTES} className="mt-0 outline-none">
+              <ContratosList
+                data={contratos}
+                isLoading={isLoading}
+                activeTab={ContratoTab.PENDENTES}
+                busca={debouncedSearch}
+                isDesativado={!isContratoAtivo}
+                {...actions}
+              />
+            </TabsContent>
 
-                <TabsContent value={ContratoTab.ASSINADOS} className="mt-0 outline-none">
-                  <ContratosList
-                    data={contratos}
-                    isLoading={isLoading}
-                    activeTab={ContratoTab.ASSINADOS}
-                    busca={debouncedSearch}
-                    {...actions}
-                  />
-                </TabsContent>
+            <TabsContent value={ContratoTab.ASSINADOS} className="mt-0 outline-none">
+              <ContratosList
+                data={contratos}
+                isLoading={isLoading}
+                activeTab={ContratoTab.ASSINADOS}
+                busca={debouncedSearch}
+                isDesativado={!isContratoAtivo}
+                {...actions}
+              />
+            </TabsContent>
 
-                <TabsContent value={ContratoTab.SEM_CONTRATO} className="mt-0 outline-none">
-                  <ContratosList
-                    data={contratos}
-                    isLoading={isLoading}
-                    activeTab={ContratoTab.SEM_CONTRATO}
-                    busca={debouncedSearch}
-                    {...actions}
-                  />
-                </TabsContent>
-              </Tabs>
-            </>
-          )}
+            <TabsContent value={ContratoTab.SEM_CONTRATO} className="mt-0 outline-none">
+              <ContratosList
+                data={contratos}
+                isLoading={isLoading}
+                activeTab={ContratoTab.SEM_CONTRATO}
+                busca={debouncedSearch}
+                isDesativado={!isContratoAtivo}
+                {...actions}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </PullToRefreshWrapper>
 

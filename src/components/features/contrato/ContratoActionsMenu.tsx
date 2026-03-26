@@ -6,6 +6,7 @@ interface ContratoActionsMenuProps {
   item: any; // Pode ser Contrato ou Passageiro
   tipo: 'contrato' | 'passageiro';
   status?: string;
+  isDesativado?: boolean;
   onVerPassageiro: (id: string) => void;
   onCopiarLink?: (token: string) => void;
   onReenviarNotificacao?: (id: string) => void;

@@ -186,7 +186,7 @@ export default function ContractSetupDialog({
 
   const currentStepTitle = () => {
     switch (step) {
-      case SetupStep.WELCOME: return "Contratos Automáticos";
+      case SetupStep.WELCOME: return "Contratos";
       case SetupStep.FEES: return "Penalidades e Multas";
       case SetupStep.CLAUSES: return "Cláusulas e Termos";
       case SetupStep.SIGNATURE: return "Assinatura Digital";

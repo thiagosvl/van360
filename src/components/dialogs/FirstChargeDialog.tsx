@@ -13,17 +13,11 @@ import {
   AlertCircle,
   CheckCircle2,
   ChevronLeft,
-  CreditCard,
+  FileText,
   Loader2,
   Wallet
 } from "lucide-react";
 import { CobrancaStatus } from "@/types/enums";
-
-export interface FirstChargeDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  passageiro: Passageiro;
-}
 
 import { PAYMENT_METHODS } from "@/constants/paymentMethods";
 import {
@@ -31,10 +25,17 @@ import {
   useFirstChargeViewModel
 } from "@/hooks/ui/useFirstChargeViewModel";
 
+export interface FirstChargeDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  passageiro: Passageiro;
+}
+
 const STEP_INDEX: Record<Step, number> = {
-  REGISTER_CHECK: 0,
-  PAYMENT_STATUS: 1,
-  PAYMENT_METHOD: 2,
+  CONTRACT_CHECK: 0,
+  REGISTER_CHECK: 1,
+  PAYMENT_STATUS: 2,
+  PAYMENT_METHOD: 3,
 };
 
 export default function FirstChargeDialog({
@@ -44,10 +45,15 @@ export default function FirstChargeDialog({
 }: FirstChargeDialogProps) {
   const {
     step,
+    showContractStep,
     paymentStatus,
     setPaymentStatus,
     paymentMethod,
     setPaymentMethod,
+    wantsContract,
+    setWantsContract,
+    wantsMonthlyCharge,
+    setWantsMonthlyCharge,
     handleBack,
     handleNext,
     isLoading
@@ -63,12 +69,15 @@ export default function FirstChargeDialog({
   const firstNamePassageiro = passageiro.nome?.split(" ")[0];
   const firstNameResponsavel = passageiro.nome_responsavel?.split(" ")[0];
 
-  const stepIndex = STEP_INDEX[step];
+  const totalSteps = showContractStep ? 4 : 3;
+  // Ajuste do index se não mostrar contrato
+  const stepIndex = showContractStep ? STEP_INDEX[step] : (STEP_INDEX[step] - 1);
 
   const primaryButtonText = () => {
+    if (step === "CONTRACT_CHECK") return wantsContract ? "Gerar e Enviar" : "Próximo";
+    if (step === "REGISTER_CHECK") return wantsMonthlyCharge ? "Próximo" : "Finalizar";
     if (step === "PAYMENT_METHOD") return "Confirmar";
     if (step === "PAYMENT_STATUS" && paymentStatus === CobrancaStatus.PENDENTE) return "Registrar";
-    if (step === "REGISTER_CHECK") return "Sim, registrar";
     return "Próximo";
   };
 
@@ -76,6 +85,8 @@ export default function FirstChargeDialog({
     isLoading ||
     (step === "PAYMENT_STATUS" && !paymentStatus) ||
     (step === "PAYMENT_METHOD" && !paymentMethod);
+
+  const isFirstStep = (showContractStep && step === "CONTRACT_CHECK") || (!showContractStep && step === "REGISTER_CHECK");
 
 
   return (
@@ -94,14 +105,14 @@ export default function FirstChargeDialog({
             </div>
             <div className="flex flex-col min-w-0 flex-1">
               <DialogTitle className="text-sm sm:text-lg font-headline font-black text-[#1a3a5c] uppercase tracking-tight truncate">
-                Mensalidade de {currentMonthNameCapitalized}
+                Contrato e Mensalidade
               </DialogTitle>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider">
-                  ETAPA {stepIndex + 1} DE 3
+                  ETAPA {stepIndex + 1} DE {totalSteps}
                 </span>
                 <div className="flex gap-1">
-                  {[0, 1, 2].map((i) => (
+                  {Array.from({ length: totalSteps }).map((_, i) => (
                     <div
                       key={i}
                       className={cn(
@@ -120,48 +131,207 @@ export default function FirstChargeDialog({
 
         {/* Content */}
         <div className="p-5 pt-4 flex-1 overflow-y-auto">
-          {step === "REGISTER_CHECK" && (
+          {step === "CONTRACT_CHECK" && (
             <div className="space-y-5">
-              <div className="text-center space-y-4 py-4">
-                <div className="mx-auto w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-2 border border-slate-100 shadow-sm">
-                  <Wallet className="w-10 h-10 text-[#1a3a5c] opacity-80" />
+              <div className="flex items-start gap-4 py-2">
+                <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 shadow-sm mt-1">
+                  <FileText className="w-6 h-6 text-[#1a3a5c] opacity-80" />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 flex-1">
                   <h2 className="text-lg sm:text-xl font-headline font-black text-[#1a3a5c] uppercase leading-tight">
-                    Registrar mensalidade?
+                    Gerar contrato?
                   </h2>
-                  <p className="text-[13px] text-slate-500 font-medium leading-relaxed px-4">
-                    Cria o registro de{" "}
-                    <strong className="text-[#1a3a5c]">{currentMonthNameCapitalized}</strong>{" "}
-                    no histórico financeiro de{" "}
-                    <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong>.
+                  <p className="text-[13px] text-slate-500 font-medium leading-relaxed pr-2">
+                    Gostaria de gerar o contrato para <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong> e já envia-lo automaticamente para o responsável?
                   </p>
                 </div>
               </div>
 
-              <div className="bg-slate-50/50 rounded-2xl border border-slate-100 px-5 py-4 flex items-center justify-between shadow-diff-shadow">
-                <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Valor</span>
-                <div className="flex flex-col items-end">
-                  <span className="font-headline font-black text-[#1a3a5c] text-xl">
-                    {(passageiro.valor_cobranca || 0).toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
-                  </span>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Valor Mensal</span>
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setWantsContract(true)}
+                  className={cn(
+                    "w-full p-4 rounded-2xl border transition-all flex items-center gap-4 active:scale-[0.98] group",
+                    wantsContract
+                      ? "border-emerald-500 bg-emerald-50/50 shadow-lg shadow-emerald-500/5 ring-1 ring-emerald-200"
+                      : "border-slate-100 bg-white hover:border-slate-200 shadow-sm"
+                  )}
+                >
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
+                    wantsContract
+                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-200"
+                      : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100"
+                  )}>
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className={cn(
+                      "text-[13px] font-black uppercase tracking-tight",
+                      wantsContract ? "text-emerald-900" : "text-[#1a3a5c]"
+                    )}>
+                      Sim, gerar e enviar
+                    </p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide">
+                      O responsável receberá por WhatsApp
+                    </p>
+                  </div>
+                  <div className={cn(
+                    "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all",
+                    wantsContract ? "border-emerald-500 bg-emerald-500" : "border-slate-300"
+                  )}>
+                    {wantsContract && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setWantsContract(false)}
+                  className={cn(
+                    "w-full p-4 rounded-2xl border transition-all flex items-center gap-4 active:scale-[0.98] group",
+                    !wantsContract
+                      ? "border-slate-400 bg-slate-50 shadow-md ring-1 ring-slate-200"
+                      : "border-slate-100 bg-white hover:border-slate-200 shadow-sm"
+                  )}
+                >
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
+                    !wantsContract
+                      ? "bg-slate-400 text-white shadow-lg shadow-slate-200"
+                      : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100"
+                  )}>
+                    <AlertCircle className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className={cn(
+                      "text-[13px] font-black uppercase tracking-tight",
+                      !wantsContract ? "text-slate-900" : "text-[#1a3a5c]"
+                    )}>
+                      Não, obrigado
+                    </p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide">
+                      Você poderá gerar manualmente depois
+                    </p>
+                  </div>
+                  <div className={cn(
+                    "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all",
+                    !wantsContract ? "border-slate-400 bg-slate-400" : "border-slate-300"
+                  )}>
+                    {!wantsContract && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === "REGISTER_CHECK" && (
+            <div className="space-y-5">
+              <div className="flex items-start gap-4 py-2">
+                <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 shadow-sm mt-1">
+                  <Wallet className="w-6 h-6 text-[#1a3a5c] opacity-80" />
                 </div>
+                <div className="space-y-1 flex-1">
+                  <h2 className="text-lg sm:text-xl font-headline font-black text-[#1a3a5c] uppercase leading-tight">
+                    Registrar primeira mensalidade?
+                  </h2>
+                  <p className="text-[13px] text-slate-500 font-medium leading-relaxed pr-2">
+                    Gostaria de registrar a mensalidade de <strong className="text-[#1a3a5c]">{currentMonthNameCapitalized}</strong> para <strong className="text-[#1a3a5c]">{firstNamePassageiro}</strong>?
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setWantsMonthlyCharge(true)}
+                  className={cn(
+                    "w-full p-4 rounded-2xl border transition-all flex items-center gap-4 active:scale-[0.98] group",
+                    wantsMonthlyCharge
+                      ? "border-emerald-500 bg-emerald-50/50 shadow-lg shadow-emerald-500/5 ring-1 ring-emerald-200"
+                      : "border-slate-100 bg-white hover:border-slate-200 shadow-sm"
+                  )}
+                >
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
+                    wantsMonthlyCharge
+                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-200"
+                      : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100"
+                  )}>
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className={cn(
+                      "text-[13px] font-black uppercase tracking-tight",
+                      wantsMonthlyCharge ? "text-emerald-900" : "text-[#1a3a5c]"
+                    )}>
+                      Sim, registrar
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Já estará visível na carteirinha</span>
+                    </div>
+                  </div>
+                  <div className={cn(
+                    "border-2 flex items-center justify-center shrink-0 transition-all w-5 h-5 rounded-full",
+                    wantsMonthlyCharge ? "border-emerald-500 bg-emerald-500" : "border-slate-300"
+                  )}>
+                    {wantsMonthlyCharge && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setWantsMonthlyCharge(false)}
+                  className={cn(
+                    "w-full p-4 rounded-2xl border transition-all flex items-center gap-4 active:scale-[0.98] group",
+                    !wantsMonthlyCharge
+                      ? "border-slate-400 bg-slate-50 shadow-md ring-1 ring-slate-200"
+                      : "border-slate-100 bg-white hover:border-slate-200 shadow-sm"
+                  )}
+                >
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
+                    !wantsMonthlyCharge
+                      ? "bg-slate-400 text-white shadow-lg shadow-slate-200"
+                      : "bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-slate-100"
+                  )}>
+                    <AlertCircle className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className={cn(
+                      "text-[13px] font-black uppercase tracking-tight",
+                      !wantsMonthlyCharge ? "text-slate-900" : "text-[#1a3a5c]"
+                    )}>
+                      Não, obrigado
+                    </p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide">
+                      Você poderá gerar manualmente depois
+                    </p>
+                  </div>
+                  <div className={cn(
+                    "border-2 flex items-center justify-center shrink-0 transition-all w-5 h-5 rounded-full",
+                    !wantsMonthlyCharge ? "border-slate-400 bg-slate-400" : "border-slate-300"
+                  )}>
+                    {!wantsMonthlyCharge && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                  </div>
+                </button>
               </div>
             </div>
           )}
 
           {step === "PAYMENT_STATUS" && (
             <div className="space-y-5">
-              <div className="space-y-1 pb-2">
-                <h3 className="font-headline font-black text-[#1a3a5c] text-lg uppercase">O responsável já pagou?</h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  {firstNamePassageiro}{" "}
-                  <span className="text-slate-300">({firstNameResponsavel})</span>
-                </p>
+              <div className="flex items-start gap-4 py-2">
+                <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 shadow-sm mt-1">
+                  <Wallet className="w-6 h-6 text-[#1a3a5c] opacity-80" />
+                </div>
+                <div className="space-y-1 flex-1">
+                  <h3 className="font-headline font-black text-[#1a3a5c] text-lg uppercase leading-tight">O responsável já pagou?</h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
+                    {firstNamePassageiro}{" "}
+                    <span className="text-slate-300">({firstNameResponsavel})</span>
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-3">
@@ -260,13 +430,16 @@ export default function FirstChargeDialog({
 
           {step === "PAYMENT_METHOD" && (
             <div className="space-y-5">
-              <div className="space-y-1 pb-2">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-headline font-black text-[#1a3a5c] text-lg uppercase">Forma de pagamento</h3>
+              <div className="flex items-start gap-4 py-2">
+                <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 shadow-sm mt-1">
+                  <Wallet className="w-6 h-6 text-[#1a3a5c] opacity-80" />
                 </div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  Como o pagamento foi realizado?
-                </p>
+                <div className="space-y-1 flex-1">
+                  <h3 className="font-headline font-black text-[#1a3a5c] text-lg uppercase leading-tight">Forma de pagamento</h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
+                    Como o pagamento foi realizado?
+                  </p>
+                </div>
               </div>
 
               <div className="bg-slate-50/50 rounded-xl border border-slate-100 p-1 shadow-sm">
@@ -308,20 +481,11 @@ export default function FirstChargeDialog({
 
         {/* Footer */}
         <div className="p-5 sm:p-6 bg-slate-50/40 flex gap-4 border-t border-slate-100/60 shrink-0">
-          {step === "REGISTER_CHECK" ? (
-            <Button
-              variant="ghost"
-              onClick={onClose}
-              className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider text-slate-400 hover:text-slate-600 transition-all hover:bg-slate-100 active:scale-95"
-              disabled={isLoading}
-            >
-              Agora não
-            </Button>
-          ) : (
+          {!isFirstStep && (
             <Button
               variant="ghost"
               onClick={handleBack}
-              className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider text-slate-400 hover:text-slate-600 transition-all hover:bg-slate-100 active:scale-95"
+              className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider border border-slate-100 text-slate-400 hover:text-slate-600 transition-all hover:bg-slate-100 active:scale-95"
               disabled={isLoading}
             >
               <ChevronLeft className="w-4 h-4 mr-1" /> Voltar

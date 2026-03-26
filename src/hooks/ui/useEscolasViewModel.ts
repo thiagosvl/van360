@@ -6,6 +6,7 @@ import {
   useEscolas,
   useFilters,
   useToggleAtivoEscola,
+  safeCloseDialog,
 } from "@/hooks";
 import { useProfile, useSession } from "@/hooks";
 import { Escola } from "@/types/escola";
@@ -131,10 +132,10 @@ export function useEscolasViewModel() {
         onConfirm: async () => {
           try {
             await deleteEscola.mutateAsync(escola.id);
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           } catch (error) {
             console.error(error);
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           }
         },
       });
@@ -166,10 +167,10 @@ export function useEscolasViewModel() {
         onConfirm: async () => {
           try {
             await toggleAtivoEscola.mutateAsync({ id: escola.id, novoStatus });
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           } catch (error) {
             console.error(error);
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           }
         },
       });

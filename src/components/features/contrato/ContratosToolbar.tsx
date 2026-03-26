@@ -15,6 +15,7 @@ interface ContratosToolbarProps {
   countSemContrato?: number;
   onOpenConfig: () => void;
   onOpenPreview: () => void;
+  isDesativado?: boolean;
 }
 
 export const ContratosToolbar = memo(function ContratosToolbar({
@@ -26,6 +27,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
   countSemContrato,
   onOpenConfig,
   onOpenPreview,
+  isDesativado,
 }: ContratosToolbarProps) {
   return (
     <div className="flex flex-col gap-6 mb-8">
@@ -106,9 +108,13 @@ export const ContratosToolbar = memo(function ContratosToolbar({
             <Button
               variant="outline"
               size="icon"
-              className="h-12 w-12 bg-white border-none rounded-xl shadow-diff-shadow hover:bg-slate-50 hover:text-[#1a3a5c] transition-all active:scale-95"
+              className={cn(
+                "h-12 w-12 bg-white border-none rounded-xl shadow-diff-shadow hover:bg-slate-50 hover:text-[#1a3a5c] transition-all active:scale-95",
+                isDesativado && "opacity-40 grayscale pointer-events-none"
+              )}
               onClick={onOpenPreview}
-              title="Visualizar Modelo"
+              disabled={isDesativado}
+              title={isDesativado ? "Recurso Desativado" : "Visualizar Modelo"}
             >
               <Eye className="w-5 h-5 text-slate-400" />
             </Button>

@@ -1,5 +1,5 @@
 import { useLayout } from "@/contexts/LayoutContext";
-import { useDeleteGasto, useFilters, useGastos, useVeiculos } from "@/hooks";
+import { useDeleteGasto, useFilters, useGastos, useVeiculos, safeCloseDialog } from "@/hooks";
 import { useGastosCalculations } from "@/hooks/business/useGastosCalculations";
 import { useProfile } from "@/hooks/business/useProfile";
 import { Gasto } from "@/types/gasto";
@@ -100,10 +100,10 @@ export function useGastosViewModel() {
         onConfirm: async () => {
           try {
             await deleteGasto.mutateAsync(id);
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
             toast.success("Gasto excluído com sucesso");
           } catch (error) {
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           }
         },
       });

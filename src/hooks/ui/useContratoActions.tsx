@@ -16,6 +16,7 @@ interface UseContratoActionsProps {
   item: any;
   tipo: 'contrato' | 'passageiro';
   status?: string;
+  isDesativado?: boolean;
   onVerPassageiro: (id: string) => void;
   onCopiarLink?: (token: string) => void;
   onReenviarNotificacao?: (id: string) => void;
@@ -30,6 +31,7 @@ export function useContratoActions({
   item,
   tipo,
   status,
+  isDesativado = false,
   onVerPassageiro,
   onCopiarLink,
   onReenviarNotificacao,
@@ -45,7 +47,7 @@ export function useContratoActions({
     const list: ActionItem[] = [];
 
     if (tipo === 'passageiro') {
-      if (onGerarContrato) {
+      if (onGerarContrato && !isDesativado) {
         list.push({
           label: 'Gerar Contrato',
           icon: <FileText className="h-4 w-4" />,
@@ -74,7 +76,7 @@ export function useContratoActions({
             swipeColor: 'bg-indigo-600',
           });
         }
-        if (onReenviarNotificacao) {
+        if (onReenviarNotificacao && !isDesativado) {
           list.push({
             label: 'Reenviar Contrato',
             icon: <Send className="h-4 w-4" />,
@@ -97,7 +99,7 @@ export function useContratoActions({
           });
         }
 
-        if (onSubstituir) {
+        if (onSubstituir && !isDesativado) {
           list.push({
             label: 'Substituir Contrato',
             icon: <RefreshCcw className="h-4 w-4" />,
@@ -117,7 +119,7 @@ export function useContratoActions({
     });
 
     // Destructive Actions
-    if (tipo === 'contrato' && isPendente && onExcluir) {
+    if (tipo === 'contrato' && isPendente && onExcluir && !isDesativado) {
       list.push({
         label: 'Excluir Contrato',
         icon: <Trash2 className="h-4 w-4" />,
@@ -136,5 +138,5 @@ export function useContratoActions({
     }
 
     return list;
-  }, [item, tipo, status, onVerPassageiro, onCopiarLink, onReenviarNotificacao, onExcluir, onSubstituir, onGerarContrato, onVisualizarLink, onVisualizarFinal]);
+  }, [item, tipo, status, isDesativado, onVerPassageiro, onCopiarLink, onReenviarNotificacao, onExcluir, onSubstituir, onGerarContrato, onVisualizarLink, onVisualizarFinal]);
 }

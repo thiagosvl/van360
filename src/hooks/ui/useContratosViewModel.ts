@@ -9,6 +9,7 @@ import {
   useSubstituirContrato,
 } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
+import { safeCloseDialog } from "@/hooks/ui/useDialogClose";
 import { ContratoTab } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -53,13 +54,10 @@ export function useContratosViewModel() {
   }, [setSearchParams]);
 
   // Queries e Mutations
-  const { data: kpis, isLoading: isLoadingKPIs, refetch: refetchKPIs } = useContratosKPIs({
-      enabled: !!profile?.config_contrato?.usar_contratos
-  });
+  const { data: kpis, isLoading: isLoadingKPIs, refetch: refetchKPIs } = useContratosKPIs();
 
   const { data: contratosRes, isLoading: isLoadingContratos, refetch: refetchContratos } = useContratos(
-    { tab: activeTab, search: debouncedSearch },
-    { enabled: !!profile?.config_contrato?.usar_contratos }
+    { tab: activeTab, search: debouncedSearch }
   );
 
   const deleteMutation = useDeleteContrato();
@@ -109,7 +107,7 @@ export function useContratosViewModel() {
       variant: "destructive",
       onConfirm: async () => {
         await deleteMutation.mutateAsync(id);
-        closeConfirmationDialog();
+        safeCloseDialog(closeConfirmationDialog);
       }
     });
   }, [openConfirmationDialog, deleteMutation, closeConfirmationDialog]);
@@ -121,7 +119,7 @@ export function useContratosViewModel() {
       confirmText: "Continuar",
       onConfirm: async () => {
         await substituirMutation.mutateAsync(id);
-        closeConfirmationDialog();
+        safeCloseDialog(closeConfirmationDialog);
       }
     });
   }, [openConfirmationDialog, substituirMutation, closeConfirmationDialog]);
@@ -133,7 +131,7 @@ export function useContratosViewModel() {
       confirmText: "Gerar",
       onConfirm: async () => {
         await createMutation.mutateAsync({ passageiroId });
-        closeConfirmationDialog();
+        safeCloseDialog(closeConfirmationDialog);
       }
     });
   }, [openConfirmationDialog, createMutation, closeConfirmationDialog]);
@@ -161,6 +159,8 @@ export function useContratosViewModel() {
     createMutation.isPending ||
     previewMutation.isPending;
 
+  const isContratoAtivo = !!profile?.config_contrato?.usar_contratos;
+
   return {
     profile,
     isProfileLoading,
@@ -173,6 +173,7 @@ export function useContratosViewModel() {
     contratos: contratosRes?.data || [],
     isLoading: isLoadingContratos || isLoadingKPIs,
     isActionLoading,
+    isContratoAtivo,
     handleRefresh,
     handleOpenContractSetup,
     handleOpenPreview,

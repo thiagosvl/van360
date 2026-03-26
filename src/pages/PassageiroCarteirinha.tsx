@@ -48,7 +48,8 @@ import {
     useToggleAtivoPassageiro,
     useToggleNotificacoesCobranca,
     useUpdateCobranca,
-    useUpdatePassageiro
+    useUpdatePassageiro,
+    safeCloseDialog,
 } from "@/hooks";
 import { useCreateContrato } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -310,9 +311,9 @@ export default function PassageiroCarteirinha() {
                 id: passageiro_id,
                 novoStatus: !passageiro.ativo,
             });
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
         } catch (error) {
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
             throw error;
         }
       },
@@ -340,9 +341,9 @@ export default function PassageiroCarteirinha() {
         onConfirm: async () => {
           try {
             await enviarNotificacao.mutateAsync(cobrancaId);
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           } catch (error) {
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           }
         },
       });
@@ -361,9 +362,9 @@ export default function PassageiroCarteirinha() {
         onConfirm: async () => {
           try {
             await desfazerPagamento.mutateAsync(cobrancaId);
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           } catch (error) {
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           }
         },
       });
@@ -470,9 +471,10 @@ export default function PassageiroCarteirinha() {
                           setIsDeleting(true);
                           try {
                             await deletePassageiro.mutateAsync(passageiro_id);
-                            closeConfirmationDialog();
+                            safeCloseDialog(closeConfirmationDialog);
                             navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS);
                           } catch (error) {
+                            safeCloseDialog(closeConfirmationDialog);
                           } finally {
                             setIsDeleting(false);
                           }
@@ -514,9 +516,9 @@ export default function PassageiroCarteirinha() {
                               valorMensal: Number(passageiro.valor_cobranca),
                               diaVencimento: Number(passageiro.dia_vencimento),
                             });
-                            closeConfirmationDialog();
+                            safeCloseDialog(closeConfirmationDialog);
                           } catch (error) {
-                            closeConfirmationDialog();
+                            safeCloseDialog(closeConfirmationDialog);
                           }
                         },
                       });

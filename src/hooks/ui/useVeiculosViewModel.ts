@@ -6,6 +6,7 @@ import {
   useFilters,
   useToggleAtivoVeiculo,
   useVeiculos,
+  safeCloseDialog,
 } from "@/hooks";
 import { useProfile, useSession } from "@/hooks";
 import { Veiculo } from "@/types/veiculo";
@@ -136,9 +137,9 @@ export function useVeiculosViewModel() {
         onConfirm: async () => {
           try {
             await deleteVeiculo.mutateAsync(veiculo.id);
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           } catch (error) {
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           }
         },
       });
@@ -172,10 +173,10 @@ export function useVeiculosViewModel() {
         onConfirm: async () => {
           try {
             await toggleAtivoVeiculo.mutateAsync({ id: veiculo.id, novoStatus });
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           } catch (error) {
             console.error(error);
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           }
         },
       });

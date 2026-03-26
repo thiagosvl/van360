@@ -12,6 +12,7 @@ import {
   useToggleAtivoPassageiro,
   useUpdatePassageiro,
   useVeiculos,
+  safeCloseDialog,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -200,9 +201,9 @@ export function usePassageirosViewModel() {
           try {
             await deletePassageiro.mutateAsync(passageiro.id);
             refetchPassageiros();
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           } catch (error) {
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           }
         },
       });
@@ -225,9 +226,9 @@ export function usePassageirosViewModel() {
           try {
             await toggleAtivoPassageiro.mutateAsync({ id: passageiro.id, novoStatus: !passageiro.ativo });
             refetchPassageiros();
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           } catch (error) {
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           }
         },
       });
@@ -337,9 +338,9 @@ export function usePassageirosViewModel() {
         onConfirm: async () => {
           try {
             await createContrato.mutateAsync({ passageiroId: passageiro.id });
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           } catch (error) {
-            closeConfirmationDialog();
+            safeCloseDialog(closeConfirmationDialog);
           }
         },
       });

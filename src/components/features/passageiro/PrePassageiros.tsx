@@ -28,6 +28,7 @@ import {
   useCreatePrePassageiro,
   useDeletePrePassageiro,
   usePrePassageiros,
+  safeCloseDialog,
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { PassageiroFormModes } from "@/types/enums";
@@ -202,8 +203,9 @@ export default function PrePassageiros({
                 if (prePassageiro.id) {
                   try {
                     await deletePrePassageiro.mutateAsync(prePassageiro.id);
-                    closeConfirmationDialog();
+                    safeCloseDialog(closeConfirmationDialog);
                   } catch (error) {
+                    safeCloseDialog(closeConfirmationDialog);
                     // Error handled by mutation hook or global handler
                     console.error(error);
                   }
@@ -343,8 +345,9 @@ export default function PrePassageiros({
                             await deletePrePassageiro.mutateAsync(
                               prePassageiro.id,
                             );
-                            closeConfirmationDialog();
+                            safeCloseDialog(closeConfirmationDialog);
                           } catch (error) {
+                            safeCloseDialog(closeConfirmationDialog);
                             console.error(error);
                           }
                         }
