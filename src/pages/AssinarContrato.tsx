@@ -10,13 +10,13 @@ import {
 import { useAssinarContratoViewModel } from "@/hooks";
 import { ContratoStatus } from "@/types/enums";
 import { openBrowserLink } from "@/utils/browser";
-import { 
-  CheckCircle2, 
-  Download, 
-  FileSignature, 
-  Loader2, 
-  PenTool, 
-  AlertCircle, 
+import {
+  CheckCircle2,
+  Download,
+  FileSignature,
+  Loader2,
+  PenTool,
+  AlertCircle,
   Minus,
   Plus,
 } from "lucide-react";
@@ -169,7 +169,7 @@ export default function AssinarContrato() {
             alt="Van360"
             className="h-8 sm:h-10 w-auto filter brightness-0 invert opacity-80"
           />
-          
+
           <div className="flex items-center bg-white/10 backdrop-blur-md rounded-xl px-2 py-1 border border-white/10 shadow-sm ml-auto sm:ml-0">
             <button
               onClick={() => setScale(s => Math.max(s - 0.25, 0.5))}
@@ -300,7 +300,7 @@ export default function AssinarContrato() {
               </p>
             </div>
 
-            <SignaturePad 
+            <SignaturePad
               ref={sigCanvas as any}
             />
 
@@ -314,7 +314,7 @@ export default function AssinarContrato() {
               variant="outline"
               onClick={() => setModalAberto(false)}
               disabled={isSigning}
-              className="flex-1 rounded-2xl h-14 font-headline font-bold text-gray-400 border-none hover:bg-gray-50 transition-all active:scale-95"
+              className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider border border-slate-100 text-slate-400 hover:text-slate-600 transition-all hover:bg-slate-100 active:scale-95"
             >
               Cancelar
             </Button>
@@ -322,7 +322,10 @@ export default function AssinarContrato() {
             <Button
               onClick={handleAssinar}
               disabled={isSigning}
-              className="flex-[1.5] rounded-2xl h-14 font-headline font-black text-lg shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white transition-all active:scale-95"
+              className={cn(
+                "flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider transition-all active:scale-95 shadow-lg",
+                "bg-[#1a3a5c] hover:bg-[#1a3a5c]/95 text-white shadow-[#1a3a5c]/20"
+              )}
             >
               {isSigning ? (
                 <>

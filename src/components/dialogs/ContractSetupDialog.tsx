@@ -691,7 +691,7 @@ export default function ContractSetupDialog({
             <Button
               variant="ghost"
               onClick={handleBack}
-              className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider text-slate-400 hover:text-slate-600 transition-all hover:bg-slate-100 active:scale-95"
+              className="flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-wider border border-slate-100 text-slate-400 hover:text-slate-600 transition-all hover:bg-slate-100 active:scale-95"
               disabled={isSubmitting}
             >
               <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
