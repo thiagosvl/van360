@@ -87,6 +87,8 @@ const ContratoMobileCard = memo(function ContratoMobileCard({
     label: action.label,
     icon: action.icon,
     onClick: action.onClick,
+    isLink: action.isLink,
+    href: action.href,
     swipeColor: action.swipeColor || "bg-gray-500",
     isDestructive: action.isDestructive,
   }));

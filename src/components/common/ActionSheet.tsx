@@ -14,6 +14,8 @@ export interface ActionSheetItem {
   description?: string;
   icon?: ReactNode;
   onClick: () => void;
+  isLink?: boolean;
+  href?: string;
   disabled?: boolean;
   isDestructive?: boolean;
   isLoading?: boolean;
@@ -68,28 +70,21 @@ export function ActionSheet({
                 ? "active:bg-rose-50 dark:active:bg-rose-900/10" 
                 : "active:bg-zinc-100 dark:active:bg-zinc-800/50";
 
-              return (
-                <button
-                  key={`${action.label}-${idx}`}
-                  disabled={action.disabled || action.isLoading}
-                  className={cn(
-                    "w-full flex items-center justify-between text-[15px] font-semibold transition-all active:scale-[0.99] rounded-none border-b last:border-0 h-auto py-4 px-6 gap-x-4",
-                    "border-zinc-50 dark:border-zinc-800/20 text-left relative",
-                    bgHoverClass,
-                    // Estilo Destrutivo
-                    action.isDestructive 
-                        ? "text-[#FF3B30]" 
-                        : "text-zinc-900 dark:text-zinc-100",
-                    // Loading/Disabled
-                    (action.disabled || action.isLoading) && "opacity-50 grayscale cursor-not-allowed",
-                    action.className
-                  )}
-                  onClick={() => {
-                    if (action.disabled || action.isLoading) return;
-                    onOpenChange(false);
-                    action.onClick();
-                  }}
-                >
+              const commonClasses = cn(
+                "w-full flex items-center justify-between text-[15px] font-semibold transition-all active:scale-[0.99] rounded-none border-b last:border-0 h-auto py-4 px-6 gap-x-4",
+                "border-zinc-50 dark:border-zinc-800/20 text-left relative",
+                bgHoverClass,
+                // Estilo Destrutivo
+                action.isDestructive 
+                    ? "text-[#FF3B30]" 
+                    : "text-zinc-900 dark:text-zinc-100",
+                // Loading/Disabled
+                (action.disabled || action.isLoading) && "opacity-50 grayscale cursor-not-allowed",
+                action.className
+              );
+
+              const content = (
+                <>
                   {/* Container de Texto */}
                   <div className="flex-1 flex flex-col min-w-0 pointer-events-none">
                     <span className="text-[16px] font-bold tracking-tight leading-normal">
@@ -113,6 +108,36 @@ export function ActionSheet({
                       action.icon && <IconRenderer icon={action.icon} className="h-5 w-5" />
                     )}
                   </div>
+                </>
+              );
+
+              if (action.isLink && action.href) {
+                return (
+                  <a
+                    key={`${action.label}-${idx}`}
+                    href={action.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={commonClasses}
+                    onClick={() => onOpenChange(false)}
+                  >
+                    {content}
+                  </a>
+                );
+              }
+
+              return (
+                <button
+                  key={`${action.label}-${idx}`}
+                  disabled={action.disabled || action.isLoading}
+                  className={commonClasses}
+                  onClick={() => {
+                    if (action.disabled || action.isLoading) return;
+                    onOpenChange(false);
+                    action.onClick();
+                  }}
+                >
+                  {content}
                 </button>
               );
             })}

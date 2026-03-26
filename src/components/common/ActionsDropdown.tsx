@@ -60,10 +60,13 @@ export function ActionsDropdown({
         {visibleActions.map((action, idx) => (
           <div key={`${action.label}-${idx}`}>
             <DropdownMenuItem
+              asChild={action.isLink && !!action.href}
               onClick={(e) => {
                  if (action.disabled || action.isLoading) return;
-                 e.stopPropagation();
-                 action.onClick();
+                 if (!action.isLink) {
+                   e.stopPropagation();
+                   action.onClick();
+                 }
               }}
               disabled={action.disabled || action.isLoading}
               className={cn(
@@ -73,16 +76,39 @@ export function ActionsDropdown({
               )}
               title={action.title}
             >
-              {action.isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mr-2" />
-              ) : action.icon && (
-                <span className={cn("h-4 w-4", 
-                   (action.isDestructive || action.variant === 'destructive') ? "text-red-600" : "text-current"
-                )}>
-                   {action.icon}
-                </span>
+              {action.isLink && action.href ? (
+                <a 
+                  href={action.href} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center gap-2"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {action.isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mr-2" />
+                  ) : action.icon && (
+                    <span className={cn("h-4 w-4", 
+                       (action.isDestructive || action.variant === 'destructive') ? "text-red-600" : "text-current"
+                    )}>
+                       {action.icon}
+                    </span>
+                  )}
+                  {action.label}
+                </a>
+              ) : (
+                <>
+                  {action.isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mr-2" />
+                  ) : action.icon && (
+                    <span className={cn("h-4 w-4", 
+                       (action.isDestructive || action.variant === 'destructive') ? "text-red-600" : "text-current"
+                    )}>
+                       {action.icon}
+                    </span>
+                  )}
+                  {action.label}
+                </>
               )}
-              {action.label}
             </DropdownMenuItem>
             {action.hasSeparatorAfter && (
                 <DropdownMenuSeparator className="bg-gray-50 my-1" />

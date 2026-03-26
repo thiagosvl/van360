@@ -4,6 +4,8 @@ export interface ActionItem {
   label: string;
   icon: ReactNode;
   onClick: () => void;
+  isLink?: boolean;
+  href?: string;
   // Visual hints
   variant?: "default" | "destructive" | "ghost"; // For Dropdown items
   swipeColor?: string; // For Mobile Swipe/Drawer styling (e.g. 'bg-red-500')

@@ -8,6 +8,8 @@ export interface MobileAction {
   label: string;
   icon: ReactNode;
   onClick: () => void;
+  isLink?: boolean;
+  href?: string;
   /** No longer used for swipe, but kept for compatibility */
   swipeColor?: string;
   /** Text color/Class for Drawer item (e.g., 'text-red-600') */
@@ -79,6 +81,8 @@ export function MobileActionItem({
           onClick: action.onClick,
           disabled: action.disabled,
           isLoading: action.isLoading,
+          isLink: action.isLink,
+          href: action.href,
           isDestructive: action.isDestructive || action.variant === "destructive",
           className: action.drawerClass,
         }))}

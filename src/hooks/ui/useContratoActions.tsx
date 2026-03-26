@@ -61,6 +61,8 @@ export function useContratoActions({
             label: 'Ver Contrato',
             icon: <ExternalLink className="h-4 w-4" />,
             onClick: () => onVisualizarFinal(item.minuta_url),
+            isLink: true,
+            href: item.minuta_url,
             swipeColor: 'bg-green-600',
           });
         }
@@ -84,10 +86,13 @@ export function useContratoActions({
 
       if (isAssinado) {
         if (onVisualizarFinal && (item.contrato_final_url || item.contrato_url)) {
+          const urlContrato = item.contrato_final_url || item.contrato_url;
           list.push({
             label: 'Ver Contrato',
             icon: <Eye className="h-4 w-4" />,
-            onClick: () => onVisualizarFinal(item.contrato_final_url || item.contrato_url),
+            onClick: () => onVisualizarFinal(urlContrato),
+            isLink: true,
+            href: urlContrato,
             swipeColor: 'bg-green-600',
           });
         }

@@ -12,10 +12,22 @@ export const openBrowserLink = async (url: string) => {
     if (Capacitor.isNativePlatform()) {
       await Browser.open({ url });
     } else {
-      window.open(url, '_blank');
+      // Para Web/PWA, simular um clique em um link real é mais robusto em mobile/standalone
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   } catch (error) {
     console.error('Erro ao abrir link:', error);
-    window.open(url, '_blank');
+    // Fallback de segurança
+    try {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (e) {
+      window.location.href = url;
+    }
   }
 };
