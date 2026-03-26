@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronRight,
   TrendingDown,
+  Bus,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -87,7 +88,10 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
 
       {/* Categorias */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden">
-        <div className="pt-6 px-6">
+        <div className="pt-6 px-6 flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
+            <TrendingDown className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+          </div>
           <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
             Categorias de Gasto
           </h3>
@@ -112,8 +116,8 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
-                  <Icon className="h-5 w-5 opacity-80 group-hover:opacity-100" />
-                </div>
+                      <Icon className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+                    </div>
                     <div className="flex flex-col">
                       <span className="text-[11px] font-bold text-[#1a3a5c] uppercase tracking-wider">
                         {cat.nome}
@@ -121,9 +125,6 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
                       <div className="flex items-center gap-1.5 font-headline font-black text-[#1a3a5c] text-sm">
                         {formatCurrency(cat.valor)}
                         <span className="text-[10px] text-slate-300">•</span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">
-                          {cat.count} reg.
-                        </span>
                       </div>
                     </div>
                   </div>
@@ -161,7 +162,7 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
                               {formatCurrency(v.valor)}
                             </div>
                             <div className="text-[9px] font-bold text-slate-300 uppercase">
-                              {v.count} reg.
+                              {v.count === 1 ? "1 registro" : `${v.count} registros`}
                             </div>
                           </div>
                         </div>
@@ -187,7 +188,10 @@ export const RelatoriosSaidas = ({ dados }: RelatoriosSaidasProps) => {
         (dados.veiculosCount || 0) > 1 &&
         dados.temGastosVinculados && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-diff-shadow overflow-hidden">
-            <div className="pt-6 px-6">
+            <div className="pt-6 px-6 flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] group-hover:bg-[#1a3a5c] group-hover:text-white border border-slate-100/60 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-slate-100">
+                <Bus className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+              </div>
               <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                 Gastos por Veículo
               </h3>

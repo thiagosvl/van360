@@ -23,7 +23,7 @@ export const RelatoriosEntradas = ({ dados }: RelatoriosEntradasProps) => {
     <div className="space-y-4 px-1">
       <div className="grid grid-cols-2 gap-4">
         <KPICard
-          label="Receita Realizada"
+          label="Receita no Mês"
           icon={TrendingUp}
           variant={KPICardVariant.PRIMARY}
           value={formatCurrency(dados.realizado)}
