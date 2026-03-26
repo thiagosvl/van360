@@ -102,7 +102,7 @@ export default function Gastos() {
 
           <div className="flex items-center justify-between px-1">
             <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
-              Controle de Gastos
+              Gastos
             </h2>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
               {gastos.length} REGISTROS

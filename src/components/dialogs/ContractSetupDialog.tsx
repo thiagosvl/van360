@@ -75,6 +75,7 @@ export default function ContractSetupDialog({
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   // Memory management for PDF Blob URL
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pdfUrlRef = useRef<string | null>(null);
   const initializedRef = useRef(false);
 
@@ -85,6 +86,11 @@ export default function ContractSetupDialog({
       }
     };
   }, []);
+
+  // Reset scroll when step changes
+  useEffect(() => {
+    scrollContainerRef.current?.scrollTo(0, 0);
+  }, [step]);
 
   // Initialize from profile or default
   useEffect(() => {
@@ -322,7 +328,7 @@ export default function ContractSetupDialog({
           >
             <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
             <p className="text-[10px] text-amber-900 leading-relaxed italic font-medium">
-              A qualquer momento você poderá ativar os contratos automáticos na tela de Passageiros ou no seu Perfil.
+              A qualquer momento você poderá ativar as configurações de contrato na tela de contratos.
             </p>
           </motion.div>
         )}
@@ -556,7 +562,7 @@ export default function ContractSetupDialog({
           <div className="absolute top-4 right-4 pointer-events-none">
             <div className="bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-slate-100 shadow-sm">
               <PenTool className="w-3 h-3 text-[#1a3a5c] opacity-60" />
-              <span className="text-[9px] font-black text-[#1a3a5c] uppercase tracking-wider">Painel Digital</span>
+              <span className="text-[9px] font-black text-[#1a3a5c] uppercase tracking-wider">Faça sua assinatura</span>
             </div>
           </div>
         </div>
@@ -580,8 +586,8 @@ export default function ContractSetupDialog({
   const renderPreview = () => (
     <div className="space-y-3">
       <div className="text-center space-y-0.5">
-        <h3 className="text-lg font-black text-[#1a3a5c] uppercase tracking-tight">Resumo Final</h3>
-        <p className="text-[10px] text-slate-500 italic font-medium px-4 leading-relaxed">Revise antes de salvar as configurações do contrato.</p>
+        <h3 className="text-lg font-black text-[#1a3a5c] uppercase tracking-tight">Revise as configurações</h3>
+        <p className="text-[10px] text-slate-500 italic font-medium px-4 leading-relaxed">Só confirme após revisar as configurações.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
@@ -600,23 +606,15 @@ export default function ContractSetupDialog({
         <div className="col-span-2 p-3 bg-slate-50 rounded-3xl border border-slate-100/60 flex items-center justify-between">
           <div>
             <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Cláusulas</p>
-            <p className="text-[10px] font-semibold text-[#1a3a5c] uppercase tracking-tight">{clausulas.filter(c => c.trim()).length} itens ativos</p>
+            <p className="text-[10px] font-semibold text-[#1a3a5c] uppercase">{clausulas.filter(c => c.trim()).length} itens ativos</p>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-[#1a3a5c] font-bold text-[8px] uppercase hover:bg-[#1a3a5c]/5 rounded-xl h-7 transition-all"
-            onClick={() => setStep(SetupStep.CLAUSES)}
-          >
-            Editar
-          </Button>
         </div>
       </div>
 
       <div className="space-y-3 px-2">
         <Button
           variant="outline"
-          className="w-full h-12 border border-slate-200 text-[#1a3a5c]/70 hover:bg-slate-50 rounded-2xl font-bold uppercase text-[9px] tracking-widest group transition-all active:scale-[0.98]"
+          className="w-full h-12 border border-slate-200 text-[#1a3a5c] hover:bg-slate-50 rounded-2xl font-black uppercase text-[10px] tracking-widest group transition-all active:scale-[0.98]"
           disabled={previewMutation.isPending}
           onClick={async () => {
             try {
@@ -645,7 +643,7 @@ export default function ContractSetupDialog({
         <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 flex gap-3">
           <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
           <p className="text-[11px] text-blue-800 leading-relaxed italic">
-            Ao concluir, os futuros passageiros cadastrados receberão este modelo via WhatsApp.
+            Ao confirmar, os contratos passarão a ser gerados seguindo as configurações definidas acima.
           </p>
         </div>
       </div>
@@ -709,7 +707,7 @@ export default function ContractSetupDialog({
           )}
         </div>
 
-        <div className="p-6 pt-2 flex-1 overflow-y-auto min-h-[300px]">
+        <div ref={scrollContainerRef} className="p-6 pt-2 flex-1 overflow-y-auto min-h-[300px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
@@ -758,7 +756,6 @@ export default function ContractSetupDialog({
                       ? "Confirmar"
                       : "Continuar"}
                 </span>
-                {step < SetupStep.PREVIEW && <ChevronRight className="w-3.5 h-3.5" />}
               </div>
             )}
           </Button>

@@ -32,7 +32,7 @@ const pagesItems = [
         icon: Car,
     },
     {
-        title: "Controle de Gastos",
+        title: "Gastos",
         href: "/gastos",
         icon: TrendingDown,
     },

@@ -13,12 +13,12 @@ export function useGastosViewModel() {
     openConfirmationDialog,
     closeConfirmationDialog,
   } = useLayout();
-  
+
   const {
     isLoading: isProfileLoading,
     profile,
   } = useProfile();
-  
+
   const deleteGasto = useDeleteGasto();
 
   const {
@@ -73,7 +73,7 @@ export function useGastosViewModel() {
   const { data: veiculosData } = useVeiculos({ usuarioId: profile?.id }, {
     enabled: !!profile?.id,
   });
-  
+
   const veiculos = useMemo(() => veiculosData?.list || [], [veiculosData]);
   const veiculosDropdown = useMemo(() => veiculos.map((v) => ({ id: v.id, placa: v.placa })), [veiculos]);
 
@@ -86,7 +86,7 @@ export function useGastosViewModel() {
   });
 
   useEffect(() => {
-    setPageTitle("Controle de Gastos");
+    setPageTitle("Gastos");
   }, [setPageTitle]);
 
   const handleDelete = useCallback(

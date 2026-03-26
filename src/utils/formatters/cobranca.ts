@@ -1,23 +1,17 @@
-import { CobrancaOrigem, CobrancaTipoPagamento } from "@/types/enums";
+import { CobrancaTipoPagamento } from "@/types/enums";
 import { formatDate } from "./date";
-
-export const formatCobrancaOrigem = (origem: string): string => {
-  if (origem === CobrancaOrigem.AUTOMATICA) {
-    return "Gerada Automaticamente";
-  }
-  return "Registrada Manualmente";
-};
+import { tiposPagamento } from "./constants";
 
 export const formatPaymentType = (tipo: string | undefined) => {
   if (!tipo) return "";
 
   const typeMap: Record<string, string> = {
-    [CobrancaTipoPagamento.DINHEIRO]: "Dinheiro",
-    [CobrancaTipoPagamento.CARTAO_CREDITO]: "Cartão de Crédito",
-    [CobrancaTipoPagamento.CARTAO_DEBITO]: "Cartão de Débito",
-    [CobrancaTipoPagamento.TRANSFERENCIA]: "Transferência",
-    [CobrancaTipoPagamento.PIX]: "PIX",
-    [CobrancaTipoPagamento.BOLETO]: "Boleto",
+    [CobrancaTipoPagamento.DINHEIRO]: tiposPagamento.find((t) => t.value === CobrancaTipoPagamento.DINHEIRO)?.label,
+    [CobrancaTipoPagamento.CARTAO_CREDITO]: tiposPagamento.find((t) => t.value === CobrancaTipoPagamento.CARTAO_CREDITO)?.label,
+    [CobrancaTipoPagamento.CARTAO_DEBITO]: tiposPagamento.find((t) => t.value === CobrancaTipoPagamento.CARTAO_DEBITO)?.label,
+    [CobrancaTipoPagamento.TRANSFERENCIA]: tiposPagamento.find((t) => t.value === CobrancaTipoPagamento.TRANSFERENCIA)?.label,
+    [CobrancaTipoPagamento.PIX]: tiposPagamento.find((t) => t.value === CobrancaTipoPagamento.PIX)?.label,
+    [CobrancaTipoPagamento.BOLETO]: tiposPagamento.find((t) => t.value === CobrancaTipoPagamento.BOLETO)?.label,
   };
 
   return typeMap[tipo] || tipo;

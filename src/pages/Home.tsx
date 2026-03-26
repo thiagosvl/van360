@@ -176,7 +176,7 @@ const Home = () => {
                 onClick={handleCopyLink}
                 icon={Copy}
                 activeIcon={CopyCheck}
-                label={isCopied ? "Copiado!" : "Copiar Link"}
+                label={isCopied ? "Copiado!" : "Link de Cadastro"}
                 isActive={isCopied}
               />
               <ShortcutCard
@@ -192,7 +192,7 @@ const Home = () => {
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.EXPENSES}
                 icon={TrendingDown}
-                label="Controle de Gastos"
+                label="Gastos"
               />
               <ShortcutCard
                 to={ROUTES.PRIVATE.MOTORISTA.REPORTS}

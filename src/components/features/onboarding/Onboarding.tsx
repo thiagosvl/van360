@@ -28,7 +28,7 @@ const slides = [
     color: "from-[#1a3a5c] to-[#2a4a6c]",
   },
   {
-    title: "Controle de Gastos",
+    title: "Gastos",
     description: "Registre despesas com manutenção, combustível e outros custos para saber o lucro real da sua van.",
     icon: Wrench,
     color: "from-[#1a3a5c] to-[#2a4a6c]",
@@ -69,11 +69,11 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
     <div className="fixed inset-0 z-[100] bg-[#F8FAFB] flex items-center justify-center">
       {/* Container Responsivo Centrado */}
       <div className="w-full max-w-lg h-full bg-[#F8FAFB] relative flex flex-col items-center justify-between p-6 overflow-hidden">
-        
+
         <div className="w-full flex justify-end absolute top-6 right-6 z-10">
-          <Button 
-            variant="ghost" 
-            onClick={onComplete} 
+          <Button
+            variant="ghost"
+            onClick={onComplete}
             className="text-[10px] font-black uppercase tracking-widest text-[#1a3a5c]/60 hover:text-[#1a3a5c] hover:bg-transparent"
           >
             Pular
@@ -91,7 +91,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                   )}>
                     <slide.icon className="w-14 h-14 text-white" />
                   </div>
-                  
+
                   <div className="space-y-4 max-w-sm">
                     <h2 className="text-xl font-black uppercase tracking-tight text-[#1a3a5c] px-4">
                       {slide.title}
@@ -120,8 +120,8 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
             ))}
           </div>
 
-          <Button 
-            onClick={handleNext} 
+          <Button
+            onClick={handleNext}
             className="w-full h-11 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-sm active:scale-95 transition-all bg-[#1a3a5c] hover:bg-[#1a3a5c]/90 text-white"
           >
             {selectedIndex === slides.length - 1 ? "Começar Agora" : "Próximo"}

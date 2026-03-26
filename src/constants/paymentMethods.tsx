@@ -1,10 +1,11 @@
 import { CobrancaTipoPagamento } from "@/types/enums";
-import { 
-  Banknote, 
-  CreditCard, 
-  FileText, 
-  QrCode, 
-  Send 
+import { formatPaymentType } from "@/utils/formatters";
+import {
+  Banknote,
+  CreditCard,
+  FileText,
+  QrCode,
+  Send
 } from "lucide-react";
 import { ReactNode } from "react";
 
@@ -18,37 +19,37 @@ export interface PaymentMethodOption {
 export const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     value: CobrancaTipoPagamento.PIX,
-    label: "PIX",
+    label: formatPaymentType(CobrancaTipoPagamento.PIX),
     icon: <QrCode className="w-5 h-5" />,
     color: "text-emerald-600",
   },
   {
     value: CobrancaTipoPagamento.DINHEIRO,
-    label: "Dinheiro",
+    label: formatPaymentType(CobrancaTipoPagamento.DINHEIRO),
     icon: <Banknote className="w-5 h-5" />,
     color: "text-green-600",
   },
   {
     value: CobrancaTipoPagamento.CARTAO_CREDITO,
-    label: "Cartão de Crédito",
+    label: formatPaymentType(CobrancaTipoPagamento.CARTAO_CREDITO),
     icon: <CreditCard className="w-5 h-5" />,
     color: "text-blue-600",
   },
   {
     value: CobrancaTipoPagamento.CARTAO_DEBITO,
-    label: "Cartão de Débito",
+    label: formatPaymentType(CobrancaTipoPagamento.CARTAO_DEBITO),
     icon: <CreditCard className="w-5 h-5" />,
     color: "text-indigo-600",
   },
   {
     value: CobrancaTipoPagamento.TRANSFERENCIA,
-    label: "Transferência",
+    label: formatPaymentType(CobrancaTipoPagamento.TRANSFERENCIA),
     icon: <Send className="w-5 h-5" />,
     color: "text-orange-600",
   },
   {
     value: CobrancaTipoPagamento.BOLETO,
-    label: "Boleto Bancário",
+    label: formatPaymentType(CobrancaTipoPagamento.BOLETO),
     icon: <FileText className="w-5 h-5" />,
     color: "text-slate-600",
   },
