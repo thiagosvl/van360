@@ -118,8 +118,10 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   }
 
   // 🔹 Se já está logado e tentar acessar login/cadastro → manda pro início
+  // Exceção: tela de boas-vindas pós-cadastro no app nativo (flag temporário)
+  const showingWelcome = sessionStorage.getItem("van360_showing_welcome") === "true";
   const authPaths: string[] = [ROUTES.PUBLIC.LOGIN, ROUTES.PUBLIC.REGISTER, ROUTES.PUBLIC.ROOT, ROUTES.PUBLIC.SPLASH];
-  if (session && authPaths.includes(location.pathname)) {
+  if (session && authPaths.includes(location.pathname) && !showingWelcome) {
     return <Navigate to={ROUTES.PRIVATE.MOTORISTA.HOME} replace />;
   }
 

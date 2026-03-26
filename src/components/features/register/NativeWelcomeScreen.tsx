@@ -1,13 +1,18 @@
 import { ROUTES } from "@/constants/routes";
 import { PartyPopper } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export function NativeWelcomeScreen() {
   const navigate = useNavigate();
   const [progress, setProgress] = useState(0);
+  const continuedRef = useRef(false);
 
   const handleContinue = () => {
+    if (continuedRef.current) return;
+    continuedRef.current = true;
+    // Limpar flag — AppGate volta a redirecionar normalmente
+    sessionStorage.removeItem("van360_showing_welcome");
     navigate(ROUTES.PRIVATE.MOTORISTA.HOME, { replace: true });
   };
 

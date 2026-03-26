@@ -55,8 +55,11 @@ export function useRegisterController() {
       const result = await usuarioApi.registrar(data);
       if (result?.error) throw new Error(result.error);
 
-      // App nativo: login automático + tela de boas-vindas
+      // App nativo: setar sessão imediatamente + mostrar tela de boas-vindas
       if (isNativeApp()) {
+        // Flag para AppGate não redirecionar enquanto a tela de boas-vindas está ativa
+        sessionStorage.setItem("van360_showing_welcome", "true");
+
         const { error } = await sessionManager.setSession(
           result.session.access_token,
           result.session.refresh_token,
@@ -64,12 +67,12 @@ export function useRegisterController() {
         );
 
         if (error) {
+          sessionStorage.removeItem("van360_showing_welcome");
           toast.error("auth.erro.login", {
             description: "Cadastro realizado, mas não foi possível fazer login automático.",
           });
           navigate(ROUTES.PUBLIC.LOGIN);
         } else {
-          // Mostrar tela de boas-vindas antes de ir para home
           setShowNativeWelcome(true);
         }
         return;
