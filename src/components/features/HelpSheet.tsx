@@ -79,7 +79,6 @@ export function HelpSheet() {
               </div>
               <div>
                 <DrawerTitle className="text-xl font-black text-slate-900 text-left">Central de Ajuda</DrawerTitle>
-                <p className="text-sm text-slate-500 text-left">Como podemos te ajudar hoje?</p>
               </div>
             </div>
           </DrawerHeader>
@@ -118,11 +117,6 @@ export function HelpSheet() {
                 ))}
               </div>
             </section>
-
-            {/* Versão */}
-            <div className="text-center pt-4">
-              <p className="text-[10px] font-bold text-slate-300 uppercase tracking-tighter">Van360 Beta v1.0.4</p>
-            </div>
           </div>
         </div>
       </DrawerContent>

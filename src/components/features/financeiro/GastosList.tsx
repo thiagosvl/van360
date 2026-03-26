@@ -69,31 +69,36 @@ const GastoMobileCard = memo(function GastoMobileCard({
     <MobileActionItem actions={actions as any} showHint={index === 0} className="bg-transparent">
       <div
         onClick={() => onEdit(gasto)}
-        className="bg-white p-3 rounded-xl shadow-diff-shadow flex items-center gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
+        className="bg-white p-3 pr-10 rounded-xl shadow-diff-shadow flex items-start gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
       >
-        <div className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center border border-slate-100 bg-slate-50/50">
+        <div className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center border border-slate-100 bg-slate-50/50 mt-0.5">
           <Icon className="h-5 w-5 text-[#1a3a5c] opacity-60" />
         </div>
 
-        <div className="flex-grow min-w-0 pr-24">
+        <div className="flex-grow min-w-0">
           <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
             {gasto.categoria}
           </p>
-          <div className="flex items-center gap-2 mt-0.5">
-            <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
+          <div className="mt-1">
+            <p className="text-[10px] text-gray-500 font-medium opacity-60 break-words line-clamp-2 leading-relaxed">
               {gasto.descricao || "Sem descrição"}
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-1 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
+        <div className="flex flex-col items-end gap-1 flex-shrink-0 pt-0.5 min-w-[70px]">
           <p className="font-headline font-bold text-[#1a3a5c] text-[13px] leading-none mb-0.5">
             {formatCurrency(gasto.valor)}
           </p>
-          <div className="flex items-center gap-1.5 grayscale opacity-50">
+          <div className="flex flex-col items-end gap-1 opacity-50">
             <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap leading-none">
               {formatDateToBR(gasto.data)}
             </span>
+            {placa && (
+              <span className="text-[8px] font-black text-[#1a3a5c]/70 uppercase tracking-tighter">
+                {formatarPlacaExibicao(placa)}
+              </span>
+            )}
           </div>
         </div>
       </div>

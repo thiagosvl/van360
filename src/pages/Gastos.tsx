@@ -56,8 +56,7 @@ export default function Gastos() {
               mes={mesFilter}
               ano={anoFilter}
               onNavigate={(m, a) => {
-                setSelectedMes(m);
-                setSelectedAno(a);
+                setFilters({ mes: m, ano: a });
               }}
               disabled={false}
             />

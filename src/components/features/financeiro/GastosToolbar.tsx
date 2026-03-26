@@ -176,6 +176,7 @@ export const GastosToolbar = memo(function GastosToolbar({
                       </SelectTrigger>
                       <SelectContent className="z-[9999]">
                         <SelectItem value="todos">Todos Veículos</SelectItem>
+                        <SelectItem value="unspecified">Não Especificado</SelectItem>
                         {veiculos.map((v) => (
                           <SelectItem key={v.id} value={v.id}>
                             {formatarPlacaExibicao(v.placa)}
@@ -265,6 +266,7 @@ export const GastosToolbar = memo(function GastosToolbar({
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                         <SelectItem value="todos">Todos</SelectItem>
+                        <SelectItem value="unspecified">Não Especificado</SelectItem>
                         {veiculos.map((v) => (
                             <SelectItem key={v.id} value={v.id}>
                             {formatarPlacaExibicao(v.placa)}

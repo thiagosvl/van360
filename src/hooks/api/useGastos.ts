@@ -39,11 +39,15 @@ export function useGastos(
     queryFn: async () => {
       if (!filters.usuarioId) return [];
 
+      const year = filters.ano;
+      const month = String(filters.mes).padStart(2, "0");
+      const lastDay = new Date(year, filters.mes, 0).getDate();
+
       const data = await gastoApi.listGastos(filters.usuarioId, {
-        mes: filters.mes.toString(),
-        ano: filters.ano.toString(),
+        data_inicio: `${year}-${month}-01`,
+        data_fim: `${year}-${month}-${lastDay}`,
         categoria: filters.categoria && filters.categoria !== "todas" ? filters.categoria : undefined,
-        veiculoId: filters.veiculoId && filters.veiculoId !== "todos" ? filters.veiculoId : undefined,
+        veiculo_id: filters.veiculoId && filters.veiculoId !== "todos" ? filters.veiculoId : undefined,
         search: filters.search?.trim() ? filters.search.trim() : undefined,
       });
 
