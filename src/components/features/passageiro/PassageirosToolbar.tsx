@@ -126,19 +126,6 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
-        {/* Search Bar */}
-        <div className="relative group flex-grow">
-          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-gray-400 group-focus-within:text-[#1a3a5c] transition-colors" />
-          </div>
-          <Input
-            placeholder={searchPlaceholder}
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full bg-white border border-gray-100/50 h-12 pl-11 pr-4 rounded-xl shadow-diff-shadow font-medium text-sm text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all"
-          />
-        </div>
-
         {/* Buttons Section (Desktop) */}
         <div className="hidden md:flex items-center gap-3">
           {showAdvancedFilters && (
@@ -401,6 +388,19 @@ export const PassageirosToolbar = memo(function PassageirosToolbar({
                 Novo
               </Button>
             )}
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative group flex-grow">
+          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-gray-400 group-focus-within:text-[#1a3a5c] transition-colors" />
+          </div>
+          <Input
+            placeholder={searchPlaceholder}
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="w-full bg-white border border-gray-100/50 h-12 pl-11 pr-4 rounded-xl shadow-diff-shadow font-medium text-sm text-gray-900 placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-[#1a3a5c]/30 transition-all"
+          />
         </div>
       </div>
     </div>

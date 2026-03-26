@@ -67,6 +67,19 @@ export default function Cobrancas() {
             onNavigate={handleNavigation}
           />
 
+          <div className="grid grid-cols-2 gap-4 px-1">
+            <KPICard
+              label="TOTAL PENDENTE"
+              value={formatCurrency(totalAReceber)}
+              variant={KPICardVariant.PRIMARY}
+            />
+            <KPICard
+              label="TOTAL RECEBIDO"
+              value={formatCurrency(totalRecebido)}
+              variant={KPICardVariant.OUTLINE}
+            />
+          </div>
+
           <Tabs
             value={activeTab}
             onValueChange={handleTabChange}
@@ -81,19 +94,6 @@ export default function Cobrancas() {
               countRecebidos={countRecebidos}
               activeTab={activeTab}
             />
-
-            <div className="grid grid-cols-2 gap-4 px-1">
-              <KPICard
-                label="TOTAL PENDENTE"
-                value={formatCurrency(totalAReceber)}
-                variant={KPICardVariant.PRIMARY}
-              />
-              <KPICard
-                label="TOTAL RECEBIDO"
-                value={formatCurrency(totalRecebido)}
-                variant={KPICardVariant.OUTLINE}
-              />
-            </div>
 
             <div className="flex items-center justify-between px-1">
               <h2 className="text-sm font-bold text-[#1a3a5c] font-headline">
