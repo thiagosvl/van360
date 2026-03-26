@@ -83,10 +83,10 @@ const randomEnum = <T>(anEnum: T): T[keyof T] => {
 };
 
 const generateDate = (startYear: number, endYear: number) => {
-    const year = randomNumber(startYear, endYear);
-    const month = randomNumber(1, 12).toString().padStart(2, '0');
-    const day = randomNumber(1, 28).toString().padStart(2, '0');
-    return `${day}/${month}/${year}`;
+  const year = randomNumber(startYear, endYear);
+  const month = randomNumber(1, 12).toString().padStart(2, '0');
+  const day = randomNumber(1, 28).toString().padStart(2, '0');
+  return `${day}/${month}/${year}`;
 };
 
 /**
@@ -119,10 +119,10 @@ export const generateCPF = (formatted = true): string => {
   const n9 = randomNumber(0, 9);
 
   let cpf = `${n1}${n2}${n3}${n4}${n5}${n6}${n7}${n8}${n9}`;
-  
+
   const d1 = createCPFDigit(cpf);
   cpf += d1;
-  
+
   const d2 = createCPFDigit(cpf);
   cpf += d2;
 
@@ -211,7 +211,7 @@ export const generateVencimento = (): string => {
  * Gera um valor de mensalidade aleatório formatado
  */
 export const generateValorCobranca = (): string => {
-  const valores = ["1,00", "1,15", "1,25"];
+  const valores = ["150,00", "180,00", "200,00", "220,00", "250,00"];
   return valores[randomNumber(0, valores.length - 1)];
 };
 
@@ -260,7 +260,7 @@ export const mockGenerator = {
     const hoje = new Date();
     const diasAtras = randomNumber(0, 30);
     const data = new Date(hoje.getTime() - diasAtras * 24 * 60 * 60 * 1000);
-    
+
     return {
       valor: `R$ ${valor},00`,
       data,
@@ -285,14 +285,14 @@ export const mockGenerator = {
       ...address,
       ativo: true,
       observacoes: "é um teste",
-      
+
       // New fields from Schema/Enums
       genero: randomEnum(PassageiroGenero),
       modalidade: randomEnum(PassageiroModalidade),
       parentesco_responsavel: randomEnum(ParentescoResponsavel),
       data_nascimento: generateDate(2010, 2020), // 4-14 years old
       data_inicio_transporte: generateDate(2024, 2024),
-      
+
       ...overrides
     };
   }

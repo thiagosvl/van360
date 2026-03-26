@@ -96,27 +96,19 @@ const Home = () => {
             </section>
           )}
 
-          {/* Notificação de Mensalidades pendentes / em dia */}
-          {!onboarding.showOnboarding && financeiro.recebido > 0 && (
+          {/* Notificação de Mensalidades pendentes */}
+          {!onboarding.showOnboarding && financeiro.countAtrasos > 0 && (
             <section>
-              {financeiro.countAtrasos > 0 ? (
-                <DashboardStatusCard
-                  type="pending"
-                  title="Passageiros em Atraso"
-                  description={`Você tem ${formatCurrency(
-                    financeiro.totalEmAtraso,
-                  )} em atraso de ${financeiro.countAtrasos} passageiro${financeiro.countAtrasos != 1 ? "s" : ""
-                    } referente ao mês de ${getMesNome(new Date().getMonth() + 1)}.`}
-                  actionLabel="Ver Mensalidades"
-                  onAction={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.BILLING)}
-                />
-              ) : (
-                <DashboardStatusCard
-                  type="success"
-                  title={`Mensalidades de ${getMesNome(new Date().getMonth() + 1)} em dia!`}
-                  description={`Todas as mensalidades vencidas do mês foram pagas.`}
-                />
-              )}
+              <DashboardStatusCard
+                type="pending"
+                title="Passageiros em Atraso"
+                description={`Você tem ${formatCurrency(
+                  financeiro.totalEmAtraso,
+                )} em atraso de ${financeiro.countAtrasos} passageiro${financeiro.countAtrasos != 1 ? "s" : ""
+                  } referente ao mês de ${getMesNome(new Date().getMonth() + 1)}.`}
+                actionLabel="Ver Mensalidades"
+                onAction={() => navigateTo(ROUTES.PRIVATE.MOTORISTA.BILLING)}
+              />
             </section>
           )}
 
@@ -131,17 +123,17 @@ const Home = () => {
             {!onboarding.showOnboarding && (
               <>
                 <KPICard
-                  label="Recebido"
-                  value={formatCurrency(financeiro.recebido)}
-                  icon={DollarSign}
-                  variant={KPICardVariant.PRIMARY}
-                  loading={isLoading}
-                />
-                <KPICard
                   label="A receber"
                   value={formatCurrency(financeiro.aReceber)}
                   icon={Wallet}
                   variant={KPICardVariant.OUTLINE}
+                  loading={isLoading}
+                />
+                <KPICard
+                  label="Recebido"
+                  value={formatCurrency(financeiro.recebido)}
+                  icon={DollarSign}
+                  variant={KPICardVariant.PRIMARY}
                   loading={isLoading}
                 />
               </>

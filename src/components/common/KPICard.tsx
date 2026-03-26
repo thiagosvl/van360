@@ -31,6 +31,24 @@ export function KPICard({
   valueClassName,
   loading = false,
 }: KPICardProps) {
+  const getDynamicFontSize = () => {
+    if (typeof value !== "string") return "text-xl";
+
+    // Converte R$ 1.500,00 -> 1500.00
+    const cleanValue = value.replace(/[^\d,]/g, "").replace(",", ".");
+    const num = parseFloat(cleanValue);
+
+    if (isNaN(num)) {
+      if (value.length > 12) return "text-md";
+      if (value.length > 9) return "text-lg";
+      return "text-xl";
+    }
+
+    if (num <= 999.99) return "text-xl";
+    if (num <= 9999.99) return "text-lg";
+    return "text-md";
+  };
+
   return (
     <div
       className={cn(
@@ -41,16 +59,27 @@ export function KPICard({
     >
       <div className="flex items-center gap-2 mb-1.5">
         {Icon && <Icon className={cn("w-3 h-3 opacity-30")} />}
-        <span className={cn("text-[10px] font-headline font-bold uppercase tracking-[0.15em] opacity-40", labelClassName)}>
+        <span
+          className={cn(
+            "text-[10px] font-headline font-bold uppercase tracking-[0.15em] opacity-40",
+            labelClassName
+          )}
+        >
           {label}
         </span>
       </div>
-      
+
       <div className="flex items-baseline gap-2">
         {loading ? (
           <div className="h-7 w-24 bg-gray-100 animate-pulse rounded-lg mt-1" />
         ) : (
-          <h3 className={cn("text-[22px] font-headline font-black leading-tight tracking-tight", valueClassName)}>
+          <h3
+            className={cn(
+              getDynamicFontSize(),
+              "font-headline font-black leading-tight tracking-tight",
+              valueClassName
+            )}
+          >
             {value}
           </h3>
         )}
