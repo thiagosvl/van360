@@ -68,12 +68,12 @@ export default function Cobrancas() {
 
           <div className="grid grid-cols-2 gap-4 px-1">
             <KPICard
-              label="TOTAL PENDENTE"
+              label="A receber no mês"
               value={formatCurrency(totalAReceber)}
               variant={KPICardVariant.PRIMARY}
             />
             <KPICard
-              label="TOTAL RECEBIDO"
+              label="Total Recebido"
               value={formatCurrency(totalRecebido)}
               variant={KPICardVariant.OUTLINE}
             />

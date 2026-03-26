@@ -121,13 +121,13 @@ const Home = () => {
             {!onboarding.showOnboarding && (
               <>
                 <KPICard
-                  label="TOTAL PENDENTE"
+                  label={`A receber em ${getMesNome(new Date().getMonth() + 1)}`}
                   value={formatCurrency(financeiro.aReceber)}
                   variant={KPICardVariant.PRIMARY}
                   loading={isLoading}
                 />
                 <KPICard
-                  label="TOTAL RECEBIDO"
+                  label={`Recebido em ${getMesNome(new Date().getMonth() + 1)}`}
                   value={formatCurrency(financeiro.recebido)}
                   variant={KPICardVariant.OUTLINE}
                   loading={isLoading}
