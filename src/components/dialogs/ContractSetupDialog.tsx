@@ -239,10 +239,10 @@ export default function ContractSetupDialog({
     <div className="space-y-4">
       <div className="text-center space-y-1">
         <h2 className="text-lg font-black text-[#1a3a5c] uppercase tracking-tight">
-          Use Contratos Automáticos
+          Contratos Automáticos
         </h2>
         <p className="text-[11px] text-slate-500 leading-relaxed px-4 italic font-medium">
-          O sistema irá gerar o contrato, enviar para o responsável e solicitar a assinatura digital, para cada passageiro cadastrado.
+          O sistema gera o contrato, envia para o responsável e solicita a assinatura digital, para cada passageiro cadastrado.
         </p>
       </div>
 
@@ -268,7 +268,7 @@ export default function ContractSetupDialog({
               "text-[13px] font-black uppercase tracking-tight",
               usarContratos ? "text-[#1a3a5c]" : "text-slate-600"
             )}>
-              Ativar Contratos
+              Usar Contratos
             </h4>
             <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wide italic">
               PDF automático e digital

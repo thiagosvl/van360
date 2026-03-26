@@ -1,3 +1,5 @@
+import { DuplicateErrorBanner } from "@/components/features/register/DuplicateErrorBanner";
+import { NativeWelcomeScreen } from "@/components/features/register/NativeWelcomeScreen";
 import { PostRegisterScreen } from "@/components/features/register/PostRegisterScreen";
 import { RegistrationFormStep } from "@/components/features/register/steps/RegistrationFormStep";
 import { Button } from "@/components/ui/button";
@@ -18,9 +20,17 @@ export default function Register() {
     handleFillMagic,
     postRegisterData,
     handleContinueInBrowser,
+    showNativeWelcome,
+    duplicateError,
+    clearDuplicateError,
   } = useRegisterController();
 
   const WandIcon = Wand2;
+
+  // Tela de boas-vindas após primeiro cadastro no app nativo
+  if (showNativeWelcome) {
+    return <NativeWelcomeScreen />;
+  }
 
   // Tela pós-cadastro condicional (somente web)
   if (postRegisterData) {
@@ -71,6 +81,12 @@ export default function Register() {
         </div>
 
           <div className="p-6 sm:p-10 lg:p-12">
+            {duplicateError && (
+              <DuplicateErrorBanner
+                error={duplicateError}
+                onDismiss={clearDuplicateError}
+              />
+            )}
             <RegistrationFormStep
               form={form}
               loading={loading}

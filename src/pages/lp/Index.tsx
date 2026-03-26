@@ -119,7 +119,7 @@ const Index = () => {
       `}</style>
 
       {/* ══════════ NAVBAR ══════════ */}
-      <nav className="sticky top-0 z-50 bg-white/97 backdrop-blur-md border-b border-slate-100 shadow-sm">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/97 backdrop-blur-md border-b border-slate-100 shadow-sm">
         <div className="max-w-[1120px] mx-auto px-5 flex items-center justify-between h-14 md:h-16">
           <span className="text-2xl font-black text-[#1a3a5c] tracking-tight">
             Van<span className="text-[#f59e0b]">360</span>
@@ -135,7 +135,7 @@ const Index = () => {
               to={CTA}
               className="inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold text-sm px-5 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all"
             >
-              Começar grátis
+              Começar grátis — 15 dias sem cartão
             </Link>
           </div>
           <button
@@ -169,6 +169,9 @@ const Index = () => {
           </div>
         )}
       </nav>
+
+      {/* Spacer para compensar navbar fixed */}
+      <div className="h-14 md:h-16" />
 
       {/* ══════════ HERO ══════════ */}
       <section className="pt-12 md:pt-16 pb-16 md:pb-24 bg-gradient-to-b from-[#f0f4f8] to-white">
@@ -206,13 +209,12 @@ const Index = () => {
 
           {/* CTA */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10">
-            <a
-              href="#pricing"
-              onClick={scrollToPricing}
+            <Link
+              to={CTA}
               className="inline-flex items-center justify-center bg-[#f59e0b] hover:bg-[#d97706] text-[#1a1a1a] font-bold text-base px-7 py-3.5 rounded-lg shadow-[0_2px_8px_rgba(245,158,11,.35)] hover:shadow-[0_4px_16px_rgba(245,158,11,.4)] hover:-translate-y-0.5 transition-all"
             >
               Começar grátis — 15 dias sem cartão
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -768,15 +770,15 @@ const Index = () => {
             Van<span className="text-[#f59e0b]">360</span>
           </span>
           <div className="flex gap-6">
-            <a
-              href="/privacidade"
+            <Link
+              to="/privacidade"
               className="hover:text-white transition-colors"
             >
               Privacidade
-            </a>
-            <a href="/termos" className="hover:text-white transition-colors">
+            </Link>
+            <Link to="/termos" className="hover:text-white transition-colors">
               Termos de uso
-            </a>
+            </Link>
           </div>
           <p>© 2026 Van360. Todos os direitos reservados.</p>
         </div>

@@ -32,6 +32,7 @@ const Login = lazyLoad(() => import("./pages/Login"));
 const Register = lazyLoad(() => import("./pages/Register"));
 const NovaSenha = lazyLoad(() => import("./pages/NovaSenha"));
 const Index = lazyLoad(() => import("./pages/lp/Index"));
+const Splash = lazyLoad(() => import("./pages/Splash"));
 const Home = lazyLoad(() => import("./pages/Home"));
 
 const Passageiros = lazyLoad(() => import("./pages/Passageiros"));
@@ -203,14 +204,24 @@ const App = () => {
               element={<AssinarContrato />}
             />
 
+            {/* Splash/Hub do app nativo */}
+            <Route
+              path={ROUTES.PUBLIC.SPLASH}
+              element={
+                <AppGate>
+                  <Splash />
+                </AppGate>
+              }
+            />
+
             <Route
               path={ROUTES.PUBLIC.ROOT}
               element={
                 Capacitor.isNativePlatform() ? (
-                  // App nativo → vai direto para login
-                  <Navigate to={ROUTES.PUBLIC.LOGIN} replace />
+                  // App nativo → splash (AppGate redireciona para home se já logado)
+                  <Navigate to={ROUTES.PUBLIC.SPLASH} replace />
                 ) : (
-                  // Web → mostra página inicial pública
+                  // Web → mostra página inicial pública (LP)
                   <Index />
                 )
               }

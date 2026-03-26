@@ -94,6 +94,7 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
     ROUTES.PUBLIC.LOGIN,
     ROUTES.PUBLIC.REGISTER,
     ROUTES.PUBLIC.NEW_PASSWORD,
+    ROUTES.PUBLIC.SPLASH,
   ];
 
   const isPublic =
@@ -117,7 +118,7 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   }
 
   // 🔹 Se já está logado e tentar acessar login/cadastro → manda pro início
-  const authPaths: string[] = [ROUTES.PUBLIC.LOGIN, ROUTES.PUBLIC.REGISTER, ROUTES.PUBLIC.ROOT];
+  const authPaths: string[] = [ROUTES.PUBLIC.LOGIN, ROUTES.PUBLIC.REGISTER, ROUTES.PUBLIC.ROOT, ROUTES.PUBLIC.SPLASH];
   if (session && authPaths.includes(location.pathname)) {
     return <Navigate to={ROUTES.PRIVATE.MOTORISTA.HOME} replace />;
   }

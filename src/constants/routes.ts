@@ -4,6 +4,7 @@ export const ROUTES = {
     REGISTER: "/cadastro",
     NEW_PASSWORD: "/nova-senha",
     EXTERNAL_PASSENGER_FORM: "/cadastro-passageiro/:motoristaId",
+    SPLASH: "/splash",
     ROOT: "/",
   },
   PRIVATE: {

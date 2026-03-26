@@ -16,10 +16,17 @@ export interface PostRegisterData {
   user: any;
 }
 
+export interface DuplicateError {
+  field: "email" | "cpfcnpj" | "generic";
+  message: string;
+}
+
 export function useRegisterController() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [postRegisterData, setPostRegisterData] = useState<PostRegisterData | null>(null);
+  const [showNativeWelcome, setShowNativeWelcome] = useState(false);
+  const [duplicateError, setDuplicateError] = useState<DuplicateError | null>(null);
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -48,7 +55,7 @@ export function useRegisterController() {
       const result = await usuarioApi.registrar(data);
       if (result?.error) throw new Error(result.error);
 
-      // App nativo: login automático + redirect (fluxo existente)
+      // App nativo: login automático + tela de boas-vindas
       if (isNativeApp()) {
         const { error } = await sessionManager.setSession(
           result.session.access_token,
@@ -62,8 +69,8 @@ export function useRegisterController() {
           });
           navigate(ROUTES.PUBLIC.LOGIN);
         } else {
-          await new Promise(resolve => setTimeout(resolve, 500));
-          navigate(ROUTES.PRIVATE.MOTORISTA.HOME);
+          // Mostrar tela de boas-vindas antes de ir para home
+          setShowNativeWelcome(true);
         }
         return;
       }
@@ -77,6 +84,42 @@ export function useRegisterController() {
       });
     } catch (err: any) {
       const respData = err.response?.data;
+      const errorMsg = (respData?.error || err.message || "").toLowerCase();
+
+      // Detectar erro de duplicidade
+      const isDuplicateEmail =
+        respData?.field === "email" ||
+        errorMsg.includes("email") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já"));
+      const isDuplicateCpf =
+        respData?.field === "cpfcnpj" ||
+        (errorMsg.includes("cpf") && (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate") || errorMsg.includes("já")));
+
+      if (isDuplicateEmail) {
+        setDuplicateError({
+          field: "email",
+          message: "Este email já está cadastrado.",
+        });
+        return;
+      }
+
+      if (isDuplicateCpf) {
+        setDuplicateError({
+          field: "cpfcnpj",
+          message: "Este CPF já está cadastrado.",
+        });
+        return;
+      }
+
+      // Fallback: checar se é erro genérico de duplicidade
+      if (errorMsg.includes("cadastrad") || errorMsg.includes("exist") || errorMsg.includes("duplicate")) {
+        setDuplicateError({
+          field: "generic",
+          message: "Email ou CPF já cadastrado.",
+        });
+        return;
+      }
+
+      // Erro não relacionado a duplicidade
       if (respData?.field) {
         form.setError(respData.field as any, { message: respData.error });
       }
@@ -117,6 +160,8 @@ export function useRegisterController() {
     }
   };
 
+  const clearDuplicateError = () => setDuplicateError(null);
+
   return {
     form,
     loading,
@@ -124,5 +169,8 @@ export function useRegisterController() {
     handleFillMagic,
     postRegisterData,
     handleContinueInBrowser,
+    showNativeWelcome,
+    duplicateError,
+    clearDuplicateError,
   };
 }
