@@ -184,10 +184,13 @@ export function usePassageiroFormViewModel({
 
           const valorForm = moneyToNumber(purePayload.valor_cobranca);
           const vencimentoForm = Number(purePayload.dia_vencimento);
+          
+          const valorAtual = Number(editingPassageiro.valor_cobranca || 0);
+          const vencimentoAtual = Number(editingPassageiro.dia_vencimento || 0);
 
           hasCriticalContractChanges =
-            Math.abs(valorForm - (editingPassageiro.valor_cobranca || 0)) > 0.01 ||
-            vencimentoForm !== editingPassageiro.dia_vencimento;
+            Math.abs(valorForm - valorAtual) > 0.01 ||
+            vencimentoForm !== vencimentoAtual;
         }
 
         onSuccess(responseData, { 

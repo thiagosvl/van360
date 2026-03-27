@@ -242,12 +242,17 @@ export function usePassageirosViewModel() {
       openPassageiroFormDialog({
         mode: PassageiroFormModes.EDIT,
         editingPassageiro: passageiro,
-        onSuccess: (updatedPassageiro, meta) => {
+        onSuccess: (data: any, meta: any) => {
           refetchPassageiros();
 
           // Abre o diálogo de atualização de contrato se houver mudanças críticas e contrato ativo
           if (meta?.hasCriticalContractChanges) {
-            openUpdateContractDialog({ passageiro: updatedPassageiro || passageiro });
+             // Garante que temos o objeto correto do passageiro (pode vir aninhado em algumas respostas como as de finalize)
+             const updatedPassageiro = (data?.id ? data : (data?.passageiro || passageiro)) as Passageiro;
+             
+             setTimeout(() => {
+                openUpdateContractDialog({ passageiro: updatedPassageiro });
+             }, 400);
           }
         },
       });
