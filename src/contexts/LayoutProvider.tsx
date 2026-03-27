@@ -380,20 +380,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
             )
           }
           onSuccess={(data, metadata) => {
-            const oldPassageiro = passageiroFormDialogState.props?.editingPassageiro;
-            const isEdit = passageiroFormDialogState.props?.mode === PassageiroFormModes.EDIT;
-
             setPassageiroFormDialogState((prev) => ({ ...prev, open: false }));
-            passageiroFormDialogState.props?.onSuccess?.(data);
-
-            if (isEdit && oldPassageiro && profile?.config_contrato?.usar_contratos && metadata?.hasCriticalContractChanges) {
-              // Ensure we have a valid passenger object for the dialog
-              const passengerForDialog = (data?.id ? data : (data?.passageiro || oldPassageiro)) as Passageiro;
-              
-              setTimeout(() => {
-                setUpdateContractDialogState({ open: true, props: { passageiro: passengerForDialog } });
-              }, 300);
-            }
+            passageiroFormDialogState.props?.onSuccess?.(data, metadata);
           }}
           editingPassageiro={
             passageiroFormDialogState.props?.editingPassageiro || null

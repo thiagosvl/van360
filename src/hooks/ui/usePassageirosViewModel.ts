@@ -34,6 +34,7 @@ export function usePassageirosViewModel() {
     closeConfirmationDialog,
     openPassageiroFormDialog,
     openFirstChargeDialog,
+    openUpdateContractDialog,
   } = useLayout();
 
   const { user } = useSession();
@@ -241,10 +242,17 @@ export function usePassageirosViewModel() {
       openPassageiroFormDialog({
         mode: PassageiroFormModes.EDIT,
         editingPassageiro: passageiro,
-        onSuccess: () => refetchPassageiros(),
+        onSuccess: (updatedPassageiro, meta) => {
+          refetchPassageiros();
+
+          // Abre o diálogo de atualização de contrato se houver mudanças críticas e contrato ativo
+          if (meta?.hasCriticalContractChanges) {
+            openUpdateContractDialog({ passageiro: updatedPassageiro || passageiro });
+          }
+        },
       });
     },
-    [openPassageiroFormDialog, refetchPassageiros],
+    [openPassageiroFormDialog, refetchPassageiros, openUpdateContractDialog],
   );
 
   const handleOpenNewDialog = useCallback(() => {

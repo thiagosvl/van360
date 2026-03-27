@@ -22,7 +22,7 @@ export interface OpenConfirmationDialogProps {
 }
 
 export interface OpenPassageiroFormProps {
-  onSuccess?: (passageiro?: Passageiro) => void;
+  onSuccess?: (passageiro?: Passageiro, meta?: any) => void;
   editingPassageiro?: Passageiro | null;
   mode?: PassageiroFormModes;
   prePassageiro?: PrePassageiro | null;

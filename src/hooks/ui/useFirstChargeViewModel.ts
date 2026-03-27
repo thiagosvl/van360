@@ -24,7 +24,7 @@ export function useFirstChargeViewModel({ passageiro, onClose }: FirstChargeView
   const [step, setStep] = useState<FirstChargeStep>(showContractStep ? "CONTRACT_CHECK" : "REGISTER_CHECK");
   const [paymentStatus, setPaymentStatus] = useState<CobrancaStatus | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string>("");
-  const [wantsContract, setWantsContract] = useState<boolean>(true);
+  const [wantsContract, setWantsContract] = useState<boolean>(showContractStep);
   const [wantsMonthlyCharge, setWantsMonthlyCharge] = useState<boolean>(true);
   const [isGeneratingContract, setIsGeneratingContract] = useState(false);
 

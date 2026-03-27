@@ -172,9 +172,10 @@ export function usePassageiroFormViewModel({
       onSuccess: (responseData?: any) => {
         // Business Logic: Detect if critical contract fields changed
         const isEdit = mode === PassageiroFormModes.EDIT;
+        const isContractActive = !!profile?.config_contrato?.usar_contratos && !!profile?.config_contrato?.configurado;
         let hasCriticalContractChanges = false;
 
-        if (isEdit && editingPassageiro) {
+        if (isEdit && editingPassageiro && isContractActive) {
           const moneyToNumber = (v: any) => {
             if (typeof v === 'number') return v;
             if (typeof v === 'string') return Number(v.replace(/\D/g, "")) / 100;

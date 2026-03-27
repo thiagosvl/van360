@@ -105,7 +105,7 @@ export default function FirstChargeDialog({
             </div>
             <div className="flex flex-col min-w-0 flex-1">
               <DialogTitle className="text-sm sm:text-lg font-headline font-black text-[#1a3a5c] uppercase tracking-tight truncate">
-                Contrato e Mensalidade
+                {showContractStep ? "Contrato e Mensalidade" : "Registrar Mensalidade"}
               </DialogTitle>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider">

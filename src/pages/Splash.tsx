@@ -18,7 +18,7 @@ export default function Splash() {
       {/* Center: Logo + Headline */}
       <div className="flex flex-col items-center text-center">
         <img
-          src="/assets/logo2-van360.png"
+          src="/assets/logo-van360.png"
           alt="Van360"
           className="w-[120px] h-[120px] object-contain drop-shadow-2xl mb-6"
         />
