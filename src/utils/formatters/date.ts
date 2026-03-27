@@ -22,7 +22,7 @@ export const formatDate = (date: string | Date) => {
 };
 
 export const formatDateToBR = (date: string | Date): string => {
-  if(!date) return "";
+  if (!date) return "";
   const newDate = formatDate(date);
   return newDate.toLocaleDateString("pt-BR", {
     day: "2-digit",
@@ -116,6 +116,7 @@ export const formatDiasAtraso = (dataVencimento: string): string => {
   const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (dias <= 0) return "Vence hoje";
+  if (dias === 0) return "Vence hoje";
   if (dias === 1) return "Venceu ontem";
   return `Vencido há ${dias} dias`;
 };
