@@ -371,17 +371,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
       {passageiroFormDialogState.open && (
         <PassageiroFormDialog
           isOpen={true}
-          onClose={() =>
-            safeCloseDialog(() =>
-              setPassageiroFormDialogState((prev) => ({
-                ...prev,
-                open: false,
-              })),
-            )
-          }
           onSuccess={(data, metadata) => {
+            const innerOnSuccess = passageiroFormDialogState.props?.onSuccess;
+            if (innerOnSuccess) {
+              innerOnSuccess(data, metadata);
+            }
+            // Depois fecha o diálogo
             setPassageiroFormDialogState((prev) => ({ ...prev, open: false }));
-            passageiroFormDialogState.props?.onSuccess?.(data, metadata);
+          }}
+          onClose={() => {
+            setPassageiroFormDialogState((prev) => ({ ...prev, open: false }));
           }}
           editingPassageiro={
             passageiroFormDialogState.props?.editingPassageiro || null

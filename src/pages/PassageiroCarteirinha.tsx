@@ -79,6 +79,7 @@ export default function PassageiroCarteirinha() {
     openCobrancaEditDialog,
     openCobrancaFormDialog,
     openManualPaymentDialog,
+    openUpdateContractDialog,
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
@@ -239,9 +240,17 @@ export default function PassageiroCarteirinha() {
     }
   }, [availableYears, yearFilter]);
 
-  const handlePassageiroFormSuccess = useCallback(() => {
+  const handlePassageiroFormSuccess = useCallback((data?: any, meta?: any) => {
     refetchPassageiro();
-  }, [refetchPassageiro]);
+    
+    if (meta?.hasCriticalContractChanges === true) {
+      const updatedPassageiro = data?.id ? data : (data?.passageiro || passageiro);
+      
+      setTimeout(() => {
+        openUpdateContractDialog({ passageiro: updatedPassageiro });
+      }, 400);
+    }
+  }, [refetchPassageiro, passageiro, openUpdateContractDialog]);
 
   const handleEditClick = useCallback(() => {
     openPassageiroFormDialog({

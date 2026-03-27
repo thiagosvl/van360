@@ -193,9 +193,9 @@ export function usePassageiroFormViewModel({
             vencimentoForm !== vencimentoAtual;
         }
 
-        onSuccess(responseData, { 
-           formData: purePayload, 
-           hasCriticalContractChanges 
+        onSuccess(responseData, {
+           formData: purePayload,
+           hasCriticalContractChanges
         });
         onClose();
       },
