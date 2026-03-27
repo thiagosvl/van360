@@ -4,24 +4,11 @@ import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CobrancaTipoPagamento, CobrancaStatus } from "@/types/enums";
 import { formatFirstName, formatShortName } from "@/utils/formatters";
+import { getPaymentMethodLabel } from "@/constants/paymentMethods";
 
 interface CobrancaSummaryProps {
   cobranca: Cobranca;
 }
-
-// Helper para tradução do método de pagamento
-const getPaymentMethodLabel = (type?: CobrancaTipoPagamento) => {
-  if (!type) return "";
-  const labels: Record<string, string> = {
-    [CobrancaTipoPagamento.DINHEIRO]: "Dinheiro",
-    [CobrancaTipoPagamento.PIX]: "PIX",
-    [CobrancaTipoPagamento.TRANSFERENCIA]: "Transf.",
-    [CobrancaTipoPagamento.BOLETO]: "Boleto",
-    [CobrancaTipoPagamento.CARTAO_CREDITO]: "Crédito",
-    [CobrancaTipoPagamento.CARTAO_DEBITO]: "Débito",
-  };
-  return labels[type] || type;
-};
 
 export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
   const isPaid = cobranca?.status === CobrancaStatus.PAGO;
@@ -58,7 +45,7 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
             </p>
           )}
         </div>
-        
+
         <div className="flex flex-col items-end shrink-0">
           <p className="text-xl font-headline font-black text-[#1a3a5c] dark:text-zinc-100 tracking-tighter leading-none">
             {Number(cobranca.valor).toLocaleString("pt-BR", {
@@ -80,21 +67,21 @@ export const CobrancaSummary = ({ cobranca }: CobrancaSummaryProps) => {
 
         {isPaid && (
           <div className="flex items-center gap-3">
-             {cobranca.tipo_pagamento && (
-                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-md ring-1 ring-inset ring-emerald-100/50">
-                    <span className="text-[8px] font-black text-emerald-600/70 uppercase tracking-widest">
-                        {getPaymentMethodLabel(cobranca.tipo_pagamento)}
-                    </span>
-                </div>
-             )}
-             {cobranca.data_pagamento && (
-               <div className="flex items-center gap-1.5">
-                 <span className="text-[8px] text-emerald-500 font-black uppercase tracking-widest">PAGO</span>
-                 <p className="text-[10px] font-bold text-emerald-600">
-                   {format(parseISO(cobranca.data_pagamento), "dd/MM/yy")}
-                 </p>
-               </div>
-             )}
+            {cobranca.tipo_pagamento && (
+              <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-md ring-1 ring-inset ring-emerald-100/50">
+                <span className="text-[8px] font-black text-emerald-600/70 uppercase tracking-widest">
+                  {getPaymentMethodLabel(cobranca.tipo_pagamento)}
+                </span>
+              </div>
+            )}
+            {cobranca.data_pagamento && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[8px] text-emerald-500 font-black uppercase tracking-widest">PAGO</span>
+                <p className="text-[10px] font-bold text-emerald-600">
+                  {format(parseISO(cobranca.data_pagamento), "dd/MM/yy")}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

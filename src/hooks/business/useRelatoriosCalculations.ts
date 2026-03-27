@@ -1,21 +1,22 @@
 import { formatarPlacaExibicao } from "@/utils/domain/veiculo/placaUtils";
 import { periodos as periodosConstants } from "@/utils/formatters/periodo";
 import {
-    ClipboardCheck,
-    Cog,
-    FileText,
-    Fuel,
-    HelpCircle,
-    Wallet,
-    Wrench,
+  ClipboardCheck,
+  Cog,
+  FileText,
+  Fuel,
+  HelpCircle,
+  Wallet,
+  Wrench,
 } from "lucide-react";
 import { useMemo } from "react";
 
-import { 
-    CobrancaTipoPagamento, 
-    GastoCategoria,
-    PassageiroPeriodo
+import {
+  CobrancaTipoPagamento,
+  GastoCategoria,
+  PassageiroPeriodo
 } from "@/types/enums";
+import { formatPaymentType } from "@/utils/formatters";
 
 // Constantes para agrupamento
 const VEICULO_OUTROS = "outros";
@@ -51,12 +52,12 @@ export const FORMAS_PAGAMENTO_LABELS: Record<
   string,
   { label: string; color: string }
 > = {
-  [CobrancaTipoPagamento.PIX]: { label: "PIX", color: "bg-emerald-500" },
-  [CobrancaTipoPagamento.DINHEIRO]: { label: "Dinheiro", color: "bg-green-500" },
-  [CobrancaTipoPagamento.CARTAO_CREDITO]: { label: "Cartão de Crédito", color: "bg-orange-500" },
-  [CobrancaTipoPagamento.CARTAO_DEBITO]: { label: "Cartão de Débito", color: "bg-yellow-500" },
-  [CobrancaTipoPagamento.TRANSFERENCIA]: { label: "Transferência", color: "bg-blue-500" },
-  [CobrancaTipoPagamento.BOLETO]: { label: "Boleto", color: "bg-purple-500" },
+  [CobrancaTipoPagamento.PIX]: { label: formatPaymentType(CobrancaTipoPagamento.PIX), color: "bg-emerald-500" },
+  [CobrancaTipoPagamento.DINHEIRO]: { label: formatPaymentType(CobrancaTipoPagamento.DINHEIRO), color: "bg-green-500" },
+  [CobrancaTipoPagamento.CARTAO_CREDITO]: { label: formatPaymentType(CobrancaTipoPagamento.CARTAO_CREDITO), color: "bg-orange-500" },
+  [CobrancaTipoPagamento.CARTAO_DEBITO]: { label: formatPaymentType(CobrancaTipoPagamento.CARTAO_DEBITO), color: "bg-yellow-500" },
+  [CobrancaTipoPagamento.TRANSFERENCIA]: { label: formatPaymentType(CobrancaTipoPagamento.TRANSFERENCIA), color: "bg-blue-500" },
+  [CobrancaTipoPagamento.BOLETO]: { label: formatPaymentType(CobrancaTipoPagamento.BOLETO), color: "bg-purple-500" },
 };
 
 

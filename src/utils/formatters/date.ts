@@ -106,6 +106,20 @@ export const formatRelativeTime = (date: string | Date): string => {
   return formatDateToBR(past);
 };
 
+export const formatDiasAtraso = (dataVencimento: string): string => {
+  const vencimento = formatDate(dataVencimento);
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  vencimento.setHours(0, 0, 0, 0);
+
+  const diffMs = hoje.getTime() - vencimento.getTime();
+  const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (dias <= 0) return "Vence hoje";
+  if (dias === 1) return "Venceu ontem";
+  return `Vencido há ${dias} dias`;
+};
+
 export const convertDateBrToISO = (dateBr: string): string => {
   if (!dateBr || dateBr.length !== 10) return "";
   const [day, month, year] = dateBr.split("/");

@@ -16,6 +16,20 @@ export interface PaymentMethodOption {
   color: string;
 }
 
+
+export const getPaymentMethodLabel = (type?: CobrancaTipoPagamento) => {
+  if (!type) return "";
+  const labels: Record<string, string> = {
+    [CobrancaTipoPagamento.DINHEIRO]: "Dinheiro",
+    [CobrancaTipoPagamento.PIX]: "PIX",
+    [CobrancaTipoPagamento.TRANSFERENCIA]: "Transferência",
+    [CobrancaTipoPagamento.BOLETO]: "Boleto",
+    [CobrancaTipoPagamento.CARTAO_CREDITO]: "Crédito",
+    [CobrancaTipoPagamento.CARTAO_DEBITO]: "Débito",
+  };
+  return labels[type] || type;
+};
+
 export const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     value: CobrancaTipoPagamento.PIX,

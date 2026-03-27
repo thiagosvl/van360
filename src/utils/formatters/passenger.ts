@@ -57,6 +57,19 @@ export const formatParentesco = (parentesco: string) => {
   }
 };
 
+export const calcularIdade = (dataNascimento?: string): number | null => {
+  if (!dataNascimento) return null;
+  const nascimento = new Date(dataNascimento + "T00:00:00");
+  const hoje = new Date();
+  let idade = hoje.getFullYear() - nascimento.getFullYear();
+  const mesAtual = hoje.getMonth();
+  const mesNascimento = nascimento.getMonth();
+  if (mesAtual < mesNascimento || (mesAtual === mesNascimento && hoje.getDate() < nascimento.getDate())) {
+    idade--;
+  }
+  return idade;
+};
+
 export const modalidades = Object.values(PassageiroModalidade).map((value) => ({
   value,
   label: formatModalidade(value),

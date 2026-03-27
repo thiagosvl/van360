@@ -2,7 +2,7 @@ export const formatShortName = (fullName?: string) => {
   if (!fullName) return "";
   const names = fullName.trim().split(/\s+/);
   if (names.length <= 2) return fullName;
-  return `${names[0]} ${names[1]}`;
+  return `${names[0]}`;
 };
 
 export const formatFirstName = (fullName?: string) => {

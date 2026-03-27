@@ -233,6 +233,18 @@ export const messages = {
       redirecionando: "Redirecionando para o sistema...",
       emailEnviado: "E-mail de redefinição enviado com sucesso.",
     },
+    recuperacao: {
+      titulo: "Recuperar Senha",
+      descricao: "Informe seu CPF para receber um código de validação no WhatsApp.",
+      validacaoTitulo: "Verificação",
+      novaSenhaTitulo: "Nova Senha",
+      novaSenhaDescricao: "Defina uma nova senha segura para sua conta.",
+      botaoSolicitar: "Receber Código no WhatsApp",
+      botaoValidar: "Validar Código",
+      botaoResetar: "Redefinir Senha",
+      alterarCpf: "Alterar CPF ou reenviar",
+      sucessoSolicitar: "Código enviado com sucesso!",
+    },
     info: {
       informeCpf: "Informe seu CPF.",
       informeCpfDescricao: "Digite o CPF cadastrado para receber o link de redefinição em seu e-mail.",
@@ -429,6 +441,7 @@ export type MessageKey =
   | `prePassageiro.erro.${keyof typeof messages.prePassageiro.erro}`
   | `prePassageiro.sucesso.${keyof typeof messages.prePassageiro.sucesso}`
   | `prePassageiro.info.${keyof typeof messages.prePassageiro.info}`
+  | `auth.recuperacao.${keyof typeof messages.auth.recuperacao}`
   | `contrato.erro.${keyof typeof messages.contrato.erro}`
   | `contrato.sucesso.${keyof typeof messages.contrato.sucesso}`
   | `home.info.${keyof typeof messages.home.info}`

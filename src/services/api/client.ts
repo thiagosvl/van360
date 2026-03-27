@@ -72,7 +72,12 @@ apiClient.interceptors.response.use(
     }
 
     // 401 Unauthorized - Fluxo de Refresh Automático
-    if (error.response.status === 401 && !originalRequest._retry) {
+    const isPublicAuthRoute = 
+        originalRequest.url.includes('/auth/recuperacao') || 
+        originalRequest.url.includes('/auth/login') ||
+        originalRequest.url.includes('/auth/registro');
+
+    if (error.response.status === 401 && !originalRequest._retry && !isPublicAuthRoute) {
         originalRequest._retry = true;
 
         try {

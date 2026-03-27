@@ -42,6 +42,7 @@ import {
 } from "@/utils/detectPlatform";
 import { cpfMask } from "@/utils/masks";
 import { toast } from "@/utils/notifications/toast";
+import { RecuperarSenhaDialog } from "@/components/features/auth/RecuperarSenhaDialog";
 
 // Internal Components
 const CustomInput = forwardRef<HTMLInputElement, any>(
@@ -131,6 +132,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
 
   const formMotoristaSchema = z.object({
     cpfcnpj: cpfSchema,
@@ -165,33 +167,9 @@ export default function Login() {
     },
   });
 
-  const handleForgotPassword = useCallback(async () => {
-    const cpfDigits = formMotorista.getValues("cpfcnpj")?.replace(/\D/g, "");
-    if (!cpfDigits) {
-      toast.info("auth.info.informeCpf", {
-        description: "auth.info.informeCpfDescricao",
-      });
-      return;
-    }
-
-    try {
-      setRefreshing(true);
-
-      const { data } = await apiClient.post("/auth/reset-password", {
-        identifier: cpfDigits,
-        redirectTo: `${import.meta.env.VITE_PUBLIC_APP_DOMAIN}${ROUTES.PUBLIC.NEW_PASSWORD}`
-      });
-
-      toast.success("auth.sucesso.emailEnviado", {
-        description: data.message || "auth.sucesso.emailEnviado",
-      });
-
-    } catch (err: any) {
-      toast.error("auth.erro.cpfNaoEncontrado");
-    } finally {
-      setRefreshing(false);
-    }
-  }, [formMotorista]);
+  const handleForgotPassword = useCallback(() => {
+    setForgotPasswordOpen(true);
+  }, []);
 
   useEffect(() => {
     sessionManager.signOut();
@@ -552,6 +530,12 @@ export default function Login() {
       </div>
 
       <LoadingOverlay active={refreshing} text={getMessage("comum.aguarde.aguarde")} />
+      
+      <RecuperarSenhaDialog 
+        open={forgotPasswordOpen} 
+        onOpenChange={setForgotPasswordOpen}
+        initialCpf={formMotorista.getValues("cpfcnpj")}
+      />
     </>
   );
 }

@@ -193,8 +193,6 @@ export function PassageirosList({
                     <div className="flex flex-col gap-1">
                       <p className="text-[10px] text-gray-400 font-medium tracking-wider">
                         {passageiro.escola?.nome || "Não informada"}
-                      </p>
-                      <div className="flex">
                         <span
                           className={cn(
                             "text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border shadow-sm",
@@ -203,7 +201,7 @@ export function PassageirosList({
                         >
                           {getPeriodoSuffix(passageiro.periodo)}
                         </span>
-                      </div>
+                      </p>
                     </div>
                   </TableCell>
                   <TableCell className="px-8 py-5">

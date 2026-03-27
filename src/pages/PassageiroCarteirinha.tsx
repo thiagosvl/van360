@@ -1,10 +1,10 @@
 import {
-    Suspense,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 
 import { ROUTES } from "@/constants/routes";
@@ -18,6 +18,16 @@ import { lazyLoad } from "@/utils/lazyLoad";
 const CarteirinhaInfo = lazyLoad(() =>
   import("@/components/features/passageiro/carteirinha").then((mod) => ({
     default: mod.CarteirinhaInfo,
+  })),
+);
+const CarteirinhaHeader = lazyLoad(() =>
+  import("@/components/features/passageiro/carteirinha").then((mod) => ({
+    default: mod.CarteirinhaHeader,
+  })),
+);
+const CarteirinhaDadosPessoais = lazyLoad(() =>
+  import("@/components/features/passageiro/carteirinha").then((mod) => ({
+    default: mod.CarteirinhaDadosPessoais,
   })),
 );
 const CarteirinhaCobrancas = lazyLoad(() =>
@@ -35,21 +45,23 @@ import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapp
 
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+import { useIsMobile } from "@/hooks";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-    useAvailableYears,
-    useCobrancasByPassageiro,
-    useDeleteCobranca,
-    useDeletePassageiro,
-    useDesfazerPagamento,
-    useEnviarNotificacaoCobranca,
-    usePassageiro,
-    useToggleAtivoPassageiro,
-    useToggleNotificacoesCobranca,
-    useUpdateCobranca,
-    useUpdatePassageiro,
-    safeCloseDialog,
+  useAvailableYears,
+  useCobrancasByPassageiro,
+  useDeleteCobranca,
+  useDeletePassageiro,
+  useDesfazerPagamento,
+  useEnviarNotificacaoCobranca,
+  usePassageiro,
+  useToggleAtivoPassageiro,
+  useToggleNotificacoesCobranca,
+  useUpdateCobranca,
+  useUpdatePassageiro,
+  safeCloseDialog,
 } from "@/hooks";
 import { useCreateContrato } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
@@ -65,11 +77,11 @@ import { CobrancaStatus, PassageiroFormModes } from "@/types/enums";
 import { Passageiro } from "@/types/passageiro";
 
 const currentYear = new Date().getFullYear().toString();
-const COBRANCAS_LIMIT = 3;
 
 export default function PassageiroCarteirinha() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
   const {
     setPageTitle,
     openConfirmationDialog,
@@ -84,6 +96,7 @@ export default function PassageiroCarteirinha() {
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
   const [isDeleting, setIsDeleting] = useState(false);
+  const [mobileTab, setMobileTab] = useState("dados");
 
   const updatePassageiro = useUpdatePassageiro();
   const deletePassageiro = useDeletePassageiro();
@@ -93,7 +106,7 @@ export default function PassageiroCarteirinha() {
   const enviarNotificacao = useEnviarNotificacaoCobranca();
   const desfazerPagamento = useDesfazerPagamento();
   const toggleNotificacoes = useToggleNotificacoesCobranca();
-  const createContrato = useCreateContrato(); 
+  const createContrato = useCreateContrato();
 
   const isActionLoading =
     createContrato.isPending ||
@@ -115,7 +128,6 @@ export default function PassageiroCarteirinha() {
   const [isObservacoesEditing, setIsObservacoesEditing] = useState(false);
   const [obsText, setObsText] = useState("");
   const [mostrarTodasCobrancas, setMostrarTodasCobrancas] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { user, loading: isSessionLoading } = useSession();
   const { profile, isLoading: isProfileLoading } = useProfile(user?.id);
 
@@ -211,17 +223,6 @@ export default function PassageiroCarteirinha() {
   ]);
 
   useEffect(() => {
-    if (isObservacoesEditing && textareaRef.current) {
-      const textarea = textareaRef.current;
-      const length = textarea.value.length;
-
-      textarea.focus();
-
-      textarea.setSelectionRange(length, length);
-    }
-  }, [isObservacoesEditing]);
-
-  useEffect(() => {
     if (passageiro && !loading) {
       setObsText(passageiro.observacoes || "");
     }
@@ -242,10 +243,10 @@ export default function PassageiroCarteirinha() {
 
   const handlePassageiroFormSuccess = useCallback((data?: any, meta?: any) => {
     refetchPassageiro();
-    
+
     if (meta?.hasCriticalContractChanges === true) {
       const updatedPassageiro = data?.id ? data : (data?.passageiro || passageiro);
-      
+
       setTimeout(() => {
         openUpdateContractDialog({ passageiro: updatedPassageiro });
       }, 400);
@@ -283,6 +284,16 @@ export default function PassageiroCarteirinha() {
     }
   };
 
+  const handleStartObsEdit = useCallback(() => {
+    setObsText(passageiro?.observacoes || "");
+    setIsObservacoesEditing(true);
+  }, [passageiro]);
+
+  const handleCancelObsEdit = useCallback(() => {
+    setObsText(passageiro?.observacoes || "");
+    setIsObservacoesEditing(false);
+  }, [passageiro]);
+
   const handleSaveObservacoes = async () => {
     if (!passageiro_id) return;
 
@@ -316,14 +327,14 @@ export default function PassageiroCarteirinha() {
       onConfirm: async () => {
         if (!passageiro || !passageiro_id) return;
         try {
-            await toggleAtivoPassageiro.mutateAsync({
-                id: passageiro_id,
-                novoStatus: !passageiro.ativo,
-            });
-            safeCloseDialog(closeConfirmationDialog);
+          await toggleAtivoPassageiro.mutateAsync({
+            id: passageiro_id,
+            novoStatus: !passageiro.ativo,
+          });
+          safeCloseDialog(closeConfirmationDialog);
         } catch (error) {
-            safeCloseDialog(closeConfirmationDialog);
-            throw error;
+          safeCloseDialog(closeConfirmationDialog);
+          throw error;
         }
       },
     });
@@ -380,7 +391,7 @@ export default function PassageiroCarteirinha() {
     },
     [desfazerPagamento, closeConfirmationDialog],
   );
-  
+
   const handleExcluirCobranca = useCallback(
     (cobranca: Cobranca) => {
       openCobrancaDeleteDialog({
@@ -451,140 +462,213 @@ export default function PassageiroCarteirinha() {
     ]);
   };
 
+  const cobrancasProps = {
+    cobrancas,
+    passageiro,
+    yearFilter,
+    availableYears,
+    mostrarTodasCobrancas,
+    limiteCobrancasMobile: 3,
+    onYearChange: setYearFilter,
+    onOpenCobrancaDialog: () => {
+      if (!passageiro_id) return;
+      openCobrancaFormDialog({
+        passageiroId: passageiro_id,
+        passageiroNome: passageiro?.nome,
+        passageiroResponsavelNome: passageiro?.nome_responsavel,
+        valorCobranca: Number(passageiro?.valor_cobranca),
+        diaVencimento: Number(passageiro?.dia_vencimento),
+        onSuccess: refetchCobrancas,
+      });
+    },
+    onEditCobranca: (cobranca: Cobranca) => {
+      openCobrancaEditDialog({
+        cobranca,
+        onSuccess: refetchCobrancas,
+      });
+    },
+    onRegistrarPagamento: (cobranca: Cobranca) => {
+      openPaymentDialog(cobranca);
+    },
+    onEnviarNotificacao: handleEnviarNotificacaoClick,
+    onToggleLembretes: handleToggleLembretes,
+    onDesfazerPagamento: handleDesfazerClick,
+    onExcluirCobranca: handleExcluirCobranca,
+    onToggleClick: handleToggleClick,
+  };
+
+  const infoProps = {
+    passageiro,
+    temCobrancasVencidas,
+    isCopiedEndereco,
+    isCopiedTelefone,
+    onEditClick: handleEditClick,
+    onCopyToClipboard: handleCopyToClipboard,
+    onToggleClick: handleToggleClick,
+    contratosAtivos: profile?.config_contrato?.usar_contratos !== false,
+    onDeleteClick: () =>
+      openConfirmationDialog({
+        title: "Excluir passageiro?",
+        description:
+          "Tem certeza que deseja excluir este passageiro? Essa ação não poderá ser desfeita.",
+        confirmText: "Excluir",
+        variant: "destructive",
+        onConfirm: async () => {
+          if (!passageiro_id) return;
+          setIsDeleting(true);
+          try {
+            await deletePassageiro.mutateAsync(passageiro_id);
+            safeCloseDialog(closeConfirmationDialog);
+            navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS);
+          } catch (error) {
+            safeCloseDialog(closeConfirmationDialog);
+          } finally {
+            setIsDeleting(false);
+          }
+        },
+      }),
+    onContractAction: () => {
+      if (!passageiro || !passageiro_id) return;
+
+      if (
+        passageiro.status_contrato === ContratoStatus.PENDENTE ||
+        passageiro.status_contrato === ContratoStatus.ASSINADO
+      ) {
+        const url =
+          passageiro.status_contrato === ContratoStatus.ASSINADO
+            ? passageiro.contrato_final_url || passageiro.contrato_url
+            : passageiro.minuta_url || passageiro.contrato_url;
+
+        if (url) {
+          openBrowserLink(url);
+        } else {
+          toast.error("contrato.erro.semUrl", {
+            description: "Link do contrato não disponível.",
+          });
+        }
+        return;
+      }
+
+      openConfirmationDialog({
+        title: "Gerar Contrato?",
+        description: `Deseja gerar um novo contrato para ${passageiro.nome}? Isso usará a configuração atual de contrato.`,
+        confirmText: "Gerar Contrato",
+        onConfirm: async () => {
+          if (!passageiro || !passageiro_id) return;
+          try {
+            await createContrato.mutateAsync({
+              passageiroId: passageiro.id,
+              modalidade: passageiro.periodo,
+              valorMensal: Number(passageiro.valor_cobranca),
+              diaVencimento: Number(passageiro.dia_vencimento),
+            });
+            safeCloseDialog(closeConfirmationDialog);
+          } catch (error) {
+            safeCloseDialog(closeConfirmationDialog);
+          }
+        },
+      });
+    },
+  };
+
+  const observacoesProps = {
+    observacoes: passageiro.observacoes,
+    isEditing: isObservacoesEditing,
+    obsText,
+    isSaving: updatePassageiro.isPending,
+    onStartEdit: handleStartObsEdit,
+    onCancelEdit: handleCancelObsEdit,
+    onChangeText: setObsText,
+    onSave: handleSaveObservacoes,
+  };
+
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="min-h-screen pb-20">
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              {/* Lado Esquerdo: Perfil e Notas */}
-              <div className="lg:col-span-4 space-y-8 lg:sticky lg:top-6 lg:h-fit">
-                <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
-                  <CarteirinhaInfo
+          <div className="space-y-6">
+            {/* Mobile Layout: Header fixo + Abas na primeira dobra */}
+            {isMobile ? (
+              <div className="space-y-5">
+                {/* Header do passageiro (avatar, nome, badges, ações) — sempre visível */}
+                <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+                  <CarteirinhaHeader
                     passageiro={passageiro}
                     temCobrancasVencidas={temCobrancasVencidas}
-                    isCopiedEndereco={isCopiedEndereco}
-                    isCopiedTelefone={isCopiedTelefone}
-                    onEditClick={handleEditClick}
-                    onCopyToClipboard={handleCopyToClipboard}
                     onToggleClick={handleToggleClick}
-                    onDeleteClick={() =>
-                      openConfirmationDialog({
-                        title: "Excluir passageiro?",
-                        description:
-                          "Tem certeza que deseja excluir este passageiro? Essa ação não poderá ser desfeita.",
-                        confirmText: "Excluir",
-                        variant: "destructive",
-                        onConfirm: async () => {
-                          if (!passageiro_id) return;
-                          setIsDeleting(true);
-                          try {
-                            await deletePassageiro.mutateAsync(passageiro_id);
-                            safeCloseDialog(closeConfirmationDialog);
-                            navigate(ROUTES.PRIVATE.MOTORISTA.PASSENGERS);
-                          } catch (error) {
-                            safeCloseDialog(closeConfirmationDialog);
-                          } finally {
-                            setIsDeleting(false);
-                          }
-                        },
-                      })
-                    }
-                    onContractAction={() => {
-                      if (!passageiro || !passageiro_id) return;
-
-                      if (
-                        passageiro.status_contrato === ContratoStatus.PENDENTE ||
-                        passageiro.status_contrato === ContratoStatus.ASSINADO
-                      ) {
-                        const url =
-                          passageiro.status_contrato === ContratoStatus.ASSINADO
-                            ? passageiro.contrato_final_url || passageiro.contrato_url
-                            : passageiro.contrato_url;
-
-                        if (url) {
-                          openBrowserLink(url);
-                        } else {
-                          toast.error("contrato.erro.semUrl", {
-                            description: "Link do contrato não disponível.",
-                          });
-                        }
-                        return;
-                      }
-
-                      openConfirmationDialog({
-                        title: "Gerar Contrato?",
-                        description: `Deseja gerar um novo contrato para ${passageiro.nome}? Isso usará a configuração atual de contrato.`,
-                        confirmText: "Gerar Contrato",
-                        onConfirm: async () => {
-                          if (!passageiro || !passageiro_id) return;
-                          try {
-                            await createContrato.mutateAsync({
-                              passageiroId: passageiro.id,
-                              modalidade: passageiro.periodo,
-                              valorMensal: Number(passageiro.valor_cobranca),
-                              diaVencimento: Number(passageiro.dia_vencimento),
-                            });
-                            safeCloseDialog(closeConfirmationDialog);
-                          } catch (error) {
-                            safeCloseDialog(closeConfirmationDialog);
-                          }
-                        },
-                      });
-                    }}
-                  />
-                </Suspense>
-
-                <Suspense fallback={<Skeleton className="h-48 w-full rounded-[2rem]" />}>
-                  <CarteirinhaObservacoes
-                    observacoes={passageiro.observacoes}
                     onEditClick={handleEditClick}
+                    onDeleteClick={infoProps.onDeleteClick}
                   />
                 </Suspense>
-              </div>
 
-              {/* Lado Direito: Financeiro e Listagem */}
-              <div className="lg:col-span-8 space-y-8">
-                <div id="cobrancas-section">
+                {/* Abas: Dados Pessoais / Mensalidades — logo na primeira dobra */}
+                <Tabs value={mobileTab} onValueChange={setMobileTab} className="w-full">
+                  <div className="bg-gray-100/40 p-1 rounded-2xl">
+                    <TabsList className="grid grid-cols-2 w-full h-11 bg-transparent p-0 gap-1">
+                      <TabsTrigger
+                        value="dados"
+                        className="rounded-xl h-full font-headline font-bold text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400"
+                      >
+                        Dados Pessoais
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="mensalidades"
+                        className="rounded-xl h-full font-headline font-bold text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400"
+                      >
+                        Mensalidades
+                      </TabsTrigger>
+                    </TabsList>
+                  </div>
+
+                  <TabsContent value="dados" className="mt-5 outline-none space-y-5">
+                    {/* Dados pessoais detalhados */}
+                    <Suspense fallback={<Skeleton className="h-64 w-full rounded-[2rem]" />}>
+                      <CarteirinhaDadosPessoais
+                        passageiro={passageiro}
+                        isCopiedEndereco={isCopiedEndereco}
+                        isCopiedTelefone={isCopiedTelefone}
+                        onEditClick={handleEditClick}
+                        onCopyToClipboard={handleCopyToClipboard}
+                        onContractAction={infoProps.onContractAction}
+                        contratosAtivos={infoProps.contratosAtivos}
+                      />
+                    </Suspense>
+
+                    {/* Observações no final da aba dados */}
+                    <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+                      <CarteirinhaObservacoes {...observacoesProps} />
+                    </Suspense>
+                  </TabsContent>
+
+                  <TabsContent value="mensalidades" className="mt-5 outline-none">
+                    <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
+                      <CarteirinhaCobrancas {...cobrancasProps} />
+                    </Suspense>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            ) : (
+              /* Desktop Layout: Side by Side */
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Lado Esquerdo: Perfil + Observações */}
+                <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-6 lg:h-fit">
                   <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
-                    <CarteirinhaCobrancas
-                      cobrancas={cobrancas}
-                      passageiro={passageiro}
-                      yearFilter={yearFilter}
-                      availableYears={availableYears}
-                      mostrarTodasCobrancas={mostrarTodasCobrancas}
-                      limiteCobrancasMobile={COBRANCAS_LIMIT}
-                      onYearChange={setYearFilter}
-                      onOpenCobrancaDialog={() => {
-                        if (!passageiro_id) return;
-                        openCobrancaFormDialog({
-                          passageiroId: passageiro_id,
-                          passageiroNome: passageiro?.nome,
-                          passageiroResponsavelNome: passageiro?.nome_responsavel,
-                          valorCobranca: Number(passageiro?.valor_cobranca),
-                          diaVencimento: Number(passageiro?.dia_vencimento),
-                          onSuccess: refetchCobrancas,
-                        });
-                      }}
-                      onEditCobranca={(cobranca) => {
-                        openCobrancaEditDialog({
-                          cobranca,
-                          onSuccess: refetchCobrancas,
-                        });
-                      }}
-                      onRegistrarPagamento={(cobranca) => {
-                        openPaymentDialog(cobranca);
-                      }}
-                      onEnviarNotificacao={handleEnviarNotificacaoClick}
-                      onToggleLembretes={handleToggleLembretes}
-                      onDesfazerPagamento={handleDesfazerClick}
-                      onExcluirCobranca={handleExcluirCobranca}
-                      onToggleClick={handleToggleClick}
-                    />
+                    <CarteirinhaInfo {...infoProps} />
+                  </Suspense>
+
+                  <Suspense fallback={<Skeleton className="h-32 w-full rounded-[2rem]" />}>
+                    <CarteirinhaObservacoes {...observacoesProps} />
+                  </Suspense>
+                </div>
+
+                {/* Lado Direito: Mensalidades */}
+                <div className="lg:col-span-8">
+                  <Suspense fallback={<Skeleton className="h-96 w-full rounded-[2rem]" />}>
+                    <CarteirinhaCobrancas {...cobrancasProps} />
                   </Suspense>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </PullToRefreshWrapper>

@@ -39,7 +39,7 @@ export function useUpdatePassageiro() {
       });
     },
     onSuccess: (data, variables) => {
-      toast.success("passageiro.sucesso.atualizado");
+      toast.success("sucesso.atualizado");
 
       // Invalidações globais
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
@@ -53,10 +53,10 @@ export function useUpdatePassageiro() {
 
       // Se payload tem escola_id ou veiculo_id, invalidamos as listas para atualizar a contagem
       if (variables.data?.escola_id !== undefined) {
-         queryClient.invalidateQueries({ queryKey: ["escolas"] });
+        queryClient.invalidateQueries({ queryKey: ["escolas"] });
       }
       if (variables.data?.veiculo_id !== undefined) {
-         queryClient.invalidateQueries({ queryKey: ["veiculos"] });
+        queryClient.invalidateQueries({ queryKey: ["veiculos"] });
       }
     },
   });
@@ -69,21 +69,21 @@ export function useDeletePassageiro() {
     mutationFn: (id: string) => passageiroApi.deletePassageiro(id),
     onError: (error: any) => {
       const errorMessage = getErrorMessage(error);
-      
+
       if (error?.response?.status === 400 || errorMessage) {
-         toast.error("passageiro.erro.excluir", {
-            description: errorMessage
-         });
+        toast.error("passageiro.erro.excluir", {
+          description: errorMessage
+        });
       } else {
-         toast.error("passageiro.erro.excluir", {
-            description: "passageiro.erro.excluirDetalhe",
-         });
+        toast.error("passageiro.erro.excluir", {
+          description: "passageiro.erro.excluirDetalhe",
+        });
       }
     },
     onSuccess: () => {
       toast.success("passageiro.sucesso.excluido");
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });
-      
+
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
@@ -118,7 +118,7 @@ export function useToggleAtivoPassageiro() {
       queryClient.invalidateQueries({ queryKey: ["cobrancas"] });
       queryClient.invalidateQueries({ queryKey: ["cobranca"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
-      
+
       queryClient.invalidateQueries({ queryKey: ["escolas"] });
       queryClient.invalidateQueries({ queryKey: ["veiculos"] });
       queryClient.invalidateQueries({ queryKey: ["usuario-resumo"] });
