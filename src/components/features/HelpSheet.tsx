@@ -50,11 +50,15 @@ export function HelpSheet() {
   const faqs = [
     {
       question: "Como adicionar um novo passageiro?",
-      answer: "Toque no ícone de 'Passageiros' no menu inferior e depois no botão '+' no topo da tela."
+      answer: "Na aba 'Passageiros'. Lá você poderá copiar e enviar o link de cadastro para os pais, ou você mesmo(a) pode realizar o cadastro clicando no botão '+ Novo'."
     },
     {
       question: "Como gerar um contrato digital?",
-      answer: "Acesse o perfil do passageiro, role até 'Documentos' e selecione 'Gerar Contrato'."
+      answer: "Após cadastrar um passageiro, caso tenha ativado a opção de contrato, você verá um aviso perguntando se deseja gerar um contrato. Caso tenha perdido esse aviso, acesse a carteirinha do passageiro e clique em 'Gerar Contrato'."
+    },
+    {
+      question: "Como ativar a opção de contrato?",
+      answer: "Na aba 'Contratos' você poderá ativar a opção."
     },
     {
       question: "Onde vejo quem está devendo?",
@@ -88,9 +92,6 @@ export function HelpSheet() {
           <div className="flex-1 overflow-y-auto px-6 space-y-8 pb-10">
             {/* Suporte Direto */}
             <section>
-              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <WhatsAppIcon className="h-3 w-3" /> Suporte em Tempo Real
-              </h3>
               <button
                 onClick={handleWhatsAppSupport}
                 className="w-full group relative flex items-center justify-between p-5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-[24px] transition-all"
