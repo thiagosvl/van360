@@ -187,9 +187,7 @@ export default function Login() {
       });
 
     } catch (err: any) {
-      toast.error("auth.erro.emailNaoEncontrado", {
-        description: err.userMessage || "Tente novamente em alguns minutos.",
-      });
+      toast.error("auth.erro.cpfNaoEncontrado");
     } finally {
       setRefreshing(false);
     }
@@ -553,7 +551,7 @@ export default function Login() {
         )}
       </div>
 
-      <LoadingOverlay active={refreshing} text="comum.aguarde" />
+      <LoadingOverlay active={refreshing} text={getMessage("comum.aguarde.aguarde")} />
     </>
   );
 }

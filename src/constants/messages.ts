@@ -391,7 +391,9 @@ export const messages = {
       ativar: "Ativar?",
       ativarDescricao: "Deseja realmente ativado?",
     },
-    aguarde: "Aguarde...",
+    aguarde: {
+      aguarde: "Aguarde..."
+    },
   },
 } as const;
 
@@ -435,6 +437,7 @@ export type MessageKey =
   | `pix.info.${keyof typeof messages.pix.info}`
   | `comum.${keyof typeof messages.comum}`
   | `comum.confirmar.${keyof typeof messages.comum.confirmar}`
+  | `comum.aguarde.${keyof typeof messages.comum.aguarde}`
   | `veiculo.confirmar.${keyof typeof messages.veiculo.confirmar}`
   | `escola.confirmar.${keyof typeof messages.escola.confirmar}`;
 

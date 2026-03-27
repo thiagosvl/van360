@@ -58,10 +58,16 @@ apiClient.interceptors.response.use(
         errorCode === "AUTH_USER_INACTIVE" ||
         (error.response.status === 404 && originalRequest.url.includes('/usuarios/resumo'));
 
-    if (isFatalAuthError) {
+    if (isFatalAuthError || (error.response.status === 401 && originalRequest._retry)) {
         await sessionManager.signOut();
         const message = handleApiError(error);
         (error as AxiosError & { userMessage?: string }).userMessage = message;
+        
+        // Redireciona para o login caso não esteja nele
+        if (!window.location.pathname.includes('/login')) {
+            window.location.href = '/login';
+        }
+        
         return Promise.reject(error);
     }
 
@@ -80,12 +86,14 @@ apiClient.interceptors.response.use(
                     originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
                     return apiClient(originalRequest);
                 }
-            } else {
-                // Se o refresh falhar (usuário removido do auth.users), forçamos o logout
-                await sessionManager.signOut();
             }
+            
+            // Se o refresh falhar ou não retornar token, forçamos o logout
+            await sessionManager.signOut();
+            window.location.href = '/login';
         } catch (refreshErr) {
             await sessionManager.signOut();
+            window.location.href = '/login';
         }
     }
 
