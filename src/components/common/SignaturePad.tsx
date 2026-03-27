@@ -40,7 +40,7 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
         onChange?.(null);
       },
       toDataURL: (type, options) => sigCanvasRef.current?.toDataURL(type, options) || "",
-      isEmpty: () => sigCanvasRef.current?.isEmpty() || true,
+      isEmpty: () => sigCanvasRef.current?.isEmpty() ?? true,
       fromDataURL: (dataURL) => sigCanvasRef.current?.fromDataURL(dataURL),
     }));
 

@@ -49,7 +49,7 @@ export function NativeWelcomeScreen() {
         <p className="text-white/70 text-base mb-8 leading-relaxed">
           Seu período de teste de 15 dias começou.
           <br />
-          Vamos configurar sua primeira van?
+          Vamos configurar sua van?
         </p>
 
         <button
