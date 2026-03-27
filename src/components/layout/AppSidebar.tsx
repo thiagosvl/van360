@@ -1,4 +1,6 @@
 import { cn } from "@/lib/utils";
+import { getWhatsAppUrl } from "@/constants";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { pagesItems } from "@/utils/domain/pages/pagesUtils";
 import { NavLink } from "react-router-dom";
 import { ExternalLink, MessageCircle } from "lucide-react";
@@ -69,7 +71,7 @@ export function AppSidebar({ onLinkClick }: AppSidebarProps) {
           variant="secondary"
           size="sm"
           onClick={() => {
-            window.open("https://wa.me/5511999999999", "_blank");
+            window.open(getWhatsAppUrl(), "_blank");
             onLinkClick?.();
           }}
           className="mt-4 w-full rounded-full border-white/30 bg-white/20 text-white hover:bg-white/30 font-bold transition-all"

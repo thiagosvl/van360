@@ -4,8 +4,10 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { getWhatsAppUrl } from "@/constants";
 import { useLayout } from "@/contexts/LayoutContext";
-import { ChevronDown, MessageCircle, HelpCircle, ExternalLink, Lightbulb } from "lucide-react";
+import { ChevronDown, HelpCircle, ExternalLink, Lightbulb } from "lucide-react";
 import { useState } from "react";
 
 interface FaqItemProps {
@@ -65,7 +67,7 @@ export function HelpSheet() {
   ];
 
   const handleWhatsAppSupport = () => {
-    window.open("https://wa.me/5511962508068'?text=Olá, preciso de ajuda com o Van360", "_blank");
+    window.open(getWhatsAppUrl(), "_blank");
   };
 
   return (
@@ -87,15 +89,15 @@ export function HelpSheet() {
             {/* Suporte Direto */}
             <section>
               <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <MessageCircle className="h-3 w-3" /> Suporte em Tempo Real
+                <WhatsAppIcon className="h-3 w-3" /> Suporte em Tempo Real
               </h3>
               <button
                 onClick={handleWhatsAppSupport}
                 className="w-full group relative flex items-center justify-between p-5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-[24px] transition-all"
               >
                 <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-2xl bg-emerald-500 flex items-center justify-center text-white shadow-lg shadow-emerald-200 group-hover:scale-110 transition-transform">
-                    <MessageCircle className="h-6 w-6 fill-current" />
+                  <div className="h-12 w-12 rounded-2xl bg-[#25D366] flex items-center justify-center text-white shadow-lg shadow-emerald-200 group-hover:scale-110 transition-transform">
+                    <WhatsAppIcon className="h-6 w-6" />
                   </div>
                   <div className="text-left">
                     <p className="font-black text-emerald-900">WhatsApp</p>

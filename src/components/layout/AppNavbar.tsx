@@ -11,6 +11,7 @@ import { useSession } from "@/hooks/business/useSession";
 import { apiClient } from "@/services/api/client";
 import { sessionManager } from "@/services/sessionManager";
 import { clearAppSession } from "@/utils/domain/motorista/motoristaUtils";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import {
   ChevronDown,
   HelpCircle,
@@ -68,7 +69,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
             onClick={() => setIsHelpOpen(true)}
             className="md:hidden group flex items-center gap-2 text-slate-400 hover:text-[#1a3a5c] transition-all p-1.5"
           >
-            <div className="h-9 w-9 rounded-2xl flex items-center justify-center group-hover:bg-[#1a3a5c]/5 group-hover:text-[#1a3a5c] transition-colors">
+            <div className="h-9 w-9 rounded-2xl flex items-center justify-center group-hover:bg-[#25D366]/10 group-hover:text-[#25D366] transition-colors">
               <HelpCircle className="h-5 w-5" />
             </div>
           </button>
