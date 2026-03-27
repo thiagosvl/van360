@@ -1,16 +1,7 @@
 import { ROUTES } from "@/constants/routes";
 import { useSession } from "@/hooks/business/useSession";
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { Onboarding } from "../features/onboarding/Onboarding";
-
-interface OnboardingContextType {
-  showOnboarding: boolean;
-}
-
-const OnboardingContext = createContext<OnboardingContextType>({ showOnboarding: false });
-
-export const useOnboarding = () => useContext(OnboardingContext);
 
 // Tela de Carregamento Inicial Premium (Splash Screen simulada)
 const InitialLoading = () => (
@@ -43,8 +34,6 @@ const InitialLoading = () => (
 export const AppGate = ({ children }: { children: React.ReactNode }) => {
   const { session, loading } = useSession();
   const location = useLocation();
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [minLoadingTimePassed, setMinLoadingTimePassed] = useState(false);
 
   useEffect(() => {
@@ -54,40 +43,6 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
     }, 1200);
     return () => clearTimeout(timer);
   }, []);
-
-  useEffect(() => {
-    const isExternalForm = location.pathname.startsWith("/cadastro-passageiro");
-    const storageKey = "van360_onboarding_done";
-    const hasCompleted = localStorage.getItem(storageKey) === "true";
-
-    // 🛠️ MODO PREVIEW: Permite ver o Onboarding via URL (?onboarding=true)
-    const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.has("onboarding")) {
-      setShowOnboarding(true);
-      setCheckingOnboarding(false);
-      return;
-    }
-
-    // REGRAS DE EXIBIÇÃO:
-    // 1. Só mostra se estiver logado (session existe)
-    // 2. Só mostra se ainda não completou no dispositivo
-    // 3. Não mostra em formulários externos de passageiro
-    const shouldShow = !!session && !hasCompleted && !isExternalForm;
-
-    setShowOnboarding(shouldShow);
-    setCheckingOnboarding(false);
-  }, [location.pathname, session]);
-
-  const handleOnboardingComplete = () => {
-    localStorage.setItem("van360_onboarding_done", "true");
-    // Log para auditoria em dev/prod
-    console.log(`[Onboarding] Completed on device`);
-
-    // Pequeno delay para garantir que o storage foi persistido e dar feedback visual suave
-    setTimeout(() => {
-      setShowOnboarding(false);
-    }, 100);
-  };
 
   const publicPaths: string[] = [
     ROUTES.PUBLIC.ROOT,
@@ -101,9 +56,8 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
     publicPaths.includes(location.pathname) ||
     location.pathname.startsWith("/cadastro-passageiro");
 
-  // Enquanto ainda carrega sessão ou verifica onboarding, mostra tela premium
-  // Adicionado minLoadingTimePassed para evitar flicker e garantir experiência visual
-  if (loading || checkingOnboarding || !minLoadingTimePassed) {
+  // Enquanto ainda carrega sessão ou o splash screen, mostra tela premium
+  if (loading || !minLoadingTimePassed) {
     return <InitialLoading />;
   }
 
@@ -125,11 +79,7 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to={ROUTES.PRIVATE.MOTORISTA.HOME} replace />;
   }
 
-  // Caso normal → renderiza conteúdo com o Onboarding como overlay se necessário
-  return (
-    <OnboardingContext.Provider value={{ showOnboarding }}>
-      {children}
-      {showOnboarding && <Onboarding onComplete={handleOnboardingComplete} />}
-    </OnboardingContext.Provider>
-  );
+  // Caso normal → renderiza conteúdo
+  return <>{children}</>;
 };
+

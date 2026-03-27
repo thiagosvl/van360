@@ -1,6 +1,8 @@
+import { DuplicateErrorBanner } from "@/components/features/register/DuplicateErrorBanner";
 import { TermosUsoDialog } from "@/components/features/register/TermosUsoDialog";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { DuplicateError } from "@/hooks/register/useRegisterController";
 import { RegisterFormData } from "@/schemas/registerSchema";
 import { lazyLoad } from "@/utils/lazyLoad";
 import { Loader2 } from "lucide-react";
@@ -17,12 +19,16 @@ interface RegistrationFormStepProps {
   form: UseFormReturn<RegisterFormData>;
   loading: boolean;
   onNext: () => void;
+  duplicateError?: DuplicateError | null;
+  onDismissDuplicateError?: () => void;
 }
 
 export function RegistrationFormStep({
   form,
   loading,
   onNext,
+  duplicateError,
+  onDismissDuplicateError,
 }: RegistrationFormStepProps) {
   return (
     <section className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -37,6 +43,12 @@ export function RegistrationFormStep({
           <CadastroForm form={form} />
 
           <div className="pt-4">
+            {duplicateError && onDismissDuplicateError && (
+              <DuplicateErrorBanner
+                error={duplicateError}
+                onDismiss={onDismissDuplicateError}
+              />
+            )}
             <Button
               type="submit" 
               disabled={loading}

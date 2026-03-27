@@ -33,9 +33,6 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
         <div className="flex-1 overflow-y-auto px-5 py-6">
           <AppSidebar role={role} />
         </div>
-        <div className="p-4 border-t border-gray-50 text-center">
-          <p className="text-[10px] text-slate-400 font-medium tracking-tight">Van360 - v1.2.0</p>
-        </div>
       </aside>
 
       {/* Área de Conteúdo Principal */}

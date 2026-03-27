@@ -25,7 +25,9 @@ export function useRegisterController() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [postRegisterData, setPostRegisterData] = useState<PostRegisterData | null>(null);
-  const [showNativeWelcome, setShowNativeWelcome] = useState(false);
+  const [showNativeWelcome, setShowNativeWelcome] = useState(
+    () => isNativeApp() && sessionStorage.getItem("van360_showing_welcome") === "true"
+  );
   const [duplicateError, setDuplicateError] = useState<DuplicateError | null>(null);
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -59,6 +61,8 @@ export function useRegisterController() {
       if (isNativeApp()) {
         // Flag para AppGate não redirecionar enquanto a tela de boas-vindas está ativa
         sessionStorage.setItem("van360_showing_welcome", "true");
+        // Setar state ANTES do setSession para evitar race condition com remount
+        setShowNativeWelcome(true);
 
         const { error } = await sessionManager.setSession(
           result.session.access_token,
@@ -68,12 +72,11 @@ export function useRegisterController() {
 
         if (error) {
           sessionStorage.removeItem("van360_showing_welcome");
+          setShowNativeWelcome(false);
           toast.error("auth.erro.login", {
             description: "Cadastro realizado, mas não foi possível fazer login automático.",
           });
           navigate(ROUTES.PUBLIC.LOGIN);
-        } else {
-          setShowNativeWelcome(true);
         }
         return;
       }
@@ -177,3 +180,4 @@ export function useRegisterController() {
     clearDuplicateError,
   };
 }
+

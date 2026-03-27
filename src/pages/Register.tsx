@@ -1,4 +1,3 @@
-import { DuplicateErrorBanner } from "@/components/features/register/DuplicateErrorBanner";
 import { NativeWelcomeScreen } from "@/components/features/register/NativeWelcomeScreen";
 import { PostRegisterScreen } from "@/components/features/register/PostRegisterScreen";
 import { RegistrationFormStep } from "@/components/features/register/steps/RegistrationFormStep";
@@ -81,18 +80,14 @@ export default function Register() {
         </div>
 
           <div className="p-6 sm:p-10 lg:p-12">
-            {duplicateError && (
-              <DuplicateErrorBanner
-                error={duplicateError}
-                onDismiss={clearDuplicateError}
-              />
-            )}
             <RegistrationFormStep
               form={form}
               loading={loading}
               onNext={async () => {
                   await handleNextStep();
               }}
+              duplicateError={duplicateError}
+              onDismissDuplicateError={clearDuplicateError}
             />
           </div>
         </div>
