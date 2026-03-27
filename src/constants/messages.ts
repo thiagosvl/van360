@@ -241,9 +241,7 @@ export const messages = {
       novaSenhaDescricao: "Defina uma nova senha segura para sua conta.",
       botaoSolicitar: "Receber Código no WhatsApp",
       botaoValidar: "Validar Código",
-      botaoResetar: "Redefinir Senha",
       alterarCpf: "Alterar CPF ou reenviar",
-      sucessoSolicitar: "Código enviado com sucesso!",
     },
     info: {
       informeCpf: "Informe seu CPF.",
@@ -254,7 +252,6 @@ export const messages = {
       loginProcessando: "Entrando...",
       acessar: "Acessar Carteirinha",
       acessando: "Acessando...",
-      redefinirSenha: "Redefinir senha",
       redefinirSenhaProcessando: "Salvando...",
       voltarLogin: "Voltar ao login",
       cadastreSe: "Cadastre-se",
