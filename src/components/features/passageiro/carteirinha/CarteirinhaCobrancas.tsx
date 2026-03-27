@@ -341,7 +341,7 @@ const MiniKPI = ({
         {label}
       </span>
     </div>
-    <span className="text-sm font-headline font-black text-[#1a3a5c] block tabular-nums">
+    <span className="text-xs max-[320px]:text-[11px] font-headline font-black text-[#1a3a5c] block tabular-nums">
       {value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
     </span>
     <span className="text-[9px] font-bold text-slate-400 block mt-0.5">
