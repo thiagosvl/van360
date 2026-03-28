@@ -40,7 +40,7 @@ export const RelatoriosVisaoGeral = ({ dados }: RelatoriosVisaoGeralProps) => {
       <div className="grid grid-cols-2 gap-4">
         {/* Lucro Estimado */}
         <KPICard
-          label="Lucro Previsto"
+          label="Saldo"
           icon={Wallet}
           variant={KPICardVariant.PRIMARY}
           value={formatCurrency(dados.lucroEstimado)}

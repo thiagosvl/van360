@@ -9,6 +9,7 @@ import { ListSkeleton } from "@/components/skeletons";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePassageirosViewModel } from "@/hooks/ui/usePassageirosViewModel";
+import { cn } from "@/lib/utils";
 import { PassageiroTab } from "@/types/enums";
 import { Users2 } from "lucide-react";
 import { useState } from "react";
@@ -72,23 +73,29 @@ export default function Passageiros() {
             onValueChange={handleTabChange}
             className="w-full space-y-6"
           >
-            <div className="bg-gray-100/40 p-1 rounded-2xl">
+            <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
               <TabsList className="grid grid-cols-2 w-full h-11 bg-transparent p-0 gap-1 mt-0">
                 <TabsTrigger
                   value={PassageiroTab.PASSAGEIROS}
-                  className="rounded-xl h-full font-headline font-bold text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400"
+                  className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
                 >
                   Passageiros
-                  <span className={`ml-2 px-1.5 py-0.5 rounded-lg text-[10px] font-bold ${activeTab === PassageiroTab.PASSAGEIROS ? "bg-white/20 text-white" : "bg-slate-200 text-slate-500"}`}>
+                  <span className={cn(
+                    "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
+                    activeTab === PassageiroTab.PASSAGEIROS ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
+                  )}>
                     {countPassageiros || 0}
                   </span>
                 </TabsTrigger>
                 <TabsTrigger
                   value={PassageiroTab.SOLICITACOES}
-                  className="rounded-xl h-full font-headline font-bold text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400"
+                  className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c]"
                 >
                   Solicitações
-                  <span className={`ml-2 px-1.5 py-0.5 rounded-lg text-[10px] font-bold ${activeTab === PassageiroTab.SOLICITACOES ? "bg-white/20 text-white" : "bg-slate-200 text-slate-500"}`}>
+                  <span className={cn(
+                    "ml-2.5 px-1.5 py-0.5 rounded-lg text-[9px] font-bold transition-colors",
+                    activeTab === PassageiroTab.SOLICITACOES ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
+                  )}>
                     {countPrePassageiros || 0}
                   </span>
                 </TabsTrigger>

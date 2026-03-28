@@ -147,19 +147,19 @@ const ProfileSummary = ({
           {passageiro.nome_responsavel}
         </p>
       )}
-      <div className="flex items-center justify-center gap-2 mt-2">
-        <Badge variant="outline" className={cn(
-          "border-none px-2 py-0.5 text-[9px] font-black uppercase tracking-widest",
-          passageiro.ativo ? "text-emerald-500 bg-emerald-50" : "text-slate-400 bg-slate-50"
-        )}>
-          {passageiro.ativo ? "Ativo" : "Inativo"}
+    <div className="flex items-center justify-center gap-2 mt-2">
+      <Badge variant="outline" className={cn(
+        "border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest",
+        passageiro.ativo ? "text-emerald-500 bg-emerald-50" : "text-slate-400 bg-slate-50"
+      )}>
+        {passageiro.ativo ? "Ativo" : "Inativo"}
+      </Badge>
+      {temCobrancasVencidas && (
+        <Badge className="bg-rose-50 text-rose-500 border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest animate-pulse">
+          Possui Débitos
         </Badge>
-        {temCobrancasVencidas && (
-          <Badge className="bg-rose-50 text-rose-500 border-none px-2 py-0.5 text-[9px] font-black uppercase tracking-widest animate-pulse">
-            Possui Débitos
-          </Badge>
-        )}
-      </div>
+      )}
+    </div>
     </div>
   </div>
 );
@@ -338,17 +338,17 @@ export const CarteirinhaDadosPessoais = ({
         <div className="flex items-center gap-2.5">
           <contratoStyle.icon className="h-4 w-4" />
           <div>
-            <span className="block text-[8px] font-black uppercase tracking-[0.2em] opacity-60">
+            <span className="block text-[8px] font-bold uppercase tracking-widest opacity-60">
               Contrato
             </span>
-            <span className="text-sm font-black">
+            <span className="text-sm font-bold">
               {contratoStyle.label}
             </span>
           </div>
         </div>
         <div className="flex items-center gap-1.5 group-hover/tile:opacity-100 transition-opacity bg-black/5 px-2.5 py-1.5 rounded-xl border border-black/5">
           <RightIcon className="h-3 w-3" />
-          <span className="text-[9px] font-black uppercase tracking-widest leading-none pt-0.5">
+          <span className="text-[9px] font-bold uppercase tracking-widest leading-none pt-0.5">
             {passageiro.status_contrato === ContratoStatus.PENDENTE || passageiro.status_contrato === ContratoStatus.ASSINADO
               ? "Ver"
               : "Gerar"
@@ -371,13 +371,13 @@ export const CarteirinhaDadosPessoais = ({
       <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2">
         <div className="flex items-center gap-2">
           <Users className="h-3.5 w-3.5 text-slate-400" />
-          <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">
+          <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
             Representante Legal
           </span>
         </div>
         <div className="flex items-center justify-between">
           <div className="min-w-0">
-            <span className="block text-sm font-black text-[#1a3a5c]">
+            <span className="block text-sm font-bold text-[#1a3a5c]">
               {passageiro.nome_responsavel}
               <div className="text-[11px] font-medium text-slate-500">
                 {formatParentesco(passageiro.parentesco_responsavel)}
@@ -405,7 +405,7 @@ export const CarteirinhaDadosPessoais = ({
       <div className="bg-slate-50/80 rounded-2xl p-3.5 space-y-2">
         <div className="flex items-center gap-2">
           <MapPin className="h-3.5 w-3.5 text-slate-400" />
-          <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">
+          <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
             Rota de Embarque
           </span>
         </div>

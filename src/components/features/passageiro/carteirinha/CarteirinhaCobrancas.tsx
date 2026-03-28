@@ -76,12 +76,13 @@ export const CarteirinhaCobrancas = ({
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-headline font-black text-[#1a3a5c]">
-          Mensalidades
-        </h3>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100/80 px-2 py-1 rounded-lg">
+            {cobrancas.length} {cobrancas.length === 1 ? "Registro" : "Registros"}
+          </span>
+        </div>
 
         <div className="flex items-center gap-2">
-
           <Button
             onClick={onOpenCobrancaDialog}
             size="sm"
@@ -213,11 +214,11 @@ const CobrancaItemPassageiro = forwardRef<
         <StatusBadge
           status={cobranca.status}
           dataVencimento={cobranca.data_vencimento}
-          className="h-4 px-2 text-[7px] font-black uppercase tracking-widest rounded-full border-none shadow-none ring-1 ring-inset ring-slate-100"
+          className="h-4 px-2 text-[7px] font-bold uppercase tracking-widest rounded-full border-none shadow-none ring-1 ring-inset ring-slate-100"
         />
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-lg font-headline font-black text-[#1a3a5c] tracking-tighter">
+        <span className="text-lg font-headline font-bold text-[#1a3a5c] tracking-tighter">
           {Number(cobranca.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
         </span>
       </div>
@@ -226,7 +227,7 @@ const CobrancaItemPassageiro = forwardRef<
           Venc: {formatDateToBR(cobranca.data_vencimento)}
         </span>
         {isPaid && cobranca.tipo_pagamento && (
-          <span className="text-[8px] font-black text-emerald-600/70 uppercase tracking-widest px-1.5 py-0.5 bg-emerald-50/50 rounded-md ring-1 ring-inset ring-emerald-100/50">
+          <span className="text-[8px] font-bold text-emerald-600/70 uppercase tracking-widest px-1.5 py-0.5 bg-emerald-50/50 rounded-md ring-1 ring-inset ring-emerald-100/50">
             {getPaymentMethodLabel(cobranca.tipo_pagamento)}
           </span>
         )}
@@ -316,14 +317,14 @@ const MiniKPI = ({
   <div className={cn("rounded-2xl p-3 text-center", colorClass)}>
     <div className="flex items-center justify-center gap-1.5 mb-1">
       {icon}
-      <span className="text-[8px] font-black uppercase tracking-[0.15em]">
+      <span className="text-[8px] font-bold uppercase tracking-widest opacity-70">
         {label}
       </span>
     </div>
-    <span className="text-xs max-[320px]:text-[11px] font-headline font-black text-[#1a3a5c] block tabular-nums">
+    <span className="text-xs max-[320px]:text-[11px] font-headline font-bold text-[#1a3a5c] block tabular-nums">
       {value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
     </span>
-    <span className="text-[9px] font-bold text-slate-400 block mt-0.5">
+    <span className="text-[9px] font-semibold text-slate-400 block mt-0.5">
       {count} {count === 1 ? "parcela" : "parcelas"}
     </span>
   </div>

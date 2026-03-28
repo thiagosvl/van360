@@ -28,33 +28,36 @@ export function DateNavigation({ mes, ano, onNavigate, disabled }: DateNavigatio
   };
 
   return (
-    <div className="flex items-center justify-between bg-surface-container-lowest p-4 rounded-xl shadow-diff-shadow max-w-md mx-auto w-full md:w-auto">
+    <div className="flex items-center justify-between bg-[#1a3a5c] h-[52px] px-1.5 rounded-[1.25rem] shadow-lg border border-white/5 max-w-md mx-auto w-full md:w-auto transition-all duration-300">
       <button
         disabled={disabled}
         onClick={handlePrevious}
-        className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors active:scale-90 duration-150 disabled:opacity-30"
+        className={cn(
+          "w-10 h-10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all active:scale-90 duration-200 disabled:opacity-20",
+          disabled && "cursor-not-allowed"
+        )}
       >
-        <ChevronLeft className="h-5 w-5" />
+        <ChevronLeft className="h-[22px] w-[22px]" />
       </button>
 
-      <div className="text-center">
+      <div className="text-center select-none px-4">
         <p className={cn(
-          "font-headline font-bold text-lg text-primary",
-          disabled && "text-gray-400 opacity-50"
+          "font-headline font-bold text-[15px] sm:text-[16px] text-white tracking-tight whitespace-nowrap",
+          disabled && "opacity-50"
         )}>
           {meses[mes - 1]} {ano}
-        </p>
-        <p className="text-[10px] text-gray-400 font-medium uppercase tracking-widest mt-0.5">
-          Fluxo Financeiro Mensal
         </p>
       </div>
 
       <button
         disabled={disabled}
         onClick={handleNext}
-        className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors active:scale-90 duration-150 disabled:opacity-30"
+        className={cn(
+          "w-10 h-10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all active:scale-90 duration-200 disabled:opacity-20",
+          disabled && "cursor-not-allowed"
+        )}
       >
-        <ChevronRight className="h-5 w-5" />
+        <ChevronRight className="h-[22px] w-[22px]" />
       </button>
     </div>
   );

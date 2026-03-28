@@ -3,6 +3,7 @@ import { CobrancaTab } from "@/types/enums";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { memo } from "react";
+import { cn } from "@/lib/utils";
 
 interface CobrancasToolbarProps {
   buscaAReceber: string;
@@ -30,23 +31,29 @@ export const CobrancasToolbar = memo(function CobrancasToolbar({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="bg-gray-100/40 p-1 rounded-2xl">
+      <div className="bg-slate-200/50 p-1 rounded-[1.25rem]">
         <TabsList className="grid grid-cols-2 w-full h-11 bg-transparent p-0 gap-1 mt-0">
           <TabsTrigger
             value={CobrancaTab.ARECEBER}
-            className="rounded-xl h-full font-headline font-bold text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400"
+            className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
           >
             A Receber
-            <span className={`ml-2 px-1.5 py-0.5 rounded-lg text-[10px] font-bold ${activeTab === CobrancaTab.ARECEBER ? "bg-white/20 text-white" : "bg-slate-200 text-slate-500"}`}>
+            <span className={cn(
+              "ml-2 px-1.5 py-0.5 rounded-lg text-[10px] font-bold transition-colors",
+              activeTab === CobrancaTab.ARECEBER ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
+            )}>
               {countAReceber || 0}
             </span>
           </TabsTrigger>
           <TabsTrigger
             value={CobrancaTab.RECEBIDOS}
-            className="rounded-xl h-full font-headline font-bold text-sm text-[#1a3a5c] transition-all duration-300 data-[state=active]:bg-[#1a3a5c] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400"
+            className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80"
           >
             Recebidos
-            <span className={`ml-2 px-1.5 py-0.5 rounded-lg text-[10px] font-bold ${activeTab === CobrancaTab.RECEBIDOS ? "bg-white/20 text-white" : "bg-slate-200 text-slate-500"}`}>
+            <span className={cn(
+              "ml-2 px-1.5 py-0.5 rounded-lg text-[10px] font-bold transition-colors",
+              activeTab === CobrancaTab.RECEBIDOS ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "bg-slate-200/80 text-slate-400"
+            )}>
               {countRecebidos || 0}
             </span>
           </TabsTrigger>
