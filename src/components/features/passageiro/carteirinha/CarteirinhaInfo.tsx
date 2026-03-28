@@ -136,7 +136,7 @@ const ProfileSummary = ({
   <div className="flex flex-col items-center -mt-12 mb-4">
     <div className="h-24 w-24 rounded-[2rem] bg-white p-1.5 shadow-xl">
       <div className={cn(
-        "h-full w-full rounded-[1.6rem] bg-slate-100 flex items-center justify-center text-[#1a3a5c] overflow-hidden relative border-2 transition-all",
+        "h-full w-full rounded-[1.6rem] bg-slate-100 flex items-center justify-center text-[#1a3a5c] relative border-2",
         passageiro.ativo ? "border-emerald-500/20" : "border-rose-500/20"
       )}>
         <User className="h-10 w-10 opacity-20" />

@@ -4,16 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { DuplicateError } from "@/hooks/register/useRegisterController";
 import { RegisterFormData } from "@/schemas/registerSchema";
-import { lazyLoad } from "@/utils/lazyLoad";
+import { CadastroForm } from "@/components/features/register";
 import { Loader2 } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
-
-// Lazy load
-const CadastroForm = lazyLoad(() =>
-  import("@/components/features/register").then((mod) => ({
-    default: mod.CadastroForm,
-  }))
-);
 
 interface RegistrationFormStepProps {
   form: UseFormReturn<RegisterFormData>;

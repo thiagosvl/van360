@@ -13,33 +13,13 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { CarteirinhaSkeleton } from "@/components/skeletons";
 
-import { lazyLoad } from "@/utils/lazyLoad";
-
-const CarteirinhaInfo = lazyLoad(() =>
-  import("@/components/features/passageiro/carteirinha").then((mod) => ({
-    default: mod.CarteirinhaInfo,
-  })),
-);
-const CarteirinhaHeader = lazyLoad(() =>
-  import("@/components/features/passageiro/carteirinha").then((mod) => ({
-    default: mod.CarteirinhaHeader,
-  })),
-);
-const CarteirinhaDadosPessoais = lazyLoad(() =>
-  import("@/components/features/passageiro/carteirinha").then((mod) => ({
-    default: mod.CarteirinhaDadosPessoais,
-  })),
-);
-const CarteirinhaCobrancas = lazyLoad(() =>
-  import("@/components/features/passageiro/carteirinha").then((mod) => ({
-    default: mod.CarteirinhaCobrancas,
-  })),
-);
-const CarteirinhaObservacoes = lazyLoad(() =>
-  import("@/components/features/passageiro/carteirinha").then((mod) => ({
-    default: mod.CarteirinhaObservacoes,
-  })),
-);
+import {
+  CarteirinhaInfo,
+  CarteirinhaHeader,
+  CarteirinhaDadosPessoais
+} from "@/components/features/passageiro/carteirinha";
+import { CarteirinhaCobrancas } from "@/components/features/passageiro/carteirinha";
+import { CarteirinhaObservacoes } from "@/components/features/passageiro/carteirinha";
 
 import { PullToRefreshWrapper } from "@/components/navigation/PullToRefreshWrapper";
 
@@ -231,8 +211,8 @@ export default function PassageiroCarteirinha() {
       const updatedPassageiro = data?.id ? data : (data?.passageiro || passageiro);
 
       setTimeout(() => {
-        const hasActiveContract = updatedPassageiro.status_contrato === ContratoStatus.ASSINADO || 
-                                  updatedPassageiro.status_contrato === ContratoStatus.PENDENTE;
+        const hasActiveContract = updatedPassageiro.status_contrato === ContratoStatus.ASSINADO ||
+          updatedPassageiro.status_contrato === ContratoStatus.PENDENTE;
 
         if (hasActiveContract) {
           openUpdateContractDialog({ passageiro: updatedPassageiro });
@@ -600,7 +580,6 @@ export default function PassageiroCarteirinha() {
                         passageiro={passageiro}
                         isCopiedEndereco={isCopiedEndereco}
                         isCopiedTelefone={isCopiedTelefone}
-                        onEditClick={handleEditClick}
                         onCopyToClipboard={handleCopyToClipboard}
                         onContractAction={infoProps.onContractAction}
                         contratosAtivos={infoProps.contratosAtivos}
