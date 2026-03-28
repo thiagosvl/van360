@@ -54,10 +54,7 @@ export const cobrancaApi = {
             .then(res => res.data);
     },
 
-    fetchAvailableYears: (passageiroId: string) =>
-        apiClient
-            .get(`${endpointBase}/passageiro/${passageiroId}/anos-disponiveis`)
-            .then(res => res.data),
+
 
     fetchNotificacoesByCobrancaId: (cobrancaId: string) =>
         apiClient

@@ -43,18 +43,18 @@ import { UseFormReturn } from "react-hook-form";
 
 // --- Constants ---
 const meses = [
-  { value: "1", label: "Janeiro" },
-  { value: "2", label: "Fevereiro" },
-  { value: "3", label: "Março" },
-  { value: "4", label: "Abril" },
-  { value: "5", label: "Maio" },
-  { value: "6", label: "Junho" },
-  { value: "7", label: "Julho" },
-  { value: "8", label: "Agosto" },
-  { value: "9", label: "Setembro" },
-  { value: "10", label: "Outubro" },
-  { value: "11", label: "Novembro" },
-  { value: "12", label: "Dezembro" },
+    { value: "1", label: "Janeiro" },
+    { value: "2", label: "Fevereiro" },
+    { value: "3", label: "Março" },
+    { value: "4", label: "Abril" },
+    { value: "5", label: "Maio" },
+    { value: "6", label: "Junho" },
+    { value: "7", label: "Julho" },
+    { value: "8", label: "Agosto" },
+    { value: "9", label: "Setembro" },
+    { value: "10", label: "Outubro" },
+    { value: "11", label: "Novembro" },
+    { value: "12", label: "Dezembro" },
 ];
 
 export interface CobrancaFormContentProps {
@@ -118,12 +118,12 @@ export function CobrancaFormContent({
                 parseInt(mesSelecionado) - 1,
                 parseInt(anoSelecionado)
             );
-            
+
             form.setValue("data_vencimento", novaData, { shouldValidate: true });
 
             // Validação de pagamentos futuros
             const isFuture = isFutureMonth(mesSelecionado, anoSelecionado);
-            form.setValue("is_future", isFuture); 
+            form.setValue("is_future", isFuture);
             if (!isFuture) {
                 form.clearErrors("foi_pago");
             }
@@ -183,11 +183,11 @@ export function CobrancaFormContent({
                                 <FormLabel className="text-gray-700 font-medium ml-1">
                                     Ano <span className="text-red-600">*</span>
                                 </FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value} disabled>
                                     <FormControl>
                                         <SelectTrigger
                                             className={cn(
-                                                "h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 transition-all",
+                                                "h-12 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 transition-all opacity-80",
                                                 fieldState.error && "border-red-500"
                                             )}
                                         >
@@ -195,7 +195,7 @@ export function CobrancaFormContent({
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent className="max-h-60">
-                                        {anos.map((a) => (
+                                        {anos.filter(a => a.value === String(new Date().getFullYear())).map((a) => (
                                             <SelectItem key={a.value} value={a.value}>
                                                 {a.label}
                                             </SelectItem>

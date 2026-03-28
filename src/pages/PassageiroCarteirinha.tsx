@@ -50,7 +50,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks";
 import { useLayout } from "@/contexts/LayoutContext";
 import {
-  useAvailableYears,
   useCobrancasByPassageiro,
   useDeleteCobranca,
   useDeletePassageiro,
@@ -123,7 +122,7 @@ export default function PassageiroCarteirinha() {
   const [isCopiedEndereco, setIsCopiedEndereco] = useState(false);
   const [isCopiedTelefone, setIsCopiedTelefone] = useState(false);
 
-  const [yearFilter, setYearFilter] = useState(currentYear);
+  const [yearFilter] = useState(currentYear);
 
   const [isObservacoesEditing, setIsObservacoesEditing] = useState(false);
   const [obsText, setObsText] = useState("");
@@ -157,15 +156,7 @@ export default function PassageiroCarteirinha() {
 
   const cobrancas = (cobrancasData || []) as Cobranca[];
 
-  const {
-    data: availableYearsData,
-    refetch: refetchAvailableYears,
-    isError: isAvailableYearsError,
-  } = useAvailableYears(passageiro_id, {
-    enabled: !!passageiro_id,
-  });
-
-  const availableYears = (availableYearsData || [currentYear]) as string[];
+  const availableYears = [currentYear];
 
   const loading =
     isSessionLoading ||
@@ -173,13 +164,6 @@ export default function PassageiroCarteirinha() {
     isPassageiroLoading ||
     isCobrancasLoading;
 
-  useEffect(() => {
-    if (isAvailableYearsError) {
-      toast.error("cobranca.erro.buscarAnos", {
-        description: "Não foi possível concluir a operação.",
-      });
-    }
-  }, [isAvailableYearsError]);
 
   useEffect(() => {
     if (isCobrancasError) {
@@ -234,12 +218,6 @@ export default function PassageiroCarteirinha() {
     }
   }, [passageiro, setPageTitle]);
 
-  useEffect(() => {
-    if (availableYears.length > 0 && !availableYears.includes(yearFilter)) {
-      const fallbackYear = new Date().getFullYear().toString();
-      setYearFilter(fallbackYear);
-    }
-  }, [availableYears, yearFilter]);
 
   const handlePassageiroFormSuccess = useCallback((data?: any, meta?: any) => {
     refetchPassageiro();
@@ -458,7 +436,6 @@ export default function PassageiroCarteirinha() {
     await Promise.all([
       refetchPassageiro(),
       refetchCobrancas(),
-      refetchAvailableYears(),
     ]);
   };
 
@@ -466,10 +443,8 @@ export default function PassageiroCarteirinha() {
     cobrancas,
     passageiro,
     yearFilter,
-    availableYears,
     mostrarTodasCobrancas,
     limiteCobrancasMobile: 3,
-    onYearChange: setYearFilter,
     onOpenCobrancaDialog: () => {
       if (!passageiro_id) return;
       openCobrancaFormDialog({

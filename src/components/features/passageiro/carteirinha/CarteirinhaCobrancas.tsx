@@ -8,16 +8,9 @@ import {
   Plus,
   AlertCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Cobranca } from "@/types/cobranca";
 import { CobrancaStatus } from "@/types/enums";
@@ -35,9 +28,7 @@ interface CarteirinhaCobrancasProps {
   cobrancas: Cobranca[];
   passageiro: Passageiro;
   yearFilter: string;
-  availableYears: string[];
   mostrarTodasCobrancas: boolean;
-  onYearChange: (year: string) => void;
   onOpenCobrancaDialog: () => void;
   onEditCobranca: (cobranca: Cobranca) => void;
   onRegistrarPagamento: (cobranca: Cobranca) => void;
@@ -53,8 +44,6 @@ export const CarteirinhaCobrancas = ({
   cobrancas,
   passageiro,
   yearFilter,
-  availableYears,
-  onYearChange,
   onOpenCobrancaDialog,
   onEditCobranca,
   onRegistrarPagamento,
@@ -92,20 +81,6 @@ export const CarteirinhaCobrancas = ({
         </h3>
 
         <div className="flex items-center gap-2">
-          {availableYears.length > 1 && (
-            <Select value={yearFilter} onValueChange={onYearChange}>
-              <SelectTrigger className="w-[90px] h-10 bg-white border-slate-100 rounded-2xl shadow-sm text-xs font-bold text-[#1a3a5c]">
-                <SelectValue placeholder="Ano" />
-              </SelectTrigger>
-              <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
-                {availableYears.map((ano) => (
-                  <SelectItem key={ano} value={ano} className="rounded-xl text-xs font-bold py-2.5">
-                    {ano}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
 
           <Button
             onClick={onOpenCobrancaDialog}
@@ -187,7 +162,19 @@ export const CarteirinhaCobrancas = ({
  * Segue o mesmo padrão visual do CobrancaMobileCard de CobrancasList,
  * mas substitui nome/responsável (redundante) por mês + data de vencimento.
  */
-const CobrancaItemPassageiro = ({
+const CobrancaItemPassageiro = forwardRef<
+  HTMLDivElement,
+  {
+    cobranca: Cobranca;
+    passageiro: Passageiro;
+    index: number;
+    onEditCobranca: (c: Cobranca) => void;
+    onRegistrarPagamento: (c: Cobranca) => void;
+    onExcluirCobranca: (c: Cobranca) => void;
+    onDesfazerPagamento: (id: string) => void;
+    onSetReceiptUrl: (url: string | null) => void;
+  }
+>(({
   cobranca,
   passageiro,
   index,
@@ -196,16 +183,7 @@ const CobrancaItemPassageiro = ({
   onExcluirCobranca,
   onDesfazerPagamento,
   onSetReceiptUrl,
-}: {
-  cobranca: Cobranca;
-  passageiro: Passageiro;
-  index: number;
-  onEditCobranca: (c: Cobranca) => void;
-  onRegistrarPagamento: (c: Cobranca) => void;
-  onExcluirCobranca: (c: Cobranca) => void;
-  onDesfazerPagamento: (id: string) => void;
-  onSetReceiptUrl: (url: string | null) => void;
-}) => {
+}, ref) => {
   const isPaid = cobranca.status === CobrancaStatus.PAGO;
   const isAtrasado = !isPaid && checkCobrancaEmAtraso(cobranca.data_vencimento);
 
@@ -258,6 +236,7 @@ const CobrancaItemPassageiro = ({
 
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.025 }}
@@ -318,7 +297,7 @@ const CobrancaItemPassageiro = ({
       </MobileActionItem>
     </motion.div>
   );
-};
+});
 
 /* Mini KPI Card */
 const MiniKPI = ({

@@ -27,7 +27,7 @@ export { usePassageiroFormDadosCadastraisViewModel } from "./ui/usePassageiroFor
 export { usePassageiroForm } from "./form/usePassageiroForm";
 
 // API hooks (queries)
-export { useAvailableYears } from "./api/useAvailableYears";
+
 export { useBuscarResponsavel } from "./api/useBuscarResponsavel";
 export { useCobranca, useCobrancaNotificacoes } from "./api/useCobranca";
 export { useCobrancas } from "./api/useCobrancas";
