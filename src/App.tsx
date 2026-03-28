@@ -60,9 +60,7 @@ const App = () => {
 
   useEffect(() => {
     const runUpdater = async () => {
-      if (!Capacitor.isNativePlatform() || import.meta.env.DEV) {
-        return;
-      }
+      if (!Capacitor.isNativePlatform()) return;
 
       try {
         const { data } = await apiClient.get("/app/updates", {
