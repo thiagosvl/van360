@@ -60,7 +60,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   }, [profile?.nome]);
 
   return (
-    <header className="fixed top-0 right-0 left-0 md:left-72 z-30 border-b border-gray-100 bg-white/95 backdrop-blur-md h-16 sm:h-20 transition-all">
+    <header className="fixed top-0 right-0 left-0 md:left-72 z-30 border-b border-gray-100 bg-white/95 backdrop-blur-md h-[calc(4rem+var(--safe-area-top))] sm:h-[calc(5rem+var(--safe-area-top))] pt-[var(--safe-area-top)] transition-all">
       <div className="flex h-full items-center justify-between px-4 sm:px-8 relative">
         {/* Esquerda: Central de Ajuda (Mobile) / Título (Desktop) */}
         <div className="flex-1 flex items-center">

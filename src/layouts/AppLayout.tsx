@@ -36,7 +36,7 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
       </aside>
 
       {/* Área de Conteúdo Principal */}
-      <main className="pt-20 sm:mt-2 pb-24 md:pb-12 px-4 sm:px-6 lg:px-10 md:ml-72 flex-1 transition-all duration-300">
+      <main className="pt-[calc(5.5rem+var(--safe-area-top))] sm:pt-[calc(6rem+var(--safe-area-top))] pb-[calc(6rem+var(--safe-area-bottom))] md:pb-12 px-4 sm:px-6 lg:px-10 md:ml-72 flex-1 transition-all duration-300">
         <Outlet />
       </main>
 
@@ -45,8 +45,8 @@ function AppLayoutContent({ role }: { role: "motorista" }) {
 
       {/* Menu Lateral Mobile (Gatilhado pelo botão "Mais") */}
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-        <SheetContent side="right" className="w-[85%] sm:w-80 p-0 border-l border-gray-100 bg-white">
-          <div className="p-6 border-b border-gray-50 bg-slate-50/50">
+        <SheetContent side="right" className="w-[85%] sm:w-80 px-0 border-l border-gray-100 bg-white">
+          <div className="px-6 pb-4 pt-6 border-b border-gray-50 bg-slate-50/50">
             <SheetTitle className="text-left">
               <span className="text-[12px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-1">Menu</span>
             </SheetTitle>

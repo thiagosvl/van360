@@ -60,13 +60,13 @@ const App = () => {
 
   useEffect(() => {
     const runUpdater = async () => {
-      if (!Capacitor.isNativePlatform()) {
+      if (!Capacitor.isNativePlatform() || import.meta.env.DEV) {
         return;
       }
 
       try {
         const { data } = await apiClient.get("/app/updates", {
-            params: { platform: Capacitor.getPlatform() }
+          params: { platform: Capacitor.getPlatform() }
         });
 
         if (!data) {
@@ -92,9 +92,9 @@ const App = () => {
         }
 
         try {
-                toast.info("sistema.info.atualizacaoApp", {
-                  description: "sistema.info.atualizacaoAppDescricao",
-                });
+          toast.info("sistema.info.atualizacaoApp", {
+            description: "sistema.info.atualizacaoAppDescricao",
+          });
 
           const version = await CapacitorUpdater.download({
             version: latest_version,
@@ -104,9 +104,9 @@ const App = () => {
           await CapacitorUpdater.next({ id: version.id });
           localStorage.setItem("pendingUpdate", version.id);
 
-                  toast.success("sistema.info.melhoriasProntas", {
-                    description: "sistema.info.melhoriasProntasDescricao",
-                  });
+          toast.success("sistema.info.melhoriasProntas", {
+            description: "sistema.info.melhoriasProntasDescricao",
+          });
         } catch (err) {
           // Erro em atualização silenciosa - não crítico
         }
@@ -116,6 +116,41 @@ const App = () => {
     };
 
     runUpdater();
+  }, []);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) {
+      document.body.classList.remove('native-app');
+      return;
+    }
+
+    document.body.classList.add('native-app');
+
+    const injectSafeAreas = () => {
+      // Criamos um elemento temporário para testar se o env() está funcionando
+      const testDiv = document.createElement('div');
+      testDiv.style.paddingTop = 'env(safe-area-inset-top)';
+      testDiv.style.position = 'absolute';
+      testDiv.style.visibility = 'hidden';
+      document.body.appendChild(testDiv);
+
+      const computedStyle = window.getComputedStyle(testDiv);
+      const topInset = parseInt(computedStyle.paddingTop) || 0;
+      document.body.removeChild(testDiv);
+
+      // Se o topInset for 0 em plataforma nativa Android, aplicamos um fallback manual
+      // pois o Android 15 edge-to-edge sempre tem algum inset (status bar).
+      if (topInset === 0 && Capacitor.getPlatform() === 'android') {
+        const root = document.documentElement;
+
+        // Valores aproximados para Android moderno
+        root.style.setProperty('--safe-area-top', '24px');
+        root.style.setProperty('--safe-area-bottom', '24px');
+      }
+    };
+
+    // Pequeno delay para garantir que o WebView esteja pronto e com insets calculados
+    setTimeout(injectSafeAreas, 500);
   }, []);
 
   useEffect(() => {
@@ -160,100 +195,100 @@ const App = () => {
         <Sonner />
         <AppErrorBoundary>
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <BackButtonController />
-          <ScrollToTop />
-          <Suspense fallback={<LoadingFallback />}>
-            <Routes>
-            {/* Rotas Públicas */}
-            <Route
-              path={ROUTES.PUBLIC.LOGIN}
-              element={
-                <AppGate>
-                  <Login />
-                </AppGate>
-              }
-            />
+            <BackButtonController />
+            <ScrollToTop />
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                {/* Rotas Públicas */}
+                <Route
+                  path={ROUTES.PUBLIC.LOGIN}
+                  element={
+                    <AppGate>
+                      <Login />
+                    </AppGate>
+                  }
+                />
 
-            <Route
-              path={ROUTES.PUBLIC.REGISTER}
-              element={
-                <AppGate>
-                  <Register />
-                </AppGate>
-              }
-            />
+                <Route
+                  path={ROUTES.PUBLIC.REGISTER}
+                  element={
+                    <AppGate>
+                      <Register />
+                    </AppGate>
+                  }
+                />
 
-            <Route
-              path={ROUTES.PUBLIC.NEW_PASSWORD}
-              element={
-                <AppGate>
-                  <NovaSenha />
-                </AppGate>
-              }
-            />
+                <Route
+                  path={ROUTES.PUBLIC.NEW_PASSWORD}
+                  element={
+                    <AppGate>
+                      <NovaSenha />
+                    </AppGate>
+                  }
+                />
 
-            {/* Rota Pública de pré-cadastro */}
-            <Route
-              path={ROUTES.PUBLIC.EXTERNAL_PASSENGER_FORM}
-              element={<PassageiroExternalForm />}
-            />
+                {/* Rota Pública de pré-cadastro */}
+                <Route
+                  path={ROUTES.PUBLIC.EXTERNAL_PASSENGER_FORM}
+                  element={<PassageiroExternalForm />}
+                />
 
-            {/* Rota Pública de assinatura de contrato */}
-            <Route
-              path="/assinar/:token"
-              element={<AssinarContrato />}
-            />
+                {/* Rota Pública de assinatura de contrato */}
+                <Route
+                  path="/assinar/:token"
+                  element={<AssinarContrato />}
+                />
 
-            {/* Splash/Hub do app nativo */}
-            <Route
-              path={ROUTES.PUBLIC.SPLASH}
-              element={
-                <AppGate>
-                  <Splash />
-                </AppGate>
-              }
-            />
+                {/* Splash/Hub do app nativo */}
+                <Route
+                  path={ROUTES.PUBLIC.SPLASH}
+                  element={
+                    <AppGate>
+                      <Splash />
+                    </AppGate>
+                  }
+                />
 
-            <Route
-              path={ROUTES.PUBLIC.ROOT}
-              element={
-                Capacitor.isNativePlatform() ? (
-                  // App nativo → splash (AppGate redireciona para home se já logado)
-                  <Navigate to={ROUTES.PUBLIC.SPLASH} replace />
-                ) : (
-                  // Web → mostra página inicial pública (LP)
-                  <Index />
-                )
-              }
-            />
+                <Route
+                  path={ROUTES.PUBLIC.ROOT}
+                  element={
+                    Capacitor.isNativePlatform() ? (
+                      // App nativo → splash (AppGate redireciona para home se já logado)
+                      <Navigate to={ROUTES.PUBLIC.SPLASH} replace />
+                    ) : (
+                      // Web → mostra página inicial pública (LP)
+                      <Index />
+                    )
+                  }
+                />
 
-            {/* Rotas Protegidas */}
-            <Route
-              element={
-                <AppGate>
-                  <AppLayout />
-                </AppGate>
-              }
-            >
+                {/* Rotas Protegidas */}
+                <Route
+                  element={
+                    <AppGate>
+                      <AppLayout />
+                    </AppGate>
+                  }
+                >
 
-              {/* Motorista */}
-              <Route path={ROUTES.PRIVATE.MOTORISTA.HOME} element={<Home />} />
-              <Route path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS} element={<Passageiros />} />
-              <Route
-                path={ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS}
-                element={<PassageiroCarteirinha />}
-              />
-              <Route path={ROUTES.PRIVATE.MOTORISTA.BILLING} element={<Cobrancas />} />
-              <Route path={ROUTES.PRIVATE.MOTORISTA.SCHOOLS} element={<Escolas />} />
-              <Route path={ROUTES.PRIVATE.MOTORISTA.VEHICLES} element={<Veiculos />} />
-              <Route path={ROUTES.PRIVATE.MOTORISTA.EXPENSES} element={<Gastos />} />
-              <Route path={ROUTES.PRIVATE.MOTORISTA.REPORTS} element={<Relatorios />} />
-              <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACTS} element={<Contratos />} />
-            </Route>
+                  {/* Motorista */}
+                  <Route path={ROUTES.PRIVATE.MOTORISTA.HOME} element={<Home />} />
+                  <Route path={ROUTES.PRIVATE.MOTORISTA.PASSENGERS} element={<Passageiros />} />
+                  <Route
+                    path={ROUTES.PRIVATE.MOTORISTA.PASSENGER_DETAILS}
+                    element={<PassageiroCarteirinha />}
+                  />
+                  <Route path={ROUTES.PRIVATE.MOTORISTA.BILLING} element={<Cobrancas />} />
+                  <Route path={ROUTES.PRIVATE.MOTORISTA.SCHOOLS} element={<Escolas />} />
+                  <Route path={ROUTES.PRIVATE.MOTORISTA.VEHICLES} element={<Veiculos />} />
+                  <Route path={ROUTES.PRIVATE.MOTORISTA.EXPENSES} element={<Gastos />} />
+                  <Route path={ROUTES.PRIVATE.MOTORISTA.REPORTS} element={<Relatorios />} />
+                  <Route path={ROUTES.PRIVATE.MOTORISTA.CONTRACTS} element={<Contratos />} />
+                </Route>
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          </Suspense>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
           </BrowserRouter>
         </AppErrorBoundary>
 
@@ -317,7 +352,7 @@ const App = () => {
               {getMessage("sistema.atualizacao.processando")}
             </p>
             <p className="text-sm opacity-80">
-                {getMessage("sistema.atualizacao.progresso", { PERCENTUAL: progress })}
+              {getMessage("sistema.atualizacao.progresso", { PERCENTUAL: progress })}
             </p>
           </div>
         )}
