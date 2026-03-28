@@ -1,3 +1,4 @@
+import { ActionSheet } from "@/components/common/ActionSheet";
 import { MobileActionItem } from "@/components/common/MobileActionItem";
 import { ResponsiveDataList } from "@/components/common/ResponsiveDataList";
 import { useGastoActions } from "@/hooks/ui/useGastoActions";
@@ -7,18 +8,10 @@ import { formatCurrency, formatDateToBR } from "@/utils/formatters";
 import {
   Bus,
   Calendar,
-  ClipboardCheck,
-  Cog,
-  Ellipsis,
-  Eye,
-  FileText,
-  Fuel,
-  HelpCircle,
-  Wallet,
-  Wrench,
 } from "lucide-react";
-import { memo } from "react";
+import { memo, useState } from "react";
 import { GastoActionsMenu } from "./GastoActionsMenu";
+import { GastoSummary } from "./GastoSummary";
 
 interface GastosListProps {
   gastos: Gasto[];
@@ -27,26 +20,6 @@ interface GastosListProps {
   veiculos?: { id: string; placa: string }[];
 }
 
-const getCategoryConfig = (categoria: string) => {
-  switch (categoria) {
-    case "Combustível":
-      return { icon: Fuel };
-    case "Manutenção":
-      return { icon: Wrench };
-    case "Salário":
-      return { icon: Wallet };
-    case "Vistorias":
-      return { icon: ClipboardCheck };
-    case "Documentação":
-      return { icon: FileText };
-    case "Administrativa":
-      return { icon: Cog };
-    case "Outro":
-      return { icon: Ellipsis };
-    default:
-      return { icon: HelpCircle };
-  }
-};
 
 const GastoMobileCard = memo(function GastoMobileCard({
   gasto,
@@ -55,7 +28,6 @@ const GastoMobileCard = memo(function GastoMobileCard({
   onDelete,
   veiculos,
 }: { gasto: Gasto; index: number } & GastosListProps) {
-  const { icon: Icon } = getCategoryConfig(gasto.categoria);
 
   const getVeiculoPlaca = (veiculoId?: string | null) => {
     if (!veiculoId) return null;
@@ -64,15 +36,34 @@ const GastoMobileCard = memo(function GastoMobileCard({
   const placa = getVeiculoPlaca(gasto.veiculo_id);
 
   const actions = useGastoActions({ gasto, onEdit, onDelete });
+  
+  const getGastoDia = (dateStr?: string) => {
+    if (!dateStr) return "??";
+    const parts = dateStr.split("-");
+    if (parts.length === 3) return parts[2].substring(0, 2);
+    // Fallback if it's already in BR format or something else
+    const day = dateStr.split("/")[0];
+    return day.padStart(2, "0").substring(0, 2);
+  };
+
+  const gastoDia = getGastoDia(gasto.data);
+
+  const renderHeader = () => <GastoSummary gasto={gasto} veiculoPlaca={placa} />;
 
   return (
-    <MobileActionItem actions={actions as any} showHint={index === 0} className="bg-transparent">
+    <MobileActionItem 
+      actions={actions as any} 
+      showHint={index === 0} 
+      className="bg-transparent"
+      renderHeader={renderHeader}
+    >
       <div
-        onClick={() => onEdit(gasto)}
         className="bg-white p-3 pr-10 rounded-xl shadow-diff-shadow flex items-start gap-3 active:scale-[0.98] transition-all duration-150 border border-gray-100/50"
       >
-        <div className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center border border-slate-100 bg-slate-50/50 mt-0.5">
-          <Icon className="h-5 w-5 text-[#1a3a5c] opacity-60" />
+        <div className="flex-shrink-0 w-9 h-9 bg-[#1a3a5c] rounded-lg flex items-center justify-center mt-0.5">
+          <span className="text-white font-headline font-bold text-sm leading-none">
+            {gastoDia}
+          </span>
         </div>
 
         <div className="flex-grow min-w-0">
@@ -91,9 +82,7 @@ const GastoMobileCard = memo(function GastoMobileCard({
             {formatCurrency(gasto.valor)}
           </p>
           <div className="flex flex-col items-end gap-1 opacity-50">
-            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap leading-none">
-              {formatDateToBR(gasto.data)}
-            </span>
+            {/* Data removed here as requested, since it's now in the header block */}
             {placa && (
               <span className="text-[8px] font-black text-[#1a3a5c]/70 uppercase tracking-tighter">
                 {formatarPlacaExibicao(placa)}
@@ -112,12 +101,15 @@ export function GastosList({
   onDelete,
   veiculos = [],
 }: GastosListProps) {
+  const [openedGasto, setOpenedGasto] = useState<Gasto | null>(null);
+
   const getVeiculoPlaca = (veiculoId?: string | null) => {
     if (!veiculoId) return null;
     return veiculos.find((v) => v.id === veiculoId)?.placa || null;
   };
 
   return (
+    <>
     <ResponsiveDataList
       data={gastos}
       mobileItemRenderer={(gasto, index) => (
@@ -158,19 +150,29 @@ export function GastosList({
           </thead>
           <tbody className="divide-y divide-gray-50">
             {gastos.map((gasto) => {
-              const { icon: Icon } = getCategoryConfig(gasto.categoria);
               const placa = getVeiculoPlaca(gasto.veiculo_id);
+              
+              const getGastoDia = (dateStr?: string) => {
+                if (!dateStr) return "??";
+                const parts = dateStr.split("-");
+                if (parts.length === 3) return parts[2].substring(0, 2);
+                const day = dateStr.split("/")[0];
+                return day.padStart(2, "0").substring(0, 2);
+              };
+              const gastoDia = getGastoDia(gasto.data);
 
               return (
                 <tr
                   key={gasto.id}
-                  onClick={() => onEdit(gasto)}
+                  onClick={() => setOpenedGasto(gasto)}
                   className="group hover:bg-slate-50/50 transition-colors cursor-pointer"
                 >
                   <td className="px-8 py-5 align-middle">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl flex items-center justify-center border border-slate-100 bg-slate-50/50">
-                        <Icon className="h-5 w-5 text-[#1a3a5c] opacity-60" />
+                      <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-[#1a3a5c]">
+                        <span className="text-white font-headline font-bold text-sm leading-none">
+                          {gastoDia}
+                        </span>
                       </div>
                       <span className="font-headline font-bold text-[#1a3a5c] text-sm">
                         {gasto.categoria}
@@ -215,5 +217,56 @@ export function GastosList({
         </table>
       </div>
     </ResponsiveDataList>
+    {/* Desktop-triggered ActionSheet (Quick View) */}
+    {openedGasto && (
+      <ActionSheetWrapper
+        gasto={openedGasto}
+        veiculoPlaca={getVeiculoPlaca(openedGasto.veiculo_id)}
+        open={!!openedGasto}
+        onOpenChange={(open) => !open && setOpenedGasto(null)}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    )}
+    </>
+  );
+}
+
+// Wrapper to avoid calling useGastoActions for all rows upfront
+function ActionSheetWrapper({ 
+  gasto, 
+  veiculoPlaca,
+  open, 
+  onOpenChange, 
+  onEdit,
+  onDelete
+}: { 
+  gasto: Gasto; 
+  veiculoPlaca?: string | null;
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  onEdit: (gasto: Gasto) => void;
+  onDelete: (id: string) => void;
+}) {
+  const actions = useGastoActions({
+    gasto,
+    onEdit,
+    onDelete
+  });
+
+  return (
+    <ActionSheet 
+      open={open} 
+      onOpenChange={onOpenChange} 
+      actions={actions.map(a => ({
+        ...a as any,
+        onClick: () => {
+          onOpenChange(false);
+          a.onClick();
+        }
+      }))}
+    >
+      <GastoSummary gasto={gasto} veiculoPlaca={veiculoPlaca} />
+    </ActionSheet>
   );
 }

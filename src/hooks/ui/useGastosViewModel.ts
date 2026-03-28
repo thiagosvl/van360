@@ -101,7 +101,6 @@ export function useGastosViewModel() {
           try {
             await deleteGasto.mutateAsync(id);
             safeCloseDialog(closeConfirmationDialog);
-            toast.success("Gasto excluído com sucesso");
           } catch (error) {
             safeCloseDialog(closeConfirmationDialog);
           }
