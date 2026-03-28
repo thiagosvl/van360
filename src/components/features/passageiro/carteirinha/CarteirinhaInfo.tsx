@@ -83,6 +83,16 @@ const ProfileActions = ({
     >
       <WhatsAppIcon className="h-4.5 w-4.5" />
     </Button>
+
+    {/* Botão de Edição Direta */}
+    <Button
+      size="icon"
+      onClick={onEditClick}
+      className="h-11 w-11 rounded-2xl bg-blue-50 text-blue-600 hover:bg-[#1a3a5c] hover:text-white transition-all shadow-sm hover:shadow-md"
+    >
+      <Pencil className="h-4.5 w-4.5" />
+    </Button>
+
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
@@ -93,7 +103,6 @@ const ProfileActions = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="center" className="w-56 rounded-2xl p-2 shadow-xl border-slate-100">
-        {/* Usando font-normal conforme solicitado pelo usuário */}
         <DropdownMenuItem onClick={onEditClick} className="rounded-xl px-3 py-2.5 text-[11px] font-normal uppercase tracking-wider text-[#1a3a5c] cursor-pointer">
           <Pencil className="h-3.5 w-3.5 mr-2 opacity-60" />
           Editar Cadastro
@@ -220,7 +229,6 @@ export const CarteirinhaInfo = (props: CarteirinhaInfoProps) => {
         passageiro={props.passageiro}
         isCopiedEndereco={props.isCopiedEndereco}
         isCopiedTelefone={props.isCopiedTelefone}
-        onEditClick={props.onEditClick}
         onCopyToClipboard={props.onCopyToClipboard}
         onContractAction={props.onContractAction}
         contratosAtivos={props.contratosAtivos}
@@ -237,11 +245,10 @@ export const CarteirinhaDadosPessoais = ({
   passageiro,
   isCopiedEndereco,
   isCopiedTelefone,
-  onEditClick,
   onCopyToClipboard,
   onContractAction,
   contratosAtivos = true,
-}: Pick<CarteirinhaInfoProps, "passageiro" | "isCopiedEndereco" | "isCopiedTelefone" | "onEditClick" | "onCopyToClipboard" | "onContractAction" | "contratosAtivos">) => {
+}: Pick<CarteirinhaInfoProps, "passageiro" | "isCopiedEndereco" | "isCopiedTelefone" | "onCopyToClipboard" | "onContractAction" | "contratosAtivos">) => {
   const getContratoStatusStyles = (status?: ContratoStatus) => {
     if (status === ContratoStatus.ASSINADO)
       return { label: "Assinado", color: "text-emerald-500 bg-emerald-50", icon: ShieldCheck };
@@ -420,14 +427,6 @@ export const CarteirinhaDadosPessoais = ({
         </div>
       </div>
 
-      {/* Botão Editar */}
-      <Button
-        onClick={onEditClick}
-        className="w-full h-12 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md text-[#1a3a5c] font-black uppercase tracking-[0.15em] text-[10px] group/edit transition-all mt-2"
-      >
-        <Pencil className="h-4 w-4 mr-2 group-hover/edit:rotate-12 transition-transform" />
-        Editar Cadastro
-      </Button>
     </div>
   );
 };
