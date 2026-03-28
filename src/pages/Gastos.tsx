@@ -47,7 +47,7 @@ export default function Gastos() {
   const loadingActions = isProfileLoading;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFB] pb-24">
+    <div className="space-y-6">
       <PullToRefreshWrapper onRefresh={handleRefresh}>
         <div className="max-w-4xl mx-auto space-y-6">
           {/* 1. Header & Navigation */}

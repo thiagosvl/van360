@@ -585,7 +585,7 @@ export default function PassageiroCarteirinha() {
   return (
     <>
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
-        <div className="min-h-screen pb-20">
+        <div>
           <div className="space-y-6">
             {/* Mobile Layout: Header fixo + Abas na primeira dobra */}
             {isMobile ? (

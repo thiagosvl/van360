@@ -178,8 +178,8 @@ export default function GastoFormDialog({
         className="w-full max-w-md p-0 gap-0 bg-gray-50 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
         hideCloseButton
       >
-        <div className="bg-blue-600 px-4 py-5 sm:py-6 text-center relative shrink-0">
-          <div className="absolute left-4 top-4 sm:top-5 flex gap-2">
+        <div className="bg-blue-600 px-4 pt-[calc(1.5rem+var(--safe-area-top))] pb-5 sm:py-6 text-center relative shrink-0">
+          <div className="absolute left-4 top-[calc(1.5rem+var(--safe-area-top))] sm:top-5 flex gap-2">
             <Button
               type="button"
               variant="ghost"
@@ -191,7 +191,7 @@ export default function GastoFormDialog({
               <Wand2 className="h-5 w-5" />
             </Button>
           </div>
-          <DialogClose className="absolute right-4 top-4 sm:top-5 text-white/70 hover:text-white transition-colors">
+          <DialogClose className="absolute right-4 top-[calc(1.5rem+var(--safe-area-top))] sm:top-5 text-white/70 hover:text-white transition-colors">
             <X className="h-6 w-6" />
             <span className="sr-only">Close</span>
           </DialogClose>
@@ -386,7 +386,7 @@ export default function GastoFormDialog({
           </Form>
         </div>
 
-        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
+        <div className="p-4 pb-[calc(1.5rem+var(--safe-area-bottom))] border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
           <Button
             type="button"
             variant="outline"

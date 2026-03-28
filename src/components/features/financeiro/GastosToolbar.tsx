@@ -220,7 +220,7 @@ export const GastosToolbar = memo(function GastosToolbar({
               </Button>
             </DrawerTrigger>
             <DrawerContent
-                className="h-auto max-h-[90vh] rounded-t-[32px] flex flex-col px-0 bg-white border-none shadow-2xl pb-8"
+                className="h-auto max-h-[90vh] rounded-t-[32px] flex flex-col px-0 bg-white border-none shadow-2xl"
             >
                 <DrawerHeader className="text-left mb-2 px-8 pt-6">
                 <DrawerTitle className="font-headline font-black text-[#1a3a5c] text-xl">Filtrar Gastos</DrawerTitle>

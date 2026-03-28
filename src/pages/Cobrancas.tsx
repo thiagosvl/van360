@@ -39,7 +39,7 @@ export default function Cobrancas() {
 
   if (isProfileLoading || !profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600 bg-[#F8FAFB]">
+      <div className="flex-1 flex items-center justify-center text-gray-600 bg-[#F8FAFB]">
         <p className="font-medium animate-pulse">Carregando informações...</p>
       </div>
     );
@@ -57,7 +57,7 @@ export default function Cobrancas() {
   const statusLabel = activeTab === CobrancaTab.ARECEBER ? "PENDENTES" : "RECEBIDOS";
 
   return (
-    <div className="min-h-screen bg-[#F8FAFB] pb-24">
+    <div className="space-y-6">
       <PullToRefreshWrapper onRefresh={pullToRefreshReload}>
         <div className="max-w-4xl mx-auto space-y-6">
           <DateNavigation

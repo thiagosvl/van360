@@ -52,7 +52,7 @@ export default function Passageiros() {
 
   if (isProfileLoading || !profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
+      <div className="flex-1 flex items-center justify-center text-gray-600">
         <p>Carregando informações...</p>
       </div>
     );

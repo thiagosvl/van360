@@ -77,7 +77,7 @@ export function HelpSheet() {
   return (
     <Drawer open={isHelpOpen} onOpenChange={setIsHelpOpen}>
       <DrawerContent className="h-[85vh] sm:h-[70vh] rounded-t-[32px] p-0 border-0 shadow-2xl overflow-hidden">
-        <div className="h-full flex flex-col pt-4 pb-6">
+        <div className="h-full flex flex-col pt-4">
           <DrawerHeader className="px-6 mb-6">
             <div className="flex items-center gap-3 mb-1">
               <div className="h-10 w-10 rounded-2xl bg-[#1a3a5c]/5 flex items-center justify-center text-[#1a3a5c]">

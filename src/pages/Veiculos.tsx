@@ -40,14 +40,14 @@ export default function Veiculos() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600 bg-[#F8FAFB]">
+      <div className="flex-1 flex items-center justify-center text-gray-600 bg-[#F8FAFB]">
         <p className="font-medium animate-pulse">Carregando informações...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFB] pb-24">
+    <div className="space-y-6">
       <PullToRefreshWrapper onRefresh={handleRefresh}>
         <div className="max-w-4xl mx-auto space-y-6">
           <VeiculosToolbar

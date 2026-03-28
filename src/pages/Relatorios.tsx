@@ -21,7 +21,7 @@ export default function Relatorios() {
   } = useRelatoriosViewModel();
 
   return (
-    <div className="min-h-screen bg-[#F8FAFB] pb-24">
+    <div className="space-y-6">
       <PullToRefreshWrapper onRefresh={refreshAll}>
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Header & Navigation */}
