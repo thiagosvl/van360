@@ -102,6 +102,10 @@ export interface OpenUpdateContractDialogProps {
   passageiro: Passageiro;
 }
 
+export interface OpenGenerateContractDialogProps {
+  passageiro: Passageiro;
+}
+
 export interface LayoutContextType {
   pageTitle: string;
   setPageTitle: (title: string) => void;
@@ -123,6 +127,7 @@ export interface LayoutContextType {
   openCobrancaHistoryDialog: (props: OpenCobrancaHistoryProps) => void;
   openReceiptDialog: (props: OpenReceiptDialogProps) => void;
   openUpdateContractDialog: (props: OpenUpdateContractDialogProps) => void;
+  openGenerateContractDialog: (props: OpenGenerateContractDialogProps) => void;
   isFirstChargeDialogOpen: boolean;
   
   openContractSetupDialog: (props?: OpenContractSetupDialogProps) => void;

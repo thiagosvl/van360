@@ -16,7 +16,7 @@ import {
 } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { FilterDefaults, PassageiroFormModes, PassageiroTab } from "@/types/enums";
+import { ContratoStatus, FilterDefaults, PassageiroFormModes, PassageiroTab } from "@/types/enums";
 import { Escola } from "@/types/escola";
 import { Passageiro } from "@/types/passageiro";
 import { Veiculo } from "@/types/veiculo";
@@ -35,6 +35,7 @@ export function usePassageirosViewModel() {
     openPassageiroFormDialog,
     openFirstChargeDialog,
     openUpdateContractDialog,
+    openGenerateContractDialog,
   } = useLayout();
 
   const { user } = useSession();
@@ -246,18 +247,26 @@ export function usePassageirosViewModel() {
           refetchPassageiros();
 
           const hasChanges = meta?.hasCriticalContractChanges;
+          const usarContratos = profile?.config_contrato?.usar_contratos;
           
-          if (hasChanges === true) {
+          if (hasChanges === true && usarContratos) {
              const updatedPassageiro = data?.id ? data : (data?.passageiro || passageiro);
              
              setTimeout(() => {
-                openUpdateContractDialog({ passageiro: updatedPassageiro });
+                const hasActiveContract = updatedPassageiro.status_contrato === ContratoStatus.ASSINADO || 
+                                          updatedPassageiro.status_contrato === ContratoStatus.PENDENTE;
+
+                if (hasActiveContract) {
+                  openUpdateContractDialog({ passageiro: updatedPassageiro });
+                } else {
+                  openGenerateContractDialog({ passageiro: updatedPassageiro });
+                }
              }, 400);
           }
         },
       });
     },
-    [openPassageiroFormDialog, refetchPassageiros, openUpdateContractDialog],
+    [openPassageiroFormDialog, refetchPassageiros, openUpdateContractDialog, openGenerateContractDialog, profile?.config_contrato?.usar_contratos],
   );
 
   const handleOpenNewDialog = useCallback(() => {
@@ -344,21 +353,19 @@ export function usePassageirosViewModel() {
 
   const handleGenerateContract = useCallback(
     (passageiro: Passageiro) => {
-      openConfirmationDialog({
-        title: "Gerar Contrato?",
-        description: `Deseja gerar um novo contrato para ${passageiro.nome} agora?`,
-        confirmText: "Gerar",
-        onConfirm: async () => {
-          try {
-            await createContrato.mutateAsync({ passageiroId: passageiro.id });
-            safeCloseDialog(closeConfirmationDialog);
-          } catch (error) {
-            safeCloseDialog(closeConfirmationDialog);
-          }
-        },
-      });
+      const usarContratos = profile?.config_contrato?.usar_contratos;
+      if (!usarContratos) return;
+
+      const hasActiveContract = passageiro.status_contrato === ContratoStatus.ASSINADO || 
+                               passageiro.status_contrato === ContratoStatus.PENDENTE;
+
+      if (hasActiveContract) {
+        openUpdateContractDialog({ passageiro });
+      } else {
+        openGenerateContractDialog({ passageiro });
+      }
     },
-    [openConfirmationDialog, closeConfirmationDialog, createContrato],
+    [profile?.config_contrato?.usar_contratos, openUpdateContractDialog, openGenerateContractDialog],
   );
 
   const pullToRefreshReload = useCallback(async () => {

@@ -1,10 +1,5 @@
 import { CepInput } from "@/components/forms";
 import {
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
     FormControl,
     FormField,
     FormItem,
@@ -22,20 +17,16 @@ export function PassageiroFormEndereco() {
   const [isCepLoading, setIsCepLoading] = useState(false);
 
   return (
-    <>
-      <AccordionItem
-        value="endereco"
-        className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm mt-4"
-      >
-        <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
-          <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
-            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-              <MapPin className="w-5 h-5" />
-            </div>
-            Endereço
+    <div className="space-y-10">
+      <div className="space-y-6">
+        <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm">
+            <MapPin className="w-5 h-5" />
           </div>
-        </AccordionTrigger>
-        <AccordionContent className="px-6 pb-6 pt-2 space-y-4">
+          Endereço do Passageiro
+        </div>
+
+        <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             <FormField
               control={form.control}
@@ -149,8 +140,6 @@ export function PassageiroFormEndereco() {
                   <FormLabel className="text-gray-700 font-medium ml-1">
                     Estado
                   </FormLabel>
-                  {/* Select for State */}
-                  {/* Assuming we might want to move Select to a reusable component later, but inline for now */}
                    <div className="relative">
                       <Input
                         {...field}
@@ -188,22 +177,18 @@ export function PassageiroFormEndereco() {
               )}
             />
           </div>
-        </AccordionContent>
-      </AccordionItem>
+        </div>
+      </div>
 
-      <AccordionItem
-        value="observacoes"
-        className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm mt-4"
-      >
-        <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
-          <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
-            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-              <FileText className="w-5 h-5" />
-            </div>
-            Observações
+      <div className="space-y-6">
+        <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm">
+            <FileText className="w-5 h-5" />
           </div>
-        </AccordionTrigger>
-        <AccordionContent className="px-6 pb-6 pt-2">
+          Informações Adicionais
+        </div>
+
+        <div>
           <FormField
             control={form.control}
             name="observacoes"
@@ -220,8 +205,8 @@ export function PassageiroFormEndereco() {
               </FormItem>
             )}
           />
-        </AccordionContent>
-      </AccordionItem>
-    </>
+        </div>
+      </div>
+    </div>
   );
 }

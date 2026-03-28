@@ -1,53 +1,46 @@
 import { CepInput } from "@/components/forms";
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
+import { BaseDialog } from "@/components/ui/BaseDialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle
-} from "@/components/ui/dialog";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-    useCreateEscola,
-    useUpdateEscola,
+  useCreateEscola,
+  useUpdateEscola,
 } from "@/hooks/api/useEscolaMutations";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
 import { cn } from "@/lib/utils";
-import { cepSchema } from "@/schemas/common"; // Oops, don't import random things.
+import { cepSchema } from "@/schemas/common";
 import { Escola } from "@/types/escola";
 import { safeCloseDialog } from "@/utils/dialogUtils";
 
 import { toast } from "@/utils/notifications/toast";
 import { validateEnderecoFields } from "@/utils/validators";
-// Just import cepSchema.
-// And remove cepSchema from validators import.
 import { mockGenerator } from "@/utils/mocks/generator";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, Loader2, MapPin, Wand2, X } from "lucide-react";
+import { Building2, MapPin, Wand2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -71,7 +64,6 @@ const escolaSchema = z
       data.numero,
     );
 
-    // Adiciona erros para cada campo que falhou na validação
     if (validation.errors.cep) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -94,6 +86,7 @@ const escolaSchema = z
       });
     }
   });
+
 type EscolaFormData = z.infer<typeof escolaSchema>;
 
 interface EscolaFormDialogProps {
@@ -119,7 +112,6 @@ export default function EscolaFormDialog({
   const [keepOpen, setKeepOpen] = useState(false);
   const [isCepLoading, setIsCepLoading] = useState(false);
   const { user } = useSession();
-  // Só chamar useProfile se não receber profile como prop e o dialog estiver aberto
   const { profile: profileFromHook } = useProfile(
     profileProp ? undefined : isOpen ? user?.id : undefined,
   );
@@ -128,7 +120,7 @@ export default function EscolaFormDialog({
   const createEscola = useCreateEscola();
   const updateEscola = useUpdateEscola();
 
-  const loading = createEscola.isPending || updateEscola.isPending;
+  const isSaving = createEscola.isPending || updateEscola.isPending;
 
   const form = useForm<EscolaFormData>({
     resolver: zodResolver(escolaSchema),
@@ -149,10 +141,8 @@ export default function EscolaFormDialog({
   const logradouro = form.watch("logradouro");
   const numero = form.watch("numero");
 
-  // Revalidar campos de endereço quando qualquer um deles mudar
   useEffect(() => {
     if (isOpen) {
-      // Trigger em todos os campos para garantir validação completa
       form.trigger(["cep", "logradouro", "numero"]);
     }
   }, [cep, logradouro, numero, isOpen, form]);
@@ -173,7 +163,6 @@ export default function EscolaFormDialog({
         });
         setOpenAccordionItems(["dados-escola", "endereco"]);
       } else {
-        // Só limpa se não estiver mantendo aberto (modo batch)
         if (!keepOpen) {
           form.reset({
             nome: "",
@@ -194,7 +183,7 @@ export default function EscolaFormDialog({
     }
   }, [isOpen, editingEscola, form]);
 
-  const onFormError = (errors: any) => {
+  const onFormError = () => {
     toast.error("validacao.formularioComErros");
     setOpenAccordionItems(["dados-escola", "endereco"]);
   };
@@ -238,7 +227,6 @@ export default function EscolaFormDialog({
             onSuccess(escolaSalva, keepOpen);
 
             if (keepOpen) {
-              // Resetar formulário mantendo alguns campos se necessário, ou reset total
               form.reset({
                 nome: "",
                 logradouro: "",
@@ -251,15 +239,12 @@ export default function EscolaFormDialog({
                 ativo: true,
               });
 
-              // Focar no campo nome com delay para garantir que a UI atualizou
               setTimeout(() => {
                 form.setFocus("nome");
                 setKeepOpen(false);
               }, 100);
             } else {
-              safeCloseDialog(() => {
-                onClose();
-              });
+              safeCloseDialog(onClose);
             }
           },
           onError: (error: any) => {
@@ -304,371 +289,311 @@ export default function EscolaFormDialog({
   };
 
   return (
-    <>
-      <Dialog open={isOpen} onOpenChange={() => safeCloseDialog(onClose)}>
-        <DialogContent
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          className="w-full max-w-2xl p-0 gap-0 bg-gray-50 h-full max-h-screen sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden sm:rounded-3xl border-0 shadow-2xl"
-          hideCloseButton
-        >
-          <div className="bg-blue-600 px-4 pt-[calc(1.25rem+var(--safe-area-top))] pb-5 sm:py-6 text-center relative shrink-0">
-            <div className="absolute left-4 top-[calc(1rem+var(--safe-area-top))] sm:top-5 flex gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20 rounded-full h-10 w-10 shadow-sm border border-white/20"
-                onClick={handleFillMock}
-                title="Preencher com dados fictícios"
-              >
-                <Wand2 className="h-5 w-5" />
-              </Button>
-            </div>
-            <DialogClose className="absolute right-4 top-[calc(1rem+var(--safe-area-top))] sm:top-5 text-white/70 hover:text-white transition-colors">
-              <X className="h-6 w-6" />
-              <span className="sr-only">Close</span>
-            </DialogClose>
+    <BaseDialog open={isOpen} onOpenChange={() => !isSaving && safeCloseDialog(onClose)} lockClose={isSaving}>
+      <BaseDialog.Header
+        title={editingEscola ? "Editar Escola" : "Nova Escola"}
+        onClose={() => safeCloseDialog(onClose)}
+        hideCloseButton={isSaving}
+        leftAction={
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-11 w-11 rounded-2xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-95 shadow-sm"
+            onClick={handleFillMock}
+            title="Preencher com dados fictícios"
+          >
+            <Wand2 className="h-5 w-5" />
+          </Button>
+        }
+      />
 
-            <div className="flex flex-col items-center">
-              <div className="flex items-center justify-center gap-3">
-                <div className="bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-sm shrink-0">
-                  <Building2 className="w-5 h-5 text-white" />
+      <BaseDialog.Body>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit, onFormError)}
+            className="space-y-10 pb-6"
+          >
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-2">
+                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm">
+                  <Building2 className="w-5 h-5" />
                 </div>
-                <DialogTitle className="text-xl font-bold text-white leading-none">
-                  {editingEscola ? "Editar Escola" : "Cadastrar Escola"}
-                </DialogTitle>
+                Dados da Escola
               </div>
-            </div>
-          </div>
-
-          <div className="p-4 sm:p-6 pt-2 bg-white flex-1 overflow-y-auto">
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(handleSubmit, onFormError)}
-                className="space-y-4"
-              >
-                <Accordion
-                  type="multiple"
-                  value={openAccordionItems}
-                  onValueChange={setOpenAccordionItems}
-                  className="w-full"
-                >
-                  <AccordionItem value="dados-escola" className="border-b-0">
-                    <AccordionTrigger className="hover:no-underline py-2">
-                      <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                        <Building2 className="w-5 h-5 text-blue-600" />
-                        Dados da Escola
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="nome"
-                        render={({ field, fieldState }) => (
-                          <FormItem>
-                            <FormLabel className="text-gray-700 font-medium ml-1">
-                              Nome da Escola{" "}
-                              <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Building2 className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-                                <Input
-                                  {...field}
-                                  className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
-                                  placeholder="Ex: Escola Municipal..."
-                                  aria-invalid={!!fieldState.error}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      {editingEscola && (
-                        <div className="pt-2">
-                          <FormField
-                            control={form.control}
-                            name="ativo"
-                            render={({ field }) => (
-                              <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
-                                <Checkbox
-                                  id="ativo"
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                  className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
-                                />
-                                <FormLabel
-                                  htmlFor="ativo"
-                                  className="flex-1 cursor-pointer font-medium text-gray-700 m-0 mt-0"
-                                >
-                                  Escola Ativa
-                                </FormLabel>
-                              </FormItem>
-                            )}
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="nome"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700 font-medium ml-1">
+                        Nome da Escola <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Building2 className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 opacity-60" />
+                          <Input
+                            {...field}
+                            className="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
+                            placeholder="Ex: Escola Municipal..."
+                            aria-invalid={!!fieldState.error}
                           />
                         </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {editingEscola && (
+                  <div className="pt-2">
+                    <FormField
+                      control={form.control}
+                      name="ativo"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-0">
+                          <Checkbox
+                            id="ativo"
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            className="h-5 w-5"
+                          />
+                          <FormLabel
+                            htmlFor="ativo"
+                            className="flex-1 cursor-pointer font-medium text-slate-700 m-0"
+                          >
+                            Escola Ativa
+                          </FormLabel>
+                        </FormItem>
                       )}
-                    </AccordionContent>
-                  </AccordionItem>
-
-                  <AccordionItem value="endereco" className="mt-2 border-b-0">
-                    <AccordionTrigger className="hover:no-underline py-2">
-                      <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                        <MapPin className="w-5 h-5 text-blue-600" />
-                        Endereço
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-1 pt-2 pb-4 space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="cep"
-                          render={({ field }) => (
-                            <div className="md:col-span-2">
-                              <CepInput
-                                field={field}
-                                inputClassName="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
-                                onLoadingChange={setIsCepLoading}
-                              />
-                            </div>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="logradouro"
-                          render={({ field, fieldState }) => (
-                            <FormItem className="md:col-span-4">
-                              <FormLabel className="text-gray-700 font-medium ml-1">
-                                Logradouro
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
-                                  aria-invalid={!!fieldState.error}
-                                  disabled={isCepLoading}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="numero"
-                          render={({ field, fieldState }) => (
-                            <FormItem className="md:col-span-2">
-                              <FormLabel className="text-gray-700 font-medium ml-1">
-                                Número
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
-                                  aria-invalid={!!fieldState.error}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="bairro"
-                          render={({ field, fieldState }) => (
-                            <FormItem className="md:col-span-4">
-                              <FormLabel className="text-gray-700 font-medium ml-1">
-                                Bairro
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
-                                  aria-invalid={!!fieldState.error}
-                                  disabled={isCepLoading}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="cidade"
-                          render={({ field, fieldState }) => (
-                            <FormItem className="md:col-span-4">
-                              <FormLabel className="text-gray-700 font-medium ml-1">
-                                Cidade
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  className="h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
-                                  aria-invalid={!!fieldState.error}
-                                  disabled={isCepLoading}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="estado"
-                          render={({ field, fieldState }) => (
-                            <FormItem className="md:col-span-2">
-                              <FormLabel className="text-gray-700 font-medium ml-1">
-                                Estado
-                              </FormLabel>
-                              <Select
-                                onValueChange={field.onChange}
-                                value={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger
-                                    className={cn(
-                                      "h-12 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all",
-                                      fieldState.error && "border-red-500",
-                                    )}
-                                    aria-invalid={!!fieldState.error}
-                                    disabled={isCepLoading}
-                                  >
-                                    <SelectValue placeholder="UF" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent className="max-h-60 overflow-y-auto">
-                                  <SelectItem value="AC">Acre</SelectItem>
-                                  <SelectItem value="AL">Alagoas</SelectItem>
-                                  <SelectItem value="AP">Amapá</SelectItem>
-                                  <SelectItem value="AM">Amazonas</SelectItem>
-                                  <SelectItem value="BA">Bahia</SelectItem>
-                                  <SelectItem value="CE">Ceará</SelectItem>
-                                  <SelectItem value="DF">
-                                    Distrito Federal
-                                  </SelectItem>
-                                  <SelectItem value="ES">
-                                    Espírito Santo
-                                  </SelectItem>
-                                  <SelectItem value="GO">Goiás</SelectItem>
-                                  <SelectItem value="MA">Maranhão</SelectItem>
-                                  <SelectItem value="MT">
-                                    Mato Grosso
-                                  </SelectItem>
-                                  <SelectItem value="MS">
-                                    Mato Grosso do Sul
-                                  </SelectItem>
-                                  <SelectItem value="MG">
-                                    Minas Gerais
-                                  </SelectItem>
-                                  <SelectItem value="PA">Pará</SelectItem>
-                                  <SelectItem value="PB">Paraíba</SelectItem>
-                                  <SelectItem value="PR">Paraná</SelectItem>
-                                  <SelectItem value="PE">Pernambuco</SelectItem>
-                                  <SelectItem value="PI">Piauí</SelectItem>
-                                  <SelectItem value="RJ">
-                                    Rio de Janeiro
-                                  </SelectItem>
-                                  <SelectItem value="RN">
-                                    Rio Grande do Norte
-                                  </SelectItem>
-                                  <SelectItem value="RS">
-                                    Rio Grande do Sul
-                                  </SelectItem>
-                                  <SelectItem value="RO">Rondônia</SelectItem>
-                                  <SelectItem value="RR">Roraima</SelectItem>
-                                  <SelectItem value="SC">
-                                    Santa Catarina
-                                  </SelectItem>
-                                  <SelectItem value="SP">São Paulo</SelectItem>
-                                  <SelectItem value="SE">Sergipe</SelectItem>
-                                  <SelectItem value="TO">Tocantins</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="referencia"
-                          render={({ field, fieldState }) => (
-                            <FormItem className="col-span-1 md:col-span-6">
-                              <FormLabel className="text-gray-700 font-medium ml-1">
-                                Referência
-                              </FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="Ex: próximo ao mercado"
-                                  {...field}
-                                  className="min-h-[80px] rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all"
-                                  aria-invalid={!!fieldState.error}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-
-                {allowBatchCreation && (
-                  <div className="flex items-center gap-2 px-1 pt-4">
-                    <Checkbox
-                      id="keepOpen"
-                      checked={keepOpen}
-                      onCheckedChange={(checked) =>
-                        setKeepOpen(checked as boolean)
-                      }
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <label
-                      htmlFor="keepOpen"
-                      className="text-sm font-medium text-gray-600 cursor-pointer select-none"
-                    >
-                      Cadastrar outra em seguida
-                    </label>
                   </div>
                 )}
-              </form>
-            </Form>
-          </div>
+              </div>
+            </div>
 
-          <div className="p-4 pb-[calc(1rem+var(--safe-area-bottom))] border-t border-gray-100 bg-gray-50 shrink-0 grid grid-cols-2 gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => safeCloseDialog(onClose)}
-              disabled={loading}
-              className="w-full h-11 rounded-xl border-gray-200 font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              onClick={form.handleSubmit(handleSubmit, onFormError)}
-              disabled={loading}
-              className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:-translate-y-0.5"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Salvando...
-                </>
-              ) : editingEscola ? (
-                "Atualizar"
-              ) : (
-                "Salvar"
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-2">
+                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                Endereço
+              </div>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="cep"
+                    render={({ field }) => (
+                      <div className="md:col-span-2">
+                        <CepInput
+                          field={field}
+                          inputClassName="pl-12 h-12 rounded-xl bg-gray-50 border-gray-200"
+                          onLoadingChange={setIsCepLoading}
+                        />
+                      </div>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="logradouro"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="md:col-span-4">
+                        <FormLabel className="text-gray-700 font-medium ml-1">
+                          Logradouro
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            className="h-12 rounded-xl bg-gray-50 border-gray-200"
+                            aria-invalid={!!fieldState.error}
+                            disabled={isCepLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="numero"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel className="text-gray-700 font-medium ml-1">
+                          Número
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            className="h-12 rounded-xl bg-gray-50 border-gray-200"
+                            aria-invalid={!!fieldState.error}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="bairro"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="md:col-span-4">
+                        <FormLabel className="text-gray-700 font-medium ml-1">
+                          Bairro
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            className="h-12 rounded-xl bg-gray-50 border-gray-200"
+                            aria-invalid={!!fieldState.error}
+                            disabled={isCepLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="cidade"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="md:col-span-4">
+                        <FormLabel className="text-gray-700 font-medium ml-1">
+                          Cidade
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            className="h-12 rounded-xl bg-gray-50 border-gray-200"
+                            aria-invalid={!!fieldState.error}
+                            disabled={isCepLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="estado"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel className="text-gray-700 font-medium ml-1">
+                          Estado
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger
+                              className={cn(
+                                "h-12 rounded-xl bg-gray-50 border-gray-200",
+                                fieldState.error && "border-red-500",
+                              )}
+                              aria-invalid={!!fieldState.error}
+                              disabled={isCepLoading}
+                            >
+                              <SelectValue placeholder="UF" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="max-h-60 overflow-y-auto rounded-2xl">
+                            <SelectItem value="AC">Acre</SelectItem>
+                            <SelectItem value="AL">Alagoas</SelectItem>
+                            <SelectItem value="AP">Amapá</SelectItem>
+                            <SelectItem value="AM">Amazonas</SelectItem>
+                            <SelectItem value="BA">Bahia</SelectItem>
+                            <SelectItem value="CE">Ceará</SelectItem>
+                            <SelectItem value="DF">Distrito Federal</SelectItem>
+                            <SelectItem value="ES">Espírito Santo</SelectItem>
+                            <SelectItem value="GO">Goiás</SelectItem>
+                            <SelectItem value="MA">Maranhão</SelectItem>
+                            <SelectItem value="MT">Mato Grosso</SelectItem>
+                            <SelectItem value="MS">Mato Grosso do Sul</SelectItem>
+                            <SelectItem value="MG">Minas Gerais</SelectItem>
+                            <SelectItem value="PA">Pará</SelectItem>
+                            <SelectItem value="PB">Paraíba</SelectItem>
+                            <SelectItem value="PR">Paraná</SelectItem>
+                            <SelectItem value="PE">Pernambuco</SelectItem>
+                            <SelectItem value="PI">Piauí</SelectItem>
+                            <SelectItem value="RJ">Rio de Janeiro</SelectItem>
+                            <SelectItem value="RN">Rio Grande do Norte</SelectItem>
+                            <SelectItem value="RS">Rio Grande do Sul</SelectItem>
+                            <SelectItem value="RO">Rondônia</SelectItem>
+                            <SelectItem value="RR">Roraima</SelectItem>
+                            <SelectItem value="SC">Santa Catarina</SelectItem>
+                            <SelectItem value="SP">São Paulo</SelectItem>
+                            <SelectItem value="SE">Sergipe</SelectItem>
+                            <SelectItem value="TO">Tocantins</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="referencia"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="col-span-1 md:col-span-6">
+                        <FormLabel className="text-gray-700 font-medium ml-1">
+                          Referência
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Ex: próximo ao mercado"
+                            {...field}
+                            className="min-h-[80px] rounded-xl bg-gray-50 border-gray-200 resize-none font-medium placeholder:text-slate-300 transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
+                            aria-invalid={!!fieldState.error}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {allowBatchCreation && (
+              <div className="flex items-center gap-2 px-1 pt-4">
+                <Checkbox
+                  id="keepOpen"
+                  checked={keepOpen}
+                  onCheckedChange={(checked) =>
+                    setKeepOpen(checked as boolean)
+                  }
+                  className="h-4 w-4 rounded border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
+                />
+                <label
+                  htmlFor="keepOpen"
+                  className="text-xs font-bold text-slate-400 uppercase tracking-widest cursor-pointer select-none italic"
+                >
+                  Cadastrar outra em seguida
+                </label>
+              </div>
+            )}
+          </form>
+        </Form>
+      </BaseDialog.Body>
+
+      <BaseDialog.Footer>
+        <BaseDialog.Action
+          label="Cancelar"
+          variant="secondary"
+          onClick={() => safeCloseDialog(onClose)}
+          disabled={isSaving}
+        />
+        <BaseDialog.Action
+          label={editingEscola ? "Atualizar" : "Salvar"}
+          variant="primary"
+          onClick={form.handleSubmit(handleSubmit, onFormError)}
+          isLoading={isSaving}
+        />
+      </BaseDialog.Footer>
+    </BaseDialog>
   );
 }

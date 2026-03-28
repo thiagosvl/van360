@@ -23,6 +23,7 @@ interface UsePassageiroActionsProps {
 
   onDelete: (passageiro: Passageiro) => void;
   onGenerateContract?: (passageiro: Passageiro) => void;
+  usarContratos?: boolean;
 }
 
 export function usePassageiroActions({
@@ -33,6 +34,7 @@ export function usePassageiroActions({
 
   onDelete,
   onGenerateContract,
+  usarContratos = true,
 }: UsePassageiroActionsProps): ActionItem[] {
 
   const actions: ActionItem[] = [
@@ -64,34 +66,36 @@ export function usePassageiroActions({
 
 
 
-  // Contract Actions are now enabled for everyone
-  if (passageiro.status_contrato === ContratoStatus.ASSINADO) {
-    const finalUrl = passageiro.contrato_final_url || passageiro.contrato_url;
-    if (finalUrl) {
+  // Contract Actions are now conditional to driver config
+  if (usarContratos) {
+    if (passageiro.status_contrato === ContratoStatus.ASSINADO) {
+      const finalUrl = passageiro.contrato_final_url || passageiro.contrato_url;
+      if (finalUrl) {
+        actions.push({
+          label: "Ver Contrato Assinado",
+          icon: <FileCheck className="h-4 w-4" />,
+          onClick: () => openBrowserLink(finalUrl),
+          swipeColor: "bg-green-600",
+          hasSeparatorAfter: true
+        });
+      }
+    } else if (passageiro.status_contrato === ContratoStatus.PENDENTE && passageiro.contrato_url) {
       actions.push({
-        label: "Ver Contrato Assinado",
-        icon: <FileCheck className="h-4 w-4" />,
-        onClick: () => openBrowserLink(finalUrl),
-        swipeColor: "bg-green-600",
+        label: "Ver Contrato (Pendente)",
+        icon: <FileText className="h-4 w-4" />,
+        onClick: () => openBrowserLink(passageiro.contrato_url),
+        swipeColor: "bg-amber-600",
+        hasSeparatorAfter: true
+      });
+    } else if (onGenerateContract) {
+      actions.push({
+        label: "Gerar Contrato",
+        icon: <FilePlus className="h-4 w-4" />,
+        onClick: () => onGenerateContract(passageiro),
+        swipeColor: "bg-blue-600",
         hasSeparatorAfter: true
       });
     }
-  } else if (passageiro.status_contrato === ContratoStatus.PENDENTE && passageiro.contrato_url) {
-    actions.push({
-      label: "Ver Contrato (Pendente)",
-      icon: <FileText className="h-4 w-4" />,
-      onClick: () => openBrowserLink(passageiro.contrato_url),
-      swipeColor: "bg-amber-600",
-      hasSeparatorAfter: true
-    });
-  } else if (onGenerateContract) {
-    actions.push({
-      label: "Gerar Contrato",
-      icon: <FilePlus className="h-4 w-4" />,
-      onClick: () => onGenerateContract(passageiro),
-      swipeColor: "bg-blue-600",
-      hasSeparatorAfter: true
-    });
   }
 
   actions.push({

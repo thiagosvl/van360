@@ -10,15 +10,18 @@ interface PassageiroActionsMenuProps {
   onToggleStatus: (passageiro: Passageiro) => void;
   onDelete: (passageiro: Passageiro) => void;
   onGenerateContract?: (passageiro: Passageiro) => void;
+  usarContratos?: boolean;
 }
 
 export const PassageiroActionsMenu = memo(function PassageiroActionsMenu({
   onGenerateContract,
+  usarContratos,
   ...props
 }: PassageiroActionsMenuProps) {
   const actions = usePassageiroActions({
     ...props,
     onGenerateContract,
+    usarContratos,
   });
 
   return <ActionsDropdown actions={actions} />;

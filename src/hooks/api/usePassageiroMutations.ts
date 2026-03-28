@@ -39,7 +39,7 @@ export function useUpdatePassageiro() {
       });
     },
     onSuccess: (data, variables) => {
-      toast.success("sucesso.atualizado");
+      toast.success("sucesso.atualizar");
 
       // Invalidações globais
       queryClient.invalidateQueries({ queryKey: ["passageiros"] });

@@ -23,17 +23,14 @@ import {
 } from "@/utils/formatters";
 import { memo } from "react";
 import { PassageiroActionsMenu } from "./PassageiroActionsMenu";
-
-const getPeriodoColor = (periodo?: PassageiroPeriodo) => {
-  return "bg-gray-50/50 text-gray-400 border-gray-100/80";
-};
+import { formatPeriodo } from "@/utils/formatters/periodo";
 
 const getPeriodoSuffix = (periodo?: PassageiroPeriodo) => {
   const labels: Record<string, string> = {
-    [PassageiroPeriodo.MANHA]: "Manhã",
-    [PassageiroPeriodo.TARDE]: "Tarde",
-    [PassageiroPeriodo.NOITE]: "Noite",
-    [PassageiroPeriodo.INTEGRAL]: "Integral",
+    [PassageiroPeriodo.MANHA]: formatPeriodo(PassageiroPeriodo.MANHA),
+    [PassageiroPeriodo.TARDE]: formatPeriodo(PassageiroPeriodo.TARDE),
+    [PassageiroPeriodo.NOITE]: formatPeriodo(PassageiroPeriodo.NOITE),
+    [PassageiroPeriodo.INTEGRAL]: formatPeriodo(PassageiroPeriodo.INTEGRAL),
   };
   return labels[periodo || ""] || "N/I";
 };
@@ -45,6 +42,7 @@ interface PassageirosListProps {
   onToggleClick: (passageiro: Passageiro) => void;
   onDeleteClick: (passageiro: Passageiro) => void;
   onGenerateContract?: (passageiro: Passageiro) => void;
+  usarContratos?: boolean;
 }
 
 
@@ -56,6 +54,7 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
   onToggleClick,
   onDeleteClick,
   onGenerateContract,
+  usarContratos,
 }: { passageiro: Passageiro; index: number } & Omit<
   PassageirosListProps,
   "passageiros"
@@ -67,12 +66,14 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
     onToggleStatus: onToggleClick,
     onDelete: onDeleteClick as any,
     onGenerateContract,
+    usarContratos,
   });
 
   const initial = getInitials(passageiro?.nome);
 
-  const shortName = formatShortName(passageiro?.nome);
+  const shortName = formatShortName(passageiro?.nome, true);
   const respName = formatFirstName(passageiro?.nome_responsavel);
+  const schoolName = passageiro.escola?.nome || "Não informada";
 
   return (
     <MobileActionItem actions={actions as any} className="bg-transparent">
@@ -89,28 +90,24 @@ const PassageiroMobileCard = memo(function PassageiroMobileCard({
         <div className="flex-grow min-w-0 pr-10">
           <p className="font-headline font-bold text-[#1a3a5c] text-sm truncate leading-tight">
             {shortName}
-          </p>
-          <div className="flex items-center gap-2 mt-0.5">
-            <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
-              {respName}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-end gap-1.5 flex-shrink-0 absolute right-12 top-1/2 -translate-y-1/2">
-          <div className="flex">
             <span
               className={cn(
-                "text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full border",
-                getPeriodoColor(passageiro.periodo)
+                "text-[8px] ml-2 font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full border",
+                "bg-gray-50/50 text-gray-400 border-gray-100/80"
               )}
             >
               {getPeriodoSuffix(passageiro.periodo)}
             </span>
-          </div>
-          <p className="text-[10px] text-gray-500 font-medium truncate opacity-60 text-right max-w-[140px]">
-            {passageiro.escola?.nome || "Escola N/I"}
           </p>
+          <div className="flex items-center gap-1 mt-0.5 min-w-0">
+            <p className="text-[10px] text-gray-500 font-medium opacity-60 flex-shrink-0">
+              {respName}
+            </p>
+            <span className="text-[8px] text-gray-400 opacity-40">•</span>
+            <p className="text-[10px] text-gray-500 font-medium truncate opacity-60">
+              {schoolName}
+            </p>
+          </div>
         </div>
       </div>
     </MobileActionItem>
@@ -161,8 +158,9 @@ export function PassageirosList({
           </TableHeader>
           <TableBody>
             {passageiros.map((passageiro) => {
-              const shortName = formatShortName(passageiro?.nome);
+              const shortName = formatShortName(passageiro?.nome, true);
               const respName = formatFirstName(passageiro?.nome_responsavel);
+              const schoolName = passageiro.escola?.nome || "Não informada";
 
               return (
                 <TableRow
@@ -175,8 +173,10 @@ export function PassageirosList({
                       <p className="font-headline font-bold text-[#1a3a5c] text-sm">
                         {shortName}
                       </p>
-                      <p className="text-[10px] text-gray-400 font-medium tracking-wider">
+                      <p className="text-[10px] text-gray-400 font-medium tracking-wider truncate flex items-center gap-1.5">
                         {respName}
+                        <span className="text-[8px] text-gray-300">•</span>
+                        {schoolName}
                       </p>
                     </div>
                   </TableCell>
@@ -185,7 +185,7 @@ export function PassageirosList({
                       status={passageiro.ativo}
                       className={cn(
                         "font-bold text-[8px] h-3.5 px-1.5 rounded-sm border-none shadow-none uppercase tracking-widest inline-flex items-center",
-                        passageiro.ativo ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-400"
+                        passageiro.ativo ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-500"
                       )}
                     />
                   </TableCell>
@@ -196,7 +196,7 @@ export function PassageirosList({
                         <span
                           className={cn(
                             "text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border shadow-sm",
-                            getPeriodoColor(passageiro.periodo)
+                            "bg-gray-50/50 text-gray-400 border-gray-100/80"
                           )}
                         >
                           {getPeriodoSuffix(passageiro.periodo)}
@@ -230,6 +230,7 @@ export function PassageirosList({
                       {...props}
                       onToggleStatus={props.onToggleClick}
                       onDelete={props.onDeleteClick}
+                      usarContratos={props.usarContratos}
                     />
                   </TableCell>
                 </TableRow>

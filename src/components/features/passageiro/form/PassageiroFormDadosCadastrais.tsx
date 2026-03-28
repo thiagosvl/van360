@@ -1,8 +1,3 @@
-import {
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
     FormControl,
@@ -53,19 +48,15 @@ export function PassageiroFormDadosCadastrais({
   } = usePassageiroFormDadosCadastraisViewModel({ escolas, veiculos });
 
   return (
-    <AccordionItem
-      value="passageiro"
-      className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm"
-    >
-      <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
-        <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
-          <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-            <User className="w-5 h-5" />
-          </div>
-          Passageiro
+    <div className="space-y-6">
+      <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-2">
+        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm">
+          <User className="w-5 h-5" />
         </div>
-      </AccordionTrigger>
-      <AccordionContent className="px-6 pb-6 pt-2 space-y-6">
+        Dados do Passageiro
+      </div>
+
+      <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Linha 1: Nome (50%) + Veículo (50%) */}
           <FormField
@@ -357,7 +348,7 @@ export function PassageiroFormDadosCadastrais({
             )}
           />
         </div>
-      </AccordionContent>
-    </AccordionItem>
+      </div>
+    </div>
   );
 }

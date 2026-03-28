@@ -65,14 +65,14 @@ import {
 import { useCreateContrato } from "@/hooks/api/useContratos";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
-import { ContratoStatus } from "@/types/enums";
+import { CobrancaStatus, ContratoStatus, PassageiroFormModes } from "@/types/enums";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { openBrowserLink } from "@/utils/browser";
 import { toast } from "@/utils/notifications/toast";
 
 import { Cobranca } from "@/types/cobranca";
-import { CobrancaStatus, PassageiroFormModes } from "@/types/enums";
+
 import { Passageiro } from "@/types/passageiro";
 
 const currentYear = new Date().getFullYear().toString();
@@ -90,7 +90,9 @@ export default function PassageiroCarteirinha() {
     openCobrancaEditDialog,
     openCobrancaFormDialog,
     openManualPaymentDialog,
+    openReceiptDialog,
     openUpdateContractDialog,
+    openGenerateContractDialog,
   } = useLayout();
   const { passageiro_id } = useParams<{ passageiro_id: string }>();
 
@@ -222,14 +224,24 @@ export default function PassageiroCarteirinha() {
   const handlePassageiroFormSuccess = useCallback((data?: any, meta?: any) => {
     refetchPassageiro();
 
-    if (meta?.hasCriticalContractChanges === true) {
+    const hasChanges = meta?.hasCriticalContractChanges === true;
+    const usarContratos = profile?.config_contrato?.usar_contratos;
+
+    if (hasChanges && usarContratos) {
       const updatedPassageiro = data?.id ? data : (data?.passageiro || passageiro);
 
       setTimeout(() => {
-        openUpdateContractDialog({ passageiro: updatedPassageiro });
+        const hasActiveContract = updatedPassageiro.status_contrato === ContratoStatus.ASSINADO || 
+                                  updatedPassageiro.status_contrato === ContratoStatus.PENDENTE;
+
+        if (hasActiveContract) {
+          openUpdateContractDialog({ passageiro: updatedPassageiro });
+        } else {
+          openGenerateContractDialog({ passageiro: updatedPassageiro });
+        }
       }, 400);
     }
-  }, [refetchPassageiro, passageiro, openUpdateContractDialog]);
+  }, [refetchPassageiro, passageiro, openUpdateContractDialog, openGenerateContractDialog, profile?.config_contrato?.usar_contratos]);
 
   const handleEditClick = useCallback(() => {
     openPassageiroFormDialog({
@@ -524,25 +536,11 @@ export default function PassageiroCarteirinha() {
         return;
       }
 
-      openConfirmationDialog({
-        title: "Gerar Contrato?",
-        description: `Deseja gerar um novo contrato para ${passageiro.nome}? Isso usará a configuração atual de contrato.`,
-        confirmText: "Gerar Contrato",
-        onConfirm: async () => {
-          if (!passageiro || !passageiro_id) return;
-          try {
-            await createContrato.mutateAsync({
-              passageiroId: passageiro.id,
-              modalidade: passageiro.periodo,
-              valorMensal: Number(passageiro.valor_cobranca),
-              diaVencimento: Number(passageiro.dia_vencimento),
-            });
-            safeCloseDialog(closeConfirmationDialog);
-          } catch (error) {
-            safeCloseDialog(closeConfirmationDialog);
-          }
-        },
-      });
+      if (passageiro.contrato_id) {
+        openUpdateContractDialog({ passageiro });
+      } else {
+        openGenerateContractDialog({ passageiro });
+      }
     },
   };
 

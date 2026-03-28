@@ -1,9 +1,4 @@
 import { MoneyInput } from "@/components/forms";
-import {
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   FormControl,
@@ -37,19 +32,15 @@ export function PassageiroFormFinanceiro({
   const form = useFormContext();
 
   return (
-    <AccordionItem
-      value="cobranca"
-      className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm mt-4"
-    >
-      <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
-        <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
-          <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-            <CreditCard className="w-5 h-5" />
-          </div>
-          Mensalidade
+    <div className="space-y-6">
+      <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-2">
+        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm">
+          <CreditCard className="w-5 h-5" />
         </div>
-      </AccordionTrigger>
-      <AccordionContent className="px-6 pb-6 pt-2 space-y-4">
+        Informações da Mensalidade
+      </div>
+
+      <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -124,7 +115,7 @@ export function PassageiroFormFinanceiro({
           />
         </div>
 
-      </AccordionContent>
-    </AccordionItem>
+      </div>
+    </div>
   );
 }

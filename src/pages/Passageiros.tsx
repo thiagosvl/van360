@@ -154,9 +154,9 @@ export default function Passageiros() {
                       icon={Users2}
                       title="Nenhum passageiro encontrado"
                       description={searchTerm.length > 0 ? "Não encontramos passageiros com os filtros selecionados." : "Comece cadastrando seu primeiro passageiro para gerenciar o transporte."}
-                      action={searchTerm.length === 0 ? { 
-                        label: "Cadastrar Passageiro", 
-                        onClick: () => setIsPassengerDrawerOpen(true) 
+                      action={searchTerm.length === 0 ? {
+                        label: "Cadastrar Passageiro",
+                        onClick: () => setIsPassengerDrawerOpen(true)
                       } : undefined}
                     />
                   ) : (
@@ -167,6 +167,7 @@ export default function Passageiros() {
                       onToggleClick={handleToggleClick}
                       onDeleteClick={handleDeleteClick}
                       onGenerateContract={handleGenerateContract}
+                      usarContratos={profile?.config_contrato?.usar_contratos}
                     />
                   )}
                 </>

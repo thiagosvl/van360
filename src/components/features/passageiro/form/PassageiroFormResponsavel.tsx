@@ -1,10 +1,5 @@
 import { PhoneInput } from "@/components/forms";
 import {
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
   FormControl,
   FormField,
   FormItem,
@@ -33,19 +28,15 @@ export function PassageiroFormResponsavel({ isSearching }: PassageiroFormRespons
   const form = useFormContext();
 
   return (
-    <AccordionItem
-      value="responsavel"
-      className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm mt-4"
-    >
-      <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 hover:no-underline transition-colors">
-        <div className="flex items-center gap-3 text-lg font-semibold text-gray-800">
-          <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-            {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Contact className="w-5 h-5" />}
-          </div>
-          Responsável
+    <div className="space-y-6">
+      <div className="flex items-center gap-3 text-lg font-semibold text-slate-800 mb-2">
+        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#1a3a5c] border border-slate-200 shadow-sm">
+          {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Contact className="w-5 h-5" />}
         </div>
-      </AccordionTrigger>
-      <AccordionContent className="px-6 pb-6 pt-2 space-y-4">
+        Dados do Responsável
+      </div>
+
+      <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -170,7 +161,7 @@ export function PassageiroFormResponsavel({ isSearching }: PassageiroFormRespons
             )}
           />
         </div>
-      </AccordionContent>
-    </AccordionItem>
+      </div>
+    </div>
   );
 }
