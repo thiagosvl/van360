@@ -137,6 +137,10 @@ export interface LayoutContextType {
   setIsMobileMenuOpen: (open: boolean) => void;
   isHelpOpen: boolean;
   setIsHelpOpen: (open: boolean) => void;
+  
+  // Loading Global
+  isGlobalLoading: boolean;
+  setIsGlobalLoading: (active: boolean, text?: string) => void;
 }
 
 export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);

@@ -79,20 +79,18 @@ export default function AppLayout() {
     console.error("Erro ao carregar perfil:", error);
   }
 
-  if (loadingSession || isLoading || !user || !profile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="relative flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#1a3a5c] border-t-transparent shadow-lg"></div>
-          <img src="/assets/logo-van360.png" alt="Carregando..." className="h-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20" />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <LayoutProvider>
-      <AppLayoutContent role="motorista" />
+      {(loadingSession || isLoading || !user || !profile) ? (
+        <div className="min-h-screen flex items-center justify-center bg-white">
+          <div className="relative flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#1a3a5c] border-t-transparent shadow-lg"></div>
+            <img src="/assets/logo-van360.png" alt="Carregando..." className="h-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20" />
+          </div>
+        </div>
+      ) : (
+        <AppLayoutContent role="motorista" />
+      )}
     </LayoutProvider>
   );
 }

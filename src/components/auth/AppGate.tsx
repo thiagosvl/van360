@@ -34,15 +34,21 @@ const InitialLoading = () => (
 export const AppGate = ({ children }: { children: React.ReactNode }) => {
   const { session, loading } = useSession();
   const location = useLocation();
-  const [minLoadingTimePassed, setMinLoadingTimePassed] = useState(false);
+  const [minLoadingTimePassed, setMinLoadingTimePassed] = useState(() => {
+    // Se não for o primeiro carregamento desta aba (ex: após login/logout), não precisamos forçar o splash
+    return sessionStorage.getItem("van360_boot_complete") === "true";
+  });
 
   useEffect(() => {
+    if (minLoadingTimePassed) return;
+
     // Garante que o splash screen apareça por pelo menos 1.2 segundos para uma experiência suave
     const timer = setTimeout(() => {
       setMinLoadingTimePassed(true);
+      sessionStorage.setItem("van360_boot_complete", "true");
     }, 1200);
     return () => clearTimeout(timer);
-  }, []);
+  }, [minLoadingTimePassed]);
 
   const publicPaths: string[] = [
     ROUTES.PUBLIC.ROOT,

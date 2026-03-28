@@ -14,6 +14,7 @@ import { ReceiptDialog } from "@/components/dialogs/ReceiptDialog";
 import VeiculoFormDialog from "@/components/dialogs/VeiculoFormDialog";
 import DeleteAccountDialog from "@/components/dialogs/DeleteAccountDialog";
 import UpdateContractDialog from "@/components/dialogs/UpdateContractDialog";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { safeCloseDialog } from "@/hooks";
 import { useProfile } from "@/hooks/business/useProfile";
 import { useSession } from "@/hooks/business/useSession";
@@ -176,6 +177,8 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
   const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isGlobalLoading, setIsGlobalLoadingState] = useState(false);
+  const [globalLoadingText, setGlobalLoadingText] = useState<string | undefined>();
 
   useContractGuard({
     profile,
@@ -296,9 +299,16 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         setIsMobileMenuOpen,
         isHelpOpen,
         setIsHelpOpen,
+        isGlobalLoading,
+        setIsGlobalLoading: (active: boolean, text?: string) => {
+          setIsGlobalLoadingState(active);
+          setGlobalLoadingText(text);
+        },
       }}
     >
       {children}
+
+      <LoadingOverlay active={isGlobalLoading} text={globalLoadingText} />
 
       {confirmationDialogState.open && confirmationDialogState.props && (
         <ConfirmationDialog

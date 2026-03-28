@@ -16,6 +16,7 @@ import {
   ChevronDown,
   HelpCircle,
   Lock,
+  Loader2,
   LogOut,
   UserPen,
 } from "lucide-react";
@@ -28,7 +29,8 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   const {
     openAlterarSenhaDialog,
     openEditarCadastroDialog,
-    setIsHelpOpen
+    setIsHelpOpen,
+    setIsGlobalLoading
   } = useLayout();
 
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -42,16 +44,23 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   const handleSignOut = async () => {
     if (isSigningOut) return;
     setIsSigningOut(true);
+    setIsGlobalLoading(true, "Encerrando sessão...");
 
     try {
-      await apiClient.post("/auth/logout");
-    } catch (err) {
-      // Erro ao encerrar sessão - não crítico, seguimos com limpeza local
-    } finally {
+      // 1. Avisamos o backend (Log e Auditoria)
+      // Usamos .catch(() => null) para garantir que a rede lenta ou erro não trave o usuário no sistema
+      await apiClient.post("/auth/logout").catch(() => null);
+
+      // 2. Limpamos a sessão local (Storage e Supabase Client)
       await sessionManager.signOut();
       clearAppSession(true);
+
+      // 3. Redirecionamento total e limpo
       window.location.href = ROUTES.PUBLIC.LOGIN;
-      setIsSigningOut(false);
+    } catch (err) {
+      // Em caso de erro crítico, forçamos a saída local
+      clearAppSession(true);
+      window.location.href = ROUTES.PUBLIC.LOGIN;
     }
   };
 
@@ -132,7 +141,11 @@ export function AppNavbar({ role }: { role: "motorista" }) {
                 className="text-rose-500 rounded-xl px-3 py-2.5 bg-rose-50/30 hover:bg-rose-50 transition-colors"
                 disabled={isSigningOut}
               >
-                <LogOut className="mr-3 h-4 w-4" />
+                {isSigningOut ? (
+                  <Loader2 className="mr-3 h-4 w-4 animate-spin" />
+                ) : (
+                  <LogOut className="mr-3 h-4 w-4" />
+                )}
                 <span className="font-bold text-sm">Encerrar Sessão</span>
               </DropdownMenuItem>
             </DropdownMenuContent>

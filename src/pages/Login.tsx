@@ -530,9 +530,9 @@ export default function Login() {
       </div>
 
       <LoadingOverlay active={refreshing} text={getMessage("comum.aguarde.aguarde")} />
-      
-      <RecuperarSenhaDialog 
-        open={forgotPasswordOpen} 
+
+      <RecuperarSenhaDialog
+        open={forgotPasswordOpen}
         onOpenChange={setForgotPasswordOpen}
         initialCpf={formMotorista.getValues("cpfcnpj")}
       />
