@@ -31,7 +31,6 @@ import {
   MapPin,
   MoreHorizontal,
   Pencil,
-  Phone,
   Plus,
   PowerOff,
   Power,
@@ -71,10 +70,16 @@ const ProfileActions = ({
   <div className="flex items-center justify-center gap-3">
     <Button
       size="icon"
-      onClick={() => window.open(`tel:${passageiro.telefone_responsavel}`, "_self")}
-      className="h-11 w-11 rounded-2xl bg-[#1a3a5c]/5 text-[#1a3a5c] hover:bg-[#1a3a5c] hover:text-white transition-all shadow-sm hover:shadow-md"
+      onClick={() => onToggleClick(!!passageiro.ativo)}
+      className={cn(
+        "h-11 w-11 rounded-2xl transition-all shadow-sm hover:shadow-md",
+        passageiro.ativo 
+          ? "bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white" // Ativo -> Ação Desativar (Vermelho)
+          : "bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white" // Inativo -> Ação Ativar (Verde)
+      )}
+      title={passageiro.ativo ? "Desativar Passageiro" : "Ativar Passageiro"}
     >
-      <Phone className="h-4.5 w-4.5" />
+      {passageiro.ativo ? <PowerOff className="h-4.5 w-4.5" /> : <Power className="h-4.5 w-4.5" />}
     </Button>
     <Button
       size="icon"
@@ -108,7 +113,7 @@ const ProfileActions = ({
           Editar Cadastro
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onToggleClick(!!passageiro.ativo)} className="rounded-xl px-3 py-2.5 text-[11px] font-normal uppercase tracking-wider text-[#1a3a5c] cursor-pointer">
-          {passageiro.ativo ? <PowerOff className="h-3.5 w-3.5 mr-2 opacity-60 text-amber-500" /> : <Power className="h-3.5 w-3.5 mr-2 opacity-60 text-emerald-500" />}
+          {passageiro.ativo ? <PowerOff className="h-3.5 w-3.5 mr-2 opacity-60 text-rose-500" /> : <Power className="h-3.5 w-3.5 mr-2 opacity-60 text-emerald-500" />}
           {passageiro.ativo ? "Desativar Passageiro" : "Reativar Passageiro"}
         </DropdownMenuItem>
         <div className="h-px bg-slate-50 my-1" />
@@ -132,14 +137,14 @@ const ProfileSummary = ({
     <div className="h-24 w-24 rounded-[2rem] bg-white p-1.5 shadow-xl">
       <div className={cn(
         "h-full w-full rounded-[1.6rem] bg-slate-100 flex items-center justify-center text-[#1a3a5c] overflow-hidden relative border-2 transition-all",
-        passageiro.ativo ? "border-emerald-500/20" : "border-slate-300/20"
+        passageiro.ativo ? "border-emerald-500/20" : "border-rose-500/20"
       )}>
         <User className="h-10 w-10 opacity-20" />
       </div>
     </div>
 
     <div className="text-center mt-3">
-      <h2 className="text-xl font-headline font-black text-[#1a3a5c] tracking-tight">
+      <h2 className="text-xl font-headline font-bold text-[#1a3a5c] tracking-tight">
         {passageiro.nome}
       </h2>
       {passageiro.nome_responsavel && (
@@ -150,7 +155,7 @@ const ProfileSummary = ({
     <div className="flex items-center justify-center gap-2 mt-2">
       <Badge variant="outline" className={cn(
         "border-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest",
-        passageiro.ativo ? "text-emerald-500 bg-emerald-50" : "text-slate-400 bg-slate-50"
+        passageiro.ativo ? "text-emerald-500 bg-emerald-50" : "text-rose-500 bg-rose-50"
       )}>
         {passageiro.ativo ? "Ativo" : "Inativo"}
       </Badge>
@@ -449,11 +454,11 @@ const InfoTile = ({
   )}>
     <div className="flex items-center gap-1.5 mb-1.5">
       <span className="text-slate-400">{icon}</span>
-      <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">
+      <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-slate-400">
         {label}
       </span>
     </div>
-    <span className="text-sm font-black text-[#1a3a5c] leading-tight block ">
+    <span className="text-sm font-bold text-[#1a3a5c] leading-tight block ">
       {value}
     </span>
   </div>

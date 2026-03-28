@@ -34,7 +34,7 @@ export const ContratosToolbar = memo(function ContratosToolbar({
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5">
         {/* Tabs - Estilo Corretor */}
         <div className="bg-slate-200/50 p-1 rounded-[1.25rem] w-full sm:w-fit overflow-x-auto scrollbar-hide">
-          <TabsList className="bg-transparent h-11 p-0 gap-1 border-0 w-max sm:w-auto">
+          <TabsList className="bg-transparent h-[52px] p-0 gap-1 border-0 w-max sm:w-auto">
             <TabsTrigger
               value={ContratoTab.PENDENTES}
               className={cn(

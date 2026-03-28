@@ -34,7 +34,7 @@ export default function Relatorios() {
             className="w-full space-y-6"
           >
             <div className="bg-slate-200/50 p-1 rounded-[1.25rem] overflow-x-auto scrollbar-hide">
-              <TabsList className="flex w-full h-11 bg-transparent p-0 gap-1 mt-0 min-w-max sm:min-w-0 sm:grid sm:grid-cols-4">
+              <TabsList className="flex w-full h-[52px] bg-transparent p-0 gap-1 mt-0 min-w-max sm:min-w-0 sm:grid sm:grid-cols-4">
                 <TabsTrigger
                   value={RelatorioTab.VISAO_GERAL}
                   className="rounded-[1rem] h-full font-headline font-bold text-[13px] transition-all duration-300 data-[state=active]:bg-white data-[state=active]:text-[#16314f] data-[state=active]:shadow-sm data-[state=inactive]:text-slate-500/80 hover:text-[#1a3a5c] px-4 flex-1 whitespace-nowrap"
