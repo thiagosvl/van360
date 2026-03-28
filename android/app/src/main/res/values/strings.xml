@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Van360</string>
+    <string name="title_activity_main">Van360</string>
+    <string name="package_name">com.tibis.van360</string>
+    <string name="custom_url_scheme">com.tibis.van360</string>
+</resources>
