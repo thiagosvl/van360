@@ -1,6 +1,5 @@
 import { ROUTES } from "@/constants/routes";
 import { useSession } from "@/hooks/business/useSession";
-import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 
 // Tela de Carregamento Inicial Premium (Splash Screen simulada)
@@ -34,21 +33,6 @@ const InitialLoading = () => (
 export const AppGate = ({ children }: { children: React.ReactNode }) => {
   const { session, loading } = useSession();
   const location = useLocation();
-  const [minLoadingTimePassed, setMinLoadingTimePassed] = useState(() => {
-    // Se não for o primeiro carregamento desta aba (ex: após login/logout), não precisamos forçar o splash
-    return sessionStorage.getItem("van360_boot_complete") === "true";
-  });
-
-  useEffect(() => {
-    if (minLoadingTimePassed) return;
-
-    // Garante que o splash screen apareça por pelo menos 1.2 segundos para uma experiência suave
-    const timer = setTimeout(() => {
-      setMinLoadingTimePassed(true);
-      sessionStorage.setItem("van360_boot_complete", "true");
-    }, 1200);
-    return () => clearTimeout(timer);
-  }, [minLoadingTimePassed]);
 
   const publicPaths: string[] = [
     ROUTES.PUBLIC.ROOT,
@@ -62,8 +46,9 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
     publicPaths.includes(location.pathname) ||
     location.pathname.startsWith("/cadastro-passageiro");
 
-  // Enquanto ainda carrega sessão ou o splash screen, mostra tela premium
-  if (loading || !minLoadingTimePassed) {
+  // Enquanto ainda carrega sessão no primeiro boot, mostra a Splash Screen
+  // Agora sem timer forçado: se carregar em 10ms, some em 10ms.
+  if (loading) {
     return <InitialLoading />;
   }
 
@@ -78,14 +63,11 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
   }
 
   // 🔹 Se já está logado e tentar acessar login/cadastro → manda pro início
-  // Exceção: tela de boas-vindas pós-cadastro no app nativo (flag temporário)
-  const showingWelcome = sessionStorage.getItem("van360_showing_welcome") === "true";
   const authPaths: string[] = [ROUTES.PUBLIC.LOGIN, ROUTES.PUBLIC.REGISTER, ROUTES.PUBLIC.ROOT, ROUTES.PUBLIC.SPLASH];
-  if (session && authPaths.includes(location.pathname) && !showingWelcome) {
+  if (session && authPaths.includes(location.pathname)) {
     return <Navigate to={ROUTES.PRIVATE.MOTORISTA.HOME} replace />;
   }
 
-  // Caso normal → renderiza conteúdo
   return <>{children}</>;
 };
 

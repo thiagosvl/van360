@@ -176,7 +176,7 @@ export default function Login() {
 
   useEffect(() => {
     sessionManager.signOut();
-    
+
     // Carregar CPF salvo se existir
     const savedCpf = localStorage.getItem("van360_saved_cpf");
     if (savedCpf) {
@@ -239,10 +239,8 @@ export default function Login() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       if (role === UserType.ADMIN) {
-        console.log("[LOGIN] Sucesso. Navegando para ADMIN...");
         navigate(ROUTES.PRIVATE.ADMIN.DASHBOARD, { replace: true });
       } else {
-        console.log("[LOGIN] Sucesso. Navegando para HOME...");
         navigate(ROUTES.PRIVATE.MOTORISTA.HOME, { replace: true });
       }
     } catch (error: any) {
@@ -433,14 +431,14 @@ export default function Login() {
                   )}
 
                   <div className="flex items-center gap-2 pt-1 pb-2">
-                    <Checkbox 
-                      id="rememberMe" 
-                      checked={rememberMe} 
+                    <Checkbox
+                      id="rememberMe"
+                      checked={rememberMe}
                       onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                       className="border-gray-200 rounded-md data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
                     />
-                    <Label 
-                      htmlFor="rememberMe" 
+                    <Label
+                      htmlFor="rememberMe"
                       className="text-xs font-medium text-slate-500 cursor-pointer select-none"
                     >
                       Lembrar meu CPF

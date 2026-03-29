@@ -23,6 +23,7 @@ import {
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { pagesItems } from "@/utils/domain/pages/pagesUtils";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatFirstName } from "@/utils/formatters";
 
 export function AppNavbar({ role }: { role: "motorista" }) {
@@ -37,7 +38,7 @@ export function AppNavbar({ role }: { role: "motorista" }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useSession();
-  const { profile } = useProfile(user?.id);
+  const { profile, isLoading: isLoadingProfile } = useProfile(user?.id);
 
   const currentPage = pagesItems.find(item => item.href === location.pathname);
 
@@ -118,7 +119,11 @@ export function AppNavbar({ role }: { role: "motorista" }) {
             <DropdownMenuTrigger asChild>
               <button className="group flex items-center gap-x-2 outline-none p-1">
                 <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-[#1a3a5c] font-bold text-sm sm:text-base group-hover:bg-[#1a3a5c] group-hover:text-white transition-all shadow-sm">
-                  <span>{userInitial}</span>
+                  {isLoadingProfile ? (
+                    <Skeleton className="h-full w-full rounded-2xl" />
+                  ) : (
+                    <span>{userInitial}</span>
+                  )}
                 </div>
                 <ChevronDown className="h-4 w-4 hidden sm:block text-slate-400 group-hover:text-slate-600 transition-colors" />
               </button>
@@ -126,7 +131,11 @@ export function AppNavbar({ role }: { role: "motorista" }) {
             <DropdownMenuContent className="w-64 mt-2 rounded-[22px] p-2 shadow-2xl border-gray-100" align="end">
               <div className="px-3 py-3 border-b border-gray-50 mb-1">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Bem-vindo,</p>
-                <p className="text-sm font-black text-slate-900 truncate">{formatFirstName(profile?.nome)}</p>
+                {isLoadingProfile ? (
+                  <Skeleton className="h-4 w-32 mt-1" />
+                ) : (
+                  <p className="text-sm font-black text-slate-900 truncate">{formatFirstName(profile?.nome)}</p>
+                )}
               </div>
               <DropdownMenuItem onClick={openEditarCadastroDialog} className="rounded-xl px-3 py-2.5">
                 <UserPen className="mr-3 h-4 w-4 text-slate-400" />

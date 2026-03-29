@@ -39,8 +39,6 @@ const Home = () => {
     navigateTo,
   } = useDashboardViewModel();
 
-  console.log("[HOME] Status carregamento dashboard:", { isLoading, hasFinanceiro: !!financeiro });
-
   if (isLoading) {
     return <HomeSkeleton />;
   }
