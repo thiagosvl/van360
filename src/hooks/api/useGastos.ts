@@ -1,6 +1,6 @@
 import { gastoApi } from "@/services/api/gasto.api";
 import { Gasto } from "@/types/gasto";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 export interface UseGastosFilters {
@@ -29,10 +29,9 @@ export function useGastos(
     onError?: (error: unknown) => void;
   }
 ) {
-  const query = useQuery<Gasto[]>({
+  const query = useQuery<Gasto[], unknown, { list: Gasto[]; total: number }>({
     queryKey: buildQueryKey(filters),
     enabled: (options?.enabled ?? true) && Boolean(filters.usuarioId),
-    placeholderData: keepPreviousData,
     staleTime: 1000 * 60,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
@@ -46,13 +45,23 @@ export function useGastos(
       const data = await gastoApi.listGastos(filters.usuarioId, {
         data_inicio: `${year}-${month}-01`,
         data_fim: `${year}-${month}-${lastDay}`,
-        categoria: filters.categoria && filters.categoria !== "todas" ? filters.categoria : undefined,
-        veiculo_id: filters.veiculoId && filters.veiculoId !== "todos" ? filters.veiculoId : undefined,
+        categoria:
+          filters.categoria && filters.categoria !== "todas"
+            ? filters.categoria
+            : undefined,
+        veiculo_id:
+          filters.veiculoId && filters.veiculoId !== "todos"
+            ? filters.veiculoId
+            : undefined,
         search: filters.search?.trim() ? filters.search.trim() : undefined,
       });
 
       return (data as Gasto[]) ?? [];
     },
+    select: (data) => ({
+      list: data ?? [],
+      total: data?.length ?? 0,
+    }),
   });
 
   useEffect(() => {
@@ -63,3 +72,4 @@ export function useGastos(
 
   return query;
 }
+

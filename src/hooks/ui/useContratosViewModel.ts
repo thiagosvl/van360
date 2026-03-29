@@ -170,7 +170,7 @@ export function useContratosViewModel() {
     debouncedSearch,
     handleTabChange,
     kpis,
-    contratos: contratosRes?.data || [],
+    contratos: contratosRes?.list || [],
     isLoading: isLoadingContratos || isLoadingKPIs,
     isActionLoading,
     isContratoAtivo,

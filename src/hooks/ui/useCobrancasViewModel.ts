@@ -103,7 +103,7 @@ export function useCobrancasViewModel() {
 
   const cobrancasAReceber = useMemo(() => cobrancasData?.areceber ?? [], [cobrancasData]);
   const cobrancasRecebidas = useMemo(() => cobrancasData?.recebidos ?? [], [cobrancasData]);
-  const isInitialLoading = isCobrancasLoading && !cobrancasData;
+  const isInitialLoading = isCobrancasLoading;
 
   // Page Title
   useEffect(() => {

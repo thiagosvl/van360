@@ -51,7 +51,7 @@ export function useGastosViewModel() {
   }, [searchTerm]);
 
   const {
-    data: gastos = [],
+    data: gastosRes,
     isLoading: isGastosLoading,
     isFetching: isGastosFetching,
     refetch: refetchGastos,
@@ -76,6 +76,8 @@ export function useGastosViewModel() {
 
   const veiculos = useMemo(() => veiculosData?.list || [], [veiculosData]);
   const veiculosDropdown = useMemo(() => veiculos.map((v) => ({ id: v.id, placa: v.placa })), [veiculos]);
+
+  const gastos = gastosRes?.list || [];
 
   const displayData = useGastosCalculations({
     gastos,

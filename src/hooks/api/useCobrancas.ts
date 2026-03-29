@@ -26,7 +26,7 @@ export function useCobrancas(
     onError?: (error: unknown) => void;
   }
 ) {
-  const query = useQuery<Cobranca[], unknown, { all: Cobranca[]; areceber: Cobranca[]; recebidos: Cobranca[] }>({
+  const query = useQuery<Cobranca[], unknown, { all: Cobranca[]; areceber: Cobranca[]; recebidos: Cobranca[]; list: Cobranca[]; total: number }>({
     queryKey: buildQueryKey(filters),
     enabled: (options?.enabled ?? true) && Boolean(filters.usuarioId),
     staleTime: 1000 * 60,
@@ -48,6 +48,8 @@ export function useCobrancas(
       all: Cobranca[];
       areceber: Cobranca[];
       recebidos: Cobranca[];
+      list: Cobranca[];
+      total: number;
     } => {
       // Garantir que cobrancas seja sempre um array
       // Pode acontecer de receber dados já transformados do cache em alguns casos
@@ -56,6 +58,8 @@ export function useCobrancas(
           all: [],
           areceber: [],
           recebidos: [],
+          list: [],
+          total: 0,
         };
       }
 
@@ -68,6 +72,8 @@ export function useCobrancas(
         all,
         areceber,
         recebidos,
+        list: all,
+        total: all.length,
       };
     },
   });

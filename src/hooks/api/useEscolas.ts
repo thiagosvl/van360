@@ -31,7 +31,6 @@ export function useEscolas(
     staleTime: 1000 * 60,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
-    placeholderData: (previousData) => previousData,
     queryFn: async (): Promise<(Escola & { passageiros_ativos_count?: number })[]> => {
       if (!usuarioId) return [];
 

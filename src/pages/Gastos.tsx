@@ -82,7 +82,6 @@ export default function Gastos() {
             }}
             categorias={CATEGORIAS_GASTOS}
             veiculos={veiculos}
-            disabled={loading || loadingActions}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
           />

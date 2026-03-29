@@ -39,7 +39,6 @@ export function useVeiculos(
     staleTime: 1000 * 60,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
-    placeholderData: (previousData) => previousData,
     queryFn: async (): Promise<(Veiculo & { passageiros_ativos_count?: number })[]> => {
       if (!usuarioId) return [];
 
